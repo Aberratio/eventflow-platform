@@ -12,6 +12,8 @@ import EventDetailsPage from "./pages/EventDetailsPage";
 import ResultsPage from "./pages/ResultsPage";
 import ParticipantDashboard from "./pages/participant/ParticipantDashboard";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
+import EventForm from "./pages/organizer/EventForm";
+import EventManage from "./pages/organizer/EventManage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
 const queryClient = new QueryClient();
@@ -32,7 +34,9 @@ const App = () => (
             <Route path="/participant" element={<ParticipantDashboard />} />
             <Route path="/participant/*" element={<ParticipantDashboard />} />
             <Route path="/organizer" element={<OrganizerDashboard />} />
-            <Route path="/organizer/*" element={<OrganizerDashboard />} />
+            <Route path="/organizer/events/new" element={<EventForm />} />
+            <Route path="/organizer/events/:id" element={<EventManage />} />
+            <Route path="/organizer/events/:id/edit" element={<EventForm />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/*" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
