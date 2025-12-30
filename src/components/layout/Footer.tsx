@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Timer } from 'lucide-react';
+import { ContactAdminForm } from '@/components/ContactAdminForm';
 
 export const Footer = () => {
   return (
@@ -40,6 +41,9 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>kontakt@sporttime.pl</li>
               <li>+48 123 456 789</li>
+              <li className="pt-2">
+                <ContactAdminForm />
+              </li>
             </ul>
           </div>
         </div>

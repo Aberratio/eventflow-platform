@@ -8,15 +8,39 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockEvents, mockResults, disciplineLabels } from '@/data/mockData';
-import { Search, Trophy, Calendar, ExternalLink } from 'lucide-react';
+import { Search, Trophy, Calendar, ExternalLink, Download, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { toast } from '@/hooks/use-toast';
 
 const ResultsPage = () => {
   const [search, setSearch] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<string>('all');
+  const [selectedDistance, setSelectedDistance] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const completedEvents = mockEvents.filter(e => e.status === 'completed');
+
+  // Get available distances for the selected event
+  const availableDistances = useMemo(() => {
+    if (selectedEvent === 'all') {
+      const allDistances = new Set<string>();
+      mockResults.forEach(r => allDistances.add(r.distanceName));
+      return Array.from(allDistances);
+    }
+    const event = mockEvents.find(e => e.id === selectedEvent);
+    return event?.distances.map(d => d.name) || [];
+  }, [selectedEvent]);
+
+  // Get available categories
+  const availableCategories = useMemo(() => {
+    const categories = new Set<string>();
+    mockResults
+      .filter(r => selectedEvent === 'all' || r.eventId === selectedEvent)
+      .filter(r => selectedDistance === 'all' || r.distanceName === selectedDistance)
+      .forEach(r => categories.add(r.category));
+    return Array.from(categories).sort();
+  }, [selectedEvent, selectedDistance]);
 
   const filteredResults = useMemo(() => {
     return mockResults
@@ -31,8 +55,10 @@ const ResultsPage = () => {
         return true;
       })
       .filter(r => selectedEvent === 'all' || r.eventId === selectedEvent)
+      .filter(r => selectedDistance === 'all' || r.distanceName === selectedDistance)
+      .filter(r => selectedCategory === 'all' || r.category === selectedCategory)
       .sort((a, b) => a.position - b.position);
-  }, [search, selectedEvent]);
+  }, [search, selectedEvent, selectedDistance, selectedCategory]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<string, typeof mockResults> = {};
@@ -45,6 +71,23 @@ const ResultsPage = () => {
     return groups;
   }, [filteredResults]);
 
+  const handleExport = () => {
+    toast({
+      title: 'Eksport wyników',
+      description: 'Pobieranie pliku CSV z wynikami...',
+    });
+    // Mock export - in production this would generate a real CSV
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setSelectedEvent('all');
+    setSelectedDistance('all');
+    setSelectedCategory('all');
+  };
+
+  const hasActiveFilters = search || selectedEvent !== 'all' || selectedDistance !== 'all' || selectedCategory !== 'all';
+
   return (
     <Layout>
       <div className="container py-8">
@@ -56,8 +99,9 @@ const ResultsPage = () => {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="bg-card border rounded-lg p-4 mb-8">
+        {/* Filters */}
+        <div className="bg-card border rounded-lg p-4 mb-8 space-y-4">
+          {/* Search Row */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -68,9 +112,27 @@ const ResultsPage = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-              <SelectTrigger className="w-full md:w-[250px]">
-                <SelectValue placeholder="Wybierz zawody" />
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-2" />
+                Eksportuj
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Row */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Filter className="h-4 w-4" />
+              <span>Filtry:</span>
+            </div>
+            <Select value={selectedEvent} onValueChange={(value) => {
+              setSelectedEvent(value);
+              setSelectedDistance('all');
+              setSelectedCategory('all');
+            }}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Zawody" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie zawody</SelectItem>
@@ -79,6 +141,37 @@ const ResultsPage = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={selectedDistance} onValueChange={(value) => {
+              setSelectedDistance(value);
+              setSelectedCategory('all');
+            }}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Dystans" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie dystanse</SelectItem>
+                {availableDistances.map(dist => (
+                  <SelectItem key={dist} value={dist}>{dist}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue placeholder="Kategoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie kategorie</SelectItem>
+                {availableCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
+                <X className="h-4 w-4 mr-1" />
+                Wyczyść
+              </Button>
+            )}
           </div>
         </div>
 
@@ -159,11 +252,11 @@ const ResultsPage = () => {
           <div className="text-center py-12">
             <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">
-              {search ? 'Nie znaleziono wyników dla podanego wyszukiwania.' : 'Brak dostępnych wyników.'}
+              {hasActiveFilters ? 'Nie znaleziono wyników dla podanych filtrów.' : 'Brak dostępnych wyników.'}
             </p>
-            {search && (
-              <Button variant="outline" onClick={() => setSearch('')}>
-                Wyczyść wyszukiwanie
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters}>
+                Wyczyść filtry
               </Button>
             )}
           </div>

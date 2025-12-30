@@ -4,9 +4,8 @@ import { FeaturedEvents } from '@/components/home/FeaturedEvents';
 import { OpenRegistrations } from '@/components/home/OpenRegistrations';
 import { UpcomingEvents } from '@/components/home/UpcomingEvents';
 import { RecentResults } from '@/components/home/RecentResults';
-import { DisciplinesSection } from '@/components/home/DisciplinesSection';
-import { StatsSection } from '@/components/home/StatsSection';
-import { mockEvents, mockRegistrations, mockResults } from '@/data/mockData';
+import { PartnersSection } from '@/components/home/PartnersSection';
+import { mockEvents, mockRegistrations, mockResults, mockPartners } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -42,12 +41,7 @@ const Index = () => {
         results={mockResults}
         userId={user?.id}
       />
-      <DisciplinesSection events={mockEvents} />
-      <StatsSection 
-        events={mockEvents}
-        registrations={mockRegistrations}
-        results={mockResults}
-      />
+      <PartnersSection partners={mockPartners} />
     </Layout>
   );
 };

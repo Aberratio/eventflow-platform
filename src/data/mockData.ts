@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner } from '@/types';
 
 export const mockUsers: User[] = [
   { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
@@ -7,6 +7,15 @@ export const mockUsers: User[] = [
   { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer' },
   { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer' },
   { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin' },
+];
+
+export const mockPartners: Partner[] = [
+  { id: 'partner1', name: 'Polski Związek Lekkiej Atletyki', logoUrl: 'https://via.placeholder.com/200x80?text=PZLA', websiteUrl: 'https://pzla.pl', featured: true },
+  { id: 'partner2', name: 'Salomon', logoUrl: 'https://via.placeholder.com/200x80?text=Salomon', websiteUrl: 'https://salomon.com', featured: true },
+  { id: 'partner3', name: 'Garmin', logoUrl: 'https://via.placeholder.com/200x80?text=Garmin', websiteUrl: 'https://garmin.com', featured: true },
+  { id: 'partner4', name: 'Compressport', logoUrl: 'https://via.placeholder.com/200x80?text=Compressport', websiteUrl: 'https://compressport.com', featured: true },
+  { id: 'partner5', name: '4F', logoUrl: 'https://via.placeholder.com/200x80?text=4F', websiteUrl: 'https://4f.com.pl', featured: true },
+  { id: 'partner6', name: 'Endomondo', logoUrl: 'https://via.placeholder.com/200x80?text=Endomondo', websiteUrl: 'https://endomondo.com', featured: true },
 ];
 
 export const mockEvents: Event[] = [
@@ -26,9 +35,11 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Fundacja Maraton Warszawski',
+    organizerContact: { email: 'kontakt@maratonwarszawski.pl', phone: '+48 22 123 45 67', website: 'https://maratonwarszawski.pl' },
     status: 'published',
     registrationDeadline: '2025-04-10',
     featured: true,
+    liveResultsUrl: 'https://example.com/live-results/maraton-warszawski',
   },
   {
     id: 'e2',
@@ -46,6 +57,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43', website: 'https://sportevents.pl' },
     status: 'published',
     registrationDeadline: '2025-07-15',
     featured: true,
@@ -66,9 +78,11 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
+    organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
     status: 'published',
     registrationDeadline: '2025-08-10',
     featured: false,
+    liveResultsUrl: 'https://example.com/live-results/gdynia-triathlon',
   },
   {
     id: 'e4',
@@ -86,6 +100,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43', website: 'https://sportevents.pl' },
     status: 'published',
     registrationDeadline: '2025-02-25',
     featured: true,
@@ -106,6 +121,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
+    organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
     status: 'published',
     registrationDeadline: '2025-05-15',
     featured: false,
@@ -127,6 +143,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43', website: 'https://sportevents.pl' },
     status: 'published',
     registrationDeadline: '2025-06-10',
     featured: false,
@@ -146,9 +163,11 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
+    organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
     status: 'published',
     registrationDeadline: '2025-08-31',
     featured: true,
+    liveResultsUrl: 'https://example.com/live-results/ironman-gdansk',
   },
   {
     id: 'e8',
@@ -166,6 +185,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43', website: 'https://sportevents.pl' },
     status: 'published',
     registrationDeadline: '2025-09-30',
     featured: false,
@@ -185,6 +205,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
+    organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
     status: 'completed',
     registrationDeadline: '2025-02-10',
     featured: false,
@@ -205,6 +226,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43', website: 'https://sportevents.pl' },
     status: 'published',
     registrationDeadline: '2025-06-30',
     featured: false,
