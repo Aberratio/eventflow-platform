@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { mockEvents, mockRegistrations, mockResults, disciplineLabels, disciplineIcons } from '@/data/mockData';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 
 const EventDetailsPage = () => {
   const { slug } = useParams();
@@ -57,6 +58,9 @@ const EventDetailsPage = () => {
     : null;
 
   const currentDistance = event.distances.find(d => d.id === selectedDistance);
+
+  // Show live results tab if event is upcoming or ongoing (has liveResultsUrl)
+  const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
   const handleRegister = () => {
     if (!isAuthenticated) {
@@ -172,24 +176,68 @@ const EventDetailsPage = () => {
 
             {/* Tabs */}
             <Tabs defaultValue="info">
-              <TabsList className="w-full justify-start">
+              <TabsList className="w-full justify-start flex-wrap h-auto">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
                 <TabsTrigger value="distances">Dystanse</TabsTrigger>
                 <TabsTrigger value="startlist">Lista startowa</TabsTrigger>
+                {showLiveResultsTab && (
+                  <TabsTrigger value="live" className="text-destructive">
+                    <Radio className="h-4 w-4 mr-1" />
+                    Na żywo
+                  </TabsTrigger>
+                )}
                 {isPast && <TabsTrigger value="results">Wyniki</TabsTrigger>}
               </TabsList>
 
               <TabsContent value="info" className="mt-6">
                 <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="font-semibold mb-4">O wydarzeniu</h3>
-                    <p className="text-muted-foreground mb-6">{event.description}</p>
+                  <CardContent className="pt-6 space-y-6">
+                    <div>
+                      <h3 className="font-semibold mb-4">O wydarzeniu</h3>
+                      <p className="text-muted-foreground">{event.description}</p>
+                    </div>
                     
-                    <h4 className="font-semibold mb-2">Lokalizacja</h4>
-                    <p className="text-muted-foreground mb-4">{event.location}, {event.city}</p>
+                    <div>
+                      <h4 className="font-semibold mb-2">Lokalizacja</h4>
+                      <p className="text-muted-foreground">{event.location}, {event.city}</p>
+                    </div>
                     
-                    <h4 className="font-semibold mb-2">Organizator</h4>
-                    <p className="text-muted-foreground">{event.organizerName}</p>
+                    <div>
+                      <h4 className="font-semibold mb-3">Organizator</h4>
+                      <p className="font-medium mb-3">{event.organizerName}</p>
+                      
+                      {event.organizerContact && (
+                        <div className="space-y-2">
+                          <a 
+                            href={`mailto:${event.organizerContact.email}`}
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <Mail className="h-4 w-4" />
+                            {event.organizerContact.email}
+                          </a>
+                          {event.organizerContact.phone && (
+                            <a 
+                              href={`tel:${event.organizerContact.phone}`}
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <Phone className="h-4 w-4" />
+                              {event.organizerContact.phone}
+                            </a>
+                          )}
+                          {event.organizerContact.website && (
+                            <a 
+                              href={event.organizerContact.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <Globe className="h-4 w-4" />
+                              {event.organizerContact.website.replace('https://', '')}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -268,6 +316,12 @@ const EventDetailsPage = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {showLiveResultsTab && (
+                <TabsContent value="live" className="mt-6">
+                  <LiveResultsEmbed url={event.liveResultsUrl} eventName={event.name} />
+                </TabsContent>
+              )}
 
               {isPast && (
                 <TabsContent value="results" className="mt-6">
@@ -364,6 +418,36 @@ const EventDetailsPage = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Organizer Contact Card */}
+            {event.organizerContact && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Kontakt z organizatorem</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm font-medium">{event.organizerName}</p>
+                  <div className="space-y-2">
+                    <a 
+                      href={`mailto:${event.organizerContact.email}`}
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Napisz do organizatora
+                    </a>
+                    {event.organizerContact.phone && (
+                      <a 
+                        href={`tel:${event.organizerContact.phone}`}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {event.organizerContact.phone}
+                      </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

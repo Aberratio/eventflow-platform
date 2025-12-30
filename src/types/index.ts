@@ -21,6 +21,12 @@ export interface Distance {
   price: number;
 }
 
+export interface OrganizerContact {
+  email: string;
+  phone?: string;
+  website?: string;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -34,8 +40,18 @@ export interface Event {
   distances: Distance[];
   organizerId: string;
   organizerName: string;
+  organizerContact?: OrganizerContact;
   status: 'draft' | 'published' | 'completed' | 'cancelled';
   registrationDeadline: string;
+  featured: boolean;
+  liveResultsUrl?: string;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  logoUrl: string;
+  websiteUrl?: string;
   featured: boolean;
 }
 
