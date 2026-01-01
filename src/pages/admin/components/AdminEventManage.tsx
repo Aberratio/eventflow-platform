@@ -28,19 +28,6 @@ export const AdminEventManage = () => {
   const { id } = useParams();
   const event = mockEvents.find((e) => e.id === id);
   const eventRegistrations = mockRegistrations.filter((r) => r.eventId === id);
-import { toast } from 'sonner';
-import { EventMerchandise, PaymentMethod } from '@/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
-export const AdminEventManage = () => {
-  const { id } = useParams();
-  const event = mockEvents.find((e) => e.id === id);
 
   const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
     event?.merchandise || mockMerchandise
