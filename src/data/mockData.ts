@@ -1,12 +1,66 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise } from '@/types';
 
 export const mockUsers: User[] = [
   { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
   { id: 'p2', name: 'Anna Nowak', email: 'anna@example.com', role: 'participant' },
   { id: 'p3', name: 'Piotr Wiśniewski', email: 'piotr@example.com', role: 'participant' },
+  { id: 'p4', name: 'Katarzyna Biegacz', email: 'kasia@example.com', role: 'participant' },
+  { id: 'p5', name: 'Tomasz Kolarz', email: 'tomek@example.com', role: 'participant' },
   { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer' },
   { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer' },
+  { id: 'o3', name: 'RunPoland', email: 'kontakt@runpoland.pl', role: 'organizer' },
   { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin' },
+];
+
+export const defaultPaymentMethods: PaymentMethod[] = [
+  { id: 'pm1', name: 'Przelew bankowy', enabled: true },
+  { id: 'pm2', name: 'BLIK', enabled: true },
+  { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+  { id: 'pm4', name: 'PayU', enabled: false },
+  { id: 'pm5', name: 'Płatność na miejscu (gotówka)', enabled: false },
+];
+
+export const mockMerchandise: EventMerchandise[] = [
+  {
+    id: 'merch1',
+    name: 'Koszulka pamiątkowa',
+    description: 'Oficjalna koszulka techniczna z logo wydarzenia',
+    price: 89,
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
+      { id: 'c2', name: 'Czarny', hex: '#000000' },
+      { id: 'c3', name: 'Niebieski', hex: '#2563EB' },
+    ],
+    imageUrl: 'https://via.placeholder.com/200x200?text=Koszulka',
+    available: true,
+  },
+  {
+    id: 'merch2',
+    name: 'Medal pamiątkowy',
+    description: 'Ekskluzywny medal dla wszystkich finisherów',
+    price: 49,
+    sizes: [],
+    colors: [
+      { id: 'c4', name: 'Złoty', hex: '#FFD700' },
+      { id: 'c5', name: 'Srebrny', hex: '#C0C0C0' },
+    ],
+    imageUrl: 'https://via.placeholder.com/200x200?text=Medal',
+    available: true,
+  },
+  {
+    id: 'merch3',
+    name: 'Bidon sportowy',
+    description: 'Bidon 750ml z logo wydarzenia',
+    price: 35,
+    sizes: [],
+    colors: [
+      { id: 'c6', name: 'Przezroczysty', hex: '#E5E7EB' },
+      { id: 'c7', name: 'Zielony', hex: '#10B981' },
+    ],
+    imageUrl: 'https://via.placeholder.com/200x200?text=Bidon',
+    available: true,
+  },
 ];
 
 export const mockPartners: Partner[] = [
@@ -40,6 +94,26 @@ export const mockEvents: Event[] = [
     registrationDeadline: '2025-04-10',
     featured: true,
     liveResultsUrl: 'https://example.com/live-results/maraton-warszawski',
+    paymentMethods: [
+      { id: 'pm1', name: 'Przelew bankowy', enabled: true },
+      { id: 'pm2', name: 'BLIK', enabled: true },
+      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+    ],
+    merchandise: [
+      {
+        id: 'merch1',
+        name: 'Koszulka Maraton Warszawski',
+        description: 'Oficjalna koszulka techniczna',
+        price: 99,
+        sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+        colors: [
+          { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c2', name: 'Czerwony', hex: '#DC2626' },
+        ],
+        imageUrl: 'https://via.placeholder.com/200x200?text=Koszulka',
+        available: true,
+      },
+    ],
   },
   {
     id: 'e2',
@@ -61,6 +135,11 @@ export const mockEvents: Event[] = [
     status: 'published',
     registrationDeadline: '2025-07-15',
     featured: true,
+    paymentMethods: [
+      { id: 'pm1', name: 'Przelew bankowy', enabled: true },
+      { id: 'pm2', name: 'BLIK', enabled: true },
+      { id: 'pm4', name: 'PayU', enabled: true },
+    ],
   },
   {
     id: 'e3',
