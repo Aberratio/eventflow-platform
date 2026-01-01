@@ -45,6 +45,31 @@ export interface Event {
   registrationDeadline: string;
   featured: boolean;
   liveResultsUrl?: string;
+  paymentMethods?: PaymentMethod[];
+  merchandise?: EventMerchandise[];
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  enabled: boolean;
+}
+
+export interface MerchandiseColor {
+  id: string;
+  name: string;
+  hex: string;
+}
+
+export interface EventMerchandise {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  sizes: string[];
+  colors: MerchandiseColor[];
+  imageUrl?: string;
+  available: boolean;
 }
 
 export interface Partner {

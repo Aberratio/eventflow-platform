@@ -15,6 +15,7 @@ import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import EventForm from "./pages/organizer/EventForm";
 import EventManage from "./pages/organizer/EventManage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/organizer/events/:id" element={<EventManage />} />
             <Route path="/organizer/events/:id/edit" element={<EventForm />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/events/:id" element={<AdminEventManage />} />
             <Route path="/admin/*" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
