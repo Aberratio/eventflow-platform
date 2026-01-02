@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { mockEvents, defaultPaymentMethods, mockMerchandise, mockUsers, mockRegistrations } from '@/data/mockData';
 import { EventOverviewTab } from '@/pages/organizer/components/EventOverviewTab';
 import { ParticipantsTab } from '@/pages/organizer/components/ParticipantsTab';
@@ -13,9 +14,11 @@ import { ResultsTab } from '@/pages/organizer/components/ResultsTab';
 import { EventSettingsTab } from '@/pages/organizer/components/EventSettingsTab';
 import { MerchandiseEditor } from './MerchandiseEditor';
 import { PaymentMethodsEditor } from './PaymentMethodsEditor';
-import { ArrowLeft, Save, Radio, Users } from 'lucide-react';
+import { PriceTiersEditor } from './PriceTiersEditor';
+import { DiscountCodesEditor } from './DiscountCodesEditor';
+import { ArrowLeft, Save, Radio, Users, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
-import { EventMerchandise, PaymentMethod } from '@/types';
+import { EventMerchandise, PaymentMethod, Distance, DiscountCode } from '@/types';
 import {
   Select,
   SelectContent,
@@ -37,6 +40,9 @@ export const AdminEventManage = () => {
   );
   const [liveResultsUrl, setLiveResultsUrl] = useState(event?.liveResultsUrl || '');
   const [selectedOrganizer, setSelectedOrganizer] = useState(event?.organizerId || '');
+  const [distances, setDistances] = useState<Distance[]>(event?.distances || []);
+  const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
+  const [enableMerchandise, setEnableMerchandise] = useState(event?.enableMerchandiseInRegistration || false);
 
   if (!event) {
     return (
@@ -164,6 +170,40 @@ export const AdminEventManage = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              <PriceTiersEditor
+                distances={distances}
+                onChange={setDistances}
+              />
+
+              <DiscountCodesEditor
+                discountCodes={discountCodes}
+                distances={distances}
+                onChange={setDiscountCodes}
+              />
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5" />
+                    Gadżety przy rejestracji
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Pokaż gadżety podczas rejestracji</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Uczestnicy będą mogli zamówić gadżety razem z pakietem startowym
+                      </p>
+                    </div>
+                    <Switch
+                      checked={enableMerchandise}
+                      onCheckedChange={setEnableMerchandise}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
               <PaymentMethodsEditor
                 paymentMethods={paymentMethods}

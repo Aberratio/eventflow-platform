@@ -10,6 +10,37 @@ export interface User {
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
 
+export interface PriceTier {
+  id: string;
+  name: string;
+  price: number;
+  endDate: string;
+  description?: string;
+}
+
+export interface DiscountCode {
+  id: string;
+  code: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  validFrom?: string;
+  validTo?: string;
+  maxUses?: number;
+  usedCount: number;
+  distanceIds?: string[];
+  active: boolean;
+}
+
+export interface MerchandiseOrder {
+  merchandiseId: string;
+  merchandiseName: string;
+  size?: string;
+  color?: string;
+  colorHex?: string;
+  quantity: number;
+  price: number;
+}
+
 export interface Distance {
   id: string;
   name: string;
@@ -19,6 +50,7 @@ export interface Distance {
   limit?: number;
   registeredCount: number;
   price: number;
+  priceTiers?: PriceTier[];
 }
 
 export interface OrganizerContact {
@@ -47,6 +79,8 @@ export interface Event {
   liveResultsUrl?: string;
   paymentMethods?: PaymentMethod[];
   merchandise?: EventMerchandise[];
+  discountCodes?: DiscountCode[];
+  enableMerchandiseInRegistration?: boolean;
 }
 
 export interface PaymentMethod {
@@ -94,6 +128,10 @@ export interface Registration {
   status: 'pending' | 'confirmed' | 'cancelled';
   bibNumber?: string;
   teamName?: string;
+  pricePaid?: number;
+  discountCode?: string;
+  discountAmount?: number;
+  merchandiseOrders?: MerchandiseOrder[];
 }
 
 export interface Result {
