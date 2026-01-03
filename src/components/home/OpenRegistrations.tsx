@@ -52,41 +52,30 @@ export const OpenRegistrations = ({ events, userRegistrations }: OpenRegistratio
     const hoursLeft = differenceInHours(new Date(deadline), now);
     
     if (hoursLeft <= 48) return { urgent: true, text: `${hoursLeft}h do końca!`, color: 'text-destructive' };
-    if (daysLeft <= 7) return { urgent: true, text: `${daysLeft} dni do końca`, color: 'text-orange-500' };
+    if (daysLeft <= 7) return { urgent: true, text: `${daysLeft} dni do końca`, color: 'text-orange-600 dark:text-orange-400' };
     return { urgent: false, text: formatDistanceToNow(new Date(deadline), { addSuffix: true, locale: pl }), color: 'text-muted-foreground' };
   };
 
   return (
-    <section className="py-12 md:py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-48 h-48 bg-primary/15 rounded-full blur-3xl" />
-      </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex items-center justify-between mb-10">
+    <section className="py-8 md:py-12 bg-muted/30">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex items-center gap-1 px-3 py-1 bg-primary/10 rounded-full">
-                <Flame className="h-4 w-4 text-primary animate-pulse" />
-                <span className="text-sm font-medium text-primary">Trwające zapisy</span>
-              </div>
+            <div className="flex items-center gap-2 mb-1">
+              <Flame className="h-5 w-5 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Trwające zapisy</h2>
             </div>
-            <h2 className="text-2xl md:text-4xl font-bold">Zapisz się teraz!</h2>
-            <p className="text-muted-foreground mt-2 max-w-md">
-              Nie przegap okazji - zarejestruj się, zanim zabraknie miejsc lub ceny wzrosną!
-            </p>
+            <p className="text-sm text-muted-foreground">Zapisz się, zanim zabraknie miejsc</p>
           </div>
-          <Button asChild variant="outline" className="gap-2 hidden sm:flex">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex">
             <Link to="/events">
-              Wszystkie wydarzenia
+              Wszystkie
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {openEvents.map(event => {
             const totalCapacity = event.distances.reduce((sum, d) => sum + (d.limit || 0), 0);
             const totalRegistered = event.distances.reduce((sum, d) => sum + d.registeredCount, 0);
@@ -100,132 +89,90 @@ export const OpenRegistrations = ({ events, userRegistrations }: OpenRegistratio
 
             return (
               <Link key={event.id} to={`/events/${event.slug}`} className="group">
-                <Card className={`h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 ${
-                  earlyBird.isEarlyBird 
-                    ? 'border-primary/30 bg-gradient-to-br from-primary/5 to-transparent' 
-                    : 'border-transparent hover:border-primary/20'
+                <Card className={`h-full transition-all hover:shadow-lg hover:border-primary/30 ${
+                  earlyBird.isEarlyBird ? 'border-primary/20' : ''
                 }`}>
-                  {/* Event Image */}
-                  <div className="relative h-40 overflow-hidden rounded-t-lg">
-                    <img 
-                      src={event.imageUrl} 
-                      alt={event.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-                    
-                    {/* Badges overlay */}
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                        {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
+                  <CardContent className="p-4 space-y-3">
+                    {/* Header: Icon + Title + Price */}
+                    <div className="flex items-start gap-3">
+                      <div className="text-2xl shrink-0">{disciplineIcons[event.discipline]}</div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                          {event.name}
+                        </h3>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-1">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {event.city}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <span className="font-bold text-primary text-sm">{priceRange}</span>
+                        {isRegistered && (
+                          <Badge variant="default" className="block mt-1 text-xs">✓ Zapisany</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Badges row */}
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {disciplineLabels[event.discipline]}
                       </Badge>
                       {earlyBird.isEarlyBird && (
-                        <Badge className="bg-primary text-primary-foreground animate-pulse">
+                        <Badge variant="default" className="text-xs">
                           <Tag className="h-3 w-3 mr-1" />
                           Early Bird
                         </Badge>
                       )}
-                    </div>
-                    
-                    {isRegistered && (
-                      <div className="absolute top-3 right-3">
-                        <Badge variant="default" className="bg-green-600 text-white">
-                          ✓ Zapisany
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {/* Price tag */}
-                    <div className="absolute bottom-3 right-3">
-                      <div className="bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                        <span className="font-bold text-primary">{priceRange}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-5 space-y-4">
-                    {/* Event title */}
-                    <div>
-                      <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                        {event.name}
-                      </h3>
-                    </div>
-
-                    {/* Event details */}
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        {event.city}
-                      </span>
+                      {event.discountCodes && event.discountCodes.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">Kody rabatowe</Badge>
+                      )}
                     </div>
 
                     {/* Capacity progress */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1.5 text-muted-foreground">
-                          <Users className="h-4 w-4" />
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1 text-muted-foreground">
+                          <Users className="h-3 w-3" />
                           Zapisanych
                         </span>
-                        <span className={`font-semibold ${isAlmostFull ? 'text-destructive' : ''}`}>
-                          {totalRegistered.toLocaleString()} / {totalCapacity.toLocaleString()}
+                        <span className={`font-medium ${isAlmostFull ? 'text-destructive' : ''}`}>
+                          {totalRegistered} / {totalCapacity}
                         </span>
                       </div>
                       <Progress 
                         value={progress} 
-                        className={`h-2 ${isAlmostFull ? '[&>div]:bg-destructive' : ''}`}
+                        className={`h-1.5 ${isAlmostFull ? '[&>div]:bg-destructive' : ''}`}
                       />
                       {isAlmostFull && spotsLeft > 0 && (
                         <p className="text-xs text-destructive font-medium">
-                          Tylko {spotsLeft} wolnych miejsc!
+                          Tylko {spotsLeft} miejsc!
                         </p>
                       )}
                     </div>
 
-                    {/* Deadline info */}
-                    <div className={`flex items-center gap-2 text-sm ${deadline.color}`}>
-                      {deadline.urgent ? (
-                        <Timer className="h-4 w-4 animate-pulse" />
-                      ) : (
-                        <Clock className="h-4 w-4" />
-                      )}
-                      <span className={deadline.urgent ? 'font-semibold' : ''}>
-                        Koniec zapisów {deadline.text}
-                      </span>
-                    </div>
-
-                    {/* Early bird countdown */}
-                    {earlyBird.isEarlyBird && earlyBird.daysLeft > 0 && (
-                      <div className="bg-primary/10 rounded-lg p-3 flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-primary" />
-                        <span className="text-sm">
-                          <span className="font-semibold text-primary">
-                            {earlyBird.daysLeft} {earlyBird.daysLeft === 1 ? 'dzień' : 'dni'}
-                          </span>
-                          {' '}do końca niższej ceny!
+                    {/* Deadline + Early bird info */}
+                    <div className="flex items-center justify-between text-xs pt-1 border-t">
+                      <div className={`flex items-center gap-1 ${deadline.color}`}>
+                        {deadline.urgent ? (
+                          <Timer className="h-3 w-3" />
+                        ) : (
+                          <Clock className="h-3 w-3" />
+                        )}
+                        <span className={deadline.urgent ? 'font-medium' : ''}>
+                          Zapisy {deadline.text}
                         </span>
                       </div>
-                    )}
-
-                    {/* Features badges */}
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {event.discountCodes && event.discountCodes.length > 0 && (
-                        <Badge variant="outline" className="text-xs">
-                          Kody rabatowe
-                        </Badge>
-                      )}
-                      {event.enableMerchandiseInRegistration && (
-                        <Badge variant="outline" className="text-xs">
-                          Gadżety
-                        </Badge>
-                      )}
-                      {event.distances.some(d => d.priceTiers && d.priceTiers.length > 1) && (
-                        <Badge variant="outline" className="text-xs">
-                          Progi cenowe
-                        </Badge>
+                      {earlyBird.isEarlyBird && earlyBird.daysLeft > 0 && (
+                        <span className="text-primary font-medium">
+                          {earlyBird.daysLeft}d do zmiany ceny
+                        </span>
                       )}
                     </div>
                   </CardContent>
@@ -235,10 +182,10 @@ export const OpenRegistrations = ({ events, userRegistrations }: OpenRegistratio
           })}
         </div>
 
-        <div className="mt-8 text-center sm:hidden">
-          <Button asChild variant="outline" className="gap-2">
+        <div className="mt-4 text-center sm:hidden">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
             <Link to="/events">
-              Zobacz wszystkie wydarzenia
+              Zobacz wszystkie
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

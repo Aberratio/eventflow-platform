@@ -46,23 +46,24 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [], var
 
   const userStatus = getUserStatus();
 
+  // Compact variant - simple row
   if (variant === 'compact') {
     return (
-      <Link to={`/events/${event.id}`}>
-        <Card className="hover:shadow-md transition-shadow">
+      <Link to={`/events/${event.slug}`}>
+        <Card className="hover:shadow-md hover:border-primary/30 transition-all">
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">{disciplineIcons[event.discipline]}</div>
+            <div className="flex items-start gap-3">
+              <div className="text-2xl shrink-0">{disciplineIcons[event.discipline]}</div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium truncate">{event.name}</h3>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-medium text-sm line-clamp-2">{event.name}</h3>
                   {userStatus && (
                     <Badge variant={statusVariants[userStatus]} className="shrink-0 text-xs">
                       {statusLabels[userStatus]}
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
@@ -80,38 +81,35 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [], var
     );
   }
 
+  // Default variant - clean card without image
   return (
-    <Link to={`/events/${event.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-        <div className="relative h-40 bg-muted">
-          {event.imageUrl ? (
-            <img src={event.imageUrl} alt={event.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl">
-              {disciplineIcons[event.discipline]}
+    <Link to={`/events/${event.slug}`}>
+      <Card className="h-full hover:shadow-md hover:border-primary/30 transition-all">
+        <CardContent className="p-4 flex flex-col h-full">
+          {/* Header with icon and badges */}
+          <div className="flex items-start gap-3 mb-3">
+            <div className="text-3xl shrink-0">{disciplineIcons[event.discipline]}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                <Badge variant="outline" className="text-xs font-normal">
+                  {disciplineLabels[event.discipline]}
+                </Badge>
+                {userStatus && (
+                  <Badge 
+                    variant={statusVariants[userStatus]}
+                    className={`text-xs ${userStatus === 'completed' ? 'bg-amber-500 hover:bg-amber-600 text-white border-0' : ''}`}
+                  >
+                    {statusLabels[userStatus]}
+                  </Badge>
+                )}
+              </div>
             </div>
-          )}
-          <div className="absolute top-2 left-2 flex gap-1">
-            <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
           </div>
-          {userStatus && (
-            <div className="absolute top-2 right-2">
-              <Badge 
-                variant={statusVariants[userStatus]}
-                className={userStatus === 'completed' ? 'bg-amber-500 hover:bg-amber-600 text-white border-0' : ''}
-              >
-                {statusLabels[userStatus]}
-              </Badge>
-            </div>
-          )}
-          {event.featured && !userStatus && (
-            <div className="absolute top-2 right-2">
-              <Badge className="bg-primary">Wyróżnione</Badge>
-            </div>
-          )}
-        </div>
-        <CardContent className="p-4 flex-1 flex flex-col">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2">{event.name}</h3>
+          
+          {/* Title */}
+          <h3 className="font-semibold mb-2 line-clamp-2">{event.name}</h3>
+          
+          {/* Details */}
           <div className="flex flex-col gap-1 text-sm text-muted-foreground mb-3">
             <span className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -123,16 +121,17 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [], var
             </span>
           </div>
           
+          {/* Registration progress */}
           {isRegistrationOpen && (
-            <div className="mt-auto">
-              <div className="flex items-center justify-between text-sm mb-1">
+            <div className="mt-auto pt-3 border-t">
+              <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Users className="h-3 w-3" />
                   Zapisy
                 </span>
-                <span className="font-medium">{totalRegistered}/{totalCapacity}</span>
+                <span className="font-medium">{totalRegistered} / {totalCapacity}</span>
               </div>
-              <Progress value={registrationProgress} className="h-2" />
+              <Progress value={registrationProgress} className="h-1.5" />
             </div>
           )}
         </CardContent>
