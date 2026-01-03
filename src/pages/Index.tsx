@@ -1,6 +1,4 @@
 import { Layout } from '@/components/layout/Layout';
-import { HeroSection } from '@/components/home/HeroSection';
-import { FeaturedEvents } from '@/components/home/FeaturedEvents';
 import { OpenRegistrations } from '@/components/home/OpenRegistrations';
 import { UpcomingEvents } from '@/components/home/UpcomingEvents';
 import { RecentResults } from '@/components/home/RecentResults';
@@ -21,8 +19,7 @@ const Index = () => {
 
   return (
     <Layout>
-      <HeroSection />
-      <FeaturedEvents 
+      <UpcomingEvents 
         events={mockEvents}
         userRegistrations={userRegistrations}
         userResults={userResults}
@@ -30,11 +27,6 @@ const Index = () => {
       <OpenRegistrations 
         events={mockEvents}
         userRegistrations={userRegistrations}
-      />
-      <UpcomingEvents 
-        events={mockEvents}
-        userRegistrations={userRegistrations}
-        userResults={userResults}
       />
       <RecentResults 
         events={mockEvents}

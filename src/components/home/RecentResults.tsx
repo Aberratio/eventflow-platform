@@ -32,21 +32,25 @@ export const RecentResults = ({ events, results, userId }: RecentResultsProps) =
   };
 
   return (
-    <section className="py-12 md:py-16 bg-muted/30">
+    <section className="py-8 md:py-12">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold">Ostatnie wyniki</h2>
-            <p className="text-muted-foreground mt-1">Zobacz jak poszło innym zawodnikom</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Trophy className="h-5 w-5 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Ostatnie wyniki</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Zobacz jak poszło zawodnikom</p>
           </div>
-          <Button asChild variant="ghost" className="gap-2 hidden sm:flex">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex">
             <Link to="/results">
-              Wszystkie wyniki
+              Wszystkie
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {completedEvents.map(event => {
             const eventResults = results
               .filter(r => r.eventId === event.id && r.status === 'finished')
@@ -57,73 +61,68 @@ export const RecentResults = ({ events, results, userId }: RecentResultsProps) =
 
             return (
               <Card key={event.id} className="h-full">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl">{disciplineIcons[event.discipline]}</span>
-                    <Badge variant="secondary">
+                <CardHeader className="pb-3 pt-4 px-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">{disciplineIcons[event.discipline]}</span>
+                    <Badge variant="secondary" className="text-xs">
                       {format(new Date(event.date), 'd MMM', { locale: pl })}
                     </Badge>
                   </div>
-                  <CardTitle className="text-lg line-clamp-1">{event.name}</CardTitle>
+                  <CardTitle className="text-sm font-semibold line-clamp-1">{event.name}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="px-4 pb-4">
+                  <div className="space-y-2">
                     {eventResults.map(result => (
                       <div 
                         key={result.id} 
-                        className={`flex items-center gap-3 p-2 rounded-lg ${
-                          result.userId === userId ? 'bg-primary/10 border border-primary/20' : ''
+                        className={`flex items-center gap-2.5 p-2 rounded-lg text-sm ${
+                          result.userId === userId ? 'bg-primary/10 border border-primary/20' : 'bg-muted/50'
                         }`}
                       >
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-full bg-muted ${getMedalColor(result.position)}`}>
+                        <div className={`flex items-center justify-center w-6 h-6 rounded-full bg-background ${getMedalColor(result.position)}`}>
                           {result.position <= 3 ? (
-                            <Medal className="h-4 w-4" />
+                            <Medal className="h-3.5 w-3.5" />
                           ) : (
-                            <span className="text-sm font-bold">{result.position}</span>
+                            <span className="text-xs font-bold">{result.position}</span>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{result.userName}</p>
-                          <p className="text-xs text-muted-foreground">{result.distanceName}</p>
+                          <p className="font-medium text-xs truncate">{result.userName}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-mono font-semibold text-sm">{result.time}</p>
-                        </div>
+                        <div className="font-mono font-semibold text-xs">{result.time}</div>
                       </div>
                     ))}
 
                     {userResult && userResult.position > 3 && (
                       <div className="pt-2 border-t">
-                        <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
-                            <span className="text-sm font-bold">{userResult.position}</span>
+                        <div className="flex items-center gap-2.5 p-2 rounded-lg bg-primary/10 border border-primary/20 text-sm">
+                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-background">
+                            <span className="text-xs font-bold">{userResult.position}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">Twój wynik</p>
-                            <p className="text-xs text-muted-foreground">{userResult.distanceName}</p>
+                            <p className="font-medium text-xs">Twój wynik</p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-mono font-semibold text-sm">{userResult.time}</p>
-                          </div>
+                          <div className="font-mono font-semibold text-xs">{userResult.time}</div>
                         </div>
                       </div>
                     )}
                   </div>
                   <Link 
                     to={`/results?eventId=${event.id}`}
-                    className="block mt-4 text-sm text-primary hover:underline text-center"
+                    className="block mt-3 text-xs text-primary hover:underline text-center"
                   >
-                    Zobacz pełne wyniki →
+                    Pełne wyniki →
                   </Link>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-        <div className="mt-6 text-center sm:hidden">
-          <Button asChild variant="outline" className="gap-2">
+        
+        <div className="mt-4 text-center sm:hidden">
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
             <Link to="/results">
-              Zobacz wszystkie wyniki
+              Wszystkie wyniki
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
