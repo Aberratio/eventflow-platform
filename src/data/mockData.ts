@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption } from '@/types';
 
 export const mockUsers: User[] = [
   { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
@@ -211,6 +211,18 @@ export const mockEvents: Event[] = [
         ],
         available: true,
       },
+      {
+        id: 'merch-ultra4',
+        name: 'Kubek termiczny 350ml',
+        description: 'Stalowy kubek z logo Tatry Ultra',
+        price: 49,
+        sizes: [],
+        colors: [
+          { id: 'c6', name: 'Srebrny', hex: '#C0C0C0' },
+          { id: 'c7', name: 'Czarny', hex: '#1F2937' },
+        ],
+        available: true,
+      },
     ],
     discountCodes: [
       { id: 'dc1', code: 'ULTRA2026', discountType: 'percent', discountValue: 15, validFrom: '2026-01-01', validTo: '2026-03-31', maxUses: 100, usedCount: 23, active: true },
@@ -218,6 +230,15 @@ export const mockEvents: Event[] = [
       { id: 'dc3', code: 'VIP100', discountType: 'fixed', discountValue: 100, validFrom: '2026-01-01', validTo: '2026-06-10', maxUses: 10, usedCount: 5, active: true },
     ],
     enableMerchandiseInRegistration: true,
+    insuranceOption: {
+      id: 'ins1',
+      name: 'Ubezpieczenie NNW Zawodnika',
+      description: 'Ubezpieczenie od następstw nieszczęśliwych wypadków podczas zawodów. Obejmuje koszty leczenia, rehabilitacji oraz świadczenie za trwały uszczerbek na zdrowiu.',
+      baseFee: 9,
+      ageMultiplier: 0.5,
+      maxAge: 70,
+      enabled: true,
+    },
   },
   // City Trail Łódź - medium options
   {
@@ -401,7 +422,7 @@ export const mockEvents: Event[] = [
     ],
     enableMerchandiseInRegistration: true,
   },
-  // Sprint Triathlon Wrocław - no merchandise
+  // Sprint Triathlon Wrocław - with merchandise and insurance
   {
     id: 'e14',
     name: 'Sprint Triathlon Wrocław 2026',
@@ -452,10 +473,69 @@ export const mockEvents: Event[] = [
       { id: 'pm2', name: 'BLIK', enabled: true },
       { id: 'pm3', name: 'Karta płatnicza', enabled: true },
     ],
+    merchandise: [
+      {
+        id: 'merch-tri1',
+        name: 'Koszulka triatlonowa Wrocław',
+        description: 'Szybkoschnąca koszulka z logo wydarzenia',
+        price: 99,
+        sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+        colors: [
+          { id: 'c1', name: 'Niebieski', hex: '#2563EB' },
+          { id: 'c2', name: 'Biały', hex: '#FFFFFF' },
+        ],
+        available: true,
+      },
+      {
+        id: 'merch-tri2',
+        name: 'Czepek pływacki',
+        description: 'Silikonowy czepek z logo Triathlon Wrocław',
+        price: 35,
+        sizes: [],
+        colors: [
+          { id: 'c3', name: 'Niebieski', hex: '#2563EB' },
+          { id: 'c4', name: 'Czarny', hex: '#000000' },
+        ],
+        available: true,
+      },
+      {
+        id: 'merch-tri3',
+        name: 'Kubek pamiątkowy',
+        description: 'Ceramiczny kubek 330ml',
+        price: 29,
+        sizes: [],
+        colors: [
+          { id: 'c5', name: 'Biały', hex: '#FFFFFF' },
+        ],
+        available: true,
+      },
+      {
+        id: 'merch-tri4',
+        name: 'Opaska na nadgarstek',
+        description: 'Silikonowa opaska z logo wydarzenia',
+        price: 15,
+        sizes: [],
+        colors: [
+          { id: 'c6', name: 'Niebieski', hex: '#2563EB' },
+          { id: 'c7', name: 'Pomarańczowy', hex: '#F97316' },
+          { id: 'c8', name: 'Zielony', hex: '#22C55E' },
+        ],
+        available: true,
+      },
+    ],
     discountCodes: [
       { id: 'dc7', code: 'TRI20', discountType: 'percent', discountValue: 20, validTo: '2026-02-28', maxUses: 30, usedCount: 18, active: true },
     ],
-    enableMerchandiseInRegistration: false,
+    enableMerchandiseInRegistration: true,
+    insuranceOption: {
+      id: 'ins2',
+      name: 'Ubezpieczenie NNW Triatlonisty',
+      description: 'Kompleksowe ubezpieczenie obejmujące wszystkie dyscypliny triathlonu: pływanie, rower i bieg.',
+      baseFee: 9,
+      ageMultiplier: 0.5,
+      maxAge: 70,
+      enabled: true,
+    },
   },
   // Original events below (keeping existing ones)
   {

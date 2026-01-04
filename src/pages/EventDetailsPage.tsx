@@ -11,26 +11,12 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 
 const EventDetailsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const [registrationDialog, setRegistrationDialog] = useState(false);
-  const [selectedDistance, setSelectedDistance] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   const event = mockEvents.find(e => e.slug === slug);
 
@@ -57,8 +43,6 @@ const EventDetailsPage = () => {
     ? mockRegistrations.find(r => r.eventId === event.id && r.userId === user?.id)
     : null;
 
-  const currentDistance = event.distances.find(d => d.id === selectedDistance);
-
   // Show live results tab if event is upcoming or ongoing (has liveResultsUrl)
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
@@ -71,17 +55,7 @@ const EventDetailsPage = () => {
       navigate('/login');
       return;
     }
-    setRegistrationDialog(true);
-  };
-
-  const handleConfirmRegistration = () => {
-    toast({
-      title: 'Zapisano na zawody!',
-      description: `Zostałeś zapisany na ${event.name} - ${currentDistance?.name}.`,
-    });
-    setRegistrationDialog(false);
-    setSelectedDistance('');
-    setSelectedCategory('');
+    navigate(`/events/${slug}/register`);
   };
 
   const handleShare = () => {
@@ -94,31 +68,23 @@ const EventDetailsPage = () => {
 
   return (
     <Layout>
-      {/* Hero */}
-      <div className="relative h-[300px] md:h-[400px] overflow-hidden">
-        <img
-          src={event.imageUrl}
-          alt={event.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <div className="container">
-            <Button variant="ghost" size="sm" asChild className="mb-4">
-              <Link to="/events">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Wszystkie wydarzenia
-              </Link>
-            </Button>
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge>
-                {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
-              </Badge>
-              {isPast && <Badge variant="secondary">Zakończone</Badge>}
-              {event.featured && !isPast && <Badge variant="default">⭐ Wyróżnione</Badge>}
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
+      {/* Clean Header (no hero image) */}
+      <div className="bg-muted/30 border-b">
+        <div className="container py-6">
+          <Button variant="ghost" size="sm" asChild className="mb-4">
+            <Link to="/events">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Wszystkie wydarzenia
+            </Link>
+          </Button>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Badge>
+              {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
+            </Badge>
+            {isPast && <Badge variant="secondary">Zakończone</Badge>}
+            {event.featured && !isPast && <Badge variant="default">⭐ Wyróżnione</Badge>}
           </div>
+          <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
         </div>
       </div>
 
@@ -465,69 +431,6 @@ const EventDetailsPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Registration Dialog */}
-      <Dialog open={registrationDialog} onOpenChange={setRegistrationDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Zapisz się na zawody</DialogTitle>
-            <DialogDescription>
-              Wybierz dystans i kategorię, w której chcesz startować.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Dystans</Label>
-              <Select value={selectedDistance} onValueChange={setSelectedDistance}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Wybierz dystans" />
-                </SelectTrigger>
-                <SelectContent>
-                  {event.distances.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name} ({d.length}{d.unit}) - {d.price} zł
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {currentDistance && (
-              <div className="space-y-2">
-                <Label>Kategoria</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz kategorię" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currentDistance.categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            {currentDistance && (
-              <div className="p-4 bg-muted rounded-lg">
-                <div className="flex justify-between">
-                  <span>Opłata startowa</span>
-                  <span className="font-bold">{currentDistance.price} zł</span>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRegistrationDialog(false)}>
-              Anuluj
-            </Button>
-            <Button 
-              onClick={handleConfirmRegistration}
-              disabled={!selectedDistance || !selectedCategory}
-            >
-              Zapisz się
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 };
