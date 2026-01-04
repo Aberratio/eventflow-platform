@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -180,7 +181,12 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{reg.userName}</div>
+                          <Link 
+                            to={`/athlete/${reg.userId}`}
+                            className="font-medium hover:text-primary hover:underline transition-colors"
+                          >
+                            {reg.userName}
+                          </Link>
                           <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
                         </div>
                       </TableCell>

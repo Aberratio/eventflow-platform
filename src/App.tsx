@@ -16,6 +16,7 @@ import EventForm from "./pages/organizer/EventForm";
 import EventManage from "./pages/organizer/EventManage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
+import AthleteProfilePage from "./pages/AthleteProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:slug" element={<EventDetailsPage />} />
             <Route path="/results" element={<ResultsPage />} />
+            <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
             <Route path="/participant" element={<ParticipantDashboard />} />
             <Route path="/participant/*" element={<ParticipantDashboard />} />
             <Route path="/organizer" element={<OrganizerDashboard />} />

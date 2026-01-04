@@ -234,7 +234,14 @@ const ResultsPage = () => {
                               </div>
                             </TableCell>
                             <TableCell className="font-mono">{result.bibNumber}</TableCell>
-                            <TableCell className="font-medium">{result.userName}</TableCell>
+                            <TableCell>
+                              <Link 
+                                to={`/athlete/${result.userId}`}
+                                className="font-medium hover:text-primary hover:underline transition-colors"
+                              >
+                                {result.userName}
+                              </Link>
+                            </TableCell>
                             <TableCell>{result.distanceName}</TableCell>
                             <TableCell className="font-mono font-medium">{result.time}</TableCell>
                             <TableCell>{result.category}</TableCell>
