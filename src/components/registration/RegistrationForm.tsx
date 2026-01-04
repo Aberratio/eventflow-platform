@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,13 +14,14 @@ import {
   Check, 
   Tag, 
   ShoppingBag, 
-  Clock, 
   AlertCircle,
   Plus,
   Minus,
-  Ticket
+  Ticket,
+  User,
+  Shield
 } from 'lucide-react';
-import { Event, Distance, EventMerchandise, MerchandiseOrder } from '@/types';
+import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { getCurrentPrice, validateDiscountCode } from '@/data/mockData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -39,21 +40,37 @@ export interface RegistrationData {
   discountCode?: string;
   discountAmount?: number;
   merchandiseOrders: MerchandiseOrder[];
+  insurancePrice?: number;
   totalAmount: number;
 }
 
-const STEPS = [
-  { id: 1, name: 'Dystans', icon: Ticket },
-  { id: 2, name: 'Kategoria', icon: Tag },
-  { id: 3, name: 'Gadżety', icon: ShoppingBag },
-  { id: 4, name: 'Rabat', icon: Tag },
-  { id: 5, name: 'Podsumowanie', icon: Check },
+// Generate years for birth date (18-80 years old)
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 63 }, (_, i) => currentYear - 18 - i);
+const months = [
+  { value: '01', label: 'Styczeń' },
+  { value: '02', label: 'Luty' },
+  { value: '03', label: 'Marzec' },
+  { value: '04', label: 'Kwiecień' },
+  { value: '05', label: 'Maj' },
+  { value: '06', label: 'Czerwiec' },
+  { value: '07', label: 'Lipiec' },
+  { value: '08', label: 'Sierpień' },
+  { value: '09', label: 'Wrzesień' },
+  { value: '10', label: 'Październik' },
+  { value: '11', label: 'Listopad' },
+  { value: '12', label: 'Grudzień' },
 ];
+const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
 export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFormProps) => {
   const [step, setStep] = useState(1);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [birthYear, setBirthYear] = useState<string>('');
+  const [birthMonth, setBirthMonth] = useState<string>('');
+  const [birthDay, setBirthDay] = useState<string>('');
+  const [wantsInsurance, setWantsInsurance] = useState(false);
   const [merchandiseOrders, setMerchandiseOrders] = useState<Map<string, MerchandiseOrder>>(new Map());
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: 'percent' | 'fixed'; value: number } | null>(null);
@@ -62,9 +79,40 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
   const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
   const hasMerchandise = event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
+  const hasInsurance = event.insuranceOption?.enabled;
   
-  // Adjust steps if no merchandise
-  const activeSteps = hasMerchandise ? STEPS : STEPS.filter(s => s.id !== 3);
+  // Build steps dynamically
+  const buildSteps = () => {
+    const steps = [
+      { id: 1, name: 'Dystans', icon: Ticket },
+      { id: 2, name: 'Dane', icon: User },
+    ];
+    
+    if (hasInsurance) {
+      steps.push({ id: 3, name: 'Ubezpieczenie', icon: Shield });
+    }
+    
+    if (hasMerchandise) {
+      steps.push({ id: 4, name: 'Gadżety', icon: ShoppingBag });
+    }
+    
+    steps.push({ id: 5, name: 'Rabat', icon: Tag });
+    steps.push({ id: 6, name: 'Podsumowanie', icon: Check });
+    
+    return steps;
+  };
+  
+  const activeSteps = buildSteps();
+
+  // Calculate age from birth year
+  const age = birthYear ? currentYear - parseInt(birthYear) : null;
+
+  // Calculate insurance price
+  const insurancePrice = useMemo(() => {
+    if (!hasInsurance || !wantsInsurance || !age || !event.insuranceOption) return 0;
+    const { baseFee, ageMultiplier } = event.insuranceOption;
+    return Math.round(baseFee + Math.max(0, age - 18) * ageMultiplier);
+  }, [hasInsurance, wantsInsurance, age, event.insuranceOption]);
 
   const distancePrice = useMemo(() => {
     if (!selectedDistance) return 0;
@@ -88,7 +136,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     return Math.min(appliedDiscount.value, distancePrice);
   }, [appliedDiscount, distancePrice]);
 
-  const totalAmount = distancePrice - discountAmount + merchandiseTotal;
+  const totalAmount = distancePrice - discountAmount + merchandiseTotal + insurancePrice;
 
   const handleApplyDiscount = () => {
     if (!discountCode.trim()) {
@@ -132,11 +180,6 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     }
   };
 
-  const getStepNumber = (stepId: number) => {
-    const stepIndex = activeSteps.findIndex(s => s.id === stepId);
-    return stepIndex + 1;
-  };
-
   const getNextStep = () => {
     const currentIndex = activeSteps.findIndex(s => s.id === step);
     if (currentIndex < activeSteps.length - 1) {
@@ -153,13 +196,18 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     return step;
   };
 
+  const isStepInActiveSteps = (stepId: number) => {
+    return activeSteps.some(s => s.id === stepId);
+  };
+
   const canProceed = () => {
     switch (step) {
       case 1: return !!selectedDistanceId;
-      case 2: return !!selectedCategory;
-      case 3: return true; // Merchandise is optional
-      case 4: return true; // Discount is optional
-      case 5: return agreedToTerms;
+      case 2: return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
+      case 3: return true; // Insurance is optional
+      case 4: return true; // Merchandise is optional
+      case 5: return true; // Discount is optional
+      case 6: return agreedToTerms;
       default: return false;
     }
   };
@@ -184,42 +232,62 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       discountCode: appliedDiscount ? discountCode : undefined,
       discountAmount: discountAmount > 0 ? discountAmount : undefined,
       merchandiseOrders: Array.from(merchandiseOrders.values()),
+      insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
     });
   };
 
+  const isLastStep = step === activeSteps[activeSteps.length - 1].id;
+  const isFirstStep = step === activeSteps[0].id;
+
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Stepper */}
+      {/* Progress bar */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {activeSteps.map((s, index) => {
-            const isActive = s.id === step;
-            const isCompleted = activeSteps.findIndex(as => as.id === step) > index;
-            const Icon = s.icon;
-            
-            return (
-              <div key={s.id} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div className={`
-                    w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors
-                    ${isActive ? 'bg-primary text-primary-foreground' : ''}
-                    ${isCompleted ? 'bg-primary/20 text-primary' : ''}
-                    ${!isActive && !isCompleted ? 'bg-muted text-muted-foreground' : ''}
-                  `}>
-                    {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                  </div>
-                  <span className={`mt-2 text-xs ${isActive ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>
-                    {s.name}
-                  </span>
-                </div>
-                {index < activeSteps.length - 1 && (
-                  <div className={`hidden sm:block w-12 h-0.5 mx-2 ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
-                )}
-              </div>
-            );
-          })}
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium">
+            Krok {activeSteps.findIndex(s => s.id === step) + 1} z {activeSteps.length}
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {activeSteps.find(s => s.id === step)?.name}
+          </span>
         </div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${((activeSteps.findIndex(s => s.id === step) + 1) / activeSteps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Step indicators */}
+      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+        {activeSteps.map((s, index) => {
+          const isActive = s.id === step;
+          const isCompleted = activeSteps.findIndex(as => as.id === step) > index;
+          const Icon = s.icon;
+          
+          return (
+            <div key={s.id} className="flex items-center">
+              <div className="flex flex-col items-center min-w-[60px]">
+                <div className={`
+                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors
+                  ${isActive ? 'bg-primary text-primary-foreground' : ''}
+                  ${isCompleted ? 'bg-primary/20 text-primary' : ''}
+                  ${!isActive && !isCompleted ? 'bg-muted text-muted-foreground' : ''}
+                `}>
+                  {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                </div>
+                <span className={`mt-2 text-xs text-center ${isActive ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>
+                  {s.name}
+                </span>
+              </div>
+              {index < activeSteps.length - 1 && (
+                <div className={`hidden sm:block w-8 md:w-12 h-0.5 mx-1 ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Step 1: Distance Selection */}
@@ -235,7 +303,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             <RadioGroup value={selectedDistanceId} onValueChange={setSelectedDistanceId}>
               <div className="space-y-4">
                 {event.distances.map(distance => {
-                  const { price, tierName, nextTier } = getCurrentPrice(distance);
+                  const { price, tierName } = getCurrentPrice(distance);
                   const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
                   const isFull = spotsLeft !== null && spotsLeft <= 0;
                   
@@ -310,46 +378,167 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         </Card>
       )}
 
-      {/* Step 2: Category Selection */}
+      {/* Step 2: Personal Data & Category */}
       {step === 2 && selectedDistance && (
         <Card>
           <CardHeader>
-            <CardTitle>Wybierz kategorię wiekową</CardTitle>
+            <CardTitle>Dane osobowe</CardTitle>
             <CardDescription>
-              Kategoria zostanie potwierdzona na podstawie daty urodzenia
+              Podaj swoją datę urodzenia i wybierz kategorię wiekową
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {selectedDistance.categories.map(category => (
-                  <label
-                    key={category}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                      ${selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
-                    `}
-                  >
-                    <RadioGroupItem value={category} />
-                    <span className="font-medium">{category}</span>
-                  </label>
-                ))}
+          <CardContent className="space-y-6">
+            {/* Birth date */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Data urodzenia</Label>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Dzień</Label>
+                  <Select value={birthDay} onValueChange={setBirthDay}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Dzień" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {days.map(d => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Miesiąc</Label>
+                  <Select value={birthMonth} onValueChange={setBirthMonth}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Miesiąc" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map(m => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Rok</Label>
+                  <Select value={birthYear} onValueChange={setBirthYear}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Rok" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map(y => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </RadioGroup>
+              {age && (
+                <p className="text-sm text-muted-foreground">
+                  Twój wiek: <span className="font-medium text-foreground">{age} lat</span>
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Category selection */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Kategoria wiekowa</Label>
+              <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {selectedDistance.categories.map(category => (
+                    <label
+                      key={category}
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                        ${selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                      `}
+                    >
+                      <RadioGroupItem value={category} />
+                      <span className="font-medium">{category}</span>
+                    </label>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Step 3: Merchandise */}
-      {step === 3 && hasMerchandise && (
+      {/* Step 3: Insurance */}
+      {step === 3 && isStepInActiveSteps(3) && hasInsurance && event.insuranceOption && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Ubezpieczenie NNW (opcjonalne)
+            </CardTitle>
+            <CardDescription>
+              Zabezpiecz się na wypadek kontuzji podczas zawodów
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <h4 className="font-semibold">{event.insuranceOption.name}</h4>
+              <p className="text-sm text-muted-foreground">{event.insuranceOption.description}</p>
+              <ul className="text-sm space-y-1">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary" />
+                  Ochrona podczas całych zawodów
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary" />
+                  Pokrycie kosztów leczenia
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary" />
+                  Świadczenie za uszczerbek na zdrowiu
+                </li>
+              </ul>
+            </div>
+
+            <div className={`
+              border-2 rounded-lg p-4 transition-all cursor-pointer
+              ${wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+            `} onClick={() => setWantsInsurance(!wantsInsurance)}>
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="insurance"
+                  checked={wantsInsurance}
+                  onCheckedChange={(checked) => setWantsInsurance(checked === true)}
+                />
+                <div className="flex-1">
+                  <label htmlFor="insurance" className="font-medium cursor-pointer">
+                    Chcę wykupić ubezpieczenie NNW
+                  </label>
+                  {age && (
+                    <div className="mt-2 text-sm">
+                      <span className="text-muted-foreground">Cena dla Twojego wieku ({age} lat): </span>
+                      <span className="font-bold text-primary">
+                        {Math.round(event.insuranceOption.baseFee + Math.max(0, age - 18) * event.insuranceOption.ageMultiplier)} zł
+                      </span>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Składka bazowa: {event.insuranceOption.baseFee} zł + dodatek wiekowy
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Step 4: Merchandise */}
+      {step === 4 && isStepInActiveSteps(4) && hasMerchandise && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShoppingBag className="h-5 w-5" />
-              Dodaj gadżety (opcjonalnie)
+              Dodatkowe produkty (opcjonalne)
             </CardTitle>
             <CardDescription>
-              Wybierz gadżety, które chcesz zamówić razem z pakietem startowym
+              Zamów oficjalne gadżety razem z pakietem startowym
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -370,7 +559,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             {merchandiseTotal > 0 && (
               <div className="bg-muted/50 rounded-lg p-4 mt-4">
                 <div className="flex justify-between items-center font-semibold">
-                  <span>Suma gadżetów:</span>
+                  <span>Suma produktów:</span>
                   <span className="text-primary">{merchandiseTotal} zł</span>
                 </div>
               </div>
@@ -379,13 +568,13 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         </Card>
       )}
 
-      {/* Step 4: Discount Code */}
-      {step === 4 && (
+      {/* Step 5: Discount Code */}
+      {step === 5 && isStepInActiveSteps(5) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5" />
-              Kod rabatowy (opcjonalnie)
+              Kod rabatowy (opcjonalne)
             </CardTitle>
             <CardDescription>
               Jeśli posiadasz kod rabatowy, wpisz go tutaj
@@ -443,8 +632,8 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         </Card>
       )}
 
-      {/* Step 5: Summary */}
-      {step === 5 && selectedDistance && (
+      {/* Step 6: Summary */}
+      {step === 6 && isStepInActiveSteps(6) && selectedDistance && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -475,11 +664,24 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                 <span>Kategoria: {selectedCategory}</span>
               </div>
 
+              {insurancePrice > 0 && (
+                <>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Ubezpieczenie NNW
+                    </span>
+                    <span>{insurancePrice} zł</span>
+                  </div>
+                </>
+              )}
+
               {merchandiseOrders.size > 0 && (
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <span className="font-medium text-sm">Gadżety:</span>
+                    <span className="font-medium text-sm">Produkty dodatkowe:</span>
                     {Array.from(merchandiseOrders.values()).map((order, i) => (
                       <div key={i} className="flex justify-between text-sm">
                         <span>
@@ -531,7 +733,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
       {/* Navigation */}
       <div className="flex justify-between mt-6">
-        {step === activeSteps[0].id ? (
+        {isFirstStep ? (
           <Button variant="ghost" onClick={onCancel}>
             Anuluj
           </Button>
@@ -542,7 +744,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
           </Button>
         )}
 
-        {step === activeSteps[activeSteps.length - 1].id ? (
+        {isLastStep ? (
           <Button onClick={handleSubmit} disabled={!agreedToTerms} size="lg">
             Płacę {totalAmount} zł
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -594,12 +796,9 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
 
   return (
     <div className={`border rounded-lg p-4 transition-colors ${quantity > 0 ? 'border-primary bg-primary/5' : 'border-border'}`}>
-      <div className="flex gap-4">
-        {item.imageUrl && (
-          <img src={item.imageUrl} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
-        )}
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 space-y-3">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-start">
             <div>
               <h4 className="font-semibold">{item.name}</h4>
               {item.description && (

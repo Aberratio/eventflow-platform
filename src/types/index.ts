@@ -59,6 +59,16 @@ export interface OrganizerContact {
   website?: string;
 }
 
+export interface InsuranceOption {
+  id: string;
+  name: string;
+  description: string;
+  baseFee: number;
+  ageMultiplier: number;
+  maxAge: number;
+  enabled: boolean;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -81,6 +91,7 @@ export interface Event {
   merchandise?: EventMerchandise[];
   discountCodes?: DiscountCode[];
   enableMerchandiseInRegistration?: boolean;
+  insuranceOption?: InsuranceOption;
 }
 
 export interface PaymentMethod {
@@ -132,6 +143,7 @@ export interface Registration {
   discountCode?: string;
   discountAmount?: number;
   merchandiseOrders?: MerchandiseOrder[];
+  insurancePaid?: number;
 }
 
 export interface Result {

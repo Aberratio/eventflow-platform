@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
+import EventRegistrationPage from "./pages/EventRegistrationPage";
 import ResultsPage from "./pages/ResultsPage";
 import ParticipantDashboard from "./pages/participant/ParticipantDashboard";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:slug" element={<EventDetailsPage />} />
+            <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
             <Route path="/participant" element={<ParticipantDashboard />} />
