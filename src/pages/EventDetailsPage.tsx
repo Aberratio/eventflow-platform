@@ -301,7 +301,14 @@ const EventDetailsPage = () => {
                           {eventRegistrations.filter(r => r.status === 'confirmed').map((reg) => (
                             <TableRow key={reg.id}>
                               <TableCell className="font-mono">{reg.bibNumber || '-'}</TableCell>
-                              <TableCell className="font-medium">{reg.userName}</TableCell>
+                              <TableCell>
+                                <Link 
+                                  to={`/athlete/${reg.userId}`}
+                                  className="font-medium hover:text-primary hover:underline transition-colors"
+                                >
+                                  {reg.userName}
+                                </Link>
+                              </TableCell>
                               <TableCell>{reg.distanceName}</TableCell>
                               <TableCell>{reg.category}</TableCell>
                             </TableRow>
@@ -344,7 +351,14 @@ const EventDetailsPage = () => {
                               .map((result) => (
                                 <TableRow key={result.id}>
                                   <TableCell className="font-bold">{result.position}</TableCell>
-                                  <TableCell className="font-medium">{result.userName}</TableCell>
+                                  <TableCell>
+                                    <Link 
+                                      to={`/athlete/${result.userId}`}
+                                      className="font-medium hover:text-primary hover:underline transition-colors"
+                                    >
+                                      {result.userName}
+                                    </Link>
+                                  </TableCell>
                                   <TableCell>{result.distanceName}</TableCell>
                                   <TableCell className="font-mono">{result.time}</TableCell>
                                   <TableCell>
