@@ -1,33 +1,114 @@
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { mockSeries, mockEvents, seriesTypeLabels, seriesTypeIcons, disciplineLabels, disciplineIcons } from '@/data/mockData';
-import { Calendar, MapPin, Users, ArrowLeft, ChevronRight, FileText } from 'lucide-react';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  Trophy,
+  ArrowLeft,
+  Globe,
+  Target,
+  Award,
+  Medal,
+} from 'lucide-react';
+import { mockSeries, mockEvents, mockResults, seriesTypeLabels, disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { useMemo } from 'react';
 
-const statusLabels: Record<string, string> = {
-  active: 'Aktywna',
-  completed: 'Zakończona',
-  upcoming: 'Nadchodząca',
+const seriesTypeColors: Record<string, string> = {
+  virtual: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  local: 'bg-green-500/10 text-green-600 border-green-500/20',
+  championship: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  cup: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
 };
 
-const statusVariants: Record<string, 'default' | 'secondary' | 'outline'> = {
-  active: 'default',
-  completed: 'secondary',
-  upcoming: 'outline',
+const seriesTypeIcons: Record<string, React.ReactNode> = {
+  virtual: <Globe className="h-4 w-4" />,
+  local: <MapPin className="h-4 w-4" />,
+  championship: <Trophy className="h-4 w-4" />,
+  cup: <Target className="h-4 w-4" />,
+};
+
+interface SeriesStanding {
+  userId: string;
+  userName: string;
+  totalPoints: number;
+  eventsCount: number;
+  eventPoints: Record<string, number>;
+}
+
+const getPointsForPosition = (position: number): number => {
+  const pointsTable: Record<number, number> = {
+    1: 100, 2: 80, 3: 60, 4: 50, 5: 45,
+    6: 40, 7: 36, 8: 32, 9: 29, 10: 26,
+  };
+  if (position <= 10) return pointsTable[position];
+  if (position <= 20) return Math.max(25 - (position - 10), 1);
+  return 1;
 };
 
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const series = mockSeries.find(s => s.slug === slug);
 
+  const seriesEvents = useMemo(() => {
+    if (!series) return [];
+    return mockEvents.filter(event => series.eventIds.includes(event.id));
+  }, [series]);
+
+  const completedEvents = useMemo(() => {
+    return seriesEvents.filter(e => e.status === 'completed');
+  }, [seriesEvents]);
+
+  const standings = useMemo((): SeriesStanding[] => {
+    if (!series || completedEvents.length === 0) return [];
+
+    const standingsMap = new Map<string, SeriesStanding>();
+
+    completedEvents.forEach(event => {
+      const eventResults = mockResults.filter(r => r.eventId === event.id);
+      
+      eventResults.forEach(result => {
+        const points = getPointsForPosition(result.position);
+        
+        if (!standingsMap.has(result.userId)) {
+          standingsMap.set(result.userId, {
+            userId: result.userId,
+            userName: result.userName,
+            totalPoints: 0,
+            eventsCount: 0,
+            eventPoints: {},
+          });
+        }
+        
+        const standing = standingsMap.get(result.userId)!;
+        standing.totalPoints += points;
+        standing.eventsCount += 1;
+        standing.eventPoints[event.id] = points;
+      });
+    });
+
+    return Array.from(standingsMap.values())
+      .sort((a, b) => {
+        if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+        return b.eventsCount - a.eventsCount;
+      });
+  }, [series, completedEvents]);
+
   if (!series) {
     return (
       <Layout>
-        <div className="container py-16 text-center">
+        <div className="container py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">Seria nie została znaleziona</h1>
           <Button asChild>
             <Link to="/series">Wróć do listy serii</Link>
@@ -37,11 +118,14 @@ const SeriesDetailsPage = () => {
     );
   }
 
-  const seriesEvents = mockEvents.filter(e => series.eventIds.includes(e.id));
-  const totalParticipants = seriesEvents.reduce(
-    (sum, e) => sum + e.distances.reduce((s, d) => s + d.registeredCount, 0),
-    0
-  );
+  const getPositionDisplay = (position: number) => {
+    if (position === 1) return <span className="text-amber-500 font-bold">🥇 1</span>;
+    if (position === 2) return <span className="text-slate-400 font-bold">🥈 2</span>;
+    if (position === 3) return <span className="text-amber-700 font-bold">🥉 3</span>;
+    return position;
+  };
+
+  const showStandings = (series.type === 'cup' || series.type === 'championship') && standings.length > 0;
 
   return (
     <Layout>
@@ -50,139 +134,196 @@ const SeriesDetailsPage = () => {
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/series">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Powrót do serii
+            Wszystkie serie
           </Link>
         </Button>
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <Badge variant="outline" className="text-sm">
-              {seriesTypeIcons[series.type]} {seriesTypeLabels[series.type]}
+          <div className="flex items-center gap-3 mb-4">
+            <Badge 
+              variant="outline" 
+              className={`${seriesTypeColors[series.type]} flex items-center gap-1`}
+            >
+              {seriesTypeIcons[series.type]}
+              {seriesTypeLabels[series.type]}
             </Badge>
-            <Badge variant={statusVariants[series.status]}>
-              {statusLabels[series.status]}
+            <Badge variant={series.status === 'active' ? 'default' : 'secondary'}>
+              {series.status === 'active' ? 'Aktywna' : series.status === 'completed' ? 'Zakończona' : 'Nadchodząca'}
             </Badge>
           </div>
           
-          <h1 className="text-3xl font-bold mb-2">{series.name}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">{series.name}</h1>
           
-          <div className="flex flex-wrap gap-4 text-muted-foreground">
-            <span>Organizator: {series.organizerName}</span>
+          <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
+            <span className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              {series.organizerName}
+            </span>
             {series.startDate && series.endDate && (
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                {format(new Date(series.startDate), 'd MMM yyyy', { locale: pl })} - {format(new Date(series.endDate), 'd MMM yyyy', { locale: pl })}
-              </span>
-            )}
-            {totalParticipants > 0 && (
-              <span className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {totalParticipants.toLocaleString()} uczestników
+                {new Date(series.startDate).toLocaleDateString('pl-PL')} - {new Date(series.endDate).toLocaleDateString('pl-PL')}
               </span>
             )}
           </div>
+
+          <p className="text-lg text-muted-foreground max-w-3xl">
+            {series.description}
+          </p>
         </div>
 
-        {/* Description */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <h2 className="text-xl font-semibold mb-3">O serii</h2>
-            <p className="text-muted-foreground whitespace-pre-line">{series.description}</p>
-          </CardContent>
-        </Card>
-
-        {/* Rules (if available) */}
+        {/* Rules */}
         {series.rules && (
           <Card className="mb-8">
-            <CardContent className="pt-6">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
                 Regulamin punktacji
-              </h2>
-              <p className="text-muted-foreground whitespace-pre-line">{series.rules}</p>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{series.rules}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* General standings */}
+        {showStandings && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Medal className="h-5 w-5 text-amber-500" />
+                Klasyfikacja generalna
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16">Poz.</TableHead>
+                      <TableHead>Zawodnik</TableHead>
+                      {completedEvents.map(event => (
+                        <TableHead key={event.id} className="text-center min-w-24">
+                          <Link 
+                            to={`/events/${event.id}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {event.name.length > 15 ? event.name.substring(0, 15) + '...' : event.name}
+                          </Link>
+                        </TableHead>
+                      ))}
+                      <TableHead className="text-center font-bold">Suma</TableHead>
+                      <TableHead className="text-center">Starty</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {standings.map((standing, index) => (
+                      <TableRow 
+                        key={standing.userId}
+                        className={index < 3 ? 'bg-muted/30' : ''}
+                      >
+                        <TableCell className="font-medium">
+                          {getPositionDisplay(index + 1)}
+                        </TableCell>
+                        <TableCell>
+                          <Link 
+                            to={`/athlete/${standing.userId}`}
+                            className="font-medium hover:text-primary transition-colors"
+                          >
+                            {standing.userName}
+                          </Link>
+                        </TableCell>
+                        {completedEvents.map(event => (
+                          <TableCell key={event.id} className="text-center">
+                            {standing.eventPoints[event.id] ? (
+                              <span className="font-medium">{standing.eventPoints[event.id]}</span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                        ))}
+                        <TableCell className="text-center font-bold text-primary">
+                          {standing.totalPoints}
+                        </TableCell>
+                        <TableCell className="text-center text-muted-foreground">
+                          {standing.eventsCount}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* Points legend */}
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Punktacja:</strong> 1. miejsce - 100 pkt, 2. miejsce - 80 pkt, 3. miejsce - 60 pkt, 
+                  4. miejsce - 50 pkt, 5. miejsce - 45 pkt, 6-10 miejsce - od 40 do 26 pkt
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
 
         {/* Events in series */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">
-            Wydarzenia w serii ({seriesEvents.length})
-          </h2>
-          
-          {seriesEvents.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {seriesEvents.map((event) => {
-                const isPast = new Date(event.date) < new Date();
-                const registeredCount = event.distances.reduce((s, d) => s + d.registeredCount, 0);
-                
-                return (
-                  <Card key={event.id} className="hover:shadow-md transition-all">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-3">
-                        <div className="text-3xl shrink-0">{disciplineIcons[event.discipline]}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap gap-1.5 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              {disciplineLabels[event.discipline]}
-                            </Badge>
-                            {isPast && (
-                              <Badge variant="secondary" className="text-xs">Zakończone</Badge>
-                            )}
-                          </div>
-                          
-                          <h3 className="font-semibold mb-2 line-clamp-2">{event.name}</h3>
-                          
-                          <div className="flex flex-col gap-1 text-sm text-muted-foreground mb-3">
-                            <span className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              {format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Wydarzenia w serii ({seriesEvents.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {seriesEvents.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                Brak wydarzeń w tej serii
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {seriesEvents.map(event => (
+                  <Link
+                    key={event.id}
+                    to={`/events/${event.id}`}
+                    className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{disciplineIcons[event.discipline]}</span>
+                        <div>
+                          <h3 className="font-semibold">{event.name}</h3>
+                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(event.date).toLocaleDateString('pl-PL')}
                             </span>
-                            <span className="flex items-center gap-2">
-                              <MapPin className="h-4 w-4" />
-                              {event.city}
-                            </span>
-                            <span className="flex items-center gap-2">
-                              <Users className="h-4 w-4" />
-                              {registeredCount} uczestników
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {event.location}
                             </span>
                           </div>
-                          
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {event.distances.slice(0, 3).map((d) => (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {event.distances.map(d => (
                               <Badge key={d.id} variant="outline" className="text-xs">
-                                {d.length}{d.unit}
+                                {d.name}
                               </Badge>
                             ))}
-                            {event.distances.length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{event.distances.length - 3}
-                              </Badge>
-                            )}
                           </div>
-                          
-                          <Button asChild size="sm" variant={isPast ? 'outline' : 'default'}>
-                            <Link to={`/events/${event.slug}`}>
-                              {isPast ? 'Zobacz wyniki' : 'Szczegóły'}
-                              <ChevronRight className="h-4 w-4 ml-1" />
-                            </Link>
-                          </Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                Brak wydarzeń w tej serii. Wkrótce zostaną dodane!
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                      <Badge 
+                        variant={event.status === 'published' ? 'default' : event.status === 'completed' ? 'secondary' : 'outline'}
+                      >
+                        {event.status === 'published' ? 'Otwarta rejestracja' : event.status === 'completed' ? 'Zakończone' : 'Wersja robocza'}
+                      </Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
