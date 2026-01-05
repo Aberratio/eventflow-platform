@@ -11,6 +11,8 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
 import ResultsPage from "./pages/ResultsPage";
+import SeriesListPage from "./pages/SeriesListPage";
+import SeriesDetailsPage from "./pages/SeriesDetailsPage";
 import ParticipantDashboard from "./pages/participant/ParticipantDashboard";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import EventForm from "./pages/organizer/EventForm";
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/events/:slug" element={<EventDetailsPage />} />
             <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
             <Route path="/results" element={<ResultsPage />} />
+            <Route path="/series" element={<SeriesListPage />} />
+            <Route path="/series/:slug" element={<SeriesDetailsPage />} />
             <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
             <Route path="/participant" element={<ParticipantDashboard />} />
             <Route path="/participant/*" element={<ParticipantDashboard />} />

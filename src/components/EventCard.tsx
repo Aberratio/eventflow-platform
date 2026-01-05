@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { Event, Registration, Result } from '@/types';
-import { disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { disciplineLabels, disciplineIcons, mockSeries, seriesTypeIcons } from '@/data/mockData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -36,6 +36,10 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [], var
   const registrationProgress = totalCapacity > 0 ? (totalRegistered / totalCapacity) * 100 : 0;
   
   const isRegistrationOpen = new Date(event.registrationDeadline) > new Date() && event.status === 'published';
+
+  // Find series for this event
+  const eventSeries = event.seriesId ? mockSeries.find(s => s.id === event.seriesId) : 
+    mockSeries.find(s => s.eventIds.includes(event.id));
 
   const getUserStatus = () => {
     if (userResult && userResult.status === 'finished') return 'completed';
@@ -86,6 +90,19 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [], var
     <Link to={`/events/${event.slug}`}>
       <Card className="h-full hover:shadow-md hover:border-primary/30 transition-all">
         <CardContent className="p-4 flex flex-col h-full">
+          {/* Series badge */}
+          {eventSeries && (
+            <Link 
+              to={`/series/${eventSeries.slug}`} 
+              onClick={(e) => e.stopPropagation()}
+              className="inline-block mb-2"
+            >
+              <Badge variant="secondary" className="text-xs hover:bg-secondary/80">
+                {seriesTypeIcons[eventSeries.type]} {eventSeries.name}
+              </Badge>
+            </Link>
+          )}
+          
           {/* Header with icon and badges */}
           <div className="flex items-start gap-3 mb-3">
             <div className="text-3xl shrink-0">{disciplineIcons[event.discipline]}</div>

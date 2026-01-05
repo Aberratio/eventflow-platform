@@ -1,5 +1,22 @@
 export type UserRole = 'participant' | 'organizer' | 'admin';
 
+export type SeriesType = 'virtual' | 'local' | 'championship' | 'cup';
+
+export interface EventSeries {
+  id: string;
+  name: string;
+  slug: string;
+  type: SeriesType;
+  description: string;
+  organizerId: string;
+  organizerName: string;
+  eventIds: string[];
+  rules?: string;
+  startDate?: string;
+  endDate?: string;
+  status: 'active' | 'completed' | 'upcoming';
+}
+
 export interface User {
   id: string;
   name: string;
@@ -79,6 +96,7 @@ export interface Event {
   city: string;
   description: string;
   imageUrl: string;
+  seriesId?: string;
   distances: Distance[];
   organizerId: string;
   organizerName: string;
