@@ -137,28 +137,28 @@ const EventsPage = () => {
             {filteredEvents.map((event) => {
               const isPast = new Date(event.date) < new Date();
               return (
-                <Card key={event.id} className="overflow-hidden group hover:shadow-lg transition-all">
-                  <div className="aspect-video relative overflow-hidden">
-                    <img
-                      src={event.imageUrl}
-                      alt={event.name}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      <Badge>
-                        {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
-                      </Badge>
-                      {isPast && (
-                        <Badge variant="secondary">Zakończone</Badge>
-                      )}
-                      {event.featured && !isPast && (
-                        <Badge variant="default" className="bg-primary">
-                          ⭐ Wyróżnione
-                        </Badge>
-                      )}
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-all">
+                  <CardContent className="pt-6">
+                    {/* Header with icon and badges */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="text-3xl shrink-0">{disciplineIcons[event.discipline]}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap gap-1.5 mb-1">
+                          <Badge variant="outline" className="text-xs font-normal">
+                            {disciplineLabels[event.discipline]}
+                          </Badge>
+                          {isPast && (
+                            <Badge variant="secondary" className="text-xs">Zakończone</Badge>
+                          )}
+                          {event.featured && !isPast && (
+                            <Badge variant="default" className="text-xs">
+                              ⭐ Wyróżnione
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <CardContent className="pt-4">
+                    
                     <h3 className="font-semibold text-lg mb-2 line-clamp-2">{event.name}</h3>
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">

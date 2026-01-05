@@ -61,6 +61,9 @@ export const Header = () => {
           <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Wydarzenia
           </Link>
+          <Link to="/series" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Serie
+          </Link>
           <Link to="/results" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Wyniki
           </Link>
@@ -142,6 +145,13 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Wydarzenia
+            </Link>
+            <Link
+              to="/series"
+              className="text-sm font-medium py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Serie
             </Link>
             <Link
               to="/results"

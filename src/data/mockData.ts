@@ -1,4 +1,72 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType } from '@/types';
+
+export const seriesTypeLabels: Record<SeriesType, string> = {
+  virtual: 'Wirtualna',
+  local: 'Ustawka lokalna',
+  championship: 'Mistrzostwa',
+  cup: 'Cykl / Grand Prix',
+};
+
+export const seriesTypeIcons: Record<SeriesType, string> = {
+  virtual: '🌐',
+  local: '📍',
+  championship: '🏆',
+  cup: '🎯',
+};
+
+export const mockSeries: EventSeries[] = [
+  {
+    id: 'series1',
+    name: 'Wirtualne Biegi Polska 2026',
+    slug: 'wirtualne-biegi-polska-2026',
+    type: 'virtual',
+    description: 'Seria 12 wirtualnych biegów - jeden w każdym miesiącu. Biegnij gdziekolwiek jesteś! Zbieraj punkty i walcz o nagrody. Każdy uczestnik otrzymuje medal finishera po ukończeniu minimum 6 biegów.',
+    organizerId: 'o3',
+    organizerName: 'RunPoland',
+    eventIds: ['e12', 'e13'],
+    startDate: '2026-01-01',
+    endDate: '2026-12-31',
+    status: 'active',
+  },
+  {
+    id: 'series2',
+    name: 'Grand Prix Biegowe Mazowsze',
+    slug: 'grand-prix-biegowe-mazowsze',
+    type: 'cup',
+    description: 'Cykl 6 biegów na Mazowszu. Zbieraj punkty i walcz o nagrody w klasyfikacji generalnej! Punktacja: 1. miejsce - 100 pkt, 2. miejsce - 80 pkt, 3. miejsce - 60 pkt, itd.',
+    organizerId: 'o2',
+    organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    eventIds: ['e11', 'e15'],
+    rules: 'Punktacja: 1. miejsce - 100 pkt, 2. miejsce - 80 pkt, 3. miejsce - 60 pkt, 4. miejsce - 50 pkt, 5. miejsce - 45 pkt. Pozostali uczestnicy otrzymują punkty wg wzoru: 40 - (pozycja - 5).',
+    startDate: '2026-03-01',
+    endDate: '2026-10-31',
+    status: 'active',
+  },
+  {
+    id: 'series3',
+    name: 'Parkrun Warszawa',
+    slug: 'parkrun-warszawa',
+    type: 'local',
+    description: 'Cotygodniowe ustawki biegowe w parkach Warszawy. Każda sobota o 9:00. Darmowe! Dołącz do społeczności biegaczy i trenuj razem z nami. Nie wymagamy zapisów - po prostu przyjdź!',
+    organizerId: 'o1',
+    organizerName: 'Marek Organizator',
+    eventIds: [],
+    status: 'active',
+  },
+  {
+    id: 'series4',
+    name: 'Mistrzostwa Polski w Triathlonie 2026',
+    slug: 'mistrzostwa-polski-triathlon-2026',
+    type: 'championship',
+    description: 'Oficjalna seria mistrzostw Polski w triathlonie. Zawody kwalifikacyjne odbywają się w całej Polsce, a finał w Gdyni. Zwycięzcy otrzymują tytuł Mistrza Polski.',
+    organizerId: 'o2',
+    organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    eventIds: ['e14'],
+    startDate: '2026-05-01',
+    endDate: '2026-09-30',
+    status: 'upcoming',
+  },
+];
 
 export const mockUsers: User[] = [
   { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
