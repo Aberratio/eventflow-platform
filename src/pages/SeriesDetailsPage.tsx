@@ -11,6 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { 
   Calendar, 
   MapPin, 
@@ -21,9 +35,13 @@ import {
   Target,
   Award,
   Medal,
+  Filter,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 import { mockSeries, mockEvents, mockResults, seriesTypeLabels, disciplineLabels, disciplineIcons } from '@/data/mockData';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const seriesTypeColors: Record<string, string> = {
   virtual: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
@@ -39,12 +57,29 @@ const seriesTypeIcons: Record<string, React.ReactNode> = {
   cup: <Target className="h-4 w-4" />,
 };
 
+const ageCategories = [
+  { id: 'all', label: 'Wszystkie kategorie' },
+  { id: '18-29', label: '18-29 lat' },
+  { id: '30-39', label: '30-39 lat' },
+  { id: '40-49', label: '40-49 lat' },
+  { id: '50-59', label: '50-59 lat' },
+  { id: '60+', label: '60+ lat' },
+];
+
+const genderOptions = [
+  { id: 'all', label: 'Open' },
+  { id: 'M', label: 'Mężczyźni' },
+  { id: 'K', label: 'Kobiety' },
+];
+
 interface SeriesStanding {
   userId: string;
   userName: string;
   totalPoints: number;
   eventsCount: number;
   eventPoints: Record<string, number>;
+  gender?: 'M' | 'K';
+  birthYear?: number;
 }
 
 const getPointsForPosition = (position: number): number => {
@@ -57,9 +92,33 @@ const getPointsForPosition = (position: number): number => {
   return 1;
 };
 
+const calculateAge = (birthYear?: number): number | null => {
+  if (!birthYear) return null;
+  const currentYear = new Date().getFullYear();
+  return currentYear - birthYear;
+};
+
+const isInAgeCategory = (age: number | null, category: string): boolean => {
+  if (age === null) return false;
+  switch (category) {
+    case '18-29': return age >= 18 && age <= 29;
+    case '30-39': return age >= 30 && age <= 39;
+    case '40-49': return age >= 40 && age <= 49;
+    case '50-59': return age >= 50 && age <= 59;
+    case '60+': return age >= 60;
+    default: return true;
+  }
+};
+
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const series = mockSeries.find(s => s.slug === slug);
+  const isMobile = useIsMobile();
+
+  const [genderFilter, setGenderFilter] = useState<'all' | 'M' | 'K'>('all');
+  const [ageFilter, setAgeFilter] = useState<string>('all');
+  const [genderDrawerOpen, setGenderDrawerOpen] = useState(false);
+  const [ageDrawerOpen, setAgeDrawerOpen] = useState(false);
 
   const seriesEvents = useMemo(() => {
     if (!series) return [];
@@ -88,6 +147,8 @@ const SeriesDetailsPage = () => {
             totalPoints: 0,
             eventsCount: 0,
             eventPoints: {},
+            gender: result.gender,
+            birthYear: result.birthYear,
           });
         }
         
@@ -95,6 +156,9 @@ const SeriesDetailsPage = () => {
         standing.totalPoints += points;
         standing.eventsCount += 1;
         standing.eventPoints[event.id] = points;
+        // Update gender and birthYear if not set
+        if (!standing.gender && result.gender) standing.gender = result.gender;
+        if (!standing.birthYear && result.birthYear) standing.birthYear = result.birthYear;
       });
     });
 
@@ -104,6 +168,25 @@ const SeriesDetailsPage = () => {
         return b.eventsCount - a.eventsCount;
       });
   }, [series, completedEvents]);
+
+  const filteredStandings = useMemo(() => {
+    return standings.filter(standing => {
+      // Gender filter
+      if (genderFilter !== 'all' && standing.gender !== genderFilter) {
+        return false;
+      }
+      
+      // Age category filter
+      if (ageFilter !== 'all') {
+        const age = calculateAge(standing.birthYear);
+        if (!isInAgeCategory(age, ageFilter)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [standings, genderFilter, ageFilter]);
 
   if (!series) {
     return (
@@ -126,6 +209,16 @@ const SeriesDetailsPage = () => {
   };
 
   const showStandings = (series.type === 'cup' || series.type === 'championship') && standings.length > 0;
+
+  const getGenderLabel = (id: string) => genderOptions.find(o => o.id === id)?.label || 'Open';
+  const getAgeLabel = (id: string) => ageCategories.find(c => c.id === id)?.label || 'Wszystkie kategorie';
+
+  const hasActiveFilters = genderFilter !== 'all' || ageFilter !== 'all';
+
+  const clearFilters = () => {
+    setGenderFilter('all');
+    setAgeFilter('all');
+  };
 
   return (
     <Layout>
@@ -198,71 +291,225 @@ const SeriesDetailsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Poz.</TableHead>
-                      <TableHead>Zawodnik</TableHead>
-                      {completedEvents.map(event => (
-                        <TableHead key={event.id} className="text-center min-w-24">
-                          <Link 
-                            to={`/events/${event.id}`}
-                            className="hover:text-primary transition-colors"
+              {/* Filters */}
+              {isMobile ? (
+                // Mobile filters - buttons with drawers
+                <div className="flex gap-2 mb-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 justify-between h-12"
+                    onClick={() => setGenderDrawerOpen(true)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      {getGenderLabel(genderFilter)}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+
+                  <Button 
+                    variant="outline"
+                    className="flex-1 justify-between h-12"
+                    onClick={() => setAgeDrawerOpen(true)}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      {ageFilter === 'all' ? 'Kategoria' : getAgeLabel(ageFilter)}
+                    </span>
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+
+                  {/* Gender Drawer */}
+                  <Drawer open={genderDrawerOpen} onOpenChange={setGenderDrawerOpen}>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>Wybierz klasyfikację</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-4 pb-8 space-y-2">
+                        {genderOptions.map(option => (
+                          <Button
+                            key={option.id}
+                            variant={genderFilter === option.id ? "default" : "ghost"}
+                            className="w-full justify-start text-lg py-6"
+                            onClick={() => {
+                              setGenderFilter(option.id as 'all' | 'M' | 'K');
+                              setGenderDrawerOpen(false);
+                            }}
                           >
-                            {event.name.length > 15 ? event.name.substring(0, 15) + '...' : event.name}
-                          </Link>
-                        </TableHead>
-                      ))}
-                      <TableHead className="text-center font-bold">Suma</TableHead>
-                      <TableHead className="text-center">Starty</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {standings.map((standing, index) => (
-                      <TableRow 
-                        key={standing.userId}
-                        className={index < 3 ? 'bg-muted/30' : ''}
-                      >
-                        <TableCell className="font-medium">
-                          {getPositionDisplay(index + 1)}
-                        </TableCell>
-                        <TableCell>
-                          <Link 
-                            to={`/athlete/${standing.userId}`}
-                            className="font-medium hover:text-primary transition-colors"
-                          >
-                            {standing.userName}
-                          </Link>
-                        </TableCell>
-                        {completedEvents.map(event => (
-                          <TableCell key={event.id} className="text-center">
-                            {standing.eventPoints[event.id] ? (
-                              <span className="font-medium">{standing.eventPoints[event.id]}</span>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
+                            {option.label}
+                          </Button>
                         ))}
-                        <TableCell className="text-center font-bold text-primary">
-                          {standing.totalPoints}
-                        </TableCell>
-                        <TableCell className="text-center text-muted-foreground">
-                          {standing.eventsCount}
-                        </TableCell>
-                      </TableRow>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+
+                  {/* Age Drawer */}
+                  <Drawer open={ageDrawerOpen} onOpenChange={setAgeDrawerOpen}>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>Wybierz kategorię wiekową</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-4 pb-8 space-y-2">
+                        {ageCategories.map(cat => (
+                          <Button
+                            key={cat.id}
+                            variant={ageFilter === cat.id ? "default" : "ghost"}
+                            className="w-full justify-start text-lg py-6"
+                            onClick={() => {
+                              setAgeFilter(cat.id);
+                              setAgeDrawerOpen(false);
+                            }}
+                          >
+                            {cat.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                </div>
+              ) : (
+                // Desktop filters - inline toggle and select
+                <div className="flex flex-wrap items-center gap-4 mb-4">
+                  <ToggleGroup 
+                    type="single" 
+                    value={genderFilter} 
+                    onValueChange={(value) => value && setGenderFilter(value as 'all' | 'M' | 'K')}
+                    className="bg-muted/50 rounded-lg p-1"
+                  >
+                    {genderOptions.map(option => (
+                      <ToggleGroupItem 
+                        key={option.id} 
+                        value={option.id}
+                        className="px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+                      >
+                        {option.label}
+                      </ToggleGroupItem>
                     ))}
-                  </TableBody>
-                </Table>
-              </div>
-              
-              {/* Points legend */}
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Punktacja:</strong> 1. miejsce - 100 pkt, 2. miejsce - 80 pkt, 3. miejsce - 60 pkt, 
-                  4. miejsce - 50 pkt, 5. miejsce - 45 pkt, 6-10 miejsce - od 40 do 26 pkt
-                </p>
-              </div>
+                  </ToggleGroup>
+
+                  <Select value={ageFilter} onValueChange={setAgeFilter}>
+                    <SelectTrigger className="w-52">
+                      <SelectValue placeholder="Kategoria wiekowa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ageCategories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Active filters badges */}
+              {hasActiveFilters && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {genderFilter !== 'all' && (
+                    <Badge variant="secondary" className="gap-1 pr-1">
+                      {getGenderLabel(genderFilter)}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 ml-1 hover:bg-transparent"
+                        onClick={() => setGenderFilter('all')}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {ageFilter !== 'all' && (
+                    <Badge variant="secondary" className="gap-1 pr-1">
+                      {getAgeLabel(ageFilter)}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 ml-1 hover:bg-transparent"
+                        onClick={() => setAgeFilter('all')}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                </div>
+              )}
+
+              {/* Table or empty state */}
+              {filteredStandings.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Filter className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="mb-4">Brak zawodników spełniających kryteria</p>
+                  <Button variant="link" onClick={clearFilters}>
+                    Wyczyść filtry
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">Poz.</TableHead>
+                          <TableHead>Zawodnik</TableHead>
+                          {completedEvents.map(event => (
+                            <TableHead key={event.id} className="text-center min-w-24">
+                              <Link 
+                                to={`/events/${event.id}`}
+                                className="hover:text-primary transition-colors"
+                              >
+                                {event.name.length > 15 ? event.name.substring(0, 15) + '...' : event.name}
+                              </Link>
+                            </TableHead>
+                          ))}
+                          <TableHead className="text-center font-bold">Suma</TableHead>
+                          <TableHead className="text-center">Starty</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredStandings.map((standing, index) => (
+                          <TableRow 
+                            key={standing.userId}
+                            className={index < 3 ? 'bg-muted/30' : ''}
+                          >
+                            <TableCell className="font-medium">
+                              {getPositionDisplay(index + 1)}
+                            </TableCell>
+                            <TableCell>
+                              <Link 
+                                to={`/athlete/${standing.userId}`}
+                                className="font-medium hover:text-primary transition-colors"
+                              >
+                                {standing.userName}
+                              </Link>
+                            </TableCell>
+                            {completedEvents.map(event => (
+                              <TableCell key={event.id} className="text-center">
+                                {standing.eventPoints[event.id] ? (
+                                  <span className="font-medium">{standing.eventPoints[event.id]}</span>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center font-bold text-primary">
+                              {standing.totalPoints}
+                            </TableCell>
+                            <TableCell className="text-center text-muted-foreground">
+                              {standing.eventsCount}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  {/* Points legend */}
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Punktacja:</strong> 1. miejsce - 100 pkt, 2. miejsce - 80 pkt, 3. miejsce - 60 pkt, 
+                      4. miejsce - 50 pkt, 5. miejsce - 45 pkt, 6-10 miejsce - od 40 do 26 pkt
+                    </p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         )}

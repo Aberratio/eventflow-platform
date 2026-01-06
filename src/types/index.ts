@@ -179,6 +179,8 @@ export interface Result {
   position: number;
   categoryPosition: number;
   status: 'finished' | 'dnf' | 'dsq';
+  gender?: 'M' | 'K';
+  birthYear?: number;
 }
 
 export interface PersonalRecord {
