@@ -67,6 +67,9 @@ export const Header = () => {
           <Link to="/results" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Wyniki
           </Link>
+          <Link to="/athletes" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Zawodnicy
+          </Link>
           
           {isAuthenticated ? (
             <DropdownMenu>
@@ -159,6 +162,13 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Wyniki
+            </Link>
+            <Link
+              to="/athletes"
+              className="text-sm font-medium py-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Zawodnicy
             </Link>
             {isAuthenticated ? (
               <>

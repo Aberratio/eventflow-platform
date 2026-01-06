@@ -20,6 +20,7 @@ import EventManage from "./pages/organizer/EventManage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
+import AthletesPage from "./pages/AthletesPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/series" element={<SeriesListPage />} />
             <Route path="/series/:slug" element={<SeriesDetailsPage />} />
             <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
+            <Route path="/athletes" element={<AthletesPage />} />
             <Route path="/participant" element={<ParticipantDashboard />} />
             <Route path="/participant/*" element={<ParticipantDashboard />} />
             <Route path="/organizer" element={<OrganizerDashboard />} />
