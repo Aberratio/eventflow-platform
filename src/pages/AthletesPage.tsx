@@ -22,7 +22,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
-import { Search, Users, ChevronRight, Trophy, X, SlidersHorizontal, Activity, Medal } from 'lucide-react';
+import { Search, Users, ChevronRight, Trophy, X, SlidersHorizontal, Activity, Medal, ArrowUpDown } from 'lucide-react';
 import { mockResults, mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
 import { SportDiscipline } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -44,6 +44,15 @@ const podiumOptions = [
 
 const allDisciplines: SportDiscipline[] = ['running', 'cycling', 'triathlon', 'multisport'];
 
+const sortOptions = [
+  { value: 'name-asc', label: 'Nazwisko A-Z' },
+  { value: 'name-desc', label: 'Nazwisko Z-A' },
+  { value: 'starts-desc', label: 'Najwięcej startów' },
+  { value: 'starts-asc', label: 'Najmniej startów' },
+  { value: 'podium-desc', label: 'Najwięcej podium' },
+  { value: 'podium-asc', label: 'Najmniej podium' },
+];
+
 interface AthleteData {
   userId: string;
   name: string;
@@ -58,6 +67,7 @@ const AthletesPage = () => {
   const [disciplineFilter, setDisciplineFilter] = useState<SportDiscipline[]>([]);
   const [startsFilter, setStartsFilter] = useState('all');
   const [podiumFilter, setPodiumFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name-asc');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   // Create event map for quick lookup
@@ -113,9 +123,9 @@ const AthletesPage = () => {
     };
   }, [athletes]);
 
-  // Filter athletes
+  // Filter and sort athletes
   const filteredAthletes = useMemo(() => {
-    return athletes.filter(athlete => {
+    const filtered = athletes.filter(athlete => {
       // Text filter
       if (searchQuery && !athlete.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -145,7 +155,27 @@ const AthletesPage = () => {
       
       return true;
     });
-  }, [athletes, searchQuery, disciplineFilter, startsFilter, podiumFilter]);
+
+    // Sort
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name, 'pl');
+        case 'name-desc':
+          return b.name.localeCompare(a.name, 'pl');
+        case 'starts-desc':
+          return b.racesCount - a.racesCount;
+        case 'starts-asc':
+          return a.racesCount - b.racesCount;
+        case 'podium-desc':
+          return b.podiumCount - a.podiumCount;
+        case 'podium-asc':
+          return a.podiumCount - b.podiumCount;
+        default:
+          return 0;
+      }
+    });
+  }, [athletes, searchQuery, disciplineFilter, startsFilter, podiumFilter, sortBy]);
 
   const toggleDiscipline = (discipline: SportDiscipline) => {
     setDisciplineFilter(prev => 
@@ -159,6 +189,7 @@ const AthletesPage = () => {
     setDisciplineFilter([]);
     setStartsFilter('all');
     setPodiumFilter('all');
+    setSortBy('name-asc');
     setSearchQuery('');
   };
 
@@ -242,6 +273,23 @@ const AthletesPage = () => {
           </SelectTrigger>
           <SelectContent>
             {podiumOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Sort */}
+      <div>
+        <label className="text-sm font-medium mb-2 block">Sortowanie</label>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className={cn(inDrawer ? "w-full" : "w-[180px]")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {sortOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -471,6 +519,20 @@ const AthletesPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {podiumOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <ArrowUpDown className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Sortuj" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
