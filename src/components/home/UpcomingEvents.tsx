@@ -2,19 +2,18 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Event, Registration, Result } from '@/types';
+import { Event, Registration } from '@/types';
 import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { disciplineIcons } from '@/data/mockData';
 
 interface UpcomingEventsProps {
   events: Event[];
   userRegistrations: Registration[];
-  userResults: Result[];
 }
 
-export const UpcomingEvents = ({ events, userRegistrations, userResults }: UpcomingEventsProps) => {
+export const UpcomingEvents = ({ events, userRegistrations }: UpcomingEventsProps) => {
   const now = new Date();
   const upcomingEvents = events
     .filter(e => new Date(e.date) > now && e.status === 'published')
@@ -23,13 +22,8 @@ export const UpcomingEvents = ({ events, userRegistrations, userResults }: Upcom
 
   if (upcomingEvents.length === 0) return null;
 
-  const getUserStatus = (eventId: string) => {
-    const result = userResults.find(r => r.eventId === eventId);
-    if (result && result.status === 'finished') return 'completed';
-    const reg = userRegistrations.find(r => r.eventId === eventId);
-    if (reg?.status === 'confirmed') return 'registered';
-    if (reg?.status === 'pending') return 'pending';
-    return null;
+  const isUserRegistered = (eventId: string) => {
+    return userRegistrations.some(r => r.eventId === eventId && r.status === 'confirmed');
   };
 
   return (
@@ -50,7 +44,7 @@ export const UpcomingEvents = ({ events, userRegistrations, userResults }: Upcom
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {upcomingEvents.map(event => {
-            const userStatus = getUserStatus(event.id);
+            const registered = isUserRegistered(event.id);
             
             return (
               <Link key={event.id} to={`/events/${event.slug}`}>
@@ -61,12 +55,9 @@ export const UpcomingEvents = ({ events, userRegistrations, userResults }: Upcom
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h3 className="font-medium text-sm line-clamp-2 leading-tight">{event.name}</h3>
-                          {userStatus && (
-                            <Badge 
-                              variant={userStatus === 'registered' ? 'default' : 'secondary'} 
-                              className="shrink-0 text-xs"
-                            >
-                              {userStatus === 'registered' ? 'Zapisany' : userStatus === 'completed' ? 'Ukończony' : 'Oczekuje'}
+                          {registered && (
+                            <Badge variant="default" className="shrink-0 text-xs">
+                              Zapisany
                             </Badge>
                           )}
                         </div>
@@ -79,11 +70,6 @@ export const UpcomingEvents = ({ events, userRegistrations, userResults }: Upcom
                             <MapPin className="h-3 w-3" />
                             {event.city}
                           </span>
-                        </div>
-                        <div className="mt-2">
-                          <Badge variant="outline" className="text-xs font-normal">
-                            {disciplineLabels[event.discipline]}
-                          </Badge>
                         </div>
                       </div>
                     </div>
