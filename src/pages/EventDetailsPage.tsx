@@ -82,7 +82,6 @@ const EventDetailsPage = () => {
               {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
             </Badge>
             {isPast && <Badge variant="secondary">Zakończone</Badge>}
-            {event.featured && !isPast && <Badge variant="default">⭐ Wyróżnione</Badge>}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
         </div>

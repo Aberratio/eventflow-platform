@@ -22,11 +22,9 @@ const Index = () => {
       <UpcomingEvents 
         events={mockEvents}
         userRegistrations={userRegistrations}
-        userResults={userResults}
       />
       <OpenRegistrations 
         events={mockEvents}
-        userRegistrations={userRegistrations}
       />
       <RecentResults 
         events={mockEvents}

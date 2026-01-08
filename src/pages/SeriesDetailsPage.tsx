@@ -291,146 +291,25 @@ const SeriesDetailsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Filters */}
-              {isMobile ? (
-                // Mobile filters - buttons with drawers
-                <div className="flex gap-2 mb-4">
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 justify-between h-12"
-                    onClick={() => setGenderDrawerOpen(true)}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      {getGenderLabel(genderFilter)}
-                    </span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-
-                  <Button 
-                    variant="outline"
-                    className="flex-1 justify-between h-12"
-                    onClick={() => setAgeDrawerOpen(true)}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      {ageFilter === 'all' ? 'Kategoria' : getAgeLabel(ageFilter)}
-                    </span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-
-                  {/* Gender Drawer */}
-                  <Drawer open={genderDrawerOpen} onOpenChange={setGenderDrawerOpen}>
-                    <DrawerContent>
-                      <DrawerHeader>
-                        <DrawerTitle>Wybierz klasyfikację</DrawerTitle>
-                      </DrawerHeader>
-                      <div className="p-4 pb-8 space-y-2">
-                        {genderOptions.map(option => (
-                          <Button
-                            key={option.id}
-                            variant={genderFilter === option.id ? "default" : "ghost"}
-                            className="w-full justify-start text-lg py-6"
-                            onClick={() => {
-                              setGenderFilter(option.id as 'all' | 'M' | 'K');
-                              setGenderDrawerOpen(false);
-                            }}
-                          >
-                            {option.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </DrawerContent>
-                  </Drawer>
-
-                  {/* Age Drawer */}
-                  <Drawer open={ageDrawerOpen} onOpenChange={setAgeDrawerOpen}>
-                    <DrawerContent>
-                      <DrawerHeader>
-                        <DrawerTitle>Wybierz kategorię wiekową</DrawerTitle>
-                      </DrawerHeader>
-                      <div className="p-4 pb-8 space-y-2">
-                        {ageCategories.map(cat => (
-                          <Button
-                            key={cat.id}
-                            variant={ageFilter === cat.id ? "default" : "ghost"}
-                            className="w-full justify-start text-lg py-6"
-                            onClick={() => {
-                              setAgeFilter(cat.id);
-                              setAgeDrawerOpen(false);
-                            }}
-                          >
-                            {cat.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </DrawerContent>
-                  </Drawer>
-                </div>
-              ) : (
-                // Desktop filters - inline toggle and select
-                <div className="flex flex-wrap items-center gap-4 mb-4">
-                  <ToggleGroup 
-                    type="single" 
-                    value={genderFilter} 
-                    onValueChange={(value) => value && setGenderFilter(value as 'all' | 'M' | 'K')}
-                    className="bg-muted/50 rounded-lg p-1"
-                  >
-                    {genderOptions.map(option => (
-                      <ToggleGroupItem 
-                        key={option.id} 
-                        value={option.id}
-                        className="px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-                      >
-                        {option.label}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-
-                  <Select value={ageFilter} onValueChange={setAgeFilter}>
-                    <SelectTrigger className="w-52">
-                      <SelectValue placeholder="Kategoria wiekowa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ageCategories.map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Active filters badges */}
-              {hasActiveFilters && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {genderFilter !== 'all' && (
-                    <Badge variant="secondary" className="gap-1 pr-1">
-                      {getGenderLabel(genderFilter)}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 ml-1 hover:bg-transparent"
-                        onClick={() => setGenderFilter('all')}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  {ageFilter !== 'all' && (
-                    <Badge variant="secondary" className="gap-1 pr-1">
-                      {getAgeLabel(ageFilter)}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 ml-1 hover:bg-transparent"
-                        onClick={() => setAgeFilter('all')}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                </div>
-              )}
+              {/* Simple filter - just gender toggle */}
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <ToggleGroup 
+                  type="single" 
+                  value={genderFilter} 
+                  onValueChange={(value) => value && setGenderFilter(value as 'all' | 'M' | 'K')}
+                  className="bg-muted/50 rounded-lg p-1"
+                >
+                  {genderOptions.map(option => (
+                    <ToggleGroupItem 
+                      key={option.id} 
+                      value={option.id}
+                      className="px-3 sm:px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm text-sm"
+                    >
+                      {option.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
 
               {/* Table or empty state */}
               {filteredStandings.length === 0 ? (

@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, ArrowRight, Medal } from 'lucide-react';
+import { Trophy, ArrowRight } from 'lucide-react';
 import { Event, Result } from '@/types';
 import { disciplineIcons } from '@/data/mockData';
 import { format } from 'date-fns';
@@ -22,13 +21,11 @@ export const RecentResults = ({ events, results, userId }: RecentResultsProps) =
 
   if (completedEvents.length === 0) return null;
 
-  const getMedalColor = (position: number) => {
-    switch (position) {
-      case 1: return 'text-yellow-500';
-      case 2: return 'text-gray-400';
-      case 3: return 'text-amber-600';
-      default: return 'text-muted-foreground';
-    }
+  const getMedalEmoji = (position: number) => {
+    if (position === 1) return '🥇';
+    if (position === 2) return '🥈';
+    if (position === 3) return '🥉';
+    return `${position}.`;
   };
 
   return (
@@ -62,47 +59,33 @@ export const RecentResults = ({ events, results, userId }: RecentResultsProps) =
             return (
               <Card key={event.id} className="h-full">
                 <CardHeader className="pb-3 pt-4 px-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xl">{disciplineIcons[event.discipline]}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {format(new Date(event.date), 'd MMM', { locale: pl })}
-                    </Badge>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <span>{disciplineIcons[event.discipline]}</span>
+                    <span>{format(new Date(event.date), 'd MMM', { locale: pl })}</span>
                   </div>
                   <CardTitle className="text-sm font-semibold line-clamp-1">{event.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4">
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {eventResults.map(result => (
                       <div 
                         key={result.id} 
-                        className={`flex items-center gap-2.5 p-2 rounded-lg text-sm ${
-                          result.userId === userId ? 'bg-primary/10 border border-primary/20' : 'bg-muted/50'
+                        className={`flex items-center gap-2 py-1.5 px-2 rounded text-sm ${
+                          result.userId === userId ? 'bg-primary/10' : ''
                         }`}
                       >
-                        <div className={`flex items-center justify-center w-6 h-6 rounded-full bg-background ${getMedalColor(result.position)}`}>
-                          {result.position <= 3 ? (
-                            <Medal className="h-3.5 w-3.5" />
-                          ) : (
-                            <span className="text-xs font-bold">{result.position}</span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-xs truncate">{result.userName}</p>
-                        </div>
-                        <div className="font-mono font-semibold text-xs">{result.time}</div>
+                        <span className="w-6 text-center shrink-0">{getMedalEmoji(result.position)}</span>
+                        <span className="flex-1 truncate">{result.userName}</span>
+                        <span className="font-mono text-xs text-muted-foreground">{result.time}</span>
                       </div>
                     ))}
 
                     {userResult && userResult.position > 3 && (
-                      <div className="pt-2 border-t">
-                        <div className="flex items-center gap-2.5 p-2 rounded-lg bg-primary/10 border border-primary/20 text-sm">
-                          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-background">
-                            <span className="text-xs font-bold">{userResult.position}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-xs">Twój wynik</p>
-                          </div>
-                          <div className="font-mono font-semibold text-xs">{userResult.time}</div>
+                      <div className="pt-1.5 mt-1.5 border-t">
+                        <div className="flex items-center gap-2 py-1.5 px-2 rounded bg-primary/10 text-sm">
+                          <span className="w-6 text-center shrink-0">{userResult.position}.</span>
+                          <span className="flex-1 truncate">Twój wynik</span>
+                          <span className="font-mono text-xs text-muted-foreground">{userResult.time}</span>
                         </div>
                       </div>
                     )}
