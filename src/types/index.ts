@@ -23,6 +23,16 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  // Participant fields
+  phone?: string;
+  birthYear?: number;
+  gender?: 'M' | 'K';
+  club?: string;
+  // Organizer fields
+  companyName?: string;
+  nip?: string;
+  website?: string;
+  description?: string;
 }
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';

@@ -5,8 +5,19 @@ import { UsersParticipantsTab } from './components/UsersParticipantsTab';
 import { UsersOrganizersTab } from './components/UsersOrganizersTab';
 import { AdminEventsTab } from './components/AdminEventsTab';
 import { AdminPartnersTab } from './components/AdminPartnersTab';
+import AdminProfileTab from './components/AdminProfileTab';
+import { LayoutDashboard, Users, Building2, Calendar, Handshake, UserCog } from 'lucide-react';
 
 const AdminDashboard = () => {
+  const tabs = [
+    { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
+    { id: 'participants', label: 'Uczestnicy', icon: Users },
+    { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
+    { id: 'events', label: 'Wydarzenia', icon: Calendar },
+    { id: 'partners', label: 'Partnerzy', icon: Handshake },
+    { id: 'profile', label: 'Profil', icon: UserCog },
+  ];
+
   return (
     <Layout>
       <div className="container py-8">
@@ -16,12 +27,17 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
-            <TabsTrigger value="overview">Pulpit</TabsTrigger>
-            <TabsTrigger value="participants">Uczestnicy</TabsTrigger>
-            <TabsTrigger value="organizers">Organizatorzy</TabsTrigger>
-            <TabsTrigger value="events">Wydarzenia</TabsTrigger>
-            <TabsTrigger value="partners">Partnerzy</TabsTrigger>
+          <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1 lg:w-auto lg:inline-flex">
+            {tabs.map(tab => (
+              <TabsTrigger 
+                key={tab.id} 
+                value={tab.id}
+                className="flex-1 lg:flex-none gap-2 text-sm py-2.5 data-[state=active]:bg-background"
+              >
+                <tab.icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="overview">
@@ -42,6 +58,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="partners">
             <AdminPartnersTab />
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <AdminProfileTab />
           </TabsContent>
         </Tabs>
       </div>

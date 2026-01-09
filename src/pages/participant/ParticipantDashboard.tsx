@@ -3,12 +3,13 @@ import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockRegistrations, mockResults, mockPersonalRecords, mockMessages, mockCertificates } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Ticket, History, Medal, Mail } from 'lucide-react';
+import { LayoutDashboard, Ticket, History, Medal, Mail, UserCog } from 'lucide-react';
 import ParticipantOverviewTab from './components/ParticipantOverviewTab';
 import ParticipantRegistrationsTab from './components/ParticipantRegistrationsTab';
 import ParticipantHistoryTab from './components/ParticipantHistoryTab';
 import ParticipantRecordsTab from './components/ParticipantRecordsTab';
 import ParticipantMessagesTab from './components/ParticipantMessagesTab';
+import ParticipantProfileTab from './components/ParticipantProfileTab';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ const ParticipantDashboard = () => {
     { id: 'history', label: 'Historia', icon: History },
     { id: 'records', label: 'Rekordy', icon: Medal },
     { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
+    { id: 'profile', label: 'Profil', icon: UserCog },
   ];
 
   return (
@@ -46,7 +48,7 @@ const ParticipantDashboard = () => {
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id}
-                className="flex-1 min-w-[80px] sm:min-w-[120px] gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 data-[state=active]:bg-background"
+                className="flex-1 min-w-[60px] sm:min-w-[100px] gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 data-[state=active]:bg-background"
               >
                 <tab.icon className="h-4 w-4" />
                 <span className="hidden xs:inline sm:inline">{tab.label}</span>
@@ -82,6 +84,10 @@ const ParticipantDashboard = () => {
 
           <TabsContent value="messages" className="mt-0">
             <ParticipantMessagesTab messages={userMessages} />
+          </TabsContent>
+
+          <TabsContent value="profile" className="mt-0">
+            <ParticipantProfileTab />
           </TabsContent>
         </Tabs>
       </div>
