@@ -99,19 +99,43 @@ export const Header = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/participant/profile" className="flex items-center gap-2">
-                        <Trophy className="h-4 w-4" />
+                        <User className="h-4 w-4" />
                         Profil
                       </Link>
                     </DropdownMenuItem>
                   </>
                 )}
-                {(user?.role === 'organizer' || user?.role === 'admin') && (
-                  <DropdownMenuItem asChild>
-                    <Link to={`/${user.role}/events`} className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      Zarządzaj wydarzeniami
-                    </Link>
-                  </DropdownMenuItem>
+                {user?.role === 'organizer' && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/organizer/events" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Zarządzaj wydarzeniami
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/organizer/profile" className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Profil
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {user?.role === 'admin' && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/events" className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Zarządzaj platformą
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/profile" className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Profil
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">

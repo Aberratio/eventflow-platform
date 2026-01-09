@@ -69,15 +69,15 @@ export const mockSeries: EventSeries[] = [
 ];
 
 export const mockUsers: User[] = [
-  { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
-  { id: 'p2', name: 'Anna Nowak', email: 'anna@example.com', role: 'participant' },
-  { id: 'p3', name: 'Piotr Wiśniewski', email: 'piotr@example.com', role: 'participant' },
-  { id: 'p4', name: 'Katarzyna Biegacz', email: 'kasia@example.com', role: 'participant' },
-  { id: 'p5', name: 'Tomasz Kolarz', email: 'tomek@example.com', role: 'participant' },
-  { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer' },
-  { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer' },
-  { id: 'o3', name: 'RunPoland', email: 'kontakt@runpoland.pl', role: 'organizer' },
-  { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin' },
+  { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant', phone: '+48 123 456 789', birthYear: 1985, gender: 'M', club: 'KB Gliwice' },
+  { id: 'p2', name: 'Anna Nowak', email: 'anna@example.com', role: 'participant', phone: '+48 234 567 890', birthYear: 1990, gender: 'K', club: 'LKS Łódź' },
+  { id: 'p3', name: 'Piotr Wiśniewski', email: 'piotr@example.com', role: 'participant', birthYear: 1978, gender: 'M' },
+  { id: 'p4', name: 'Katarzyna Biegacz', email: 'kasia@example.com', role: 'participant', birthYear: 1995, gender: 'K', club: 'Maratończycy Poznań' },
+  { id: 'p5', name: 'Tomasz Kolarz', email: 'tomek@example.com', role: 'participant', birthYear: 1982, gender: 'M' },
+  { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer', phone: '+48 600 111 222', companyName: 'Timing Marek Kowalczyk', nip: '1234567890', website: 'https://timing.pl', description: 'Profesjonalne zawody biegowe od 2010 roku. Organizujemy wydarzenia w całej Polsce.' },
+  { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer', phone: '+48 32 987 65 43', companyName: 'Sportowe Wydarzenia Sp. z o.o.', nip: '9876543210', website: 'https://sportevents.pl', description: 'Największy organizator imprez sportowych na Śląsku.' },
+  { id: 'o3', name: 'RunPoland', email: 'kontakt@runpoland.pl', role: 'organizer', phone: '+48 22 123 45 67', companyName: 'RunPoland S.A.', website: 'https://runpoland.pl', description: 'Ogólnopolska sieć biegów ulicznych i górskich.' },
+  { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin', phone: '+48 800 123 456' },
 ];
 
 export const defaultPaymentMethods: PaymentMethod[] = [
