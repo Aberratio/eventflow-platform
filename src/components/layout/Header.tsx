@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Timer, Menu, X, User, LogOut, Calendar, Trophy, Settings, LayoutDashboard } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
+import { Timer, Menu, X, User, LogOut, Calendar, Trophy, Settings, LayoutDashboard, ShoppingCart, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ const roleBadgeVariants = {
 
 export const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -56,7 +58,6 @@ export const Header = () => {
           <span className="font-bold text-xl">SportTime</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Wydarzenia
@@ -69,6 +70,19 @@ export const Header = () => {
           </Link>
           <Link to="/athletes" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Zawodnicy
+          </Link>
+          <Link to="/shop" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Sklep
+          </Link>
+          
+          {/* Cart Icon */}
+          <Link to="/shop" className="relative">
+            <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+            {totalItems > 0 && (
+              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+                {totalItems > 9 ? '9+' : totalItems}
+              </span>
+            )}
           </Link>
           
           {isAuthenticated ? (
@@ -193,6 +207,17 @@ export const Header = () => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Zawodnicy
+            </Link>
+            <Link
+              to="/shop"
+              className="text-sm font-medium py-2 flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Sklep
+              {totalItems > 0 && (
+                <Badge variant="secondary" className="ml-1">{totalItems}</Badge>
+              )}
             </Link>
             {isAuthenticated ? (
               <>

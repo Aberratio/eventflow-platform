@@ -222,3 +222,33 @@ export interface Message {
   read: boolean;
   eventId?: string;
 }
+
+// Shop types
+export type ShopCategory = 'apparel' | 'footwear' | 'accessories' | 'nutrition' | 'electronics';
+
+export interface ShopProduct {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  category: ShopCategory;
+  brand: string;
+  sizes?: string[];
+  colors?: MerchandiseColor[];
+  imageUrl: string;
+  images?: string[];
+  inStock: boolean;
+  stockCount?: number;
+  rating?: number;
+  reviewCount?: number;
+  featured?: boolean;
+}
+
+export interface CartItem {
+  productId: string;
+  quantity: number;
+  size?: string;
+  color?: string;
+}
