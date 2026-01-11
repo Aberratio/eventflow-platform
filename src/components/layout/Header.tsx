@@ -76,7 +76,7 @@ export const Header = () => {
           </Link>
           
           {/* Cart Icon */}
-          <Link to="/shop" className="relative">
+          <Link to="/cart" className="relative">
             <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
@@ -215,6 +215,14 @@ export const Header = () => {
             >
               <ShoppingBag className="h-4 w-4" />
               Sklep
+            </Link>
+            <Link
+              to="/cart"
+              className="text-sm font-medium py-2 flex items-center gap-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Koszyk
               {totalItems > 0 && (
                 <Badge variant="secondary" className="ml-1">{totalItems}</Badge>
               )}

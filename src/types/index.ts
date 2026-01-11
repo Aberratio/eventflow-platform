@@ -226,6 +226,21 @@ export interface Message {
 // Shop types
 export type ShopCategory = 'apparel' | 'footwear' | 'accessories' | 'nutrition' | 'electronics';
 
+export interface DeliveryMethod {
+  id: string;
+  name: string;
+  price: number;
+  estimatedDays: string;
+  description?: string;
+}
+
+export interface ShopPaymentMethod {
+  id: string;
+  name: string;
+  icon?: string;
+  surcharge?: number;
+}
+
 export interface ShopProduct {
   id: string;
   name: string;
