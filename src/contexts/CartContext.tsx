@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { CartItem, ShopProduct } from '@/types';
+import { CartItem, ShopProduct, OrderDetails } from '@/types';
 import { mockShopProducts } from '@/data/mockData';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,12 +14,15 @@ interface CartContextType {
   totalItems: number;
   totalPrice: number;
   getProduct: (productId: string) => ShopProduct | undefined;
+  lastOrder: OrderDetails | null;
+  setLastOrder: (order: OrderDetails) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [lastOrder, setLastOrder] = useState<OrderDetails | null>(null);
   const { toast } = useToast();
 
   const getProduct = useCallback((productId: string) => {
@@ -109,6 +112,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       totalItems,
       totalPrice,
       getProduct,
+      lastOrder,
+      setLastOrder,
     }}>
       {children}
     </CartContext.Provider>

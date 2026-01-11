@@ -267,3 +267,24 @@ export interface CartItem {
   size?: string;
   color?: string;
 }
+
+export interface OrderDetails {
+  orderId: string;
+  orderNumber: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    price: number;
+  }>;
+  deliveryMethod: DeliveryMethod;
+  paymentMethod: ShopPaymentMethod;
+  productTotal: number;
+  deliveryPrice: number;
+  paymentSurcharge: number;
+  totalPrice: number;
+  estimatedDelivery: string;
+  createdAt: string;
+}
