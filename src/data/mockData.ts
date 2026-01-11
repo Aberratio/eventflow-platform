@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod } from '@/types';
 
 export const seriesTypeLabels: Record<SeriesType, string> = {
   virtual: 'Wirtualna',
@@ -1803,4 +1803,20 @@ export const mockShopProducts: ShopProduct[] = [
     rating: 4.7,
     reviewCount: 124,
   },
+];
+
+// Delivery methods for shop
+export const mockDeliveryMethods: DeliveryMethod[] = [
+  { id: 'dpd', name: 'Kurier DPD', price: 14.99, estimatedDays: '1-2 dni robocze' },
+  { id: 'inpost-courier', name: 'Kurier InPost', price: 12.99, estimatedDays: '2-3 dni robocze' },
+  { id: 'inpost-paczkomat', name: 'Paczkomat InPost', price: 9.99, estimatedDays: '1-2 dni robocze' },
+  { id: 'pickup', name: 'Odbiór osobisty', price: 0, estimatedDays: 'Kraków, ul. Sportowa 15' },
+];
+
+// Payment methods for shop
+export const mockShopPaymentMethods: ShopPaymentMethod[] = [
+  { id: 'card', name: 'Karta płatnicza (Visa, Mastercard)', icon: 'credit-card' },
+  { id: 'blik', name: 'BLIK', icon: 'smartphone' },
+  { id: 'transfer', name: 'Przelew online (Przelewy24)', icon: 'building' },
+  { id: 'cod', name: 'Płatność przy odbiorze', icon: 'banknote', surcharge: 5 },
 ];

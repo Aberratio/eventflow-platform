@@ -16,6 +16,7 @@ import SeriesListPage from "./pages/SeriesListPage";
 import SeriesDetailsPage from "./pages/SeriesDetailsPage";
 import ShopPage from "./pages/ShopPage";
 import ShopProductPage from "./pages/ShopProductPage";
+import CartPage from "./pages/CartPage";
 import ParticipantDashboard from "./pages/participant/ParticipantDashboard";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import EventForm from "./pages/organizer/EventForm";
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/series/:slug" element={<SeriesDetailsPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/shop/:slug" element={<ShopProductPage />} />
+              <Route path="/cart" element={<CartPage />} />
               <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
               <Route path="/athletes" element={<AthletesPage />} />
               <Route path="/participant" element={<ParticipantDashboard />} />
