@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, Truck, CreditCard, Smartphone, Building, Banknote, Package } from 'lucide-react';
+import { addDays, format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
 import { mockDeliveryMethods, mockShopPaymentMethods } from '@/data/mockData';
+import { OrderDetails } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {
   card: <CreditCard className="h-4 w-4" />,
@@ -19,8 +21,7 @@ const paymentIcons: Record<string, React.ReactNode> = {
 };
 
 const CartPage = () => {
-  const { items, getProduct, updateItemQuantity, removeItemByVariant, clearCart, totalPrice, totalItems } = useCart();
-  const { toast } = useToast();
+  const { items, getProduct, updateItemQuantity, removeItemByVariant, clearCart, totalPrice, totalItems, setLastOrder } = useCart();
   const navigate = useNavigate();
   
   const [selectedDelivery, setSelectedDelivery] = useState<string>('');
@@ -36,20 +37,46 @@ const CartPage = () => {
   const canCheckout = items.length > 0 && !!selectedDelivery && !!selectedPayment;
 
   const handleCheckout = async () => {
-    if (!canCheckout) return;
+    if (!canCheckout || !deliveryMethod || !paymentMethod) return;
 
     setIsProcessing(true);
     
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    toast({
-      title: 'Zamówienie złożone!',
-      description: 'Dziękujemy za zakupy. Potwierdzenie zostało wysłane na email.',
-    });
+    // Generate order number
+    const orderNumber = `ORD-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     
+    // Calculate estimated delivery date
+    const deliveryDaysMatch = deliveryMethod.estimatedDays.match(/\d+/);
+    const maxDeliveryDays = deliveryDaysMatch ? parseInt(deliveryDaysMatch[0]) + 1 : 3;
+    const estimatedDeliveryDate = addDays(new Date(), maxDeliveryDays);
+    
+    // Create order details
+    const orderDetails: OrderDetails = {
+      orderId: crypto.randomUUID(),
+      orderNumber,
+      items: items.map(item => ({
+        productId: item.productId,
+        productName: getProduct(item.productId)?.name || 'Produkt',
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        price: getProduct(item.productId)?.price || 0,
+      })),
+      deliveryMethod,
+      paymentMethod,
+      productTotal: totalPrice,
+      deliveryPrice,
+      paymentSurcharge,
+      totalPrice: totalPrice + deliveryPrice + paymentSurcharge,
+      estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
+      createdAt: new Date().toISOString(),
+    };
+    
+    setLastOrder(orderDetails);
     clearCart();
-    navigate('/shop');
+    navigate('/order-success');
     setIsProcessing(false);
   };
 
