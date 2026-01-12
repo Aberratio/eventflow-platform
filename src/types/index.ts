@@ -288,3 +288,48 @@ export interface OrderDetails {
   estimatedDelivery: string;
   createdAt: string;
 }
+
+// Ticket types
+export interface Ticket {
+  id: string;
+  eventId: string;
+  eventName: string;
+  eventDate: string;
+  distanceId: string;
+  distanceName: string;
+  location: string;
+  participantName: string;
+  participantId: string;
+  bibNumber: string;
+  category: string;
+  registrationId: string;
+}
+
+// Shop order types
+export interface ShopOrder {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    price: number;
+  }>;
+  deliveryMethod: DeliveryMethod;
+  paymentMethod: ShopPaymentMethod;
+  productTotal: number;
+  deliveryPrice: number;
+  paymentSurcharge: number;
+  totalPrice: number;
+  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: string;
+  trackingNumber?: string;
+}
+
+// Extended discount code with group discounts
+export interface GroupDiscountCode extends DiscountCode {
+  minParticipants?: number;
+}

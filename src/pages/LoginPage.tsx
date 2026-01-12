@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,9 +91,19 @@ const LoginPage = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center text-sm text-muted-foreground">
-          <p>💡 Tip: Dane logowania są zapisywane w localStorage przeglądarki.</p>
-          <p className="mt-1">Wyloguj się, aby zmienić rolę.</p>
+        <div className="mt-8 text-center space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+            <Link to="/register" className="text-primary hover:underline font-medium">
+              Zarejestruj się
+            </Link>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
+              Zapomniałeś hasła?
+            </Link>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p>💡 Tip: Dane logowania są zapisywane w localStorage przeglądarki.</p>
+          </div>
         </div>
       </div>
     </Layout>
