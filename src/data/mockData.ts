@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder } from '@/types';
 
 export const seriesTypeLabels: Record<SeriesType, string> = {
   virtual: 'Wirtualna',
@@ -1819,4 +1819,106 @@ export const mockShopPaymentMethods: ShopPaymentMethod[] = [
   { id: 'blik', name: 'BLIK', icon: 'smartphone' },
   { id: 'transfer', name: 'Przelew online (Przelewy24)', icon: 'building' },
   { id: 'cod', name: 'Płatność przy odbiorze', icon: 'banknote', surcharge: 5 },
+];
+
+// Mock tickets for participants
+export const mockTickets: Ticket[] = [
+  {
+    id: 'ticket1',
+    eventId: 'e11',
+    eventName: 'Bieg Górski Tatry Ultra 2026',
+    eventDate: '2026-06-15',
+    distanceId: 'd21',
+    distanceName: 'Maraton 42K',
+    location: 'Zakopane, Kuźnice',
+    participantName: 'Jan Kowalski',
+    participantId: 'p1',
+    bibNumber: '042',
+    category: 'M30-34',
+    registrationId: 'r9',
+  },
+  {
+    id: 'ticket2',
+    eventId: 'e12',
+    eventName: 'City Trail Łódź 2026',
+    eventDate: '2026-04-12',
+    distanceId: 'd23',
+    distanceName: 'Trail 15K',
+    location: 'Łódź, Park im. Poniatowskiego',
+    participantName: 'Jan Kowalski',
+    participantId: 'p1',
+    bibNumber: '215',
+    category: 'M30-39',
+    registrationId: 'r10',
+  },
+  {
+    id: 'ticket3',
+    eventId: 'e1',
+    eventName: 'Półmaraton Warszawski 2026',
+    eventDate: '2025-09-28',
+    distanceId: 'd1',
+    distanceName: 'Półmaraton',
+    location: 'Warszawa, Stadion Narodowy',
+    participantName: 'Jan Kowalski',
+    participantId: 'p1',
+    bibNumber: '1542',
+    category: 'M30-39',
+    registrationId: 'r1',
+  },
+];
+
+// Mock shop orders
+export const mockShopOrders: ShopOrder[] = [
+  {
+    id: 'order1',
+    orderNumber: 'ORD-2026-A1B2C3',
+    userId: 'p1',
+    items: [
+      { productId: 'prod1', productName: 'Koszulka techniczna Pro Run', quantity: 2, size: 'L', color: 'Niebieski', price: 129 },
+      { productId: 'prod5', productName: 'Czapka biegowa z daszkiem', quantity: 1, color: 'Czarny', price: 79 },
+    ],
+    deliveryMethod: { id: 'inpost-paczkomat', name: 'Paczkomat InPost', price: 9.99, estimatedDays: '1-2 dni robocze' },
+    paymentMethod: { id: 'blik', name: 'BLIK', icon: 'smartphone' },
+    productTotal: 337,
+    deliveryPrice: 9.99,
+    paymentSurcharge: 0,
+    totalPrice: 346.99,
+    status: 'delivered',
+    createdAt: '2026-01-02T14:30:00Z',
+    trackingNumber: 'INP0012345678',
+  },
+  {
+    id: 'order2',
+    orderNumber: 'ORD-2026-D4E5F6',
+    userId: 'p1',
+    items: [
+      { productId: 'prod2', productName: 'Buty do biegania UltraSpeed 3', quantity: 1, size: '43', color: 'Neonowy', price: 699 },
+    ],
+    deliveryMethod: { id: 'dpd', name: 'Kurier DPD', price: 14.99, estimatedDays: '1-2 dni robocze' },
+    paymentMethod: { id: 'card', name: 'Karta płatnicza (Visa, Mastercard)', icon: 'credit-card' },
+    productTotal: 699,
+    deliveryPrice: 14.99,
+    paymentSurcharge: 0,
+    totalPrice: 713.99,
+    status: 'shipped',
+    createdAt: '2026-01-08T09:15:00Z',
+    trackingNumber: 'DPD987654321',
+  },
+  {
+    id: 'order3',
+    orderNumber: 'ORD-2026-G7H8I9',
+    userId: 'p1',
+    items: [
+      { productId: 'prod6', productName: 'Żele energetyczne Power Pack (10 szt)', quantity: 2, price: 89 },
+      { productId: 'prod12', productName: 'Napój izotoniczny (12 szt)', quantity: 1, price: 59 },
+    ],
+    deliveryMethod: { id: 'inpost-courier', name: 'Kurier InPost', price: 12.99, estimatedDays: '2-3 dni robocze' },
+    paymentMethod: { id: 'cod', name: 'Płatność przy odbiorze', icon: 'banknote', surcharge: 5 },
+    productTotal: 237,
+    deliveryPrice: 12.99,
+    paymentSurcharge: 5,
+    totalPrice: 254.99,
+    status: 'pending',
+    createdAt: '2026-01-10T16:45:00Z',
+  },
 ];
