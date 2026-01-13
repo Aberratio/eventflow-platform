@@ -19,10 +19,11 @@ import {
   Minus,
   Ticket,
   User,
-  Shield
+  Shield,
+  Users
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
-import { getCurrentPrice, validateDiscountCode } from '@/data/mockData';
+import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes } from '@/data/mockData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -42,6 +43,7 @@ export interface RegistrationData {
   merchandiseOrders: MerchandiseOrder[];
   insurancePrice?: number;
   totalAmount: number;
+  teamName?: string;
 }
 
 // Generate years for birth date (18-80 years old)
@@ -76,17 +78,27 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: 'percent' | 'fixed'; value: number } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  // Team registration state
+  const [wantsTeam, setWantsTeam] = useState(false);
+  const [teamName, setTeamName] = useState('');
 
   const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
   const hasMerchandise = event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
   const hasInsurance = event.insuranceOption?.enabled;
+  const hasTeamOption = true; // Always show team option
   
   // Build steps dynamically
   const buildSteps = () => {
-    const steps = [
+    const steps: Array<{ id: number; name: string; icon: typeof Ticket }> = [
       { id: 1, name: 'Dystans', icon: Ticket },
       { id: 2, name: 'Dane', icon: User },
     ];
+    
+    // Add team step after personal data
+    if (hasTeamOption) {
+      steps.push({ id: 25, name: 'Drużyna', icon: Users });
+    }
     
     if (hasInsurance) {
       steps.push({ id: 3, name: 'Ubezpieczenie', icon: Shield });
@@ -204,6 +216,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     switch (step) {
       case 1: return !!selectedDistanceId;
       case 2: return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
+      case 25: return true; // Team is optional
       case 3: return true; // Insurance is optional
       case 4: return true; // Merchandise is optional
       case 5: return true; // Discount is optional
@@ -234,6 +247,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       merchandiseOrders: Array.from(merchandiseOrders.values()),
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
+      teamName: wantsTeam && teamName.trim() ? teamName.trim() : undefined,
     });
   };
 
@@ -465,6 +479,87 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         </Card>
       )}
 
+      {/* Step 25: Team Registration */}
+      {step === 25 && isStepInActiveSteps(25) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Zapis drużynowy (opcjonalne)
+            </CardTitle>
+            <CardDescription>
+              Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Team option */}
+            <div
+              className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${
+                wantsTeam ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => setWantsTeam(!wantsTeam)}
+            >
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="team"
+                  checked={wantsTeam}
+                  onCheckedChange={(checked) => setWantsTeam(checked === true)}
+                />
+                <div className="flex-1">
+                  <label htmlFor="team" className="font-medium cursor-pointer">
+                    Chcę zapisać się jako część drużyny
+                  </label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Team name input */}
+            {wantsTeam && (
+              <div className="space-y-2">
+                <Label htmlFor="teamName">Nazwa drużyny / klubu</Label>
+                <Input
+                  id="teamName"
+                  placeholder="np. KB Górskie Wilki, Biegacze Warszawa"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Wpisz dokładnie taką samą nazwę, jak pozostali członkowie drużyny.
+                </p>
+              </div>
+            )}
+
+            {/* Group discount info */}
+            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Zniżki grupowe
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Zniżki są naliczane automatycznie po zapisaniu minimalnej liczby osób z tej samej drużyny:
+              </p>
+              <ul className="text-sm space-y-2">
+                {mockGroupDiscountCodes.map((discount) => (
+                  <li key={discount.id} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="font-mono">
+                      {discount.minParticipants}+ osób
+                    </Badge>
+                    <span className="text-primary font-medium">-{discount.discountValue}%</span>
+                    <span className="text-muted-foreground">rabatu</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 Zniżka zostanie przypisana do wszystkich członków drużyny po osiągnięciu minimalnej liczby zapisanych.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Step 3: Insurance */}
       {step === 3 && isStepInActiveSteps(3) && hasInsurance && event.insuranceOption && (
         <Card>
@@ -663,6 +758,15 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
               <div className="flex justify-between text-muted-foreground">
                 <span>Kategoria: {selectedCategory}</span>
               </div>
+
+              {wantsTeam && teamName && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Drużyna: {teamName}
+                  </span>
+                </div>
+              )}
 
               {insurancePrice > 0 && (
                 <>

@@ -164,14 +164,16 @@ export interface Registration {
   distanceName: string;
   category: string;
   registeredAt: string;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'removed';
   bibNumber?: string;
   teamName?: string;
+  teamId?: string;
   pricePaid?: number;
   discountCode?: string;
   discountAmount?: number;
   merchandiseOrders?: MerchandiseOrder[];
   insurancePaid?: number;
+  removedAt?: string;
 }
 
 export interface Result {
