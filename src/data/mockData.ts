@@ -1922,3 +1922,40 @@ export const mockShopOrders: ShopOrder[] = [
     createdAt: '2026-01-10T16:45:00Z',
   },
 ];
+
+// Mock group discount codes for team registrations
+export const mockGroupDiscountCodes = [
+  {
+    id: 'grp1',
+    code: 'DRUZYNA3',
+    discountType: 'percent' as const,
+    discountValue: 10,
+    minParticipants: 3,
+    validTo: '2026-12-31',
+    maxUses: 100,
+    usedCount: 15,
+    active: true,
+  },
+  {
+    id: 'grp2',
+    code: 'DRUZYNA5',
+    discountType: 'percent' as const,
+    discountValue: 15,
+    minParticipants: 5,
+    validTo: '2026-12-31',
+    maxUses: 50,
+    usedCount: 8,
+    active: true,
+  },
+  {
+    id: 'grp3',
+    code: 'TEAM10',
+    discountType: 'percent' as const,
+    discountValue: 20,
+    minParticipants: 10,
+    validTo: '2026-12-31',
+    maxUses: 20,
+    usedCount: 2,
+    active: true,
+  },
+];
