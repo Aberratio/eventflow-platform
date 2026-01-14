@@ -31,10 +31,16 @@ const CartPage = () => {
   const deliveryMethod = mockDeliveryMethods.find(d => d.id === selectedDelivery);
   const paymentMethod = mockShopPaymentMethods.find(p => p.id === selectedPayment);
   
-  const deliveryPrice = deliveryMethod?.price || 0;
+  // Check if cart contains only services (no delivery needed)
+  const hasOnlyServices = items.every(item => {
+    const product = getProduct(item.productId);
+    return product?.isService;
+  });
+  
+  const deliveryPrice = hasOnlyServices ? 0 : (deliveryMethod?.price || 0);
   const paymentSurcharge = paymentMethod?.surcharge || 0;
 
-  const canCheckout = items.length > 0 && !!selectedDelivery && !!selectedPayment;
+  const canCheckout = items.length > 0 && (hasOnlyServices || !!selectedDelivery) && !!selectedPayment;
 
   const handleCheckout = async () => {
     if (!canCheckout || !deliveryMethod || !paymentMethod) return;
@@ -143,39 +149,54 @@ const CartPage = () => {
               })}
             </div>
 
-            {/* Delivery Options */}
-            <div className="bg-card rounded-lg border p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Truck className="h-5 w-5" />
-                Dostawa
-              </h2>
-              
-              <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
-                <div className="space-y-3">
-                  {mockDeliveryMethods.map((method) => (
-                    <div key={method.id} className="flex items-start space-x-3">
-                      <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
-                      <Label htmlFor={method.id} className="flex-1 cursor-pointer">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium flex items-center gap-2">
-                              <Package className="h-4 w-4 text-muted-foreground" />
-                              {method.name}
+            {/* Delivery Options - hide for services only */}
+            {!hasOnlyServices && (
+              <div className="bg-card rounded-lg border p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Truck className="h-5 w-5" />
+                  Dostawa
+                </h2>
+                
+                <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
+                  <div className="space-y-3">
+                    {mockDeliveryMethods.map((method) => (
+                      <div key={method.id} className="flex items-start space-x-3">
+                        <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
+                        <Label htmlFor={method.id} className="flex-1 cursor-pointer">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium flex items-center gap-2">
+                                <Package className="h-4 w-4 text-muted-foreground" />
+                                {method.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {method.estimatedDays}
+                              </div>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {method.estimatedDays}
+                            <div className="font-medium">
+                              {method.price === 0 ? 'Gratis' : `${method.price.toFixed(2)} zł`}
                             </div>
                           </div>
-                          <div className="font-medium">
-                            {method.price === 0 ? 'Gratis' : `${method.price.toFixed(2)} zł`}
-                          </div>
-                        </div>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+
+            {hasOnlyServices && (
+              <div className="bg-primary/5 rounded-lg border border-primary/20 p-6">
+                <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  Usługa cyfrowa
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Twoje zamówienie zawiera wyłącznie usługi cyfrowe. Nie jest wymagana dostawa fizyczna - 
+                  otrzymasz dostęp do zakupionych usług na swoje konto.
+                </p>
+              </div>
+            )}
 
             {/* Payment Options */}
             <div className="bg-card rounded-lg border p-6">

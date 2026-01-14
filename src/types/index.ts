@@ -226,7 +226,7 @@ export interface Message {
 }
 
 // Shop types
-export type ShopCategory = 'apparel' | 'footwear' | 'accessories' | 'nutrition' | 'electronics';
+export type ShopCategory = 'apparel' | 'footwear' | 'accessories' | 'nutrition' | 'electronics' | 'services';
 
 export interface DeliveryMethod {
   id: string;
@@ -261,6 +261,10 @@ export interface ShopProduct {
   rating?: number;
   reviewCount?: number;
   featured?: boolean;
+  // Service-specific fields
+  isService?: boolean;
+  serviceDetails?: string;
+  validityDays?: number;
 }
 
 export interface CartItem {
