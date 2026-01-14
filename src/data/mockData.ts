@@ -1506,6 +1506,7 @@ export const shopCategoryLabels: Record<ShopCategory, string> = {
   accessories: 'Akcesoria',
   nutrition: 'Odżywki',
   electronics: 'Elektronika',
+  services: 'Usługi',
 };
 
 export const mockShopProducts: ShopProduct[] = [
@@ -1802,6 +1803,23 @@ export const mockShopProducts: ShopProduct[] = [
     stockCount: 0,
     rating: 4.7,
     reviewCount: 124,
+  },
+  {
+    id: 'service-organizer',
+    name: 'Licencja Organizatora SportTime',
+    slug: 'licencja-organizatora',
+    description: 'Zostań organizatorem na platformie SportTime! Licencja umożliwia tworzenie i zarządzanie własnymi zawodami, publikowanie wydarzeń, zbieranie zapisów oraz wprowadzanie wyników. Pełen dostęp do panelu organizatora przez 12 miesięcy.',
+    price: 499,
+    category: 'services',
+    brand: 'SportTime',
+    imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400',
+    inStock: true,
+    rating: 5.0,
+    reviewCount: 42,
+    featured: true,
+    isService: true,
+    serviceDetails: 'Po zakupie licencja zostanie aktywowana w ciągu 24h. Otrzymasz dostęp do panelu organizatora, gdzie możesz tworzyć wydarzenia, zarządzać zapisami i publikować wyniki. Wsparcie techniczne 24/7.',
+    validityDays: 365,
   },
 ];
 

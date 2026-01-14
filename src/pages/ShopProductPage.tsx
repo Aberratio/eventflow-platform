@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Check } from 'lucide-react';
+import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield } from 'lucide-react';
 import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
@@ -90,8 +90,14 @@ const ShopProductPage = () => {
 
           {/* Product Details */}
           <div>
-            <div className="mb-2">
+            <div className="mb-2 flex gap-2">
               <Badge variant="secondary">{shopCategoryLabels[product.category]}</Badge>
+              {product.isService && (
+                <Badge variant="default" className="gap-1">
+                  <Zap className="h-3 w-3" />
+                  Usługa cyfrowa
+                </Badge>
+              )}
             </div>
             
             <p className="text-sm text-muted-foreground mb-1">{product.brand}</p>
@@ -132,8 +138,8 @@ const ShopProductPage = () => {
 
             <Separator className="my-6" />
 
-            {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
+            {/* Size Selection - only for physical products */}
+            {!product.isService && product.sizes && product.sizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-3 block">Rozmiar</label>
                 <div className="flex flex-wrap gap-2">
@@ -152,8 +158,8 @@ const ShopProductPage = () => {
               </div>
             )}
 
-            {/* Color Selection */}
-            {product.colors && product.colors.length > 0 && (
+            {/* Color Selection - only for physical products */}
+            {!product.isService && product.colors && product.colors.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-3 block">
                   Kolor: {selectedColorData?.name}
@@ -186,34 +192,53 @@ const ShopProductPage = () => {
               </div>
             )}
 
-            {/* Quantity */}
-            <div className="mb-6">
-              <label className="text-sm font-medium mb-3 block">Ilość</label>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-12 text-center font-medium">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                  disabled={product.stockCount !== undefined && quantity >= product.stockCount}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                {product.stockCount !== undefined && (
-                  <span className="text-sm text-muted-foreground">
-                    (dostępnych: {product.stockCount})
-                  </span>
+            {/* Service Details */}
+            {product.isService && product.serviceDetails && (
+              <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <h3 className="font-medium mb-2 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  Informacje o usłudze
+                </h3>
+                <p className="text-sm text-muted-foreground">{product.serviceDetails}</p>
+                {product.validityDays && (
+                  <p className="text-sm mt-2 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Ważność: {product.validityDays} dni
+                  </p>
                 )}
               </div>
-            </div>
+            )}
+
+            {/* Quantity - only for physical products */}
+            {!product.isService && (
+              <div className="mb-6">
+                <label className="text-sm font-medium mb-3 block">Ilość</label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(quantity + 1)}
+                    disabled={product.stockCount !== undefined && quantity >= product.stockCount}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  {product.stockCount !== undefined && (
+                    <span className="text-sm text-muted-foreground">
+                      (dostępnych: {product.stockCount})
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Add to Cart */}
             <Button 
@@ -223,13 +248,17 @@ const ShopProductPage = () => {
               disabled={!product.inStock}
             >
               <ShoppingCart className="h-5 w-5" />
-              {product.inStock ? 'Dodaj do koszyka' : 'Produkt niedostępny'}
+              {product.inStock 
+                ? (product.isService ? 'Kup teraz' : 'Dodaj do koszyka')
+                : 'Produkt niedostępny'}
             </Button>
 
             {product.inStock && (
               <p className="text-sm text-muted-foreground text-center mt-3">
                 <Check className="h-4 w-4 inline mr-1 text-success" />
-                Produkt dostępny - wysyłka w 24h
+                {product.isService 
+                  ? 'Usługa zostanie aktywowana w ciągu 24h'
+                  : 'Produkt dostępny - wysyłka w 24h'}
               </p>
             )}
 
