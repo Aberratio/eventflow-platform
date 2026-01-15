@@ -111,7 +111,9 @@ export interface Event {
   organizerId: string;
   organizerName: string;
   organizerContact?: OrganizerContact;
-  status: 'draft' | 'published' | 'completed' | 'cancelled';
+  status: 'draft' | 'awaiting_approval' | 'published' | 'completed' | 'cancelled';
+  rejectionReason?: string;
+  submittedAt?: string;
   registrationDeadline: string;
   featured: boolean;
   liveResultsUrl?: string;

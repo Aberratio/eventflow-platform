@@ -4,14 +4,16 @@ import { AdminOverviewTab } from './components/AdminOverviewTab';
 import { UsersParticipantsTab } from './components/UsersParticipantsTab';
 import { UsersOrganizersTab } from './components/UsersOrganizersTab';
 import { AdminEventsTab } from './components/AdminEventsTab';
+import { AdminModerationTab } from './components/AdminModerationTab';
 import { AdminPartnersTab } from './components/AdminPartnersTab';
 import { AdminShopTab } from './components/AdminShopTab';
 import AdminProfileTab from './components/AdminProfileTab';
-import { LayoutDashboard, Users, Building2, Calendar, Handshake, UserCog, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Calendar, Handshake, UserCog, ShoppingBag, ShieldCheck } from 'lucide-react';
 
 const AdminDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
+    { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
     { id: 'participants', label: 'Uczestnicy', icon: Users },
     { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
     { id: 'events', label: 'Wydarzenia', icon: Calendar },
@@ -44,6 +46,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="overview">
             <AdminOverviewTab />
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <AdminModerationTab />
           </TabsContent>
 
           <TabsContent value="participants">
