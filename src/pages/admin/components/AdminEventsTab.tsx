@@ -23,6 +23,7 @@ import { Search, Calendar, MapPin, Settings, Eye } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {
   draft: 'Wersja robocza',
+  awaiting_approval: 'Oczekuje na akceptację',
   published: 'Opublikowane',
   completed: 'Zakończone',
   cancelled: 'Anulowane',
@@ -30,6 +31,7 @@ const statusLabels: Record<string, string> = {
 
 const statusColors: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
+  awaiting_approval: 'bg-warning/10 text-warning border-warning/20',
   published: 'bg-primary/10 text-primary border-primary/20',
   completed: 'bg-muted text-muted-foreground',
   cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
@@ -69,6 +71,7 @@ export const AdminEventsTab = () => {
           <SelectContent>
             <SelectItem value="all">Wszystkie statusy</SelectItem>
             <SelectItem value="draft">Wersja robocza</SelectItem>
+            <SelectItem value="awaiting_approval">Oczekuje na akceptację</SelectItem>
             <SelectItem value="published">Opublikowane</SelectItem>
             <SelectItem value="completed">Zakończone</SelectItem>
             <SelectItem value="cancelled">Anulowane</SelectItem>
