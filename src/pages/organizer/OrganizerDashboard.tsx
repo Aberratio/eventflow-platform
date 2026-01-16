@@ -130,11 +130,15 @@ const OrganizerDashboard = () => {
                           event.status === 'published' ? 'bg-primary/10 text-primary' :
                           event.status === 'completed' ? 'bg-muted text-muted-foreground' :
                           event.status === 'draft' ? 'bg-yellow-500/10 text-yellow-600' :
+                          event.status === 'awaiting_approval' ? 'bg-amber-500/10 text-amber-600' :
+                          event.status === 'cancelled' && event.rejectionReason ? 'bg-destructive/10 text-destructive' :
                           'bg-destructive/10 text-destructive'
                         }`}>
                           {event.status === 'published' ? 'Aktywne' :
                            event.status === 'completed' ? 'Zakończone' :
-                           event.status === 'draft' ? 'Szkic' : 'Anulowane'}
+                           event.status === 'draft' ? 'Szkic' :
+                           event.status === 'awaiting_approval' ? 'Oczekuje na akceptację' :
+                           event.rejectionReason ? 'Odrzucone' : 'Anulowane'}
                         </span>
                         <Button variant="outline" size="sm" asChild>
                           <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>

@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 const roleLabels = {
   participant: 'Uczestnik',
@@ -76,7 +77,7 @@ export const Header = () => {
           </Link>
           
           {/* Cart Icon */}
-          <Link to="/cart" className="relative">
+          <Link to="/cart" className="relative" aria-label="Koszyk">
             <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
@@ -84,6 +85,9 @@ export const Header = () => {
               </span>
             )}
           </Link>
+          
+          {/* Notification Center */}
+          {isAuthenticated && <NotificationCenter />}
           
           {isAuthenticated ? (
             <DropdownMenu>

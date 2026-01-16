@@ -60,7 +60,10 @@ const EventForm = () => {
   );
 
   // Step 3 - Status
-  const [status, setStatus] = useState<'draft' | 'published'>(existingEvent?.status === 'published' ? 'published' : 'draft');
+  const [status, setStatus] = useState<'draft' | 'awaiting_approval' | 'published'>(
+    existingEvent?.status === 'published' ? 'published' : 
+    existingEvent?.status === 'awaiting_approval' ? 'awaiting_approval' : 'draft'
+  );
 
   const addDistance = () => {
     setDistances([...distances, {
@@ -123,11 +126,14 @@ const EventForm = () => {
   const prevStep = () => setStep(step - 1);
 
   const handleSubmit = () => {
+    const messages = {
+      draft: 'Wydarzenie zostało zapisane jako szkic.',
+      awaiting_approval: 'Wydarzenie zostało zgłoszone do akceptacji. Administrator sprawdzi je wkrótce.',
+      published: 'Wydarzenie zostało opublikowane i jest widoczne dla uczestników.',
+    };
     toast({
       title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
-      description: status === 'published' 
-        ? 'Wydarzenie zostało opublikowane i jest widoczne dla uczestników.'
-        : 'Wydarzenie zostało zapisane jako szkic.',
+      description: messages[status],
     });
     navigate('/organizer');
   };
@@ -463,7 +469,7 @@ const EventForm = () => {
                 <CardTitle>Status publikacji</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant={status === 'draft' ? 'default' : 'outline'}
                     onClick={() => setStatus('draft')}
@@ -472,18 +478,21 @@ const EventForm = () => {
                     Zapisz jako szkic
                   </Button>
                   <Button
-                    variant={status === 'published' ? 'default' : 'outline'}
-                    onClick={() => setStatus('published')}
+                    variant={status === 'awaiting_approval' ? 'default' : 'outline'}
+                    onClick={() => setStatus('awaiting_approval')}
                     className="flex-1"
                   >
-                    Opublikuj od razu
+                    Zgłoś do akceptacji
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {status === 'draft'
-                    ? 'Wydarzenie będzie widoczne tylko dla Ciebie. Możesz je opublikować później.'
-                    : 'Wydarzenie będzie od razu widoczne dla wszystkich użytkowników.'}
+                    ? 'Wydarzenie będzie widoczne tylko dla Ciebie. Możesz je zgłosić do akceptacji później.'
+                    : 'Wydarzenie zostanie przesłane do administratora w celu weryfikacji i zatwierdzenia.'}
                 </p>
+                <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
+                  <strong>Uwaga:</strong> Wszystkie nowe wydarzenia wymagają zatwierdzenia przez administratora przed publikacją.
+                </div>
               </CardContent>
             </Card>
           </div>

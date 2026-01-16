@@ -33,6 +33,8 @@ export interface User {
   nip?: string;
   website?: string;
   description?: string;
+  // New user tracking
+  isNewUser?: boolean;
 }
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
@@ -396,4 +398,18 @@ export interface SecuritySettings {
   sessionTimeoutMinutes: number;
   trustedDevices: TrustedDevice[];
   loginHistory: LoginHistoryEntry[];
+}
+
+// Notification types
+export type NotificationType = 'registration' | 'moderation' | 'order' | 'message' | 'system';
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  actionUrl?: string;
 }
