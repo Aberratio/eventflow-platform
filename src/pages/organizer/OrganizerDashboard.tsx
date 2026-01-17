@@ -4,10 +4,14 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockEvents } from '@/data/mockData';
+import { Badge } from '@/components/ui/badge';
+import { mockEvents, disciplineIcons } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays, UserCog } from 'lucide-react';
+import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays, UserCog, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import OrganizerProfileTab from './components/OrganizerProfileTab';
+import { ListContainer, ListRow } from '@/components/lists';
 
 const OrganizerDashboard = () => {
   const { user } = useAuth();
@@ -20,6 +24,19 @@ const OrganizerDashboard = () => {
     { id: 'events', label: 'Moje wydarzenia', icon: CalendarDays },
     { id: 'profile', label: 'Profil', icon: UserCog },
   ];
+
+  const getStatusBadge = (event: typeof myEvents[0]) => {
+    const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      published: { label: 'Aktywne', variant: 'default' },
+      completed: { label: 'Zakończone', variant: 'secondary' },
+      draft: { label: 'Szkic', variant: 'outline' },
+      awaiting_approval: { label: 'Oczekuje', variant: 'outline' },
+      rejected: { label: 'Odrzucone', variant: 'destructive' },
+      cancelled: { label: 'Anulowane', variant: 'destructive' },
+    };
+    const config = statusConfig[event.status] || statusConfig.draft;
+    return <Badge variant={config.variant} className="text-xs">{config.label}</Badge>;
+  };
 
   return (
     <Layout>
@@ -87,20 +104,23 @@ const OrganizerDashboard = () => {
 
             <Card>
               <CardHeader><CardTitle>Ostatnie wydarzenia</CardTitle></CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-0">
+                <ListContainer>
                   {myEvents.slice(0, 5).map(event => (
-                    <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <div className="font-medium">{event.name}</div>
-                        <div className="text-sm text-muted-foreground">{event.city} • {event.date}</div>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
-                      </Button>
-                    </div>
+                    <ListRow
+                      key={event.id}
+                      icon={disciplineIcons[event.discipline]}
+                      title={event.name}
+                      subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })}`}
+                      badge={getStatusBadge(event)}
+                      action={
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
+                        </Button>
+                      }
+                    />
                   ))}
-                </div>
+                </ListContainer>
               </CardContent>
             </Card>
           </TabsContent>
@@ -115,38 +135,26 @@ const OrganizerDashboard = () => {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {myEvents.map(event => (
-                    <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="font-medium">{event.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {event.city} • {event.date} • {event.distances.reduce((a, d) => a + d.registeredCount, 0)} uczestników
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          event.status === 'published' ? 'bg-primary/10 text-primary' :
-                          event.status === 'completed' ? 'bg-muted text-muted-foreground' :
-                          event.status === 'draft' ? 'bg-yellow-500/10 text-yellow-600' :
-                          event.status === 'awaiting_approval' ? 'bg-amber-500/10 text-amber-600' :
-                          event.status === 'cancelled' && event.rejectionReason ? 'bg-destructive/10 text-destructive' :
-                          'bg-destructive/10 text-destructive'
-                        }`}>
-                          {event.status === 'published' ? 'Aktywne' :
-                           event.status === 'completed' ? 'Zakończone' :
-                           event.status === 'draft' ? 'Szkic' :
-                           event.status === 'awaiting_approval' ? 'Oczekuje na akceptację' :
-                           event.rejectionReason ? 'Odrzucone' : 'Anulowane'}
-                        </span>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-0">
+                <ListContainer>
+                  {myEvents.map(event => {
+                    const participantCount = event.distances.reduce((a, d) => a + d.registeredCount, 0);
+                    return (
+                      <ListRow
+                        key={event.id}
+                        icon={disciplineIcons[event.discipline]}
+                        title={event.name}
+                        subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${participantCount} uczestników`}
+                        badge={getStatusBadge(event)}
+                        action={
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
+                          </Button>
+                        }
+                      />
+                    );
+                  })}
+                </ListContainer>
               </CardContent>
             </Card>
           </TabsContent>

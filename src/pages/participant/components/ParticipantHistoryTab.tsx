@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Result, Certificate } from '@/types';
-import { Calendar, Trophy, Medal, Download, ExternalLink, Clock, Users } from 'lucide-react';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { Trophy } from 'lucide-react';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { toast } from 'sonner';
+import { ListContainer, ListGroup, ListEmptyState, ResultListRow } from '@/components/lists';
 
 interface ParticipantHistoryTabProps {
   results: Result[];
@@ -42,29 +39,37 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
     return true;
   }).sort((a, b) => new Date(b.event!.date).getTime() - new Date(a.event!.date).getTime());
 
+  // Group by year
+  const groupedResults = filteredResults.reduce((groups, result) => {
+    const year = new Date(result.event!.date).getFullYear().toString();
+    if (!groups[year]) {
+      groups[year] = [];
+    }
+    groups[year].push(result);
+    return groups;
+  }, {} as Record<string, typeof filteredResults>);
+
   const handleDownloadCertificate = (certificateId: string) => {
     toast.success('Pobieranie dyplomu...');
   };
 
-  const getMedalIcon = (position: number) => {
-    if (position === 1) return <Medal className="h-5 w-5 text-yellow-500" />;
-    if (position === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (position === 3) return <Medal className="h-5 w-5 text-amber-700" />;
-    return null;
-  };
-
   if (results.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Trophy className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h3 className="font-semibold mb-2">Brak historii startów</h3>
-          <p className="text-muted-foreground mb-4">Tu pojawią się Twoje wyniki po ukończeniu zawodów</p>
-          <Button asChild>
-            <Link to="/events">Znajdź zawody</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <ListContainer
+        isEmpty
+        emptyState={
+          <ListEmptyState
+            icon={<Trophy className="h-12 w-12" />}
+            title="Brak historii startów"
+            description="Tu pojawią się Twoje wyniki po ukończeniu zawodów"
+            action={
+              <Button asChild>
+                <Link to="/events">Znajdź zawody</Link>
+              </Button>
+            }
+          />
+        }
+      />
     );
   }
 
@@ -98,85 +103,32 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
       </div>
 
       {/* Results List */}
-      <div className="space-y-3">
-        {filteredResults.map(result => (
-          <Card key={result.id}>
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                {/* Event Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold truncate">{result.eventName}</h3>
-                    {getMedalIcon(result.categoryPosition)}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground mb-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {result.event && format(new Date(result.event.date), 'd MMM yyyy', { locale: pl })}
-                    </div>
-                    <Badge variant="outline" className="text-xs">{result.distanceName}</Badge>
-                  </div>
-                  
-                  {/* Results */}
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <span className="font-mono font-bold text-lg">{result.time}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>OPEN: <strong>{result.position}</strong></span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <Trophy className="h-4 w-4 text-muted-foreground" />
-                      <span>{result.category}: <strong>{result.categoryPosition}</strong></span>
-                    </div>
-                    
-                    <Badge 
-                      variant={result.status === 'finished' ? 'default' : 'destructive'}
-                      className="text-xs"
-                    >
-                      {result.status === 'finished' ? 'Ukończony' : result.status === 'dnf' ? 'DNF' : 'DSQ'}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {/* Actions */}
-                <div className="flex gap-2 sm:flex-col shrink-0">
-                  {result.certificate && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleDownloadCertificate(result.certificate!.id)}
-                      className="flex-1 sm:flex-none"
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Dyplom
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" asChild className="flex-1 sm:flex-none">
-                    <Link to={`/results?event=${result.eventId}`}>
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      Wyniki
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredResults.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            Brak wyników dla wybranych filtrów
-          </CardContent>
-        </Card>
-      )}
+      <ListContainer
+        isEmpty={filteredResults.length === 0}
+        emptyState={
+          <ListEmptyState
+            title="Brak wyników"
+            description="Brak wyników dla wybranych filtrów"
+          />
+        }
+      >
+        {Object.entries(groupedResults)
+          .sort(([a], [b]) => parseInt(b) - parseInt(a))
+          .map(([year, yearResults]) => (
+            <ListGroup key={year} title={year}>
+              {yearResults.map(result => (
+                <ResultListRow
+                  key={result.id}
+                  result={result}
+                  event={result.event}
+                  showEvent
+                  showDownload={!!result.certificate}
+                  onDownloadCertificate={result.certificate ? () => handleDownloadCertificate(result.certificate!.id) : undefined}
+                />
+              ))}
+            </ListGroup>
+          ))}
+      </ListContainer>
     </div>
   );
 };

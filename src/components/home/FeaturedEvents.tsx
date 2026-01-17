@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { EventCard } from '@/components/EventCard';
 import { Event, Registration, Result } from '@/types';
 import { ArrowRight } from 'lucide-react';
+import { ListContainer, EventListRow } from '@/components/lists';
 
 interface FeaturedEventsProps {
   events: Event[];
@@ -20,7 +20,7 @@ export const FeaturedEvents = ({ events, userRegistrations, userResults }: Featu
   return (
     <section className="py-12 md:py-16">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">Wyróżnione wydarzenia</h2>
             <p className="text-muted-foreground mt-1">Najciekawsze zawody w tym sezonie</p>
@@ -32,16 +32,16 @@ export const FeaturedEvents = ({ events, userRegistrations, userResults }: Featu
             </Link>
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ListContainer>
           {featuredEvents.map(event => (
-            <EventCard
+            <EventListRow
               key={event.id}
               event={event}
               userRegistrations={userRegistrations}
               userResults={userResults}
             />
           ))}
-        </div>
+        </ListContainer>
         <div className="mt-6 text-center sm:hidden">
           <Button asChild variant="outline" className="gap-2">
             <Link to="/events">
