@@ -36,9 +36,18 @@ import {
   Award,
   Medal,
   Filter,
-  X,
-  ChevronDown,
+  Download,
+  FileText,
+  Printer,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+import { useToast } from '@/hooks/use-toast';
 import { mockSeries, mockEvents, mockResults, seriesTypeLabels, disciplineLabels, disciplineIcons } from '@/data/mockData';
 import { useMemo, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -114,11 +123,36 @@ const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const series = mockSeries.find(s => s.slug === slug);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'M' | 'K'>('all');
   const [ageFilter, setAgeFilter] = useState<string>('all');
   const [genderDrawerOpen, setGenderDrawerOpen] = useState(false);
   const [ageDrawerOpen, setAgeDrawerOpen] = useState(false);
+
+  const handleExportCSV = () => {
+    if (!series) return;
+    const data = filteredStandings.map((s, i) => ({
+      'Pozycja': i + 1,
+      'Zawodnik': s.userName,
+      'Punkty': s.totalPoints,
+      'Starty': s.eventsCount,
+    }));
+    exportToCSV(data, `klasyfikacja-${series.slug}`);
+    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+  };
+
+  const handleExportPDF = () => {
+    if (!series) return;
+    const columns = ['Poz.', 'Zawodnik', 'Punkty', 'Starty'];
+    const rows = filteredStandings.map((s, i) => [
+      String(i + 1),
+      s.userName,
+      String(s.totalPoints),
+      String(s.eventsCount),
+    ]);
+    generatePrintableHTML(`Klasyfikacja generalna - ${series.name}`, columns, rows);
+  };
 
   const seriesEvents = useMemo(() => {
     if (!series) return [];
@@ -284,11 +318,26 @@ const SeriesDetailsPage = () => {
         {/* General standings */}
         {showStandings && (
           <Card className="mb-8">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
               <CardTitle className="flex items-center gap-2">
                 <Medal className="h-5 w-5 text-amber-500" />
                 Klasyfikacja generalna
               </CardTitle>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" /> Eksport
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={handleExportCSV}>
+                    <FileText className="h-4 w-4 mr-2" /> Pobierz CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF}>
+                    <Printer className="h-4 w-4 mr-2" /> Drukuj PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </CardHeader>
             <CardContent>
               {/* Simple filter - just gender toggle */}

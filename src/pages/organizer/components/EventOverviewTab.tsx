@@ -1,10 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Event, Registration } from '@/types';
 import { disciplineLabels } from '@/data/mockData';
-import { Users, Calendar, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
+import { Users, Calendar, MapPin, TrendingUp, ExternalLink, AlertTriangle, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface EventOverviewTabProps {
   event: Event;
@@ -12,6 +14,7 @@ interface EventOverviewTabProps {
 }
 
 export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
+  const { toast } = useToast();
   const confirmedRegistrations = registrations.filter(r => r.status === 'confirmed');
   const pendingRegistrations = registrations.filter(r => r.status === 'pending');
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
@@ -25,8 +28,46 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
     percentage: d.limit ? Math.round((registrations.filter(r => r.distanceId === d.id).length / d.limit) * 100) : 0
   }));
 
+  const handleResubmit = () => {
+    toast({
+      title: 'Wydarzenie zgłoszone ponownie',
+      description: 'Twoje wydarzenie zostało przesłane do ponownej weryfikacji.',
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Rejection alert */}
+      {event.status === 'rejected' && event.rejectionReason && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Wydarzenie odrzucone</AlertTitle>
+          <AlertDescription className="mt-2">
+            <p className="mb-3">{event.rejectionReason}</p>
+            <Button size="sm" onClick={handleResubmit}>
+              <Send className="h-4 w-4 mr-2" />
+              Popraw i zgłoś ponownie
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Awaiting approval info */}
+      {event.status === 'awaiting_approval' && (
+        <Alert>
+          <Calendar className="h-4 w-4" />
+          <AlertTitle>Oczekuje na akceptację</AlertTitle>
+          <AlertDescription>
+            Twoje wydarzenie zostało przesłane do weryfikacji. Otrzymasz powiadomienie po rozpatrzeniu.
+            {event.submittedAt && (
+              <span className="block text-xs mt-1 text-muted-foreground">
+                Zgłoszono: {new Date(event.submittedAt).toLocaleDateString('pl-PL')}
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Quick stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>

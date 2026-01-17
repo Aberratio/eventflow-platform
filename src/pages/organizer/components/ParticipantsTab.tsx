@@ -35,6 +35,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { SendMessageDialog } from '@/components/SendMessageDialog';
 import { Event, Registration } from '@/types';
+import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { 
   Search, 
   Download, 
@@ -45,8 +46,16 @@ import {
   Trash2, 
   RotateCcw,
   Users,
-  UserMinus
+  UserMinus,
+  FileText,
+  Printer
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ParticipantsTabProps {
   event: Event;
@@ -209,11 +218,31 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     setSelectedParticipant(null);
   };
 
-  const handleExport = () => {
-    toast({
-      title: 'Eksport rozpoczęty',
-      description: 'Lista uczestników zostanie pobrana jako plik CSV.',
-    });
+  const handleExportCSV = () => {
+    const data = filteredRegistrations.map(reg => ({
+      'Numer startowy': reg.bibNumber || '-',
+      'Imię i nazwisko': reg.userName,
+      'Email': reg.userEmail,
+      'Dystans': reg.distanceName,
+      'Kategoria': reg.category,
+      'Status': reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : reg.status === 'cancelled' ? 'Anulowany' : 'Usunięty',
+      'Drużyna': reg.teamName || '-',
+      'Data zapisu': new Date(reg.registeredAt).toLocaleDateString('pl-PL'),
+    }));
+    exportToCSV(data, `lista-startowa-${event.slug}`);
+    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+  };
+
+  const handleExportPDF = () => {
+    const columns = ['Numer', 'Imię i nazwisko', 'Dystans', 'Kategoria', 'Status'];
+    const rows = filteredRegistrations.map(reg => [
+      reg.bibNumber || '-',
+      reg.userName,
+      reg.distanceName,
+      reg.category,
+      reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : 'Anulowany',
+    ]);
+    generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
   };
 
   const getStatusBadge = (status: string) => {
@@ -337,10 +366,24 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                   <UserMinus className="h-4 w-4 mr-2" />
                   Usuń nieopłaconych ({unpaidCount})
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleExport}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Eksport
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Eksport
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Pobierz CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF}>
+                      <Printer className="h-4 w-4 mr-2" />
+                      Drukuj PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>
                   <Mail className="h-4 w-4 mr-2" />
                   Wiadomość
