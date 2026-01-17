@@ -24,7 +24,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Event, Result, Registration } from '@/types';
 import { mockResults } from '@/data/mockData';
-import { Plus, Upload, Save, Trophy, Clock, AlertCircle } from 'lucide-react';
+import { Plus, Upload, Save, Trophy, Clock, AlertCircle, Download, FileText, Printer } from 'lucide-react';
+import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ResultsTabProps {
   event: Event;
@@ -113,6 +120,30 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     });
   };
 
+  const handleExportCSV = () => {
+    const sortedResults = [...allResults].sort((a, b) => a.time.localeCompare(b.time));
+    const data = sortedResults.map((r, i) => ({
+      'Pozycja': r.status === 'finished' ? i + 1 : '-',
+      'Numer startowy': r.bibNumber,
+      'Czas': r.time,
+      'Status': r.status === 'finished' ? 'Ukończył' : r.status === 'dnf' ? 'DNF' : 'DSQ',
+    }));
+    exportToCSV(data, `wyniki-${event.slug}-${selectedDistanceData?.name || 'all'}`);
+    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+  };
+
+  const handleExportPDF = () => {
+    const sortedResults = [...allResults].sort((a, b) => a.time.localeCompare(b.time));
+    const columns = ['Poz.', 'Numer', 'Czas', 'Status'];
+    const rows = sortedResults.map((r, i) => [
+      r.status === 'finished' ? String(i + 1) : '-',
+      r.bibNumber,
+      r.time,
+      r.status === 'finished' ? 'Ukończył' : r.status === 'dnf' ? 'DNF' : 'DSQ',
+    ]);
+    generatePrintableHTML(`Wyniki - ${event.name} - ${selectedDistanceData?.name || ''}`, columns, rows);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'finished':
@@ -173,11 +204,30 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       {/* Entry mode content */}
       {entryMode === 'manual' ? (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
             <CardTitle>Wprowadź wyniki - {selectedDistanceData?.name}</CardTitle>
-            <Button onClick={() => setAddDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Dodaj wynik
-            </Button>
+            <div className="flex gap-2">
+              {allResults.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      <Download className="mr-2 h-4 w-4" /> Eksport
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                      <FileText className="h-4 w-4 mr-2" /> Pobierz CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF}>
+                      <Printer className="h-4 w-4 mr-2" /> Drukuj PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <Button onClick={() => setAddDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Dodaj wynik
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {allResults.length === 0 ? (
