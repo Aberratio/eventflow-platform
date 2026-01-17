@@ -197,3 +197,24 @@ export const generateHTMLTable = (data: Record<string, unknown>[]): string => {
     </table>
   `;
 };
+
+// Generate printable HTML with columns and rows (opens print dialog)
+export const generatePrintableHTML = (title: string, columns: string[], rows: (string | number)[][]) => {
+  const tableHtml = `
+    <table>
+      <thead>
+        <tr>
+          ${columns.map(col => `<th>${col}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            ${row.map(cell => `<td>${cell ?? '-'}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  printToPDF(title, tableHtml);
+};
