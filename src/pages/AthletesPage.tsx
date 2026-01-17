@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,11 +19,11 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
-import { Search, Users, ChevronRight, Trophy, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Search, Users, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { mockResults, mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
 import { SportDiscipline } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
+import { ListContainer, ListEmptyState, AthleteListRow } from '@/components/lists';
 
 const allDisciplines: SportDiscipline[] = ['running', 'cycling', 'triathlon', 'multisport'];
 
@@ -280,46 +278,34 @@ const AthletesPage = () => {
           {filteredAthletes.length} zawodników
         </p>
 
-        {/* Athletes Grid */}
-        {filteredAthletes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {filteredAthletes.map((athlete) => (
-              <Link key={athlete.userId} to={`/athlete/${athlete.userId}`}>
-                <Card className="hover:shadow-md hover:border-primary/30 transition-all h-full">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-medium truncate">{athlete.name}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          {athlete.racesCount} startów
-                          {athlete.podiumCount > 0 && (
-                            <span className="ml-2">
-                              <Trophy className="h-3 w-3 text-yellow-500 inline mr-0.5" />
-                              {athlete.podiumCount}
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground mb-2">
-              Nie znaleziono zawodników
-            </p>
-            {hasActiveFilters && (
-              <Button variant="link" onClick={clearFilters}>
-                Wyczyść filtry
-              </Button>
-            )}
-          </div>
-        )}
+        {/* Athletes List */}
+        <ListContainer
+          isEmpty={filteredAthletes.length === 0}
+          emptyState={
+            <ListEmptyState
+              icon={<Users className="h-12 w-12" />}
+              title="Nie znaleziono zawodników"
+              description="Spróbuj zmienić kryteria wyszukiwania"
+              action={
+                hasActiveFilters ? (
+                  <Button variant="link" onClick={clearFilters}>
+                    Wyczyść filtry
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
+        >
+          {filteredAthletes.map((athlete) => (
+            <AthleteListRow
+              key={athlete.userId}
+              userId={athlete.userId}
+              name={athlete.name}
+              racesCount={athlete.racesCount}
+              podiumCount={athlete.podiumCount}
+            />
+          ))}
+        </ListContainer>
       </div>
     </Layout>
   );

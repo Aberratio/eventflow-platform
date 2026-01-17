@@ -1,15 +1,15 @@
 import { useState, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
-import { Calendar, MapPin, Users, Search, Filter } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar as CalendarIcon } from 'lucide-react';
+import { SportDiscipline } from '@/types';
+import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/components/lists';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { SportDiscipline } from '@/types';
 
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,6 +41,21 @@ const EventsPage = () => {
       .filter(e => !selectedCity || e.city === selectedCity)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [search, selectedDiscipline, selectedCity]);
+
+  // Group events by month
+  const groupedEvents = useMemo(() => {
+    const groups: Record<string, typeof filteredEvents> = {};
+    
+    filteredEvents.forEach(event => {
+      const monthKey = format(new Date(event.date), 'LLLL yyyy', { locale: pl });
+      if (!groups[monthKey]) {
+        groups[monthKey] = [];
+      }
+      groups[monthKey].push(event);
+    });
+    
+    return groups;
+  }, [filteredEvents]);
 
   const handleDisciplineChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -130,52 +145,30 @@ const EventsPage = () => {
           Znaleziono {filteredEvents.length} wydarzeń
         </p>
 
-        {/* Events Grid */}
-        {filteredEvents.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEvents.map((event) => {
-              const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
-              
-              return (
-                <Link key={event.id} to={`/events/${event.slug}`}>
-                  <Card className="h-full hover:shadow-md hover:border-primary/30 transition-all">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="text-2xl shrink-0">{disciplineIcons[event.discipline]}</div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm mb-2 line-clamp-2">{event.name}</h3>
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1.5">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="h-3 w-3" />
-                              {event.city}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Users className="h-3 w-3" />
-                              {totalParticipants.toLocaleString()} uczestników
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              Nie znaleziono wydarzeń spełniających kryteria.
-            </p>
-            <Button variant="outline" onClick={clearFilters}>
-              Wyczyść filtry
-            </Button>
-          </div>
-        )}
+        {/* Events List */}
+        <ListContainer
+          isEmpty={filteredEvents.length === 0}
+          emptyState={
+            <ListEmptyState
+              icon={<CalendarIcon className="h-12 w-12" />}
+              title="Nie znaleziono wydarzeń"
+              description="Spróbuj zmienić kryteria wyszukiwania"
+              action={
+                <Button variant="outline" onClick={clearFilters}>
+                  Wyczyść filtry
+                </Button>
+              }
+            />
+          }
+        >
+          {Object.entries(groupedEvents).map(([monthKey, events]) => (
+            <ListGroup key={monthKey} title={monthKey}>
+              {events.map(event => (
+                <EventListRow key={event.id} event={event} />
+              ))}
+            </ListGroup>
+          ))}
+        </ListContainer>
       </div>
     </Layout>
   );
