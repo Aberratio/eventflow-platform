@@ -110,7 +110,7 @@ const OrganizerDashboard = () => {
                   {myEvents.slice(0, 5).map(event => (
                     <ListRow
                       key={event.id}
-                      icon={disciplineIcons[event.discipline]}
+                      icon={<DisciplineIcon discipline={event.discipline} />}
                       title={event.name}
                       subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })}`}
                       badge={getStatusBadge(event)}
@@ -143,7 +143,7 @@ const OrganizerDashboard = () => {
                     return (
                       <ListRow
                         key={event.id}
-                        icon={disciplineIcons[event.discipline]}
+                        icon={<DisciplineIcon discipline={event.discipline} />}
                         title={event.name}
                         subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${participantCount} uczestników`}
                         badge={getStatusBadge(event)}

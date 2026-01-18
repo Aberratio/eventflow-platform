@@ -466,7 +466,7 @@ const SeriesDetailsPage = () => {
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{disciplineIcons[event.discipline]}</span>
+                        <DisciplineIcon discipline={event.discipline} size="lg" />
                         <div>
                           <h3 className="font-semibold">{event.name}</h3>
                           <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mt-1">

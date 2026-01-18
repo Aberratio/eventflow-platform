@@ -91,6 +91,7 @@ const EventRegistrationPage = () => {
                 <Badge className="flex items-center gap-1.5">
                   <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
                   {disciplineLabels[event.discipline]}
+                </Badge>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold">{event.name}</h1>
               <div className="flex flex-wrap items-center gap-4 mt-2 text-muted-foreground">
