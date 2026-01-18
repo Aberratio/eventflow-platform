@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { EventSeries } from '@/types';
-import { seriesTypeIcons } from '@/data/mockData';
-import { Calendar, Users } from 'lucide-react';
+import { SeriesTypeIcon } from '@/components/icons/SeriesTypeIcon';
+import { Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
@@ -50,7 +50,7 @@ export const SeriesListRow = ({
 
   return (
     <ListRow
-      icon={seriesTypeIcons[series.type]}
+      icon={<SeriesTypeIcon type={series.type} />}
       title={series.name}
       subtitle={subtitle}
       badge={badge}

@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Event, Registration, Result } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Calendar, MapPin, Users, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -42,8 +41,6 @@ export const EventListRow = ({
     ? 'secondary' 
     : 'outline';
 
-  const disciplineIcon = disciplineIcons[event.discipline];
-
   return (
     <Link 
       to={`/events/${event.slug}`}
@@ -53,8 +50,8 @@ export const EventListRow = ({
     >
       {/* Icon + Main Info */}
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        <div className="p-2 rounded-lg bg-muted shrink-0 text-xl">
-          {disciplineIcon}
+        <div className="p-2 rounded-lg bg-muted shrink-0">
+          <DisciplineIcon discipline={event.discipline} size="md" />
         </div>
         
         <div className="flex-1 min-w-0">

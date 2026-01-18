@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { mockEvents, mockRegistrations, mockResults, disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { mockEvents, mockRegistrations, mockResults, disciplineLabels } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -78,8 +79,9 @@ const EventDetailsPage = () => {
             </Link>
           </Button>
           <div className="flex flex-wrap gap-2 mb-3">
-            <Badge>
-              {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
+            <Badge className="flex items-center gap-1.5">
+              <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
+              {disciplineLabels[event.discipline]}
             </Badge>
             {isPast && <Badge variant="secondary">Zakończone</Badge>}
           </div>

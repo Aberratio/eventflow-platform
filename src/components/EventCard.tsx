@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import { Event, Registration, Result } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -32,7 +32,9 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [] }: E
       <Card className="h-full hover:shadow-md hover:border-primary/30 transition-all">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="text-2xl shrink-0">{disciplineIcons[event.discipline]}</div>
+            <div className="p-1.5 rounded bg-muted shrink-0">
+              <DisciplineIcon discipline={event.discipline} size="md" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <h3 className="font-medium text-sm line-clamp-2 leading-tight">{event.name}</h3>

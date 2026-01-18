@@ -4,7 +4,8 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { mockEvents, disciplineIcons } from '@/data/mockData';
+import { mockEvents } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { ChevronLeft, ChevronRight, Trophy, Calendar } from 'lucide-react';
 import { format, getMonth, getYear } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -137,7 +138,7 @@ const ResultsCalendarPage = () => {
                       <Card key={event.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
-                            <span className="text-2xl">{disciplineIcons[event.discipline]}</span>
+                            <DisciplineIcon discipline={event.discipline} size="lg" />
                             <div className="flex-1 min-w-0">
                               <Link 
                                 to={`/results?eventId=${event.id}`}

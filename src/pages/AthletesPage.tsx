@@ -20,7 +20,8 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Search, Users, X, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
-import { mockResults, mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { mockResults, mockEvents, disciplineLabels } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { SportDiscipline } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ListContainer, ListEmptyState, AthleteListRow } from '@/components/lists';
@@ -187,7 +188,7 @@ const AthletesPage = () => {
                           <SelectItem value="all">Wszystkie</SelectItem>
                           {allDisciplines.map(d => (
                             <SelectItem key={d} value={d}>
-                              {disciplineIcons[d]} {disciplineLabels[d]}
+                              <span className="flex items-center gap-2"><DisciplineIcon discipline={d} size="sm" /> {disciplineLabels[d]}</span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -233,7 +234,7 @@ const AthletesPage = () => {
                   <SelectItem value="all">Wszystkie</SelectItem>
                   {allDisciplines.map(d => (
                     <SelectItem key={d} value={d}>
-                      {disciplineIcons[d]} {disciplineLabels[d]}
+                      <span className="flex items-center gap-2"><DisciplineIcon discipline={d} size="sm" /> {disciplineLabels[d]}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>

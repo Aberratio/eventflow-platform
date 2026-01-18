@@ -4,8 +4,9 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
-import { Search, Filter, MapPin, Calendar as CalendarIcon } from 'lucide-react';
+import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
+import { Search, Filter, MapPin, Calendar as CalendarIcon, PersonStanding, Bike, Waves, Medal } from 'lucide-react';
 import { SportDiscipline } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/components/lists';
 import { format } from 'date-fns';
@@ -114,10 +115,26 @@ const EventsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie</SelectItem>
-                <SelectItem value="running">🏃 Bieganie</SelectItem>
-                <SelectItem value="cycling">🚴 Kolarstwo</SelectItem>
-                <SelectItem value="triathlon">🏊 Triathlon</SelectItem>
-                <SelectItem value="multisport">🎯 Multisport</SelectItem>
+                <SelectItem value="running">
+                  <span className="flex items-center gap-2">
+                    <PersonStanding className="h-4 w-4" /> Bieganie
+                  </span>
+                </SelectItem>
+                <SelectItem value="cycling">
+                  <span className="flex items-center gap-2">
+                    <Bike className="h-4 w-4" /> Kolarstwo
+                  </span>
+                </SelectItem>
+                <SelectItem value="triathlon">
+                  <span className="flex items-center gap-2">
+                    <Waves className="h-4 w-4" /> Triathlon
+                  </span>
+                </SelectItem>
+                <SelectItem value="multisport">
+                  <span className="flex items-center gap-2">
+                    <Medal className="h-4 w-4" /> Multisport
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedCity || 'all'} onValueChange={handleCityChange}>

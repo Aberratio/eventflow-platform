@@ -2,7 +2,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockEvents, disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -87,9 +88,9 @@ const EventRegistrationPage = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex flex-wrap gap-2 mb-2">
-                <Badge>
-                  {disciplineIcons[event.discipline]} {disciplineLabels[event.discipline]}
-                </Badge>
+                <Badge className="flex items-center gap-1.5">
+                  <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
+                  {disciplineLabels[event.discipline]}
               </div>
               <h1 className="text-2xl md:text-3xl font-bold">{event.name}</h1>
               <div className="flex flex-wrap items-center gap-4 mt-2 text-muted-foreground">

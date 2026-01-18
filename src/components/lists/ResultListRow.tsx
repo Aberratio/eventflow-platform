@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Result, Event } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
-import { Clock, Trophy, Medal, Download, ExternalLink } from 'lucide-react';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
+import { Clock, Medal, Download, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
@@ -18,9 +18,9 @@ interface ResultListRowProps {
 }
 
 const getMedalIcon = (position: number) => {
-  if (position === 1) return '🥇';
-  if (position === 2) return '🥈';
-  if (position === 3) return '🥉';
+  if (position <= 3) {
+    return <Medal className={`h-4 w-4 ${position === 1 ? 'text-yellow-500' : position === 2 ? 'text-gray-400' : 'text-amber-600'}`} />;
+  }
   return null;
 };
 
@@ -42,7 +42,10 @@ export const ResultListRow = ({
 
   const badge = result.status === 'finished' ? (
     medal ? (
-      <span className="text-base">{medal}</span>
+      <span className="flex items-center gap-1">
+        {medal}
+        <span className="text-xs font-medium">{result.categoryPosition}.</span>
+      </span>
     ) : null
   ) : (
     <Badge variant="destructive" className="text-xs">
@@ -82,7 +85,7 @@ export const ResultListRow = ({
 
   return (
     <ListRow
-      icon={showEvent && event ? disciplineIcons[event.discipline] : undefined}
+      icon={showEvent && event ? <DisciplineIcon discipline={event.discipline} /> : undefined}
       title={title}
       subtitle={subtitle}
       badge={badge}
