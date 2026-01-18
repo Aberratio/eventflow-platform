@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSafe } from '@/contexts/AuthContext';
 import { Calendar, Trophy, ShoppingBag, Users, ArrowRight, Sparkles } from 'lucide-react';
 
 interface OnboardingStep {
@@ -57,12 +57,13 @@ const organizerSteps: OnboardingStep[] = [
 ];
 
 export const OnboardingDialog = () => {
-  const { user } = useAuth();
+  const authContext = useAuthSafe();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
+  const user = authContext?.user ?? null;
   const steps = user?.role === 'organizer' ? organizerSteps : participantSteps;
 
   useEffect(() => {

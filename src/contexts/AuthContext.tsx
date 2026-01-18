@@ -55,3 +55,8 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Safe version that returns null if not in provider (for components that may render during initialization)
+export const useAuthSafe = () => {
+  return useContext(AuthContext);
+};
