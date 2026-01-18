@@ -39,6 +39,8 @@ export interface User {
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
 
+export type RegistrationStatus = 'open' | 'closed' | 'none';
+
 export interface PriceTier {
   id: string;
   name: string;
@@ -119,6 +121,8 @@ export interface Event {
   registrationDeadline: string;
   featured: boolean;
   liveResultsUrl?: string;
+  isLive?: boolean;
+  registrationStatus?: RegistrationStatus;
   paymentMethods?: PaymentMethod[];
   merchandise?: EventMerchandise[];
   discountCodes?: DiscountCode[];

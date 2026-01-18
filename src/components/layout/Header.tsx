@@ -1,8 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { Timer, Menu, X, User, LogOut, Calendar, Trophy, Settings, LayoutDashboard, ShoppingCart, ShoppingBag } from 'lucide-react';
+import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -11,8 +11,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { cn } from '@/lib/utils';
 
 const roleLabels = {
   participant: 'Uczestnik',
@@ -30,7 +44,10 @@ export const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [resultsOpen, setResultsOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -40,16 +57,15 @@ export const Header = () => {
   const getDashboardLink = () => {
     if (!user) return '/';
     switch (user.role) {
-      case 'participant':
-        return '/participant';
-      case 'organizer':
-        return '/organizer';
-      case 'admin':
-        return '/admin';
-      default:
-        return '/';
+      case 'participant': return '/participant';
+      case 'organizer': return '/organizer';
+      case 'admin': return '/admin';
+      default: return '/';
     }
   };
+
+  const isActive = (path: string) => location.pathname === path;
+  const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
@@ -59,43 +75,133 @@ export const Header = () => {
           <span className="font-bold text-xl">SportTime</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Wydarzenia
-          </Link>
-          <Link to="/series" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Serie
-          </Link>
-          <Link to="/results" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Wyniki
-          </Link>
-          <Link to="/athletes" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Zawodnicy
-          </Link>
-          <Link to="/shop" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Sklep
-          </Link>
-          
-          {/* Cart Icon */}
-          <Link to="/cart" className="relative" aria-label="Koszyk">
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-1">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link 
+                  to="/" 
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+                    isActive('/') && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  Strona Główna
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link 
+                  to="/wydarzenia" 
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+                    (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  Wydarzenia
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className={cn(
+                  isActivePrefix('/wyniki') && "bg-accent text-accent-foreground"
+                )}>
+                  Wyniki
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="w-48 p-2">
+                    <NavigationMenuLink asChild>
+                      <Link to="/wyniki" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        Kalendarz wyników
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link to="/wyniki/live" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        🔴 Na żywo
+                      </Link>
+                    </NavigationMenuLink>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link 
+                  to="/blog" 
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+                    isActive('/blog') && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  Blog
+                </Link>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className={cn(
+                  isActivePrefix('/info') && "bg-accent text-accent-foreground"
+                )}>
+                  Informacje
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="w-48 p-2">
+                    <NavigationMenuLink asChild>
+                      <Link to="/info/kontakt" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        Kontakt
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link to="/info/oferta" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        Oferta
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link to="/info/ubezpieczenia" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        Ubezpieczenia
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link to="/info/o-nas" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
+                        O nas
+                      </Link>
+                    </NavigationMenuLink>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link 
+                  to="/sklep" 
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+                    (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground"
+                  )}
+                >
+                  Sklep
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+
+          {/* Cart */}
+          <Link to="/cart" className="relative p-2" aria-label="Koszyk">
             <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+              <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
                 {totalItems > 9 ? '9+' : totalItems}
               </span>
             )}
           </Link>
-          
-          {/* Notification Center */}
+
           {isAuthenticated && <NotificationCenter />}
-          
+
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="gap-2 ml-2">
                   <User className="h-4 w-4" />
-                  <span>{user?.name}</span>
-                  <Badge variant={roleBadgeVariants[user?.role || 'participant']}>
+                  <span className="max-w-[100px] truncate">{user?.name}</span>
+                  <Badge variant={roleBadgeVariants[user?.role || 'participant']} className="text-xs">
                     {roleLabels[user?.role || 'participant']}
                   </Badge>
                 </Button>
@@ -108,52 +214,20 @@ export const Header = () => {
                   </Link>
                 </DropdownMenuItem>
                 {user?.role === 'participant' && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/participant/events" className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Moje zawody
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/participant/profile" className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Profil
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem asChild>
+                    <Link to="/participant/events" className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Moje zawody
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 {user?.role === 'organizer' && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/organizer/events" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Zarządzaj wydarzeniami
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/organizer/profile" className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Profil
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {user?.role === 'admin' && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/events" className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Zarządzaj platformą
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/profile" className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Profil
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem asChild>
+                    <Link to="/organizer/events" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Zarządzaj wydarzeniami
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
@@ -163,9 +237,14 @@ export const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild>
-              <Link to="/login">Zaloguj się</Link>
-            </Button>
+            <div className="flex items-center gap-2 ml-2">
+              <Button variant="ghost" asChild>
+                <Link to="/logowanie">Zaloguj</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/rejestracja">Zarejestruj</Link>
+              </Button>
+            </div>
           )}
         </nav>
 
@@ -173,7 +252,7 @@ export const Header = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -182,75 +261,85 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-card">
-          <nav className="container py-4 flex flex-col gap-4">
-            <Link
-              to="/events"
-              className="text-sm font-medium py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
+        <div className="lg:hidden border-t bg-card max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <nav className="container py-4 flex flex-col gap-1">
+            <Link to="/" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+              Strona Główna
+            </Link>
+            <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Wydarzenia
             </Link>
-            <Link
-              to="/series"
-              className="text-sm font-medium py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Serie
+
+            <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent">
+                Wyniki
+                <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pl-4">
+                <Link to="/wyniki" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Kalendarz wyników
+                </Link>
+                <Link to="/wyniki/live" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  🔴 Na żywo
+                </Link>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Link to="/blog" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+              Blog
             </Link>
-            <Link
-              to="/results"
-              className="text-sm font-medium py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Wyniki
-            </Link>
-            <Link
-              to="/athletes"
-              className="text-sm font-medium py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Zawodnicy
-            </Link>
-            <Link
-              to="/shop"
-              className="text-sm font-medium py-2 flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <ShoppingBag className="h-4 w-4" />
+
+            <Collapsible open={infoOpen} onOpenChange={setInfoOpen}>
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent">
+                Informacje
+                <ChevronDown className={cn("h-4 w-4 transition-transform", infoOpen && "rotate-180")} />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pl-4">
+                <Link to="/info/kontakt" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Kontakt
+                </Link>
+                <Link to="/info/oferta" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Oferta
+                </Link>
+                <Link to="/info/ubezpieczenia" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Ubezpieczenia
+                </Link>
+                <Link to="/info/o-nas" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  O nas
+                </Link>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
             </Link>
-            <Link
-              to="/cart"
-              className="text-sm font-medium py-2 flex items-center gap-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
+            <Link to="/cart" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
               <ShoppingCart className="h-4 w-4" />
               Koszyk
-              {totalItems > 0 && (
-                <Badge variant="secondary" className="ml-1">{totalItems}</Badge>
-              )}
+              {totalItems > 0 && <Badge variant="secondary">{totalItems}</Badge>}
             </Link>
+
+            <div className="border-t my-2" />
+
             {isAuthenticated ? (
               <>
-                <Link
-                  to={getDashboardLink()}
-                  className="text-sm font-medium py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
+                <Link to={getDashboardLink()} className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Panel {roleLabels[user?.role || 'participant']}
                 </Link>
-                <Button variant="outline" onClick={handleLogout} className="justify-start">
+                <Button variant="outline" onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="justify-start mx-3">
                   <LogOut className="h-4 w-4 mr-2" />
                   Wyloguj
                 </Button>
               </>
             ) : (
-              <Button asChild>
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  Zaloguj się
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-2 px-3">
+                <Button variant="outline" asChild>
+                  <Link to="/logowanie" onClick={() => setMobileMenuOpen(false)}>Zaloguj</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/rejestracja" onClick={() => setMobileMenuOpen(false)}>Zarejestruj</Link>
+                </Button>
+              </div>
             )}
           </nav>
         </div>

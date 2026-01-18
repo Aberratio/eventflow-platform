@@ -1,9 +1,9 @@
 import { Layout } from '@/components/layout/Layout';
-import { OpenRegistrations } from '@/components/home/OpenRegistrations';
 import { UpcomingEvents } from '@/components/home/UpcomingEvents';
-import { RecentResults } from '@/components/home/RecentResults';
+import { LiveResultsSection } from '@/components/home/LiveResultsSection';
+import { RecentResultsSection } from '@/components/home/RecentResultsSection';
 import { PartnersSection } from '@/components/home/PartnersSection';
-import { mockEvents, mockRegistrations, mockResults, mockPartners } from '@/data/mockData';
+import { mockEvents, mockRegistrations, mockPartners } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
@@ -12,10 +12,6 @@ const Index = () => {
   const userRegistrations = user 
     ? mockRegistrations.filter(r => r.userId === user.id)
     : [];
-  
-  const userResults = user
-    ? mockResults.filter(r => r.userId === user.id)
-    : [];
 
   return (
     <Layout>
@@ -23,14 +19,8 @@ const Index = () => {
         events={mockEvents}
         userRegistrations={userRegistrations}
       />
-      <OpenRegistrations 
-        events={mockEvents}
-      />
-      <RecentResults 
-        events={mockEvents}
-        results={mockResults}
-        userId={user?.id}
-      />
+      <LiveResultsSection events={mockEvents} />
+      <RecentResultsSection events={mockEvents} />
       <PartnersSection partners={mockPartners} />
     </Layout>
   );
