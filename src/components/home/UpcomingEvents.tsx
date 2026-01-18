@@ -40,6 +40,7 @@ export const UpcomingEvents = ({ events, userRegistrations }: UpcomingEventsProp
               key={event.id}
               event={event}
               userRegistrations={userRegistrations}
+              showDetails={true}
             />
           ))}
         </ListContainer>
