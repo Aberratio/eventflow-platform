@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Event } from '@/types';
-import { disciplineLabels, disciplineIcons } from '@/data/mockData';
+import { disciplineLabels } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 
 interface DisciplinesSectionProps {
   events: Event[];
@@ -30,10 +31,12 @@ export const DisciplinesSection = ({ events }: DisciplinesSectionProps) => {
           {disciplines.map(discipline => {
             const count = getDisciplineStats(discipline);
             return (
-              <Link key={discipline} to={`/events?discipline=${discipline}`}>
+              <Link key={discipline} to={`/wydarzenia?discipline=${discipline}`}>
                 <Card className="hover:shadow-lg hover:border-primary/50 transition-all h-full">
                   <CardContent className="p-6 text-center">
-                    <div className="text-5xl mb-3">{disciplineIcons[discipline]}</div>
+                    <div className="flex justify-center mb-3">
+                      <DisciplineIcon discipline={discipline} size="lg" className="h-12 w-12" />
+                    </div>
                     <h3 className="font-semibold text-lg mb-1">{disciplineLabels[discipline]}</h3>
                     <p className="text-sm text-muted-foreground">
                       {count} {count === 1 ? 'wydarzenie' : count < 5 ? 'wydarzenia' : 'wydarzeń'}

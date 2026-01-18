@@ -2,8 +2,8 @@ import { useState, useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockSeries, mockEvents, seriesTypeLabels, seriesTypeIcons } from '@/data/mockData';
-import { Filter, Calendar } from 'lucide-react';
+import { mockSeries, mockEvents, seriesTypeLabels } from '@/data/mockData';
+import { Filter, Calendar, Globe, MapPin, Trophy, Target } from 'lucide-react';
 import { SeriesType } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, SeriesListRow } from '@/components/lists';
 
@@ -66,10 +66,26 @@ const SeriesListPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie typy</SelectItem>
-                <SelectItem value="virtual">🌐 Wirtualne</SelectItem>
-                <SelectItem value="local">📍 Ustawki lokalne</SelectItem>
-                <SelectItem value="cup">🎯 Cykle / Grand Prix</SelectItem>
-                <SelectItem value="championship">🏆 Mistrzostwa</SelectItem>
+                <SelectItem value="virtual">
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" /> Wirtualne
+                  </span>
+                </SelectItem>
+                <SelectItem value="local">
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" /> Ustawki lokalne
+                  </span>
+                </SelectItem>
+                <SelectItem value="cup">
+                  <span className="flex items-center gap-2">
+                    <Target className="h-4 w-4" /> Cykle / Grand Prix
+                  </span>
+                </SelectItem>
+                <SelectItem value="championship">
+                  <span className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" /> Mistrzostwa
+                  </span>
+                </SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>

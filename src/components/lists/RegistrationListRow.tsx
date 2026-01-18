@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Registration, Event } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Ticket } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -37,7 +37,7 @@ export const RegistrationListRow = ({ registration, event }: RegistrationListRow
 
   return (
     <ListRow
-      icon={disciplineIcons[event.discipline]}
+      icon={<DisciplineIcon discipline={event.discipline} />}
       title={event.name}
       subtitle={subtitle}
       badge={badge}

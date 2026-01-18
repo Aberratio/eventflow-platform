@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Radio, Calendar, MapPin, ArrowRight, ExternalLink } from 'lucide-react';
 import { Event } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -22,7 +21,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
   if (liveEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-destructive/5">
+    <section className="py-8 md:py-12 bg-destructive/5 border-y border-destructive/10">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -61,7 +60,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span>{disciplineIcons[event.discipline]}</span>
+                          <DisciplineIcon discipline={event.discipline} size="sm" />
                           <span className="font-medium truncate">{event.name}</span>
                         </div>
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">

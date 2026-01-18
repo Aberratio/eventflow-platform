@@ -7,11 +7,11 @@ export const seriesTypeLabels: Record<SeriesType, string> = {
   cup: 'Cykl / Grand Prix',
 };
 
-export const seriesTypeIcons: Record<SeriesType, string> = {
-  virtual: '🌐',
-  local: '📍',
-  championship: '🏆',
-  cup: '🎯',
+export const disciplineLabels: Record<string, string> = {
+  running: 'Bieganie',
+  cycling: 'Kolarstwo',
+  triathlon: 'Triathlon',
+  multisport: 'Multisport',
 };
 
 export const mockSeries: EventSeries[] = [
@@ -151,7 +151,7 @@ const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => 
   return [
     {
       id: 'pt1',
-      name: 'Early Bird',
+      name: 'Wczesna rezerwacja',
       price: Math.round(basePrice * 0.7),
       endDate: earlyBirdEnd.toISOString().split('T')[0],
       description: 'Zapisz się wcześniej i zaoszczędź 30%!'
@@ -165,7 +165,7 @@ const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => 
     },
     {
       id: 'pt3',
-      name: 'Last Minute',
+      name: 'Ostatnia chwila',
       price: Math.round(basePrice * 1.2),
       endDate: eventDate,
       description: 'Ostatnia szansa na zapis!'
@@ -196,9 +196,9 @@ export const mockEvents: Event[] = [
         registeredCount: 187, 
         price: 450,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 315, endDate: '2026-02-28', description: 'Zaoszczędź 135 zł!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 315, endDate: '2026-02-28', description: 'Zaoszczędź 135 zł!' },
           { id: 'pt2', name: 'Cena regularna', price: 450, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Last Minute', price: 540, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt3', name: 'Ostatnia chwila', price: 540, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
       { 
@@ -211,9 +211,9 @@ export const mockEvents: Event[] = [
         registeredCount: 312, 
         price: 300,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 210, endDate: '2026-02-28', description: 'Zaoszczędź 90 zł!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 210, endDate: '2026-02-28', description: 'Zaoszczędź 90 zł!' },
           { id: 'pt2', name: 'Cena regularna', price: 300, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Last Minute', price: 360, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt3', name: 'Ostatnia chwila', price: 360, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
       { 
@@ -226,9 +226,9 @@ export const mockEvents: Event[] = [
         registeredCount: 543, 
         price: 180,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 126, endDate: '2026-02-28', description: 'Zaoszczędź 54 zł!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 126, endDate: '2026-02-28', description: 'Zaoszczędź 54 zł!' },
           { id: 'pt2', name: 'Cena regularna', price: 180, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Last Minute', price: 216, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt3', name: 'Ostatnia chwila', price: 216, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
     ],
@@ -323,7 +323,7 @@ export const mockEvents: Event[] = [
     distances: [
       { 
         id: 'd23', 
-        name: 'Trail 15K', 
+        name: 'Trasa 15 km', 
         length: 15, 
         unit: 'km', 
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50-59', 'M60+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], 
@@ -331,13 +331,13 @@ export const mockEvents: Event[] = [
         registeredCount: 234, 
         price: 90,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 65, endDate: '2026-02-15', description: 'Najlepsza cena!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 65, endDate: '2026-02-15', description: 'Najlepsza cena!' },
           { id: 'pt2', name: 'Cena regularna', price: 90, endDate: '2026-04-05', description: 'Standardowa cena' }
         ]
       },
       { 
         id: 'd24', 
-        name: 'Trail 7K', 
+        name: 'Trasa 7 km', 
         length: 7, 
         unit: 'km', 
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50-59', 'M60+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], 
@@ -345,7 +345,7 @@ export const mockEvents: Event[] = [
         registeredCount: 456, 
         price: 60,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 45, endDate: '2026-02-15', description: 'Najlepsza cena!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 45, endDate: '2026-02-15', description: 'Najlepsza cena!' },
           { id: 'pt2', name: 'Cena regularna', price: 60, endDate: '2026-04-05', description: 'Standardowa cena' }
         ]
       },
@@ -393,7 +393,7 @@ export const mockEvents: Event[] = [
     distances: [
       { 
         id: 'd25', 
-        name: 'Gran Fondo 150K', 
+        name: 'Trasa długa 150 km', 
         length: 150, 
         unit: 'km', 
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50-59', 'M60+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], 
@@ -401,14 +401,14 @@ export const mockEvents: Event[] = [
         registeredCount: 156, 
         price: 220,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 160, endDate: '2026-04-30', description: 'Zaoszczędź 60 zł!' },
+          { id: 'pt1', name: 'Wczesna rezerwacja', price: 160, endDate: '2026-04-30', description: 'Zaoszczędź 60 zł!' },
           { id: 'pt2', name: 'Cena regularna', price: 220, endDate: '2026-06-30', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Last Minute', price: 270, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
+          { id: 'pt3', name: 'Ostatnia chwila', price: 270, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
         ]
       },
       { 
         id: 'd26', 
-        name: 'Medio 80K', 
+        name: 'Trasa średnia 80 km', 
         length: 80, 
         unit: 'km', 
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50-59', 'M60+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], 
@@ -1500,19 +1500,6 @@ export const mockCertificates: Certificate[] = [
   },
 ];
 
-export const disciplineLabels: Record<string, string> = {
-  running: 'Bieganie',
-  cycling: 'Kolarstwo',
-  triathlon: 'Triathlon',
-  multisport: 'Multisport'
-};
-
-export const disciplineIcons: Record<string, string> = {
-  running: '🏃',
-  cycling: '🚴',
-  triathlon: '🏊',
-  multisport: '🏅'
-};
 
 // Helper function to get current price for a distance
 export const getCurrentPrice = (distance: { price: number; priceTiers?: PriceTier[] }): { price: number; tierName: string; nextTier?: PriceTier } => {

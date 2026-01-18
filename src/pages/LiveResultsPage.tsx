@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Radio, Calendar, MapPin, ExternalLink, Trophy } from 'lucide-react';
-import { mockEvents, disciplineIcons } from '@/data/mockData';
+import { mockEvents } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -52,7 +53,7 @@ const LiveResultsPage = () => {
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-2xl">{disciplineIcons[event.discipline]}</span>
+                            <DisciplineIcon discipline={event.discipline} size="lg" />
                             <h2 className="text-xl font-semibold">{event.name}</h2>
                           </div>
                           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

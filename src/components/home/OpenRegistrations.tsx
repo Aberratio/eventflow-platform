@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { Event } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -47,7 +47,7 @@ export const OpenRegistrations = ({ events }: OpenRegistrationsProps) => {
               <Card className="h-full transition-all hover:shadow-md hover:border-primary/30">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl shrink-0">{disciplineIcons[event.discipline]}</div>
+                    <div className="p-1.5 rounded bg-muted shrink-0"><DisciplineIcon discipline={event.discipline} size="md" /></div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                         {event.name}

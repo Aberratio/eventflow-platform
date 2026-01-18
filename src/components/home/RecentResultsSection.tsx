@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Event } from '@/types';
-import { disciplineIcons } from '@/data/mockData';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -44,7 +44,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
             <Card key={event.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-center gap-3 md:gap-4">
-                  <span className="text-xl md:text-2xl">{disciplineIcons[event.discipline]}</span>
+                  <DisciplineIcon discipline={event.discipline} size="md" />
                   <div className="flex-1 min-w-0">
                     <Link 
                       to={`/results?eventId=${event.id}`}
