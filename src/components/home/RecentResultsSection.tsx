@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Trophy, ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Event } from '@/types';
-import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -43,8 +41,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
           {completedEvents.map(event => (
             <Card key={event.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-3 md:p-4">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <DisciplineIcon discipline={event.discipline} size="md" />
+                <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <Link 
                       to={`/results?eventId=${event.id}`}
@@ -63,10 +60,9 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
                       </span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="shrink-0" asChild>
+                  <Button variant="outline" size="sm" className="shrink-0" asChild>
                     <Link to={`/results?eventId=${event.id}`}>
-                      <span className="hidden sm:inline mr-1">Zobacz</span>
-                      wyniki
+                      Zobacz wyniki
                     </Link>
                   </Button>
                 </div>

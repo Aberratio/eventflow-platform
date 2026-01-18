@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { Event, Registration, Result } from '@/types';
-import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Calendar, MapPin, Users, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -48,13 +47,8 @@ export const EventListRow = ({
         isRegistered || hasCompleted ? 'ring-1 ring-primary/20 bg-primary/5' : ''
       }`}
     >
-      {/* Icon + Main Info */}
-      <div className="flex items-start gap-3 flex-1 min-w-0">
-        <div className="p-2 rounded-lg bg-muted shrink-0">
-          <DisciplineIcon discipline={event.discipline} size="md" />
-        </div>
-        
-        <div className="flex-1 min-w-0">
+      {/* Main Info */}
+      <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-foreground truncate">{event.name}</h3>
             {hasCompleted ? (
@@ -75,21 +69,20 @@ export const EventListRow = ({
             </span>
           </div>
 
-          {/* Distances - always show on details mode, hide on compact */}
-          {showDetails && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {event.distances.map(d => (
-                <Badge key={d.id} variant="outline" className="text-xs font-normal">
-                  {d.name}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Distances - always show on details mode, hide on compact */}
+        {showDetails && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {event.distances.map(d => (
+              <Badge key={d.id} variant="outline" className="text-xs font-normal">
+                {d.name}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Status + Counter + CTA */}
-      <div className="flex items-center gap-3 sm:gap-4 ml-10 sm:ml-0">
+      <div className="flex items-center gap-3 sm:gap-4">
         {showDetails && (
           <>
             <Badge variant={statusVariant} className="text-xs whitespace-nowrap shrink-0">

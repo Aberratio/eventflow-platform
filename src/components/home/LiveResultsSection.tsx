@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Radio, Calendar, MapPin, ArrowRight, ExternalLink } from 'lucide-react';
 import { Event } from '@/types';
-import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -59,10 +58,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
                   <div className="flex-1 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <DisciplineIcon discipline={event.discipline} size="sm" />
-                          <span className="font-medium truncate">{event.name}</span>
-                        </div>
+                        <span className="font-medium truncate block mb-1">{event.name}</span>
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />

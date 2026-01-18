@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown } from 'lucide-react';
+import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -11,14 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
 import {
   Collapsible,
   CollapsibleContent,
@@ -77,111 +69,94 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-1">
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <Link 
-                  to="/" 
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-                    isActive('/') && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  Strona Główna
+          <Link 
+            to="/" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActive('/') && "bg-accent text-accent-foreground"
+            )}
+          >
+            Strona Główna
+          </Link>
+
+          <Link 
+            to="/wydarzenia" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground"
+            )}
+          >
+            Wydarzenia
+          </Link>
+
+          {/* Wyniki dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(
+              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActivePrefix('/wyniki') && "bg-accent text-accent-foreground"
+            )}>
+              Wyniki
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to="/wyniki" className="w-full">
+                  Kalendarz wyników
                 </Link>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link 
-                  to="/wydarzenia" 
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-                    (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  Wydarzenia
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/wyniki/live" className="w-full flex items-center gap-2">
+                  <Radio className="h-3 w-3 text-destructive" />
+                  Na żywo
                 </Link>
-              </NavigationMenuItem>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn(
-                  isActivePrefix('/wyniki') && "bg-accent text-accent-foreground"
-                )}>
-                  Wyniki
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="w-48 p-2">
-                    <NavigationMenuLink asChild>
-                      <Link to="/wyniki" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        Kalendarz wyników
-                      </Link>
-                    </NavigationMenuLink>
-                    <NavigationMenuLink asChild>
-                      <Link to="/wyniki/live" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        🔴 Na żywo
-                      </Link>
-                    </NavigationMenuLink>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
+          <Link 
+            to="/blog" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActive('/blog') && "bg-accent text-accent-foreground"
+            )}
+          >
+            Blog
+          </Link>
 
-              <NavigationMenuItem>
-                <Link 
-                  to="/blog" 
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-                    isActive('/blog') && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  Blog
-                </Link>
-              </NavigationMenuItem>
+          {/* Informacje dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(
+              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActivePrefix('/info') && "bg-accent text-accent-foreground"
+            )}>
+              Informacje
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to="/info/kontakt" className="w-full">Kontakt</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/info/oferta" className="w-full">Oferta</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/info/ubezpieczenia" className="w-full">Ubezpieczenia</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/info/o-nas" className="w-full">O nas</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className={cn(
-                  isActivePrefix('/info') && "bg-accent text-accent-foreground"
-                )}>
-                  Informacje
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="w-48 p-2">
-                    <NavigationMenuLink asChild>
-                      <Link to="/info/kontakt" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        Kontakt
-                      </Link>
-                    </NavigationMenuLink>
-                    <NavigationMenuLink asChild>
-                      <Link to="/info/oferta" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        Oferta
-                      </Link>
-                    </NavigationMenuLink>
-                    <NavigationMenuLink asChild>
-                      <Link to="/info/ubezpieczenia" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        Ubezpieczenia
-                      </Link>
-                    </NavigationMenuLink>
-                    <NavigationMenuLink asChild>
-                      <Link to="/info/o-nas" className="block px-3 py-2 text-sm rounded-md hover:bg-accent">
-                        O nas
-                      </Link>
-                    </NavigationMenuLink>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link 
-                  to="/sklep" 
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-                    (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground"
-                  )}
-                >
-                  Sklep
-                </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+          <Link 
+            to="/sklep" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground"
+            )}
+          >
+            Sklep
+          </Link>
 
           {/* Cart */}
           <Link to="/cart" className="relative p-2" aria-label="Koszyk">
@@ -279,8 +254,9 @@ export const Header = () => {
                 <Link to="/wyniki" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Kalendarz wyników
                 </Link>
-                <Link to="/wyniki/live" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  🔴 Na żywo
+                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  <Radio className="h-3 w-3 text-destructive" />
+                  Na żywo
                 </Link>
               </CollapsibleContent>
             </Collapsible>
