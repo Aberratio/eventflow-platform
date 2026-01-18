@@ -309,17 +309,19 @@ export const mockEvents: Event[] = [
       enabled: true,
     },
   },
-  // City Trail Łódź - medium options
+  // City Trail Łódź - medium options - LIVE EVENT
   {
     id: 'e12',
     name: 'City Trail Łódź 2026',
     slug: 'city-trail-lodz-2026',
     discipline: 'running',
-    date: '2026-04-12',
+    date: new Date().toISOString().split('T')[0], // Today's date for LIVE
     location: 'Park im. Poniatowskiego',
     city: 'Łódź',
     description: 'Bieg przełajowy w sercu Łodzi. Trasa prowadzi przez najpiękniejsze parki miasta. Idealne wydarzenie na wiosnę!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
+    isLive: true,
+    liveResultsUrl: 'https://wyniki.example.com/city-trail-lodz-live',
     distances: [
       { 
         id: 'd23', 
