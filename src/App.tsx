@@ -18,6 +18,13 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
 import ResultsPage from "./pages/ResultsPage";
+import ResultsCalendarPage from "./pages/ResultsCalendarPage";
+import LiveResultsPage from "./pages/LiveResultsPage";
+import BlogPage from "./pages/BlogPage";
+import ContactPage from "./pages/info/ContactPage";
+import OfferPage from "./pages/info/OfferPage";
+import InsurancePage from "./pages/info/InsurancePage";
+import AboutPage from "./pages/info/AboutPage";
 import SeriesListPage from "./pages/SeriesListPage";
 import SeriesDetailsPage from "./pages/SeriesDetailsPage";
 import ShopPage from "./pages/ShopPage";
@@ -49,6 +56,19 @@ const App = () => (
               <div className="pb-16 md:pb-0">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  {/* Polish routes */}
+                  <Route path="/wydarzenia" element={<EventsPage />} />
+                  <Route path="/wyniki" element={<ResultsCalendarPage />} />
+                  <Route path="/wyniki/live" element={<LiveResultsPage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/info/kontakt" element={<ContactPage />} />
+                  <Route path="/info/oferta" element={<OfferPage />} />
+                  <Route path="/info/ubezpieczenia" element={<InsurancePage />} />
+                  <Route path="/info/o-nas" element={<AboutPage />} />
+                  <Route path="/logowanie" element={<LoginPage />} />
+                  <Route path="/rejestracja" element={<RegisterPage />} />
+                  <Route path="/sklep" element={<ShopPage />} />
+                  {/* English routes (keep for compatibility) */}
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/register" element={<RegisterPage />} />
                   <Route path="/forgot-password" element={<ForgotPasswordPage />} />
