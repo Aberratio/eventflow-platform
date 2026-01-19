@@ -128,6 +128,11 @@ export interface Event {
   discountCodes?: DiscountCode[];
   enableMerchandiseInRegistration?: boolean;
   insuranceOption?: InsuranceOption;
+  // Gallery and route
+  gallery?: string[];
+  routeMapUrl?: string;
+  routeGpxUrl?: string;
+  routeElevationProfile?: string;
 }
 
 export interface PaymentMethod {

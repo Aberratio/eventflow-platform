@@ -7,12 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { mockEvents, mockRegistrations, mockResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
+import { ImageGallery } from '@/components/ImageGallery';
+import { RouteMap } from '@/components/RouteMap';
 
 const EventDetailsPage = () => {
   const { slug } = useParams();
@@ -145,6 +147,18 @@ const EventDetailsPage = () => {
             <Tabs defaultValue="info">
               <TabsList className="w-full justify-start flex-wrap h-auto">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
+                {event.routeMapUrl && (
+                  <TabsTrigger value="route">
+                    <Route className="h-4 w-4 mr-1" />
+                    Trasa
+                  </TabsTrigger>
+                )}
+                {event.gallery && event.gallery.length > 0 && (
+                  <TabsTrigger value="gallery">
+                    <Images className="h-4 w-4 mr-1" />
+                    Galeria
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="distances">Dystanse</TabsTrigger>
                 <TabsTrigger value="startlist">Lista startowa</TabsTrigger>
                 {showLiveResultsTab && (
@@ -208,6 +222,42 @@ const EventDetailsPage = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Route Tab */}
+              {event.routeMapUrl && (
+                <TabsContent value="route" className="mt-6">
+                  <RouteMap 
+                    mapUrl={event.routeMapUrl}
+                    elevationProfileUrl={event.routeElevationProfile}
+                    gpxUrl={event.routeGpxUrl}
+                    distanceInfo={event.distances.length > 0 ? {
+                      length: event.distances[0].length,
+                      unit: event.distances[0].unit,
+                      elevation: '+4500m'
+                    } : undefined}
+                  />
+                </TabsContent>
+              )}
+
+              {/* Gallery Tab */}
+              {event.gallery && event.gallery.length > 0 && (
+                <TabsContent value="gallery" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Images className="h-5 w-5 text-primary" />
+                        Galeria wydarzenia
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Zdjęcia z poprzednich edycji i przygotowań
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <ImageGallery images={event.gallery} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
 
               <TabsContent value="distances" className="mt-6">
                 <div className="space-y-4">
