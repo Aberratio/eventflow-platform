@@ -19,7 +19,7 @@ export const UpcomingEvents = ({ events, userRegistrations }: UpcomingEventsProp
   if (upcomingEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-8 md:py-12 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>

@@ -43,14 +43,14 @@ export const EventListRow = ({
   return (
     <Link 
       to={`/events/${event.slug}`}
-      className={`group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors ${
+      className={`group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border bg-card transition-all duration-300 hover:bg-accent/50 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 ${
         isRegistered || hasCompleted ? 'ring-1 ring-primary/20 bg-primary/5' : ''
       }`}
     >
       {/* Main Info */}
       <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-foreground truncate">{event.name}</h3>
+            <h3 className="font-semibold text-foreground truncate transition-colors group-hover:text-primary">{event.name}</h3>
             {hasCompleted ? (
               <Badge variant="secondary" className="text-xs shrink-0">Ukończony</Badge>
             ) : isRegistered ? (

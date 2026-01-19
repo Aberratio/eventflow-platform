@@ -19,7 +19,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   if (completedEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-8 md:py-12 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -39,7 +39,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
 
         <div className="space-y-2">
           {completedEvents.map(event => (
-            <Card key={event.id} className="hover:shadow-sm transition-shadow">
+            <Card key={event.id} className="transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5">
               <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
