@@ -11,7 +11,7 @@ export const PartnersSection = ({ partners }: PartnersSectionProps) => {
   if (featuredPartners.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-muted/30">
+    <section className="py-12 md:py-16 bg-muted/30 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold">Nasi partnerzy</h2>
@@ -24,14 +24,14 @@ export const PartnersSection = ({ partners }: PartnersSectionProps) => {
               href={partner.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block"
+              className="block group"
             >
-              <Card className="hover:shadow-lg hover:border-primary/30 transition-all h-full">
+              <Card className="transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1 h-full">
                 <CardContent className="p-4 flex items-center justify-center h-24">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
-                    className="max-h-12 max-w-full object-contain opacity-70 hover:opacity-100 transition-opacity"
+                    className="max-h-12 max-w-full object-contain opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:scale-105"
                   />
                 </CardContent>
               </Card>

@@ -28,16 +28,16 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [] }: E
   const userStatus = getUserStatus();
 
   return (
-    <Link to={`/events/${event.slug}`}>
-      <Card className="h-full hover:shadow-md hover:border-primary/30 transition-all">
+    <Link to={`/events/${event.slug}`} className="block group">
+      <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-muted shrink-0">
-              <DisciplineIcon discipline={event.discipline} size="md" />
+            <div className="p-1.5 rounded bg-muted shrink-0 transition-colors group-hover:bg-primary/10">
+              <DisciplineIcon discipline={event.discipline} size="md" className="transition-colors group-hover:text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5">
-                <h3 className="font-medium text-sm line-clamp-2 leading-tight">{event.name}</h3>
+                <h3 className="font-medium text-sm line-clamp-2 leading-tight transition-colors group-hover:text-primary">{event.name}</h3>
                 {userStatus && (
                   <Badge 
                     variant={userStatus === 'registered' ? 'default' : 'secondary'}

@@ -20,7 +20,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
   if (liveEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-destructive/5 border-y border-destructive/10">
+    <section className="py-8 md:py-12 bg-destructive/5 border-y border-destructive/10 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -43,7 +43,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {liveEvents.map(event => (
-            <Card key={event.id} className="border-destructive/20 overflow-hidden">
+            <Card key={event.id} className="border-destructive/20 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-destructive/40 hover:-translate-y-1">
               <CardContent className="p-0">
                 <div className="flex">
                   {/* Live indicator */}
