@@ -185,6 +185,18 @@ export const mockEvents: Event[] = [
     city: 'Zakopane',
     description: 'Najtrudniejszy górski ultramaraton w Polsce! Trasa prowadzi przez najwyższe partie Tatr Zachodnich. Przewyższenie +4500m. Limit czasu 24h.',
     imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    gallery: [
+      'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
+      'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800',
+      'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+      'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800',
+      'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
+    ],
+    routeMapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200',
+    routeElevationProfile: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200',
     distances: [
       { 
         id: 'd20', 
