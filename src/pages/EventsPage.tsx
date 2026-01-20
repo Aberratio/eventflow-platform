@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Search, Filter, MapPin, Calendar as CalendarIcon, PersonStanding, Bike, Waves, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar as CalendarIcon, PersonStanding, Bike, Waves, Medal, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 import { SportDiscipline } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/components/lists';
 import { format, getYear, getMonth, parse } from 'date-fns';
@@ -19,6 +19,7 @@ const EventsPage = () => {
   
   const selectedDiscipline = searchParams.get('discipline') as SportDiscipline | null;
   const selectedCity = searchParams.get('city');
+  const selectedStatus = searchParams.get('status') as 'open' | 'closed' | 'none' | null;
 
   // Get current year (2026)
   const currentYear = 2026;
@@ -55,8 +56,9 @@ const EventsPage = () => {
       })
       .filter(e => !selectedDiscipline || e.discipline === selectedDiscipline)
       .filter(e => !selectedCity || e.city === selectedCity)
+      .filter(e => !selectedStatus || e.registrationStatus === selectedStatus)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [search, selectedDiscipline, selectedCity, selectedYear]);
+  }, [search, selectedDiscipline, selectedCity, selectedYear, selectedStatus]);
 
   // Group events by month
   const groupedEvents = useMemo(() => {
@@ -120,12 +122,22 @@ const EventsPage = () => {
     setSearchParams(params);
   };
 
+  const handleStatusChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value === 'all') {
+      params.delete('status');
+    } else {
+      params.set('status', value);
+    }
+    setSearchParams(params);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setSearchParams({});
   };
 
-  const hasFilters = search || selectedDiscipline || selectedCity;
+  const hasFilters = search || selectedDiscipline || selectedCity || selectedStatus;
 
   return (
     <Layout>
@@ -189,6 +201,18 @@ const EventsPage = () => {
                 {cities.map(city => (
                   <SelectItem key={city} value={city}>{city}</SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedStatus || 'all'} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <ClipboardList className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Status zapisów" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie statusy</SelectItem>
+                <SelectItem value="open">Zapisy otwarte</SelectItem>
+                <SelectItem value="closed">Zapisy zamknięte</SelectItem>
+                <SelectItem value="none">Brak zapisów</SelectItem>
               </SelectContent>
             </Select>
             {hasFilters && (
