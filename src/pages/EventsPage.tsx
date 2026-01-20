@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -6,18 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Search, Filter, MapPin, Calendar as CalendarIcon, PersonStanding, Bike, Waves, Medal } from 'lucide-react';
+import { Search, Filter, MapPin, Calendar as CalendarIcon, PersonStanding, Bike, Waves, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SportDiscipline } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/components/lists';
-import { format } from 'date-fns';
+import { format, getYear, getMonth, parse } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+  const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   const selectedDiscipline = searchParams.get('discipline') as SportDiscipline | null;
   const selectedCity = searchParams.get('city');
+
+  // Get current year (2026)
+  const currentYear = 2026;
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  // Available years from mock data
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    mockEvents
+      .filter(e => e.status === 'published' || e.status === 'completed')
+      .forEach(e => years.add(getYear(new Date(e.date))));
+    return Array.from(years).sort((a, b) => a - b);
+  }, []);
 
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(mockEvents.map(e => e.city))];
@@ -27,6 +41,7 @@ const EventsPage = () => {
   const filteredEvents = useMemo(() => {
     return mockEvents
       .filter(e => e.status === 'published' || e.status === 'completed')
+      .filter(e => getYear(new Date(e.date)) === selectedYear)
       .filter(e => {
         if (search) {
           const searchLower = search.toLowerCase();
@@ -41,7 +56,7 @@ const EventsPage = () => {
       .filter(e => !selectedDiscipline || e.discipline === selectedDiscipline)
       .filter(e => !selectedCity || e.city === selectedCity)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [search, selectedDiscipline, selectedCity]);
+  }, [search, selectedDiscipline, selectedCity, selectedYear]);
 
   // Group events by month
   const groupedEvents = useMemo(() => {
@@ -57,6 +72,33 @@ const EventsPage = () => {
     
     return groups;
   }, [filteredEvents]);
+
+  // Auto-scroll to current month on load (only for current year)
+  useEffect(() => {
+    if (selectedYear !== currentYear) return;
+    
+    const currentMonth = new Date().getMonth();
+    const monthKeys = Object.keys(groupedEvents);
+    
+    // Find first month >= current month
+    const targetMonth = monthKeys.find(key => {
+      try {
+        const parsed = parse(key, 'LLLL yyyy', new Date(), { locale: pl });
+        return getMonth(parsed) >= currentMonth;
+      } catch {
+        return false;
+      }
+    }) || monthKeys[0];
+    
+    if (targetMonth && monthRefs.current[targetMonth]) {
+      setTimeout(() => {
+        monthRefs.current[targetMonth]?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
+    }
+  }, [selectedYear, groupedEvents, currentYear]);
 
   const handleDisciplineChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -157,6 +199,27 @@ const EventsPage = () => {
           </div>
         </div>
 
+        {/* Year Navigation */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSelectedYear(y => y - 1)}
+            disabled={!availableYears.includes(selectedYear - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-xl font-bold min-w-[80px] text-center">{selectedYear}</span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSelectedYear(y => y + 1)}
+            disabled={!availableYears.includes(selectedYear + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
         {/* Results count */}
         <p className="text-sm text-muted-foreground mb-4">
           Znaleziono {filteredEvents.length} wydarzeń
@@ -179,11 +242,13 @@ const EventsPage = () => {
           }
         >
           {Object.entries(groupedEvents).map(([monthKey, events]) => (
-            <ListGroup key={monthKey} title={monthKey}>
-              {events.map(event => (
-                <EventListRow key={event.id} event={event} />
-              ))}
-            </ListGroup>
+            <div key={monthKey} ref={el => monthRefs.current[monthKey] = el}>
+              <ListGroup title={monthKey}>
+                {events.map(event => (
+                  <EventListRow key={event.id} event={event} showDetails={true} />
+                ))}
+              </ListGroup>
+            </div>
           ))}
         </ListContainer>
       </div>
