@@ -1,13 +1,16 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, ShoppingCart, User, LogIn } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 
 export const BottomNav = () => {
   const location = useLocation();
-  const { isAuthenticated, user } = useAuth();
+  const auth = useAuthSafe();
   const { totalItems } = useCart();
+  
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const user = auth?.user ?? null;
 
   const getDashboardLink = () => {
     if (!user) return '/login';
