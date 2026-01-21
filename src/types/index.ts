@@ -100,6 +100,13 @@ export interface InsuranceOption {
   enabled: boolean;
 }
 
+export interface BannerCropArea {
+  x: number;      // % od lewej
+  y: number;      // % od góry
+  width: number;  // % szerokości
+  height: number; // % wysokości
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -133,6 +140,10 @@ export interface Event {
   routeMapUrl?: string;
   routeGpxUrl?: string;
   routeElevationProfile?: string;
+  // Banner and organizer logo
+  bannerUrl?: string;
+  bannerCropArea?: BannerCropArea;
+  organizerLogoUrl?: string;
 }
 
 export interface PaymentMethod {

@@ -113,15 +113,6 @@ export const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link 
-            to="/blog" 
-            className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActive('/blog') && "bg-accent text-accent-foreground"
-            )}
-          >
-            Blog
-          </Link>
 
           {/* Informacje dropdown */}
           <DropdownMenu>
@@ -261,9 +252,6 @@ export const Header = () => {
               </CollapsibleContent>
             </Collapsible>
 
-            <Link to="/blog" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Blog
-            </Link>
 
             <Collapsible open={infoOpen} onOpenChange={setInfoOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent">
