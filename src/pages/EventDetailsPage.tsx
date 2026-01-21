@@ -69,27 +69,80 @@ const EventDetailsPage = () => {
     });
   };
 
+  // Calculate banner position based on crop area
+  const getBannerStyle = () => {
+    if (!event.bannerCropArea) return {};
+    const { y, height } = event.bannerCropArea;
+    return {
+      objectPosition: `center ${y + height / 2}%`,
+    };
+  };
+
   return (
     <Layout>
-      {/* Clean Header (no hero image) */}
-      <div className="bg-muted/30 border-b">
-        <div className="container py-6">
-          <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link to="/events">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Wszystkie wydarzenia
-            </Link>
-          </Button>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <Badge className="flex items-center gap-1.5">
-              <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
-              {disciplineLabels[event.discipline]}
-            </Badge>
-            {isPast && <Badge variant="secondary">Zakończone</Badge>}
+      {/* Header with optional banner */}
+      {event.bannerUrl ? (
+        <div className="relative h-64 md:h-80 overflow-hidden bg-muted">
+          <img
+            src={event.bannerUrl}
+            alt={event.name}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={getBannerStyle()}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          
+          {/* Organizer logo */}
+          {event.organizerLogoUrl && (
+            <div className="absolute top-4 right-4 md:top-6 md:right-6">
+              <img
+                src={event.organizerLogoUrl}
+                alt={event.organizerName}
+                className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover border-2 border-background shadow-lg"
+              />
+            </div>
+          )}
+          
+          <div className="absolute bottom-0 left-0 right-0">
+            <div className="container pb-6">
+              <Button variant="ghost" size="sm" asChild className="mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40">
+                <Link to="/events">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Wszystkie wydarzenia
+                </Link>
+              </Button>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm">
+                  <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
+                  {disciplineLabels[event.discipline]}
+                </Badge>
+                {isPast && <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">Zakończone</Badge>}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground drop-shadow-md">{event.name}</h1>
+              <p className="text-muted-foreground mt-1">Organizator: {event.organizerName}</p>
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
         </div>
-      </div>
+      ) : (
+        /* Clean Header (no banner) */
+        <div className="bg-muted/30 border-b">
+          <div className="container py-6">
+            <Button variant="ghost" size="sm" asChild className="mb-4">
+              <Link to="/events">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Wszystkie wydarzenia
+              </Link>
+            </Button>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Badge className="flex items-center gap-1.5">
+                <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
+                {disciplineLabels[event.discipline]}
+              </Badge>
+              {isPast && <Badge variant="secondary">Zakończone</Badge>}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
+          </div>
+        </div>
+      )}
 
       <div className="container py-8">
         <div className="grid lg:grid-cols-3 gap-8">

@@ -11,8 +11,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { SportDiscipline, Distance } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye } from 'lucide-react';
+import { SportDiscipline, BannerCropArea } from '@/types';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X } from 'lucide-react';
+import { ImageCropper, CropArea } from '@/components/ImageCropper';
 
 interface DistanceForm {
   id: string;
@@ -45,6 +46,12 @@ const EventForm = () => {
   const [description, setDescription] = useState(existingEvent?.description || '');
   const [imageUrl, setImageUrl] = useState(existingEvent?.imageUrl || '');
   const [featured, setFeatured] = useState(existingEvent?.featured || false);
+  
+  // Media - Banner and Logo
+  const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
+  const [bannerCropArea, setBannerCropArea] = useState<BannerCropArea | undefined>(existingEvent?.bannerCropArea);
+  const [organizerLogoUrl, setOrganizerLogoUrl] = useState(existingEvent?.organizerLogoUrl || '');
+  const [showBannerCropper, setShowBannerCropper] = useState(false);
 
   // Step 2 - Distances
   const [distances, setDistances] = useState<DistanceForm[]>(
@@ -184,111 +191,113 @@ const EventForm = () => {
 
         {/* Step 1: Basic Info */}
         {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Podstawowe informacje</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nazwa wydarzenia *</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="np. Warsaw Marathon 2025"
-                  />
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Podstawowe informacje</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nazwa wydarzenia *</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="np. Warsaw Marathon 2025"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="discipline">Dyscyplina *</Label>
+                    <Select value={discipline} onValueChange={(v: SportDiscipline) => setDiscipline(v)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(disciplineLabels).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="discipline">Dyscyplina *</Label>
-                  <Select value={discipline} onValueChange={(v: SportDiscipline) => setDiscipline(v)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(disciplineLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date">Data wydarzenia *</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={date}
-                    onChange={e => setDate(e.target.value)}
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Data wydarzenia *</Label>
+                    <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="deadline">Termin rejestracji *</Label>
+                    <Input id="deadline" type="date" value={registrationDeadline} onChange={e => setRegistrationDeadline(e.target.value)} />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="deadline">Termin rejestracji *</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={registrationDeadline}
-                    onChange={e => setRegistrationDeadline(e.target.value)}
-                  />
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Lokalizacja (miejsce startu) *</Label>
+                    <Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="np. Stadion Narodowy" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Miasto *</Label>
+                    <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="np. Warszawa" />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="location">Lokalizacja (miejsce startu) *</Label>
-                  <Input
-                    id="location"
-                    value={location}
-                    onChange={e => setLocation(e.target.value)}
-                    placeholder="np. Stadion Narodowy"
-                  />
+                  <Label htmlFor="description">Opis wydarzenia</Label>
+                  <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..." rows={4} />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="city">Miasto *</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    placeholder="np. Warszawa"
-                  />
+                  <Label htmlFor="imageUrl">URL obrazka</Label>
+                  <Input id="imageUrl" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Opis wydarzenia</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
-                  rows={4}
-                />
-              </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="featured" checked={featured} onCheckedChange={(checked) => setFeatured(checked === true)} />
+                  <Label htmlFor="featured" className="cursor-pointer">Wyróżnij wydarzenie na stronie głównej</Label>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="imageUrl">URL obrazka</Label>
-                <Input
-                  id="imageUrl"
-                  value={imageUrl}
-                  onChange={e => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+                {/* Media Section */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Image className="h-5 w-5 text-primary" />
+                    Media wydarzenia (opcjonalne)
+                  </h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <Label>Baner wydarzenia</Label>
+                      <p className="text-sm text-muted-foreground">Pionowy obrazek w tle (zalecane 800x1200px)</p>
+                      <Input placeholder="URL banera" value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} />
+                      {bannerUrl && (
+                        <Button type="button" variant="outline" size="sm" onClick={() => setShowBannerCropper(true)}>
+                          <Crop className="h-4 w-4 mr-2" /> Przytnij baner
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      <Label>Logo organizatora</Label>
+                      <p className="text-sm text-muted-foreground">Kwadratowe logo (zalecane 200x200px)</p>
+                      <Input placeholder="URL logo" value={organizerLogoUrl} onChange={(e) => setOrganizerLogoUrl(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="featured"
-                  checked={featured}
-                  onCheckedChange={(checked) => setFeatured(checked === true)}
-                />
-                <Label htmlFor="featured" className="cursor-pointer">
-                  Wyróżnij wydarzenie na stronie głównej
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
+            {bannerUrl && (
+              <ImageCropper
+                imageUrl={bannerUrl}
+                open={showBannerCropper}
+                onOpenChange={setShowBannerCropper}
+                aspectRatio={16 / 9}
+                title="Przytnij baner wydarzenia"
+                onCrop={(crop) => setBannerCropArea(crop)}
+              />
+            )}
+          </>
         )}
 
         {/* Step 2: Distances */}

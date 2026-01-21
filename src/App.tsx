@@ -20,7 +20,7 @@ import EventRegistrationPage from "./pages/EventRegistrationPage";
 import ResultsPage from "./pages/ResultsPage";
 import ResultsCalendarPage from "./pages/ResultsCalendarPage";
 import LiveResultsPage from "./pages/LiveResultsPage";
-import BlogPage from "./pages/BlogPage";
+
 import ContactPage from "./pages/info/ContactPage";
 import OfferPage from "./pages/info/OfferPage";
 import InsurancePage from "./pages/info/InsurancePage";
@@ -60,7 +60,7 @@ const App = () => (
                   <Route path="/wydarzenia" element={<EventsPage />} />
                   <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
-                  <Route path="/blog" element={<BlogPage />} />
+                  
                   <Route path="/info/kontakt" element={<ContactPage />} />
                   <Route path="/info/oferta" element={<OfferPage />} />
                   <Route path="/info/ubezpieczenia" element={<InsurancePage />} />

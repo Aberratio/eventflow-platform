@@ -185,6 +185,9 @@ export const mockEvents: Event[] = [
     city: 'Zakopane',
     description: 'Najtrudniejszy górski ultramaraton w Polsce! Trasa prowadzi przez najwyższe partie Tatr Zachodnich. Przewyższenie +4500m. Limit czasu 24h.',
     imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    bannerUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=1600&fit=crop',
+    bannerCropArea: { x: 0, y: 15, width: 100, height: 50 },
+    organizerLogoUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop',
     gallery: [
       'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
       'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800',
@@ -332,6 +335,9 @@ export const mockEvents: Event[] = [
     city: 'Łódź',
     description: 'Bieg przełajowy w sercu Łodzi. Trasa prowadzi przez najpiękniejsze parki miasta. Idealne wydarzenie na wiosnę!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
+    bannerUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&h=1600&fit=crop',
+    bannerCropArea: { x: 0, y: 20, width: 100, height: 45 },
+    organizerLogoUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=200&h=200&fit=crop',
     isLive: true,
     liveResultsUrl: 'https://wyniki.example.com/city-trail-lodz-live',
     distances: [
@@ -404,6 +410,9 @@ export const mockEvents: Event[] = [
     city: 'Mikołajki',
     description: 'Malownicza trasa wśród jezior mazurskich. Idealne połączenie sportu i natury. Trasy dla każdego poziomu zaawansowania!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
+    bannerUrl: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=1200&h=1600&fit=crop',
+    bannerCropArea: { x: 0, y: 10, width: 100, height: 55 },
+    organizerLogoUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop',
     distances: [
       { 
         id: 'd25', 
@@ -516,6 +525,9 @@ export const mockEvents: Event[] = [
     city: 'Wrocław',
     description: 'Szybki triathlon w centrum Wrocławia. Pływanie w Odrze, rower po bulwarach, bieg wokół stadionu. Idealne wprowadzenie do triathlonu!',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
+    bannerUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=1200&h=1600&fit=crop',
+    bannerCropArea: { x: 0, y: 25, width: 100, height: 40 },
+    organizerLogoUrl: 'https://images.unsplash.com/photo-1559159177-0a5f8f5cc20e?w=200&h=200&fit=crop',
     distances: [
       { 
         id: 'd28', 
