@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { SportDiscipline, BannerCropArea } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X, Globe } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 
 interface DistanceForm {
@@ -46,6 +46,11 @@ const EventForm = () => {
   const [description, setDescription] = useState(existingEvent?.description || '');
   const [imageUrl, setImageUrl] = useState(existingEvent?.imageUrl || '');
   const [featured, setFeatured] = useState(existingEvent?.featured || false);
+  
+  // Virtual event fields
+  const [isVirtual, setIsVirtual] = useState(existingEvent?.isVirtual || false);
+  const [startDate, setStartDate] = useState(existingEvent?.startDate || '');
+  const [endDate, setEndDate] = useState(existingEvent?.endDate || '');
   
   // Media - Banner and Logo
   const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
@@ -103,8 +108,18 @@ const EventForm = () => {
   };
 
   const validateStep1 = () => {
-    if (!name || !date || !registrationDeadline || !location || !city) {
+    if (!name || !date || !registrationDeadline) {
       toast({ title: 'Błąd', description: 'Wypełnij wszystkie wymagane pola', variant: 'destructive' });
+      return false;
+    }
+    // For non-virtual events, location and city are required
+    if (!isVirtual && (!location || !city)) {
+      toast({ title: 'Błąd', description: 'Wypełnij lokalizację i miasto', variant: 'destructive' });
+      return false;
+    }
+    // For virtual events, start and end dates are required
+    if (isVirtual && (!startDate || !endDate)) {
+      toast({ title: 'Błąd', description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego', variant: 'destructive' });
       return false;
     }
     return true;
@@ -233,16 +248,62 @@ const EventForm = () => {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Lokalizacja (miejsce startu) *</Label>
-                    <Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="np. Stadion Narodowy" />
+                {/* Virtual event toggle */}
+                <div className="p-4 rounded-lg border bg-muted/30 space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      id="isVirtual" 
+                      checked={isVirtual} 
+                      onCheckedChange={(checked) => {
+                        setIsVirtual(checked === true);
+                        if (checked) {
+                          setLocation('Wydarzenie wirtualne');
+                          setCity('Cały świat');
+                        } else {
+                          setLocation('');
+                          setCity('');
+                        }
+                      }} 
+                    />
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-primary" />
+                      <Label htmlFor="isVirtual" className="cursor-pointer font-medium">Wydarzenie wirtualne</Label>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="city">Miasto *</Label>
-                    <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="np. Warszawa" />
-                  </div>
+                  {isVirtual && (
+                    <p className="text-sm text-muted-foreground pl-6">
+                      Uczestnicy wykonują aktywność samodzielnie w dowolnym miejscu i wprowadzają swoje wyniki po zakończeniu okna czasowego.
+                    </p>
+                  )}
                 </div>
+
+                {/* Virtual event date range */}
+                {isVirtual && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Data rozpoczęcia okna *</Label>
+                      <Input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">Data zakończenia okna *</Label>
+                      <Input id="endDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Location fields - hidden for virtual events */}
+                {!isVirtual && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Lokalizacja (miejsce startu) *</Label>
+                      <Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="np. Stadion Narodowy" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Miasto *</Label>
+                      <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="np. Warszawa" />
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Opis wydarzenia</Label>
@@ -439,10 +500,25 @@ const EventForm = () => {
                     <p className="text-sm text-muted-foreground">Termin rejestracji</p>
                     <p className="font-medium">{registrationDeadline}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Lokalizacja</p>
-                    <p className="font-medium">{location}, {city}</p>
-                  </div>
+                  {isVirtual ? (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Okno startowe</p>
+                        <p className="font-medium">{startDate} - {endDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Typ wydarzenia</p>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                          <Globe className="h-3 w-3 mr-1" /> Wirtualny
+                        </Badge>
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Lokalizacja</p>
+                      <p className="font-medium">{location}, {city}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-muted-foreground">Slug URL</p>
                     <p className="font-medium text-primary">/events/{generateSlug(name)}</p>
@@ -467,9 +543,16 @@ const EventForm = () => {
                   </div>
                 </div>
 
-                {featured && (
-                  <Badge variant="default">⭐ Wyróżnione wydarzenie</Badge>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {isVirtual && (
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                      <Globe className="h-3 w-3 mr-1" /> Wirtualny
+                    </Badge>
+                  )}
+                  {featured && (
+                    <Badge variant="default">⭐ Wyróżnione wydarzenie</Badge>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

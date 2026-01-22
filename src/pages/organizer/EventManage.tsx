@@ -6,8 +6,9 @@ import { mockEvents, mockRegistrations } from '@/data/mockData';
 import { EventOverviewTab } from './components/EventOverviewTab';
 import { ParticipantsTab } from './components/ParticipantsTab';
 import { ResultsTab } from './components/ResultsTab';
+import { VirtualResultsVerificationTab } from './components/VirtualResultsVerificationTab';
 import { EventSettingsTab } from './components/EventSettingsTab';
-import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe } from 'lucide-react';
 
 const EventManage = () => {
   const { id } = useParams();
@@ -40,7 +41,9 @@ const EventManage = () => {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold">{event.name}</h1>
-          <p className="text-muted-foreground">{event.city} • {event.date}</p>
+          <p className="text-muted-foreground">
+            {event.isVirtual ? 'Wydarzenie wirtualne • Cały świat' : `${event.city} • ${event.date}`}
+          </p>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -54,8 +57,8 @@ const EventManage = () => {
               <span className="hidden sm:inline">Uczestnicy</span>
             </TabsTrigger>
             <TabsTrigger value="results" className="flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              <span className="hidden sm:inline">Wyniki</span>
+              {event.isVirtual ? <Globe className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
+              <span className="hidden sm:inline">{event.isVirtual ? 'Weryfikacja' : 'Wyniki'}</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -72,7 +75,11 @@ const EventManage = () => {
           </TabsContent>
 
           <TabsContent value="results">
-            <ResultsTab event={event} registrations={registrations} />
+            {event.isVirtual ? (
+              <VirtualResultsVerificationTab event={event} />
+            ) : (
+              <ResultsTab event={event} registrations={registrations} />
+            )}
           </TabsContent>
 
           <TabsContent value="settings">

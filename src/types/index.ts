@@ -144,6 +144,10 @@ export interface Event {
   bannerUrl?: string;
   bannerCropArea?: BannerCropArea;
   organizerLogoUrl?: string;
+  // Virtual event fields
+  isVirtual?: boolean;
+  startDate?: string;  // Start of virtual event window
+  endDate?: string;    // End of virtual event window
 }
 
 export interface PaymentMethod {
@@ -432,4 +436,27 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   actionUrl?: string;
+}
+
+// Virtual event result submission
+export type VirtualResultSubmissionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface VirtualResultSubmission {
+  id: string;
+  eventId: string;
+  eventName: string;
+  distanceId: string;
+  distanceName: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  submittedTime: string;          // Format HH:MM:SS
+  submittedTimeInSeconds: number;
+  proofUrl?: string;              // Link to proof (Strava, photo)
+  notes?: string;                 // Participant's note
+  submittedAt: string;            // Submission date
+  status: VirtualResultSubmissionStatus;
+  reviewedAt?: string;            // Review date
+  reviewedBy?: string;            // Organizer ID
+  rejectionReason?: string;       // Reason for rejection
 }

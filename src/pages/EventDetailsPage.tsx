@@ -115,6 +115,12 @@ const EventDetailsPage = () => {
                   <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
                   {disciplineLabels[event.discipline]}
                 </Badge>
+                {event.isVirtual && (
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 backdrop-blur-sm">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Wirtualny
+                  </Badge>
+                )}
                 {isPast && <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">Zakończone</Badge>}
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground drop-shadow-md">{event.name}</h1>
@@ -137,6 +143,12 @@ const EventDetailsPage = () => {
                 <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
                 {disciplineLabels[event.discipline]}
               </Badge>
+              {event.isVirtual && (
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                  <Globe className="h-3 w-3 mr-1" />
+                  Wirtualny
+                </Badge>
+              )}
               {isPast && <Badge variant="secondary">Zakończone</Badge>}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
@@ -157,19 +169,32 @@ const EventDetailsPage = () => {
                       <Calendar className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Data</div>
+                      <div className="text-sm text-muted-foreground">
+                        {event.isVirtual ? 'Okno startowe' : 'Data'}
+                      </div>
                       <div className="font-medium">
-                        {format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}
+                        {event.isVirtual && event.startDate && event.endDate 
+                          ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
+                          : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })
+                        }
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <MapPin className="h-5 w-5 text-primary" />
+                      {event.isVirtual ? (
+                        <Globe className="h-5 w-5 text-primary" />
+                      ) : (
+                        <MapPin className="h-5 w-5 text-primary" />
+                      )}
                     </div>
                     <div>
-                      <div className="text-sm text-muted-foreground">Miejsce</div>
-                      <div className="font-medium">{event.city}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {event.isVirtual ? 'Zasięg' : 'Miejsce'}
+                      </div>
+                      <div className="font-medium">
+                        {event.isVirtual ? 'Cały świat' : event.city}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -193,6 +218,21 @@ const EventDetailsPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Virtual event info banner */}
+                {event.isVirtual && (
+                  <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <div className="flex items-start gap-3">
+                      <Globe className="h-5 w-5 text-primary mt-0.5" />
+                      <div>
+                        <p className="font-medium text-sm">Wydarzenie wirtualne</p>
+                        <p className="text-sm text-muted-foreground">
+                          Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a następnie wprowadź swój wynik w panelu uczestnika.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
