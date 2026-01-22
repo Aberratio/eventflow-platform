@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Event, Registration, Result } from '@/types';
-import { Calendar, MapPin, Users, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Users, ArrowRight, Globe } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -51,6 +51,12 @@ export const EventListRow = ({
       <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-foreground truncate transition-colors group-hover:text-primary">{event.name}</h3>
+            {event.isVirtual && (
+              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                <Globe className="h-3 w-3 mr-1" />
+                Wirtualny
+              </Badge>
+            )}
             {hasCompleted ? (
               <Badge variant="secondary" className="text-xs shrink-0">Ukończony</Badge>
             ) : isRegistered ? (
@@ -61,11 +67,23 @@ export const EventListRow = ({
           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
             <span className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
-              {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
+              {event.isVirtual && event.startDate && event.endDate 
+                ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
+                : format(new Date(event.date), 'd MMM yyyy', { locale: pl })
+              }
             </span>
             <span className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              {event.city}
+              {event.isVirtual ? (
+                <>
+                  <Globe className="h-3.5 w-3.5" />
+                  Cały świat
+                </>
+              ) : (
+                <>
+                  <MapPin className="h-3.5 w-3.5" />
+                  {event.city}
+                </>
+              )}
             </span>
           </div>
 

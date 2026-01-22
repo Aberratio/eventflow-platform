@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission } from '@/types';
 
 export const seriesTypeLabels: Record<SeriesType, string> = {
   virtual: 'Wirtualna',
@@ -2695,3 +2695,82 @@ export const mockSecuritySettings: SecuritySettings = {
     },
   ],
 };
+
+// Virtual event mock data
+export const mockVirtualEvents: Partial<Event>[] = [
+  {
+    id: 'virtual-1',
+    name: 'Bieg Sylwestrowy Wirtualny 2026',
+    slug: 'bieg-sylwestrowy-wirtualny-2026',
+    discipline: 'running',
+    date: '2026-01-01',
+    isVirtual: true,
+    startDate: '2026-01-01',
+    endDate: '2026-01-15',
+    location: 'Wydarzenie wirtualne',
+    city: 'Cały świat',
+    description: 'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na świecie i zgłoś swój wynik.',
+    imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
+    distances: [
+      { id: 'vd-5k', name: '5 km', length: 5, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 234, price: 30 },
+      { id: 'vd-10k', name: '10 km', length: 10, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 187, price: 40 },
+      { id: 'vd-21k', name: 'Półmaraton', length: 21.097, unit: 'km', categories: ['Open'], limit: 500, registeredCount: 89, price: 60 },
+    ],
+    organizerId: 'o3',
+    organizerName: 'RunPoland',
+    status: 'published',
+    registrationDeadline: '2026-01-10',
+    featured: false,
+  },
+];
+
+// Virtual result submissions mock data
+export const mockVirtualResultSubmissions: VirtualResultSubmission[] = [
+  {
+    id: 'vrs-1',
+    eventId: 'virtual-1',
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026',
+    distanceId: 'vd-10k',
+    distanceName: '10 km',
+    userId: 'p1',
+    userName: 'Jan Kowalski',
+    userEmail: 'jan@example.com',
+    submittedTime: '00:58:23',
+    submittedTimeInSeconds: 3503,
+    proofUrl: 'https://strava.com/activities/123456',
+    notes: 'Bieg w parku miejskim',
+    submittedAt: '2026-01-10T14:30:00Z',
+    status: 'pending',
+  },
+  {
+    id: 'vrs-2',
+    eventId: 'virtual-1',
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026',
+    distanceId: 'vd-5k',
+    distanceName: '5 km',
+    userId: 'p2',
+    userName: 'Anna Nowak',
+    userEmail: 'anna@example.com',
+    submittedTime: '00:28:45',
+    submittedTimeInSeconds: 1725,
+    proofUrl: 'https://garmin.com/activity/789',
+    submittedAt: '2026-01-08T09:15:00Z',
+    status: 'approved',
+    reviewedAt: '2026-01-08T12:00:00Z',
+    reviewedBy: 'o3',
+  },
+  {
+    id: 'vrs-3',
+    eventId: 'virtual-1',
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026',
+    distanceId: 'vd-21k',
+    distanceName: 'Półmaraton',
+    userId: 'p3',
+    userName: 'Piotr Wiśniewski',
+    userEmail: 'piotr@example.com',
+    submittedTime: '01:58:12',
+    submittedTimeInSeconds: 7092,
+    submittedAt: '2026-01-12T16:45:00Z',
+    status: 'pending',
+  },
+];
