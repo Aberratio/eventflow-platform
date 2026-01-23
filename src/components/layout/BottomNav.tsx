@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, ShoppingCart, User, LogIn } from 'lucide-react';
 import { useAuthSafe } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
+import { useCartSafe } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 
 export const BottomNav = () => {
   const location = useLocation();
   const auth = useAuthSafe();
-  const { totalItems } = useCart();
+  const { totalItems } = useCartSafe();
   
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const user = auth?.user ?? null;
