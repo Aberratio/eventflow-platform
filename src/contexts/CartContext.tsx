@@ -127,3 +127,22 @@ export const useCart = () => {
   }
   return context;
 };
+
+// Safe version that returns default values if used outside provider
+export const useCartSafe = () => {
+  const context = useContext(CartContext);
+  return context ?? {
+    items: [],
+    addItem: () => {},
+    removeItem: () => {},
+    removeItemByVariant: () => {},
+    updateQuantity: () => {},
+    updateItemQuantity: () => {},
+    clearCart: () => {},
+    totalItems: 0,
+    totalPrice: 0,
+    getProduct: () => undefined,
+    lastOrder: null,
+    setLastOrder: () => {},
+  };
+};
