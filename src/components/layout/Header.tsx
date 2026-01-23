@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
+import { useAuthSafe } from '@/contexts/AuthContext';
+import { useCartSafe } from '@/contexts/CartContext';
 import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -33,13 +33,17 @@ const roleBadgeVariants = {
 } as const;
 
 export const Header = () => {
-  const { user, isAuthenticated, logout } = useAuth();
-  const { totalItems } = useCart();
+  const auth = useAuthSafe();
+  const { totalItems } = useCartSafe();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  
+  const user = auth?.user ?? null;
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const logout = auth?.logout ?? (() => {});
 
   const handleLogout = () => {
     logout();
