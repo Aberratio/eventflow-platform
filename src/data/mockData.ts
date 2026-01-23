@@ -1368,6 +1368,31 @@ export const mockEvents: Event[] = [
     registrationDeadline: '2026-11-03',
     featured: false,
   },
+  // Virtual event
+  {
+    id: 'virtual-1',
+    name: 'Bieg Sylwestrowy Wirtualny 2026',
+    slug: 'bieg-sylwestrowy-wirtualny-2026',
+    discipline: 'running',
+    date: '2026-01-01',
+    isVirtual: true,
+    startDate: '2026-01-01',
+    endDate: '2026-01-15',
+    location: 'Wydarzenie wirtualne',
+    city: 'Cały świat',
+    description: 'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na świecie i zgłoś swój wynik.',
+    imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
+    distances: [
+      { id: 'vd-5k', name: '5 km', length: 5, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 234, price: 30 },
+      { id: 'vd-10k', name: '10 km', length: 10, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 187, price: 40 },
+      { id: 'vd-21k', name: 'Półmaraton', length: 21.097, unit: 'km', categories: ['Open'], limit: 500, registeredCount: 89, price: 60 },
+    ],
+    organizerId: 'o3',
+    organizerName: 'RunPoland',
+    status: 'published',
+    registrationDeadline: '2026-01-10',
+    featured: false,
+  },
 ];
 
 export const mockRegistrations: Registration[] = [
@@ -1400,6 +1425,51 @@ export const mockRegistrations: Registration[] = [
       { merchandiseId: 'merch-ultra1', merchandiseName: 'Koszulka techniczna Tatry Ultra', size: 'L', color: 'Granatowy', colorHex: '#1E3A5F', quantity: 1, price: 119 },
       { merchandiseId: 'merch-ultra2', merchandiseName: 'Buff górski', color: 'Zielony', colorHex: '#059669', quantity: 2, price: 118 },
     ]
+  },
+  // Registration for virtual event - p1
+  { 
+    id: 'r-virtual-1', 
+    eventId: 'virtual-1', 
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026', 
+    userId: 'p1', 
+    userName: 'Jan Kowalski', 
+    userEmail: 'jan@example.com', 
+    distanceId: 'vd-10k', 
+    distanceName: '10 km', 
+    category: 'Open', 
+    registeredAt: '2025-12-28T10:00:00Z', 
+    status: 'confirmed', 
+    pricePaid: 40 
+  },
+  // Registration for virtual event - p2
+  { 
+    id: 'r-virtual-2', 
+    eventId: 'virtual-1', 
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026', 
+    userId: 'p2', 
+    userName: 'Anna Nowak', 
+    userEmail: 'anna@example.com', 
+    distanceId: 'vd-5k', 
+    distanceName: '5 km', 
+    category: 'Open', 
+    registeredAt: '2025-12-29T14:00:00Z', 
+    status: 'confirmed', 
+    pricePaid: 30 
+  },
+  // Registration for virtual event - p3 (no submission yet)
+  { 
+    id: 'r-virtual-3', 
+    eventId: 'virtual-1', 
+    eventName: 'Bieg Sylwestrowy Wirtualny 2026', 
+    userId: 'p3', 
+    userName: 'Piotr Wiśniewski', 
+    userEmail: 'piotr@example.com', 
+    distanceId: 'vd-21k', 
+    distanceName: 'Półmaraton', 
+    category: 'Open', 
+    registeredAt: '2025-12-30T09:00:00Z', 
+    status: 'confirmed', 
+    pricePaid: 60 
   },
 ];
 
