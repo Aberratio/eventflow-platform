@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCartSafe } from '@/contexts/CartContext';
-import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio } from 'lucide-react';
+import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio, Globe } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -112,6 +112,12 @@ export const Header = () => {
                 <Link to="/wyniki/live" className="w-full flex items-center gap-2">
                   <Radio className="h-3 w-3 text-destructive" />
                   Na żywo
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/wyniki/wirtualne" className="w-full flex items-center gap-2">
+                  <Globe className="h-3 w-3 text-primary" />
+                  Ranking wirtualny
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -252,6 +258,10 @@ export const Header = () => {
                 <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   <Radio className="h-3 w-3 text-destructive" />
                   Na żywo
+                </Link>
+                <Link to="/wyniki/wirtualne" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  <Globe className="h-3 w-3 text-primary" />
+                  Ranking wirtualny
                 </Link>
               </CollapsibleContent>
             </Collapsible>
