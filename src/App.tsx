@@ -40,7 +40,7 @@ import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import NotificationsPage from "./pages/NotificationsPage";
-import VirtualRankingsPage from "./pages/VirtualRankingsPage";
+
 
 const queryClient = new QueryClient();
 
@@ -61,7 +61,7 @@ const App = () => (
                   <Route path="/wydarzenia" element={<EventsPage />} />
                   <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
-                  <Route path="/wyniki/wirtualne" element={<VirtualRankingsPage />} />
+                  
                   
                   <Route path="/info/kontakt" element={<ContactPage />} />
                   <Route path="/info/oferta" element={<OfferPage />} />

@@ -72,8 +72,6 @@ const ResultsCalendarPage = () => {
     }
   }, [selectedYear]);
 
-  const canGoPrev = availableYears.includes(selectedYear + 1);
-  const canGoNext = availableYears.includes(selectedYear - 1);
 
   const months = [
     'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
@@ -99,8 +97,8 @@ const ResultsCalendarPage = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setSelectedYear(y => y + 1)}
-            disabled={!canGoPrev}
+            onClick={() => setSelectedYear(y => y - 1)}
+            disabled={!availableYears.includes(selectedYear - 1)}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -108,8 +106,8 @@ const ResultsCalendarPage = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setSelectedYear(y => y - 1)}
-            disabled={!canGoNext}
+            onClick={() => setSelectedYear(y => y + 1)}
+            disabled={!availableYears.includes(selectedYear + 1)}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -141,7 +139,7 @@ const ResultsCalendarPage = () => {
                             <DisciplineIcon discipline={event.discipline} size="lg" />
                             <div className="flex-1 min-w-0">
                               <Link 
-                                to={`/results?eventId=${event.id}`}
+                                to={`/events/${event.slug}?tab=results`}
                                 className="font-medium hover:text-primary transition-colors line-clamp-1"
                               >
                                 {event.name}
@@ -160,7 +158,7 @@ const ResultsCalendarPage = () => {
                               </div>
                             </div>
                             <Button variant="outline" size="sm" asChild>
-                              <Link to={`/results?eventId=${event.id}`}>
+                              <Link to={`/events/${event.slug}?tab=results`}>
                                 <Trophy className="h-4 w-4 mr-1.5" />
                                 Wyniki
                               </Link>

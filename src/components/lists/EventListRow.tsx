@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Event, Registration, Result } from '@/types';
-import { Calendar, MapPin, Users, ArrowRight, Globe } from 'lucide-react';
+import { Calendar, MapPin, Users, ArrowRight, Globe, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -28,17 +28,37 @@ export const EventListRow = ({
     r => r.eventId === event.id && r.status === 'finished'
   );
 
+  // Check if event is in the past
+  const isPast = new Date(event.date) < new Date();
+
   const registrationStatus = event.registrationStatus || 'open';
-  const statusLabel = registrationStatus === 'open' 
-    ? 'Zapisy otwarte' 
-    : registrationStatus === 'closed' 
-    ? 'Zapisy zamknięte' 
-    : 'Brak zapisów';
-  const statusVariant = registrationStatus === 'open' 
-    ? 'default' 
-    : registrationStatus === 'closed' 
-    ? 'secondary' 
-    : 'outline';
+  
+  // For past events, show "Wyniki dostępne" instead of registration status
+  const getStatusDisplay = () => {
+    if (isPast) {
+      return {
+        label: 'Wyniki dostępne',
+        variant: 'secondary' as const,
+        showTrophy: true
+      };
+    }
+    
+    return {
+      label: registrationStatus === 'open' 
+        ? 'Zapisy otwarte' 
+        : registrationStatus === 'closed' 
+        ? 'Zapisy zamknięte' 
+        : 'Brak zapisów',
+      variant: registrationStatus === 'open' 
+        ? 'default' as const
+        : registrationStatus === 'closed' 
+        ? 'secondary' as const
+        : 'outline' as const,
+      showTrophy: false
+    };
+  };
+  
+  const statusDisplay = getStatusDisplay();
 
   return (
     <Link 
@@ -103,8 +123,9 @@ export const EventListRow = ({
       <div className="flex items-center gap-3 sm:gap-4">
         {showDetails && (
           <>
-            <Badge variant={statusVariant} className="text-xs whitespace-nowrap shrink-0">
-              {statusLabel}
+            <Badge variant={statusDisplay.variant} className="text-xs whitespace-nowrap shrink-0">
+              {statusDisplay.showTrophy && <Trophy className="h-3 w-3 mr-1" />}
+              {statusDisplay.label}
             </Badge>
             
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap">

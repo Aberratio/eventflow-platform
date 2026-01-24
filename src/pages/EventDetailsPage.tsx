@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +19,10 @@ import { RouteMap } from '@/components/RouteMap';
 const EventDetailsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
+  
+  const defaultTab = searchParams.get('tab') || 'info';
 
   const event = mockEvents.find(e => e.slug === slug);
 
@@ -237,7 +240,7 @@ const EventDetailsPage = () => {
             </Card>
 
             {/* Tabs */}
-            <Tabs defaultValue="info">
+            <Tabs defaultValue={defaultTab}>
               <TabsList className="w-full justify-start flex-wrap h-auto">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
                 {event.routeMapUrl && (
