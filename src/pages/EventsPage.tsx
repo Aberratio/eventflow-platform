@@ -19,7 +19,7 @@ const EventsPage = () => {
   
   const selectedDiscipline = searchParams.get('discipline') as SportDiscipline | null;
   const selectedCity = searchParams.get('city');
-  const selectedStatus = searchParams.get('status') as 'open' | 'closed' | 'none' | null;
+  const selectedStatus = searchParams.get('status') as 'open' | 'closed' | 'none' | 'completed' | null;
 
   // Get current year (2026)
   const currentYear = 2026;
@@ -56,7 +56,13 @@ const EventsPage = () => {
       })
       .filter(e => !selectedDiscipline || e.discipline === selectedDiscipline)
       .filter(e => !selectedCity || e.city === selectedCity)
-      .filter(e => !selectedStatus || e.registrationStatus === selectedStatus)
+      .filter(e => {
+        if (!selectedStatus) return true;
+        if (selectedStatus === 'completed') {
+          return new Date(e.date) < new Date();
+        }
+        return e.registrationStatus === selectedStatus;
+      })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [search, selectedDiscipline, selectedCity, selectedYear, selectedStatus]);
 
@@ -213,6 +219,7 @@ const EventsPage = () => {
                 <SelectItem value="open">Zapisy otwarte</SelectItem>
                 <SelectItem value="closed">Zapisy zamknięte</SelectItem>
                 <SelectItem value="none">Brak zapisów</SelectItem>
+                <SelectItem value="completed">Zakończone</SelectItem>
               </SelectContent>
             </Select>
             {hasFilters && (
