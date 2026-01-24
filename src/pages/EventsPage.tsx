@@ -8,11 +8,9 @@ import { format, getYear, getMonth, parse } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useEventFilters, distanceRangeOptions } from '@/hooks/useEventFilters';
 import { EventFiltersSidebar } from '@/components/filters/EventFiltersSidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const EventsPage = () => {
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const isMobile = useIsMobile();
   
   const {
     filters,
@@ -146,43 +144,26 @@ const EventsPage = () => {
   return (
     <Layout>
       <div className="flex min-h-[calc(100vh-4rem)]">
-        {/* Desktop Sidebar */}
-        {!isMobile && (
-          <EventFiltersSidebar
-            filters={filters}
-            updateFilter={updateFilter}
-            toggleArrayFilter={toggleArrayFilter}
-            clearFilters={clearFilters}
-            hasActiveFilters={hasActiveFilters}
-            activeFiltersCount={activeFiltersCount}
-            filteredCount={filteredEvents.length}
-          />
-        )}
+        {/* Sidebar (desktop only, managed internally) */}
+        <EventFiltersSidebar
+          filters={filters}
+          updateFilter={updateFilter}
+          toggleArrayFilter={toggleArrayFilter}
+          clearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          activeFiltersCount={activeFiltersCount}
+          filteredCount={filteredEvents.length}
+        />
 
         {/* Main Content */}
-        <div className="flex-1 container py-8">
+        <div className="flex-1 py-8 px-4 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
+            <p className="text-muted-foreground text-sm lg:text-base">
               Znajdź idealne zawody dla siebie
             </p>
           </div>
-
-          {/* Mobile Filters */}
-          {isMobile && (
-            <div className="mb-6">
-              <EventFiltersSidebar
-                filters={filters}
-                updateFilter={updateFilter}
-                toggleArrayFilter={toggleArrayFilter}
-                clearFilters={clearFilters}
-                hasActiveFilters={hasActiveFilters}
-                activeFiltersCount={activeFiltersCount}
-                filteredCount={filteredEvents.length}
-              />
-            </div>
-          )}
 
           {/* Year Navigation */}
           <div className="flex items-center justify-center gap-4 mb-6">

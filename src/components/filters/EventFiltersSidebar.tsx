@@ -34,8 +34,7 @@ import {
 } from 'lucide-react';
 import { mockEvents, mockSeries, disciplineLabels } from '@/data/mockData';
 import { SportDiscipline } from '@/types';
-import { useEventFilters, distanceRangeOptions, EventFiltersState } from '@/hooks/useEventFilters';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { distanceRangeOptions, EventFiltersState } from '@/hooks/useEventFilters';
 
 const disciplineIcons: Record<SportDiscipline, React.ElementType> = {
   running: PersonStanding,
@@ -51,12 +50,12 @@ interface FilterSectionProps {
 }
 
 const FilterSection = ({ title, defaultOpen = true, children }: FilterSectionProps) => (
-  <Collapsible defaultOpen={defaultOpen} className="border-b border-border pb-4">
-    <CollapsibleTrigger className="flex justify-between items-center w-full py-2 group">
+  <Collapsible defaultOpen={defaultOpen} className="py-3">
+    <CollapsibleTrigger className="flex justify-between items-center w-full group">
       <span className="font-medium text-sm">{title}</span>
       <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
     </CollapsibleTrigger>
-    <CollapsibleContent className="pt-2 space-y-2">
+    <CollapsibleContent className="pt-3 space-y-2">
       {children}
     </CollapsibleContent>
   </Collapsible>
@@ -101,6 +100,7 @@ interface FiltersContentProps {
   filteredCount: number;
   onApply?: () => void;
   showApplyButton?: boolean;
+  showHeader?: boolean;
 }
 
 const FiltersContent = ({
@@ -114,24 +114,44 @@ const FiltersContent = ({
   filteredCount,
   onApply,
   showApplyButton = false,
+  showHeader = false,
 }: FiltersContentProps) => {
   return (
     <div className="flex flex-col h-full">
-      <ScrollArea className="flex-1">
-        <div className="space-y-4 pr-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Szukaj..."
-              value={filters.search}
-              onChange={(e) => updateFilter('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      {/* Header with clear button */}
+      {showHeader && (
+        <div className="flex items-center justify-between pb-3 border-b border-border mb-3">
+          <h2 className="font-semibold flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtry
+          </h2>
+          {hasActiveFilters && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              onClick={clearFilters}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Wyczyść
+            </Button>
+          )}
+        </div>
+      )}
 
-          <Separator />
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Szukaj..."
+          value={filters.search}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="pl-10"
+        />
+      </div>
 
+      <ScrollArea className="flex-1 -mx-1 px-1">
+        <div className="divide-y divide-border">
           {/* Discipline */}
           <FilterSection title="Dyscyplina">
             {(Object.keys(disciplineLabels) as SportDiscipline[]).map((discipline) => {
@@ -266,24 +286,14 @@ const FiltersContent = ({
         </div>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="pt-4 mt-4 border-t border-border space-y-2">
-        {hasActiveFilters && (
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={clearFilters}
-          >
-            <X className="h-4 w-4 mr-2" />
-            Wyczyść filtry
-          </Button>
-        )}
-        {showApplyButton && onApply && (
+      {/* Footer for mobile */}
+      {showApplyButton && onApply && (
+        <div className="pt-4 mt-4 border-t border-border">
           <Button className="w-full" onClick={onApply}>
             Pokaż wyniki ({filteredCount})
           </Button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -310,8 +320,6 @@ export const EventFiltersSidebar = ({
   activeFiltersCount,
   filteredCount,
 }: EventFiltersSidebarProps) => {
-  const isMobile = useIsMobile();
-
   // Derive cities and organizers from mock data
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(mockEvents.map(e => e.city))];
@@ -328,77 +336,86 @@ export const EventFiltersSidebar = ({
     return Array.from(uniqueOrgs.entries()).map(([id, name]) => ({ id, name }));
   }, []);
 
-  // Desktop sidebar
-  if (!isMobile) {
-    return (
-      <aside className="w-64 shrink-0 border-r border-border bg-card p-4 h-[calc(100vh-4rem)] sticky top-16">
-        <h2 className="font-semibold mb-4 flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4" />
-          Filtry
-          {activeFiltersCount > 0 && (
-            <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </h2>
-        <FiltersContent
-          filters={filters}
-          updateFilter={updateFilter}
-          toggleArrayFilter={toggleArrayFilter}
-          clearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-          cities={cities}
-          organizers={organizers}
-          filteredCount={filteredCount}
-        />
-      </aside>
-    );
-  }
+  const filtersContent = (
+    <FiltersContent
+      filters={filters}
+      updateFilter={updateFilter}
+      toggleArrayFilter={toggleArrayFilter}
+      clearFilters={clearFilters}
+      hasActiveFilters={hasActiveFilters}
+      cities={cities}
+      organizers={organizers}
+      filteredCount={filteredCount}
+      showHeader
+    />
+  );
 
-  // Mobile drawer
+  // Desktop/Tablet sidebar
   return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <Button variant="outline" className="w-full">
-          <SlidersHorizontal className="h-4 w-4 mr-2" />
-          Filtry
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-              {activeFiltersCount}
-            </span>
-          )}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="pb-0">
-          <DrawerTitle className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4" />
-            Filtry wydarzeń
-          </DrawerTitle>
-        </DrawerHeader>
-        <div className="px-4 pb-4 flex-1 overflow-hidden">
-          <FiltersContent
-            filters={filters}
-            updateFilter={updateFilter}
-            toggleArrayFilter={toggleArrayFilter}
-            clearFilters={clearFilters}
-            hasActiveFilters={hasActiveFilters}
-            cities={cities}
-            organizers={organizers}
-            filteredCount={filteredCount}
-            showApplyButton
-            onApply={() => {
-              // Close drawer by clicking the close button programmatically
-              document.querySelector<HTMLButtonElement>('[data-drawer-close]')?.click();
-            }}
-          />
-        </div>
-        <DrawerFooter className="pt-0">
-          <DrawerClose asChild data-drawer-close>
-            <Button variant="outline">Zamknij</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+    <>
+      {/* Desktop Sidebar - visible on lg+ */}
+      <aside className="hidden lg:flex w-72 shrink-0 flex-col border-r border-border bg-card/50 p-4 h-[calc(100vh-4rem)] sticky top-16 overflow-hidden">
+        {filtersContent}
+      </aside>
+
+      {/* Tablet/Mobile Drawer - visible on < lg */}
+      <div className="lg:hidden">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <SlidersHorizontal className="h-4 w-4 mr-2" />
+              Filtry
+              {activeFiltersCount > 0 && (
+                <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader className="pb-0">
+              <DrawerTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filtry wydarzeń
+                </span>
+                {hasActiveFilters && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={clearFilters}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Wyczyść
+                  </Button>
+                )}
+              </DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-4 flex-1 overflow-hidden">
+              <FiltersContent
+                filters={filters}
+                updateFilter={updateFilter}
+                toggleArrayFilter={toggleArrayFilter}
+                clearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                cities={cities}
+                organizers={organizers}
+                filteredCount={filteredCount}
+                showApplyButton
+                onApply={() => {
+                  document.querySelector<HTMLButtonElement>('[data-drawer-close]')?.click();
+                }}
+              />
+            </div>
+            <DrawerFooter className="pt-0">
+              <DrawerClose asChild data-drawer-close>
+                <Button variant="outline">Zamknij</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </>
   );
 };
