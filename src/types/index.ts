@@ -148,6 +148,7 @@ export interface Event {
   isVirtual?: boolean;
   startDate?: string;  // Start of virtual event window
   endDate?: string;    // End of virtual event window
+  resultDocuments?: EventResultDocument[];
 }
 
 export interface PaymentMethod {
@@ -221,6 +222,41 @@ export interface Result {
   status: 'finished' | 'dnf' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;
+}
+
+// Result classification types
+export type ResultClassificationType = 'open' | 'category' | 'team' | 'distance';
+
+// Team result for group classifications
+export interface TeamResult {
+  id: string;
+  eventId: string;
+  distanceId: string;
+  distanceName: string;
+  teamName: string;
+  members: Array<{
+    userId: string;
+    userName: string;
+    time: string;
+    timeInSeconds: number;
+  }>;
+  totalTime: string;
+  totalTimeInSeconds: number;
+  position: number;
+}
+
+// PDF documents with results
+export interface EventResultDocument {
+  id: string;
+  eventId: string;
+  name: string;
+  type: ResultClassificationType;
+  distanceId?: string;
+  distanceName?: string;
+  fileUrl: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  description?: string;
 }
 
 export interface PersonalRecord {

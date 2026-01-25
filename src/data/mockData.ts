@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument } from '@/types';
 
 export const seriesTypeLabels: Record<SeriesType, string> = {
   virtual: 'Wirtualna',
@@ -2928,5 +2928,155 @@ export const mockVirtualResultSubmissions: VirtualResultSubmission[] = [
     submittedTimeInSeconds: 3300,
     submittedAt: '2026-01-14T15:00:00Z',
     status: 'pending',
+  },
+];
+
+// Team results for group classifications
+export const mockTeamResults: TeamResult[] = [
+  {
+    id: 'team1',
+    eventId: 'e9',
+    distanceId: 'd17',
+    distanceName: '10km',
+    teamName: 'Biegacze Wrocław',
+    members: [
+      { userId: 'p1', userName: 'Jan Kowalski', time: '0:42:15', timeInSeconds: 2535 },
+      { userId: 'p2', userName: 'Anna Nowak', time: '0:48:30', timeInSeconds: 2910 },
+      { userId: 'p3', userName: 'Piotr Wiśniewski', time: '0:45:00', timeInSeconds: 2700 },
+    ],
+    totalTime: '2:15:45',
+    totalTimeInSeconds: 8145,
+    position: 1,
+  },
+  {
+    id: 'team2',
+    eventId: 'e9',
+    distanceId: 'd17',
+    distanceName: '10km',
+    teamName: 'Nocni Biegacze',
+    members: [
+      { userId: 'p4', userName: 'Katarzyna Biegacz', time: '0:50:00', timeInSeconds: 3000 },
+      { userId: 'p5', userName: 'Tomasz Kolarz', time: '0:52:30', timeInSeconds: 3150 },
+      { userId: 'p6', userName: 'Ewa Kamińska', time: '0:55:00', timeInSeconds: 3300 },
+    ],
+    totalTime: '2:37:30',
+    totalTimeInSeconds: 9450,
+    position: 2,
+  },
+  {
+    id: 'team3',
+    eventId: 'e9',
+    distanceId: 'd17',
+    distanceName: '10km',
+    teamName: 'Drużyna Hali Stulecia',
+    members: [
+      { userId: 'p7', userName: 'Tomasz Malinowski', time: '0:58:00', timeInSeconds: 3480 },
+      { userId: 'p8', userName: 'Marta Zielińska', time: '1:02:00', timeInSeconds: 3720 },
+    ],
+    totalTime: '2:00:00',
+    totalTimeInSeconds: 7200,
+    position: 3,
+  },
+];
+
+// PDF documents with results
+export const mockResultDocuments: EventResultDocument[] = [
+  // Nocny Bieg Wrocławski 2025 (e9)
+  {
+    id: 'doc1',
+    eventId: 'e9',
+    name: 'Klasyfikacja generalna OPEN - 10km',
+    type: 'open',
+    distanceId: 'd17',
+    distanceName: '10km',
+    fileUrl: '/results/e9-10km-open.pdf',
+    uploadedAt: '2025-02-16T10:00:00Z',
+    uploadedBy: 'o1',
+  },
+  {
+    id: 'doc2',
+    eventId: 'e9',
+    name: 'Klasyfikacja drużynowa',
+    type: 'team',
+    fileUrl: '/results/e9-team.pdf',
+    uploadedAt: '2025-02-16T12:00:00Z',
+    uploadedBy: 'o1',
+    description: 'Klasyfikacja drużyn 3-osobowych',
+  },
+  {
+    id: 'doc3',
+    eventId: 'e9',
+    name: 'Wyniki kategorie wiekowe',
+    type: 'category',
+    distanceId: 'd17',
+    distanceName: '10km',
+    fileUrl: '/results/e9-categories.pdf',
+    uploadedAt: '2025-02-16T14:00:00Z',
+    uploadedBy: 'o1',
+  },
+  // Bieg Górski Tatry Ultra (e11)
+  {
+    id: 'doc4',
+    eventId: 'e11',
+    name: 'Klasyfikacja OPEN - Ultra 80K',
+    type: 'open',
+    distanceId: 'd20',
+    distanceName: 'Ultra 80K',
+    fileUrl: '/results/e11-ultra80k-open.pdf',
+    uploadedAt: '2026-06-16T10:00:00Z',
+    uploadedBy: 'o3',
+  },
+  {
+    id: 'doc5',
+    eventId: 'e11',
+    name: 'Klasyfikacja OPEN - Maraton 42K',
+    type: 'open',
+    distanceId: 'd21',
+    distanceName: 'Maraton 42K',
+    fileUrl: '/results/e11-marathon-open.pdf',
+    uploadedAt: '2026-06-16T11:00:00Z',
+    uploadedBy: 'o3',
+  },
+  {
+    id: 'doc6',
+    eventId: 'e11',
+    name: 'Klasyfikacja drużynowa',
+    type: 'team',
+    fileUrl: '/results/e11-team.pdf',
+    uploadedAt: '2026-06-16T12:00:00Z',
+    uploadedBy: 'o3',
+    description: 'Klasyfikacja drużyn górskich',
+  },
+  {
+    id: 'doc7',
+    eventId: 'e11',
+    name: 'Kategorie wiekowe - wszytskie dystanse',
+    type: 'category',
+    fileUrl: '/results/e11-all-categories.pdf',
+    uploadedAt: '2026-06-16T14:00:00Z',
+    uploadedBy: 'o3',
+  },
+  // Bieg Wiosenny (e15)
+  {
+    id: 'doc8',
+    eventId: 'e15',
+    name: 'Wyniki oficjalne - 10 km',
+    type: 'distance',
+    distanceId: 'd30',
+    distanceName: '10 km',
+    fileUrl: '/results/e15-10km.pdf',
+    uploadedAt: '2025-04-10T18:00:00Z',
+    uploadedBy: 'o2',
+  },
+  {
+    id: 'doc9',
+    eventId: 'e15',
+    name: 'Wyniki oficjalne - 5 km',
+    type: 'distance',
+    distanceId: 'd31',
+    distanceName: '5 km',
+    fileUrl: '/results/e15-5km.pdf',
+    uploadedAt: '2025-04-10T17:00:00Z',
+    uploadedBy: 'o2',
   },
 ];
