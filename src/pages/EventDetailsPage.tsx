@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { mockEvents, mockRegistrations, mockResults, disciplineLabels } from '@/data/mockData';
+import { mockEvents, mockRegistrations, mockResults, mockResultDocuments, mockTeamResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +16,169 @@ import { toast } from '@/hooks/use-toast';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 import { ImageGallery } from '@/components/ImageGallery';
 import { RouteMap } from '@/components/RouteMap';
+import { ResultsFilters } from '@/components/results/ResultsFilters';
+import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
+import { Event, Result } from '@/types';
+
+// Results Section Component
+const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: Result[] }) => {
+  const [selectedDistance, setSelectedDistance] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const eventDocuments = mockResultDocuments.filter(d => d.eventId === event.id);
+  const eventTeamResults = mockTeamResults.filter(t => t.eventId === event.id);
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const cats = new Set(eventResults.map(r => r.category));
+    return Array.from(cats).sort();
+  }, [eventResults]);
+
+  // Filter results
+  const filteredResults = useMemo(() => {
+    return eventResults.filter(r => {
+      if (selectedDistance !== 'all' && r.distanceId !== selectedDistance) return false;
+      if (selectedCategory !== 'all' && r.category !== selectedCategory) return false;
+      if (selectedGender !== 'all' && r.gender !== selectedGender) return false;
+      if (searchQuery && !r.userName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    }).sort((a, b) => a.position - b.position);
+  }, [eventResults, selectedDistance, selectedCategory, selectedGender, searchQuery]);
+
+  const getMedalIcon = (position: number) => {
+    if (position === 1) return <Medal className="h-4 w-4 text-yellow-500" />;
+    if (position === 2) return <Medal className="h-4 w-4 text-gray-400" />;
+    if (position === 3) return <Medal className="h-4 w-4 text-amber-600" />;
+    return null;
+  };
+
+  return (
+    <>
+      {/* Filters */}
+      <ResultsFilters
+        distances={event.distances}
+        selectedDistance={selectedDistance}
+        onDistanceChange={setSelectedDistance}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        selectedGender={selectedGender}
+        onGenderChange={setSelectedGender}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        categories={categories}
+      />
+
+      {/* Results Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-primary" />
+            Wyniki oficjalne
+            <Badge variant="secondary" className="ml-2">{filteredResults.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {filteredResults.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">Poz.</TableHead>
+                  <TableHead>Uczestnik</TableHead>
+                  <TableHead className="hidden sm:table-cell">Dystans</TableHead>
+                  <TableHead>Czas</TableHead>
+                  <TableHead className="hidden md:table-cell">Kat.</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredResults.map((result) => (
+                  <TableRow key={result.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {getMedalIcon(result.position)}
+                        <span className="font-bold">{result.position}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link 
+                        to={`/athlete/${result.userId}`}
+                        className="font-medium hover:text-primary hover:underline transition-colors"
+                      >
+                        {result.userName}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">{result.distanceName}</TableCell>
+                    <TableCell className="font-mono">{result.time}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {result.categoryPosition}. {result.category}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              {eventResults.length === 0 ? 'Wyniki będą dostępne wkrótce.' : 'Brak wyników spełniających kryteria.'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Team Results */}
+      {eventTeamResults.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Klasyfikacja drużynowa
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">Poz.</TableHead>
+                  <TableHead>Drużyna</TableHead>
+                  <TableHead className="hidden sm:table-cell">Członkowie</TableHead>
+                  <TableHead>Łączny czas</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {eventTeamResults.sort((a, b) => a.position - b.position).map((team) => (
+                  <TableRow key={team.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {getMedalIcon(team.position)}
+                        <span className="font-bold">{team.position}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{team.teamName}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {team.members.map((m) => (
+                          <Badge key={m.userId} variant="outline" className="text-xs">
+                            {m.userName}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono">{team.totalTime}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* PDF Documents */}
+      {eventDocuments.length > 0 && (
+        <ResultDocumentsList documents={eventDocuments} />
+      )}
+    </>
+  );
+};
 
 const EventDetailsPage = () => {
   const { slug } = useParams();
@@ -444,50 +608,8 @@ const EventDetailsPage = () => {
               )}
 
               {isPast && (
-                <TabsContent value="results" className="mt-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      {eventResults.length > 0 ? (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-16">Poz.</TableHead>
-                              <TableHead>Uczestnik</TableHead>
-                              <TableHead>Dystans</TableHead>
-                              <TableHead>Czas</TableHead>
-                              <TableHead>Kat.</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {eventResults
-                              .sort((a, b) => a.position - b.position)
-                              .map((result) => (
-                                <TableRow key={result.id}>
-                                  <TableCell className="font-bold">{result.position}</TableCell>
-                                  <TableCell>
-                                    <Link 
-                                      to={`/athlete/${result.userId}`}
-                                      className="font-medium hover:text-primary hover:underline transition-colors"
-                                    >
-                                      {result.userName}
-                                    </Link>
-                                  </TableCell>
-                                  <TableCell>{result.distanceName}</TableCell>
-                                  <TableCell className="font-mono">{result.time}</TableCell>
-                                  <TableCell>
-                                    {result.categoryPosition}. {result.category}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                        </Table>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-8">
-                          Wyniki będą dostępne wkrótce.
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
+                <TabsContent value="results" className="mt-6 space-y-6">
+                  <ResultsSection event={event} eventResults={eventResults} />
                 </TabsContent>
               )}
             </Tabs>
