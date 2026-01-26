@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { SendMessageDialog } from '@/components/SendMessageDialog';
-import { Event, Registration } from '@/types';
+import { Event, Registration, PaymentDetails } from '@/types';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { 
   Search, 
@@ -48,7 +48,10 @@ import {
   Users,
   UserMinus,
   FileText,
-  Printer
+  Printer,
+  CreditCard,
+  Check,
+  Clock,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -56,6 +59,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { PaymentDetailsPanel } from './PaymentDetailsPanel';
+import { BankPaymentSummary } from './BankPaymentSummary';
 
 interface ParticipantsTabProps {
   event: Event;
@@ -81,9 +86,15 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] = useState(false);
   const [deleteUnpaidDialogOpen, setDeleteUnpaidDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  
+  // Payment details panel
+  const [paymentPanelRegistration, setPaymentPanelRegistration] = useState<Registration | null>(null);
 
   // Local state for registrations (to simulate changes)
   const [localRegistrations, setLocalRegistrations] = useState<Registration[]>(registrations);
+
+  // Check if event requires manual payment confirmation
+  const requiresManualPayment = event.paymentConfig?.type === 'organizer_bank';
 
   // Filter registrations based on view mode and filters
   const filteredRegistrations = useMemo(() => {
@@ -245,10 +256,59 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
   };
 
+  const handlePaymentUpdate = (registrationId: string, updatedDetails: PaymentDetails) => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === registrationId ? { ...r, paymentDetails: updatedDetails } : r)
+    );
+  };
+
+  const getPaymentStatus = (reg: Registration) => {
+    if (!reg.paymentDetails) return null;
+    const { startFeePaid, insurancePaid, insuranceAmount, merchandisePayments } = reg.paymentDetails;
+    
+    const allMerchPaid = merchandisePayments.every(mp => mp.paid);
+    const insuranceOk = !insuranceAmount || insurancePaid;
+    
+    if (startFeePaid && allMerchPaid && insuranceOk) {
+      return 'full';
+    } else if (startFeePaid || merchandisePayments.some(mp => mp.paid)) {
+      return 'partial';
+    }
+    return 'none';
+  };
+
+  const getPaymentBadge = (reg: Registration) => {
+    const status = getPaymentStatus(reg);
+    if (!status) return null;
+    
+    switch (status) {
+      case 'full':
+        return (
+          <Badge className="bg-primary/10 text-primary">
+            <Check className="h-3 w-3 mr-1" />
+            Opłacone
+          </Badge>
+        );
+      case 'partial':
+        return (
+          <Badge variant="outline" className="text-warning border-warning/50">
+            <Clock className="h-3 w-3 mr-1" />
+            Częściowo
+          </Badge>
+        );
+      case 'none':
+        return (
+          <Badge variant="outline" className="text-muted-foreground">
+            Nieopłacone
+          </Badge>
+        );
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">Potwierdzony</Badge>;
+        return <Badge className="bg-primary/10 text-primary hover:bg-primary/20">Potwierdzony</Badge>;
       case 'pending':
         return <Badge variant="secondary">Oczekujący</Badge>;
       case 'cancelled':
@@ -265,6 +325,21 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
 
   return (
     <div className="space-y-6">
+      {/* Bank payment summary for manual payment events */}
+      {requiresManualPayment && viewMode === 'active' && (
+        <BankPaymentSummary event={event} registrations={localRegistrations} />
+      )}
+
+      {/* Payment details panel */}
+      {paymentPanelRegistration && (
+        <PaymentDetailsPanel
+          registration={paymentPanelRegistration}
+          event={event}
+          onPaymentUpdate={handlePaymentUpdate}
+          onClose={() => setPaymentPanelRegistration(null)}
+        />
+      )}
+
       {/* View mode toggle and bulk actions */}
       <Card>
         <CardContent className="pt-6">
@@ -419,6 +494,9 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                     <TableHead>Dystans</TableHead>
                     <TableHead>Kategoria</TableHead>
                     <TableHead>Status</TableHead>
+                    {requiresManualPayment && viewMode === 'active' && (
+                      <TableHead>Płatność</TableHead>
+                    )}
                     <TableHead>{viewMode === 'removed' ? 'Data usunięcia' : 'Data zapisu'}</TableHead>
                     <TableHead className="text-right">Akcje</TableHead>
                   </TableRow>
@@ -464,6 +542,23 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                           ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
                           : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
                       </TableCell>
+                      {requiresManualPayment && viewMode === 'active' && (
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto py-1 px-2"
+                            onClick={() => setPaymentPanelRegistration(reg)}
+                          >
+                            {getPaymentBadge(reg) || (
+                              <Badge variant="outline" className="text-muted-foreground">
+                                <CreditCard className="h-3 w-3 mr-1" />
+                                Sprawdź
+                              </Badge>
+                            )}
+                          </Button>
+                        </TableCell>
+                      )}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           {viewMode === 'removed' ? (
@@ -477,6 +572,16 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                             </Button>
                           ) : (
                             <>
+                              {requiresManualPayment && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Szczegóły płatności"
+                                  onClick={() => setPaymentPanelRegistration(reg)}
+                                >
+                                  <CreditCard className="h-4 w-4" />
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -496,7 +601,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                   title="Potwierdź"
                                   onClick={() => handleStatusChange(reg, 'confirmed')}
                                 >
-                                  <UserCheck className="h-4 w-4 text-green-600" />
+                                  <UserCheck className="h-4 w-4 text-primary" />
                                 </Button>
                               )}
                               {reg.status !== 'cancelled' && (

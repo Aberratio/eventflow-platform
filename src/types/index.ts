@@ -149,6 +149,37 @@ export interface Event {
   startDate?: string;  // Start of virtual event window
   endDate?: string;    // End of virtual event window
   resultDocuments?: EventResultDocument[];
+  // Payment configuration
+  paymentConfig?: PaymentConfig;
+}
+
+// Payment configuration types
+export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';
+
+export interface PaymentConfig {
+  type: PaymentConfigType;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
+  transferTitle?: string;
+}
+
+// Detailed payment tracking for bank transfers
+export interface MerchandisePaymentStatus {
+  merchandiseId: string;
+  merchandiseName: string;
+  paid: boolean;
+  paidAt?: string;
+  amount: number;
+}
+
+export interface PaymentDetails {
+  startFeePaid: boolean;
+  startFeePaidAt?: string;
+  startFeeAmount: number;
+  insurancePaid: boolean;
+  insurancePaidAt?: string;
+  insuranceAmount?: number;
+  merchandisePayments: MerchandisePaymentStatus[];
 }
 
 export interface PaymentMethod {
@@ -203,6 +234,8 @@ export interface Registration {
   merchandiseOrders?: MerchandiseOrder[];
   insurancePaid?: number;
   removedAt?: string;
+  // Detailed payment tracking for bank transfer events
+  paymentDetails?: PaymentDetails;
 }
 
 export interface Result {
