@@ -1,419 +1,131 @@
 
-# Plan: Rozbudowa systemu płatności i weryfikacji dla organizatora
+# Plan: Dodanie konfiguracji płatności w EventForm
 
-## 1. Kontekst i cele
+## Cel
+Dodanie nowej sekcji w formularzu tworzenia/edycji wydarzenia, która pozwoli organizatorowi wybrać metodę przyjmowania płatności:
+- **Bramka płatnicza admina** (automatyczne płatności online)
+- **Przelew na konto bankowe** (ręczne potwierdzanie przez organizatora)
 
-Użytkownik chce rozbudować system o:
+## Lokalizacja w formularzu
+Sekcja zostanie dodana w **Kroku 1 (Podstawowe informacje)**, po sekcji "Media wydarzenia", jako nowa karta "Konfiguracja płatności".
 
-1. **Konfigurację płatności na poziomie wydarzenia** - organizator wybiera:
-   - Przelew na swoje konto bankowe (musi podać numer)
-   - Bramka płatnicza admina (automatyczne płatności)
+## Wizualizacja UI
 
-2. **Ręczne potwierdzanie opłat** - dla wydarzeń z przelewem bankowym:
-   - Osobno opłata startowa
-   - Osobno każdy gadżet/merchandise
-   - Osobno ubezpieczenie
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│  💳 Konfiguracja płatności                                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Wybierz sposób przyjmowania płatności od uczestników:             │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ ○ Bramka płatnicza (automatyczna)                           │    │
+│  │   Płatności są przetwarzane automatycznie przez             │    │
+│  │   bramkę płatniczą administratora serwisu.                  │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ ● Przelew bankowy (ręczny)                                  │    │
+│  │   Uczestnicy wpłacają na Twoje konto bankowe.               │    │
+│  │   Musisz ręcznie potwierdzać otrzymane wpłaty.              │    │
+│  │                                                              │    │
+│  │   Numer konta: [PL __ ____ ____ ____ ____ ____ ____]        │    │
+│  │   Właściciel:  [Nazwa firmy / Imię Nazwisko        ]        │    │
+│  │   Tytuł:       [Opłata za {eventName} - {participant}]      │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-3. **Weryfikacja wyników wirtualnych** - organizator ręcznie zatwierdza czasy zgłoszone przez uczestników
+## Zmiany w pliku
 
-4. **Mockowanie różnych scenariuszy** - wydarzenia z różnymi kombinacjami ustawień
+### `src/pages/organizer/EventForm.tsx`
 
----
-
-## 2. Rozszerzenie modelu danych
-
-### Nowe pola w interfejsie `Event` (`src/types/index.ts`)
+**1. Nowe stany (linie ~56-58)**
 
 ```typescript
-interface Event {
-  // ... istniejące pola
-  
-  // Konfiguracja płatności
-  paymentConfig?: {
-    type: 'organizer_bank' | 'admin_gateway';
-    // Dla type === 'organizer_bank':
-    bankAccountNumber?: string;  // np. "PL61 1090 1014 0000 0712 1981 2874"
-    bankAccountHolder?: string;  // np. "Timing Marek Kowalczyk"
-    transferTitle?: string;      // np. "Opłata startowa {eventName} - {participantName}"
-  };
-}
+// Payment configuration
+const [paymentConfigType, setPaymentConfigType] = useState<PaymentConfigType>(
+  existingEvent?.paymentConfig?.type || 'admin_gateway'
+);
+const [bankAccountNumber, setBankAccountNumber] = useState(
+  existingEvent?.paymentConfig?.bankAccountNumber || ''
+);
+const [bankAccountHolder, setBankAccountHolder] = useState(
+  existingEvent?.paymentConfig?.bankAccountHolder || ''
+);
+const [transferTitle, setTransferTitle] = useState(
+  existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}'
+);
 ```
 
-### Rozszerzenie interfejsu `Registration` (`src/types/index.ts`)
-
-Dodanie szczegółowego śledzenia płatności:
+**2. Import nowych typów i komponentów**
 
 ```typescript
-interface Registration {
-  // ... istniejące pola
-  
-  // Szczegółowy status płatności (dla przelewów bankowych)
-  paymentDetails?: {
-    startFeePaid: boolean;
-    startFeePaidAt?: string;
-    insurancePaid: boolean;
-    insurancePaidAt?: string;
-    merchandisePayments: {
-      merchandiseId: string;
-      paid: boolean;
-      paidAt?: string;
-    }[];
-  };
-}
+import { PaymentConfigType } from '@/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { CreditCard, Building2 } from 'lucide-react';
 ```
 
----
+**3. Nowa sekcja UI w Kroku 1 (po sekcji Media)**
 
-## 3. UI organizatora - zakładka Uczestnicy
+- Karta z tytułem "Konfiguracja płatności"
+- RadioGroup z dwoma opcjami:
+  - `admin_gateway` - Bramka płatnicza (domyślna)
+  - `organizer_bank` - Przelew bankowy
+- Warunkowo pokazywane pola dla przelewu bankowego:
+  - Numer konta (z walidacją IBAN)
+  - Nazwa właściciela konta
+  - Wzór tytułu przelewu (z placeholderami `{eventName}`, `{participantName}`)
 
-### Rozbudowa `ParticipantsTab.tsx`
+**4. Walidacja w `validateStep1()`**
 
-Dla wydarzeń z `paymentConfig.type === 'organizer_bank'` dodajemy rozszerzony widok:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│  UCZESTNICY - Bieg z Przelewem Bankowym                                          │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                   │
-│  ⚠️ To wydarzenie przyjmuje płatności przelewem bankowym.                        │
-│     Konto: PL61 1090 1014 0000 0712 1981 2874 (Timing Marek Kowalczyk)          │
-│                                                                                   │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                   │
-│  Tabela uczestników z kolumnami płatności:                                       │
-│                                                                                   │
-│  Nr │ Uczestnik       │ Dystans  │ Opłata  │ Ubezp. │ Gadżety           │ Akcje │
-│  ───│─────────────────│──────────│─────────│────────│───────────────────│───────│
-│  042│ Jan Kowalski    │ Ultra80K │ ☑ 450zł │ ☐ 15zł │ ☑ Koszulka (119zł)│ [...] │
-│     │ jan@example.com │          │         │        │ ☐ Buff (59zł)     │       │
-│     │                 │          │         │        │ ☐ Plecak (249zł)  │       │
-│  ───│─────────────────│──────────│─────────│────────│───────────────────│───────│
-│  156│ Anna Nowak      │ Maraton  │ ☐ 300zł │ ☑ 12zł │ (brak)            │ [...] │
-│     │ anna@example.com│          │         │        │                   │       │
-│  ───│─────────────────│──────────│─────────│────────│───────────────────│───────│
-│  ...                                                                             │
-│                                                                                   │
-│  Podsumowanie:                                                                   │
-│  • Opłaconych: 45/67  • Do zebrania: 8 450 zł  • Zebrano: 12 320 zł            │
-│                                                                                   │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Funkcjonalność:**
-- Klikalne checkboxy przy każdej pozycji
-- Po kliknięciu → zapisuje datę opłacenia
-- Tooltips pokazują kiedy opłacono
-- Filtr: "Pokaż tylko nieopłaconych"
-
----
-
-## 4. Mockowane wydarzenia - różne scenariusze
-
-### Scenariusz 1: Wydarzenie z bramką płatniczą admina (automatyczne)
-
-Istniejące wydarzenia (e11, e12, e13, e14) już mają `paymentMethods` ale bez rozróżnienia. Dodamy jedno nowe:
-
+Dodanie sprawdzenia:
 ```typescript
-{
-  id: 'e-gateway',
-  name: 'Maraton Automatyczny 2026',
-  paymentConfig: {
-    type: 'admin_gateway'
-  },
-  // Płatności automatyczne - organizator nie musi nic ręcznie potwierdzać
-}
-```
-
-### Scenariusz 2: Wydarzenie z przelewem na konto organizatora
-
-```typescript
-{
-  id: 'e-bank-transfer',
-  name: 'Bieg Lokalny z Przelewem 2026',
-  paymentConfig: {
-    type: 'organizer_bank',
-    bankAccountNumber: 'PL61 1090 1014 0000 0712 1981 2874',
-    bankAccountHolder: 'Timing Marek Kowalczyk',
-    transferTitle: 'Bieg Lokalny - {participantName}'
-  },
-  enableMerchandiseInRegistration: true,
-  merchandise: [...], // gadżety do kupienia
-  insuranceOption: {...}, // ubezpieczenie
-}
-```
-
-### Scenariusz 3: Wydarzenie wirtualne z weryfikacją czasów
-
-Już istnieje `virtual-1`, rozszerzymy dane:
-
-```typescript
-{
-  id: 'virtual-2',
-  name: 'Wirtualny Maraton Wiosenny 2026',
-  isVirtual: true,
-  paymentConfig: {
-    type: 'admin_gateway' // lub 'organizer_bank'
-  },
-  // Uczestnicy sami deklarują czasy
-  // Organizator ręcznie weryfikuje w VirtualResultsVerificationTab
-}
-```
-
-### Scenariusz 4: Wydarzenie mieszane (przelew + gadżety + wirtualne)
-
-```typescript
-{
-  id: 'e-mixed',
-  name: 'Hybrid Challenge 2026',
-  isVirtual: true,
-  paymentConfig: {
-    type: 'organizer_bank',
-    bankAccountNumber: 'PL27 1140 2004 0000 3002 0135 5387',
-    bankAccountHolder: 'RunPoland S.A.',
-  },
-  enableMerchandiseInRegistration: true,
-  merchandise: [...],
-  // Organizator musi:
-  // 1. Ręcznie potwierdzać opłaty (startowe + gadżety)
-  // 2. Weryfikować zgłoszone czasy
-}
-```
-
----
-
-## 5. Mockowane rejestracje z różnymi stanami płatności
-
-```typescript
-// Pełna opłata za wszystko
-{
-  id: 'r-bank-1',
-  eventId: 'e-bank-transfer',
-  status: 'confirmed',
-  paymentDetails: {
-    startFeePaid: true,
-    startFeePaidAt: '2026-01-10T14:30:00Z',
-    insurancePaid: true,
-    insurancePaidAt: '2026-01-10T14:30:00Z',
-    merchandisePayments: [
-      { merchandiseId: 'merch1', paid: true, paidAt: '2026-01-10T14:30:00Z' }
-    ]
-  }
-}
-
-// Opłacony start, ale nie gadżety
-{
-  id: 'r-bank-2',
-  eventId: 'e-bank-transfer',
-  status: 'pending', // nadal pending bo nie wszystko opłacone
-  paymentDetails: {
-    startFeePaid: true,
-    startFeePaidAt: '2026-01-12T09:00:00Z',
-    insurancePaid: false,
-    merchandisePayments: [
-      { merchandiseId: 'merch1', paid: false },
-      { merchandiseId: 'merch2', paid: true, paidAt: '2026-01-12T09:00:00Z' }
-    ]
-  }
-}
-
-// Nic nie opłacone
-{
-  id: 'r-bank-3',
-  eventId: 'e-bank-transfer',
-  status: 'pending',
-  paymentDetails: {
-    startFeePaid: false,
-    insurancePaid: false,
-    merchandisePayments: []
+if (paymentConfigType === 'organizer_bank') {
+  if (!bankAccountNumber || !bankAccountHolder) {
+    toast({ 
+      title: 'Błąd', 
+      description: 'Podaj numer konta i właściciela dla płatności przelewem', 
+      variant: 'destructive' 
+    });
+    return false;
   }
 }
 ```
 
----
+**5. Aktualizacja podglądu w Kroku 3**
 
-## 6. Rozbudowa zakładki weryfikacji wirtualnych
-
-### Już istniejąca `VirtualResultsVerificationTab.tsx`
-
-Działa poprawnie, ale dodamy mockowane dane dla nowych wydarzeń wirtualnych:
-
+Dodanie wyświetlania wybranej metody płatności:
 ```typescript
-// Więcej mockVirtualResultSubmissions
-{
-  id: 'vrs-new-1',
-  eventId: 'virtual-2',
-  userId: 'p1',
-  userName: 'Jan Kowalski',
-  submittedTime: '3:45:22',
-  submittedTimeInSeconds: 13522,
-  proofUrl: 'https://strava.com/activities/123456',
-  notes: 'Biegłem w Tatrach, świetna pogoda!',
-  status: 'pending',
-  submittedAt: '2026-03-15T18:30:00Z'
-},
-{
-  id: 'vrs-new-2',
-  eventId: 'virtual-2',
-  userId: 'p2',
-  userName: 'Anna Nowak',
-  submittedTime: '4:12:05',
-  submittedTimeInSeconds: 15125,
-  proofUrl: 'https://strava.com/activities/789012',
-  status: 'approved',
-  submittedAt: '2026-03-14T10:00:00Z',
-  reviewedAt: '2026-03-14T12:00:00Z',
-  reviewedBy: 'o3'
-},
-{
-  id: 'vrs-new-3',
-  eventId: 'virtual-2',
-  userId: 'p3',
-  userName: 'Piotr Wiśniewski',
-  submittedTime: '2:58:00',
-  submittedTimeInSeconds: 10680,
-  proofUrl: '',
-  notes: 'Zegarek się rozładował, nie mam dowodu',
-  status: 'rejected',
-  rejectionReason: 'Brak dowodu ukończenia dystansu',
-  submittedAt: '2026-03-13T16:00:00Z',
-  reviewedAt: '2026-03-13T18:00:00Z',
-  reviewedBy: 'o3'
-}
+<div>
+  <p className="text-sm text-muted-foreground">Metoda płatności</p>
+  <p className="font-medium">
+    {paymentConfigType === 'admin_gateway' 
+      ? '💳 Bramka płatnicza (automatyczna)' 
+      : '🏦 Przelew bankowy (ręczny)'}
+  </p>
+</div>
 ```
 
----
+## Szczegóły techniczne
 
-## 7. Podsumowanie zmian w plikach
+### Walidacja numeru konta
+- Podstawowa walidacja formatu IBAN (26 cyfr dla Polski)
+- Formatowanie z odstępami co 4 cyfry dla czytelności
+
+### Placeholdery w tytule przelewu
+Organizator może używać zmiennych:
+- `{eventName}` - nazwa wydarzenia
+- `{participantName}` - imię i nazwisko uczestnika
+- `{distanceName}` - nazwa dystansu
+
+### Domyślne wartości
+- Typ: `admin_gateway` (bramka admina)
+- Tytuł przelewu: `"Opłata za {eventName} - {participantName}"`
+
+## Podsumowanie zmian
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie `PaymentConfig`, rozszerzenie `Registration.paymentDetails` |
-| `src/data/mockData.ts` | Modyfikacja | Nowe wydarzenia (e-bank-transfer, e-gateway, virtual-2, e-mixed), nowe rejestracje z paymentDetails, więcej VirtualResultSubmissions |
-| `src/pages/organizer/components/ParticipantsTab.tsx` | Modyfikacja | Dodanie widoku szczegółowych płatności dla wydarzeń z przelewem bankowym |
-
----
-
-## 8. Diagram przepływu płatności
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    KONFIGURACJA WYDARZENIA                          │
-└─────────────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌──────────────────────────┐    ┌──────────────────────────┐
-│   BRAMKA ADMINA          │    │   PRZELEW BANKOWY        │
-│   (admin_gateway)        │    │   (organizer_bank)       │
-└──────────────────────────┘    └──────────────────────────┘
-              │                               │
-              ▼                               ▼
-┌──────────────────────────┐    ┌──────────────────────────┐
-│ Automatyczne potwierdzenie│    │ Uczestnik widzi dane    │
-│ po płatności online       │    │ do przelewu:            │
-│                          │    │ • Nr konta              │
-│ Registration.status =    │    │ • Właściciel            │
-│ 'confirmed'              │    │ • Tytuł przelewu        │
-└──────────────────────────┘    └──────────────────────────┘
-                                              │
-                                              ▼
-                              ┌──────────────────────────┐
-                              │ Organizator ręcznie      │
-                              │ oznacza opłaty:          │
-                              │ ☑ Opłata startowa       │
-                              │ ☑ Ubezpieczenie         │
-                              │ ☑ Koszulka              │
-                              │ ☑ Medal                 │
-                              └──────────────────────────┘
-                                              │
-                                              ▼
-                              ┌──────────────────────────┐
-                              │ Wszystko opłacone?       │
-                              │ → status = 'confirmed'   │
-                              └──────────────────────────┘
-```
-
----
-
-## 9. UI widok szczegółowego zaznaczania płatności
-
-Po kliknięciu na uczestnika lub ikonie "rozwiń" pojawi się panel:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Jan Kowalski - szczegóły płatności                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Pozycja                       │ Kwota    │ Status              │
-│  ─────────────────────────────│──────────│─────────────────────│
-│  ☑ Opłata startowa (Ultra 80K) │ 450 zł   │ ✓ Opłacono 10.01   │
-│  ☐ Ubezpieczenie NNW           │ 15 zł    │ Nieopłacone        │
-│  ☑ Koszulka techniczna (L)     │ 119 zł   │ ✓ Opłacono 10.01   │
-│  ☐ Buff górski (x2)            │ 118 zł   │ Nieopłacone        │
-│  ☐ Plecak biegowy (L/XL)       │ 249 zł   │ Nieopłacone        │
-│  ─────────────────────────────│──────────│─────────────────────│
-│  RAZEM                         │ 951 zł   │ Opłacono: 569 zł   │
-│                                            │ Brakuje: 382 zł    │
-│                                                                  │
-│  [Oznacz wszystko jako opłacone]  [Wyślij przypomnienie]       │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Część techniczna
-
-### Zmiany w `src/types/index.ts`
-
-```typescript
-// Nowy typ konfiguracji płatności
-export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';
-
-export interface PaymentConfig {
-  type: PaymentConfigType;
-  bankAccountNumber?: string;
-  bankAccountHolder?: string;
-  transferTitle?: string;
-}
-
-// Rozszerzenie Registration
-export interface MerchandisePaymentStatus {
-  merchandiseId: string;
-  merchandiseName: string;
-  paid: boolean;
-  paidAt?: string;
-  amount: number;
-}
-
-export interface PaymentDetails {
-  startFeePaid: boolean;
-  startFeePaidAt?: string;
-  insurancePaid: boolean;
-  insurancePaidAt?: string;
-  merchandisePayments: MerchandisePaymentStatus[];
-}
-
-// W Event dodać:
-paymentConfig?: PaymentConfig;
-
-// W Registration dodać:
-paymentDetails?: PaymentDetails;
-```
-
-### Logika w `ParticipantsTab.tsx`
-
-```typescript
-// Sprawdzenie czy wydarzenie wymaga ręcznego potwierdzania
-const requiresManualPaymentConfirmation = 
-  event.paymentConfig?.type === 'organizer_bank';
-
-// Renderowanie dodatkowych kolumn
-{requiresManualPaymentConfirmation && (
-  <>
-    <TableHead>Opłata startowa</TableHead>
-    <TableHead>Ubezpieczenie</TableHead>
-    <TableHead>Gadżety</TableHead>
-  </>
-)}
-```
+| `src/pages/organizer/EventForm.tsx` | Modyfikacja | Dodanie sekcji konfiguracji płatności z RadioGroup i polami dla danych bankowych |
