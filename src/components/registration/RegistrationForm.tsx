@@ -20,12 +20,17 @@ import {
   Ticket,
   User,
   Shield,
-  Users
+  Users,
+  Building2,
+  Copy,
+  AlertTriangle
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes } from '@/data/mockData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface RegistrationFormProps {
   event: Event;
@@ -66,6 +71,7 @@ const months = [
 const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
 export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFormProps) => {
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -818,6 +824,16 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
               </div>
             </div>
 
+            {/* Bank transfer details */}
+            {event.paymentConfig?.type === 'organizer_bank' && (
+              <BankTransferDetails
+                event={event}
+                user={user}
+                selectedDistance={selectedDistance}
+                totalAmount={totalAmount}
+              />
+            )}
+
             {/* Terms agreement */}
             <div className="flex items-start gap-3 pt-4">
               <Checkbox
@@ -850,7 +866,9 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
         {isLastStep ? (
           <Button onClick={handleSubmit} disabled={!agreedToTerms} size="lg">
-            Płacę {totalAmount} zł
+            {event.paymentConfig?.type === 'organizer_bank' 
+              ? 'Zapisz się' 
+              : `Płacę ${totalAmount} zł`}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
@@ -859,6 +877,118 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Bank Transfer Details Component
+interface BankTransferDetailsProps {
+  event: Event;
+  user: { name?: string } | null;
+  selectedDistance?: { name: string };
+  totalAmount: number;
+}
+
+const BankTransferDetails = ({ event, user, selectedDistance, totalAmount }: BankTransferDetailsProps) => {
+  const generateTransferTitle = () => {
+    if (!event.paymentConfig?.transferTitle) {
+      return `${event.name} - ${user?.name || 'Uczestnik'}`;
+    }
+    
+    return event.paymentConfig.transferTitle
+      .replace('{eventName}', event.name)
+      .replace('{participantName}', user?.name || 'Uczestnik')
+      .replace('{distanceName}', selectedDistance?.name || '');
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: 'Skopiowano',
+        description: `${label} został skopiowany do schowka`,
+      });
+    });
+  };
+
+  if (!event.paymentConfig) return null;
+
+  return (
+    <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg space-y-4">
+      <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+        <Building2 className="h-5 w-5" />
+        <h4 className="font-semibold">Dane do przelewu bankowego</h4>
+      </div>
+      
+      <div className="space-y-3 text-sm">
+        {/* Account number */}
+        <div className="flex justify-between items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs">Numer konta</p>
+            <p className="font-mono font-medium truncate">{event.paymentConfig.bankAccountNumber}</p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => copyToClipboard(event.paymentConfig!.bankAccountNumber || '', 'Numer konta')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        {/* Account holder */}
+        <div className="flex justify-between items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs">Odbiorca</p>
+            <p className="font-medium truncate">{event.paymentConfig.bankAccountHolder}</p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => copyToClipboard(event.paymentConfig!.bankAccountHolder || '', 'Odbiorca')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        {/* Transfer title */}
+        <div className="flex justify-between items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs">Tytuł przelewu</p>
+            <p className="font-medium truncate">{generateTransferTitle()}</p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        {/* Amount */}
+        <div className="flex justify-between items-center">
+          <div className="min-w-0 flex-1">
+            <p className="text-muted-foreground text-xs">Kwota</p>
+            <p className="font-bold text-lg">{totalAmount.toFixed(2)} PLN</p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      {/* Warning */}
+      <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 pt-2 border-t border-amber-200 dark:border-amber-800">
+        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+        <p>
+          Płatność przelewem bankowym wymaga ręcznego potwierdzenia przez organizatora. 
+          Twój zapis zostanie potwierdzony po zaksięgowaniu wpłaty.
+        </p>
       </div>
     </div>
   );
