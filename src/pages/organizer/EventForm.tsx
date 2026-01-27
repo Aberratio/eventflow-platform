@@ -9,10 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { SportDiscipline, BannerCropArea } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X, Globe } from 'lucide-react';
+import { SportDiscipline, BannerCropArea, PaymentConfigType } from '@/types';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X, Globe, CreditCard, Building2 } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 
 interface DistanceForm {
@@ -57,6 +58,20 @@ const EventForm = () => {
   const [bannerCropArea, setBannerCropArea] = useState<BannerCropArea | undefined>(existingEvent?.bannerCropArea);
   const [organizerLogoUrl, setOrganizerLogoUrl] = useState(existingEvent?.organizerLogoUrl || '');
   const [showBannerCropper, setShowBannerCropper] = useState(false);
+
+  // Payment configuration
+  const [paymentConfigType, setPaymentConfigType] = useState<PaymentConfigType>(
+    existingEvent?.paymentConfig?.type || 'admin_gateway'
+  );
+  const [bankAccountNumber, setBankAccountNumber] = useState(
+    existingEvent?.paymentConfig?.bankAccountNumber || ''
+  );
+  const [bankAccountHolder, setBankAccountHolder] = useState(
+    existingEvent?.paymentConfig?.bankAccountHolder || ''
+  );
+  const [transferTitle, setTransferTitle] = useState(
+    existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}'
+  );
 
   // Step 2 - Distances
   const [distances, setDistances] = useState<DistanceForm[]>(
@@ -121,6 +136,17 @@ const EventForm = () => {
     if (isVirtual && (!startDate || !endDate)) {
       toast({ title: 'Błąd', description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego', variant: 'destructive' });
       return false;
+    }
+    // Validate bank transfer payment configuration
+    if (paymentConfigType === 'organizer_bank') {
+      if (!bankAccountNumber.trim() || !bankAccountHolder.trim()) {
+        toast({ 
+          title: 'Błąd', 
+          description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym', 
+          variant: 'destructive' 
+        });
+        return false;
+      }
     }
     return true;
   };
@@ -345,6 +371,100 @@ const EventForm = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Payment Configuration Section */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Konfiguracja płatności
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Wybierz sposób przyjmowania płatności od uczestników
+                  </p>
+                  
+                  <RadioGroup 
+                    value={paymentConfigType} 
+                    onValueChange={(value: PaymentConfigType) => setPaymentConfigType(value)}
+                    className="space-y-4"
+                  >
+                    {/* Admin Gateway Option */}
+                    <div className={`relative flex items-start gap-3 p-4 rounded-lg border transition-colors ${
+                      paymentConfigType === 'admin_gateway' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-muted-foreground/50'
+                    }`}>
+                      <RadioGroupItem value="admin_gateway" id="admin_gateway" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="admin_gateway" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          Bramka płatnicza (automatyczna)
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Płatności są przetwarzane automatycznie przez bramkę płatniczą administratora serwisu. 
+                          Nie musisz ręcznie potwierdzać wpłat.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Organizer Bank Transfer Option */}
+                    <div className={`relative flex items-start gap-3 p-4 rounded-lg border transition-colors ${
+                      paymentConfigType === 'organizer_bank' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-muted-foreground/50'
+                    }`}>
+                      <RadioGroupItem value="organizer_bank" id="organizer_bank" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="organizer_bank" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <Building2 className="h-4 w-4 text-primary" />
+                          Przelew bankowy (ręczny)
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Uczestnicy wpłacają na Twoje konto bankowe. 
+                          Musisz ręcznie potwierdzać otrzymane wpłaty w panelu organizatora.
+                        </p>
+
+                        {/* Bank transfer fields - shown when selected */}
+                        {paymentConfigType === 'organizer_bank' && (
+                          <div className="mt-4 pt-4 border-t border-dashed space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="bankAccountNumber">Numer konta bankowego *</Label>
+                              <Input
+                                id="bankAccountNumber"
+                                value={bankAccountNumber}
+                                onChange={(e) => setBankAccountNumber(e.target.value)}
+                                placeholder="PL 00 0000 0000 0000 0000 0000 0000"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Podaj pełny numer konta w formacie IBAN
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="bankAccountHolder">Właściciel konta *</Label>
+                              <Input
+                                id="bankAccountHolder"
+                                value={bankAccountHolder}
+                                onChange={(e) => setBankAccountHolder(e.target.value)}
+                                placeholder="Nazwa firmy lub Imię Nazwisko"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="transferTitle">Wzór tytułu przelewu</Label>
+                              <Input
+                                id="transferTitle"
+                                value={transferTitle}
+                                onChange={(e) => setTransferTitle(e.target.value)}
+                                placeholder="Opłata za {eventName} - {participantName}"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Dostępne zmienne: {'{eventName}'}, {'{participantName}'}, {'{distanceName}'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
               </CardContent>
             </Card>
 
@@ -522,6 +642,22 @@ const EventForm = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Slug URL</p>
                     <p className="font-medium text-primary">/events/{generateSlug(name)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Metoda płatności</p>
+                    <p className="font-medium flex items-center gap-2">
+                      {paymentConfigType === 'admin_gateway' ? (
+                        <>
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          Bramka płatnicza (automatyczna)
+                        </>
+                      ) : (
+                        <>
+                          <Building2 className="h-4 w-4 text-primary" />
+                          Przelew bankowy (ręczny)
+                        </>
+                      )}
+                    </p>
                   </div>
                 </div>
 
