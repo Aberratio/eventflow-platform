@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig } from '@/types';
+import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
+import { useEffect, useRef } from 'react';
 
 interface RegistrationSuccessState {
   registrationData: RegistrationData;
@@ -25,8 +27,25 @@ const RegistrationSuccessPage = () => {
   const { slug } = useParams();
   const location = useLocation();
   const { user } = useAuth();
+  const { sendRegistrationEmail } = useRegistrationEmail();
+  const emailSentRef = useRef(false);
   
   const state = location.state as RegistrationSuccessState | null;
+
+  // Send confirmation email on mount (only once)
+  useEffect(() => {
+    if (state && !emailSentRef.current) {
+      emailSentRef.current = true;
+      sendRegistrationEmail({
+        registrationData: state.registrationData,
+        eventName: state.eventName,
+        eventDate: state.eventDate,
+        eventCity: state.eventCity,
+        eventSlug: state.eventSlug,
+        paymentConfig: state.paymentConfig,
+      });
+    }
+  }, [state, sendRegistrationEmail]);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {
