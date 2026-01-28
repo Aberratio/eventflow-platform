@@ -1,27 +1,85 @@
 
-# Plan: Wyświetlanie danych do przelewu na stronie rejestracji
+
+# Plan: Strona sukcesu po rejestracji z danymi do przelewu
 
 ## Cel
-Po zakończeniu rejestracji na wydarzenie z płatnością przelewem bankowym (`paymentConfig.type === 'organizer_bank'`), uczestnik powinien zobaczyć pełne dane do przelewu wraz z wygenerowanym tytułem.
+Utworzenie dedykowanej strony sukcesu (`/events/:slug/register/success`) wyświetlanej po zakończeniu rejestracji. Dla wydarzeń z płatnością przelewem bankowym strona będzie zawierać pełne dane do przelewu i instrukcje dla uczestnika.
 
-## Lokalizacja zmian
-Modyfikacja kroku 6 (Podsumowanie) w `src/components/registration/RegistrationForm.tsx` - dodanie sekcji z danymi do przelewu.
+## Lokalizacja i architektura
+
+Utworzenie nowej strony `src/pages/RegistrationSuccessPage.tsx` wzorowanej na istniejącej `OrderSuccessPage.tsx`, z dodatkową logiką dla danych przelewu bankowego.
+
+### Przepływ danych
+
+```text
+RegistrationForm 
+    │
+    ▼ onComplete(data)
+EventRegistrationPage
+    │
+    ▼ navigate z state
+RegistrationSuccessPage
+    │
+    ▼ odczyt state + event.paymentConfig
+Wyświetlenie danych
+```
 
 ## Wizualizacja UI
 
+### Wariant A: Bramka płatnicza (automatyczna)
+
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│  ✓ Podsumowanie zamówienia                                          │
+│                                                                      │
+│                    ✓ (zielona ikona)                                │
+│                                                                      │
+│              Rejestracja zakończona!                                │
+│                                                                      │
+│  Zapisałeś się na wydarzenie Bieg Górski Tatry 2026                │
+│  Dystans: Ultra 80K • Kategoria: M30-34                            │
+│                                                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  Bieg Górski Tatry 2026                                             │
-│  15 czerwca 2026 • Zakopane                                         │
+│  Szczegóły rejestracji                                              │
+│  ─────────────────────────────────────────────────────────────────  │
+│  Opłata startowa (Ultra 80K)                           450 zł      │
+│  Ubezpieczenie NNW                                      15 zł      │
+│  Koszulka techniczna (L) x1                            119 zł      │
+│  ─────────────────────────────────────────────────────────────────  │
+│  Razem zapłacono                                       584 zł      │
 │                                                                      │
+│  ✓ Płatność zrealizowana automatycznie                             │
+│                                                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  📧 Na podany adres email wysłaliśmy potwierdzenie rejestracji     │
+│                                                                      │
+│  [Zobacz wydarzenie]         [Moje rejestracje]                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Wariant B: Przelew bankowy (ręczny)
+
+```text
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│                    ✓ (zielona ikona)                                │
+│                                                                      │
+│              Rejestracja wstępna zakończona!                        │
+│                                                                      │
+│  Zapisałeś się na wydarzenie Bieg Górski Tatry 2026                │
+│  Dystans: Ultra 80K • Kategoria: M30-34                            │
+│                                                                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Szczegóły zamówienia                                               │
 │  ─────────────────────────────────────────────────────────────────  │
-│  Ultra 80K (80 km)                                    450 zł        │
-│  Kategoria: M30-34                                                   │
+│  Opłata startowa (Ultra 80K)                           450 zł      │
+│  Ubezpieczenie NNW                                      15 zł      │
+│  Koszulka techniczna (L) x1                            119 zł      │
 │  ─────────────────────────────────────────────────────────────────  │
-│  Do zapłaty                                           450 zł        │
+│  Do zapłaty                                            584 zł      │
 │                                                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
@@ -39,65 +97,98 @@ Modyfikacja kroku 6 (Podsumowanie) w `src/components/registration/RegistrationFo
 │  │  Bieg Górski Tatry 2026 - Jan Kowalski             [📋 Kopiuj]│  │
 │  │                                                                │  │
 │  │  Kwota                                                         │  │
-│  │  450,00 PLN                                        [📋 Kopiuj]│  │
+│  │  584,00 PLN                                        [📋 Kopiuj]│  │
 │  │                                                                │  │
 │  └───────────────────────────────────────────────────────────────┘  │
 │                                                                      │
-│  ⚠️ Płatność przelewem bankowym wymaga ręcznego potwierdzenia       │
-│     przez organizatora. Twój zapis zostanie potwierdzony po         │
-│     zaksięgowaniu wpłaty.                                           │
+│  ⚠️ Ważne informacje                                                │
+│  • Wpłać dokładną kwotę na podane konto                            │
+│  • Użyj podanego tytułu przelewu                                   │
+│  • Twoja rejestracja zostanie potwierdzona po zaksięgowaniu wpłaty │
+│  • Status płatności możesz sprawdzić w panelu uczestnika           │
 │                                                                      │
 ├─────────────────────────────────────────────────────────────────────┤
-│  ☑ Akceptuję regulamin zawodów...                                   │
+│                                                                      │
+│  📧 Na podany adres email wysłaliśmy potwierdzenie z danymi        │
+│     do przelewu                                                     │
+│                                                                      │
+│  [Zobacz wydarzenie]         [Moje rejestracje]                    │
+│                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## Zmiany w pliku
+## Zmiany w plikach
 
-### `src/components/registration/RegistrationForm.tsx`
+### 1. Nowy plik: `src/pages/RegistrationSuccessPage.tsx`
 
-**1. Import nowych ikon**
+Nowa strona zawierająca:
+- Nagłówek sukcesu z ikoną CheckCircle
+- Szczegóły rejestracji (dystans, kategoria, kwoty)
+- Warunkową sekcję danych do przelewu (dla `organizer_bank`)
+- Funkcję kopiowania do schowka z toastem
+- Instrukcje dla uczestnika
+- Przyciski nawigacyjne
 
+### 2. Modyfikacja: `src/pages/EventRegistrationPage.tsx`
+
+Zmiana w `handleComplete`:
 ```typescript
-import { 
-  // ... istniejące
-  Building2,
-  Copy,
-  AlertTriangle
-} from 'lucide-react';
-```
-
-**2. Import useAuth i toast**
-
-```typescript
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-```
-
-**3. Pobranie danych użytkownika**
-
-Na początku komponentu:
-```typescript
-const { user } = useAuth();
-```
-
-**4. Funkcja generowania tytułu przelewu**
-
-Funkcja zamieniająca placeholdery na rzeczywiste wartości:
-```typescript
-const generateTransferTitle = () => {
-  if (!event.paymentConfig?.transferTitle) {
-    return `${event.name} - ${user?.name || 'Uczestnik'}`;
-  }
-  
-  return event.paymentConfig.transferTitle
-    .replace('{eventName}', event.name)
-    .replace('{participantName}', user?.name || 'Uczestnik')
-    .replace('{distanceName}', selectedDistance?.name || '');
+const handleComplete = (data: RegistrationData) => {
+  // Przekierowanie do strony sukcesu z danymi rejestracji
+  navigate(`/events/${slug}/register/success`, { 
+    state: { 
+      registrationData: data,
+      eventId: event.id,
+      eventName: event.name,
+      eventSlug: slug,
+      eventDate: event.date,
+      eventCity: event.city,
+      paymentConfig: event.paymentConfig
+    } 
+  });
 };
 ```
 
-**5. Funkcja kopiowania do schowka**
+### 3. Modyfikacja: `src/App.tsx`
+
+Dodanie nowej trasy:
+```typescript
+import RegistrationSuccessPage from './pages/RegistrationSuccessPage';
+
+// W Routes:
+<Route path="/events/:slug/register/success" element={<RegistrationSuccessPage />} />
+```
+
+## Szczegóły techniczne
+
+### Przekazywanie danych przez React Router state
+
+Dane rejestracji przekazywane są przez `navigate()` z opcją `state`, co pozwala na:
+- Brak potrzeby globalnego stanu/kontekstu
+- Bezpieczne przekazanie wszystkich danych rejestracji
+- Obsługę przypadku gdy użytkownik wejdzie bezpośrednio na URL (przekierowanie)
+
+### Interfejs danych w state
+
+```typescript
+interface RegistrationSuccessState {
+  registrationData: RegistrationData;
+  eventId: string;
+  eventName: string;
+  eventSlug: string;
+  eventDate: string;
+  eventCity: string;
+  paymentConfig?: PaymentConfig;
+}
+```
+
+### Obsługa błędu braku danych
+
+Jeśli użytkownik wejdzie bezpośrednio na `/events/:slug/register/success` bez state:
+- Wyświetlenie komunikatu o braku danych
+- Przycisk powrotu do listy wydarzeń
+
+### Funkcja kopiowania (ponowne użycie)
 
 ```typescript
 const copyToClipboard = (text: string, label: string) => {
@@ -110,115 +201,24 @@ const copyToClipboard = (text: string, label: string) => {
 };
 ```
 
-**6. Sekcja danych do przelewu w kroku 6**
-
-Po sekcji "Do zapłaty" i przed checkboxem z regulaminem, warunkowo wyświetlana sekcja:
-
-```typescript
-{event.paymentConfig?.type === 'organizer_bank' && (
-  <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg space-y-4">
-    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-      <Building2 className="h-5 w-5" />
-      <h4 className="font-semibold">Dane do przelewu bankowego</h4>
-    </div>
-    
-    <div className="space-y-3 text-sm">
-      {/* Numer konta */}
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-muted-foreground text-xs">Numer konta</p>
-          <p className="font-mono font-medium">{event.paymentConfig.bankAccountNumber}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(event.paymentConfig.bankAccountNumber, 'Numer konta')}>
-          <Copy className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      {/* Odbiorca */}
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-muted-foreground text-xs">Odbiorca</p>
-          <p className="font-medium">{event.paymentConfig.bankAccountHolder}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(event.paymentConfig.bankAccountHolder, 'Odbiorca')}>
-          <Copy className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      {/* Tytuł */}
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-muted-foreground text-xs">Tytuł przelewu</p>
-          <p className="font-medium">{generateTransferTitle()}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}>
-          <Copy className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      {/* Kwota */}
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-muted-foreground text-xs">Kwota</p>
-          <p className="font-bold text-lg">{totalAmount.toFixed(2)} PLN</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}>
-          <Copy className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-    
-    {/* Ostrzeżenie */}
-    <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 pt-2 border-t border-amber-200 dark:border-amber-800">
-      <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-      <p>
-        Płatność przelewem bankowym wymaga ręcznego potwierdzenia przez organizatora. 
-        Twój zapis zostanie potwierdzony po zaksięgowaniu wpłaty.
-      </p>
-    </div>
-  </div>
-)}
-```
-
-**7. Zmiana tekstu przycisku dla przelewów bankowych**
-
-Zmiana tekstu na przycisku końcowym:
-
-```typescript
-{isLastStep ? (
-  <Button onClick={handleSubmit} disabled={!agreedToTerms} size="lg">
-    {event.paymentConfig?.type === 'organizer_bank' 
-      ? 'Zapisz się' 
-      : `Płacę ${totalAmount} zł`}
-    <ArrowRight className="h-4 w-4 ml-2" />
-  </Button>
-) : (
-  // ...
-)}
-```
-
-## Szczegóły techniczne
-
 ### Generowanie tytułu przelewu
 
-Funkcja `generateTransferTitle()` obsługuje placeholdery:
-- `{eventName}` - nazwa wydarzenia
-- `{participantName}` - imię i nazwisko uczestnika (z kontekstu auth)
-- `{distanceName}` - nazwa wybranego dystansu
-
-### Kopiowanie do schowka
-
-Wykorzystanie Clipboard API (`navigator.clipboard.writeText`) z feedbackiem przez toast.
-
-### Stylowanie
-
-Sekcja danych do przelewu wyróżniona:
-- Tło: `bg-amber-50` (light) / `bg-amber-950/20` (dark)
-- Ramka: `border-amber-200` / `border-amber-800`
-- Ikona banku (Building2) z odpowiednim kolorem
+Wykorzystanie tej samej logiki co w `RegistrationForm`:
+```typescript
+const generateTransferTitle = () => {
+  const template = paymentConfig?.transferTitle || '{eventName} - {participantName}';
+  return template
+    .replace('{eventName}', eventName)
+    .replace('{participantName}', user?.name || 'Uczestnik')
+    .replace('{distanceName}', registrationData.distanceName);
+};
+```
 
 ## Podsumowanie zmian
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/components/registration/RegistrationForm.tsx` | Modyfikacja | Dodanie sekcji z danymi do przelewu w kroku 6 (podsumowanie) dla wydarzeń z `paymentConfig.type === 'organizer_bank'` |
+| `src/pages/RegistrationSuccessPage.tsx` | Utworzenie | Nowa strona sukcesu z danymi do przelewu |
+| `src/pages/EventRegistrationPage.tsx` | Modyfikacja | Zmiana przekierowania po rejestracji na stronę sukcesu |
+| `src/App.tsx` | Modyfikacja | Dodanie trasy `/events/:slug/register/success` |
+
