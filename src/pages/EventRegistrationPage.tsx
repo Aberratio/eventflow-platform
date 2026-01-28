@@ -62,11 +62,18 @@ const EventRegistrationPage = () => {
   }
 
   const handleComplete = (data: RegistrationData) => {
-    toast({
-      title: 'Zapisano na zawody!',
-      description: `Zostałeś zapisany na ${event.name} - ${data.distanceName}. Kwota do zapłaty: ${data.totalAmount} zł`,
+    // Redirect to success page with registration data
+    navigate(`/events/${slug}/register/success`, { 
+      state: { 
+        registrationData: data,
+        eventId: event.id,
+        eventName: event.name,
+        eventSlug: slug,
+        eventDate: event.date,
+        eventCity: event.city,
+        paymentConfig: event.paymentConfig
+      } 
     });
-    navigate(`/events/${slug}`);
   };
 
   const handleCancel = () => {

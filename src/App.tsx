@@ -17,6 +17,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
+import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
 import ResultsPage from "./pages/ResultsPage";
 import ResultsCalendarPage from "./pages/ResultsCalendarPage";
 import LiveResultsPage from "./pages/LiveResultsPage";
@@ -78,6 +79,7 @@ const App = () => (
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/events/:slug" element={<EventDetailsPage />} />
                   <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
+                  <Route path="/events/:slug/register/success" element={<RegistrationSuccessPage />} />
                   <Route path="/results" element={<ResultsPage />} />
                   <Route path="/series" element={<SeriesListPage />} />
                   <Route path="/series/:slug" element={<SeriesDetailsPage />} />
