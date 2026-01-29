@@ -71,34 +71,35 @@ export const EventListRow = ({
   return (
     <Link 
       to={`/events/${event.slug}`}
-      className={`group flex items-start gap-3 px-3 py-2.5 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors ${
+      className={`group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors ${
         isRegistered || hasCompleted ? 'bg-primary/5' : ''
       }`}
     >
-      {/* Date column - fixed width */}
-      <div className="w-14 shrink-0 text-center pt-0.5">
-        <span className="text-sm font-medium text-foreground">{dateDisplay}</span>
+      {/* Date column - responsive width */}
+      <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5">
+        <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
       </div>
       
       {/* Vertical separator */}
-      <div className="w-px self-stretch bg-border/50 shrink-0" />
+      <div className="w-px self-stretch bg-border/40 shrink-0" />
       
       {/* Main content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors text-sm sm:text-base">
             {event.name}
           </span>
           {event.isVirtual && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">
-              <Globe className="h-2.5 w-2.5 mr-0.5" />
-              Wirtualny
+            <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0 bg-primary/10 text-primary border-primary/30">
+              <Globe className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />
+              <span className="hidden sm:inline">Wirtualny</span>
+              <span className="sm:hidden">Wirt.</span>
             </Badge>
           )}
           {hasCompleted ? (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Ukończony</Badge>
+            <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">Ukończony</Badge>
           ) : isRegistered ? (
-            <Badge variant="default" className="text-[10px] px-1.5 py-0">Zapisany</Badge>
+            <Badge variant="default" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">Zapisany</Badge>
           ) : null}
           <span className="text-muted-foreground hidden sm:inline">•</span>
           <span className="text-muted-foreground text-sm hidden sm:inline">
@@ -107,7 +108,7 @@ export const EventListRow = ({
         </div>
         
         {/* Distances as inline text + mobile location */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
           <span className="sm:hidden">
             {event.isVirtual ? 'Cały świat' : event.city}
             {showDetails && distancesText && ' • '}
@@ -117,11 +118,11 @@ export const EventListRow = ({
       </div>
       
       {/* Status + counter + arrow */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
         {showDetails && (
           <>
-            <Badge variant={statusDisplay.variant} className="text-[10px] px-1.5 py-0 whitespace-nowrap">
-              {statusDisplay.showTrophy && <Trophy className="h-2.5 w-2.5 mr-0.5" />}
+            <Badge variant={statusDisplay.variant} className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0 whitespace-nowrap">
+              {statusDisplay.showTrophy && <Trophy className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />}
               {statusDisplay.label}
             </Badge>
             <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:flex items-center gap-1">
@@ -132,7 +133,7 @@ export const EventListRow = ({
             </span>
           </>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </div>
     </Link>
   );
