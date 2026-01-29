@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Event, Registration, Result } from '@/types';
-import { Calendar, MapPin, Users, ArrowRight, Globe, Trophy } from 'lucide-react';
+import { Users, ChevronRight, Globe, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -19,7 +19,6 @@ export const EventListRow = ({
   showDetails = false
 }: EventListRowProps) => {
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
-  const totalLimit = event.distances.reduce((acc, d) => acc + d.limit, 0);
   
   const isRegistered = userRegistrations.some(
     r => r.eventId === event.id && r.status === 'confirmed'
@@ -33,11 +32,11 @@ export const EventListRow = ({
 
   const registrationStatus = event.registrationStatus || 'open';
   
-  // For past events, show "Wyniki dostępne" instead of registration status
+  // For past events, show "Wyniki" instead of registration status
   const getStatusDisplay = () => {
     if (isPast) {
       return {
-        label: 'Wyniki dostępne',
+        label: 'Wyniki',
         variant: 'secondary' as const,
         showTrophy: true
       };
@@ -45,10 +44,10 @@ export const EventListRow = ({
     
     return {
       label: registrationStatus === 'open' 
-        ? 'Zapisy otwarte' 
+        ? 'Otwarte' 
         : registrationStatus === 'closed' 
-        ? 'Zapisy zamknięte' 
-        : 'Brak zapisów',
+        ? 'Zamkn.' 
+        : 'Brak',
       variant: registrationStatus === 'open' 
         ? 'default' as const
         : registrationStatus === 'closed' 
@@ -60,91 +59,80 @@ export const EventListRow = ({
   
   const statusDisplay = getStatusDisplay();
 
+  // Format date for display
+  const eventDate = new Date(event.date);
+  const dateDisplay = event.isVirtual && event.startDate && event.endDate 
+    ? `${format(new Date(event.startDate), 'd', { locale: pl })}-${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
+    : format(eventDate, 'd MMM', { locale: pl });
+
+  // Format distances as inline text
+  const distancesText = event.distances.map(d => d.name).join(', ');
+
   return (
     <Link 
       to={`/events/${event.slug}`}
-      className={`group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border bg-card transition-all duration-300 hover:bg-accent/50 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5 ${
-        isRegistered || hasCompleted ? 'ring-1 ring-primary/20 bg-primary/5' : ''
+      className={`group flex items-start gap-3 px-3 py-2.5 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors ${
+        isRegistered || hasCompleted ? 'bg-primary/5' : ''
       }`}
     >
-      {/* Main Info */}
-      <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-semibold text-foreground truncate transition-colors group-hover:text-primary">{event.name}</h3>
-            {event.isVirtual && (
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
-                <Globe className="h-3 w-3 mr-1" />
-                Wirtualny
-              </Badge>
-            )}
-            {hasCompleted ? (
-              <Badge variant="secondary" className="text-xs shrink-0">Ukończony</Badge>
-            ) : isRegistered ? (
-              <Badge variant="default" className="text-xs shrink-0">Zapisany</Badge>
-            ) : null}
-          </div>
-          
-          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {event.isVirtual && event.startDate && event.endDate 
-                ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
-                : format(new Date(event.date), 'd MMM yyyy', { locale: pl })
-              }
-            </span>
-            <span className="flex items-center gap-1">
-              {event.isVirtual ? (
-                <>
-                  <Globe className="h-3.5 w-3.5" />
-                  Cały świat
-                </>
-              ) : (
-                <>
-                  <MapPin className="h-3.5 w-3.5" />
-                  {event.city}
-                </>
-              )}
-            </span>
-          </div>
-
-        {/* Distances - always show on details mode, hide on compact */}
-        {showDetails && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {event.distances.map(d => (
-              <Badge key={d.id} variant="outline" className="text-xs font-normal">
-                {d.name}
-              </Badge>
-            ))}
-          </div>
-        )}
+      {/* Date column - fixed width */}
+      <div className="w-14 shrink-0 text-center pt-0.5">
+        <span className="text-sm font-medium text-foreground">{dateDisplay}</span>
       </div>
-
-      {/* Status + Counter + CTA */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      
+      {/* Vertical separator */}
+      <div className="w-px self-stretch bg-border/50 shrink-0" />
+      
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+            {event.name}
+          </span>
+          {event.isVirtual && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">
+              <Globe className="h-2.5 w-2.5 mr-0.5" />
+              Wirtualny
+            </Badge>
+          )}
+          {hasCompleted ? (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Ukończony</Badge>
+          ) : isRegistered ? (
+            <Badge variant="default" className="text-[10px] px-1.5 py-0">Zapisany</Badge>
+          ) : null}
+          <span className="text-muted-foreground hidden sm:inline">•</span>
+          <span className="text-muted-foreground text-sm hidden sm:inline">
+            {event.isVirtual ? 'Cały świat' : event.city}
+          </span>
+        </div>
+        
+        {/* Distances as inline text + mobile location */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+          <span className="sm:hidden">
+            {event.isVirtual ? 'Cały świat' : event.city}
+            {showDetails && distancesText && ' • '}
+          </span>
+          {showDetails && <span className="truncate">{distancesText}</span>}
+        </div>
+      </div>
+      
+      {/* Status + counter + arrow */}
+      <div className="flex items-center gap-2 shrink-0">
         {showDetails && (
           <>
-            <Badge variant={statusDisplay.variant} className="text-xs whitespace-nowrap shrink-0">
-              {statusDisplay.showTrophy && <Trophy className="h-3 w-3 mr-1" />}
+            <Badge variant={statusDisplay.variant} className="text-[10px] px-1.5 py-0 whitespace-nowrap">
+              {statusDisplay.showTrophy && <Trophy className="h-2.5 w-2.5 mr-0.5" />}
               {statusDisplay.label}
             </Badge>
-            
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground whitespace-nowrap">
-              <Users className="h-4 w-4" />
-              <span className="font-medium text-foreground">{totalParticipants.toLocaleString()}</span>
-              <span>/</span>
-              <span>{totalLimit.toLocaleString()}</span>
-            </div>
+            <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              {totalParticipants >= 1000 
+                ? `${(totalParticipants / 1000).toFixed(1)}k` 
+                : totalParticipants.toLocaleString()}
+            </span>
           </>
         )}
-        
-        {!showDetails && (
-          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Users className="h-3.5 w-3.5" />
-            {totalParticipants.toLocaleString()}
-          </span>
-        )}
-
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </div>
     </Link>
   );
