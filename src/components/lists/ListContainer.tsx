@@ -1,20 +1,29 @@
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface ListGroupProps {
   title?: string;
+  count?: number;
   children: React.ReactNode;
   className?: string;
+  sticky?: boolean;
 }
 
-export const ListGroup = ({ title, children, className }: ListGroupProps) => {
+export const ListGroup = ({ title, count, children, className, sticky = true }: ListGroupProps) => {
   return (
     <div className={cn('', className)}>
       {title && (
-        <div className="px-3 sm:px-4 py-2 bg-muted/30 border-b">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            {title}
-          </span>
+        <div className={cn(
+          'flex items-center justify-between px-3 py-2 bg-background border-b border-border',
+          sticky && 'sticky top-0 z-10'
+        )}>
+          <h3 className="text-sm font-semibold text-foreground capitalize">{title}</h3>
+          {count !== undefined && (
+            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+              {count}
+            </Badge>
+          )}
         </div>
       )}
       {children}

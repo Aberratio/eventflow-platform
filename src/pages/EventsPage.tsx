@@ -207,9 +207,9 @@ const EventsPage = () => {
               />
             }
           >
-            {Object.entries(groupedEvents).map(([monthKey, events]) => (
-              <div key={monthKey} ref={el => monthRefs.current[monthKey] = el}>
-                <ListGroup title={monthKey}>
+          {Object.entries(groupedEvents).map(([monthKey, events]) => (
+              <div key={monthKey} ref={el => monthRefs.current[monthKey] = el} className="scroll-mt-4">
+                <ListGroup title={monthKey} count={events.length}>
                   {events.map(event => (
                     <EventListRow key={event.id} event={event} showDetails={true} />
                   ))}
