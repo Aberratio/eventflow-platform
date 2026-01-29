@@ -1,224 +1,145 @@
 
-
-# Plan: Strona sukcesu po rejestracji z danymi do przelewu
+# Plan: Poprawa wyglądu listy wydarzeń na stronie /wydarzenia
 
 ## Cel
-Utworzenie dedykowanej strony sukcesu (`/events/:slug/register/success`) wyświetlanej po zakończeniu rejestracji. Dla wydarzeń z płatnością przelewem bankowym strona będzie zawierać pełne dane do przelewu i instrukcje dla uczestnika.
+Przekształcenie listy wydarzeń w bardziej kompaktowy, zgrabny i czytelny format. Zmniejszenie wizualnego "ciężaru" każdego wiersza przy zachowaniu wszystkich istotnych informacji.
 
-## Lokalizacja i architektura
+## Obecne problemy
 
-Utworzenie nowej strony `src/pages/RegistrationSuccessPage.tsx` wzorowanej na istniejącej `OrderSuccessPage.tsx`, z dodatkową logiką dla danych przelewu bankowego.
+1. **EventListRow** - każdy wiersz ma dużo paddingu (`p-4`), oddzielną ramkę i efekt uniesienia (`hover:-translate-y-0.5`)
+2. **ListGroup** - nagłówki miesięcy są zbyt małe i mało wyraziste (uppercase, text-xs)
+3. **Dystanse** - wyświetlane jako osobne badge'e zajmują dużo miejsca w pionie
+4. **Brak wizualnej hierarchii** - wszystkie elementy mają podobną wagę wizualną
 
-### Przepływ danych
+## Proponowane zmiany
+
+### 1. Kompaktowy EventListRow
 
 ```text
-RegistrationForm 
-    │
-    ▼ onComplete(data)
-EventRegistrationPage
-    │
-    ▼ navigate z state
-RegistrationSuccessPage
-    │
-    ▼ odczyt state + event.paymentConfig
-Wyświetlenie danych
+PRZED (aktualny):
+┌─────────────────────────────────────────────────────────────────┐
+│  Bieg Górski Tatry 2026                      [Wirtualny]       │
+│  📅 15 cze 2026  📍 Zakopane                                   │
+│  [Ultra 80K] [Trasa 40K] [Trasa 21K]                          │
+│                            [Zapisy otwarte] 1,234 / 2,000  →  │
+└─────────────────────────────────────────────────────────────────┘
+(każdy wiersz z border, border-radius, shadow on hover)
+
+PO (nowy):
+┌─────────────────────────────────────────────────────────────────┐
+│  15 cze │ Bieg Górski Tatry 2026 • Zakopane    [Zapisy] 1,234→│
+│         │ Ultra 80K, Trasa 40K, Trasa 21K                       │
+└─────────────────────────────────────────────────────────────────┘
+(wiersze w ramach miesiąca połączone, tylko border-b)
 ```
 
-## Wizualizacja UI
-
-### Wariant A: Bramka płatnicza (automatyczna)
+### 2. Wyraziste nagłówki miesięcy
 
 ```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                      │
-│                    ✓ (zielona ikona)                                │
-│                                                                      │
-│              Rejestracja zakończona!                                │
-│                                                                      │
-│  Zapisałeś się na wydarzenie Bieg Górski Tatry 2026                │
-│  Dystans: Ultra 80K • Kategoria: M30-34                            │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Szczegóły rejestracji                                              │
-│  ─────────────────────────────────────────────────────────────────  │
-│  Opłata startowa (Ultra 80K)                           450 zł      │
-│  Ubezpieczenie NNW                                      15 zł      │
-│  Koszulka techniczna (L) x1                            119 zł      │
-│  ─────────────────────────────────────────────────────────────────  │
-│  Razem zapłacono                                       584 zł      │
-│                                                                      │
-│  ✓ Płatność zrealizowana automatycznie                             │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  📧 Na podany adres email wysłaliśmy potwierdzenie rejestracji     │
-│                                                                      │
-│  [Zobacz wydarzenie]         [Moje rejestracje]                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+PRZED:                              PO:
+STYCZEŃ 2026                        Styczeń 2026 (3)
+(uppercase, text-xs, bg-muted)      (Capitalized, text-base, sticky header)
 ```
 
-### Wariant B: Przelew bankowy (ręczny)
+### 3. Struktura wizualna
 
 ```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                      │
-│                    ✓ (zielona ikona)                                │
-│                                                                      │
-│              Rejestracja wstępna zakończona!                        │
-│                                                                      │
-│  Zapisałeś się na wydarzenie Bieg Górski Tatry 2026                │
-│  Dystans: Ultra 80K • Kategoria: M30-34                            │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Szczegóły zamówienia                                               │
-│  ─────────────────────────────────────────────────────────────────  │
-│  Opłata startowa (Ultra 80K)                           450 zł      │
-│  Ubezpieczenie NNW                                      15 zł      │
-│  Koszulka techniczna (L) x1                            119 zł      │
-│  ─────────────────────────────────────────────────────────────────  │
-│  Do zapłaty                                            584 zł      │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  🏦 Dane do przelewu bankowego                                      │
-│                                                                      │
-│  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                                                                │  │
-│  │  Numer konta                                                   │  │
-│  │  PL61 1090 1014 0000 0712 1981 2874                [📋 Kopiuj]│  │
-│  │                                                                │  │
-│  │  Odbiorca                                                      │  │
-│  │  Timing Marek Kowalczyk                            [📋 Kopiuj]│  │
-│  │                                                                │  │
-│  │  Tytuł przelewu                                                │  │
-│  │  Bieg Górski Tatry 2026 - Jan Kowalski             [📋 Kopiuj]│  │
-│  │                                                                │  │
-│  │  Kwota                                                         │  │
-│  │  584,00 PLN                                        [📋 Kopiuj]│  │
-│  │                                                                │  │
-│  └───────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-│  ⚠️ Ważne informacje                                                │
-│  • Wpłać dokładną kwotę na podane konto                            │
-│  • Użyj podanego tytułu przelewu                                   │
-│  • Twoja rejestracja zostanie potwierdzona po zaksięgowaniu wpłaty │
-│  • Status płatności możesz sprawdzić w panelu uczestnika           │
-│                                                                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  📧 Na podany adres email wysłaliśmy potwierdzenie z danymi        │
-│     do przelewu                                                     │
-│                                                                      │
-│  [Zobacz wydarzenie]         [Moje rejestracje]                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  Styczeń 2026                                           (5)    │
+├─────────────────────────────────────────────────────────────────┤
+│  12 sty │ Bieg Zimowy Kraków • Kraków         [Otwarte] 450 → │
+│         │ 10 km, 5 km                                          │
+├─────────────────────────────────────────────────────────────────┤
+│  18 sty │ Cross Górski Zakopane • Zakopane    [Otwarte] 890 → │
+│         │ 21 km, 10 km                                         │
+├─────────────────────────────────────────────────────────────────┤
+│  25 sty │ Maraton Zimowy • Gdańsk             [Zamkn.]  1.2k → │
+│         │ 42 km, 21 km                                         │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Luty 2026                                              (8)    │
+├─────────────────────────────────────────────────────────────────┤
+...
 ```
 
 ## Zmiany w plikach
 
-### 1. Nowy plik: `src/pages/RegistrationSuccessPage.tsx`
+### 1. `src/components/lists/EventListRow.tsx`
 
-Nowa strona zawierająca:
-- Nagłówek sukcesu z ikoną CheckCircle
-- Szczegóły rejestracji (dystans, kategoria, kwoty)
-- Warunkową sekcję danych do przelewu (dla `organizer_bank`)
-- Funkcję kopiowania do schowka z toastem
-- Instrukcje dla uczestnika
-- Przyciski nawigacyjne
+**Kluczowe zmiany:**
+- Zmniejszenie paddingu z `p-4` na `px-3 py-2.5`
+- Usunięcie `border`, `rounded-lg`, `hover:-translate-y-0.5`
+- Dodanie `border-b` jako separatora
+- Przeniesienie daty na lewą stronę jako wydzielona kolumna
+- Dystanse jako inline text (przecinkami) zamiast badge'ów
+- Uproszczenie layoutu dla mobile
+- Delikatniejszy hover (`hover:bg-muted/30`)
 
-### 2. Modyfikacja: `src/pages/EventRegistrationPage.tsx`
+### 2. `src/components/lists/ListContainer.tsx`
 
-Zmiana w `handleComplete`:
-```typescript
-const handleComplete = (data: RegistrationData) => {
-  // Przekierowanie do strony sukcesu z danymi rejestracji
-  navigate(`/events/${slug}/register/success`, { 
-    state: { 
-      registrationData: data,
-      eventId: event.id,
-      eventName: event.name,
-      eventSlug: slug,
-      eventDate: event.date,
-      eventCity: event.city,
-      paymentConfig: event.paymentConfig
-    } 
-  });
-};
-```
+**Kluczowe zmiany w ListGroup:**
+- Zmiana nagłówka z uppercase text-xs na capitalized text-sm/base
+- Dodanie licznika wydarzeń jako Badge
+- Opcjonalny sticky header dla lepszej nawigacji
+- Lekkie tło dla separacji wizualnej
 
-### 3. Modyfikacja: `src/App.tsx`
+### 3. `src/pages/EventsPage.tsx`
 
-Dodanie nowej trasy:
-```typescript
-import RegistrationSuccessPage from './pages/RegistrationSuccessPage';
-
-// W Routes:
-<Route path="/events/:slug/register/success" element={<RegistrationSuccessPage />} />
-```
+**Kluczowe zmiany:**
+- Zmniejszenie space-y między grupami miesięcy
+- Usunięcie zewnętrznej ramki Card (wiersze same tworzą strukturę)
+- Dodanie scroll-margin dla nagłówków miesięcy
 
 ## Szczegóły techniczne
 
-### Przekazywanie danych przez React Router state
-
-Dane rejestracji przekazywane są przez `navigate()` z opcją `state`, co pozwala na:
-- Brak potrzeby globalnego stanu/kontekstu
-- Bezpieczne przekazanie wszystkich danych rejestracji
-- Obsługę przypadku gdy użytkownik wejdzie bezpośrednio na URL (przekierowanie)
-
-### Interfejs danych w state
+### EventListRow - nowy layout
 
 ```typescript
-interface RegistrationSuccessState {
-  registrationData: RegistrationData;
-  eventId: string;
-  eventName: string;
-  eventSlug: string;
-  eventDate: string;
-  eventCity: string;
-  paymentConfig?: PaymentConfig;
-}
+// Kompaktowy wiersz z datą po lewej
+<Link className="group flex items-start gap-3 px-3 py-2.5 border-b hover:bg-muted/30 transition-colors">
+  {/* Data - stała szerokość */}
+  <div className="w-14 shrink-0 text-center pt-0.5">
+    <span className="text-sm font-medium">{format(date, 'd MMM', { locale: pl })}</span>
+  </div>
+  
+  {/* Separator */}
+  <div className="w-px h-10 bg-border/50 shrink-0" />
+  
+  {/* Treść */}
+  <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-2">
+      <span className="font-medium truncate">{event.name}</span>
+      <span className="text-muted-foreground">•</span>
+      <span className="text-muted-foreground text-sm">{event.city}</span>
+    </div>
+    <p className="text-xs text-muted-foreground mt-0.5">
+      {event.distances.map(d => d.name).join(', ')}
+    </p>
+  </div>
+  
+  {/* Status + licznik */}
+  <div className="flex items-center gap-2 shrink-0">
+    <Badge variant="..." className="text-xs px-1.5 py-0">{status}</Badge>
+    <span className="text-xs text-muted-foreground">{count}</span>
+    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+  </div>
+</Link>
 ```
 
-### Obsługa błędu braku danych
-
-Jeśli użytkownik wejdzie bezpośrednio na `/events/:slug/register/success` bez state:
-- Wyświetlenie komunikatu o braku danych
-- Przycisk powrotu do listy wydarzeń
-
-### Funkcja kopiowania (ponowne użycie)
+### ListGroup - wyrazisty nagłówek
 
 ```typescript
-const copyToClipboard = (text: string, label: string) => {
-  navigator.clipboard.writeText(text).then(() => {
-    toast({
-      title: 'Skopiowano',
-      description: `${label} został skopiowany do schowka`,
-    });
-  });
-};
-```
-
-### Generowanie tytułu przelewu
-
-Wykorzystanie tej samej logiki co w `RegistrationForm`:
-```typescript
-const generateTransferTitle = () => {
-  const template = paymentConfig?.transferTitle || '{eventName} - {participantName}';
-  return template
-    .replace('{eventName}', eventName)
-    .replace('{participantName}', user?.name || 'Uczestnik')
-    .replace('{distanceName}', registrationData.distanceName);
-};
+<div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-background border-b">
+  <h3 className="text-sm font-semibold capitalize">{title}</h3>
+  <Badge variant="secondary" className="text-xs">{count}</Badge>
+</div>
 ```
 
 ## Podsumowanie zmian
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/pages/RegistrationSuccessPage.tsx` | Utworzenie | Nowa strona sukcesu z danymi do przelewu |
-| `src/pages/EventRegistrationPage.tsx` | Modyfikacja | Zmiana przekierowania po rejestracji na stronę sukcesu |
-| `src/App.tsx` | Modyfikacja | Dodanie trasy `/events/:slug/register/success` |
-
+| `src/components/lists/EventListRow.tsx` | Modyfikacja | Kompaktowy layout z datą po lewej, dystanse inline, mniejsze paddingi |
+| `src/components/lists/ListContainer.tsx` | Modyfikacja | Wyrazistsze nagłówki grup z licznikiem, sticky headers |
+| `src/pages/EventsPage.tsx` | Modyfikacja | Dostosowanie struktury do nowego kompaktowego stylu |
