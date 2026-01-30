@@ -311,16 +311,15 @@ interface EventFiltersSidebarProps {
   filteredCount: number;
 }
 
+// Desktop sidebar only
 export const EventFiltersSidebar = ({
   filters,
   updateFilter,
   toggleArrayFilter,
   clearFilters,
   hasActiveFilters,
-  activeFiltersCount,
   filteredCount,
 }: EventFiltersSidebarProps) => {
-  // Derive cities and organizers from mock data
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(mockEvents.map(e => e.city))];
     return uniqueCities.sort();
@@ -336,86 +335,103 @@ export const EventFiltersSidebar = ({
     return Array.from(uniqueOrgs.entries()).map(([id, name]) => ({ id, name }));
   }, []);
 
-  const filtersContent = (
-    <FiltersContent
-      filters={filters}
-      updateFilter={updateFilter}
-      toggleArrayFilter={toggleArrayFilter}
-      clearFilters={clearFilters}
-      hasActiveFilters={hasActiveFilters}
-      cities={cities}
-      organizers={organizers}
-      filteredCount={filteredCount}
-      showHeader
-    />
-  );
-
-  // Desktop/Tablet sidebar
   return (
-    <>
-      {/* Desktop Sidebar - visible on lg+ */}
-      <aside className="hidden lg:flex w-72 shrink-0 flex-col border-r border-border bg-card/50 p-4 h-[calc(100vh-4rem)] sticky top-16 overflow-hidden">
-        {filtersContent}
-      </aside>
+    <aside className="hidden lg:flex w-72 shrink-0 flex-col border-r border-border bg-card/50 p-4 h-[calc(100vh-4rem)] sticky top-16 overflow-hidden">
+      <FiltersContent
+        filters={filters}
+        updateFilter={updateFilter}
+        toggleArrayFilter={toggleArrayFilter}
+        clearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+        cities={cities}
+        organizers={organizers}
+        filteredCount={filteredCount}
+        showHeader
+      />
+    </aside>
+  );
+};
 
-      {/* Tablet/Mobile Drawer - visible on < lg */}
-      <div className="lg:hidden">
-        <Drawer>
-          <DrawerTrigger asChild>
-            <Button variant="outline" className="w-full">
-              <SlidersHorizontal className="h-4 w-4 mr-2" />
-              Filtry
-              {activeFiltersCount > 0 && (
-                <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="max-h-[85vh]">
-            <DrawerHeader className="pb-0">
-              <DrawerTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filtry wydarzeń
-                </span>
-                {hasActiveFilters && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="h-8 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={clearFilters}
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Wyczyść
-                  </Button>
-                )}
-              </DrawerTitle>
-            </DrawerHeader>
-            <div className="px-4 pb-4 flex-1 overflow-hidden">
-              <FiltersContent
-                filters={filters}
-                updateFilter={updateFilter}
-                toggleArrayFilter={toggleArrayFilter}
-                clearFilters={clearFilters}
-                hasActiveFilters={hasActiveFilters}
-                cities={cities}
-                organizers={organizers}
-                filteredCount={filteredCount}
-                showApplyButton
-                onApply={() => {
-                  document.querySelector<HTMLButtonElement>('[data-drawer-close]')?.click();
-                }}
-              />
-            </div>
-            <DrawerFooter className="pt-0">
-              <DrawerClose asChild data-drawer-close>
-                <Button variant="outline">Zamknij</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
-    </>
+// Mobile/Tablet drawer trigger with full drawer
+export const EventFiltersDrawerTrigger = ({
+  filters,
+  updateFilter,
+  toggleArrayFilter,
+  clearFilters,
+  hasActiveFilters,
+  activeFiltersCount,
+  filteredCount,
+}: EventFiltersSidebarProps) => {
+  const cities = useMemo(() => {
+    const uniqueCities = [...new Set(mockEvents.map(e => e.city))];
+    return uniqueCities.sort();
+  }, []);
+
+  const organizers = useMemo(() => {
+    const uniqueOrgs = new Map<string, string>();
+    mockEvents.forEach(e => {
+      if (e.organizerId && e.organizerName) {
+        uniqueOrgs.set(e.organizerId, e.organizerName);
+      }
+    });
+    return Array.from(uniqueOrgs.entries()).map(([id, name]) => ({ id, name }));
+  }, []);
+
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button variant="outline" size="sm" className="lg:hidden shrink-0">
+          <SlidersHorizontal className="h-4 w-4 mr-2" />
+          Filtry
+          {activeFiltersCount > 0 && (
+            <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+              {activeFiltersCount}
+            </span>
+          )}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="pb-0">
+          <DrawerTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filtry wydarzeń
+            </span>
+            {hasActiveFilters && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                onClick={clearFilters}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Wyczyść
+              </Button>
+            )}
+          </DrawerTitle>
+        </DrawerHeader>
+        <div className="px-4 pb-4 flex-1 overflow-hidden">
+          <FiltersContent
+            filters={filters}
+            updateFilter={updateFilter}
+            toggleArrayFilter={toggleArrayFilter}
+            clearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+            cities={cities}
+            organizers={organizers}
+            filteredCount={filteredCount}
+            showApplyButton
+            onApply={() => {
+              document.querySelector<HTMLButtonElement>('[data-drawer-close]')?.click();
+            }}
+          />
+        </div>
+        <DrawerFooter className="pt-0">
+          <DrawerClose asChild data-drawer-close>
+            <Button variant="outline">Zamknij</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 };

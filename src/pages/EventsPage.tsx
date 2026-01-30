@@ -7,7 +7,7 @@ import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/compon
 import { format, getYear, getMonth, parse } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useEventFilters, distanceRangeOptions } from '@/hooks/useEventFilters';
-import { EventFiltersSidebar } from '@/components/filters/EventFiltersSidebar';
+import { EventFiltersSidebar, EventFiltersDrawerTrigger } from '@/components/filters/EventFiltersSidebar';
 
 const EventsPage = () => {
   const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -143,7 +143,7 @@ const EventsPage = () => {
 
   return (
     <Layout>
-      <div className="flex min-h-[calc(100vh-4rem)]">
+      <div className="flex min-h-[calc(100vh-4rem)] overflow-x-hidden">
         {/* Sidebar (desktop only, managed internally) */}
         <EventFiltersSidebar
           filters={filters}
@@ -156,13 +156,27 @@ const EventsPage = () => {
         />
 
         {/* Main Content */}
-        <div className="flex-1 py-8 px-4 lg:px-8">
-          {/* Header */}
+        <div className="flex-1 py-8 px-4 lg:px-8 min-w-0 overflow-hidden">
+          {/* Header with filter button on mobile */}
           <div className="mb-6">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
-            <p className="text-muted-foreground text-sm lg:text-base">
-              Znajdź idealne zawody dla siebie
-            </p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
+                <p className="text-muted-foreground text-sm lg:text-base">
+                  Znajdź idealne zawody dla siebie
+                </p>
+              </div>
+              {/* Filter button - mobile/tablet only */}
+              <EventFiltersDrawerTrigger
+                filters={filters}
+                updateFilter={updateFilter}
+                toggleArrayFilter={toggleArrayFilter}
+                clearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                activeFiltersCount={activeFiltersCount}
+                filteredCount={filteredEvents.length}
+              />
+            </div>
           </div>
 
           {/* Year Navigation */}

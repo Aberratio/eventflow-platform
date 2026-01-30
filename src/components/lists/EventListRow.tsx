@@ -75,13 +75,10 @@ export const EventListRow = ({
         isRegistered || hasCompleted ? 'bg-primary/5' : ''
       }`}
     >
-      {/* Date column - responsive width */}
-      <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5">
+      {/* Date column with color accent */}
+      <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5 pr-2 sm:pr-3 border-r-2 border-primary/20">
         <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
       </div>
-      
-      {/* Vertical separator */}
-      <div className="w-px self-stretch bg-border/40 shrink-0" />
       
       {/* Main content */}
       <div className="flex-1 min-w-0">
