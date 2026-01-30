@@ -1,116 +1,209 @@
 
-# Plan: Akcenty kolorystyczne dla miesiecy i responsywnosc listy wydarzen
+# Plan: Naprawa poziomego scrollowania i poprawa wizualna listy wydarzeń
 
-## Cel
-Dodanie wyrazistego akcentu kolorystycznego do naglowkow miesiecy oraz poprawa wyswietlania listy na tabletach i urzadzeniach mobilnych.
+## Zidentyfikowane problemy
 
-## Zmiany wizualne
+### 1. Poziomy scroll na tablet/mobile
+- Button filtrów (`lg:hidden`) jest w osobnym div, który nie jest zintegrowany z głównym layoutem strony
+- Na mniejszych ekranach elementy w `EventListRow` mogą przekraczać szerokość kontenera
+- Brak `overflow-x-hidden` na głównym kontenerze
 
-### 1. Naglowki miesiecy z akcentem kolorystycznym
+### 2. Szary separator (border) przy mieście
+- Pionowy separator `w-px self-stretch bg-border/40` pomiędzy datą a treścią wygląda "biednie"
+- Użytkownik chce bardziej estetycznego rozwiązania
 
-Obecny wyglad:
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Styczeń 2026                                           (5)    │  <- neutralne tlo, brak akcentu
-├─────────────────────────────────────────────────────────────────┤
+## Proponowane zmiany
+
+### 1. EventsPage.tsx - Integracja przycisku filtrów
+
+**Obecny układ:**
+```
+<Layout>
+  <div flex>
+    <EventFiltersSidebar /> ← zawiera osobny div z przyciskiem
+    <div main-content>
+      <header>
+      <year-nav>
+      <list>
+    </div>
+  </div>
+</Layout>
 ```
 
-Nowy wyglad z akcentem:
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│ ▌ Styczeń 2026                                          (5)    │  <- zielony pasek po lewej + lekkie tlo accent
-├─────────────────────────────────────────────────────────────────┤
+**Nowy układ:**
+```
+<Layout>
+  <div flex overflow-x-hidden>
+    <EventFiltersSidebar /> ← tylko desktop sidebar + Drawer (bez trigger)
+    <div main-content overflow-hidden>
+      <header + filter button inline> ← przycisk w nagłówku na mobile
+      <year-nav>
+      <list>
+    </div>
+  </div>
+</Layout>
 ```
 
-Elementy akcentu:
-- Pionowy pasek w kolorze primary po lewej stronie naglowka (border-l-3 lub border-l-4)
-- Delikatne tlo w kolorze accent (`bg-accent/50` lub `bg-primary/5`)
-- Badge z liczba wydarzen w kolorze primary
-- Lekko wiekszy padding dla lepszej czytelnosci
+Zmiana: Przycisk filtrów zostanie przeniesiony do nagłówka strony (obok "Wydarzenia sportowe") na mobile/tablet, co pozwoli lepiej kontrolować szerokość.
 
-### 2. Responsywnosc - tablet i mobile
+### 2. EventFiltersSidebar.tsx - Rozdzielenie triggera od Drawera
 
-**Mobile (< 640px):**
-- Data w jednej linii z nazwa (kompaktowo)
-- Ukrycie licznika uczestnikow (juz zaimplementowane)
-- Miasto wyswietlane pod nazwa wydarzenia
-- Mniejszy padding wierszy
+Obecnie komponent zawiera zarówno sidebar, trigger button jak i drawer. Propozycja:
+- Eksport osobnego `FilterDrawerTrigger` i `FilterDrawer` lub
+- Przekazanie triggera jako prop, aby można go było umieścić w dowolnym miejscu
 
-**Tablet (640px - 1024px):**
-- Pelny wyglad jak na desktop
-- Lekko zmniejszone paddingi
-- Wszystkie elementy widoczne
+### 3. EventListRow.tsx - Poprawa separatora i responsywności
 
-### 3. Szczegolowe zmiany UI
+**Obecny separator:**
+```tsx
+<div className="w-px self-stretch bg-border/40 shrink-0" />
+```
 
-#### ListContainer.tsx - ListGroup:
+**Propozycja 1: Subtelny gradient zamiast szarej linii**
+```tsx
+<div className="w-0.5 self-stretch bg-gradient-to-b from-transparent via-primary/20 to-transparent shrink-0" />
+```
 
-```typescript
-<div className={cn(
-  'flex items-center justify-between px-4 py-2.5',
-  'bg-accent/40 border-l-4 border-l-primary',  // Akcent kolorystyczny
-  'border-b border-border',
-  sticky && 'sticky top-0 z-10'
-)}>
-  <h3 className="text-sm font-semibold text-foreground capitalize">{title}</h3>
-  {count !== undefined && (
-    <Badge className="text-xs px-2 py-0.5 bg-primary/15 text-primary border-0">
-      {count}
-    </Badge>
-  )}
+**Propozycja 2: Usunięcie separatora, dodanie akcentu w kolumnie daty**
+```tsx
+{/* Data z akcentem kolorystycznym */}
+<div className="w-12 sm:w-14 shrink-0 text-center py-0.5 border-r-2 border-primary/30">
+  <span className="text-xs sm:text-sm font-medium">{dateDisplay}</span>
 </div>
 ```
 
-#### EventListRow.tsx - poprawa responsywnosci:
+**Propozycja 3 (Minimalistyczna): Usunięcie separatora całkowicie**
+```tsx
+{/* Data bez separatora - wykorzystanie większego gap */}
+<div className="w-12 sm:w-14 shrink-0 text-center pt-0.5">
+  <span className="text-xs sm:text-sm font-medium text-primary/80">{dateDisplay}</span>
+</div>
+{/* Brak separatora, treść zaczyna się bezpośrednio */}
+```
 
-```typescript
-// Responsywne paddingi i ukrywanie elementow
+Rekomendacja: **Propozycja 2** - subtelny kolorowy border na kolumnie daty zamiast szarej linii, co pasuje do akcentu kolorystycznego w nagłówkach miesięcy.
+
+### 4. Dodanie overflow-hidden do kontenerów
+
+```tsx
+// EventsPage.tsx
+<div className="flex min-h-[calc(100vh-4rem)] overflow-x-hidden">
+
+// Main content
+<div className="flex-1 py-8 px-4 lg:px-8 min-w-0 overflow-hidden">
+```
+
+## Szczegółowe zmiany w plikach
+
+### EventsPage.tsx
+
+```tsx
+// Zmiana 1: overflow-x-hidden na głównym kontenerze
+<div className="flex min-h-[calc(100vh-4rem)] overflow-x-hidden">
+
+// Zmiana 2: min-w-0 i overflow-hidden na main content
+<div className="flex-1 py-8 px-4 lg:px-8 min-w-0 overflow-hidden">
+
+// Zmiana 3: Przycisk filtrów w nagłówku na mobile
+<div className="mb-6">
+  <div className="flex items-start justify-between gap-4">
+    <div>
+      <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
+      <p className="text-muted-foreground text-sm lg:text-base">
+        Znajdź idealne zawody dla siebie
+      </p>
+    </div>
+    {/* Filter button - mobile/tablet only */}
+    <div className="lg:hidden shrink-0">
+      <FilterDrawerTrigger ... />
+    </div>
+  </div>
+</div>
+```
+
+### EventFiltersSidebar.tsx
+
+```tsx
+// Eksport DrawerTriggera jako osobny komponent lub prop
+// Usunięcie div lg:hidden z pełną szerokością
+
+// Opcja 1: Przekazanie children jako trigger
+interface EventFiltersSidebarProps {
+  // ... existing props
+  renderTrigger?: (props: { activeFiltersCount: number }) => React.ReactNode;
+}
+
+// Opcja 2: Eksport osobnego komponentu
+export const EventFiltersDrawerTrigger = ({ ... }) => (
+  <DrawerTrigger asChild>
+    <Button variant="outline" size="sm" className="shrink-0">
+      <SlidersHorizontal className="h-4 w-4 mr-2" />
+      Filtry
+      {activeFiltersCount > 0 && (
+        <span className="ml-2 text-xs bg-primary ...">
+          {activeFiltersCount}
+        </span>
+      )}
+    </Button>
+  </DrawerTrigger>
+);
+```
+
+### EventListRow.tsx
+
+```tsx
+// Zmiana separatora na kolorowy akcent przy dacie
 <Link className="group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 ...">
-  
-  {/* Data - mniejsza szerokosc na mobile */}
-  <div className="w-12 sm:w-14 shrink-0 text-center">
-    <span className="text-xs sm:text-sm font-medium">{dateDisplay}</span>
+  {/* Data z kolorowym akcentem po prawej stronie */}
+  <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5 pr-2 sm:pr-3 border-r-2 border-primary/20">
+    <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
   </div>
   
-  {/* Separator - cienszy na mobile */}
-  <div className="w-px self-stretch bg-border/40 shrink-0" />
+  {/* USUNIĘTY: stary szary separator */}
+  {/* <div className="w-px self-stretch bg-border/40 shrink-0" /> */}
   
-  {/* Status badge - mniejszy na mobile */}
-  <Badge className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">
-    {statusDisplay.label}
-  </Badge>
+  {/* Main content - bez zmian */}
+  <div className="flex-1 min-w-0">
+    ...
+  </div>
 </Link>
 ```
 
 ## Podsumowanie zmian
 
-| Plik | Akcja | Opis |
-|------|-------|------|
-| `src/components/lists/ListContainer.tsx` | Modyfikacja | Dodanie akcentu kolorystycznego do ListGroup (border-l-4, bg-accent, Badge primary) |
-| `src/components/lists/EventListRow.tsx` | Modyfikacja | Poprawa responsywnosci (mniejsze paddingi/fonty na mobile, lepsze breakpointy) |
+| Plik | Zmiana | Cel |
+|------|--------|-----|
+| `EventsPage.tsx` | Dodanie `overflow-x-hidden`, `min-w-0`, przeniesienie przycisku filtrów do nagłówka | Eliminacja poziomego scrollowania |
+| `EventFiltersSidebar.tsx` | Refaktor triggera drawera, usunięcie `w-full` | Lepsza kontrola szerokości przycisku |
+| `EventListRow.tsx` | Zamiana szarego separatora na kolorowy border przy kolumnie daty | Poprawa estetyki |
 
-## Efekt koncowy
+## Efekt końcowy
 
-```text
-Desktop/Tablet:
-┌─────────────────────────────────────────────────────────────────┐
-│ ▌ Styczeń 2026                                          [5]    │  <- zielony akcent
-├─────────────────────────────────────────────────────────────────┤
-│  12 sty │ Bieg Zimowy Kraków • Kraków         [Otwarte] 450 → │
-│         │ 10 km, 5 km                                          │
-├─────────────────────────────────────────────────────────────────┤
-│  18 sty │ Cross Górski • Zakopane             [Otwarte] 890 → │
-│         │ 21 km, 10 km                                         │
-└─────────────────────────────────────────────────────────────────┘
+**Desktop (bez zmian):**
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ [Sidebar Filtry]  │  Wydarzenia sportowe                             │
+│                   │  Znajdź idealne zawody dla siebie                │
+│                   ├──────────────────────────────────────────────────│
+│                   │  ▌ Styczeń 2026                            [5]   │
+│                   ├──────────────────────────────────────────────────│
+│                   │  12 sty ▎ Bieg Zimowy • Kraków     [Otwarte] →  │
+└──────────────────────────────────────────────────────────────────────┘
+```
 
-Mobile:
-┌───────────────────────────────────────┐
-│ ▌ Styczeń 2026                   [5] │
-├───────────────────────────────────────┤
-│ 12 sty │ Bieg Zimowy Kraków      → │
-│        │ Kraków • 10 km, 5 km       │
-├───────────────────────────────────────┤
-│ 18 sty │ Cross Górski            → │
-│        │ Zakopane • 21 km, 10 km    │
-└───────────────────────────────────────┘
+**Tablet/Mobile (poprawiony):**
+```
+┌─────────────────────────────────────┐
+│ Wydarzenia sportowe    [🔧 Filtry] │  ← przycisk w nagłówku
+│ Znajdź idealne zawody              │
+├─────────────────────────────────────┤
+│ ▌ Styczeń 2026                 [5] │
+├─────────────────────────────────────┤
+│ 12 sty ▎ Bieg Zimowy           →  │  ← kolorowy akcent zamiast szarego
+│         Kraków • 10 km            │
+├─────────────────────────────────────┤
+│ 18 sty ▎ Cross Górski          →  │
+│         Zakopane • 21 km          │
+└─────────────────────────────────────┘
+(bez poziomego scrollowania)
 ```
