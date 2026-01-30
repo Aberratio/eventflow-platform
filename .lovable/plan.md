@@ -1,209 +1,213 @@
 
-# Plan: Naprawa poziomego scrollowania i poprawa wizualna listy wydarzeń
+# Plan: Poprawa strony wynikow analogicznie do strony wydarzen
 
-## Zidentyfikowane problemy
+## Obecny stan
 
-### 1. Poziomy scroll na tablet/mobile
-- Button filtrów (`lg:hidden`) jest w osobnym div, który nie jest zintegrowany z głównym layoutem strony
-- Na mniejszych ekranach elementy w `EventListRow` mogą przekraczać szerokość kontenera
-- Brak `overflow-x-hidden` na głównym kontenerze
-
-### 2. Szary separator (border) przy mieście
-- Pionowy separator `w-px self-stretch bg-border/40` pomiędzy datą a treścią wygląda "biednie"
-- Użytkownik chce bardziej estetycznego rozwiązania
+Strona `/wyniki` (ResultsCalendarPage) wyswietla kalendarz wynikow zakoczonych zawodow z grupowaniem po miesiacach. Obecny wyglad uzywa Card dla kazdego wydarzenia z badge'ami dla dystansow - co jest niespojne ze zaktualizowana strona wydarzen.
 
 ## Proponowane zmiany
 
-### 1. EventsPage.tsx - Integracja przycisku filtrów
+### 1. Nowy komponent ResultEventListRow
 
-**Obecny układ:**
-```
-<Layout>
-  <div flex>
-    <EventFiltersSidebar /> ← zawiera osobny div z przyciskiem
-    <div main-content>
-      <header>
-      <year-nav>
-      <list>
-    </div>
-  </div>
-</Layout>
+Analogiczny do `EventListRow`, ale dla zakoczonych wydarzen z wynikami:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  12 sty ▎ Polmaraton Warszawski • Warszawa  [Bieg] [3 dyst.] → │
+│         │ 21 km, 10 km, 5 km                                   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Nowy układ:**
-```
-<Layout>
-  <div flex overflow-x-hidden>
-    <EventFiltersSidebar /> ← tylko desktop sidebar + Drawer (bez trigger)
-    <div main-content overflow-hidden>
-      <header + filter button inline> ← przycisk w nagłówku na mobile
-      <year-nav>
-      <list>
-    </div>
-  </div>
-</Layout>
-```
+Elementy:
+- Data po lewej z kolorowym akcentem (border-r-2 border-primary/20)
+- Nazwa wydarzenia + miasto
+- Badge z dyscyplina
+- Ilosc dystansow lub lista dystansow inline
+- Strzalka do przejscia do wynikow
 
-Zmiana: Przycisk filtrów zostanie przeniesiony do nagłówka strony (obok "Wydarzenia sportowe") na mobile/tablet, co pozwoli lepiej kontrolować szerokość.
+### 2. Filtry wynikow (ResultsFiltersSidebar)
 
-### 2. EventFiltersSidebar.tsx - Rozdzielenie triggera od Drawera
+Nowy komponent analogiczny do `EventFiltersSidebar`:
 
-Obecnie komponent zawiera zarówno sidebar, trigger button jak i drawer. Propozycja:
-- Eksport osobnego `FilterDrawerTrigger` i `FilterDrawer` lub
-- Przekazanie triggera jako prop, aby można go było umieścić w dowolnym miejscu
+**Desktop**: Sidebar po lewej (hidden lg:flex)
+**Mobile/Tablet**: Drawer z przyciskiem w naglowku
 
-### 3. EventListRow.tsx - Poprawa separatora i responsywności
+Filtry:
+- Wyszukiwarka (po nazwie wydarzenia lub miescie)
+- Dyscyplina (bieg, kolarstwo, triathlon, multisport)
+- Miasto
+- Dystans (przedzialy: do 5km, 5-10km, 10-21km, 21-42km, 42+km)
+- Seria
 
-**Obecny separator:**
-```tsx
-<div className="w-px self-stretch bg-border/40 shrink-0" />
-```
+### 3. Struktura strony
 
-**Propozycja 1: Subtelny gradient zamiast szarej linii**
-```tsx
-<div className="w-0.5 self-stretch bg-gradient-to-b from-transparent via-primary/20 to-transparent shrink-0" />
-```
+```text
+Desktop:
+┌──────────────────────────────────────────────────────────────────────┐
+│ [Sidebar Filtry]  │  Kalendarz wynikow                               │
+│                   │  Przegladaj wyniki zakoczonych zawodow           │
+│                   ├──────────────────────────────────────────────────│
+│                   │  [2025] [2026] [2027]                            │
+│                   ├──────────────────────────────────────────────────│
+│                   │  ▌ Styczen 2026                            [5]   │
+│                   ├──────────────────────────────────────────────────│
+│                   │  12 sty ▎ Polmaraton Warszawski • Warszawa  →   │
+│                   │         │ 21 km, 10 km                          │
+│                   ├──────────────────────────────────────────────────│
+│                   │  18 sty ▎ Cross Gorski • Zakopane           →   │
+│                   │         │ 15 km, 7 km                           │
+└──────────────────────────────────────────────────────────────────────┘
 
-**Propozycja 2: Usunięcie separatora, dodanie akcentu w kolumnie daty**
-```tsx
-{/* Data z akcentem kolorystycznym */}
-<div className="w-12 sm:w-14 shrink-0 text-center py-0.5 border-r-2 border-primary/30">
-  <span className="text-xs sm:text-sm font-medium">{dateDisplay}</span>
-</div>
-```
-
-**Propozycja 3 (Minimalistyczna): Usunięcie separatora całkowicie**
-```tsx
-{/* Data bez separatora - wykorzystanie większego gap */}
-<div className="w-12 sm:w-14 shrink-0 text-center pt-0.5">
-  <span className="text-xs sm:text-sm font-medium text-primary/80">{dateDisplay}</span>
-</div>
-{/* Brak separatora, treść zaczyna się bezpośrednio */}
-```
-
-Rekomendacja: **Propozycja 2** - subtelny kolorowy border na kolumnie daty zamiast szarej linii, co pasuje do akcentu kolorystycznego w nagłówkach miesięcy.
-
-### 4. Dodanie overflow-hidden do kontenerów
-
-```tsx
-// EventsPage.tsx
-<div className="flex min-h-[calc(100vh-4rem)] overflow-x-hidden">
-
-// Main content
-<div className="flex-1 py-8 px-4 lg:px-8 min-w-0 overflow-hidden">
+Mobile/Tablet:
+┌─────────────────────────────────────┐
+│ Kalendarz wynikow     [Filtry]     │
+│ Przegladaj wyniki zakoczonych      │
+├─────────────────────────────────────┤
+│ [2025] [2026] [2027]               │
+├─────────────────────────────────────┤
+│ ▌ Styczen 2026                 [5] │
+├─────────────────────────────────────┤
+│ 12 sty ▎ Polmaraton Warsz.     →  │
+│         Warszawa • 21 km, 10 km    │
+└─────────────────────────────────────┘
 ```
 
-## Szczegółowe zmiany w plikach
+### 4. Hook useResultsFilters
 
-### EventsPage.tsx
+Analogiczny do `useEventFilters`:
 
-```tsx
-// Zmiana 1: overflow-x-hidden na głównym kontenerze
-<div className="flex min-h-[calc(100vh-4rem)] overflow-x-hidden">
-
-// Zmiana 2: min-w-0 i overflow-hidden na main content
-<div className="flex-1 py-8 px-4 lg:px-8 min-w-0 overflow-hidden">
-
-// Zmiana 3: Przycisk filtrów w nagłówku na mobile
-<div className="mb-6">
-  <div className="flex items-start justify-between gap-4">
-    <div>
-      <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
-      <p className="text-muted-foreground text-sm lg:text-base">
-        Znajdź idealne zawody dla siebie
-      </p>
-    </div>
-    {/* Filter button - mobile/tablet only */}
-    <div className="lg:hidden shrink-0">
-      <FilterDrawerTrigger ... />
-    </div>
-  </div>
-</div>
+```typescript
+interface ResultsFiltersState {
+  search: string;
+  disciplines: SportDiscipline[];
+  cities: string[];
+  distanceRanges: string[];
+  seriesId: string | null;
+  selectedYear: number;
+}
 ```
 
-### EventFiltersSidebar.tsx
+Z zapisem do localStorage (klucz 'results-page-filters').
 
-```tsx
-// Eksport DrawerTriggera jako osobny komponent lub prop
-// Usunięcie div lg:hidden z pełną szerokością
+## Zmiany w plikach
 
-// Opcja 1: Przekazanie children jako trigger
-interface EventFiltersSidebarProps {
-  // ... existing props
-  renderTrigger?: (props: { activeFiltersCount: number }) => React.ReactNode;
+| Plik | Akcja | Opis |
+|------|-------|------|
+| `src/components/lists/ResultEventListRow.tsx` | Nowy | Kompaktowy wiersz wydarzenia z wynikami (analogiczny do EventListRow) |
+| `src/components/filters/ResultsFiltersSidebar.tsx` | Nowy | Filtry dla strony wynikow (sidebar + drawer) |
+| `src/hooks/useResultsFilters.ts` | Nowy | Hook do zarzadzania filtrami wynikow |
+| `src/pages/ResultsCalendarPage.tsx` | Modyfikacja | Integracja nowych komponentow, layout z sidebar |
+| `src/components/lists/index.ts` | Modyfikacja | Eksport nowego ResultEventListRow |
+
+## Szczegoly techniczne
+
+### ResultEventListRow.tsx
+
+```typescript
+interface ResultEventListRowProps {
+  event: Event;
 }
 
-// Opcja 2: Eksport osobnego komponentu
-export const EventFiltersDrawerTrigger = ({ ... }) => (
-  <DrawerTrigger asChild>
-    <Button variant="outline" size="sm" className="shrink-0">
-      <SlidersHorizontal className="h-4 w-4 mr-2" />
-      Filtry
-      {activeFiltersCount > 0 && (
-        <span className="ml-2 text-xs bg-primary ...">
-          {activeFiltersCount}
-        </span>
-      )}
-    </Button>
-  </DrawerTrigger>
-);
-```
-
-### EventListRow.tsx
-
-```tsx
-// Zmiana separatora na kolorowy akcent przy dacie
-<Link className="group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 ...">
-  {/* Data z kolorowym akcentem po prawej stronie */}
-  <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5 pr-2 sm:pr-3 border-r-2 border-primary/20">
-    <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
-  </div>
+export const ResultEventListRow = ({ event }: ResultEventListRowProps) => {
+  const dateDisplay = format(new Date(event.date), 'd MMM', { locale: pl });
+  const distancesText = event.distances.map(d => d.name).join(', ');
   
-  {/* USUNIĘTY: stary szary separator */}
-  {/* <div className="w-px self-stretch bg-border/40 shrink-0" /> */}
-  
-  {/* Main content - bez zmian */}
-  <div className="flex-1 min-w-0">
-    ...
-  </div>
-</Link>
+  return (
+    <Link 
+      to={`/events/${event.slug}?tab=results`}
+      className="group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors"
+    >
+      {/* Data z kolorowym akcentem */}
+      <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5 pr-2 sm:pr-3 border-r-2 border-primary/20">
+        <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
+      </div>
+      
+      {/* Tresc */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors text-sm sm:text-base">
+            {event.name}
+          </span>
+          <span className="text-muted-foreground hidden sm:inline">•</span>
+          <span className="text-muted-foreground text-sm hidden sm:inline">{event.city}</span>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+          <span className="sm:hidden">{event.city} • </span>
+          <span className="truncate">{distancesText}</span>
+        </div>
+      </div>
+      
+      {/* Badge dyscypliny + strzalka */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">
+          <Trophy className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />
+          Wyniki
+        </Badge>
+        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground" />
+      </div>
+    </Link>
+  );
+};
 ```
 
-## Podsumowanie zmian
+### ResultsFiltersSidebar.tsx
 
-| Plik | Zmiana | Cel |
-|------|--------|-----|
-| `EventsPage.tsx` | Dodanie `overflow-x-hidden`, `min-w-0`, przeniesienie przycisku filtrów do nagłówka | Eliminacja poziomego scrollowania |
-| `EventFiltersSidebar.tsx` | Refaktor triggera drawera, usunięcie `w-full` | Lepsza kontrola szerokości przycisku |
-| `EventListRow.tsx` | Zamiana szarego separatora na kolorowy border przy kolumnie daty | Poprawa estetyki |
+Struktura analogiczna do EventFiltersSidebar:
+- `ResultsFiltersSidebar` - sidebar na desktop
+- `ResultsFiltersDrawerTrigger` - drawer na mobile/tablet
 
-## Efekt końcowy
+Filtry:
+- Wyszukiwarka
+- Dyscyplina (checkboxy)
+- Miasto (checkboxy)
+- Dystans (przedzialy jak w EventFiltersSidebar)
+- Seria (checkboxy)
 
-**Desktop (bez zmian):**
+### useResultsFilters.ts
+
+```typescript
+const STORAGE_KEY = 'results-page-filters';
+
+interface ResultsFiltersState {
+  search: string;
+  disciplines: SportDiscipline[];
+  cities: string[];
+  distanceRanges: string[];
+  seriesId: string | null;
+  selectedYear: number;
+}
 ```
+
+### ResultsCalendarPage.tsx - zmiany
+
+1. Import i uzycie useResultsFilters
+2. Layout z flex i overflow-x-hidden (analogicznie do EventsPage)
+3. ResultsFiltersSidebar na desktop
+4. Przycisk filtrow w naglowku na mobile
+5. Uzycie ListContainer i ListGroup z akcentami kolorystycznymi
+6. Uzycie ResultEventListRow zamiast Card
+
+## Wyglad koncowy
+
+```text
+Desktop:
 ┌──────────────────────────────────────────────────────────────────────┐
-│ [Sidebar Filtry]  │  Wydarzenia sportowe                             │
-│                   │  Znajdź idealne zawody dla siebie                │
-│                   ├──────────────────────────────────────────────────│
-│                   │  ▌ Styczeń 2026                            [5]   │
-│                   ├──────────────────────────────────────────────────│
-│                   │  12 sty ▎ Bieg Zimowy • Kraków     [Otwarte] →  │
+│ [Filtry         ]  │  Kalendarz wynikow                              │
+│ [Wyszukaj...   ]  │  Przegladaj wyniki zakoczonych zawodow          │
+│                    │                                                  │
+│ Dyscyplina         │  [◀ 2025]  [2026]  [2027 ▶]                     │
+│ ☐ Bieg             │                                                  │
+│ ☐ Kolarstwo        │  ▌ Styczen 2026                            [5]  │
+│ ☐ Triathlon        │  ─────────────────────────────────────────────  │
+│                    │  12 sty ▎ Polmaraton Warszawski • Warsz.   →   │
+│ Miasto             │         │ 21 km, 10 km                         │
+│ ☐ Warszawa         │  ─────────────────────────────────────────────  │
+│ ☐ Krakow           │  18 sty ▎ Cross Gorski • Zakopane          →   │
+│ ☐ Gdansk           │         │ 15 km, 7 km                          │
+│                    │                                                  │
+│ Dystans            │  ▌ Luty 2026                               [3]  │
+│ ☐ do 5 km          │  ─────────────────────────────────────────────  │
+│ ☐ 5-10 km          │  ...                                            │
+│ ☐ 10-21 km         │                                                  │
 └──────────────────────────────────────────────────────────────────────┘
-```
-
-**Tablet/Mobile (poprawiony):**
-```
-┌─────────────────────────────────────┐
-│ Wydarzenia sportowe    [🔧 Filtry] │  ← przycisk w nagłówku
-│ Znajdź idealne zawody              │
-├─────────────────────────────────────┤
-│ ▌ Styczeń 2026                 [5] │
-├─────────────────────────────────────┤
-│ 12 sty ▎ Bieg Zimowy           →  │  ← kolorowy akcent zamiast szarego
-│         Kraków • 10 km            │
-├─────────────────────────────────────┤
-│ 18 sty ▎ Cross Górski          →  │
-│         Zakopane • 21 km          │
-└─────────────────────────────────────┘
-(bez poziomego scrollowania)
 ```
