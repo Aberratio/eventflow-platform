@@ -14,7 +14,7 @@ import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
-import { ImageGallery } from '@/components/ImageGallery';
+import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
 import { RouteMap } from '@/components/RouteMap';
 import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
@@ -413,7 +413,7 @@ const EventDetailsPage = () => {
                     Trasa
                   </TabsTrigger>
                 )}
-                {event.gallery && event.gallery.length > 0 && (
+                {event.galleryAlbums && event.galleryAlbums.length > 0 && (
                   <TabsTrigger value="gallery">
                     <Images className="h-4 w-4 mr-1" />
                     Galeria
@@ -500,22 +500,9 @@ const EventDetailsPage = () => {
               )}
 
               {/* Gallery Tab */}
-              {event.gallery && event.gallery.length > 0 && (
+              {event.galleryAlbums && event.galleryAlbums.length > 0 && (
                 <TabsContent value="gallery" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Images className="h-5 w-5 text-primary" />
-                        Galeria wydarzenia
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        Zdjęcia z poprzednich edycji i przygotowań
-                      </p>
-                    </CardHeader>
-                    <CardContent>
-                      <ImageGallery images={event.gallery} />
-                    </CardContent>
-                  </Card>
+                  <GalleryAlbumsList albums={event.galleryAlbums} />
                 </TabsContent>
               )}
 

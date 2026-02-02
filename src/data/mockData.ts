@@ -69,14 +69,43 @@ export const mockSeries: EventSeries[] = [
 ];
 
 export const mockUsers: User[] = [
+  // Existing users
   { id: 'p1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant', phone: '+48 123 456 789', birthYear: 1985, gender: 'M', club: 'KB Gliwice' },
   { id: 'p2', name: 'Anna Nowak', email: 'anna@example.com', role: 'participant', phone: '+48 234 567 890', birthYear: 1990, gender: 'K', club: 'LKS Łódź' },
   { id: 'p3', name: 'Piotr Wiśniewski', email: 'piotr@example.com', role: 'participant', birthYear: 1978, gender: 'M' },
   { id: 'p4', name: 'Katarzyna Biegacz', email: 'kasia@example.com', role: 'participant', birthYear: 1995, gender: 'K', club: 'Maratończycy Poznań' },
   { id: 'p5', name: 'Tomasz Kolarz', email: 'tomek@example.com', role: 'participant', birthYear: 1982, gender: 'M' },
+  // New participants - expanded for edge cases
+  { id: 'p6', name: 'Magdalena Szybka', email: 'magda@example.com', role: 'participant', birthYear: 1992, gender: 'K', club: 'KS Tarnów' },
+  { id: 'p7', name: 'Adam Biegacz', email: 'adam.b@example.com', role: 'participant', birthYear: 1988, gender: 'M', club: 'Runners Warsaw' },
+  { id: 'p8', name: 'Beata Górska', email: 'beata.g@example.com', role: 'participant', birthYear: 1975, gender: 'K' },
+  { id: 'p9', name: 'Cezary Ultra', email: 'cezary@example.com', role: 'participant', birthYear: 1970, gender: 'M', club: 'Ultra Team PL' },
+  { id: 'p10', name: 'Dorota Maratonka', email: 'dorota@example.com', role: 'participant', birthYear: 1965, gender: 'K', club: 'Senior Runners' },
+  { id: 'p11', name: 'Emil Sprinter', email: 'emil@example.com', role: 'participant', birthYear: 2000, gender: 'M' },
+  { id: 'p12', name: 'Felicja Rowerowa', email: 'felicja@example.com', role: 'participant', birthYear: 1998, gender: 'K', club: 'Cycling Kraków' },
+  { id: 'p13', name: 'Grzegorz Trail', email: 'grzegorz@example.com', role: 'participant', birthYear: 1983, gender: 'M', club: 'Mountain Runners' },
+  { id: 'p14', name: 'Halina Pływaczka', email: 'halina@example.com', role: 'participant', birthYear: 1977, gender: 'K' },
+  { id: 'p15', name: 'Igor Triatlonista', email: 'igor@example.com', role: 'participant', birthYear: 1991, gender: 'M', club: 'Tri Gdańsk' },
+  { id: 'p16', name: 'Justyna Półmaraton', email: 'justyna@example.com', role: 'participant', birthYear: 1994, gender: 'K', club: 'Half Runners' },
+  { id: 'p17', name: 'Kamil Endurance', email: 'kamil@example.com', role: 'participant', birthYear: 1986, gender: 'M' },
+  { id: 'p18', name: 'Laura Fitness', email: 'laura@example.com', role: 'participant', birthYear: 2002, gender: 'K', club: 'Young Athletes' },
+  { id: 'p19', name: 'Marek Górski', email: 'marek.g@example.com', role: 'participant', birthYear: 1968, gender: 'M', club: 'Senior Trail' },
+  { id: 'p20', name: 'Natalia Szosa', email: 'natalia@example.com', role: 'participant', birthYear: 1996, gender: 'K' },
+  { id: 'p21', name: 'Oskar Multisport', email: 'oskar@example.com', role: 'participant', birthYear: 1989, gender: 'M', club: 'Multi Team' },
+  { id: 'p22', name: 'Patrycja Cross', email: 'patrycja@example.com', role: 'participant', birthYear: 1993, gender: 'K', club: 'Cross Country PL' },
+  { id: 'p23', name: 'Robert Weteran', email: 'robert@example.com', role: 'participant', birthYear: 1960, gender: 'M' },
+  { id: 'p24', name: 'Sandra Nowa', email: 'sandra@example.com', role: 'participant', birthYear: 2003, gender: 'K', isNewUser: true },
+  { id: 'p25', name: 'Tadeusz Klasyk', email: 'tadeusz@example.com', role: 'participant', birthYear: 1958, gender: 'M', club: 'Old Boys Running' },
+  { id: 'p26', name: 'Urszula Pionierka', email: 'urszula@example.com', role: 'participant', birthYear: 1972, gender: 'K' },
+  { id: 'p27', name: 'Wojciech Sprint', email: 'wojciech@example.com', role: 'participant', birthYear: 1997, gender: 'M', club: 'Speed Team' },
+  { id: 'p28', name: 'Zofia Junior', email: 'zofia@example.com', role: 'participant', birthYear: 2004, gender: 'K', isNewUser: true },
+  { id: 'p29', name: 'Artur Wyczynowy', email: 'artur@example.com', role: 'participant', birthYear: 1984, gender: 'M', club: 'Pro Runners' },
+  { id: 'p30', name: 'Barbara Amatorka', email: 'barbara@example.com', role: 'participant', birthYear: 1999, gender: 'K' },
+  // Organizers
   { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer', phone: '+48 600 111 222', companyName: 'Timing Marek Kowalczyk', nip: '1234567890', website: 'https://timing.pl', description: 'Profesjonalne zawody biegowe od 2010 roku. Organizujemy wydarzenia w całej Polsce.' },
   { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer', phone: '+48 32 987 65 43', companyName: 'Sportowe Wydarzenia Sp. z o.o.', nip: '9876543210', website: 'https://sportevents.pl', description: 'Największy organizator imprez sportowych na Śląsku.' },
   { id: 'o3', name: 'RunPoland', email: 'kontakt@runpoland.pl', role: 'organizer', phone: '+48 22 123 45 67', companyName: 'RunPoland S.A.', website: 'https://runpoland.pl', description: 'Ogólnopolska sieć biegów ulicznych i górskich.' },
+  // Admin
   { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin', phone: '+48 800 123 456' },
 ];
 
@@ -188,15 +217,33 @@ export const mockEvents: Event[] = [
     bannerUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=1600&fit=crop',
     bannerCropArea: { x: 0, y: 15, width: 100, height: 50 },
     organizerLogoUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop',
-    gallery: [
-      'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
-      'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800',
-      'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
-      'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800',
-      'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?w=800',
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800',
+    galleryAlbums: [
+      {
+        id: 'ga-e11-1',
+        name: 'Oficjalny album Tatry Ultra 2026',
+        url: 'https://photos.google.com/share/tatry-ultra-2026',
+        platform: 'google_photos',
+        photographer: 'Studio Górskie',
+      },
+      {
+        id: 'ga-e11-2',
+        name: 'Zdjęcia amatorskie - Flickr',
+        url: 'https://flickr.com/groups/tatry-ultra-2026',
+        platform: 'flickr',
+      },
+      {
+        id: 'ga-e11-3',
+        name: 'Album fanów na Facebooku',
+        url: 'https://facebook.com/media/set/tatry-ultra',
+        platform: 'facebook',
+      },
+      {
+        id: 'ga-e11-4',
+        name: 'Stories z wydarzenia',
+        url: 'https://instagram.com/tatry_ultra_2026',
+        platform: 'instagram',
+        photographer: 'Jan Fotograf',
+      },
     ],
     routeMapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200',
     routeElevationProfile: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200',
@@ -1625,6 +1672,96 @@ export const mockEvents: Event[] = [
       enabled: true,
     },
   },
+  // ============================================
+  // EDGE CASE EVENTS
+  // ============================================
+  // Event with NO gallery albums
+  {
+    id: 'e-no-gallery',
+    name: 'Bieg Bez Galerii 2026',
+    slug: 'bieg-bez-galerii-2026',
+    discipline: 'running',
+    date: '2026-05-01',
+    location: 'Park Centralny',
+    city: 'Łódź',
+    description: 'Prosty bieg miejski bez dodatkowych materiałów foto.',
+    imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
+    distances: [
+      { id: 'd-nog-1', name: '5 km', length: 5, unit: 'km', categories: ['Open'], limit: 500, registeredCount: 234, price: 40 },
+    ],
+    organizerId: 'o1',
+    organizerName: 'Marek Organizator',
+    status: 'completed',
+    registrationDeadline: '2026-04-28',
+    featured: false,
+    // NO galleryAlbums - testing empty state
+  },
+  // Event with ONE gallery album
+  {
+    id: 'e-one-album',
+    name: 'Bieg z Jednym Albumem 2026',
+    slug: 'bieg-z-jednym-albumem-2026',
+    discipline: 'running',
+    date: '2026-06-01',
+    location: 'Stadion Miejski',
+    city: 'Poznań',
+    description: 'Wydarzenie z jednym oficjalnym albumem zdjęć.',
+    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+    distances: [
+      { id: 'd-one-1', name: '10 km', length: 10, unit: 'km', categories: ['M', 'K'], limit: 1000, registeredCount: 567, price: 60 },
+    ],
+    organizerId: 'o2',
+    organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    status: 'completed',
+    registrationDeadline: '2026-05-28',
+    featured: false,
+    galleryAlbums: [
+      { id: 'ga-one-1', name: 'Oficjalny album wydarzenia', url: 'https://photos.google.com/share/bieg-poznan-2026', platform: 'google_photos', photographer: 'Foto Studio Poznań' },
+    ],
+  },
+  // Event with FULL registration (all distances at limit)
+  {
+    id: 'e-full',
+    name: 'Bieg Wyprzedany 2026',
+    slug: 'bieg-wyprzedany-2026',
+    discipline: 'running',
+    date: '2026-07-15',
+    location: 'Rynek',
+    city: 'Wrocław',
+    description: 'Bardzo popularny bieg - wszystkie miejsca wyprzedane!',
+    imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
+    distances: [
+      { id: 'd-full-1', name: '10 km', length: 10, unit: 'km', categories: ['M', 'K'], limit: 500, registeredCount: 500, price: 80 },
+      { id: 'd-full-2', name: '5 km', length: 5, unit: 'km', categories: ['Open'], limit: 300, registeredCount: 300, price: 50 },
+    ],
+    organizerId: 'o3',
+    organizerName: 'RunPoland',
+    status: 'published',
+    registrationStatus: 'closed' as const,
+    registrationDeadline: '2026-07-10',
+    featured: false,
+  },
+  // Completed event with NO results yet
+  {
+    id: 'e-no-results',
+    name: 'Bieg Bez Wyników 2026',
+    slug: 'bieg-bez-wynikow-2026',
+    discipline: 'running',
+    date: '2026-01-20',
+    location: 'Park Śląski',
+    city: 'Chorzów',
+    description: 'Wydarzenie zakończone, wyniki w trakcie przetwarzania.',
+    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+    distances: [
+      { id: 'd-nores-1', name: '10 km', length: 10, unit: 'km', categories: ['M', 'K'], limit: 800, registeredCount: 654, price: 70 },
+    ],
+    organizerId: 'o2',
+    organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
+    status: 'completed',
+    registrationDeadline: '2026-01-17',
+    featured: false,
+    // No results in mockResults for this event
+  },
 ];
 
 export const mockRegistrations: Registration[] = [
@@ -1953,6 +2090,43 @@ export const mockRegistrations: Registration[] = [
     status: 'confirmed',
     pricePaid: 65,
   },
+  // ============================================
+  // EXPANDED: More registrations for e11 (Tatry Ultra) - start list edge case
+  // ============================================
+  { id: 'r-e11-001', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p6', userName: 'Magdalena Szybka', userEmail: 'magda@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'K25-29', registeredAt: '2026-01-10T08:00:00Z', status: 'confirmed', bibNumber: '001', pricePaid: 315 },
+  { id: 'r-e11-002', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p7', userName: 'Adam Biegacz', userEmail: 'adam.b@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M30-34', registeredAt: '2026-01-11T09:00:00Z', status: 'confirmed', bibNumber: '002', pricePaid: 315 },
+  { id: 'r-e11-003', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p8', userName: 'Beata Górska', userEmail: 'beata.g@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'K45-49', registeredAt: '2026-01-12T10:00:00Z', status: 'confirmed', bibNumber: '003', pricePaid: 450 },
+  { id: 'r-e11-004', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p9', userName: 'Cezary Ultra', userEmail: 'cezary@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M50-54', registeredAt: '2026-01-13T11:00:00Z', status: 'confirmed', bibNumber: '004', pricePaid: 450 },
+  { id: 'r-e11-005', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p10', userName: 'Dorota Maratonka', userEmail: 'dorota@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'K55-59', registeredAt: '2026-01-14T12:00:00Z', status: 'confirmed', bibNumber: '100', pricePaid: 210 },
+  { id: 'r-e11-006', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p11', userName: 'Emil Sprinter', userEmail: 'emil@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'M18-24', registeredAt: '2026-01-15T13:00:00Z', status: 'confirmed', bibNumber: '200', pricePaid: 126 },
+  { id: 'r-e11-007', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p12', userName: 'Felicja Rowerowa', userEmail: 'felicja@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'K18-24', registeredAt: '2026-01-16T14:00:00Z', status: 'pending', pricePaid: 180 },
+  { id: 'r-e11-008', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p13', userName: 'Grzegorz Trail', userEmail: 'grzegorz@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M35-39', registeredAt: '2026-01-17T15:00:00Z', status: 'confirmed', bibNumber: '005', pricePaid: 315, discountCode: 'ULTRA2026', discountAmount: 67 },
+  { id: 'r-e11-009', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p14', userName: 'Halina Pływaczka', userEmail: 'halina@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'K40-44', registeredAt: '2026-01-18T16:00:00Z', status: 'confirmed', bibNumber: '101', pricePaid: 300 },
+  { id: 'r-e11-010', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p15', userName: 'Igor Triatlonista', userEmail: 'igor@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'M30-34', registeredAt: '2026-01-19T17:00:00Z', status: 'confirmed', bibNumber: '102', pricePaid: 300 },
+  { id: 'r-e11-011', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p16', userName: 'Justyna Półmaraton', userEmail: 'justyna@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'K25-29', registeredAt: '2026-01-20T08:00:00Z', status: 'confirmed', bibNumber: '201', pricePaid: 180 },
+  { id: 'r-e11-012', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p17', userName: 'Kamil Endurance', userEmail: 'kamil@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M35-39', registeredAt: '2026-01-21T09:00:00Z', status: 'confirmed', bibNumber: '006', pricePaid: 450 },
+  { id: 'r-e11-013', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p18', userName: 'Laura Fitness', userEmail: 'laura@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'K18-24', registeredAt: '2026-01-22T10:00:00Z', status: 'pending', pricePaid: 180 },
+  { id: 'r-e11-014', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p19', userName: 'Marek Górski', userEmail: 'marek.g@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'M55-59', registeredAt: '2026-01-23T11:00:00Z', status: 'confirmed', bibNumber: '103', pricePaid: 300 },
+  { id: 'r-e11-015', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p20', userName: 'Natalia Szosa', userEmail: 'natalia@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'K25-29', registeredAt: '2026-01-24T12:00:00Z', status: 'confirmed', bibNumber: '202', pricePaid: 180 },
+  { id: 'r-e11-016', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p21', userName: 'Oskar Multisport', userEmail: 'oskar@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M30-34', registeredAt: '2026-01-25T13:00:00Z', status: 'confirmed', bibNumber: '007', pricePaid: 450 },
+  { id: 'r-e11-017', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p22', userName: 'Patrycja Cross', userEmail: 'patrycja@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'K25-29', registeredAt: '2026-01-26T14:00:00Z', status: 'confirmed', bibNumber: '104', pricePaid: 300 },
+  { id: 'r-e11-018', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p23', userName: 'Robert Weteran', userEmail: 'robert@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'M60+', registeredAt: '2026-01-27T15:00:00Z', status: 'confirmed', bibNumber: '105', pricePaid: 300 },
+  { id: 'r-e11-019', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p24', userName: 'Sandra Nowa', userEmail: 'sandra@example.com', distanceId: 'd22', distanceName: 'Półmaraton 21K', category: 'K18-24', registeredAt: '2026-01-28T16:00:00Z', status: 'confirmed', bibNumber: '203', pricePaid: 180 },
+  { id: 'r-e11-020', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p25', userName: 'Tadeusz Klasyk', userEmail: 'tadeusz@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'M60+', registeredAt: '2026-01-29T17:00:00Z', status: 'confirmed', bibNumber: '106', pricePaid: 300 },
+  // Cancelled registration
+  { id: 'r-e11-021', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p26', userName: 'Urszula Pionierka', userEmail: 'urszula@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'K45-49', registeredAt: '2026-01-30T08:00:00Z', status: 'cancelled', pricePaid: 0 },
+  // ============================================
+  // EXPANDED: More registrations for e22 (Maraton Gdański) - open registration
+  // ============================================
+  { id: 'r-e22-001', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p6', userName: 'Magdalena Szybka', userEmail: 'magda@example.com', distanceId: 'd44', distanceName: 'Maraton 42 km', category: 'K25-29', registeredAt: '2026-02-01T08:00:00Z', status: 'confirmed', bibNumber: '1001', pricePaid: 180 },
+  { id: 'r-e22-002', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p7', userName: 'Adam Biegacz', userEmail: 'adam.b@example.com', distanceId: 'd44', distanceName: 'Maraton 42 km', category: 'M30-39', registeredAt: '2026-02-02T09:00:00Z', status: 'confirmed', bibNumber: '1002', pricePaid: 180 },
+  { id: 'r-e22-003', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p9', userName: 'Cezary Ultra', userEmail: 'cezary@example.com', distanceId: 'd44', distanceName: 'Maraton 42 km', category: 'M50+', registeredAt: '2026-02-03T10:00:00Z', status: 'confirmed', bibNumber: '1003', pricePaid: 180 },
+  { id: 'r-e22-004', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p11', userName: 'Emil Sprinter', userEmail: 'emil@example.com', distanceId: 'd45', distanceName: 'Półmaraton 21 km', category: 'M18-29', registeredAt: '2026-02-04T11:00:00Z', status: 'confirmed', bibNumber: '2001', pricePaid: 110 },
+  { id: 'r-e22-005', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p16', userName: 'Justyna Półmaraton', userEmail: 'justyna@example.com', distanceId: 'd45', distanceName: 'Półmaraton 21 km', category: 'K18-29', registeredAt: '2026-02-05T12:00:00Z', status: 'confirmed', bibNumber: '2002', pricePaid: 110 },
+  { id: 'r-e22-006', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p27', userName: 'Wojciech Sprint', userEmail: 'wojciech@example.com', distanceId: 'd45', distanceName: 'Półmaraton 21 km', category: 'M18-29', registeredAt: '2026-02-06T13:00:00Z', status: 'pending', pricePaid: 110 },
+  { id: 'r-e22-007', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p28', userName: 'Zofia Junior', userEmail: 'zofia@example.com', distanceId: 'd45', distanceName: 'Półmaraton 21 km', category: 'K18-29', registeredAt: '2026-02-07T14:00:00Z', status: 'confirmed', bibNumber: '2003', pricePaid: 110 },
+  { id: 'r-e22-008', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p29', userName: 'Artur Wyczynowy', userEmail: 'artur@example.com', distanceId: 'd44', distanceName: 'Maraton 42 km', category: 'M30-39', registeredAt: '2026-02-08T15:00:00Z', status: 'confirmed', bibNumber: '1004', pricePaid: 180 },
+  { id: 'r-e22-009', eventId: 'e22', eventName: 'Maraton Gdański 2026', userId: 'p30', userName: 'Barbara Amatorka', userEmail: 'barbara@example.com', distanceId: 'd45', distanceName: 'Półmaraton 21 km', category: 'K18-29', registeredAt: '2026-02-09T16:00:00Z', status: 'confirmed', bibNumber: '2004', pricePaid: 110 },
 ];
 
 export const mockResults: Result[] = [
@@ -2407,6 +2581,38 @@ export const mockResults: Result[] = [
     gender: 'M',
     birthYear: 1970,
   },
+  // ============================================
+  // EXPANDED: More results for e11 (Tatry Ultra) - completed event with many results
+  // ============================================
+  { id: 'res-e11-001', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p6', userName: 'Magdalena Szybka', bibNumber: '001', category: 'K25-29', position: 8, categoryPosition: 1, time: '10:15:30', timeInSeconds: 36930, status: 'finished', gender: 'K', birthYear: 1992 },
+  { id: 'res-e11-002', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p7', userName: 'Adam Biegacz', bibNumber: '002', category: 'M30-34', position: 3, categoryPosition: 1, time: '9:30:15', timeInSeconds: 34215, status: 'finished', gender: 'M', birthYear: 1988 },
+  { id: 'res-e11-003', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p8', userName: 'Beata Górska', bibNumber: '003', category: 'K45-49', position: 15, categoryPosition: 1, time: '11:45:00', timeInSeconds: 42300, status: 'finished', gender: 'K', birthYear: 1975 },
+  { id: 'res-e11-004', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p9', userName: 'Cezary Ultra', bibNumber: '004', category: 'M50-54', position: 12, categoryPosition: 1, time: '11:15:30', timeInSeconds: 40530, status: 'finished', gender: 'M', birthYear: 1970 },
+  { id: 'res-e11-005', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p10', userName: 'Dorota Maratonka', bibNumber: '100', category: 'K55-59', position: 25, categoryPosition: 1, time: '5:30:00', timeInSeconds: 19800, status: 'finished', gender: 'K', birthYear: 1965 },
+  { id: 'res-e11-006', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd22', distanceName: 'Półmaraton 21K', userId: 'p11', userName: 'Emil Sprinter', bibNumber: '200', category: 'M18-24', position: 2, categoryPosition: 1, time: '1:45:00', timeInSeconds: 6300, status: 'finished', gender: 'M', birthYear: 2000 },
+  { id: 'res-e11-007', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p13', userName: 'Grzegorz Trail', bibNumber: '005', category: 'M35-39', position: 5, categoryPosition: 1, time: '9:58:45', timeInSeconds: 35925, status: 'finished', gender: 'M', birthYear: 1983 },
+  { id: 'res-e11-008', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p14', userName: 'Halina Pływaczka', bibNumber: '101', category: 'K40-44', position: 18, categoryPosition: 2, time: '4:55:20', timeInSeconds: 17720, status: 'finished', gender: 'K', birthYear: 1977 },
+  { id: 'res-e11-009', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p15', userName: 'Igor Triatlonista', bibNumber: '102', category: 'M30-34', position: 7, categoryPosition: 2, time: '4:15:00', timeInSeconds: 15300, status: 'finished', gender: 'M', birthYear: 1991 },
+  { id: 'res-e11-010', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd22', distanceName: 'Półmaraton 21K', userId: 'p16', userName: 'Justyna Półmaraton', bibNumber: '201', category: 'K25-29', position: 5, categoryPosition: 1, time: '1:58:30', timeInSeconds: 7110, status: 'finished', gender: 'K', birthYear: 1994 },
+  { id: 'res-e11-011', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p17', userName: 'Kamil Endurance', bibNumber: '006', category: 'M35-39', position: 6, categoryPosition: 2, time: '10:05:00', timeInSeconds: 36300, status: 'finished', gender: 'M', birthYear: 1986 },
+  { id: 'res-e11-012', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p19', userName: 'Marek Górski', bibNumber: '103', category: 'M55-59', position: 22, categoryPosition: 1, time: '5:10:00', timeInSeconds: 18600, status: 'finished', gender: 'M', birthYear: 1968 },
+  { id: 'res-e11-013', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd22', distanceName: 'Półmaraton 21K', userId: 'p20', userName: 'Natalia Szosa', bibNumber: '202', category: 'K25-29', position: 8, categoryPosition: 2, time: '2:05:15', timeInSeconds: 7515, status: 'finished', gender: 'K', birthYear: 1996 },
+  { id: 'res-e11-014', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p21', userName: 'Oskar Multisport', bibNumber: '007', category: 'M30-34', position: 4, categoryPosition: 2, time: '9:45:30', timeInSeconds: 35130, status: 'finished', gender: 'M', birthYear: 1989 },
+  { id: 'res-e11-015', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p22', userName: 'Patrycja Cross', bibNumber: '104', category: 'K25-29', position: 12, categoryPosition: 1, time: '4:35:00', timeInSeconds: 16500, status: 'finished', gender: 'K', birthYear: 1993 },
+  { id: 'res-e11-016', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p23', userName: 'Robert Weteran', bibNumber: '105', category: 'M60+', position: 30, categoryPosition: 1, time: '5:45:00', timeInSeconds: 20700, status: 'finished', gender: 'M', birthYear: 1960 },
+  { id: 'res-e11-017', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd22', distanceName: 'Półmaraton 21K', userId: 'p24', userName: 'Sandra Nowa', bibNumber: '203', category: 'K18-24', position: 10, categoryPosition: 1, time: '2:12:00', timeInSeconds: 7920, status: 'finished', gender: 'K', birthYear: 2003 },
+  { id: 'res-e11-018', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd21', distanceName: 'Maraton 42K', userId: 'p25', userName: 'Tadeusz Klasyk', bibNumber: '106', category: 'M60+', position: 35, categoryPosition: 2, time: '6:00:00', timeInSeconds: 21600, status: 'finished', gender: 'M', birthYear: 1958 },
+  // DNF and DSQ examples
+  { id: 'res-e11-dnf1', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd20', distanceName: 'Ultra 80K', userId: 'p26', userName: 'Urszula Pionierka', bibNumber: '050', category: 'K45-49', position: 0, categoryPosition: 0, time: '-', timeInSeconds: 0, status: 'dnf', gender: 'K', birthYear: 1972 },
+  { id: 'res-e11-dsq1', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', distanceId: 'd22', distanceName: 'Półmaraton 21K', userId: 'p27', userName: 'Wojciech Sprint', bibNumber: '250', category: 'M18-24', position: 0, categoryPosition: 0, time: '-', timeInSeconds: 0, status: 'dsq', gender: 'M', birthYear: 1997 },
+  // ============================================
+  // EXPANDED: Results for completed 2025 events
+  // ============================================
+  { id: 'res-e9-001', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', distanceId: 'd17', distanceName: '10km', userId: 'p1', userName: 'Jan Kowalski', bibNumber: '1001', category: 'M', position: 1, categoryPosition: 1, time: '0:42:15', timeInSeconds: 2535, status: 'finished', gender: 'M', birthYear: 1985 },
+  { id: 'res-e9-002', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', distanceId: 'd17', distanceName: '10km', userId: 'p2', userName: 'Anna Nowak', bibNumber: '2345', category: 'K', position: 10, categoryPosition: 1, time: '0:48:30', timeInSeconds: 2910, status: 'finished', gender: 'K', birthYear: 1990 },
+  { id: 'res-e9-003', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', distanceId: 'd17', distanceName: '10km', userId: 'p3', userName: 'Piotr Wiśniewski', bibNumber: '789', category: 'M', position: 2, categoryPosition: 2, time: '0:45:00', timeInSeconds: 2700, status: 'finished', gender: 'M', birthYear: 1978 },
+  { id: 'res-e9-004', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', distanceId: 'd17', distanceName: '10km', userId: 'p6', userName: 'Magdalena Szybka', bibNumber: '1100', category: 'K', position: 5, categoryPosition: 2, time: '0:46:15', timeInSeconds: 2775, status: 'finished', gender: 'K', birthYear: 1992 },
+  { id: 'res-e9-005', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', distanceId: 'd17', distanceName: '10km', userId: 'p7', userName: 'Adam Biegacz', bibNumber: '1200', category: 'M', position: 3, categoryPosition: 3, time: '0:45:30', timeInSeconds: 2730, status: 'finished', gender: 'M', birthYear: 1988 },
 ];
 
 export const mockPersonalRecords: PersonalRecord[] = [
