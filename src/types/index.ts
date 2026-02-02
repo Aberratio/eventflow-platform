@@ -136,7 +136,7 @@ export interface Event {
   enableMerchandiseInRegistration?: boolean;
   insuranceOption?: InsuranceOption;
   // Gallery and route
-  gallery?: string[];
+  galleryAlbums?: GalleryAlbum[];
   routeMapUrl?: string;
   routeGpxUrl?: string;
   routeElevationProfile?: string;
@@ -505,6 +505,17 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   actionUrl?: string;
+}
+
+// Gallery album for external photo platforms
+export type GalleryPlatform = 'google_photos' | 'flickr' | 'facebook' | 'instagram' | 'other';
+
+export interface GalleryAlbum {
+  id: string;
+  name: string;
+  url: string;
+  platform: GalleryPlatform;
+  photographer?: string;
 }
 
 // Virtual event result submission
