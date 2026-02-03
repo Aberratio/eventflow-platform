@@ -1,7 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Timer, Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
+import { mockInfoPages } from '@/data/mockData';
 
 export const Footer = () => {
+  // Get only published pages that should show in footer
+  const footerPages = mockInfoPages
+    .filter(page => page.published && page.showInFooter)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <footer className="border-t bg-card mt-auto">
       <div className="container py-8 md:py-12">
@@ -28,14 +34,17 @@ export const Footer = () => {
             </ul>
           </div>
           
-          {/* Informacje */}
+          {/* Informacje - Dynamic from CMS */}
           <div>
             <h4 className="font-semibold mb-4">Informacje</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/info/kontakt" className="hover:text-foreground transition-colors">Kontakt</Link></li>
-              <li><Link to="/info/oferta" className="hover:text-foreground transition-colors">Oferta</Link></li>
-              <li><Link to="/info/ubezpieczenia" className="hover:text-foreground transition-colors">Ubezpieczenia</Link></li>
-              <li><Link to="/info/o-nas" className="hover:text-foreground transition-colors">O nas</Link></li>
+              {footerPages.map(page => (
+                <li key={page.id}>
+                  <Link to={`/info/${page.slug}`} className="hover:text-foreground transition-colors">
+                    {page.title}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           
@@ -43,7 +52,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Prawne</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="#" className="hover:text-foreground transition-colors">Regulamin</Link></li>
+              <li><Link to="/info/regulamin" className="hover:text-foreground transition-colors">Regulamin</Link></li>
               <li><Link to="#" className="hover:text-foreground transition-colors">Polityka prywatności</Link></li>
               <li><Link to="#" className="hover:text-foreground transition-colors">RODO</Link></li>
             </ul>

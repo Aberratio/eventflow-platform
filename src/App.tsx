@@ -22,10 +22,7 @@ import ResultsPage from "./pages/ResultsPage";
 import ResultsCalendarPage from "./pages/ResultsCalendarPage";
 import LiveResultsPage from "./pages/LiveResultsPage";
 
-import ContactPage from "./pages/info/ContactPage";
-import OfferPage from "./pages/info/OfferPage";
-import InsurancePage from "./pages/info/InsurancePage";
-import AboutPage from "./pages/info/AboutPage";
+import { DynamicInfoPage } from './components/info/DynamicInfoPage';
 import SeriesListPage from "./pages/SeriesListPage";
 import SeriesDetailsPage from "./pages/SeriesDetailsPage";
 import ShopPage from "./pages/ShopPage";
@@ -63,11 +60,14 @@ const App = () => (
                   <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
                   
+                  {/* Dynamic info pages */}
+                  <Route path="/info/:slug" element={<DynamicInfoPage />} />
                   
-                  <Route path="/info/kontakt" element={<ContactPage />} />
-                  <Route path="/info/oferta" element={<OfferPage />} />
-                  <Route path="/info/ubezpieczenia" element={<InsurancePage />} />
-                  <Route path="/info/o-nas" element={<AboutPage />} />
+                  {/* Legacy info routes for backward compatibility */}
+                  <Route path="/info/kontakt" element={<DynamicInfoPage />} />
+                  <Route path="/info/oferta" element={<DynamicInfoPage />} />
+                  <Route path="/info/ubezpieczenia" element={<DynamicInfoPage />} />
+                  <Route path="/info/o-nas" element={<DynamicInfoPage />} />
                   <Route path="/logowanie" element={<LoginPage />} />
                   <Route path="/rejestracja" element={<RegisterPage />} />
                   <Route path="/sklep" element={<ShopPage />} />
