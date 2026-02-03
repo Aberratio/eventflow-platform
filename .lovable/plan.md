@@ -1,255 +1,279 @@
 
 
-# Plan: Zmiana galerii na linki do albumow oraz rozbudowa mockow
+# Plan: CMS dla stron informacyjnych w panelu admina
 
 ## Cel
 
-1. **Galeria** - zamiana wyswietlania zdjec na linki do zewnetrznych albumow (Google Photos, Flickr, Facebook itp.)
-2. **Mock data** - znaczna rozbudowa danych testowych dla pelnego pokrycia edge case'ow:
-   - Wiecej wynikow (results)
-   - Wiecej zapisanych uczestnikow (registrations/start lists)
-   - Rozne scenariusze wydarzen
+Dodanie nowej zakładki "Strony" w panelu administratora, pozwalającej na:
+- Przeglądanie istniejących stron informacyjnych
+- Dodawanie nowych stron (np. FAQ, Regulamin, Polityka prywatności)
+- Edycję treści i ustawień stron
+- Ukrywanie/publikowanie stron
+- Zarządzanie kolejnością wyświetlania w nawigacji
 
----
+## Architektura rozwiązania
 
-## 1. Zmiany w typach i strukturze danych
-
-### Nowy typ GalleryAlbum (src/types/index.ts)
-
-Zamiast `gallery?: string[]` (lista URL zdjec), wprowadzamy:
+### 1. Nowy typ InfoPage
 
 ```typescript
-export interface GalleryAlbum {
+interface InfoPage {
   id: string;
-  name: string;           // np. "Oficjalny album 2025"
-  url: string;            // link zewnetrzny
-  platform: 'google_photos' | 'flickr' | 'facebook' | 'instagram' | 'other';
-  photographer?: string;  // opcjonalnie - autor
+  title: string;              // Tytuł strony (np. "O nas")
+  slug: string;               // URL slug (np. "o-nas")
+  icon: string;               // Nazwa ikony z lucide-react
+  description: string;        // Krótki opis (meta description)
+  content: InfoPageSection[]; // Sekcje treści
+  published: boolean;         // Czy widoczna publicznie
+  showInFooter: boolean;      // Czy pokazywać w stopce
+  showInHeader: boolean;      // Czy pokazywać w nagłówku
+  order: number;              // Kolejność w nawigacji
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface InfoPageSection {
+  id: string;
+  type: 'hero' | 'text' | 'cards' | 'faq' | 'cta' | 'stats' | 'team' | 'pricing';
+  title?: string;
+  content?: string;           // Markdown lub prosty tekst
+  items?: InfoPageSectionItem[];
+}
+
+interface InfoPageSectionItem {
+  id: string;
+  title: string;
+  description: string;
+  icon?: string;
+  link?: string;
+  image?: string;
 }
 ```
 
-Zmiana w Event:
-```typescript
-// Przed:
-gallery?: string[];
+### 2. Nowa zakładka w AdminDashboard
 
-// Po:
-galleryAlbums?: GalleryAlbum[];
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [Pulpit] [Moderacja] [Uczestnicy] [Organizatorzy] [Wydarzenia]          │
+│ [Sklep] [Partnerzy] [Strony] [Profil]                                   │
+│                          ^^^^^^                                         │
+│                          NOWA ZAKLADKA                                  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 2. Nowy komponent GalleryAlbumsList
-
-Zamiast ImageGallery, tworzymy nowy komponent wyswietlajacy linki:
+### 3. Komponent AdminPagesTab
 
 **Wyglad:**
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Strony informacyjne                               [+ Dodaj stronę]     │
+│ Zarządzaj treścią stron publicznych                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ [Mail] Kontakt              /info/kontakt    [Opublikowana] [...]  │ │
+│ │        Formularz kontaktowy i dane firmy     [Stopka] [Nagłówek]   │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ [Gift] Oferta               /info/oferta     [Opublikowana] [...]  │ │
+│ │        Pakiety i cennik dla organizatorów    [Stopka] [Nagłówek]   │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ [Shield] Ubezpieczenia      /info/ubezp...   [Opublikowana] [...]  │ │
+│ │          Ubezpieczenie NNW dla zawodników    [Stopka]              │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ [Users] O nas               /info/o-nas      [Opublikowana] [...]  │ │
+│ │         Historia i zespół SportTime          [Stopka] [Nagłówek]   │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ [HelpCircle] FAQ            /info/faq        [Szkic] [...]         │ │
+│ │              Najczęściej zadawane pytania                          │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ 📷 Galeria i albumy                                             │
-│ Przegladaj zdjecia z wydarzenia na zewnetrznych platformach    │
-├─────────────────────────────────────────────────────────────────┤
-│ ┌─────────────────────────────────────────────────────────────┐ │
-│ │ [Google Photos]  Oficjalny album 2025                    → │ │
-│ │                  Fot. Jan Fotograf                         │ │
-│ └─────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────┐ │
-│ │ [Flickr]  Zdjecia amatorskie                             → │ │
-│ └─────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────┐ │
-│ │ [Facebook]  Album fanow                                  → │ │
-│ └─────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+
+**Funkcjonalnosci:**
+- Lista wszystkich stron z podgladem statusu
+- Drag & drop do zmiany kolejnosci (opcjonalnie)
+- Quick actions: Edytuj, Podglad, Publikuj/Ukryj, Usun
+- Badge'e pokazujace gdzie strona jest widoczna (Stopka/Naglowek)
+
+### 4. Dialog edycji/dodawania strony
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Edytuj stronę: O nas                                              [X]  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│ Tytuł strony *                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ O nas                                                               │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+│ Slug URL *                                                             │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ o-nas                                                               │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ Podgląd: sporttime.pl/info/o-nas                                       │
+│                                                                         │
+│ Ikona                                                                  │
+│ ┌───────────────────────────┐                                          │
+│ │ [Users] Users         ▼  │                                          │
+│ └───────────────────────────┘                                          │
+│                                                                         │
+│ Krótki opis (SEO)                                                      │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ Poznaj historię SportTime i nasz zespół                            │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ Ustawienia widoczności                                              │ │
+│ │ ☑ Opublikowana                                                      │ │
+│ │ ☑ Pokazuj w stopce                                                  │ │
+│ │ ☐ Pokazuj w nagłówku                                                │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│ Sekcje treści                                      [+ Dodaj sekcję]    │
+│ ═══════════════════════════════════════════════════════════════════════ │
+│                                                                         │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ 1. [Hero] Nagłówek główny                              [↑] [↓] [X] │ │
+│ │    Poznaj zespół SportTime...                                       │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ 2. [Stats] Statystyki                                  [↑] [↓] [X] │ │
+│ │    4 elementy: 500+ wydarzeń, 150k uczestników...                   │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ 3. [Text] Nasza historia                               [↑] [↓] [X] │ │
+│ │    SportTime powstał w 2016 roku...                                 │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+│                                                                         │
+│                                    [Anuluj]    [Zapisz zmiany]         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Kazdy wiersz:
-- Ikona platformy (rozpoznawanie po typie)
-- Nazwa albumu
-- Opcjonalnie autor/fotograf
-- Strzalka -> otwiera link w nowej karcie
+### 5. Dynamiczny renderer stron
 
----
+Zamiast oddzielnych komponentow dla kazdej strony (AboutPage, OfferPage), tworzymy uniwersalny komponent `DynamicInfoPage` ktory:
+- Pobiera dane strony po slug
+- Renderuje sekcje dynamicznie na podstawie typu
+- Obsluguje 404 dla nieistniejacych stron
 
-## 3. Rozbudowa mockData
-
-### 3.1 Wiecej uczestnikow (mockUsers)
-
-Dodanie 20+ nowych uczestnikow z roznymi profilami:
-- Rozne roczniki (1960-2005) - pokrycie kategorii wiekowych
-- Rozne plci (M/K)
-- Z klubem i bez
-- Rozne miasta
-
-### 3.2 Wiecej rejestracji (mockRegistrations)
-
-Dla kazdego wydarzenia z otwartymi zapisami:
-- 50-200 rejestracji na rozne dystanse
-- Rozne statusy (confirmed, pending, cancelled)
-- Z merchandise i bez
-- Z kodami rabatowymi i bez
-
-### 3.3 Wiecej wynikow (mockResults)
-
-Dla kazdego zakonczonego wydarzenia:
-- 30-100+ wynikow
-- Rozne kategorie wiekowe i plciowe
-- TOP 3 z medalami
-- DNF i DSQ dla realizmu
-- Rozne czasy
-
-### 3.4 Edge case'y wydarzen
-
-Dodanie wydarzen reprezentujacych wszystkie scenariusze:
-
-| Scenariusz | Event ID | Opis |
-|------------|----------|------|
-| Brak galerii | e-no-gallery | Wydarzenie bez zadnych albumow |
-| 1 album | e-one-album | Jeden link do Google Photos |
-| Wiele albumow | e-multi-album | 4+ linki do roznych platform |
-| Pelne zapisy | e-full | Limit osiagniety na wszystkich dystansach |
-| Prawie pelne | e-almost-full | 95-99% zapelnienia |
-| Wydarzenie archiwalne | e-archive-2024 | Stare wydarzenie z pelna historia |
-| Brak wynikow | e-no-results | Zakonczone ale brak wynikow |
-| Tylko PDF | e-pdf-only | Wyniki tylko w dokumentach |
-| Duzo kategorii | e-many-cats | 20+ kategorii wiekowych |
-
----
-
-## 4. Zmiany w plikach
+## Zmiany w plikach
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie interfejsu GalleryAlbum, zmiana Event.gallery na galleryAlbums |
-| `src/components/GalleryAlbumsList.tsx` | Nowy | Komponent wyswietlajacy linki do albumow |
-| `src/pages/EventDetailsPage.tsx` | Modyfikacja | Podmiana ImageGallery na GalleryAlbumsList |
-| `src/data/mockData.ts` | Modyfikacja | Rozbudowa: users, registrations, results, events z galleryAlbums |
-| `src/components/ImageGallery.tsx` | Usuniecie | Komponent juz niepotrzebny (lub zachowany dla innych zastosowan) |
+| `src/types/index.ts` | Modyfikacja | Dodanie InfoPage, InfoPageSection, InfoPageSectionItem |
+| `src/data/mockData.ts` | Modyfikacja | Dodanie mockInfoPages z danymi 4 istniejacych stron + 2 nowe (FAQ, Regulamin jako szkice) |
+| `src/pages/admin/components/AdminPagesTab.tsx` | Nowy | Glowna zakladka CMS z lista stron |
+| `src/pages/admin/components/PageEditorDialog.tsx` | Nowy | Dialog edycji strony z edytorem sekcji |
+| `src/pages/admin/components/SectionEditor.tsx` | Nowy | Edytor pojedynczej sekcji |
+| `src/pages/admin/AdminDashboard.tsx` | Modyfikacja | Dodanie zakladki "Strony" |
+| `src/components/info/DynamicInfoPage.tsx` | Nowy | Uniwersalny renderer stron informacyjnych |
+| `src/components/info/sections/*.tsx` | Nowe | Komponenty dla typow sekcji (HeroSection, TextSection, StatsSection, FaqSection, etc.) |
+| `src/App.tsx` | Modyfikacja | Dodanie dynamicznej trasy `/info/:slug` |
+| `src/components/layout/Footer.tsx` | Modyfikacja | Dynamiczne linki na podstawie mockInfoPages |
 
----
-
-## 5. Przykladowe dane mockowe
-
-### GalleryAlbums dla wydarzenia e11:
+## Mock data - przykladowe strony
 
 ```typescript
-galleryAlbums: [
+export const mockInfoPages: InfoPage[] = [
   {
-    id: 'ga1',
-    name: 'Oficjalny album Tatry Ultra 2026',
-    url: 'https://photos.google.com/share/tatry-ultra-2026',
-    platform: 'google_photos',
-    photographer: 'Studio Gorskie',
+    id: 'page-kontakt',
+    title: 'Kontakt',
+    slug: 'kontakt',
+    icon: 'Mail',
+    description: 'Skontaktuj się z zespołem SportTime',
+    published: true,
+    showInFooter: true,
+    showInHeader: false,
+    order: 1,
+    content: [
+      {
+        id: 's1',
+        type: 'hero',
+        title: 'Kontakt',
+        content: 'Masz pytania? Skontaktuj się z nami!',
+      },
+      {
+        id: 's2',
+        type: 'cards',
+        title: 'Dane kontaktowe',
+        items: [
+          { id: 'c1', title: 'Email', description: 'kontakt@sporttime.pl', icon: 'Mail' },
+          { id: 'c2', title: 'Telefon', description: '+48 123 456 789', icon: 'Phone' },
+          { id: 'c3', title: 'Adres', description: 'ul. Sportowa 1, 00-001 Warszawa', icon: 'MapPin' },
+        ],
+      },
+    ],
+    createdAt: '2024-01-01',
+    updatedAt: '2025-01-15',
   },
   {
-    id: 'ga2',
-    name: 'Zdjecia amatorskie - Flickr',
-    url: 'https://flickr.com/groups/tatry-ultra-2026',
-    platform: 'flickr',
+    id: 'page-faq',
+    title: 'FAQ',
+    slug: 'faq',
+    icon: 'HelpCircle',
+    description: 'Najczęściej zadawane pytania',
+    published: false,  // szkic
+    showInFooter: true,
+    showInHeader: false,
+    order: 5,
+    content: [
+      {
+        id: 's1',
+        type: 'hero',
+        title: 'Często zadawane pytania',
+        content: 'Znajdź odpowiedzi na najczęściej zadawane pytania',
+      },
+      {
+        id: 's2',
+        type: 'faq',
+        items: [
+          { id: 'f1', title: 'Jak się zarejestrować na zawody?', description: 'Wejdź na stronę wydarzenia...' },
+          { id: 'f2', title: 'Jak sprawdzić swoje wyniki?', description: 'Po zakończeniu zawodów...' },
+        ],
+      },
+    ],
+    createdAt: '2025-01-20',
+    updatedAt: '2025-01-20',
   },
-  {
-    id: 'ga3',
-    name: 'Album na Facebooku',
-    url: 'https://facebook.com/media/set/tatry-ultra',
-    platform: 'facebook',
-  },
-]
+  // ... pozostale strony (Oferta, Ubezpieczenia, O nas, Regulamin)
+];
 ```
 
-### Nowi uczestnicy (przyklad):
+## Typy sekcji i ich renderowanie
 
-```typescript
-{ id: 'p10', name: 'Adam Biegacz', email: 'adam@example.com', role: 'participant', birthYear: 1995, gender: 'M', club: 'Runners Warsaw' },
-{ id: 'p11', name: 'Beata Szybka', email: 'beata@example.com', role: 'participant', birthYear: 1988, gender: 'K' },
-{ id: 'p12', name: 'Cezary Ultra', email: 'cezary@example.com', role: 'participant', birthYear: 1975, gender: 'M', club: 'Ultra Team PL' },
-// ... 20+ wiecej
-```
+| Typ sekcji | Opis | Przykladowe uzycie |
+|------------|------|-------------------|
+| `hero` | Naglowek z tytulem i opisem | Poczatek kazdej strony |
+| `text` | Blok tekstu (markdown) | Opisy, artykuly |
+| `cards` | Siatka kart z ikonami | Dane kontaktowe, funkcje |
+| `faq` | Accordion z pytaniami | Sekcja FAQ |
+| `stats` | Liczniki/statystyki | "500+ wydarzen" |
+| `team` | Lista osob z avatarami | Zespol |
+| `pricing` | Tabela cenowa | Pakiety uslug |
+| `cta` | Call to action z przyciskiem | Zacheta do kontaktu |
 
-### Nowe rejestracje (przyklad dla e11):
+## Przeplyw uzytkownika
 
-```typescript
-// Generowanie 100+ rejestracji
-{ id: 'r-e11-001', eventId: 'e11', userId: 'p10', distanceId: 'd20', status: 'confirmed', bibNumber: '001', ... },
-{ id: 'r-e11-002', eventId: 'e11', userId: 'p11', distanceId: 'd21', status: 'confirmed', bibNumber: '002', ... },
-// ... itd
-```
+1. Admin wchodzi do panelu -> zakladka "Strony"
+2. Widzi liste wszystkich stron z ich statusem
+3. Klika "Dodaj strone" -> otwiera sie dialog
+4. Wypelnia podstawowe dane (tytul, slug, opis)
+5. Dodaje sekcje tresci wybierajac typ
+6. Dla kazdej sekcji wypelnia odpowiednie pola
+7. Ustawia widocznosc (publikuj, stopka, naglowek)
+8. Zapisuje -> strona pojawia sie w nawigacji
 
-### Nowe wyniki (przyklad):
+## Uwagi techniczne
 
-```typescript
-// 50+ wynikow dla kazdego zakonczonego wydarzenia
-{ id: 'res-e11-001', eventId: 'e11', userId: 'p10', position: 1, categoryPosition: 1, time: '7:23:45', status: 'finished', ... },
-{ id: 'res-e11-002', eventId: 'e11', userId: 'p11', position: 2, categoryPosition: 1, time: '7:45:12', status: 'finished', ... },
-{ id: 'res-e11-050', eventId: 'e11', userId: 'p50', position: 50, status: 'dnf', ... }, // DNF
-```
-
----
-
-## 6. Komponent GalleryAlbumsList - szczegoly
-
-```typescript
-// src/components/GalleryAlbumsList.tsx
-
-interface GalleryAlbumsListProps {
-  albums: GalleryAlbum[];
-}
-
-// Mapowanie platform na ikony i kolory
-const platformConfig = {
-  google_photos: { icon: Camera, label: 'Google Photos', color: 'text-red-500' },
-  flickr: { icon: Camera, label: 'Flickr', color: 'text-pink-500' },
-  facebook: { icon: Facebook, label: 'Facebook', color: 'text-blue-600' },
-  instagram: { icon: Instagram, label: 'Instagram', color: 'text-purple-500' },
-  other: { icon: ExternalLink, label: 'Album', color: 'text-gray-500' },
-};
-
-export const GalleryAlbumsList = ({ albums }: GalleryAlbumsListProps) => {
-  if (albums.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Galeria i albumy</CardTitle>
-        <p>Przegladaj zdjecia z wydarzenia</p>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {albums.map(album => (
-            <a
-              key={album.id}
-              href={album.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group"
-            >
-              <PlatformIcon platform={album.platform} />
-              <div className="flex-1 min-w-0">
-                <div className="font-medium group-hover:text-primary">{album.name}</div>
-                {album.photographer && (
-                  <div className="text-sm text-muted-foreground">Fot. {album.photographer}</div>
-                )}
-              </div>
-              <ExternalLink className="h-4 w-4 text-muted-foreground" />
-            </a>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-```
-
----
-
-## 7. Podsumowanie zmian
-
-1. **Typ GalleryAlbum** - nowy interfejs z polami: id, name, url, platform, photographer
-2. **Event.galleryAlbums** - zamiana string[] na GalleryAlbum[]
-3. **GalleryAlbumsList** - nowy komponent renderujacy linki
-4. **EventDetailsPage** - podmiana ImageGallery na GalleryAlbumsList
-5. **mockData** - rozbudowa o:
-   - 25+ nowych uczestnikow
-   - 200+ nowych rejestracji (rozne statusy, dystanse)
-   - 150+ nowych wynikow (z DNF/DSQ)
-   - Rozne scenariusze albumow (0, 1, wiele)
-   - Edge case wydarzenia
+- Slug musi byc unikalny - walidacja po stronie formularza
+- Ikony z lucide-react - dropdown z najpopularniejszymi
+- Kolejnosc sekcji przez drag & drop lub strzalki gora/dol
+- Usuniecie strony wymaga potwierdzenia
+- Mozliwosc podgladu przed publikacja
 
