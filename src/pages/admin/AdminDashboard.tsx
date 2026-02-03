@@ -8,7 +8,8 @@ import { AdminModerationTab } from './components/AdminModerationTab';
 import { AdminPartnersTab } from './components/AdminPartnersTab';
 import { AdminShopTab } from './components/AdminShopTab';
 import AdminProfileTab from './components/AdminProfileTab';
-import { LayoutDashboard, Users, Building2, Calendar, Handshake, UserCog, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { AdminPagesTab } from './components/AdminPagesTab';
+import { LayoutDashboard, Users, Building2, Calendar, Handshake, UserCog, ShoppingBag, ShieldCheck, FileText } from 'lucide-react';
 
 const AdminDashboard = () => {
   const tabs = [
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
     { id: 'events', label: 'Wydarzenia', icon: Calendar },
     { id: 'shop', label: 'Sklep', icon: ShoppingBag },
     { id: 'partners', label: 'Partnerzy', icon: Handshake },
+    { id: 'pages', label: 'Strony', icon: FileText },
     { id: 'profile', label: 'Profil', icon: UserCog },
   ];
 
@@ -70,6 +72,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="partners">
             <AdminPartnersTab />
+          </TabsContent>
+
+          <TabsContent value="pages">
+            <AdminPagesTab />
           </TabsContent>
 
           <TabsContent value="profile">
