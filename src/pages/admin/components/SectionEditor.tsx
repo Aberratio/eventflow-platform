@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,13 +44,13 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
   // Hero section
   if (section.type === 'hero') {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Tytuł</Label>
+          <Label>Tytuł główny</Label>
           <Input
             value={section.title || ''}
             onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="Tytuł główny strony"
+            placeholder="np. Witamy w SportTime"
           />
         </div>
         <div className="space-y-2">
@@ -59,7 +58,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           <Textarea
             value={section.content || ''}
             onChange={(e) => onUpdate({ content: e.target.value })}
-            placeholder="Krótki opis lub podtytuł"
+            placeholder="Krótki opis lub hasło przewodnie"
             rows={2}
           />
         </div>
@@ -70,7 +69,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
   // Text section
   if (section.type === 'text') {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="space-y-2">
           <Label>Nagłówek sekcji (opcjonalnie)</Label>
           <Input
@@ -84,9 +83,12 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           <Textarea
             value={section.content || ''}
             onChange={(e) => onUpdate({ content: e.target.value })}
-            placeholder="Treść tekstowa (możesz użyć Markdown)"
-            rows={6}
+            placeholder="Treść tekstowa. Użyj nowych linii do tworzenia akapitów."
+            rows={8}
           />
+          <p className="text-xs text-muted-foreground">
+            Użyj nowych linii (Enter), aby rozdzielić akapity.
+          </p>
         </div>
       </div>
     );
@@ -95,7 +97,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
   // CTA section
   if (section.type === 'cta') {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="space-y-2">
           <Label>Tytuł CTA</Label>
           <Input
@@ -105,11 +107,11 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           />
         </div>
         <div className="space-y-2">
-          <Label>Opis</Label>
+          <Label>Opis zachęcający</Label>
           <Textarea
             value={section.content || ''}
             onChange={(e) => onUpdate({ content: e.target.value })}
-            placeholder="Tekst zachęcający do działania"
+            placeholder="Tekst zachęcający do podjęcia akcji"
             rows={2}
           />
         </div>
@@ -117,25 +119,61 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
     );
   }
 
-  // Cards, FAQ, Stats, Team, Pricing sections (with items)
-  const getItemFields = () => {
+  // Sections with items (cards, faq, stats, team, pricing)
+  const getItemConfig = () => {
     switch (section.type) {
       case 'cards':
-        return ['title', 'description', 'icon', 'link'];
+        return {
+          titleLabel: 'Tytuł karty',
+          titlePlaceholder: 'np. Email',
+          descLabel: 'Opis / wartość',
+          descPlaceholder: 'np. kontakt@sporttime.pl',
+          showIcon: true,
+          showLink: true,
+        };
       case 'faq':
-        return ['title', 'description'];
+        return {
+          titleLabel: 'Pytanie',
+          titlePlaceholder: 'np. Jak się zarejestrować?',
+          descLabel: 'Odpowiedź',
+          descPlaceholder: 'Wpisz odpowiedź na pytanie...',
+          descRows: 3,
+        };
       case 'stats':
-        return ['title', 'description'];
+        return {
+          titleLabel: 'Wartość',
+          titlePlaceholder: 'np. 500+',
+          descLabel: 'Etykieta',
+          descPlaceholder: 'np. Wydarzeń',
+        };
       case 'team':
-        return ['title', 'description', 'image'];
+        return {
+          titleLabel: 'Imię i nazwisko',
+          titlePlaceholder: 'np. Jan Kowalski',
+          descLabel: 'Stanowisko',
+          descPlaceholder: 'np. CEO',
+          showImage: true,
+        };
       case 'pricing':
-        return ['title', 'description', 'price', 'features'];
+        return {
+          titleLabel: 'Nazwa pakietu',
+          titlePlaceholder: 'np. Pro',
+          descLabel: 'Opis pakietu',
+          descPlaceholder: 'np. Dla średnich wydarzeń',
+          showPrice: true,
+          showFeatures: true,
+        };
       default:
-        return ['title', 'description'];
+        return {
+          titleLabel: 'Tytuł',
+          titlePlaceholder: 'Tytuł',
+          descLabel: 'Opis',
+          descPlaceholder: 'Opis',
+        };
     }
   };
 
-  const itemFields = getItemFields();
+  const config = getItemConfig();
 
   return (
     <div className="space-y-4">
@@ -153,12 +191,18 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           <Label>Elementy ({section.items?.length || 0})</Label>
           <Button variant="outline" size="sm" onClick={addItem}>
             <Plus className="h-4 w-4 mr-1" />
-            Dodaj
+            Dodaj element
           </Button>
         </div>
 
+        {(section.items || []).length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4 border-2 border-dashed rounded-lg">
+            Brak elementów. Kliknij "Dodaj element", aby dodać pierwszy.
+          </p>
+        )}
+
         {(section.items || []).map((item, index) => (
-          <div key={item.id} className="p-3 border rounded-lg space-y-2 bg-muted/30">
+          <div key={item.id} className="p-4 border rounded-lg space-y-3 bg-muted/20">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">
                 Element {index + 1}
@@ -166,79 +210,97 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-destructive hover:text-destructive"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => deleteItem(item.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
 
-            <div className="grid gap-2">
-              {itemFields.includes('title') && (
+            <div className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">{config.titleLabel}</Label>
                 <Input
                   value={item.title}
                   onChange={(e) => updateItem(item.id, { title: e.target.value })}
-                  placeholder={section.type === 'faq' ? 'Pytanie' : section.type === 'stats' ? 'Wartość (np. 500+)' : 'Tytuł'}
+                  placeholder={config.titlePlaceholder}
                 />
-              )}
+              </div>
 
-              {itemFields.includes('description') && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{config.descLabel}</Label>
                 <Textarea
                   value={item.description}
                   onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                  placeholder={section.type === 'faq' ? 'Odpowiedź' : section.type === 'stats' ? 'Etykieta (np. Wydarzeń)' : 'Opis'}
-                  rows={section.type === 'faq' ? 3 : 2}
+                  placeholder={config.descPlaceholder}
+                  rows={config.descRows || 2}
                 />
+              </div>
+
+              {config.showIcon && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Ikona</Label>
+                  <Select
+                    value={item.icon || ''}
+                    onValueChange={(value) => updateItem(item.id, { icon: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz ikonę" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {iconOptions.map(icon => (
+                        <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
 
-              {itemFields.includes('icon') && (
-                <Select
-                  value={item.icon || ''}
-                  onValueChange={(value) => updateItem(item.id, { icon: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wybierz ikonę" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {iconOptions.map(icon => (
-                      <SelectItem key={icon} value={icon}>{icon}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {config.showLink && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Link (opcjonalnie)</Label>
+                  <Input
+                    value={item.link || ''}
+                    onChange={(e) => updateItem(item.id, { link: e.target.value })}
+                    placeholder="np. /kontakt lub https://..."
+                  />
+                </div>
               )}
 
-              {itemFields.includes('link') && (
-                <Input
-                  value={item.link || ''}
-                  onChange={(e) => updateItem(item.id, { link: e.target.value })}
-                  placeholder="Link (opcjonalnie)"
-                />
+              {config.showImage && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">URL zdjęcia</Label>
+                  <Input
+                    value={item.image || ''}
+                    onChange={(e) => updateItem(item.id, { image: e.target.value })}
+                    placeholder="https://example.com/photo.jpg"
+                  />
+                </div>
               )}
 
-              {itemFields.includes('image') && (
-                <Input
-                  value={item.image || ''}
-                  onChange={(e) => updateItem(item.id, { image: e.target.value })}
-                  placeholder="URL zdjęcia"
-                />
+              {config.showPrice && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Cena (PLN)</Label>
+                  <Input
+                    type="number"
+                    value={item.price || ''}
+                    onChange={(e) => updateItem(item.id, { price: parseFloat(e.target.value) || 0 })}
+                    placeholder="np. 299"
+                  />
+                  <p className="text-xs text-muted-foreground">Wpisz 0 dla darmowego pakietu</p>
+                </div>
               )}
 
-              {itemFields.includes('price') && (
-                <Input
-                  type="number"
-                  value={item.price || ''}
-                  onChange={(e) => updateItem(item.id, { price: parseFloat(e.target.value) || 0 })}
-                  placeholder="Cena"
-                />
-              )}
-
-              {itemFields.includes('features') && (
-                <Textarea
-                  value={item.features?.join('\n') || ''}
-                  onChange={(e) => updateItem(item.id, { features: e.target.value.split('\n').filter(Boolean) })}
-                  placeholder="Funkcje (każda w nowej linii)"
-                  rows={3}
-                />
+              {config.showFeatures && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Funkcje (każda w nowej linii)</Label>
+                  <Textarea
+                    value={item.features?.join('\n') || ''}
+                    onChange={(e) => updateItem(item.id, { features: e.target.value.split('\n').filter(Boolean) })}
+                    placeholder="Funkcja 1&#10;Funkcja 2&#10;Funkcja 3"
+                    rows={4}
+                  />
+                </div>
               )}
             </div>
           </div>

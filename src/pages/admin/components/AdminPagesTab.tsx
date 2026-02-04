@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, MoreVertical, Eye, Pencil, Trash2, Globe, EyeOff, ArrowUp, ArrowDown, Mail, Gift, Shield, Users, HelpCircle, FileText, Scale, CreditCard } from 'lucide-react';
 import { mockInfoPages } from '@/data/mockData';
 import { InfoPage } from '@/types';
-import { PageEditorDialog } from './PageEditorDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -22,51 +22,19 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export const AdminPagesTab = () => {
+  const navigate = useNavigate();
   const [pages, setPages] = useState<InfoPage[]>(mockInfoPages);
-  const [editingPage, setEditingPage] = useState<InfoPage | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const sortedPages = [...pages].sort((a, b) => a.order - b.order);
 
   const handleCreatePage = () => {
-    const newPage: InfoPage = {
-      id: `page-${Date.now()}`,
-      title: '',
-      slug: '',
-      icon: 'FileText',
-      description: '',
-      content: [],
-      published: false,
-      showInFooter: false,
-      showInHeader: false,
-      order: pages.length + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setEditingPage(newPage);
-    setIsDialogOpen(true);
+    navigate('/admin/pages/new');
   };
 
   const handleEditPage = (page: InfoPage) => {
-    setEditingPage(page);
-    setIsDialogOpen(true);
-  };
-
-  const handleSavePage = (page: InfoPage) => {
-    const existingIndex = pages.findIndex(p => p.id === page.id);
-    if (existingIndex >= 0) {
-      const updated = [...pages];
-      updated[existingIndex] = { ...page, updatedAt: new Date().toISOString() };
-      setPages(updated);
-      toast({ title: 'Zapisano zmiany', description: `Strona "${page.title}" została zaktualizowana.` });
-    } else {
-      setPages([...pages, page]);
-      toast({ title: 'Utworzono stronę', description: `Strona "${page.title}" została dodana.` });
-    }
-    setIsDialogOpen(false);
-    setEditingPage(null);
+    navigate(`/admin/pages/${page.id}/edit`);
   };
 
   const handleDeletePage = (id: string) => {
@@ -224,18 +192,6 @@ export const AdminPagesTab = () => {
           </div>
         </CardContent>
       </Card>
-
-      {editingPage && (
-        <PageEditorDialog
-          page={editingPage}
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) setEditingPage(null);
-          }}
-          onSave={handleSavePage}
-        />
-      )}
 
       <AlertDialog open={!!deletePageId} onOpenChange={() => setDeletePageId(null)}>
         <AlertDialogContent>

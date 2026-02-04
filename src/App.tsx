@@ -34,6 +34,7 @@ import EventForm from "./pages/organizer/EventForm";
 import EventManage from "./pages/organizer/EventManage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
+import { PageEditorPage } from "./pages/admin/components/PageEditorPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
@@ -98,6 +99,8 @@ const App = () => (
                   <Route path="/organizer/events/:id/edit" element={<EventForm />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/events/:id" element={<AdminEventManage />} />
+                  <Route path="/admin/pages/new" element={<PageEditorPage />} />
+                  <Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
                   <Route path="/admin/*" element={<AdminDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
