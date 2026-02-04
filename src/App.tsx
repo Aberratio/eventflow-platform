@@ -10,6 +10,9 @@ import { OnboardingDialog } from "@/components/OnboardingDialog";
 import { BottomNav } from "@/components/layout/BottomNav";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ServerError from "./pages/ServerError";
+import ServiceUnavailable from "./pages/ServiceUnavailable";
+import Forbidden from "./pages/Forbidden";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -97,6 +100,10 @@ const App = () => (
                   <Route path="/admin/pages/new" element={<PageEditorPage />} />
                   <Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
                   <Route path="/admin/*" element={<AdminDashboard />} />
+                  <Route path="/404" element={<NotFound />} />
+                  <Route path="/500" element={<ServerError />} />
+                  <Route path="/503" element={<ServiceUnavailable />} />
+                  <Route path="/403" element={<Forbidden />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </div>
