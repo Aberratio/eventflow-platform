@@ -1,279 +1,327 @@
 
 
-# Plan: CMS dla stron informacyjnych w panelu admina
+# Plan: Edytor stron CMS na osobnej stronie + podpowiedzi + poprawa mockow
 
-## Cel
+## Problem
 
-Dodanie nowej zakładki "Strony" w panelu administratora, pozwalającej na:
-- Przeglądanie istniejących stron informacyjnych
-- Dodawanie nowych stron (np. FAQ, Regulamin, Polityka prywatności)
-- Edycję treści i ustawień stron
-- Ukrywanie/publikowanie stron
-- Zarządzanie kolejnością wyświetlania w nawigacji
+1. Edytor stron jest w modalu - niewygodny dla zlozonych operacji
+2. Brak podpowiedzi dla osob nietechnicznych
+3. Strony informacyjne z naglowka nie dzialaja (404) - prawdopodobnie problem z routingiem lub mockData
 
-## Architektura rozwiązania
+## Rozwiazanie
 
-### 1. Nowy typ InfoPage
+### 1. Nowa strona edytora: `/admin/pages/:pageId/edit`
+
+Zamiast modalu, edycja odbedzie sie na dedykowanej stronie z pelnym interfejsem:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ← Wróć do listy stron                                                       │
+│                                                                             │
+│ Edytuj stronę: O nas                                                        │
+│ Ostatnia edycja: 25 sty 2025, 16:00                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ ┌─ Podstawowe informacje ──────────────────────────────────────────────────┐│
+│ │ ℹ️ Te dane określają jak strona będzie widoczna w nawigacji i w         ││
+│ │    wynikach wyszukiwania (Google, Bing).                                 ││
+│ │                                                                          ││
+│ │ Tytuł strony *              Slug URL *                                   ││
+│ │ [O nas                  ]   [o-nas                   ]                   ││
+│ │                             Podgląd: sporttime.pl/info/o-nas             ││
+│ │                                                                          ││
+│ │ Ikona          Krótki opis (SEO)                                         ││
+│ │ [Users ▼]      [Poznaj historię i zespół SportTime...             ]      ││
+│ │                                                                          ││
+│ │ 💡 Opis SEO pojawi się w wynikach wyszukiwania. Staraj się               ││
+│ │    zmieścić w 160 znakach i zawrzeć najważniejsze informacje.            ││
+│ └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│ ┌─ Widoczność ─────────────────────────────────────────────────────────────┐│
+│ │ ℹ️ Określ gdzie strona będzie widoczna. Niepublikowane strony są        ││
+│ │    dostępne tylko dla administratorów.                                   ││
+│ │                                                                          ││
+│ │ ☑ Opublikowana    ☑ Pokazuj w stopce    ☐ Pokazuj w nagłówku           ││
+│ │   Strona jest        Link pojawi się       Bezpośredni link              ││
+│ │   widoczna           w dolnej części       w górnym menu                 ││
+│ │   publicznie         strony                                              ││
+│ └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│ ═══════════════════════════════════════════════════════════════════════════ │
+│ Sekcje treści                                                               │
+│ ═══════════════════════════════════════════════════════════════════════════ │
+│                                                                             │
+│ ℹ️ Sekcje to bloki treści, z których składa się strona. Możesz je         │
+│    dowolnie dodawać, usuwać i zmieniać kolejność. Każdy typ sekcji         │
+│    wyświetla treść w inny sposób.                                          │
+│                                                                             │
+│ ┌─ 1. Nagłówek (Hero) ─────────────────────────────────────────────────────┐│
+│ │ 💡 Sekcja powitalna na górze strony. Przyciąga uwagę odwiedzających.    ││
+│ │                                                                          ││
+│ │ Tytuł:    [O nas                                                   ]     ││
+│ │ Podtytuł: [Tworzymy technologię, która łączy sportowców           ]     ││
+│ │                                                                          ││
+│ │                                            [↑] [↓] [🗑️ Usuń sekcję]     ││
+│ └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│ ┌─ 2. Statystyki ──────────────────────────────────────────────────────────┐│
+│ │ 💡 Wyświetla liczby w atrakcyjny sposób. Idealne do pokazania           ││
+│ │    osiągnięć i statystyk.                                                ││
+│ │                                                                          ││
+│ │ Tytuł sekcji: [SportTime w liczbach                              ]       ││
+│ │                                                                          ││
+│ │ Elementy (4):                                        [+ Dodaj element]   ││
+│ │ ┌─────────────────────────────────────────────────────────────────────┐  ││
+│ │ │ Wartość: [500+        ]    Etykieta: [Wydarzeń     ]     [🗑️]      │  ││
+│ │ └─────────────────────────────────────────────────────────────────────┘  ││
+│ │ ┌─────────────────────────────────────────────────────────────────────┐  ││
+│ │ │ Wartość: [150 000+    ]    Etykieta: [Uczestników  ]     [🗑️]      │  ││
+│ │ └─────────────────────────────────────────────────────────────────────┘  ││
+│ │ ...                                                                      ││
+│ │                                            [↑] [↓] [🗑️ Usuń sekcję]     ││
+│ └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                             │
+│ ┌───────────────────────────────────────────────────────────────────────────┐
+│ │                         [+ Dodaj nową sekcję]                            ││
+│ │                                                                          ││
+│ │  [🖼 Hero]  [📝 Tekst]  [🃏 Karty]  [❓ FAQ]  [📊 Statystyki]            ││
+│ │  [👥 Zespół]  [💰 Cennik]  [📣 CTA]                                     ││
+│ └───────────────────────────────────────────────────────────────────────────┘
+│                                                                             │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│                                                                             │
+│              [Anuluj]    [👁 Podgląd]    [💾 Zapisz zmiany]                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 2. Komponenty callout/podpowiedzi
+
+Nowy komponent `EditorHint` z trzema wariantami:
 
 ```typescript
-interface InfoPage {
-  id: string;
-  title: string;              // Tytuł strony (np. "O nas")
-  slug: string;               // URL slug (np. "o-nas")
-  icon: string;               // Nazwa ikony z lucide-react
-  description: string;        // Krótki opis (meta description)
-  content: InfoPageSection[]; // Sekcje treści
-  published: boolean;         // Czy widoczna publicznie
-  showInFooter: boolean;      // Czy pokazywać w stopce
-  showInHeader: boolean;      // Czy pokazywać w nagłówku
-  order: number;              // Kolejność w nawigacji
-  createdAt: string;
-  updatedAt: string;
-}
+// Warianty:
+// info - niebieskie tlo, ikona Info - ogolne wyjasnienia
+// tip - zolte tlo, ikona Lightbulb - praktyczne wskazowki
+// warning - pomaranczowe tlo, ikona AlertTriangle - ostrzezenia
 
-interface InfoPageSection {
-  id: string;
-  type: 'hero' | 'text' | 'cards' | 'faq' | 'cta' | 'stats' | 'team' | 'pricing';
-  title?: string;
-  content?: string;           // Markdown lub prosty tekst
-  items?: InfoPageSectionItem[];
-}
+<EditorHint variant="info">
+  Te dane określają jak strona będzie widoczna w nawigacji 
+  i w wynikach wyszukiwania.
+</EditorHint>
 
-interface InfoPageSectionItem {
-  id: string;
-  title: string;
-  description: string;
-  icon?: string;
-  link?: string;
-  image?: string;
-}
+<EditorHint variant="tip">
+  Opis SEO powinien mieścić się w 160 znakach i zawierać 
+  najważniejsze słowa kluczowe.
+</EditorHint>
 ```
 
-### 2. Nowa zakładka w AdminDashboard
+### 3. Podpowiedzi dla poszczegolnych sekcji
 
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ [Pulpit] [Moderacja] [Uczestnicy] [Organizatorzy] [Wydarzenia]          │
-│ [Sklep] [Partnerzy] [Strony] [Profil]                                   │
-│                          ^^^^^^                                         │
-│                          NOWA ZAKLADKA                                  │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+Kazdy typ sekcji dostanie krotki opis co robi:
 
-### 3. Komponent AdminPagesTab
+| Typ | Podpowiedz |
+|-----|-----------|
+| hero | Sekcja powitalna na gorze strony. Przyciaga uwage odwiedzajacych. |
+| text | Blok tekstu. Mozesz uzyc Markdown do formatowania (pogrubienie, listy). |
+| cards | Siatka kart z ikonami. Idealna do prezentacji uslug lub funkcji. |
+| faq | Rozwijane pytania i odpowiedzi. Uzytkownicy klikaja aby zobaczyc odpowiedz. |
+| stats | Wyswietla liczby w atrakcyjny sposob. Idealne do pokazania osiagniec. |
+| team | Lista osob z awatarami. Pokazuje czlonkow zespolu. |
+| pricing | Tabela z pakietami cenowymi. Srodkowy pakiet jest wyroziony. |
+| cta | Wezwanie do dzialania. Zacheca uzytkownikow do kontaktu lub rejestracji. |
 
-**Wyglad:**
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ Strony informacyjne                               [+ Dodaj stronę]     │
-│ Zarządzaj treścią stron publicznych                                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ [Mail] Kontakt              /info/kontakt    [Opublikowana] [...]  │ │
-│ │        Formularz kontaktowy i dane firmy     [Stopka] [Nagłówek]   │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ [Gift] Oferta               /info/oferta     [Opublikowana] [...]  │ │
-│ │        Pakiety i cennik dla organizatorów    [Stopka] [Nagłówek]   │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ [Shield] Ubezpieczenia      /info/ubezp...   [Opublikowana] [...]  │ │
-│ │          Ubezpieczenie NNW dla zawodników    [Stopka]              │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ [Users] O nas               /info/o-nas      [Opublikowana] [...]  │ │
-│ │         Historia i zespół SportTime          [Stopka] [Nagłówek]   │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ [HelpCircle] FAQ            /info/faq        [Szkic] [...]         │ │
-│ │              Najczęściej zadawane pytania                          │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-**Funkcjonalnosci:**
-- Lista wszystkich stron z podgladem statusu
-- Drag & drop do zmiany kolejnosci (opcjonalnie)
-- Quick actions: Edytuj, Podglad, Publikuj/Ukryj, Usun
-- Badge'e pokazujace gdzie strona jest widoczna (Stopka/Naglowek)
-
-### 4. Dialog edycji/dodawania strony
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ Edytuj stronę: O nas                                              [X]  │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│ Tytuł strony *                                                         │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ O nas                                                               │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│                                                                         │
-│ Slug URL *                                                             │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ o-nas                                                               │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ Podgląd: sporttime.pl/info/o-nas                                       │
-│                                                                         │
-│ Ikona                                                                  │
-│ ┌───────────────────────────┐                                          │
-│ │ [Users] Users         ▼  │                                          │
-│ └───────────────────────────┘                                          │
-│                                                                         │
-│ Krótki opis (SEO)                                                      │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ Poznaj historię SportTime i nasz zespół                            │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│                                                                         │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ Ustawienia widoczności                                              │ │
-│ │ ☑ Opublikowana                                                      │ │
-│ │ ☑ Pokazuj w stopce                                                  │ │
-│ │ ☐ Pokazuj w nagłówku                                                │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│                                                                         │
-│ ═══════════════════════════════════════════════════════════════════════ │
-│ Sekcje treści                                      [+ Dodaj sekcję]    │
-│ ═══════════════════════════════════════════════════════════════════════ │
-│                                                                         │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 1. [Hero] Nagłówek główny                              [↑] [↓] [X] │ │
-│ │    Poznaj zespół SportTime...                                       │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 2. [Stats] Statystyki                                  [↑] [↓] [X] │ │
-│ │    4 elementy: 500+ wydarzeń, 150k uczestników...                   │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ 3. [Text] Nasza historia                               [↑] [↓] [X] │ │
-│ │    SportTime powstał w 2016 roku...                                 │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-│                                                                         │
-│                                    [Anuluj]    [Zapisz zmiany]         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### 5. Dynamiczny renderer stron
-
-Zamiast oddzielnych komponentow dla kazdej strony (AboutPage, OfferPage), tworzymy uniwersalny komponent `DynamicInfoPage` ktory:
-- Pobiera dane strony po slug
-- Renderuje sekcje dynamicznie na podstawie typu
-- Obsluguje 404 dla nieistniejacych stron
-
-## Zmiany w plikach
+### 4. Zmiany w plikach
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie InfoPage, InfoPageSection, InfoPageSectionItem |
-| `src/data/mockData.ts` | Modyfikacja | Dodanie mockInfoPages z danymi 4 istniejacych stron + 2 nowe (FAQ, Regulamin jako szkice) |
-| `src/pages/admin/components/AdminPagesTab.tsx` | Nowy | Glowna zakladka CMS z lista stron |
-| `src/pages/admin/components/PageEditorDialog.tsx` | Nowy | Dialog edycji strony z edytorem sekcji |
-| `src/pages/admin/components/SectionEditor.tsx` | Nowy | Edytor pojedynczej sekcji |
-| `src/pages/admin/AdminDashboard.tsx` | Modyfikacja | Dodanie zakladki "Strony" |
-| `src/components/info/DynamicInfoPage.tsx` | Nowy | Uniwersalny renderer stron informacyjnych |
-| `src/components/info/sections/*.tsx` | Nowe | Komponenty dla typow sekcji (HeroSection, TextSection, StatsSection, FaqSection, etc.) |
-| `src/App.tsx` | Modyfikacja | Dodanie dynamicznej trasy `/info/:slug` |
-| `src/components/layout/Footer.tsx` | Modyfikacja | Dynamiczne linki na podstawie mockInfoPages |
+| `src/pages/admin/components/PageEditorPage.tsx` | Nowy | Pelnostronicowy edytor z calloutami |
+| `src/components/admin/EditorHint.tsx` | Nowy | Komponent podpowiedzi (info/tip/warning) |
+| `src/pages/admin/components/SectionEditor.tsx` | Modyfikacja | Dodanie podpowiedzi do kazdego typu sekcji |
+| `src/pages/admin/components/AdminPagesTab.tsx` | Modyfikacja | Zmiana linku "Edytuj" na navigate do nowej strony |
+| `src/App.tsx` | Modyfikacja | Dodanie trasy `/admin/pages/:pageId/edit` |
+| `src/data/mockData.ts` | Modyfikacja | Ustawienie wszystkich stron na `published: true` |
 
-## Mock data - przykladowe strony
+### 5. Poprawa mockInfoPages
+
+Wszystkie strony z naglowka (kontakt, oferta, ubezpieczenia, o-nas) maja `published: true`, wiec powinny dzialac. Sprawdze czy problem jest w:
+
+1. Ustawienie FAQ i Regulamin na `published: true` dla testow
+2. Upewnienie sie ze tresc jest kompletna
 
 ```typescript
-export const mockInfoPages: InfoPage[] = [
-  {
-    id: 'page-kontakt',
-    title: 'Kontakt',
-    slug: 'kontakt',
-    icon: 'Mail',
-    description: 'Skontaktuj się z zespołem SportTime',
-    published: true,
-    showInFooter: true,
-    showInHeader: false,
-    order: 1,
-    content: [
-      {
-        id: 's1',
-        type: 'hero',
-        title: 'Kontakt',
-        content: 'Masz pytania? Skontaktuj się z nami!',
-      },
-      {
-        id: 's2',
-        type: 'cards',
-        title: 'Dane kontaktowe',
-        items: [
-          { id: 'c1', title: 'Email', description: 'kontakt@sporttime.pl', icon: 'Mail' },
-          { id: 'c2', title: 'Telefon', description: '+48 123 456 789', icon: 'Phone' },
-          { id: 'c3', title: 'Adres', description: 'ul. Sportowa 1, 00-001 Warszawa', icon: 'MapPin' },
-        ],
-      },
-    ],
-    createdAt: '2024-01-01',
-    updatedAt: '2025-01-15',
-  },
-  {
-    id: 'page-faq',
-    title: 'FAQ',
-    slug: 'faq',
-    icon: 'HelpCircle',
-    description: 'Najczęściej zadawane pytania',
-    published: false,  // szkic
-    showInFooter: true,
-    showInHeader: false,
-    order: 5,
-    content: [
-      {
-        id: 's1',
-        type: 'hero',
-        title: 'Często zadawane pytania',
-        content: 'Znajdź odpowiedzi na najczęściej zadawane pytania',
-      },
-      {
-        id: 's2',
-        type: 'faq',
-        items: [
-          { id: 'f1', title: 'Jak się zarejestrować na zawody?', description: 'Wejdź na stronę wydarzenia...' },
-          { id: 'f2', title: 'Jak sprawdzić swoje wyniki?', description: 'Po zakończeniu zawodów...' },
-        ],
-      },
-    ],
-    createdAt: '2025-01-20',
-    updatedAt: '2025-01-20',
-  },
-  // ... pozostale strony (Oferta, Ubezpieczenia, O nas, Regulamin)
-];
+// Zmiana w mockData.ts dla FAQ:
+published: true, // bylo: false
+
+// Zmiana dla Regulamin:
+published: true, // bylo: false
 ```
 
-## Typy sekcji i ich renderowanie
+### 6. Struktura strony edytora
 
-| Typ sekcji | Opis | Przykladowe uzycie |
-|------------|------|-------------------|
-| `hero` | Naglowek z tytulem i opisem | Poczatek kazdej strony |
-| `text` | Blok tekstu (markdown) | Opisy, artykuly |
-| `cards` | Siatka kart z ikonami | Dane kontaktowe, funkcje |
-| `faq` | Accordion z pytaniami | Sekcja FAQ |
-| `stats` | Liczniki/statystyki | "500+ wydarzen" |
-| `team` | Lista osob z avatarami | Zespol |
-| `pricing` | Tabela cenowa | Pakiety uslug |
-| `cta` | Call to action z przyciskiem | Zacheta do kontaktu |
+```typescript
+// PageEditorPage.tsx - struktura
 
-## Przeplyw uzytkownika
+const PageEditorPage = () => {
+  const { pageId } = useParams();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<InfoPage | null>(null);
 
-1. Admin wchodzi do panelu -> zakladka "Strony"
-2. Widzi liste wszystkich stron z ich statusem
-3. Klika "Dodaj strone" -> otwiera sie dialog
-4. Wypelnia podstawowe dane (tytul, slug, opis)
-5. Dodaje sekcje tresci wybierajac typ
-6. Dla kazdej sekcji wypelnia odpowiednie pola
-7. Ustawia widocznosc (publikuj, stopka, naglowek)
-8. Zapisuje -> strona pojawia sie w nawigacji
+  // Zaladuj dane strony
+  useEffect(() => {
+    const page = mockInfoPages.find(p => p.id === pageId);
+    if (!page) {
+      // Nowa strona
+      setFormData({
+        id: `page-${Date.now()}`,
+        title: '',
+        slug: '',
+        // ...
+      });
+    } else {
+      setFormData(page);
+    }
+  }, [pageId]);
 
-## Uwagi techniczne
+  return (
+    <Layout>
+      <div className="container py-8 max-w-4xl">
+        {/* Nawigacja powrotna */}
+        <Button variant="ghost" onClick={() => navigate('/admin?tab=pages')}>
+          <ArrowLeft /> Wróć do listy stron
+        </Button>
 
-- Slug musi byc unikalny - walidacja po stronie formularza
-- Ikony z lucide-react - dropdown z najpopularniejszymi
-- Kolejnosc sekcji przez drag & drop lub strzalki gora/dol
-- Usuniecie strony wymaga potwierdzenia
-- Mozliwosc podgladu przed publikacja
+        {/* Naglowek */}
+        <h1>Edytuj stronę: {formData?.title || 'Nowa strona'}</h1>
+        
+        {/* Sekcja: Podstawowe informacje */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Podstawowe informacje</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EditorHint variant="info">
+              Te dane określają jak strona będzie widoczna w nawigacji...
+            </EditorHint>
+            {/* Pola formularza */}
+          </CardContent>
+        </Card>
+
+        {/* Sekcja: Widocznosc */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Widoczność</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EditorHint variant="info">
+              Określ gdzie strona będzie widoczna...
+            </EditorHint>
+            {/* Checkboxy */}
+          </CardContent>
+        </Card>
+
+        {/* Sekcja: Tresc */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Sekcje treści</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EditorHint variant="info">
+              Sekcje to bloki treści, z których składa się strona...
+            </EditorHint>
+            {/* Lista sekcji */}
+          </CardContent>
+        </Card>
+
+        {/* Przyciski akcji */}
+        <div className="flex gap-3 sticky bottom-4">
+          <Button variant="outline">Anuluj</Button>
+          <Button variant="outline">
+            <Eye /> Podgląd
+          </Button>
+          <Button>
+            <Save /> Zapisz zmiany
+          </Button>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+```
+
+### 7. Komponent EditorHint
+
+```typescript
+// src/components/admin/EditorHint.tsx
+
+interface EditorHintProps {
+  variant: 'info' | 'tip' | 'warning';
+  children: React.ReactNode;
+}
+
+const variants = {
+  info: {
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    border: 'border-blue-200 dark:border-blue-800',
+    icon: Info,
+    iconColor: 'text-blue-500',
+  },
+  tip: {
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    border: 'border-amber-200 dark:border-amber-800',
+    icon: Lightbulb,
+    iconColor: 'text-amber-500',
+  },
+  warning: {
+    bg: 'bg-orange-50 dark:bg-orange-950/30',
+    border: 'border-orange-200 dark:border-orange-800',
+    icon: AlertTriangle,
+    iconColor: 'text-orange-500',
+  },
+};
+
+export const EditorHint = ({ variant, children }: EditorHintProps) => {
+  const config = variants[variant];
+  const Icon = config.icon;
+
+  return (
+    <div className={cn(
+      'flex gap-3 p-3 rounded-lg border text-sm mb-4',
+      config.bg,
+      config.border
+    )}>
+      <Icon className={cn('h-5 w-5 shrink-0 mt-0.5', config.iconColor)} />
+      <div className="text-muted-foreground">{children}</div>
+    </div>
+  );
+};
+```
+
+### 8. Routing i nawigacja
+
+```typescript
+// App.tsx - nowa trasa
+<Route path="/admin/pages/new" element={<PageEditorPage />} />
+<Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
+
+// AdminPagesTab.tsx - zmiana handlera
+const handleEditPage = (page: InfoPage) => {
+  navigate(`/admin/pages/${page.id}/edit`);
+};
+
+const handleCreatePage = () => {
+  navigate('/admin/pages/new');
+};
+```
+
+## Wyglad koncowy edytora
+
+Edytor bedzie:
+- Na pelnej stronie (nie w modalu)
+- Z czytelnym podzialem na sekcje (karty)
+- Z calloutami wyjasniajacymi kazda czesc
+- Z podpowiedziami dla kazdego typu sekcji
+- Z sticky footer z przyciskami akcji
+- Z podgladem przed zapisaniem
+- Responsywny i intuicyjny
 
