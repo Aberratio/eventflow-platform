@@ -61,14 +61,9 @@ const App = () => (
                   <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
                   
-                  {/* Dynamic info pages */}
+                  {/* Dynamic info pages - jedna trasa dla wszystkich stron informacyjnych */}
                   <Route path="/info/:slug" element={<DynamicInfoPage />} />
                   
-                  {/* Legacy info routes for backward compatibility */}
-                  <Route path="/info/kontakt" element={<DynamicInfoPage />} />
-                  <Route path="/info/oferta" element={<DynamicInfoPage />} />
-                  <Route path="/info/ubezpieczenia" element={<DynamicInfoPage />} />
-                  <Route path="/info/o-nas" element={<DynamicInfoPage />} />
                   <Route path="/logowanie" element={<LoginPage />} />
                   <Route path="/rejestracja" element={<RegisterPage />} />
                   <Route path="/sklep" element={<ShopPage />} />
