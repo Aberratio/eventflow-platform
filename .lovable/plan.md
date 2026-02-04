@@ -1,327 +1,221 @@
 
-
-# Plan: Edytor stron CMS na osobnej stronie + podpowiedzi + poprawa mockow
+# Plan: Naprawa stron informacyjnych z nawigacji + symulacja backendu
 
 ## Problem
 
-1. Edytor stron jest w modalu - niewygodny dla zlozonych operacji
-2. Brak podpowiedzi dla osob nietechnicznych
-3. Strony informacyjne z naglowka nie dzialaja (404) - prawdopodobnie problem z routingiem lub mockData
+Strony informacyjne z menu "Informacje" (Kontakt, Oferta, Ubezpieczenia, O nas) pokazują 404 ponieważ:
+1. W App.tsx są zduplikowane trasy - dynamiczna `/info/:slug` i statyczne `/info/kontakt` itd.
+2. Statyczne trasy nie przekazują parametru `slug` do komponentu
+3. Komponent `DynamicInfoPage` szuka `slug` w `useParams()`, ale dla statycznych tras jest on `undefined`
 
 ## Rozwiazanie
 
-### 1. Nowa strona edytora: `/admin/pages/:pageId/edit`
+### 1. Naprawa routingu w App.tsx
 
-Zamiast modalu, edycja odbedzie sie na dedykowanej stronie z pelnym interfejsem:
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ← Wróć do listy stron                                                       │
-│                                                                             │
-│ Edytuj stronę: O nas                                                        │
-│ Ostatnia edycja: 25 sty 2025, 16:00                                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ ┌─ Podstawowe informacje ──────────────────────────────────────────────────┐│
-│ │ ℹ️ Te dane określają jak strona będzie widoczna w nawigacji i w         ││
-│ │    wynikach wyszukiwania (Google, Bing).                                 ││
-│ │                                                                          ││
-│ │ Tytuł strony *              Slug URL *                                   ││
-│ │ [O nas                  ]   [o-nas                   ]                   ││
-│ │                             Podgląd: sporttime.pl/info/o-nas             ││
-│ │                                                                          ││
-│ │ Ikona          Krótki opis (SEO)                                         ││
-│ │ [Users ▼]      [Poznaj historię i zespół SportTime...             ]      ││
-│ │                                                                          ││
-│ │ 💡 Opis SEO pojawi się w wynikach wyszukiwania. Staraj się               ││
-│ │    zmieścić w 160 znakach i zawrzeć najważniejsze informacje.            ││
-│ └──────────────────────────────────────────────────────────────────────────┘│
-│                                                                             │
-│ ┌─ Widoczność ─────────────────────────────────────────────────────────────┐│
-│ │ ℹ️ Określ gdzie strona będzie widoczna. Niepublikowane strony są        ││
-│ │    dostępne tylko dla administratorów.                                   ││
-│ │                                                                          ││
-│ │ ☑ Opublikowana    ☑ Pokazuj w stopce    ☐ Pokazuj w nagłówku           ││
-│ │   Strona jest        Link pojawi się       Bezpośredni link              ││
-│ │   widoczna           w dolnej części       w górnym menu                 ││
-│ │   publicznie         strony                                              ││
-│ └──────────────────────────────────────────────────────────────────────────┘│
-│                                                                             │
-│ ═══════════════════════════════════════════════════════════════════════════ │
-│ Sekcje treści                                                               │
-│ ═══════════════════════════════════════════════════════════════════════════ │
-│                                                                             │
-│ ℹ️ Sekcje to bloki treści, z których składa się strona. Możesz je         │
-│    dowolnie dodawać, usuwać i zmieniać kolejność. Każdy typ sekcji         │
-│    wyświetla treść w inny sposób.                                          │
-│                                                                             │
-│ ┌─ 1. Nagłówek (Hero) ─────────────────────────────────────────────────────┐│
-│ │ 💡 Sekcja powitalna na górze strony. Przyciąga uwagę odwiedzających.    ││
-│ │                                                                          ││
-│ │ Tytuł:    [O nas                                                   ]     ││
-│ │ Podtytuł: [Tworzymy technologię, która łączy sportowców           ]     ││
-│ │                                                                          ││
-│ │                                            [↑] [↓] [🗑️ Usuń sekcję]     ││
-│ └──────────────────────────────────────────────────────────────────────────┘│
-│                                                                             │
-│ ┌─ 2. Statystyki ──────────────────────────────────────────────────────────┐│
-│ │ 💡 Wyświetla liczby w atrakcyjny sposób. Idealne do pokazania           ││
-│ │    osiągnięć i statystyk.                                                ││
-│ │                                                                          ││
-│ │ Tytuł sekcji: [SportTime w liczbach                              ]       ││
-│ │                                                                          ││
-│ │ Elementy (4):                                        [+ Dodaj element]   ││
-│ │ ┌─────────────────────────────────────────────────────────────────────┐  ││
-│ │ │ Wartość: [500+        ]    Etykieta: [Wydarzeń     ]     [🗑️]      │  ││
-│ │ └─────────────────────────────────────────────────────────────────────┘  ││
-│ │ ┌─────────────────────────────────────────────────────────────────────┐  ││
-│ │ │ Wartość: [150 000+    ]    Etykieta: [Uczestników  ]     [🗑️]      │  ││
-│ │ └─────────────────────────────────────────────────────────────────────┘  ││
-│ │ ...                                                                      ││
-│ │                                            [↑] [↓] [🗑️ Usuń sekcję]     ││
-│ └──────────────────────────────────────────────────────────────────────────┘│
-│                                                                             │
-│ ┌───────────────────────────────────────────────────────────────────────────┐
-│ │                         [+ Dodaj nową sekcję]                            ││
-│ │                                                                          ││
-│ │  [🖼 Hero]  [📝 Tekst]  [🃏 Karty]  [❓ FAQ]  [📊 Statystyki]            ││
-│ │  [👥 Zespół]  [💰 Cennik]  [📣 CTA]                                     ││
-│ └───────────────────────────────────────────────────────────────────────────┘
-│                                                                             │
-│ ─────────────────────────────────────────────────────────────────────────── │
-│                                                                             │
-│              [Anuluj]    [👁 Podgląd]    [💾 Zapisz zmiany]                │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 2. Komponenty callout/podpowiedzi
-
-Nowy komponent `EditorHint` z trzema wariantami:
+Usunac zduplikowane statyczne trasy (linie 68-71) i zostawic tylko dynamiczna:
 
 ```typescript
-// Warianty:
-// info - niebieskie tlo, ikona Info - ogolne wyjasnienia
-// tip - zolte tlo, ikona Lightbulb - praktyczne wskazowki
-// warning - pomaranczowe tlo, ikona AlertTriangle - ostrzezenia
+// Bylo:
+<Route path="/info/:slug" element={<DynamicInfoPage />} />
+<Route path="/info/kontakt" element={<DynamicInfoPage />} />  // USUNAC
+<Route path="/info/oferta" element={<DynamicInfoPage />} />   // USUNAC
+<Route path="/info/ubezpieczenia" element={<DynamicInfoPage />} /> // USUNAC
+<Route path="/info/o-nas" element={<DynamicInfoPage />} />    // USUNAC
 
-<EditorHint variant="info">
-  Te dane określają jak strona będzie widoczna w nawigacji 
-  i w wynikach wyszukiwania.
-</EditorHint>
-
-<EditorHint variant="tip">
-  Opis SEO powinien mieścić się w 160 znakach i zawierać 
-  najważniejsze słowa kluczowe.
-</EditorHint>
+// Po zmianach:
+<Route path="/info/:slug" element={<DynamicInfoPage />} />
 ```
 
-### 3. Podpowiedzi dla poszczegolnych sekcji
+### 2. Symulacja pobierania danych z backendu
 
-Kazdy typ sekcji dostanie krotki opis co robi:
-
-| Typ | Podpowiedz |
-|-----|-----------|
-| hero | Sekcja powitalna na gorze strony. Przyciaga uwage odwiedzajacych. |
-| text | Blok tekstu. Mozesz uzyc Markdown do formatowania (pogrubienie, listy). |
-| cards | Siatka kart z ikonami. Idealna do prezentacji uslug lub funkcji. |
-| faq | Rozwijane pytania i odpowiedzi. Uzytkownicy klikaja aby zobaczyc odpowiedz. |
-| stats | Wyswietla liczby w atrakcyjny sposob. Idealne do pokazania osiagniec. |
-| team | Lista osob z awatarami. Pokazuje czlonkow zespolu. |
-| pricing | Tabela z pakietami cenowymi. Srodkowy pakiet jest wyroziony. |
-| cta | Wezwanie do dzialania. Zacheca uzytkownikow do kontaktu lub rejestracji. |
-
-### 4. Zmiany w plikach
-
-| Plik | Akcja | Opis |
-|------|-------|------|
-| `src/pages/admin/components/PageEditorPage.tsx` | Nowy | Pelnostronicowy edytor z calloutami |
-| `src/components/admin/EditorHint.tsx` | Nowy | Komponent podpowiedzi (info/tip/warning) |
-| `src/pages/admin/components/SectionEditor.tsx` | Modyfikacja | Dodanie podpowiedzi do kazdego typu sekcji |
-| `src/pages/admin/components/AdminPagesTab.tsx` | Modyfikacja | Zmiana linku "Edytuj" na navigate do nowej strony |
-| `src/App.tsx` | Modyfikacja | Dodanie trasy `/admin/pages/:pageId/edit` |
-| `src/data/mockData.ts` | Modyfikacja | Ustawienie wszystkich stron na `published: true` |
-
-### 5. Poprawa mockInfoPages
-
-Wszystkie strony z naglowka (kontakt, oferta, ubezpieczenia, o-nas) maja `published: true`, wiec powinny dzialac. Sprawdze czy problem jest w:
-
-1. Ustawienie FAQ i Regulamin na `published: true` dla testow
-2. Upewnienie sie ze tresc jest kompletna
+Stworzenie hooka `useInfoPage` ktory symuluje fetch z API:
 
 ```typescript
-// Zmiana w mockData.ts dla FAQ:
-published: true, // bylo: false
+// src/hooks/useInfoPage.ts
 
-// Zmiana dla Regulamin:
-published: true, // bylo: false
-```
+export interface InfoPageResponse {
+  page: InfoPage | null;
+  isLoading: boolean;
+  error: string | null;
+}
 
-### 6. Struktura strony edytora
+export const useInfoPage = (slug: string | undefined): InfoPageResponse => {
+  const [page, setPage] = useState<InfoPage | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-```typescript
-// PageEditorPage.tsx - struktura
-
-const PageEditorPage = () => {
-  const { pageId } = useParams();
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState<InfoPage | null>(null);
-
-  // Zaladuj dane strony
   useEffect(() => {
-    const page = mockInfoPages.find(p => p.id === pageId);
-    if (!page) {
-      // Nowa strona
-      setFormData({
-        id: `page-${Date.now()}`,
-        title: '',
-        slug: '',
-        // ...
-      });
-    } else {
-      setFormData(page);
-    }
-  }, [pageId]);
+    // Symulacja opóźnienia sieciowego (300-500ms)
+    const fetchPage = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      // Symulacja fetch z backendu
+      await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+      
+      if (!slug) {
+        setError('Brak adresu strony');
+        setIsLoading(false);
+        return;
+      }
+      
+      // "Pobieranie" z mockData (symulacja backendu)
+      const foundPage = mockInfoPages.find(p => p.slug === slug);
+      
+      if (!foundPage) {
+        setError('Strona nie istnieje');
+      } else if (!foundPage.published) {
+        setError('Strona nie jest opublikowana');
+      } else {
+        setPage(foundPage);
+      }
+      
+      setIsLoading(false);
+    };
 
+    fetchPage();
+  }, [slug]);
+
+  return { page, isLoading, error };
+};
+```
+
+### 3. Rozbudowa DynamicInfoPage
+
+Dodanie stanu ladowania i obslugi bledow:
+
+```typescript
+// src/components/info/DynamicInfoPage.tsx
+
+export const DynamicInfoPage = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const { page, isLoading, error } = useInfoPage(slug);
+
+  // Stan ladowania
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <Skeleton className="h-12 w-3/4 mx-auto" />
+            <Skeleton className="h-6 w-1/2 mx-auto" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Blad lub brak strony
+  if (error || !page) {
+    return <Navigate to="/404" replace />;
+  }
+
+  // Renderowanie strony
   return (
     <Layout>
-      <div className="container py-8 max-w-4xl">
-        {/* Nawigacja powrotna */}
-        <Button variant="ghost" onClick={() => navigate('/admin?tab=pages')}>
-          <ArrowLeft /> Wróć do listy stron
-        </Button>
-
-        {/* Naglowek */}
-        <h1>Edytuj stronę: {formData?.title || 'Nowa strona'}</h1>
-        
-        {/* Sekcja: Podstawowe informacje */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Podstawowe informacje</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EditorHint variant="info">
-              Te dane określają jak strona będzie widoczna w nawigacji...
-            </EditorHint>
-            {/* Pola formularza */}
-          </CardContent>
-        </Card>
-
-        {/* Sekcja: Widocznosc */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Widoczność</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EditorHint variant="info">
-              Określ gdzie strona będzie widoczna...
-            </EditorHint>
-            {/* Checkboxy */}
-          </CardContent>
-        </Card>
-
-        {/* Sekcja: Tresc */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sekcje treści</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EditorHint variant="info">
-              Sekcje to bloki treści, z których składa się strona...
-            </EditorHint>
-            {/* Lista sekcji */}
-          </CardContent>
-        </Card>
-
-        {/* Przyciski akcji */}
-        <div className="flex gap-3 sticky bottom-4">
-          <Button variant="outline">Anuluj</Button>
-          <Button variant="outline">
-            <Eye /> Podgląd
-          </Button>
-          <Button>
-            <Save /> Zapisz zmiany
-          </Button>
-        </div>
+      <div className="min-h-screen">
+        {page.content.map((section) => (
+          <SectionRenderer key={section.id} section={section} />
+        ))}
       </div>
     </Layout>
   );
 };
 ```
 
-### 7. Komponent EditorHint
+## Diagram przeplywu danych
+
+```text
+┌──────────────────┐     ┌─────────────────┐     ┌──────────────────┐
+│   Navigation     │     │  DynamicInfoPage│     │   useInfoPage    │
+│   Header.tsx     │     │                 │     │      Hook        │
+└────────┬─────────┘     └────────┬────────┘     └────────┬─────────┘
+         │                        │                       │
+         │  Klik: /info/kontakt   │                       │
+         │───────────────────────>│                       │
+         │                        │                       │
+         │                        │  slug = "kontakt"     │
+         │                        │──────────────────────>│
+         │                        │                       │
+         │                        │                       │ await 300-500ms
+         │                        │                       │ (symulacja fetch)
+         │                        │                       │
+         │                        │                       │ znajdz w mockInfoPages
+         │                        │                       │
+         │                        │  { page, isLoading }  │
+         │                        │<──────────────────────│
+         │                        │                       │
+         │                        │  Renderuj sekcje      │
+         │                        │                       │
+```
+
+## Zmiany w plikach
+
+| Plik | Akcja | Opis |
+|------|-------|------|
+| `src/App.tsx` | Modyfikacja | Usuniecie zduplikowanych tras /info/kontakt, /info/oferta itd. |
+| `src/hooks/useInfoPage.ts` | Nowy | Hook do symulacji pobierania danych strony z backendu |
+| `src/components/info/DynamicInfoPage.tsx` | Modyfikacja | Uzycie hooka, dodanie stanu ladowania i obslugi bledow |
+
+## Przyklad uzycia w przyszlosci z prawdziwym backendem
+
+Hook jest przygotowany na latwa zamiane mockow na prawdziwe API:
 
 ```typescript
-// src/components/admin/EditorHint.tsx
-
-interface EditorHintProps {
-  variant: 'info' | 'tip' | 'warning';
-  children: React.ReactNode;
-}
-
-const variants = {
-  info: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    border: 'border-blue-200 dark:border-blue-800',
-    icon: Info,
-    iconColor: 'text-blue-500',
-  },
-  tip: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    border: 'border-amber-200 dark:border-amber-800',
-    icon: Lightbulb,
-    iconColor: 'text-amber-500',
-  },
-  warning: {
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    border: 'border-orange-200 dark:border-orange-800',
-    icon: AlertTriangle,
-    iconColor: 'text-orange-500',
-  },
-};
-
-export const EditorHint = ({ variant, children }: EditorHintProps) => {
-  const config = variants[variant];
-  const Icon = config.icon;
-
-  return (
-    <div className={cn(
-      'flex gap-3 p-3 rounded-lg border text-sm mb-4',
-      config.bg,
-      config.border
-    )}>
-      <Icon className={cn('h-5 w-5 shrink-0 mt-0.5', config.iconColor)} />
-      <div className="text-muted-foreground">{children}</div>
-    </div>
-  );
+// Przyszla implementacja z Supabase:
+export const useInfoPage = (slug: string | undefined) => {
+  return useQuery({
+    queryKey: ['infoPage', slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('info_pages')
+        .select('*')
+        .eq('slug', slug)
+        .eq('published', true)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!slug,
+  });
 };
 ```
 
-### 8. Routing i nawigacja
+## Stan ladowania - komponenty szkieletowe
 
-```typescript
-// App.tsx - nowa trasa
-<Route path="/admin/pages/new" element={<PageEditorPage />} />
-<Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
+Podczas ladowania strony uzytkownik zobaczy animowane szkielety:
 
-// AdminPagesTab.tsx - zmiana handlera
-const handleEditPage = (page: InfoPage) => {
-  navigate(`/admin/pages/${page.id}/edit`);
-};
-
-const handleCreatePage = () => {
-  navigate('/admin/pages/new');
-};
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│    ████████████████████████████████████                     │
+│              (skeleton - tytul)                             │
+│                                                             │
+│         ████████████████████████                            │
+│              (skeleton - opis)                              │
+│                                                             │
+│   ┌───────────────┐ ┌───────────────┐ ┌───────────────┐    │
+│   │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │    │
+│   │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │    │
+│   │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │ │  ░░░░░░░░░░░  │    │
+│   └───────────────┘ └───────────────┘ └───────────────┘    │
+│           (skeleton - karty)                                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Wyglad koncowy edytora
+## Podsumowanie
 
-Edytor bedzie:
-- Na pelnej stronie (nie w modalu)
-- Z czytelnym podzialem na sekcje (karty)
-- Z calloutami wyjasniajacymi kazda czesc
-- Z podpowiedziami dla kazdego typu sekcji
-- Z sticky footer z przyciskami akcji
-- Z podgladem przed zapisaniem
-- Responsywny i intuicyjny
+Po tych zmianach:
 
+1. Wszystkie linki z nawigacji beda dzialac poprawnie
+2. Strony beda wyswietlac stan ladowania (skeleton)
+3. Bledy beda przekierowywac na 404
+4. Kod jest przygotowany na przyszla integracje z backendem
+5. Dane o strukturze stron sa pobierane dynamicznie (symulacja JSON z API)
