@@ -369,6 +369,8 @@ export const mockUsers: User[] = [
   { id: 'p28', name: 'Zofia Junior', email: 'zofia@example.com', role: 'participant', birthYear: 2004, gender: 'K', isNewUser: true },
   { id: 'p29', name: 'Artur Wyczynowy', email: 'artur@example.com', role: 'participant', birthYear: 1984, gender: 'M', club: 'Pro Runners' },
   { id: 'p30', name: 'Barbara Amatorka', email: 'barbara@example.com', role: 'participant', birthYear: 1999, gender: 'K' },
+  // Moderator (mini-admin)
+  { id: 'mod1', name: 'Monika Moderator', email: 'monika@sporttime.pl', role: 'moderator', phone: '+48 500 200 300' },
   // Organizers
   { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer', phone: '+48 600 111 222', companyName: 'Timing Marek Kowalczyk', nip: '1234567890', website: 'https://timing.pl', description: 'Profesjonalne zawody biegowe od 2010 roku. Organizujemy wydarzenia w całej Polsce.' },
   { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer', phone: '+48 32 987 65 43', companyName: 'Sportowe Wydarzenia Sp. z o.o.', nip: '9876543210', website: 'https://sportevents.pl', description: 'Największy organizator imprez sportowych na Śląsku.' },

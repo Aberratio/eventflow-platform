@@ -1,4 +1,4 @@
-export type UserRole = 'participant' | 'organizer' | 'admin';
+export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin';
 
 export type SeriesType = 'virtual' | 'local' | 'championship' | 'cup';
 
