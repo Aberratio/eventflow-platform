@@ -1,313 +1,184 @@
 
-# Plan: Kreatywne strony bledow z animacjami sportowymi
+# Plan: Nowa rola "Moderator" (ograniczony admin dla pracowników)
 
 ## Koncepcja
 
-Stworze unikalne, animowane strony bledow nawiazujace do tematyki SportTime - mierzenia czasu i sportu. Kazda strona bedzie miala inny motyw i zabawne teksty po polsku.
+Dodam nową rolę **"moderator"** (mini-admin) dla pracowników, którzy potrzebują dostępu do panelu administracyjnego, ale z ograniczonymi uprawnieniami. To zapobiegnie przypadkowym uszkodzeniom danych lub zmianom krytycznych ustawień.
 
-## Strony do stworzenia
+## Podział ról
 
-### 1. Strona 404 - "Falstart"
+| Funkcjonalność | Super Admin | Moderator |
+|----------------|:-----------:|:---------:|
+| **Pulpit (Overview)** | Pełny | Ograniczony (bez przychodów) |
+| **Moderacja wydarzeń** | Tak | Tak |
+| **Uczestnicy (lista)** | Tak | Tylko podgląd |
+| **Uczestnicy (edycja/blokada)** | Tak | Nie |
+| **Organizatorzy (lista)** | Tak | Tylko podgląd |
+| **Organizatorzy (edycja)** | Tak | Nie |
+| **Wydarzenia** | Tak | Tylko podgląd |
+| **Sklep - Produkty** | Tak | Nie |
+| **Sklep - Zamówienia** | Tak | Tylko zmiana statusu |
+| **Partnerzy** | Tak | Nie |
+| **Strony CMS** | Tak | Nie |
+| **Profil własny** | Tak | Tak (bez ustawień bezpieczeństwa) |
 
-**Motyw:** Biegacz ktory wystartowak za wczesnie i zostal zdyskwalifikowany
+## Co Moderator MOŻE robić:
+- Przeglądać pulpit (bez danych finansowych)
+- Moderować wydarzenia (zatwierdzać/odrzucać)
+- Przeglądać listy użytkowników i organizatorów
+- Przeglądać wydarzenia
+- Aktualizować statusy zamówień w sklepie
+- Edytować swój profil
 
-**Animacje:**
-- Animowany biegacz w pozycji startowej
-- Czerwona flaga/swiatlo "FALSTART"
-- Stoper pokazujacy czas "DNF" (Did Not Finish)
-- Slady stop prowadzace... donikad
+## Czego Moderator NIE MOŻE robić:
+- Blokować/usuwać użytkowników
+- Edytować organizatorów
+- Zarządzać produktami w sklepie
+- Edytować partnerów i stron CMS
+- Zmieniać ustawień bezpieczeństwa
+- Widzieć danych finansowych (przychody)
 
-**Teksty:**
-- "404 - FALSTART!"
-- "Wybiegles poza trase... ta strona nie istnieje!"
-- "Moze sprobuj jeszcze raz od linii startu?"
+## Zmiany techniczne
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│              🚩 FALSTART! 🚩                                │
-│                                                             │
-│         ┌─────────────────────────┐                        │
-│         │   ⏱️  DNF               │ ← animowany stoper     │
-│         │   --:--.---             │                        │
-│         └─────────────────────────┘                        │
-│                                                             │
-│              🏃💨  ← animowany biegacz                     │
-│         ═══════════════════════════                        │
-│               (linia mety)                                  │
-│                                                             │
-│         "Wybiegłeś poza trasę!"                            │
-│         "Ta strona nie istnieje..."                        │
-│                                                             │
-│              [🏠 Wróć na start]                            │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 2. Strona 500 - "Awaria sprzetu"
-
-**Motyw:** Zepsuty stoper/system pomiaru czasu
-
-**Animacje:**
-- Stoper z glitchujacymi cyframi
-- Iskry lecace z "zepsutego" urzadzenia
-- Migajace "ERROR" na wyswietlaczu
-
-**Teksty:**
-- "500 - AWARIA SYSTEMU!"
-- "Nasz stoper sie zacial... technik juz biegnie!"
-- "Sprobuj odswiezyc za chwile"
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│         ┌─────────────────────────┐                        │
-│         │   ⏱️  E̸R̵R̶O̷R̸            │                        │
-│         │   8̷8̸:̵8̶8̷.̸8̵8̶8̷          │ ← glitchujace cyfry   │
-│         │   ⚡💥⚡                 │ ← iskry               │
-│         └─────────────────────────┘                        │
-│                                                             │
-│              🔧🏃 ← technik biegnie                        │
-│                                                             │
-│         "Nasz stoper się zaciął!"                          │
-│         "Technik już biegnie na pomoc..."                  │
-│                                                             │
-│              [🔄 Spróbuj ponownie]                         │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### 3. Strona 503 - "Przerwa techniczna"
-
-**Motyw:** Zawody wstrzymane - przerwa na nawodnienie
-
-**Animacje:**
-- Animowany znak "STOP" z miga
-- Butelka wody "pijaca"
-- Countdown do wznowienia
-
-**Teksty:**
-- "503 - PRZERWA TECHNICZNA"
-- "Zawody chwilowo wstrzymane"
-- "Uzupelniamy plyny... wroć za chwile!"
-
-### 4. Strona 403 - "Strefa VIP"
-
-**Motyw:** Proba wejscia do strefy VIP bez akredytacji
-
-**Animacje:**
-- Animowana barierka/tasma
-- Ochroniarz krecacy glowa "nie"
-- Migajaca akredytacja
-
-**Teksty:**
-- "403 - BRAK AKREDYTACJI!"
-- "Ta strefa jest tylko dla VIPow"
-- "Potrzebujesz specjalnego wejscia"
-
-## Wspolne elementy animacji
-
-### CSS Keyframes (dodane do tailwind.config.ts):
+### 1. Rozszerzenie typu UserRole
 
 ```typescript
-keyframes: {
-  // Biegacz
-  'runner': {
-    '0%, 100%': { transform: 'translateX(0)' },
-    '50%': { transform: 'translateX(20px)' },
-  },
-  // Glitch tekstu
-  'glitch': {
-    '0%, 100%': { transform: 'translate(0)' },
-    '20%': { transform: 'translate(-2px, 2px)' },
-    '40%': { transform: 'translate(2px, -2px)' },
-    '60%': { transform: 'translate(-2px, -2px)' },
-    '80%': { transform: 'translate(2px, 2px)' },
-  },
-  // Miganie
-  'blink': {
-    '0%, 50%, 100%': { opacity: '1' },
-    '25%, 75%': { opacity: '0' },
-  },
-  // Pulsowanie stopera
-  'stopwatch-pulse': {
-    '0%, 100%': { transform: 'scale(1)' },
-    '50%': { transform: 'scale(1.05)' },
-  },
-  // Skakanie cyfr
-  'digit-flip': {
-    '0%': { transform: 'rotateX(0deg)' },
-    '50%': { transform: 'rotateX(90deg)' },
-    '100%': { transform: 'rotateX(0deg)' },
-  },
-  // Iskry
-  'spark': {
-    '0%': { transform: 'translateY(0) scale(1)', opacity: '1' },
-    '100%': { transform: 'translateY(-20px) scale(0)', opacity: '0' },
-  },
-  // Krecenie glowa
-  'shake-head': {
-    '0%, 100%': { transform: 'rotate(0deg)' },
-    '25%': { transform: 'rotate(-15deg)' },
-    '75%': { transform: 'rotate(15deg)' },
-  },
-}
+// src/types/index.ts
+export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin';
 ```
 
-## Komponenty do stworzenia
+### 2. Dodanie mockowego moderatora
 
-### 1. AnimatedStopwatch.tsx
-Animowany stoper z możliwością wyswietlania roznych stanow (DNF, ERROR, czas)
+```typescript
+// src/data/mockData.ts
+{ 
+  id: 'm1', 
+  name: 'Monika Moderator', 
+  email: 'monika@sporttime.pl', 
+  role: 'moderator', 
+  phone: '+48 500 200 300' 
+},
+```
 
-### 2. RunnerAnimation.tsx
-SVG animowanego biegacza
+### 3. Aktualizacja strony logowania
 
-### 3. GlitchText.tsx
-Tekst z efektem glitch
+Nowa karta z ikoną `UserCheck` i kolorem pomarańczowym:
 
-### 4. SparkEffect.tsx
-Animowane iskry
+```text
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│   │  Uczestnik  │  │ Organizator │  │  Moderator  │  │ Super Admin │        │
+│   │     👤      │  │     💼      │  │     ✓      │  │     🛡️     │        │
+│   │             │  │             │  │  (nowy!)    │  │             │        │
+│   └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4. Nowy dashboard dla Moderatora
+
+Stworzę dedykowany `ModeratorDashboard.tsx` z ograniczonymi zakładkami:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Panel Moderatora                                                            │
+│ Witaj, Monika! (ograniczony dostęp)                                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ [Pulpit] [Moderacja] [Uczestnicy] [Organizatorzy] [Zamówienia] [Profil]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   • Pulpit: statystyki bez danych finansowych                              │
+│   • Moderacja: zatwierdzanie/odrzucanie wydarzeń                           │
+│   • Uczestnicy: tylko podgląd (bez akcji)                                  │
+│   • Organizatorzy: tylko podgląd (bez akcji)                               │
+│   • Zamówienia: zmiana statusów (bez cen)                                  │
+│   • Profil: własne dane (bez bezpieczeństwa)                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 5. Komponenty z ograniczeniami
+
+Stworzę wersje "read-only" niektórych zakładek lub dodam prop `readOnly`:
+
+```typescript
+// Przykład - UsersParticipantsTab z ograniczeniami
+interface Props {
+  readOnly?: boolean;
+}
+
+// Gdy readOnly=true:
+// - Brak przycisków "Zablokuj", "Usuń", "Resetuj hasło"
+// - Tylko podgląd danych
+```
+
+### 6. Osobna zakładka zamówień dla moderatora
+
+Moderator widzi zamówienia, ale:
+- Bez szczegółów cenowych/finansowych
+- Może tylko zmieniać statusy (np. "Wysłane", "Dostarczone")
+- Nie może anulować ani modyfikować produktów
+
+### 7. Pulpit bez danych finansowych
+
+Dla moderatora:
+- Ukryty wykres przychodów
+- Ukryta karta "Najpopularniejsze produkty" (z kwotami)
+- Widoczne: liczba wydarzeń, użytkowników, rejestracji, do moderacji
 
 ## Zmiany w plikach
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/pages/NotFound.tsx` | Modyfikacja | Nowa strona 404 z animacja "Falstart" |
-| `src/pages/ServerError.tsx` | Nowy | Strona 500 z glitchujacym stoperem |
-| `src/pages/ServiceUnavailable.tsx` | Nowy | Strona 503 z przerwa techniczna |
-| `src/pages/Forbidden.tsx` | Nowy | Strona 403 z ochroniarzem |
-| `src/components/errors/AnimatedStopwatch.tsx` | Nowy | Komponent animowanego stopera |
-| `src/components/errors/RunnerAnimation.tsx` | Nowy | SVG animowanego biegacza |
-| `src/components/errors/GlitchText.tsx` | Nowy | Tekst z efektem glitch |
-| `tailwind.config.ts` | Modyfikacja | Dodanie nowych keyframes i animacji |
-| `src/index.css` | Modyfikacja | Dodatkowe style dla animacji |
+| `src/types/index.ts` | Modyfikacja | Dodanie `'moderator'` do `UserRole` |
+| `src/data/mockData.ts` | Modyfikacja | Dodanie użytkownika moderatora |
+| `src/pages/LoginPage.tsx` | Modyfikacja | Dodanie 4. karty logowania (Moderator) |
+| `src/pages/moderator/ModeratorDashboard.tsx` | Nowy | Dashboard dla moderatora |
+| `src/pages/moderator/components/ModeratorOverviewTab.tsx` | Nowy | Pulpit bez danych finansowych |
+| `src/pages/moderator/components/ModeratorOrdersTab.tsx` | Nowy | Zamówienia (tylko statusy) |
+| `src/pages/moderator/components/UsersReadOnlyTab.tsx` | Nowy | Uczestnicy/Organizatorzy bez akcji |
+| `src/pages/moderator/components/ModeratorProfileTab.tsx` | Nowy | Profil bez bezpieczeństwa |
+| `src/contexts/AuthContext.tsx` | Modyfikacja | Obsługa nowej roli |
+| `src/components/layout/BottomNav.tsx` | Modyfikacja | Przekierowanie moderatora na `/moderator` |
+| `src/App.tsx` | Modyfikacja | Dodanie tras `/moderator/*` |
 
-## Szczegoly animacji 404 - Falstart
+## Wygląd strony logowania
 
-```tsx
-// NotFound.tsx - struktura
-const NotFound = () => {
-  const [showRunner, setShowRunner] = useState(false);
-  
-  useEffect(() => {
-    // Animacja wejscia
-    setTimeout(() => setShowRunner(true), 500);
-  }, []);
+Rozszerzę siatkę do 4 kolumn (lub 2x2 na mobile):
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center">
-      <div className="text-center space-y-8">
-        {/* Czerwona flaga */}
-        <div className="animate-bounce">
-          🚩
-        </div>
-        
-        {/* Stoper z DNF */}
-        <AnimatedStopwatch status="dnf" />
-        
-        {/* Animowany biegacz */}
-        <div className={cn(
-          "transition-all duration-1000",
-          showRunner ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
-        )}>
-          <RunnerAnimation />
-        </div>
-        
-        {/* Linia mety */}
-        <div className="h-1 w-64 mx-auto bg-gradient-to-r from-transparent via-primary to-transparent" />
-        
-        {/* Teksty */}
-        <div className="space-y-2">
-          <h1 className="text-6xl font-bold text-destructive animate-pulse">
-            404
-          </h1>
-          <p className="text-2xl font-semibold">FALSTART!</p>
-          <p className="text-muted-foreground">
-            Wybiegłeś poza trasę... ta strona nie istnieje!
-          </p>
-        </div>
-        
-        {/* Przycisk */}
-        <Button asChild>
-          <Link to="/">
-            🏠 Wróć na start
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-};
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     Zaloguj się do SportTime                                │
+│                                                                             │
+│  ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐   │
+│  │   Uczestnik   │ │  Organizator  │ │   Moderator   │ │  Super Admin  │   │
+│  │      👤       │ │      💼       │ │      ✓       │ │      🛡️      │   │
+│  │               │ │               │ │   (mini-     │ │   (pełen      │   │
+│  │  Przeglądaj   │ │ Twórz zawody  │ │    admin)    │ │   dostęp)     │   │
+│  │   zawody      │ │  i wyniki     │ │              │ │               │   │
+│  │               │ │               │ │  Moderuj     │ │  Wszystkie    │   │
+│  │  [Zaloguj]    │ │  [Zaloguj]    │ │  wydarzenia  │ │  funkcje      │   │
+│  │               │ │               │ │              │ │               │   │
+│  └───────────────┘ └───────────────┘ │  [Zaloguj]   │ │  [Zaloguj]    │   │
+│                                      └───────────────┘ └───────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Szczegoly animacji 500 - Awaria
+## Badge w dashboardzie
+
+Moderator zobaczy badge informujący o ograniczeniach:
 
 ```tsx
-// ServerError.tsx - struktura
-const ServerError = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-destructive/10 flex items-center justify-center">
-      <div className="text-center space-y-8">
-        {/* Zepsuty stoper */}
-        <div className="relative">
-          <AnimatedStopwatch status="error" />
-          {/* Iskry */}
-          <SparkEffect />
-        </div>
-        
-        {/* Glitchujacy tekst */}
-        <GlitchText>500</GlitchText>
-        
-        {/* Technik */}
-        <div className="text-4xl animate-bounce">
-          🔧🏃
-        </div>
-        
-        <div className="space-y-2">
-          <p className="text-2xl font-semibold">AWARIA SYSTEMU!</p>
-          <p className="text-muted-foreground">
-            Nasz stoper się zaciął... technik już biegnie!
-          </p>
-        </div>
-        
-        <Button onClick={() => window.location.reload()}>
-          🔄 Spróbuj ponownie
-        </Button>
-      </div>
-    </div>
-  );
-};
+<Badge variant="secondary" className="gap-1">
+  <Lock className="h-3 w-3" />
+  Dostęp ograniczony
+</Badge>
 ```
 
-## Zabawne teksty
+## Bezpieczeństwo
 
-### 404 - Falstart
-- "Wybiegłeś poza trasę... ta strona nie istnieje!"
-- "Sędzia pokazał czerwoną flagę - zły adres!"
-- "DNF - Did Not Find (nie znaleziono)"
-
-### 500 - Awaria
-- "Nasz stoper się zaciął... technik już biegnie!"
-- "Houston, mamy problem z pomiarem czasu!"
-- "Ktoś potknął się o kabel... przepraszamy!"
-
-### 503 - Przerwa
-- "Zawody chwilowo wstrzymane - uzupełniamy płyny!"
-- "Nawet serwery potrzebują przerwy na wodę"
-- "Wrócimy szybciej niż Usain Bolt!"
-
-### 403 - VIP
-- "Hej, tu strefa VIP! Gdzie Twoja akredytacja?"
-- "Ochroniarz mówi NIE - brak uprawnień"
-- "Ta strona jest tylko dla zwycięzców... zaloguj się!"
-
-## Responsywnosc
-
-Wszystkie animacje beda responsywne:
-- Na mobile: mniejsze elementy, uproszczone animacje
-- Na desktop: pelne animacje, wieksze SVG
-
-## Dostepnosc
-
-- Animacje z `prefers-reduced-motion` - wylaczone dla uzytkownikow preferujacych mniej ruchu
-- Odpowiednie aria-labels
-- Semantyczny HTML
+- Moderator nie ma dostępu do ustawień bezpieczeństwa konta (2FA, hasła innych)
+- Nie widzi przychodów ani danych finansowych
+- Nie może modyfikować krytycznych danych (użytkownicy, produkty, strony)
+- Może tylko wykonywać "bezpieczne" operacje (moderacja, statusy zamówień)
