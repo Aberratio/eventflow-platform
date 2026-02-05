@@ -19,6 +19,8 @@ export const BottomNav = () => {
         return '/participant';
       case 'organizer':
         return '/organizer';
+      case 'moderator':
+        return '/moderator';
       case 'admin':
         return '/admin';
       default:
@@ -53,6 +55,7 @@ export const BottomNav = () => {
       active: isAuthenticated 
         ? location.pathname.startsWith('/participant') ||
           location.pathname.startsWith('/organizer') ||
+          location.pathname.startsWith('/moderator') ||
           location.pathname.startsWith('/admin')
         : location.pathname === '/login',
     },

@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Layout } from '@/components/layout/Layout';
-import { User, Briefcase, Shield } from 'lucide-react';
+import { User, Briefcase, Shield, UserCheck } from 'lucide-react';
 import { UserRole } from '@/types';
 import { useEffect } from 'react';
 
@@ -16,6 +16,7 @@ const LoginPage = () => {
       const redirectPath = {
         participant: '/participant',
         organizer: '/organizer',
+        moderator: '/moderator',
         admin: '/admin',
       }[user.role];
       navigate(redirectPath);
@@ -27,6 +28,7 @@ const LoginPage = () => {
     const redirectPath = {
       participant: '/participant',
       organizer: '/organizer',
+      moderator: '/moderator',
       admin: '/admin',
     }[role];
     navigate(redirectPath);
@@ -37,21 +39,28 @@ const LoginPage = () => {
       role: 'participant' as UserRole,
       icon: User,
       title: 'Uczestnik',
-      description: 'Przeglądaj zawody, rejestruj się na wydarzenia, śledź swoje wyniki i rekordy osobiste.',
+      description: 'Przeglądaj zawody, rejestruj się na wydarzenia, śledź swoje wyniki.',
       color: 'bg-accent text-accent-foreground',
     },
     {
       role: 'organizer' as UserRole,
       icon: Briefcase,
       title: 'Organizator',
-      description: 'Twórz i zarządzaj wydarzeniami, dodawaj wyniki, komunikuj się z uczestnikami.',
+      description: 'Twórz i zarządzaj wydarzeniami, dodawaj wyniki uczestników.',
       color: 'bg-primary text-primary-foreground',
+    },
+    {
+      role: 'moderator' as UserRole,
+      icon: UserCheck,
+      title: 'Moderator',
+      description: 'Moderuj wydarzenia, przeglądaj użytkowników i zarządzaj zamówieniami.',
+      color: 'bg-warning text-warning-foreground',
     },
     {
       role: 'admin' as UserRole,
       icon: Shield,
-      title: 'Administrator',
-      description: 'Pełny dostęp do platformy - zarządzanie użytkownikami, wydarzeniami i ustawieniami.',
+      title: 'Super Admin',
+      description: 'Pełny dostęp do platformy i wszystkich ustawień systemowych.',
       color: 'bg-destructive text-destructive-foreground',
     },
   ];
@@ -66,7 +75,7 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {roles.map(({ role, icon: Icon, title, description, color }) => (
             <Card key={role} className="relative overflow-hidden hover:shadow-lg transition-shadow">
               <CardHeader className="text-center pb-2">

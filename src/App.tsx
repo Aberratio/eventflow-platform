@@ -35,6 +35,7 @@ import ParticipantDashboard from "./pages/participant/ParticipantDashboard";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import EventForm from "./pages/organizer/EventForm";
 import EventManage from "./pages/organizer/EventManage";
+import ModeratorDashboard from "./pages/moderator/ModeratorDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
 import { PageEditorPage } from "./pages/admin/components/PageEditorPage";
@@ -95,6 +96,8 @@ const App = () => (
                   <Route path="/organizer/events/new" element={<EventForm />} />
                   <Route path="/organizer/events/:id" element={<EventManage />} />
                   <Route path="/organizer/events/:id/edit" element={<EventForm />} />
+                  <Route path="/moderator" element={<ModeratorDashboard />} />
+                  <Route path="/moderator/*" element={<ModeratorDashboard />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/events/:id" element={<AdminEventManage />} />
                   <Route path="/admin/pages/new" element={<PageEditorPage />} />
