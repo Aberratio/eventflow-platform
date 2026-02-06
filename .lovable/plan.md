@@ -1,184 +1,212 @@
 
-# Plan: Nowa rola "Moderator" (ograniczony admin dla pracowników)
+# Plan: System nadawania numerów startowych
 
-## Koncepcja
+## Cel
 
-Dodam nową rolę **"moderator"** (mini-admin) dla pracowników, którzy potrzebują dostępu do panelu administracyjnego, ale z ograniczonymi uprawnieniami. To zapobiegnie przypadkowym uszkodzeniom danych lub zmianom krytycznych ustawień.
+Dodanie funkcjonalności batch i pojedynczego nadawania numerów startowych dla organizatorów i administratorów wydarzeń, wraz z rozbudową mockowych danych o duże listy startowe.
 
-## Podział ról
+## Zakres zmian
 
-| Funkcjonalność | Super Admin | Moderator |
-|----------------|:-----------:|:---------:|
-| **Pulpit (Overview)** | Pełny | Ograniczony (bez przychodów) |
-| **Moderacja wydarzeń** | Tak | Tak |
-| **Uczestnicy (lista)** | Tak | Tylko podgląd |
-| **Uczestnicy (edycja/blokada)** | Tak | Nie |
-| **Organizatorzy (lista)** | Tak | Tylko podgląd |
-| **Organizatorzy (edycja)** | Tak | Nie |
-| **Wydarzenia** | Tak | Tylko podgląd |
-| **Sklep - Produkty** | Tak | Nie |
-| **Sklep - Zamówienia** | Tak | Tylko zmiana statusu |
-| **Partnerzy** | Tak | Nie |
-| **Strony CMS** | Tak | Nie |
-| **Profil własny** | Tak | Tak (bez ustawień bezpieczeństwa) |
+### 1. Rozbudowa mock danych (src/data/mockData.ts)
 
-## Co Moderator MOŻE robić:
-- Przeglądać pulpit (bez danych finansowych)
-- Moderować wydarzenia (zatwierdzać/odrzucać)
-- Przeglądać listy użytkowników i organizatorów
-- Przeglądać wydarzenia
-- Aktualizować statusy zamówień w sklepie
-- Edytować swój profil
+Dodanie ~100 rejestracji dla wybranych wydarzeń:
 
-## Czego Moderator NIE MOŻE robić:
-- Blokować/usuwać użytkowników
-- Edytować organizatorów
-- Zarządzać produktami w sklepie
-- Edytować partnerów i stron CMS
-- Zmieniać ustawień bezpieczeństwa
-- Widzieć danych finansowych (przychody)
+| Event ID | Nazwa | Liczba zapisanych | Z numerami | Bez numerów |
+|----------|-------|-------------------|------------|-------------|
+| e9 | Nocny Bieg Wrocławski | 100 | 65 | 35 |
+| e11 | Tatry Ultra | 100 | 70 | 30 |
+| e15 | Bieg po Parku | 80 | 40 | 40 |
 
-## Zmiany techniczne
+Generowanie uczestników:
+- Losowe imiona i nazwiska (pula polskich imion)
+- Losowe kategorie wiekowe pasujące do dystansów
+- Mix statusów: confirmed (70%), pending (25%), cancelled (5%)
+- Niektórzy z już przydzielonymi numerami startowymi
 
-### 1. Rozszerzenie typu UserRole
+### 2. Nowy komponent BibNumberAssignment
 
-```typescript
-// src/types/index.ts
-export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin';
-```
+Lokalizacja: `src/components/organizer/BibNumberAssignment.tsx`
 
-### 2. Dodanie mockowego moderatora
-
-```typescript
-// src/data/mockData.ts
-{ 
-  id: 'm1', 
-  name: 'Monika Moderator', 
-  email: 'monika@sporttime.pl', 
-  role: 'moderator', 
-  phone: '+48 500 200 300' 
-},
-```
-
-### 3. Aktualizacja strony logowania
-
-Nowa karta z ikoną `UserCheck` i kolorem pomarańczowym:
-
-```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                                                                              │
-│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│   │  Uczestnik  │  │ Organizator │  │  Moderator  │  │ Super Admin │        │
-│   │     👤      │  │     💼      │  │     ✓      │  │     🛡️     │        │
-│   │             │  │             │  │  (nowy!)    │  │             │        │
-│   └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘        │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 4. Nowy dashboard dla Moderatora
-
-Stworzę dedykowany `ModeratorDashboard.tsx` z ograniczonymi zakładkami:
+Funkcjonalności zgodnie z obrazkami referencyjnymi:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Panel Moderatora                                                            │
-│ Witaj, Monika! (ograniczony dostęp)                                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [Pulpit] [Moderacja] [Uczestnicy] [Organizatorzy] [Zamówienia] [Profil]    │
+│ NADAWANIE NUMERÓW STARTOWYCH                                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│   • Pulpit: statystyki bez danych finansowych                              │
-│   • Moderacja: zatwierdzanie/odrzucanie wydarzeń                           │
-│   • Uczestnicy: tylko podgląd (bez akcji)                                  │
-│   • Organizatorzy: tylko podgląd (bez akcji)                               │
-│   • Zamówienia: zmiana statusów (bez cen)                                  │
-│   • Profil: własne dane (bez bezpieczeństwa)                               │
+│ ┌──────────────────────────────────┐  ┌──────────────────────────────────┐ │
+│ │ Sortowanie:                      │  │ Numer początkowy:                │ │
+│ │ [Po dacie zapisu (tylko opłac.)] │  │ [1              ]                │ │
+│ └──────────────────────────────────┘  └──────────────────────────────────┘ │
+│                                                                             │
+│ Uwzględnij dystanse:                                                        │
+│ [✓] Bieg 10 km (15 bez numeru)                                             │
+│ [✓] Bieg 5 km (20 bez numeru)                                              │
+│ [ ] Bieg 21 km (0 bez numeru)                                              │
+│                                                                             │
+│ ┌────────────────────────────┐  ┌────────────────────────────────────────┐ │
+│ │ 🔢 Nadaj numery startowe!  │  │ 🗑️ Usuń wszystkie numery startowe!  │ │
+│ └────────────────────────────┘  └────────────────────────────────────────┘ │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 5. Komponenty z ograniczeniami
+**Opcje sortowania (Select):**
+- Po dacie zapisu (tylko opłaceni) - domyślnie
+- Po nazwisku i imieniu (tylko opłaceni)
+- Po dacie zapisu (wszyscy)
+- Po nazwisku i imieniu (wszyscy)
 
-Stworzę wersje "read-only" niektórych zakładek lub dodam prop `readOnly`:
+**Logika przydzielania:**
+1. Filtruj uczestników bez numeru startowego
+2. Filtruj według wybranych dystansów
+3. Sortuj według wybranej opcji
+4. Przydzielaj numery od "numeru początkowego" rosnąco
+5. Pomijaj numery już zajęte (symulacja kolizji)
 
-```typescript
-// Przykład - UsersParticipantsTab z ograniczeniami
-interface Props {
-  readOnly?: boolean;
-}
+### 3. Rozbudowa dialogu pojedynczego przypisywania
 
-// Gdy readOnly=true:
-// - Brak przycisków "Zablokuj", "Usuń", "Resetuj hasło"
-// - Tylko podgląd danych
+Lokalizacja: `src/pages/organizer/components/ParticipantsTab.tsx`
+
+Ulepszenia:
+- Wyświetlanie listy wolnych numerów (np. "430-443, 445 i więcej")
+- Walidacja - ostrzeżenie gdy numer jest już zajęty
+- Sugestia następnego wolnego numeru
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Przydzielanie numeru                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ Zawodnik: Jan Kowalski                                                      │
+│ Dystans: Bieg 10 km                                                         │
+│                                                                             │
+│ Zmień na: [_________]                                                       │
+│                                                                             │
+│ Wolne numery: 430-443, 445 i więcej                                         │
+│                                                                             │
+│                        ┌─────────┐  ┌─────────┐                            │
+│                        │ Zmień   │  │ Anuluj  │                            │
+│                        └─────────┘  └─────────┘                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 6. Osobna zakładka zamówień dla moderatora
+### 4. Integracja z ParticipantsTab
 
-Moderator widzi zamówienia, ale:
-- Bez szczegółów cenowych/finansowych
-- Może tylko zmieniać statusy (np. "Wysłane", "Dostarczone")
-- Nie może anulować ani modyfikować produktów
+Dodanie sekcji "Narzędzia administracyjne" powyżej tabeli uczestników:
+- Eksport listy (istniejący)
+- Wiadomość grupowa (istniejący)
+- **Nowy:** Panel nadawania numerów startowych
 
-### 7. Pulpit bez danych finansowych
-
-Dla moderatora:
-- Ukryty wykres przychodów
-- Ukryta karta "Najpopularniejsze produkty" (z kwotami)
-- Widoczne: liczba wydarzeń, użytkowników, rejestracji, do moderacji
-
-## Zmiany w plikach
+### 5. Struktura plików
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie `'moderator'` do `UserRole` |
-| `src/data/mockData.ts` | Modyfikacja | Dodanie użytkownika moderatora |
-| `src/pages/LoginPage.tsx` | Modyfikacja | Dodanie 4. karty logowania (Moderator) |
-| `src/pages/moderator/ModeratorDashboard.tsx` | Nowy | Dashboard dla moderatora |
-| `src/pages/moderator/components/ModeratorOverviewTab.tsx` | Nowy | Pulpit bez danych finansowych |
-| `src/pages/moderator/components/ModeratorOrdersTab.tsx` | Nowy | Zamówienia (tylko statusy) |
-| `src/pages/moderator/components/UsersReadOnlyTab.tsx` | Nowy | Uczestnicy/Organizatorzy bez akcji |
-| `src/pages/moderator/components/ModeratorProfileTab.tsx` | Nowy | Profil bez bezpieczeństwa |
-| `src/contexts/AuthContext.tsx` | Modyfikacja | Obsługa nowej roli |
-| `src/components/layout/BottomNav.tsx` | Modyfikacja | Przekierowanie moderatora na `/moderator` |
-| `src/App.tsx` | Modyfikacja | Dodanie tras `/moderator/*` |
+| `src/data/mockData.ts` | Modyfikacja | Dodanie ~280 nowych rejestracji dla 3 wydarzeń |
+| `src/components/organizer/BibNumberAssignment.tsx` | Nowy | Panel batch nadawania numerów |
+| `src/pages/organizer/components/ParticipantsTab.tsx` | Modyfikacja | Integracja panelu, ulepszony dialog pojedynczy |
 
-## Wygląd strony logowania
+## Szczegóły techniczne
 
-Rozszerzę siatkę do 4 kolumn (lub 2x2 na mobile):
+### Helper do wyliczania wolnych numerów
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     Zaloguj się do SportTime                                │
-│                                                                             │
-│  ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐   │
-│  │   Uczestnik   │ │  Organizator  │ │   Moderator   │ │  Super Admin  │   │
-│  │      👤       │ │      💼       │ │      ✓       │ │      🛡️      │   │
-│  │               │ │               │ │   (mini-     │ │   (pełen      │   │
-│  │  Przeglądaj   │ │ Twórz zawody  │ │    admin)    │ │   dostęp)     │   │
-│  │   zawody      │ │  i wyniki     │ │              │ │               │   │
-│  │               │ │               │ │  Moderuj     │ │  Wszystkie    │   │
-│  │  [Zaloguj]    │ │  [Zaloguj]    │ │  wydarzenia  │ │  funkcje      │   │
-│  │               │ │               │ │              │ │               │   │
-│  └───────────────┘ └───────────────┘ │  [Zaloguj]   │ │  [Zaloguj]    │   │
-│                                      └───────────────┘ └───────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
+```typescript
+const getAvailableNumbers = (registrations: Registration[], maxToShow = 5): string => {
+  // Zbierz wszystkie zajęte numery
+  const usedNumbers = registrations
+    .filter(r => r.bibNumber)
+    .map(r => parseInt(r.bibNumber!, 10))
+    .filter(n => !isNaN(n))
+    .sort((a, b) => a - b);
+  
+  // Znajdź zakresy wolnych numerów (od 1 do max+10)
+  // Zwróć np. "430-443, 445 i więcej"
+};
 ```
 
-## Badge w dashboardzie
+### Symulacja kolizji numerów
 
-Moderator zobaczy badge informujący o ograniczeniach:
-
-```tsx
-<Badge variant="secondary" className="gap-1">
-  <Lock className="h-3 w-3" />
-  Dostęp ograniczony
-</Badge>
+Podczas batch assignment:
+```typescript
+const assignBibNumbers = () => {
+  let currentNumber = startNumber;
+  const usedNumbers = new Set(
+    localRegistrations
+      .filter(r => r.bibNumber)
+      .map(r => parseInt(r.bibNumber!, 10))
+  );
+  
+  eligibleParticipants.forEach(participant => {
+    // Pomijaj zajęte numery
+    while (usedNumbers.has(currentNumber)) {
+      currentNumber++;
+    }
+    // Przydziel numer
+    participant.bibNumber = String(currentNumber).padStart(3, '0');
+    usedNumbers.add(currentNumber);
+    currentNumber++;
+  });
+};
 ```
 
-## Bezpieczeństwo
+### Mock dane - przykład generowania
 
-- Moderator nie ma dostępu do ustawień bezpieczeństwa konta (2FA, hasła innych)
-- Nie widzi przychodów ani danych finansowych
-- Nie może modyfikować krytycznych danych (użytkownicy, produkty, strony)
-- Może tylko wykonywać "bezpieczne" operacje (moderacja, statusy zamówień)
+```typescript
+// Generator polskich imion i nazwisk
+const firstNamesMale = ['Adam', 'Bartek', 'Cezary', 'Damian', 'Emil', ...];
+const firstNamesFemale = ['Anna', 'Beata', 'Celina', 'Dorota', 'Ewa', ...];
+const lastNames = ['Kowalski', 'Nowak', 'Wiśniewski', 'Wójcik', 'Kowalczyk', ...];
+
+// Generowanie 100 rejestracji dla e9
+const e9Registrations = Array.from({ length: 100 }, (_, i) => ({
+  id: `r-e9-${String(i + 1).padStart(3, '0')}`,
+  eventId: 'e9',
+  eventName: 'Nocny Bieg Wrocławski',
+  userId: `p-gen-${i}`,
+  userName: `${randomFirstName()} ${randomLastName()}`,
+  userEmail: `participant${i}@example.com`,
+  distanceId: i % 3 === 0 ? 'd17' : 'd18', // 10km lub 5km
+  distanceName: i % 3 === 0 ? '10km' : '5km',
+  category: randomCategory(),
+  registeredAt: randomDate(),
+  status: randomStatus(), // confirmed/pending/cancelled
+  bibNumber: i < 65 ? String(100 + i) : undefined, // 65 z numerami
+  pricePaid: i % 3 === 0 ? 60 : 40,
+}));
+```
+
+## Flow użytkownika
+
+### Batch nadawanie:
+1. Organizator otwiera zakładkę "Uczestnicy"
+2. Widzi panel "Nadawanie numerów startowych"
+3. Wybiera sortowanie (np. "Po dacie zapisu, tylko opłaceni")
+4. Zaznacza dystanse do numeracji
+5. Ustawia numer początkowy (np. 1, 100, 500)
+6. Klika "Nadaj numery startowe!"
+7. System przydziela numery omijając już zajęte
+8. Toast: "Przydzielono numery 35 uczestnikom"
+
+### Pojedyncze nadawanie:
+1. Organizator klika ikonę # przy uczestniku
+2. Otwiera się dialog z:
+   - Imieniem i nazwiskiem
+   - Aktualnym dystansem
+   - Polem na numer
+   - Listą wolnych numerów
+3. Wpisuje numer, potwierdza
+4. Walidacja (czy nie zajęty)
+5. Toast sukcesu lub błędu
+
+## Elementy UI
+
+Wykorzystanie istniejących komponentów:
+- Card, CardHeader, CardContent
+- Select, SelectItem
+- Checkbox
+- Button (variant: default, destructive, outline)
+- Dialog, DialogContent, DialogHeader
+- Input
+- Badge
+- Toast
