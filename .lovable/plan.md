@@ -1,212 +1,284 @@
 
-# Plan: System nadawania numerów startowych
+# Plan: Dodanie trzech pol rich text do wydarzen
 
 ## Cel
 
-Dodanie funkcjonalności batch i pojedynczego nadawania numerów startowych dla organizatorów i administratorów wydarzeń, wraz z rozbudową mockowych danych o duże listy startowe.
+Dodanie trzech nowych pol HTML do interfejsu Event, ktore beda edytowalne przez organizatorow za pomoca edytora WYSIWYG:
 
-## Zakres zmian
+1. **organizersHtml** - Informacje o organizatorach (moze byc wielu, z linkami, dlugie nazwy sponsorow)
+2. **rulesHtml** - Regulamin zawodow (formatowany tekst z mozliwoscia linkowania do PDF-ow)
+3. **finalAcceptanceHtml** - Opcjonalny tekst akceptacji koncowej wyswietlany przy rejestracji jako checkbox
 
-### 1. Rozbudowa mock danych (src/data/mockData.ts)
+## Wybor biblioteki WYSIWYG
 
-Dodanie ~100 rejestracji dla wybranych wydarzeń:
+Zainstaluje **@tiptap/react** z podstawowymi rozszerzeniami - lekki, nowoczesny edytor oparty na ProseMirror, ktory:
+- Ma dobra integracje z React
+- Wspiera linki (kluczowe dla organizatorow i regulaminow)
+- Jest responsywny i dostepny
+- Latwo sie stylizuje z Tailwind CSS
 
-| Event ID | Nazwa | Liczba zapisanych | Z numerami | Bez numerów |
-|----------|-------|-------------------|------------|-------------|
-| e9 | Nocny Bieg Wrocławski | 100 | 65 | 35 |
-| e11 | Tatry Ultra | 100 | 70 | 30 |
-| e15 | Bieg po Parku | 80 | 40 | 40 |
+Pakiety do zainstalowania:
+```
+@tiptap/react
+@tiptap/starter-kit
+@tiptap/extension-link
+@tiptap/extension-underline
+@tiptap/pm
+```
 
-Generowanie uczestników:
-- Losowe imiona i nazwiska (pula polskich imion)
-- Losowe kategorie wiekowe pasujące do dystansów
-- Mix statusów: confirmed (70%), pending (25%), cancelled (5%)
-- Niektórzy z już przydzielonymi numerami startowymi
+## Zmiany w typach
 
-### 2. Nowy komponent BibNumberAssignment
+```typescript
+// src/types/index.ts - nowe pola w Event
+export interface Event {
+  // ... istniejace pola ...
+  
+  // Rich text fields
+  organizersHtml?: string;          // HTML z informacjami o organizatorach
+  rulesHtml?: string;               // HTML z regulaminem
+  finalAcceptanceHtml?: string;     // HTML z tekstem akceptacji koncowej
+  requireFinalAcceptance?: boolean; // Czy wyswietlac checkbox akceptacji
+}
+```
 
-Lokalizacja: `src/components/organizer/BibNumberAssignment.tsx`
+## Komponenty do stworzenia
 
-Funkcjonalności zgodnie z obrazkami referencyjnymi:
+### 1. RichTextEditor.tsx
+
+Komponent edytora WYSIWYG z paskiem narzedzi:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ NADAWANIE NUMERÓW STARTOWYCH                                                │
+│ [B] [I] [U] [S] | [Link] | [Lista] [Num] | [H2] [H3] | [Wyczysc]           │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ ┌──────────────────────────────────┐  ┌──────────────────────────────────┐ │
-│ │ Sortowanie:                      │  │ Numer początkowy:                │ │
-│ │ [Po dacie zapisu (tylko opłac.)] │  │ [1              ]                │ │
-│ └──────────────────────────────────┘  └──────────────────────────────────┘ │
+│   LUKS "ROSPONDEK" przy PSP Zyrowa                                         │
+│   STARTER Zdzieszowice                                                      │
 │                                                                             │
-│ Uwzględnij dystanse:                                                        │
-│ [✓] Bieg 10 km (15 bez numeru)                                             │
-│ [✓] Bieg 5 km (20 bez numeru)                                              │
-│ [ ] Bieg 21 km (0 bez numeru)                                              │
-│                                                                             │
-│ ┌────────────────────────────┐  ┌────────────────────────────────────────┐ │
-│ │ 🔢 Nadaj numery startowe!  │  │ 🗑️ Usuń wszystkie numery startowe!  │ │
-│ └────────────────────────────┘  └────────────────────────────────────────┘ │
+│   (obszar edycji z formatowaniem)                                          │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Opcje sortowania (Select):**
-- Po dacie zapisu (tylko opłaceni) - domyślnie
-- Po nazwisku i imieniu (tylko opłaceni)
-- Po dacie zapisu (wszyscy)
-- Po nazwisku i imieniu (wszyscy)
+Funkcje:
+- Pogrubienie, kursywa, podkreslenie, przekreslenie
+- Linki (dodawanie/usuwanie z dialogiem na URL)
+- Listy punktowane i numerowane
+- Naglowki H2, H3
+- Czyszczenie formatowania
 
-**Logika przydzielania:**
-1. Filtruj uczestników bez numeru startowego
-2. Filtruj według wybranych dystansów
-3. Sortuj według wybranej opcji
-4. Przydzielaj numery od "numeru początkowego" rosnąco
-5. Pomijaj numery już zajęte (symulacja kolizji)
+### 2. RichTextDisplay.tsx
 
-### 3. Rozbudowa dialogu pojedynczego przypisywania
+Komponent do bezpiecznego wyswietlania HTML:
 
-Lokalizacja: `src/pages/organizer/components/ParticipantsTab.tsx`
+```tsx
+<RichTextDisplay html={event.organizersHtml} />
+```
 
-Ulepszenia:
-- Wyświetlanie listy wolnych numerów (np. "430-443, 445 i więcej")
-- Walidacja - ostrzeżenie gdy numer jest już zajęty
-- Sugestia następnego wolnego numeru
+- Renderuje HTML z odpowiednimi klasami Tailwind
+- Stylizuje linki, listy, naglowki
+- Zabezpiecza przed XSS (sanityzacja)
+
+## Integracja z EventForm.tsx
+
+Nowa sekcja w Kroku 1 (po sekcji platnosci):
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Przydzielanie numeru                                 │
+│ 📋 Dodatkowe informacje                                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ Zawodnik: Jan Kowalski                                                      │
-│ Dystans: Bieg 10 km                                                         │
+│ Organizatorzy                                                               │
+│ Mozesz wpisac wielu organizatorow, sponsorow z linkami do ich stron.       │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [B] [I] [U] [Link] [Lista]                                              ││
+│ ├─────────────────────────────────────────────────────────────────────────┤│
+│ │ LUKS "ROSPONDEK" przy PSP Zyrowa                                        ││
+│ │ STARTER Zdzieszowice                                                     ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
-│ Zmień na: [_________]                                                       │
+│ Regulamin                                                                   │
+│ Wpisz tresc regulaminu lub dodaj linki do plikow PDF.                      │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [B] [I] [U] [Link] [Lista]                                              ││
+│ ├─────────────────────────────────────────────────────────────────────────┤│
+│ │ Regulamin zawodow                                                        ││
+│ │ (link do PDF)                                                            ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
-│ Wolne numery: 430-443, 445 i więcej                                         │
+│ [✓] Wymagaj dodatkowej akceptacji przy rejestracji                         │
 │                                                                             │
-│                        ┌─────────┐  ┌─────────┐                            │
-│                        │ Zmień   │  │ Anuluj  │                            │
-│                        └─────────┘  └─────────┘                            │
+│ Tekst akceptacji                                                            │
+│ Ten tekst pojawi sie jako checkbox, ktory uczestnik musi zaakceptowac.     │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [B] [I] [U] [Link] [Lista]                                              ││
+│ ├─────────────────────────────────────────────────────────────────────────┤│
+│ │ Akceptuje regulamin i oswiadczam...                                      ││
+│ │ (klauzula RODO, dane kontaktowe administratora...)                       ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 4. Integracja z ParticipantsTab
+## Wyswietlanie na stronie wydarzenia
 
-Dodanie sekcji "Narzędzia administracyjne" powyżej tabeli uczestników:
-- Eksport listy (istniejący)
-- Wiadomość grupowa (istniejący)
-- **Nowy:** Panel nadawania numerów startowych
+### EventDetailsPage.tsx - zakladka "Informacje"
 
-### 5. Struktura plików
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ O wydarzeniu                                                                │
+│ [opis wydarzenia...]                                                        │
+│                                                                             │
+│ Organizatorzy                                                               │
+│ LUKS "ROSPONDEK" przy PSP Zyrowa                                           │
+│ STARTER Zdzieszowice                                                        │
+│ (linki klikalne, sformatowane)                                             │
+│                                                                             │
+│ Regulamin                                                                   │
+│ Regulamin zawodow (link do PDF)                                            │
+│ Regulamin RODO (link do PDF)                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Wyswietlanie przy rejestracji
+
+### RegistrationForm.tsx - Krok 6 (Podsumowanie)
+
+Jesli `requireFinalAcceptance` jest wlaczone:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ [✓] Akceptuje regulamin zawodow oraz polityke prywatnosci...               │
+│                                                                             │
+│ [✓] Oswiadczam, ze zapoznalem sie z regulaminem i akceptuje:               │
+│     1) administratorem danych osobowych jest LUKS "ROSPONDEK",             │
+│     2) kontakt z osoba odpowiedzialna: kontakt@luksrospondek.pl,           │
+│     3) dane beda przetwarzane w celu przeprowadzenia imprezy...            │
+│     (pelny tekst z finalAcceptanceHtml)                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Zmiany w plikach
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/data/mockData.ts` | Modyfikacja | Dodanie ~280 nowych rejestracji dla 3 wydarzeń |
-| `src/components/organizer/BibNumberAssignment.tsx` | Nowy | Panel batch nadawania numerów |
-| `src/pages/organizer/components/ParticipantsTab.tsx` | Modyfikacja | Integracja panelu, ulepszony dialog pojedynczy |
+| `package.json` | Modyfikacja | Dodanie @tiptap/* |
+| `src/types/index.ts` | Modyfikacja | Nowe pola: organizersHtml, rulesHtml, finalAcceptanceHtml, requireFinalAcceptance |
+| `src/components/ui/rich-text-editor.tsx` | Nowy | Komponent edytora WYSIWYG |
+| `src/components/ui/rich-text-display.tsx` | Nowy | Komponent wyswietlania HTML |
+| `src/pages/organizer/EventForm.tsx` | Modyfikacja | Nowa sekcja z trzema edytorami |
+| `src/pages/EventDetailsPage.tsx` | Modyfikacja | Wyswietlanie organizersHtml i rulesHtml |
+| `src/components/registration/RegistrationForm.tsx` | Modyfikacja | Opcjonalny checkbox finalAcceptance |
+| `src/data/mockData.ts` | Modyfikacja | Przykladowe dane HTML dla kilku wydarzen |
+| `src/index.css` | Modyfikacja | Style dla edytora i wyswietlanego HTML |
 
-## Szczegóły techniczne
-
-### Helper do wyliczania wolnych numerów
+## Przykladowe dane mockowe
 
 ```typescript
-const getAvailableNumbers = (registrations: Registration[], maxToShow = 5): string => {
-  // Zbierz wszystkie zajęte numery
-  const usedNumbers = registrations
-    .filter(r => r.bibNumber)
-    .map(r => parseInt(r.bibNumber!, 10))
-    .filter(n => !isNaN(n))
-    .sort((a, b) => a - b);
+// Dla eventu e1 (Maraton Krakowski)
+organizersHtml: `
+  <p><strong>Organizator glowny:</strong></p>
+  <p><a href="https://krakowskabiegi.pl">Krakowska Fundacja Biegow</a></p>
+  <p><strong>Wspolorganizatorzy:</strong></p>
+  <ul>
+    <li>Urzad Miasta Krakowa</li>
+    <li><a href="https://sponsor.pl">Sponsor Tytularny SA</a></li>
+  </ul>
+`,
+rulesHtml: `
+  <p><a href="/regulamin-maraton-2025.pdf">📄 Regulamin zawodow (PDF)</a></p>
+  <p><a href="/regulamin-rodo.pdf">📄 Klauzula informacyjna RODO (PDF)</a></p>
+`,
+finalAcceptanceHtml: `
+  <p>Oswiadczam, ze:</p>
+  <ol>
+    <li>administratorem moich danych osobowych jest Krakowska Fundacja Biegow,</li>
+    <li>kontakt z osoba odpowiedzialna za ochrone danych: <a href="mailto:rodo@krakow.pl">rodo@krakow.pl</a>,</li>
+    <li>moje dane beda przetwarzane w celu przeprowadzenia imprezy sportowej,</li>
+    <li>podanie danych jest dobrowolne, ale odmowa moze skutkowac odmowa uczestnictwa.</li>
+  </ol>
+`,
+requireFinalAcceptance: true
+```
+
+## Szczegoly techniczne
+
+### Konfiguracja TipTap
+
+```tsx
+const editor = useEditor({
+  extensions: [
+    StarterKit.configure({
+      heading: { levels: [2, 3] },
+    }),
+    Link.configure({
+      openOnClick: false,
+      HTMLAttributes: { class: 'text-primary underline' },
+    }),
+    Underline,
+  ],
+  content: initialValue,
+  onUpdate: ({ editor }) => {
+    onChange(editor.getHTML());
+  },
+});
+```
+
+### Pasek narzedzi edytora
+
+```tsx
+<div className="flex flex-wrap gap-1 p-2 border-b bg-muted/30">
+  <ToolbarButton 
+    icon={Bold} 
+    active={editor.isActive('bold')} 
+    onClick={() => editor.chain().focus().toggleBold().run()} 
+  />
+  <ToolbarButton icon={Italic} ... />
+  <ToolbarButton icon={Underline} ... />
+  <ToolbarButton icon={Strikethrough} ... />
+  <Separator orientation="vertical" className="h-6 mx-1" />
+  <ToolbarButton icon={Link} onClick={handleAddLink} />
+  <Separator orientation="vertical" className="h-6 mx-1" />
+  <ToolbarButton icon={List} ... />
+  <ToolbarButton icon={ListOrdered} ... />
+  <Separator orientation="vertical" className="h-6 mx-1" />
+  <ToolbarButton icon={Heading2} ... />
+  <ToolbarButton icon={Heading3} ... />
+</div>
+```
+
+### Style dla wyswietlania HTML
+
+```css
+.rich-text-content {
+  @apply prose prose-sm dark:prose-invert max-w-none;
   
-  // Znajdź zakresy wolnych numerów (od 1 do max+10)
-  // Zwróć np. "430-443, 445 i więcej"
-};
-```
-
-### Symulacja kolizji numerów
-
-Podczas batch assignment:
-```typescript
-const assignBibNumbers = () => {
-  let currentNumber = startNumber;
-  const usedNumbers = new Set(
-    localRegistrations
-      .filter(r => r.bibNumber)
-      .map(r => parseInt(r.bibNumber!, 10))
-  );
+  a {
+    @apply text-primary underline hover:no-underline;
+  }
   
-  eligibleParticipants.forEach(participant => {
-    // Pomijaj zajęte numery
-    while (usedNumbers.has(currentNumber)) {
-      currentNumber++;
-    }
-    // Przydziel numer
-    participant.bibNumber = String(currentNumber).padStart(3, '0');
-    usedNumbers.add(currentNumber);
-    currentNumber++;
-  });
-};
+  ul, ol {
+    @apply pl-5 my-2;
+  }
+  
+  h2 {
+    @apply text-lg font-semibold mt-4 mb-2;
+  }
+  
+  h3 {
+    @apply text-base font-semibold mt-3 mb-1;
+  }
+}
 ```
 
-### Mock dane - przykład generowania
+## Walidacja
 
-```typescript
-// Generator polskich imion i nazwisk
-const firstNamesMale = ['Adam', 'Bartek', 'Cezary', 'Damian', 'Emil', ...];
-const firstNamesFemale = ['Anna', 'Beata', 'Celina', 'Dorota', 'Ewa', ...];
-const lastNames = ['Kowalski', 'Nowak', 'Wiśniewski', 'Wójcik', 'Kowalczyk', ...];
+W `EventForm.tsx` - validateStep1():
+- Pola sa opcjonalne, wiec brak walidacji wymaganosci
+- Sprawdzenie czy HTML nie przekracza limitu (np. 50000 znakow)
 
-// Generowanie 100 rejestracji dla e9
-const e9Registrations = Array.from({ length: 100 }, (_, i) => ({
-  id: `r-e9-${String(i + 1).padStart(3, '0')}`,
-  eventId: 'e9',
-  eventName: 'Nocny Bieg Wrocławski',
-  userId: `p-gen-${i}`,
-  userName: `${randomFirstName()} ${randomLastName()}`,
-  userEmail: `participant${i}@example.com`,
-  distanceId: i % 3 === 0 ? 'd17' : 'd18', // 10km lub 5km
-  distanceName: i % 3 === 0 ? '10km' : '5km',
-  category: randomCategory(),
-  registeredAt: randomDate(),
-  status: randomStatus(), // confirmed/pending/cancelled
-  bibNumber: i < 65 ? String(100 + i) : undefined, // 65 z numerami
-  pricePaid: i % 3 === 0 ? 60 : 40,
-}));
-```
+## Responsywnosc
 
-## Flow użytkownika
-
-### Batch nadawanie:
-1. Organizator otwiera zakładkę "Uczestnicy"
-2. Widzi panel "Nadawanie numerów startowych"
-3. Wybiera sortowanie (np. "Po dacie zapisu, tylko opłaceni")
-4. Zaznacza dystanse do numeracji
-5. Ustawia numer początkowy (np. 1, 100, 500)
-6. Klika "Nadaj numery startowe!"
-7. System przydziela numery omijając już zajęte
-8. Toast: "Przydzielono numery 35 uczestnikom"
-
-### Pojedyncze nadawanie:
-1. Organizator klika ikonę # przy uczestniku
-2. Otwiera się dialog z:
-   - Imieniem i nazwiskiem
-   - Aktualnym dystansem
-   - Polem na numer
-   - Listą wolnych numerów
-3. Wpisuje numer, potwierdza
-4. Walidacja (czy nie zajęty)
-5. Toast sukcesu lub błędu
-
-## Elementy UI
-
-Wykorzystanie istniejących komponentów:
-- Card, CardHeader, CardContent
-- Select, SelectItem
-- Checkbox
-- Button (variant: default, destructive, outline)
-- Dialog, DialogContent, DialogHeader
-- Input
-- Badge
-- Toast
+- Pasek narzedzi lamiacy sie na mniejszych ekranach
+- Edytor skalujacy sie do szerokosci kontenera
+- Touch-friendly przyciski
