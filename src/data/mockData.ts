@@ -640,6 +640,42 @@ export const mockEvents: Event[] = [
       maxAge: 70,
       enabled: true,
     },
+    // Rich text fields
+    organizersHtml: `
+      <p><strong>Organizator główny:</strong></p>
+      <p><a href="https://runpoland.pl">RunPoland</a> - największa organizacja biegów górskich w Polsce</p>
+      <p><strong>Współorganizatorzy:</strong></p>
+      <ul>
+        <li>Tatrzański Park Narodowy</li>
+        <li>Urząd Miasta Zakopane</li>
+        <li><a href="https://www.pza.org.pl">Polski Związek Alpinizmu</a></li>
+      </ul>
+      <p><strong>Sponsor tytularny:</strong></p>
+      <p><a href="https://salomon.com">Salomon</a></p>
+    `,
+    rulesHtml: `
+      <p><a href="/regulaminy/tatry-ultra-2026.pdf">📄 Regulamin zawodów Tatry Ultra 2026 (PDF)</a></p>
+      <p><a href="/regulaminy/regulamin-nnw.pdf">📄 Regulamin ubezpieczenia NNW (PDF)</a></p>
+      <p><a href="/regulaminy/rodo-runpoland.pdf">📄 Klauzula informacyjna RODO (PDF)</a></p>
+      <h3>Główne punkty regulaminu:</h3>
+      <ol>
+        <li>Obowiązkowy ekwipunek górski</li>
+        <li>Limit czasowy 24 godziny</li>
+        <li>Minimalna ilość wody: 1,5L</li>
+        <li>Obowiązkowe oświetlenie dla startu nocnego</li>
+      </ol>
+    `,
+    finalAcceptanceHtml: `
+      <p><strong>Oświadczam, że:</strong></p>
+      <ol>
+        <li>Administratorem moich danych osobowych jest RunPoland Sp. z o.o.</li>
+        <li>Kontakt z osobą odpowiedzialną za ochronę danych: <a href="mailto:rodo@runpoland.pl">rodo@runpoland.pl</a></li>
+        <li>Moje dane będą przetwarzane w celu przeprowadzenia imprezy sportowej oraz publikacji wyników</li>
+        <li>Jestem świadomy/a ryzyka związanego z udziałem w biegu górskim i startuję na własną odpowiedzialność</li>
+        <li>Stan mojego zdrowia pozwala na udział w zawodach o charakterze ekstremalnym</li>
+      </ol>
+    `,
+    requireFinalAcceptance: true,
   },
   // City Trail Łódź - medium options - LIVE EVENT
   {
@@ -715,6 +751,14 @@ export const mockEvents: Event[] = [
       { id: 'dc4', code: 'LODZ10', discountType: 'percent', discountValue: 10, validTo: '2026-03-01', maxUses: 50, usedCount: 12, active: true },
     ],
     enableMerchandiseInRegistration: true,
+    // Rich text - simple version
+    organizersHtml: `
+      <p><strong>Organizator:</strong> <a href="https://sportevents.pl">Sportowe Wydarzenia Sp. z o.o.</a></p>
+      <p>Wsparcie: Urząd Miasta Łódź, MOSiR Łódź</p>
+    `,
+    rulesHtml: `
+      <p><a href="/regulaminy/city-trail-lodz.pdf">📄 Regulamin biegu (PDF)</a></p>
+    `,
   },
   // Maraton Rowerowy Mazury - cycling with merchandise
   {
