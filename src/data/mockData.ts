@@ -2078,6 +2078,121 @@ export const mockEvents: Event[] = [
   },
 ];
 
+// ============================================
+// Generator for large start lists (bib number assignment feature)
+// Must be defined BEFORE mockRegistrations array
+// ============================================
+const firstNamesMale = ['Adam', 'Bartosz', 'Cezary', 'Damian', 'Emil', 'Filip', 'Grzegorz', 'Henryk', 'Igor', 'Jakub', 'Kamil', 'Łukasz', 'Marcin', 'Norbert', 'Oskar', 'Paweł', 'Rafał', 'Szymon', 'Tomasz', 'Wojciech', 'Zbigniew', 'Artur', 'Błażej', 'Dominik', 'Edward'];
+const firstNamesFemale = ['Anna', 'Beata', 'Celina', 'Dorota', 'Ewa', 'Felicja', 'Grażyna', 'Halina', 'Iwona', 'Joanna', 'Karolina', 'Lidia', 'Monika', 'Natalia', 'Oliwia', 'Paulina', 'Renata', 'Sylwia', 'Teresa', 'Urszula', 'Weronika', 'Zofia', 'Agata', 'Barbara', 'Danuta'];
+const lastNames = ['Kowalski', 'Nowak', 'Wiśniewski', 'Wójcik', 'Kowalczyk', 'Kamiński', 'Lewandowski', 'Zieliński', 'Szymański', 'Woźniak', 'Dąbrowski', 'Kozłowski', 'Jankowski', 'Mazur', 'Kwiatkowski', 'Krawczyk', 'Piotrowski', 'Grabowski', 'Nowakowski', 'Pawłowski', 'Michalski', 'Adamczyk', 'Dudek', 'Zając', 'Wieczorek'];
+
+function generateLargeStartList(): Registration[] {
+  const registrations: Registration[] = [];
+  
+  // e9: Nocny Bieg Wrocławski - 100 registrations, 65 with bib, 35 without
+  for (let i = 0; i < 100; i++) {
+    const isMale = Math.random() > 0.45;
+    const firstName = isMale 
+      ? firstNamesMale[i % firstNamesMale.length] 
+      : firstNamesFemale[i % firstNamesFemale.length];
+    const lastName = lastNames[(i * 7 + 3) % lastNames.length];
+    const status = i < 70 ? 'confirmed' : i < 95 ? 'pending' : 'cancelled';
+    const hasBib = i < 65 && status === 'confirmed';
+    
+    registrations.push({
+      id: `r-e9-gen-${String(i + 1).padStart(3, '0')}`,
+      eventId: 'e9',
+      eventName: 'Nocny Bieg Wrocławski',
+      userId: `p-e9-gen-${i}`,
+      userName: `${firstName} ${lastName}`,
+      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+      distanceId: 'd17',
+      distanceName: '10km',
+      category: isMale ? 'M' : 'K',
+      registeredAt: new Date(2025, 0, 5 + Math.floor(i / 5), 8 + (i % 12), (i * 17) % 60).toISOString(),
+      status: status as 'confirmed' | 'pending' | 'cancelled',
+      bibNumber: hasBib ? String(100 + i).padStart(3, '0') : undefined,
+      pricePaid: 60,
+    });
+  }
+
+  // e11: Tatry Ultra - 100 registrations across 3 distances, 70 with bib, 30 without
+  const e11Distances = [
+    { id: 'd20', name: 'Ultra 80K', price: 450 },
+    { id: 'd21', name: 'Maraton 42K', price: 300 },
+    { id: 'd22', name: 'Półmaraton 21K', price: 180 },
+  ];
+  const e11Categories = {
+    M: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50-54', 'M55-59', 'M60+'],
+    K: ['K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'],
+  };
+  
+  for (let i = 0; i < 100; i++) {
+    const isMale = Math.random() > 0.4;
+    const firstName = isMale 
+      ? firstNamesMale[(i + 5) % firstNamesMale.length] 
+      : firstNamesFemale[(i + 3) % firstNamesFemale.length];
+    const lastName = lastNames[(i * 11 + 7) % lastNames.length];
+    const distance = e11Distances[i % 3];
+    const categories = isMale ? e11Categories.M : e11Categories.K;
+    const category = categories[i % categories.length];
+    const status = i < 75 ? 'confirmed' : i < 95 ? 'pending' : 'cancelled';
+    const hasBib = i < 70 && status === 'confirmed';
+    
+    registrations.push({
+      id: `r-e11-gen-${String(i + 100).padStart(3, '0')}`,
+      eventId: 'e11',
+      eventName: 'Bieg Górski Tatry Ultra 2026',
+      userId: `p-e11-gen-${i}`,
+      userName: `${firstName} ${lastName}`,
+      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@tatryultra.pl`,
+      distanceId: distance.id,
+      distanceName: distance.name,
+      category: category,
+      registeredAt: new Date(2026, 0, 10 + Math.floor(i / 4), 7 + (i % 14), (i * 23) % 60).toISOString(),
+      status: status as 'confirmed' | 'pending' | 'cancelled',
+      bibNumber: hasBib ? String(300 + i).padStart(3, '0') : undefined,
+      pricePaid: distance.price,
+    });
+  }
+
+  // e15: Bieg Wiosenny - 80 registrations, 40 with bib, 40 without
+  const e15Distances = [
+    { id: 'd30', name: '10 km', price: 60, categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'] },
+    { id: 'd31', name: '5 km', price: 40, categories: ['Open'] },
+  ];
+  
+  for (let i = 0; i < 80; i++) {
+    const isMale = Math.random() > 0.5;
+    const firstName = isMale 
+      ? firstNamesMale[(i + 10) % firstNamesMale.length] 
+      : firstNamesFemale[(i + 8) % firstNamesFemale.length];
+    const lastName = lastNames[(i * 13 + 11) % lastNames.length];
+    const distance = e15Distances[i % 2];
+    const category = distance.categories[i % distance.categories.length];
+    const status = i < 60 ? 'confirmed' : i < 77 ? 'pending' : 'cancelled';
+    const hasBib = i < 40 && status === 'confirmed';
+    
+    registrations.push({
+      id: `r-e15-gen-${String(i + 1).padStart(3, '0')}`,
+      eventId: 'e15',
+      eventName: 'Bieg Wiosenny 2025',
+      userId: `p-e15-gen-${i}`,
+      userName: `${firstName} ${lastName}`,
+      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@biegwiosenny.pl`,
+      distanceId: distance.id,
+      distanceName: distance.name,
+      category: category,
+      registeredAt: new Date(2025, 2, 1 + Math.floor(i / 3), 9 + (i % 10), (i * 19) % 60).toISOString(),
+      status: status as 'confirmed' | 'pending' | 'cancelled',
+      bibNumber: hasBib ? String(500 + i).padStart(3, '0') : undefined,
+      pricePaid: distance.price,
+    });
+  }
+
+  return registrations;
+}
+
 export const mockRegistrations: Registration[] = [
   { id: 'r1', eventId: 'e1', eventName: 'Maraton Warszawski 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd1', distanceName: 'Maraton', category: 'M30-39', registeredAt: '2025-01-15T10:30:00Z', status: 'confirmed', bibNumber: '1542', pricePaid: 150 },
   { id: 'r2', eventId: 'e3', eventName: 'Gdynia Triathlon 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd5', distanceName: 'Olimpijski', category: 'M30-34', registeredAt: '2025-02-20T14:15:00Z', status: 'confirmed', bibNumber: '234', pricePaid: 350 },
@@ -2446,120 +2561,6 @@ export const mockRegistrations: Registration[] = [
   // ============================================
   ...generateLargeStartList(),
 ];
-
-// ============================================
-// Generator for large start lists (bib number assignment feature)
-// ============================================
-const firstNamesMale = ['Adam', 'Bartosz', 'Cezary', 'Damian', 'Emil', 'Filip', 'Grzegorz', 'Henryk', 'Igor', 'Jakub', 'Kamil', 'Łukasz', 'Marcin', 'Norbert', 'Oskar', 'Paweł', 'Rafał', 'Szymon', 'Tomasz', 'Wojciech', 'Zbigniew', 'Artur', 'Błażej', 'Dominik', 'Edward'];
-const firstNamesFemale = ['Anna', 'Beata', 'Celina', 'Dorota', 'Ewa', 'Felicja', 'Grażyna', 'Halina', 'Iwona', 'Joanna', 'Karolina', 'Lidia', 'Monika', 'Natalia', 'Oliwia', 'Paulina', 'Renata', 'Sylwia', 'Teresa', 'Urszula', 'Weronika', 'Zofia', 'Agata', 'Barbara', 'Danuta'];
-const lastNames = ['Kowalski', 'Nowak', 'Wiśniewski', 'Wójcik', 'Kowalczyk', 'Kamiński', 'Lewandowski', 'Zieliński', 'Szymański', 'Woźniak', 'Dąbrowski', 'Kozłowski', 'Jankowski', 'Mazur', 'Kwiatkowski', 'Krawczyk', 'Piotrowski', 'Grabowski', 'Nowakowski', 'Pawłowski', 'Michalski', 'Adamczyk', 'Dudek', 'Zając', 'Wieczorek'];
-
-function generateLargeStartList(): Registration[] {
-  const registrations: Registration[] = [];
-  
-  // e9: Nocny Bieg Wrocławski - 100 registrations, 65 with bib, 35 without
-  for (let i = 0; i < 100; i++) {
-    const isMale = Math.random() > 0.45;
-    const firstName = isMale 
-      ? firstNamesMale[i % firstNamesMale.length] 
-      : firstNamesFemale[i % firstNamesFemale.length];
-    const lastName = lastNames[(i * 7 + 3) % lastNames.length];
-    const status = i < 70 ? 'confirmed' : i < 95 ? 'pending' : 'cancelled';
-    const hasBib = i < 65 && status === 'confirmed';
-    
-    registrations.push({
-      id: `r-e9-gen-${String(i + 1).padStart(3, '0')}`,
-      eventId: 'e9',
-      eventName: 'Nocny Bieg Wrocławski',
-      userId: `p-e9-gen-${i}`,
-      userName: `${firstName} ${lastName}`,
-      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
-      distanceId: 'd17',
-      distanceName: '10km',
-      category: isMale ? 'M' : 'K',
-      registeredAt: new Date(2025, 0, 5 + Math.floor(i / 5), 8 + (i % 12), (i * 17) % 60).toISOString(),
-      status: status as 'confirmed' | 'pending' | 'cancelled',
-      bibNumber: hasBib ? String(100 + i).padStart(3, '0') : undefined,
-      pricePaid: 60,
-    });
-  }
-
-  // e11: Tatry Ultra - 100 registrations across 3 distances, 70 with bib, 30 without
-  const e11Distances = [
-    { id: 'd20', name: 'Ultra 80K', price: 450 },
-    { id: 'd21', name: 'Maraton 42K', price: 300 },
-    { id: 'd22', name: 'Półmaraton 21K', price: 180 },
-  ];
-  const e11Categories = {
-    M: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50-54', 'M55-59', 'M60+'],
-    K: ['K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'],
-  };
-  
-  for (let i = 0; i < 100; i++) {
-    const isMale = Math.random() > 0.4;
-    const firstName = isMale 
-      ? firstNamesMale[(i + 5) % firstNamesMale.length] 
-      : firstNamesFemale[(i + 3) % firstNamesFemale.length];
-    const lastName = lastNames[(i * 11 + 7) % lastNames.length];
-    const distance = e11Distances[i % 3];
-    const categories = isMale ? e11Categories.M : e11Categories.K;
-    const category = categories[i % categories.length];
-    const status = i < 75 ? 'confirmed' : i < 95 ? 'pending' : 'cancelled';
-    const hasBib = i < 70 && status === 'confirmed';
-    
-    registrations.push({
-      id: `r-e11-gen-${String(i + 100).padStart(3, '0')}`,
-      eventId: 'e11',
-      eventName: 'Bieg Górski Tatry Ultra 2026',
-      userId: `p-e11-gen-${i}`,
-      userName: `${firstName} ${lastName}`,
-      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@tatryultra.pl`,
-      distanceId: distance.id,
-      distanceName: distance.name,
-      category: category,
-      registeredAt: new Date(2026, 0, 10 + Math.floor(i / 4), 7 + (i % 14), (i * 23) % 60).toISOString(),
-      status: status as 'confirmed' | 'pending' | 'cancelled',
-      bibNumber: hasBib ? String(300 + i).padStart(3, '0') : undefined,
-      pricePaid: distance.price,
-    });
-  }
-
-  // e15: Bieg Wiosenny - 80 registrations, 40 with bib, 40 without
-  const e15Distances = [
-    { id: 'd30', name: '10 km', price: 60, categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'] },
-    { id: 'd31', name: '5 km', price: 40, categories: ['Open'] },
-  ];
-  
-  for (let i = 0; i < 80; i++) {
-    const isMale = Math.random() > 0.5;
-    const firstName = isMale 
-      ? firstNamesMale[(i + 10) % firstNamesMale.length] 
-      : firstNamesFemale[(i + 8) % firstNamesFemale.length];
-    const lastName = lastNames[(i * 13 + 11) % lastNames.length];
-    const distance = e15Distances[i % 2];
-    const category = distance.categories[i % distance.categories.length];
-    const status = i < 60 ? 'confirmed' : i < 77 ? 'pending' : 'cancelled';
-    const hasBib = i < 40 && status === 'confirmed';
-    
-    registrations.push({
-      id: `r-e15-gen-${String(i + 1).padStart(3, '0')}`,
-      eventId: 'e15',
-      eventName: 'Bieg Wiosenny 2025',
-      userId: `p-e15-gen-${i}`,
-      userName: `${firstName} ${lastName}`,
-      userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@biegwiosenny.pl`,
-      distanceId: distance.id,
-      distanceName: distance.name,
-      category: category,
-      registeredAt: new Date(2025, 2, 1 + Math.floor(i / 3), 9 + (i % 10), (i * 19) % 60).toISOString(),
-      status: status as 'confirmed' | 'pending' | 'cancelled',
-      bibNumber: hasBib ? String(500 + i).padStart(3, '0') : undefined,
-      pricePaid: distance.price,
-    });
-  }
-
-  return registrations;
-}
 
 export const mockResults: Result[] = [
   // Wyniki dla wydarzenia e1 (Półmaraton Warszawski)
