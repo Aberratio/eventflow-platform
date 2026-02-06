@@ -18,6 +18,7 @@ import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
 import { RouteMap } from '@/components/RouteMap';
 import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
 
 // Results Section Component
@@ -438,14 +439,34 @@ const EventDetailsPage = () => {
                       <p className="text-muted-foreground">{event.description}</p>
                     </div>
                     
-                    <div>
-                      <h4 className="font-semibold mb-2">Lokalizacja</h4>
-                      <p className="text-muted-foreground">{event.location}, {event.city}</p>
-                    </div>
+                    {/* Organizers HTML */}
+                    {event.organizersHtml && (
+                      <div>
+                        <h4 className="font-semibold mb-3">Organizatorzy</h4>
+                        <RichTextDisplay html={event.organizersHtml} />
+                      </div>
+                    )}
+
+                    {/* Rules HTML */}
+                    {event.rulesHtml && (
+                      <div>
+                        <h4 className="font-semibold mb-3">Regulamin</h4>
+                        <RichTextDisplay html={event.rulesHtml} />
+                      </div>
+                    )}
+                    
+                    {!event.organizersHtml && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Lokalizacja</h4>
+                        <p className="text-muted-foreground">{event.location}, {event.city}</p>
+                      </div>
+                    )}
                     
                     <div>
                       <h4 className="font-semibold mb-3">Organizator</h4>
-                      <p className="font-medium mb-3">{event.organizerName}</p>
+                      {!event.organizersHtml && (
+                        <p className="font-medium mb-3">{event.organizerName}</p>
+                      )}
                       
                       {event.organizerContact && (
                         <div className="space-y-2">

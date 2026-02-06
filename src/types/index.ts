@@ -151,6 +151,11 @@ export interface Event {
   resultDocuments?: EventResultDocument[];
   // Payment configuration
   paymentConfig?: PaymentConfig;
+  // Rich text fields
+  organizersHtml?: string;          // HTML with organizers info (multiple, sponsors, links)
+  rulesHtml?: string;               // HTML with rules/regulations (links to PDFs)
+  finalAcceptanceHtml?: string;     // HTML with final acceptance text for registration
+  requireFinalAcceptance?: boolean; // Whether to show final acceptance checkbox
 }
 
 // Payment configuration types

@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 
 interface RegistrationFormProps {
   event: Event;
@@ -84,6 +85,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   const [appliedDiscount, setAppliedDiscount] = useState<{ type: 'percent' | 'fixed'; value: number } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToFinalAcceptance, setAgreedToFinalAcceptance] = useState(false);
   
   // Team registration state
   const [wantsTeam, setWantsTeam] = useState(false);
@@ -226,7 +228,10 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       case 3: return true; // Insurance is optional
       case 4: return true; // Merchandise is optional
       case 5: return true; // Discount is optional
-      case 6: return agreedToTerms;
+      case 6: 
+        const termsOk = agreedToTerms;
+        const finalAcceptanceOk = !event.requireFinalAcceptance || agreedToFinalAcceptance;
+        return termsOk && finalAcceptanceOk;
       default: return false;
     }
   };
@@ -847,6 +852,21 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                 Oświadczam, że będę startować na własną odpowiedzialność.
               </label>
             </div>
+
+            {/* Final Acceptance - only if event requires it */}
+            {event.requireFinalAcceptance && event.finalAcceptanceHtml && (
+              <div className="flex items-start gap-3 pt-2 border-t mt-4">
+                <Checkbox
+                  id="finalAcceptance"
+                  checked={agreedToFinalAcceptance}
+                  onCheckedChange={(checked) => setAgreedToFinalAcceptance(checked === true)}
+                  className="mt-1"
+                />
+                <label htmlFor="finalAcceptance" className="text-sm cursor-pointer">
+                  <RichTextDisplay html={event.finalAcceptanceHtml} className="text-sm" />
+                </label>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -13,8 +13,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { SportDiscipline, BannerCropArea, PaymentConfigType } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Upload, Crop, X, Globe, CreditCard, Building2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 interface DistanceForm {
   id: string;
@@ -73,7 +74,11 @@ const EventForm = () => {
     existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}'
   );
 
-  // Step 2 - Distances
+  // Rich text fields
+  const [organizersHtml, setOrganizersHtml] = useState(existingEvent?.organizersHtml || '');
+  const [rulesHtml, setRulesHtml] = useState(existingEvent?.rulesHtml || '');
+  const [requireFinalAcceptance, setRequireFinalAcceptance] = useState(existingEvent?.requireFinalAcceptance || false);
+  const [finalAcceptanceHtml, setFinalAcceptanceHtml] = useState(existingEvent?.finalAcceptanceHtml || '');
   const [distances, setDistances] = useState<DistanceForm[]>(
     existingEvent?.distances.map(d => ({
       id: d.id,
@@ -464,6 +469,76 @@ const EventForm = () => {
                       </div>
                     </div>
                   </RadioGroup>
+                </div>
+
+                {/* Rich Text Fields Section */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Dodatkowe informacje (opcjonalne)
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
+                  </p>
+                  
+                  <div className="space-y-6">
+                    {/* Organizers HTML */}
+                    <div className="space-y-2">
+                      <Label>Organizatorzy</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Możesz wpisać wielu organizatorów, sponsorów z linkami do ich stron.
+                      </p>
+                      <RichTextEditor
+                        value={organizersHtml}
+                        onChange={setOrganizersHtml}
+                        placeholder="Wpisz informacje o organizatorach..."
+                        minHeight="100px"
+                      />
+                    </div>
+
+                    {/* Rules HTML */}
+                    <div className="space-y-2">
+                      <Label>Regulamin</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Wpisz treść regulaminu lub dodaj linki do plików PDF.
+                      </p>
+                      <RichTextEditor
+                        value={rulesHtml}
+                        onChange={setRulesHtml}
+                        placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
+                        minHeight="120px"
+                      />
+                    </div>
+
+                    {/* Final Acceptance */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="requireFinalAcceptance"
+                          checked={requireFinalAcceptance}
+                          onCheckedChange={(checked) => setRequireFinalAcceptance(checked === true)}
+                        />
+                        <Label htmlFor="requireFinalAcceptance" className="cursor-pointer">
+                          Wymagaj dodatkowej akceptacji przy rejestracji
+                        </Label>
+                      </div>
+                      
+                      {requireFinalAcceptance && (
+                        <div className="space-y-2 pl-6">
+                          <Label>Tekst akceptacji</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Ten tekst pojawi się jako checkbox, który uczestnik musi zaakceptować przy rejestracji.
+                          </p>
+                          <RichTextEditor
+                            value={finalAcceptanceHtml}
+                            onChange={setFinalAcceptanceHtml}
+                            placeholder="Oświadczam, że zapoznałem się z regulaminem..."
+                            minHeight="100px"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
