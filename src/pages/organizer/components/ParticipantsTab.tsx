@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Table,
@@ -34,8 +35,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { SendMessageDialog } from '@/components/SendMessageDialog';
+import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+import { getAvailableNumbersString, isBibNumberTaken, getNextAvailableNumber } from '@/lib/bibNumberUtils';
 import { 
   Search, 
   Download, 
@@ -52,6 +55,7 @@ import {
   CreditCard,
   Check,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -323,8 +327,33 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const activeCount = localRegistrations.filter(r => r.status !== 'removed').length;
   const removedCount = localRegistrations.filter(r => r.status === 'removed').length;
 
+  // Calculate available numbers string for dialog
+  const availableNumbersString = useMemo(() => {
+    return getAvailableNumbersString(localRegistrations);
+  }, [localRegistrations]);
+
+  // Check if current bib number is taken
+  const isBibTaken = useMemo(() => {
+    if (!bibNumber || !selectedParticipant) return false;
+    return isBibNumberTaken(localRegistrations, bibNumber, selectedParticipant.id);
+  }, [bibNumber, localRegistrations, selectedParticipant]);
+
+  // Get suggested next available number
+  const suggestedNumber = useMemo(() => {
+    return getNextAvailableNumber(localRegistrations, 1);
+  }, [localRegistrations]);
+
   return (
     <div className="space-y-6">
+      {/* Bib number assignment panel */}
+      {viewMode === 'active' && (
+        <BibNumberAssignment
+          event={event}
+          registrations={localRegistrations}
+          onRegistrationsChange={setLocalRegistrations}
+        />
+      )}
+
       {/* Bank payment summary for manual payment events */}
       {requiresManualPayment && viewMode === 'active' && (
         <BankPaymentSummary event={event} registrations={localRegistrations} />
@@ -635,29 +664,62 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
         </CardContent>
       </Card>
 
-      {/* Bib number dialog */}
+      {/* Bib number dialog - enhanced with validation and suggestions */}
       <Dialog open={bibDialogOpen} onOpenChange={setBibDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Przypisz numer startowy</DialogTitle>
             <DialogDescription>
-              Przypisz numer startowy dla {selectedParticipant?.userName}
+              Przypisz numer startowy dla <strong>{selectedParticipant?.userName}</strong>
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Input
-              type="text"
-              placeholder="Wpisz numer startowy"
-              value={bibNumber}
-              onChange={e => setBibNumber(e.target.value)}
-            />
+          <div className="space-y-4 py-4">
+            {/* Participant info */}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span className="text-muted-foreground">Dystans:</span>
+              <span className="font-medium">{selectedParticipant?.distanceName}</span>
+              <span className="text-muted-foreground">Kategoria:</span>
+              <span className="font-medium">{selectedParticipant?.category}</span>
+              {selectedParticipant?.bibNumber && (
+                <>
+                  <span className="text-muted-foreground">Obecny numer:</span>
+                  <span className="font-mono font-medium">{selectedParticipant.bibNumber}</span>
+                </>
+              )}
+            </div>
+
+            {/* Input */}
+            <div className="space-y-2">
+              <Label htmlFor="bib-input">Numer startowy</Label>
+              <Input
+                id="bib-input"
+                type="text"
+                placeholder={`np. ${suggestedNumber}`}
+                value={bibNumber}
+                onChange={e => setBibNumber(e.target.value)}
+                className={isBibTaken ? 'border-destructive' : ''}
+              />
+              
+              {/* Validation warning */}
+              {isBibTaken && (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  Ten numer jest już zajęty!
+                </div>
+              )}
+
+              {/* Available numbers hint */}
+              <p className="text-xs text-muted-foreground">
+                Wolne numery: {availableNumbersString}
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBibDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button onClick={handleAssignBib} disabled={!bibNumber}>
-              Przypisz
+            <Button onClick={handleAssignBib} disabled={!bibNumber || isBibTaken}>
+              {selectedParticipant?.bibNumber ? 'Zmień' : 'Przypisz'}
             </Button>
           </DialogFooter>
         </DialogContent>
