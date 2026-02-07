@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -23,10 +25,12 @@ import {
   Users,
   Building2,
   Copy,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle2,
+  UserCog
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
-import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes } from '@/data/mockData';
+import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes, getExistingTeamsForEvent, validateTeamName, mockGlobalInsuranceSettings } from '@/data/mockData';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -89,7 +93,31 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   
   // Team registration state
   const [wantsTeam, setWantsTeam] = useState(false);
+  type TeamMode = 'create' | 'join';
+  const [teamMode, setTeamMode] = useState<TeamMode>('create');
   const [teamName, setTeamName] = useState('');
+  const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
+  const [teamNameError, setTeamNameError] = useState('');
+
+  // Profile completeness check
+  const isProfileComplete = useMemo(() => {
+    if (!user) return false;
+    return !!(user.birthYear && user.gender);
+  }, [user]);
+
+  // Auto-fill from profile
+  useEffect(() => {
+    if (isProfileComplete && user?.birthYear) {
+      setBirthYear(String(user.birthYear));
+      setBirthMonth('01');
+      setBirthDay('01');
+    }
+  }, [isProfileComplete, user]);
+
+  // Get existing teams for this event
+  const existingTeams = useMemo(() => {
+    return getExistingTeamsForEvent(event.id);
+  }, [event.id]);
 
   const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
   const hasMerchandise = event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
@@ -127,12 +155,13 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   // Calculate age from birth year
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
 
-  // Calculate insurance price
+  // Calculate insurance price using global settings
   const insurancePrice = useMemo(() => {
-    if (!hasInsurance || !wantsInsurance || !age || !event.insuranceOption) return 0;
-    const { baseFee, ageMultiplier } = event.insuranceOption;
+    if (!hasInsurance || !wantsInsurance || !age) return 0;
+    const { baseFee, ageMultiplier, maxAge } = mockGlobalInsuranceSettings;
+    if (age > maxAge) return 0;
     return Math.round(baseFee + Math.max(0, age - 18) * ageMultiplier);
-  }, [hasInsurance, wantsInsurance, age, event.insuranceOption]);
+  }, [hasInsurance, wantsInsurance, age]);
 
   const distancePrice = useMemo(() => {
     if (!selectedDistance) return 0;
@@ -157,6 +186,25 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   }, [appliedDiscount, distancePrice]);
 
   const totalAmount = distancePrice - discountAmount + merchandiseTotal + insurancePrice;
+
+  // Validate team name on change
+  useEffect(() => {
+    if (wantsTeam && teamMode === 'create' && teamName) {
+      const result = validateTeamName(teamName);
+      setTeamNameError(result.valid ? '' : (result.error || ''));
+    } else {
+      setTeamNameError('');
+    }
+  }, [teamName, wantsTeam, teamMode]);
+
+  // Get final team name
+  const getFinalTeamName = (): string | undefined => {
+    if (!wantsTeam) return undefined;
+    if (teamMode === 'create') {
+      return teamName.trim() || undefined;
+    }
+    return selectedExistingTeam || undefined;
+  };
 
   const handleApplyDiscount = () => {
     if (!discountCode.trim()) {
@@ -224,7 +272,13 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     switch (step) {
       case 1: return !!selectedDistanceId;
       case 2: return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
-      case 25: return true; // Team is optional
+      case 25: 
+        // Team is optional, but if user wants a team, validate
+        if (!wantsTeam) return true;
+        if (teamMode === 'create') {
+          return teamName.trim().length >= 3 && !teamNameError;
+        }
+        return !!selectedExistingTeam;
       case 3: return true; // Insurance is optional
       case 4: return true; // Merchandise is optional
       case 5: return true; // Discount is optional
@@ -258,7 +312,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       merchandiseOrders: Array.from(merchandiseOrders.values()),
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
-      teamName: wantsTeam && teamName.trim() ? teamName.trim() : undefined,
+      teamName: getFinalTeamName(),
     });
   };
 
@@ -413,6 +467,33 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* Profile completeness callout */}
+            {isProfileComplete ? (
+              <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertTitle className="text-green-800 dark:text-green-200">Dane pobrane z profilu</AlertTitle>
+                <AlertDescription className="text-green-700 dark:text-green-300">
+                  <span>
+                    Rok urodzenia: <strong>{user?.birthYear}</strong> ({currentYear - (user?.birthYear || 0)} lat) • 
+                    Płeć: <strong>{user?.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</strong>
+                  </span>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                <UserCog className="h-4 w-4 text-amber-600" />
+                <AlertTitle className="text-amber-800 dark:text-amber-200">Uzupełnij swój profil</AlertTitle>
+                <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-amber-700 dark:text-amber-300">
+                  <span>
+                    Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.
+                  </span>
+                  <Button variant="outline" size="sm" asChild className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900">
+                    <Link to="/participant?tab=profile">Przejdź do profilu</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Birth date */}
             <div className="space-y-3">
               <Label className="text-base font-medium">Data urodzenia</Label>
@@ -527,19 +608,87 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
               </div>
             </div>
 
-            {/* Team name input */}
+            {/* Team mode selection */}
             {wantsTeam && (
-              <div className="space-y-2">
-                <Label htmlFor="teamName">Nazwa drużyny / klubu</Label>
-                <Input
-                  id="teamName"
-                  placeholder="np. KB Górskie Wilki, Biegacze Warszawa"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Wpisz dokładnie taką samą nazwę, jak pozostali członkowie drużyny.
-                </p>
+              <div className="space-y-4 pl-2 border-l-2 border-primary/30 ml-2">
+                <RadioGroup value={teamMode} onValueChange={(v) => setTeamMode(v as TeamMode)}>
+                  {/* Create new team */}
+                  <div className="space-y-3">
+                    <label
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                        ${teamMode === 'create' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                      `}
+                    >
+                      <RadioGroupItem value="create" />
+                      <span className="font-medium">Utwórz nową drużynę</span>
+                    </label>
+                    
+                    {teamMode === 'create' && (
+                      <div className="ml-7 space-y-2">
+                        <Label htmlFor="newTeamName">Nazwa drużyny / klubu</Label>
+                        <Input
+                          id="newTeamName"
+                          placeholder="np. KB Górskie Wilki, Biegacze Warszawa"
+                          value={teamName}
+                          onChange={(e) => setTeamName(e.target.value)}
+                          className={teamNameError ? 'border-destructive' : ''}
+                        />
+                        {teamNameError && (
+                          <p className="text-sm text-destructive flex items-center gap-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {teamNameError}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          3-50 znaków. Użyj tej samej nazwy co pozostali członkowie drużyny.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Join existing team */}
+                  <div className="space-y-3">
+                    <label
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                        ${teamMode === 'join' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                        ${existingTeams.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                    >
+                      <RadioGroupItem value="join" disabled={existingTeams.length === 0} />
+                      <div>
+                        <span className="font-medium">Dołącz do istniejącej drużyny</span>
+                        {existingTeams.length === 0 && (
+                          <p className="text-xs text-muted-foreground">Brak drużyn zapisanych na te zawody</p>
+                        )}
+                      </div>
+                    </label>
+                    
+                    {teamMode === 'join' && existingTeams.length > 0 && (
+                      <div className="ml-7 space-y-2">
+                        <Label>Wybierz drużynę</Label>
+                        <Select value={selectedExistingTeam} onValueChange={setSelectedExistingTeam}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Wybierz drużynę..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {existingTeams.map(team => (
+                              <SelectItem key={team.name} value={team.name}>
+                                <div className="flex items-center gap-2">
+                                  <span>{team.name}</span>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {team.memberCount} {team.memberCount === 1 ? 'osoba' : team.memberCount < 5 ? 'osoby' : 'osób'}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                </RadioGroup>
               </div>
             )}
 
@@ -572,7 +721,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       )}
 
       {/* Step 3: Insurance */}
-      {step === 3 && isStepInActiveSteps(3) && hasInsurance && event.insuranceOption && (
+      {step === 3 && isStepInActiveSteps(3) && hasInsurance && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -584,23 +733,9 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-              <h4 className="font-semibold">{event.insuranceOption.name}</h4>
-              <p className="text-sm text-muted-foreground">{event.insuranceOption.description}</p>
-              <ul className="text-sm space-y-1">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  Ochrona podczas całych zawodów
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  Pokrycie kosztów leczenia
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  Świadczenie za uszczerbek na zdrowiu
-                </li>
-              </ul>
+            {/* Global insurance info from admin settings */}
+            <div className="bg-muted/50 rounded-lg p-4">
+              <RichTextDisplay html={mockGlobalInsuranceSettings.infoHtml} />
             </div>
 
             <div className={`
@@ -619,15 +754,23 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                   </label>
                   {age && (
                     <div className="mt-2 text-sm">
-                      <span className="text-muted-foreground">Cena dla Twojego wieku ({age} lat): </span>
-                      <span className="font-bold text-primary">
-                        {Math.round(event.insuranceOption.baseFee + Math.max(0, age - 18) * event.insuranceOption.ageMultiplier)} zł
-                      </span>
+                      {age > mockGlobalInsuranceSettings.maxAge ? (
+                        <span className="text-destructive">
+                          Ubezpieczenie niedostępne dla osób powyżej {mockGlobalInsuranceSettings.maxAge} lat
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-muted-foreground">Składka dla Twojego wieku ({age} lat): </span>
+                          <span className="font-bold text-primary">
+                            {Math.round(mockGlobalInsuranceSettings.baseFee + Math.max(0, age - 18) * mockGlobalInsuranceSettings.ageMultiplier)} zł
+                          </span>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            (składka bazowa {mockGlobalInsuranceSettings.baseFee} zł + dodatek wiekowy {Math.max(0, age - 18) * mockGlobalInsuranceSettings.ageMultiplier} zł)
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Składka bazowa: {event.insuranceOption.baseFee} zł + dodatek wiekowy
-                  </p>
                 </div>
               </div>
             </div>
@@ -770,11 +913,11 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                 <span>Kategoria: {selectedCategory}</span>
               </div>
 
-              {wantsTeam && teamName && (
+              {getFinalTeamName() && (
                 <div className="flex justify-between text-muted-foreground">
                   <span className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
-                    Drużyna: {teamName}
+                    Drużyna: {getFinalTeamName()}
                   </span>
                 </div>
               )}

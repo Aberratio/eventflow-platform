@@ -582,3 +582,11 @@ export interface InfoPage {
   createdAt: string;
   updatedAt: string;
 }
+
+// Global insurance settings (editable by admin)
+export interface GlobalInsuranceSettings {
+  infoHtml: string;        // Rich text description HTML
+  baseFee: number;         // Base fee (e.g. 15 PLN)
+  ageMultiplier: number;   // Age multiplier (e.g. 0.5 PLN/year)
+  maxAge: number;          // Maximum age (e.g. 70)
+}

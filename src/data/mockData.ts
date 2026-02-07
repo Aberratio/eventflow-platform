@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage, GlobalInsuranceSettings } from '@/types';
 
 // ============== CMS INFO PAGES ==============
 export const mockInfoPages: InfoPage[] = [
@@ -2193,14 +2193,93 @@ function generateLargeStartList(): Registration[] {
   return registrations;
 }
 
+// ============================================
+// Global Insurance Settings (admin configurable)
+// ============================================
+export const mockGlobalInsuranceSettings: GlobalInsuranceSettings = {
+  infoHtml: `
+    <p><strong>Ubezpieczenie NNW dla sportowców</strong></p>
+    <p>Ubezpieczenie od następstw nieszczęśliwych wypadków zapewnia:</p>
+    <ul>
+      <li>Ochronę podczas całych zawodów i rozgrzewki</li>
+      <li>Pokrycie kosztów leczenia do 10 000 zł</li>
+      <li>Świadczenie za trwały uszczerbek na zdrowiu</li>
+      <li>Assistance medyczne 24/7</li>
+    </ul>
+    <p>Polisa jest ważna od momentu startu do zakończenia imprezy.</p>
+    <p><a href="/info/ubezpieczenia">Szczegóły ubezpieczenia →</a></p>
+  `,
+  baseFee: 15,
+  ageMultiplier: 0.5,
+  maxAge: 70,
+};
+
+// ============================================
+// Helper function to get existing teams for an event
+// ============================================
+export const getExistingTeamsForEvent = (eventId: string): Array<{
+  name: string;
+  memberCount: number;
+}> => {
+  const teamsMap = new Map<string, number>();
+  
+  mockRegistrations
+    .filter(r => r.eventId === eventId && r.teamName && r.status !== 'cancelled')
+    .forEach(r => {
+      const count = teamsMap.get(r.teamName!) || 0;
+      teamsMap.set(r.teamName!, count + 1);
+    });
+  
+  return Array.from(teamsMap.entries())
+    .map(([name, memberCount]) => ({ name, memberCount }))
+    .sort((a, b) => b.memberCount - a.memberCount);
+};
+
+// ============================================
+// Team name validation utility
+// ============================================
+export const validateTeamName = (name: string): { valid: boolean; error?: string } => {
+  const trimmed = name.trim();
+  
+  if (trimmed.length < 3) {
+    return { valid: false, error: 'Nazwa musi mieć minimum 3 znaki' };
+  }
+  
+  if (trimmed.length > 50) {
+    return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
+  }
+  
+  // Only letters, numbers, spaces, dashes, apostrophes, dots
+  const validPattern = /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s\-'\.]+$/;
+  if (!validPattern.test(trimmed)) {
+    return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
+  }
+  
+  // Check for banned words (mock list)
+  const bannedWords = ['dupa', 'chuj', 'kurwa', 'pierdol'];
+  const lowerName = trimmed.toLowerCase();
+  if (bannedWords.some(word => lowerName.includes(word))) {
+    return { valid: false, error: 'Nazwa zawiera niedozwolone słowa' };
+  }
+  
+  return { valid: true };
+};
+
 export const mockRegistrations: Registration[] = [
   { id: 'r1', eventId: 'e1', eventName: 'Maraton Warszawski 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd1', distanceName: 'Maraton', category: 'M30-39', registeredAt: '2025-01-15T10:30:00Z', status: 'confirmed', bibNumber: '1542', pricePaid: 150 },
   { id: 'r2', eventId: 'e3', eventName: 'Gdynia Triathlon 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd5', distanceName: 'Olimpijski', category: 'M30-34', registeredAt: '2025-02-20T14:15:00Z', status: 'confirmed', bibNumber: '234', pricePaid: 350 },
   { id: 'r3', eventId: 'e5', eventName: 'Półmaraton Krakowski', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd9', distanceName: 'Półmaraton', category: 'M30-39', registeredAt: '2025-03-01T09:00:00Z', status: 'pending', pricePaid: 100 },
-  { id: 'r4', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd17', distanceName: '10km', category: 'M', registeredAt: '2025-01-10T18:45:00Z', status: 'confirmed', bibNumber: '1001', pricePaid: 60 },
+  { id: 'r4', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd17', distanceName: '10km', category: 'M', registeredAt: '2025-01-10T18:45:00Z', status: 'confirmed', bibNumber: '1001', pricePaid: 60, teamName: 'Biegacze Wrocław' },
   { id: 'r5', eventId: 'e2', eventName: 'Tour de Pologne Amatorów', userId: 'p2', userName: 'Anna Nowak', userEmail: 'anna@example.com', distanceId: 'd4', distanceName: 'Medio Fondo', category: 'K35-49', registeredAt: '2025-02-28T11:20:00Z', status: 'confirmed', bibNumber: '567', pricePaid: 150 },
   { id: 'r6', eventId: 'e1', eventName: 'Maraton Warszawski 2025', userId: 'p2', userName: 'Anna Nowak', userEmail: 'anna@example.com', distanceId: 'd2', distanceName: 'Bieg na 10km', category: 'K30-39', registeredAt: '2025-01-20T16:00:00Z', status: 'confirmed', bibNumber: '3456', pricePaid: 70 },
-  { id: 'r7', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p2', userName: 'Anna Nowak', userEmail: 'anna@example.com', distanceId: 'd17', distanceName: '10km', category: 'K', registeredAt: '2025-01-12T20:30:00Z', status: 'confirmed', bibNumber: '2345', pricePaid: 60 },
+  { id: 'r7', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p2', userName: 'Anna Nowak', userEmail: 'anna@example.com', distanceId: 'd17', distanceName: '10km', category: 'K', registeredAt: '2025-01-12T20:30:00Z', status: 'confirmed', bibNumber: '2345', pricePaid: 60, teamName: 'Biegacze Wrocław' },
+  { id: 'r4b', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p3', userName: 'Piotr Wiśniewski', userEmail: 'piotr@example.com', distanceId: 'd17', distanceName: '10km', category: 'M', registeredAt: '2025-01-11T10:00:00Z', status: 'confirmed', bibNumber: '1002', pricePaid: 60, teamName: 'Biegacze Wrocław' },
+  { id: 'r4c', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p4', userName: 'Maria Zielińska', userEmail: 'maria@example.com', distanceId: 'd17', distanceName: '10km', category: 'K', registeredAt: '2025-01-11T12:00:00Z', status: 'confirmed', bibNumber: '1003', pricePaid: 60, teamName: 'Nocni Biegacze' },
+  { id: 'r4d', eventId: 'e9', eventName: 'Nocny Bieg Wrocławski', userId: 'p5', userName: 'Tomasz Nowicki', userEmail: 'tomasz@example.com', distanceId: 'd17', distanceName: '10km', category: 'M', registeredAt: '2025-01-11T14:00:00Z', status: 'confirmed', bibNumber: '1004', pricePaid: 60, teamName: 'Nocni Biegacze' },
+  { id: 'r-team-e11-1', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p-team1', userName: 'Marcin Górski', userEmail: 'marcin.gorski@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'M30-34', registeredAt: '2026-01-20T09:00:00Z', status: 'confirmed', bibNumber: '801', pricePaid: 450, teamName: 'KB Górskie Wilki' },
+  { id: 'r-team-e11-2', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p-team2', userName: 'Katarzyna Szczypiór', userEmail: 'kasia.szcz@example.com', distanceId: 'd20', distanceName: 'Ultra 80K', category: 'K25-29', registeredAt: '2026-01-20T10:00:00Z', status: 'confirmed', bibNumber: '802', pricePaid: 450, teamName: 'KB Górskie Wilki' },
+  { id: 'r-team-e11-3', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p-team3', userName: 'Andrzej Kowal', userEmail: 'andrzej.kowal@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'M40-44', registeredAt: '2026-01-21T08:00:00Z', status: 'confirmed', bibNumber: '401', pricePaid: 300, teamName: 'Ultra Team PL' },
+  { id: 'r-team-e11-4', eventId: 'e11', eventName: 'Bieg Górski Tatry Ultra 2026', userId: 'p-team4', userName: 'Ewa Malinowska', userEmail: 'ewa.mal@example.com', distanceId: 'd21', distanceName: 'Maraton 42K', category: 'K35-39', registeredAt: '2026-01-21T09:00:00Z', status: 'confirmed', bibNumber: '402', pricePaid: 300, teamName: 'Ultra Team PL' },
   { id: 'r8', eventId: 'e4', eventName: 'Bieg Piastów - Polana Jakuszycka', userId: 'p3', userName: 'Piotr Wiśniewski', userEmail: 'piotr@example.com', distanceId: 'd8', distanceName: '25km', category: 'M', registeredAt: '2025-01-05T08:00:00Z', status: 'confirmed', bibNumber: '789', pricePaid: 120 },
   // Registration with merchandise
   { 
