@@ -23,8 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { Event } from '@/types';
+import { mockEvents, disciplineLabels, mockGoogleCalendarSettings } from '@/data/mockData';
+import { Event, GoogleCalendarSettings } from '@/types';
+import { addEventToGoogleCalendar } from '@/lib/googleCalendarUtils';
 import { 
   Calendar, 
   MapPin, 
@@ -45,11 +46,12 @@ export const AdminModerationTab = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [calendarSettings] = useState<GoogleCalendarSettings>(mockGoogleCalendarSettings);
 
   const pendingEvents = events.filter(e => e.status === 'awaiting_approval');
   const rejectedEvents = events.filter(e => e.status === 'draft' && e.rejectionReason);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!selectedEvent) return;
     
     setEvents(prev => prev.map(e => 
@@ -57,6 +59,18 @@ export const AdminModerationTab = () => {
         ? { ...e, status: 'published' as const, rejectionReason: undefined }
         : e
     ));
+    
+    // Add to Google Calendar if connected and enabled
+    if (calendarSettings.enabled && calendarSettings.connected) {
+      const result = await addEventToGoogleCalendar(selectedEvent, calendarSettings.calendarId);
+      if (result.success) {
+        toast.success('Wydarzenie dodane do Google Calendar');
+      } else {
+        toast.error('Nie udało się dodać wydarzenia do kalendarza', {
+          description: result.error
+        });
+      }
+    }
     
     toast.success('Wydarzenie zostało zatwierdzone', {
       description: `"${selectedEvent.name}" jest teraz widoczne publicznie.`

@@ -590,3 +590,23 @@ export interface GlobalInsuranceSettings {
   ageMultiplier: number;   // Age multiplier (e.g. 0.5 PLN/year)
   maxAge: number;          // Maximum age (e.g. 70)
 }
+
+// Online session for staff presence tracking
+export interface OnlineSession {
+  userId: string;
+  userName: string;
+  role: 'admin' | 'moderator';
+  loginAt: string;           // ISO date
+  lastActiveAt: string;      // ISO date
+  ipAddress?: string;
+  browser?: string;
+  location?: string;
+}
+
+// Google Calendar integration settings
+export interface GoogleCalendarSettings {
+  enabled: boolean;
+  connected: boolean;
+  calendarId?: string;        // e.g. 'primary' or specific calendar ID
+  lastSyncAt?: string;
+}

@@ -4,15 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Shield, Save, Calculator } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Shield, Save, Calculator, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { mockGlobalInsuranceSettings } from '@/data/mockData';
-import type { GlobalInsuranceSettings } from '@/types';
+import { mockGlobalInsuranceSettings, mockGoogleCalendarSettings } from '@/data/mockData';
+import type { GlobalInsuranceSettings, GoogleCalendarSettings } from '@/types';
 
 export const AdminSettingsTab = () => {
   const [insuranceSettings, setInsuranceSettings] = useState<GlobalInsuranceSettings>(mockGlobalInsuranceSettings);
+  const [calendarSettings, setCalendarSettings] = useState<GoogleCalendarSettings>(mockGoogleCalendarSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const handleSaveInsurance = async () => {
     setIsSaving(true);
@@ -22,6 +25,26 @@ export const AdminSettingsTab = () => {
     toast({
       title: 'Zapisano',
       description: 'Ustawienia ubezpieczeń zostały zaktualizowane',
+    });
+  };
+
+  const handleConnectCalendar = async () => {
+    setIsConnecting(true);
+    // Simulate connection - in real app, this would trigger OAuth flow
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setCalendarSettings(prev => ({ ...prev, connected: true, lastSyncAt: new Date().toISOString() }));
+    setIsConnecting(false);
+    toast({
+      title: 'Połączono',
+      description: 'Google Calendar został podłączony',
+    });
+  };
+
+  const handleDisconnectCalendar = () => {
+    setCalendarSettings(prev => ({ ...prev, connected: false, lastSyncAt: undefined }));
+    toast({
+      title: 'Rozłączono',
+      description: 'Google Calendar został odłączony',
     });
   };
 
@@ -162,6 +185,84 @@ export const AdminSettingsTab = () => {
               <Save className="h-4 w-4 mr-2" />
               {isSaving ? 'Zapisywanie...' : 'Zapisz ustawienia ubezpieczeń'}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Google Calendar Integration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Integracja Google Calendar
+          </CardTitle>
+          <CardDescription>
+            Automatyczne dodawanie zatwierdzonych wydarzeń do kalendarza Google
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Connection Status */}
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center gap-3">
+              {calendarSettings.connected ? (
+                <div className="p-2 rounded-full bg-primary/10">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                </div>
+              ) : (
+                <div className="p-2 rounded-full bg-muted">
+                  <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                </div>
+              )}
+              <div>
+                <p className="font-medium">
+                  {calendarSettings.connected ? 'Połączono z Google Calendar' : 'Nie połączono z Google Calendar'}
+                </p>
+                {calendarSettings.connected && calendarSettings.lastSyncAt && (
+                  <p className="text-sm text-muted-foreground">
+                    Ostatnia synchronizacja: {new Date(calendarSettings.lastSyncAt).toLocaleString('pl-PL')}
+                  </p>
+                )}
+              </div>
+            </div>
+            {calendarSettings.connected ? (
+              <Button variant="outline" onClick={handleDisconnectCalendar}>
+                Rozłącz
+              </Button>
+            ) : (
+              <Button onClick={handleConnectCalendar} disabled={isConnecting}>
+                <Calendar className="h-4 w-4 mr-2" />
+                {isConnecting ? 'Łączenie...' : 'Połącz Google Calendar'}
+              </Button>
+            )}
+          </div>
+
+          {/* Auto-add setting */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Automatyczne dodawanie wydarzeń</Label>
+              <p className="text-sm text-muted-foreground">
+                Zatwierdzone wydarzenia będą automatycznie dodawane do kalendarza
+              </p>
+            </div>
+            <Switch
+              checked={calendarSettings.enabled}
+              onCheckedChange={(checked) => setCalendarSettings(prev => ({ ...prev, enabled: checked }))}
+              disabled={!calendarSettings.connected}
+            />
+          </div>
+
+          <Separator />
+
+          {/* Info about what gets synced */}
+          <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+            <p className="text-sm font-medium">Po połączeniu, każde zatwierdzone wydarzenie zostanie automatycznie dodane do kalendarza z:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+              <li>Tytuł: Nazwa wydarzenia</li>
+              <li>Data: Data wydarzenia</li>
+              <li>Lokalizacja: Miejsce i miasto</li>
+              <li>Opis: Link do strony wydarzenia</li>
+              <li>Przypomnienia: 1 dzień i 1 tydzień przed</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
