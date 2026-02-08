@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockEvents, mockUsers, mockRegistrations, mockSalesStats, mockShopOrders } from '@/data/mockData';
-import { Calendar, Users, Shield, Settings, TrendingUp, CheckCircle, DollarSign, Package, Clock, ShoppingCart } from 'lucide-react';
+import { mockEvents, mockUsers, mockRegistrations, mockSalesStats, mockShopOrders, mockOnlineSessions } from '@/data/mockData';
+import { Calendar, Users, Shield, Settings, TrendingUp, CheckCircle, DollarSign, Package, Clock, ShoppingCart, UserCheck } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { OnlineStaffCard } from './OnlineStaffCard';
 
 export const AdminOverviewTab = () => {
   const pendingModerationCount = mockEvents.filter(e => e.status === 'awaiting_approval').length;
@@ -82,8 +83,31 @@ export const AdminOverviewTab = () => {
   const totalRevenue = mockSalesStats.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0);
   const totalOrders = mockShopOrders.length;
 
+  const adminCount = mockOnlineSessions.filter(s => s.role === 'admin').length;
+  const moderatorCount = mockOnlineSessions.filter(s => s.role === 'moderator').length;
+
   return (
     <div className="space-y-6">
+      {/* Online Staff Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserCheck className="h-5 w-5" />
+            Aktualnie zalogowani administratorzy i moderatorzy
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {mockOnlineSessions.map((session) => (
+              <OnlineStaffCard key={session.userId} session={session} />
+            ))}
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            Zalogowanych: {adminCount} {adminCount === 1 ? 'admin' : 'adminów'}, {moderatorCount} {moderatorCount === 1 ? 'moderator' : 'moderatorów'}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat) => (
