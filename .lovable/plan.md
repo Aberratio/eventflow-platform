@@ -1,395 +1,398 @@
 
-# Plan: Rozbudowa systemu rejestracji na wydarzenia
+# Plan: Funkcje admina - online status i integracja Google Calendar
 
 ## Zakres zmian
 
-Plan obejmuje trzy główne funkcjonalności:
+Plan obejmuje dwie funkcjonalności dla administratora:
 
-1. **Automatyczne uzupełnianie danych z profilu** - jeśli użytkownik ma wypełnione dane w profilu (rok urodzenia, płeć), krok "Dane osobowe" jest pomijany lub wstępnie wypełniony
-2. **Rozbudowa systemu drużyn** - możliwość tworzenia nowej drużyny lub dołączenia do istniejącej z walidacją nazw
-3. **System ubezpieczeń z panelem admina** - kalkulator składek z konfigurowalnym tekstem i wartościami w panelu SuperAdmina
-
----
-
-## 1. Automatyczne uzupełnianie danych z profilu
-
-### Logika działania
-
-```text
-Zalogowany użytkownik z wypełnionym profilem:
-- birthYear: 1985 (rok urodzenia)
-- gender: 'M' lub 'K' (płeć)
-
-↓
-
-Formularz rejestracji automatycznie:
-1. Wypełnia datę urodzenia (rok z profilu, miesiąc/dzień = styczeń 01)
-2. Oblicza wiek i proponuje kategorie wiekowe
-3. Wyświetla dane jako tylko do odczytu z możliwością edycji
-
-Użytkownik BEZ wypełnionych danych:
-↓
-Wyświetla callout zachęcający do uzupełnienia profilu
-```
-
-### Interfejs w RegistrationForm
-
-W kroku 2 (Dane osobowe) pojawi się jeden z dwóch widoków:
-
-**Wariant A - Profil wypełniony:**
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ✓ Dane zostały pobrane z Twojego profilu                                   │
-│                                                                             │
-│ Rok urodzenia: 1985 (wiek: 41 lat)                                         │
-│ Płeć: Mężczyzna                                                            │
-│                                                                             │
-│ [Zmień dane]  ← opcjonalny link do edycji                                  │
-│                                                                             │
-│ Kategoria wiekowa: [M30-34] [M35-39] [M40-44] ← automatycznie wybrana      │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Wariant B - Profil niekompletny:**
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ⚠️ Uzupełnij swój profil!                                         (callout) │
-│                                                                             │
-│ Wypełnij dane w profilu, aby automatycznie uzupełniać formularze           │
-│ rejestracyjne na przyszłe wydarzenia.                                      │
-│                                                                             │
-│ [Przejdź do profilu →]                                                     │
-└─────────────────────────────────────────────────────────────────────────────┘
-│                                                                             │
-│ Data urodzenia:  [Dzień] [Miesiąc] [Rok]   ← ręczne wypełnianie            │
-│ Kategoria:       [ ] M30-34  [ ] M35-39  ...                               │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+1. **Lista aktualnie zalogowanych adminow i moderatorow** - panel w AdminOverviewTab pokazujacy kto jest online
+2. **Integracja Google Calendar** - automatyczne dodawanie wydarzen do kalendarza po zatwierdzeniu przez admina
 
 ---
 
-## 2. System drużyn - tworzenie i dołączanie
+## 1. Lista zalogowanych administratorow i moderatorow
 
-### Rozbudowa kroku "Drużyna" w RegistrationForm
+### Architektura
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 👥 Zapis drużynowy (opcjonalne)                                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ [✓] Chcę zapisać się jako część drużyny                                    │
-│                                                                             │
-│ ┌─────────────────────────────────────────────────────────────────────────┐│
-│ │ ○ Utwórz nową drużynę                                                   ││
-│ │   Wpisz nazwę nowej drużyny (3-50 znaków)                              ││
-│ │   [____________________________________________]                        ││
-│ │                                                                         ││
-│ │ ○ Dołącz do istniejącej drużyny                                        ││
-│ │   Wybierz z listy drużyn zapisanych na te zawody:                      ││
-│ │   [Wybierz drużynę... ▼]                                               ││
-│ │     - Biegacze Wrocław (4 członków)                                    ││
-│ │     - KB Górskie Wilki (2 członków)                                    ││
-│ │     - Nocni Biegacze (5 członków)                                      ││
-│ └─────────────────────────────────────────────────────────────────────────┘│
-│                                                                             │
-│ 💰 Zniżki grupowe                                                          │
-│ 3+ osób: -10%  |  5+ osób: -15%  |  10+ osób: -20%                        │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+Poniewaz jest to mockowany system bez backendowej bazy danych, zasymulujemy sesje online poprzez:
 
-### Walidacja nazwy drużyny
-
-```typescript
-const validateTeamName = (name: string): { valid: boolean; error?: string } => {
-  const trimmed = name.trim();
-  
-  if (trimmed.length < 3) {
-    return { valid: false, error: 'Nazwa musi mieć minimum 3 znaki' };
-  }
-  
-  if (trimmed.length > 50) {
-    return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
-  }
-  
-  // Tylko litery, cyfry, spacje, myślniki, apostrofy
-  const validPattern = /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s\-'\.]+$/;
-  if (!validPattern.test(trimmed)) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
-  }
-  
-  // Sprawdź czy nie zawiera wulgarnych słów (mockowa lista)
-  const bannedWords = ['dupa', 'chuj', 'kurwa', 'pierdol'];
-  const lowerName = trimmed.toLowerCase();
-  if (bannedWords.some(word => lowerName.includes(word))) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone słowa' };
-  }
-  
-  return { valid: true };
-};
-```
-
-### Helper do pobierania istniejących drużyn
-
-```typescript
-// W mockData.ts
-export const getExistingTeamsForEvent = (eventId: string): Array<{
-  name: string;
-  memberCount: number;
-}> => {
-  const teamsMap = new Map<string, number>();
-  
-  mockRegistrations
-    .filter(r => r.eventId === eventId && r.teamName && r.status !== 'cancelled')
-    .forEach(r => {
-      const count = teamsMap.get(r.teamName!) || 0;
-      teamsMap.set(r.teamName!, count + 1);
-    });
-  
-  return Array.from(teamsMap.entries())
-    .map(([name, memberCount]) => ({ name, memberCount }))
-    .sort((a, b) => b.memberCount - a.memberCount);
-};
-```
-
----
-
-## 3. System ubezpieczeń z panelem admina
-
-### Nowa zakładka w AdminDashboard
-
-Dodam nową zakładkę "Ustawienia" (Settings) w panelu SuperAdmina z sekcją ubezpieczeń:
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ Panel Administratora                                                        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ [Pulpit] [Moderacja] [Uczestnicy] ... [Ustawienia]                         │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ ⚙️ Ustawienia platformy                                                    │
-│                                                                             │
-│ ╔═══════════════════════════════════════════════════════════════════════╗  │
-│ ║ 🛡️ Ubezpieczenia NNW                                                   ║  │
-│ ╠═══════════════════════════════════════════════════════════════════════╣  │
-│ ║                                                                        ║  │
-│ ║ Tekst informacyjny dla uczestników:                                   ║  │
-│ ║ ┌──────────────────────────────────────────────────────────────────┐  ║  │
-│ ║ │ [Edytor WYSIWYG - RichTextEditor]                                │  ║  │
-│ ║ │ Ubezpieczenie NNW zapewnia ochronę podczas całych zawodów...     │  ║  │
-│ ║ └──────────────────────────────────────────────────────────────────┘  ║  │
-│ ║                                                                        ║  │
-│ ║ Kalkulator składek:                                                   ║  │
-│ ║                                                                        ║  │
-│ ║ Opłata bazowa:        [___15___] zł                                   ║  │
-│ ║ Mnożnik wiekowy:      [__0.50__] zł za każdy rok powyżej 18          ║  │
-│ ║ Maksymalny wiek:      [___70___] lat                                  ║  │
-│ ║                                                                        ║  │
-│ ║ 📊 Przykładowe składki:                                               ║  │
-│ ║ • Wiek 18-25: 15-19 zł                                                ║  │
-│ ║ • Wiek 30: 21 zł                                                      ║  │
-│ ║ • Wiek 40: 26 zł                                                      ║  │
-│ ║ • Wiek 50: 31 zł                                                      ║  │
-│ ║ • Wiek 60: 36 zł                                                      ║  │
-│ ║                                                                        ║  │
-│ ║               [Zapisz ustawienia ubezpieczeń]                         ║  │
-│ ╚═══════════════════════════════════════════════════════════════════════╝  │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+1. **Kontekst OnlinePresence** - globalny kontekst sledzacy aktywnych uzytkownikow
+2. **Mockowe sesje** - losowo wygenerowane "aktywne" sesje dla kilku adminow/moderatorow
+3. **Symulacja heartbeat** - aktualizacja "ostatniej aktywnosci" co 30 sekund
 
 ### Nowy typ w types/index.ts
 
 ```typescript
-// Globalne ustawienia ubezpieczeń (edytowalne przez admina)
-export interface GlobalInsuranceSettings {
-  infoHtml: string;        // Tekst informacyjny HTML
-  baseFee: number;         // Opłata bazowa (np. 15 zł)
-  ageMultiplier: number;   // Mnożnik wiekowy (np. 0.5 zł/rok)
-  maxAge: number;          // Maksymalny wiek (np. 70)
+export interface OnlineSession {
+  userId: string;
+  userName: string;
+  role: 'admin' | 'moderator';
+  loginAt: string;           // ISO date
+  lastActiveAt: string;      // ISO date
+  ipAddress?: string;
+  browser?: string;
+  location?: string;
 }
 ```
 
-### Mockowe dane
+### Mockowe dane sesji
 
 ```typescript
 // W mockData.ts
-export const mockGlobalInsuranceSettings: GlobalInsuranceSettings = {
-  infoHtml: `
-    <p><strong>Ubezpieczenie NNW dla sportowców</strong></p>
-    <p>Ubezpieczenie od następstw nieszczęśliwych wypadków zapewnia:</p>
-    <ul>
-      <li>Ochronę podczas całych zawodów i rozgrzewki</li>
-      <li>Pokrycie kosztów leczenia do 10 000 zł</li>
-      <li>Świadczenie za trwały uszczerbek na zdrowiu</li>
-      <li>Assistance medyczne</li>
-    </ul>
-    <p>Polisa jest ważna od momentu startu do zakończenia imprezy.</p>
-    <p><a href="/info/ubezpieczenia">Szczegóły ubezpieczenia →</a></p>
-  `,
-  baseFee: 15,
-  ageMultiplier: 0.5,
-  maxAge: 70,
-};
+export const mockOnlineSessions: OnlineSession[] = [
+  {
+    userId: 'a1',
+    userName: 'Admin Platformy',
+    role: 'admin',
+    loginAt: new Date(Date.now() - 3600000).toISOString(), // 1h temu
+    lastActiveAt: new Date().toISOString(),
+    browser: 'Chrome 120',
+    location: 'Warszawa, PL',
+  },
+  {
+    userId: 'mod1',
+    userName: 'Monika Moderator',
+    role: 'moderator',
+    loginAt: new Date(Date.now() - 7200000).toISOString(), // 2h temu
+    lastActiveAt: new Date(Date.now() - 300000).toISOString(), // 5 min temu
+    browser: 'Firefox 121',
+    location: 'Krakow, PL',
+  },
+  // Dodatkowy admin dla demonstracji
+  {
+    userId: 'a2',
+    userName: 'Jan Administrator',
+    role: 'admin',
+    loginAt: new Date(Date.now() - 1800000).toISOString(), // 30 min temu
+    lastActiveAt: new Date(Date.now() - 120000).toISOString(), // 2 min temu
+    browser: 'Safari 17',
+    location: 'Gdansk, PL',
+  },
+];
 ```
 
-### Integracja z formularzem rejestracji
-
-W kroku 3 (Ubezpieczenie) pobieramy globalne ustawienia i wyświetlamy:
+### Nowa karta w AdminOverviewTab
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🛡️ Ubezpieczenie NNW (opcjonalne)                                          │
+│ 👥 Aktualnie zalogowani administratorzy i moderatorzy                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ [Tekst z globalInsuranceSettings.infoHtml - RichTextDisplay]               │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [🟢] Admin Platformy (admin)                                           ││
+│ │     📍 Warszawa, PL • Chrome 120                                       ││
+│ │     ⏱️ Aktywny teraz                                                   ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
-│ ───────────────────────────────────────────────────────────────────────────│
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [🟡] Monika Moderator (moderator)                                      ││
+│ │     📍 Krakow, PL • Firefox 121                                        ││
+│ │     ⏱️ Aktywny 5 min temu                                              ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
-│ [✓] Chcę wykupić ubezpieczenie NNW                                         │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ [🟢] Jan Administrator (admin)                                         ││
+│ │     📍 Gdansk, PL • Safari 17                                          ││
+│ │     ⏱️ Aktywny 2 min temu                                              ││
+│ └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                             │
-│ Składka dla Twojego wieku (38 lat): 25 zł                                  │
-│ (opłata bazowa 15 zł + dodatek wiekowy 10 zł)                              │
+│ Zalogowanych: 2 adminow, 1 moderator                                       │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Formuła kalkulacji
+### Logika statusu aktywnosci
 
 ```typescript
-const calculateInsurancePrice = (age: number, settings: GlobalInsuranceSettings): number => {
-  if (age > settings.maxAge) {
-    return 0; // Brak możliwości ubezpieczenia
-  }
+const getActivityStatus = (lastActiveAt: string): { status: 'online' | 'away' | 'idle'; label: string } => {
+  const diff = Date.now() - new Date(lastActiveAt).getTime();
+  const minutes = Math.floor(diff / 60000);
   
-  const ageAddition = Math.max(0, age - 18) * settings.ageMultiplier;
-  return Math.round(settings.baseFee + ageAddition);
+  if (minutes < 2) {
+    return { status: 'online', label: 'Aktywny teraz' };
+  } else if (minutes < 10) {
+    return { status: 'away', label: `Aktywny ${minutes} min temu` };
+  } else {
+    return { status: 'idle', label: `Nieaktywny od ${minutes} min` };
+  }
 };
 
-// Przykłady:
-// Wiek 18: 15 + 0 * 0.5 = 15 zł
-// Wiek 25: 15 + 7 * 0.5 = 18.5 → 19 zł
-// Wiek 40: 15 + 22 * 0.5 = 26 zł
-// Wiek 60: 15 + 42 * 0.5 = 36 zł
+// Kolory statusu
+// online (< 2 min) -> zielony
+// away (2-10 min) -> zolty
+// idle (> 10 min) -> szary
 ```
 
 ---
 
-## Struktura plików do modyfikacji/utworzenia
+## 2. Integracja Google Calendar
+
+### Wymagania
+
+- **Connector Google Calendar** - do polaczenia potrzebny jest Google Calendar connector
+- **Automatyczne tworzenie wydarzen** - po zatwierdzeniu wydarzenia przez admina, tworzy sie wpis w kalendarzu
+
+### Konfiguracja w AdminSettingsTab
+
+Nowa sekcja w panelu ustawien admina:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📅 Integracja Google Calendar                                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ [✓] Automatycznie dodawaj zatwierdzone wydarzenia do Google Calendar       │
+│                                                                             │
+│ Status: ⚠️ Nie polaczono z Google Calendar                                 │
+│                                                                             │
+│ [Polacz Google Calendar]                                                    │
+│                                                                             │
+│ ─────────────────────────────────────────────────────────────────────────── │
+│                                                                             │
+│ Po polaczeniu, kazde zatwierdzone wydarzenie zostanie automatycznie        │
+│ dodane do Twojego kalendarza Google z nastepujacymi danymi:                │
+│                                                                             │
+│ • Tytul: [Nazwa wydarzenia]                                                 │
+│ • Data: [Data wydarzenia]                                                   │
+│ • Lokalizacja: [Lokalizacja, Miasto]                                        │
+│ • Opis: Link do strony wydarzenia                                           │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Typ ustawien kalendarza
+
+```typescript
+// W types/index.ts
+export interface GoogleCalendarSettings {
+  enabled: boolean;
+  connected: boolean;
+  calendarId?: string;        // np. 'primary' lub ID konkretnego kalendarza
+  lastSyncAt?: string;
+}
+```
+
+### Integracja z ModerationTab
+
+Po zatwierdzeniu wydarzenia (`handleApprove`), jezeli integracja jest wlaczona:
+
+```typescript
+const handleApprove = async () => {
+  if (!selectedEvent) return;
+  
+  // Zmiana statusu wydarzenia
+  setEvents(prev => prev.map(e => 
+    e.id === selectedEvent.id 
+      ? { ...e, status: 'published' as const, rejectionReason: undefined }
+      : e
+  ));
+  
+  // Dodanie do Google Calendar (jesli polaczono)
+  if (calendarSettings.enabled && calendarSettings.connected) {
+    try {
+      await addEventToGoogleCalendar(selectedEvent);
+      toast.success('Wydarzenie dodane do Google Calendar');
+    } catch (error) {
+      toast.error('Nie udalo sie dodac wydarzenia do kalendarza');
+    }
+  }
+  
+  toast.success('Wydarzenie zostalo zatwierdzone', {
+    description: `"${selectedEvent.name}" jest teraz widoczne publicznie.`
+  });
+  
+  // ...
+};
+```
+
+### Helper do tworzenia wydarzenia w Google Calendar
+
+```typescript
+// W src/lib/googleCalendarUtils.ts
+import { Event } from '@/types';
+
+const GATEWAY_URL = 'https://gateway.lovable.dev/google_calendar/calendar/v3';
+
+export const addEventToGoogleCalendar = async (event: Event, calendarId = 'primary') => {
+  // Parse event date (format: "15 wrzesnia 2026" lub podobny)
+  const eventDate = parseEventDate(event.date);
+  
+  const calendarEvent = {
+    summary: event.name,
+    location: `${event.location}, ${event.city}`,
+    description: `${event.description}\n\nOrganizator: ${event.organizerName}\n\nWiecej informacji: ${window.location.origin}/events/${event.slug}`,
+    start: {
+      date: eventDate,  // Format: YYYY-MM-DD dla wydarzen calodniowych
+      timeZone: 'Europe/Warsaw',
+    },
+    end: {
+      date: eventDate,
+      timeZone: 'Europe/Warsaw',
+    },
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: 'popup', minutes: 1440 }, // 1 dzien przed
+        { method: 'email', minutes: 10080 }, // 1 tydzien przed
+      ],
+    },
+  };
+  
+  const response = await fetch(`${GATEWAY_URL}/calendars/${calendarId}/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(calendarEvent),
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to create calendar event');
+  }
+  
+  return response.json();
+};
+```
+
+---
+
+## Struktura plikow do modyfikacji/utworzenia
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie GlobalInsuranceSettings |
-| `src/data/mockData.ts` | Modyfikacja | mockGlobalInsuranceSettings + getExistingTeamsForEvent + rejestracje z drużynami |
-| `src/components/registration/RegistrationForm.tsx` | Modyfikacja | Logika profilu, rozbudowa drużyn, integracja ubezpieczeń |
-| `src/pages/admin/AdminDashboard.tsx` | Modyfikacja | Dodanie zakładki "Ustawienia" |
-| `src/pages/admin/components/AdminSettingsTab.tsx` | Nowy | Panel ustawień z sekcją ubezpieczeń |
+| `src/types/index.ts` | Modyfikacja | OnlineSession, GoogleCalendarSettings |
+| `src/data/mockData.ts` | Modyfikacja | mockOnlineSessions, mockCalendarSettings |
+| `src/lib/googleCalendarUtils.ts` | Nowy | Helper do tworzenia wydarzen w GCal |
+| `src/pages/admin/components/AdminOverviewTab.tsx` | Modyfikacja | Sekcja z zalogowanymi adminami/moderatorami |
+| `src/pages/admin/components/AdminSettingsTab.tsx` | Modyfikacja | Sekcja konfiguracji Google Calendar |
+| `src/pages/admin/components/AdminModerationTab.tsx` | Modyfikacja | Integracja z Google Calendar przy zatwierdzaniu |
 
 ---
 
-## Szczegóły techniczne
+## Szczegoly techniczne
 
-### Wykrywanie kompletności profilu
-
-```typescript
-// W RegistrationForm.tsx
-const { user } = useAuth();
-
-const isProfileComplete = useMemo(() => {
-  if (!user) return false;
-  return !!(user.birthYear && user.gender);
-}, [user]);
-
-// Jeśli profil jest kompletny, wstępnie wypełnij datę:
-useEffect(() => {
-  if (isProfileComplete && user?.birthYear) {
-    setBirthYear(String(user.birthYear));
-    setBirthMonth('01');
-    setBirthDay('01');
-  }
-}, [isProfileComplete, user]);
-```
-
-### Callout zachęcający do uzupełnienia profilu
+### Komponent OnlineUserCard
 
 ```tsx
-{!isProfileComplete && (
-  <Alert className="mb-4 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-    <AlertTriangle className="h-4 w-4 text-amber-600" />
-    <AlertTitle>Uzupełnij swój profil</AlertTitle>
-    <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <span>
-        Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.
-      </span>
-      <Button variant="outline" size="sm" asChild>
-        <Link to="/participant?tab=profile">Przejdź do profilu</Link>
-      </Button>
-    </AlertDescription>
-  </Alert>
-)}
+interface OnlineUserCardProps {
+  session: OnlineSession;
+}
+
+const OnlineUserCard = ({ session }: OnlineUserCardProps) => {
+  const activity = getActivityStatus(session.lastActiveAt);
+  
+  const statusColors = {
+    online: 'bg-green-500',
+    away: 'bg-yellow-500',
+    idle: 'bg-gray-400',
+  };
+  
+  return (
+    <div className="flex items-center gap-3 p-3 border rounded-lg">
+      <div className="relative">
+        <Avatar>
+          <AvatarFallback>{session.userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+        </Avatar>
+        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-background ${statusColors[activity.status]}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium truncate">{session.userName}</span>
+          <Badge variant="outline" className="text-xs">
+            {session.role === 'admin' ? 'Admin' : 'Moderator'}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {session.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {session.location}
+            </span>
+          )}
+          {session.browser && (
+            <span className="flex items-center gap-1">
+              <Monitor className="h-3 w-3" />
+              {session.browser}
+            </span>
+          )}
+        </div>
+        <div className="text-xs text-muted-foreground mt-1">
+          <Clock className="inline h-3 w-3 mr-1" />
+          {activity.label}
+        </div>
+      </div>
+    </div>
+  );
+};
 ```
 
-### State dla trybu drużyny
+### Przycisk polaczenia z Google Calendar
+
+Jesli connector nie jest polaczony, wyswietle przycisk z akcja:
+
+```tsx
+<Button onClick={() => {
+  // Prompt uzytkownika do polaczenia Google Calendar connectora
+  toast.info('Polacz Google Calendar w ustawieniach projektu');
+}}>
+  <Calendar className="h-4 w-4 mr-2" />
+  Polacz Google Calendar
+</Button>
+```
+
+### Parsowanie daty wydarzenia
 
 ```typescript
-type TeamMode = 'none' | 'create' | 'join';
-
-const [teamMode, setTeamMode] = useState<TeamMode>('none');
-const [newTeamName, setNewTeamName] = useState('');
-const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
-const [teamNameError, setTeamNameError] = useState('');
-
-const existingTeams = useMemo(() => {
-  return getExistingTeamsForEvent(event.id);
-}, [event.id]);
+const parseEventDate = (dateStr: string): string => {
+  // Mapa polskich miesiecy
+  const months: Record<string, string> = {
+    'stycznia': '01', 'lutego': '02', 'marca': '03',
+    'kwietnia': '04', 'maja': '05', 'czerwca': '06',
+    'lipca': '07', 'sierpnia': '08', 'wrzesnia': '09',
+    'pazdziernika': '10', 'listopada': '11', 'grudnia': '12',
+  };
+  
+  // Format: "15 wrzesnia 2026"
+  const parts = dateStr.toLowerCase().split(' ');
+  if (parts.length === 3) {
+    const day = parts[0].padStart(2, '0');
+    const month = months[parts[1]] || '01';
+    const year = parts[2];
+    return `${year}-${month}-${day}`;
+  }
+  
+  return new Date().toISOString().split('T')[0];
+};
 ```
 
 ---
 
-## Mockowe dane drużyn
+## Flow uzytkownika
 
-Dodam do istniejących rejestracji kilka z nazwami drużyn:
+### Przegladanie online adminow:
 
-```typescript
-// Modyfikacja istniejących rejestracji w mockRegistrations
-{ 
-  id: 'r4', 
-  eventId: 'e9', 
-  ...
-  teamName: 'Biegacze Wrocław',  // Nowe pole
-},
-{ 
-  id: 'r7', 
-  eventId: 'e9', 
-  ...
-  teamName: 'Biegacze Wrocław',  // Ta sama drużyna
-},
+1. Admin otwiera pulpit (`/admin`)
+2. W sekcji "Aktualnie zalogowani" widzi liste aktywnych adminow i moderatorow
+3. Kazdy uzytkownik ma status aktywnosci (zielony/zolty/szary)
+4. Widoczne sa lokalizacja i przegladarka
 
-// Nowe rejestracje z drużynami dla wydarzenia e11 (Tatry Ultra)
-{ 
-  id: 'r-team-1', 
-  eventId: 'e11', 
-  teamName: 'KB Górskie Wilki',
-  ...
-},
-{ 
-  id: 'r-team-2', 
-  eventId: 'e11', 
-  teamName: 'KB Górskie Wilki',
-  ...
-},
-{ 
-  id: 'r-team-3', 
-  eventId: 'e11', 
-  teamName: 'Ultra Team PL',
-  ...
-},
-```
+### Konfiguracja Google Calendar:
+
+1. Admin przechodzi do zakladki "Ustawienia"
+2. Widzi sekcje "Integracja Google Calendar"
+3. Klika "Polacz Google Calendar" (wymaga connectora)
+4. Po polaczeniu wlacza automatyczne dodawanie wydarzen
+
+### Automatyczne tworzenie wydarzen:
+
+1. Organizator zglasza wydarzenie do moderacji
+2. Admin zatwierdza wydarzenie w zakladce "Moderacja"
+3. System automatycznie tworzy wydarzenie w Google Calendar
+4. Admin otrzymuje powiadomienie o sukcesie/bledzie
 
 ---
 
-## Podsumowanie zmian
+## Uwagi bezpieczenstwa
 
-1. **Profil** → automatyczne uzupełnianie danych + callout dla niekompletnych
-2. **Drużyny** → tworzenie/dołączanie + walidacja nazw + lista istniejących
-3. **Ubezpieczenia** → panel admina z edytorem tekstu + kalkulator składek
-
-Wszystkie zmiany są w pełni zintegrowane z istniejącym systemem rejestracji i panelem administratora.
+- Mockowane sesje online sa tylko symulacja - w produkcji nalezaloby uzyc Supabase Auth i realtime
+- Integracja Google Calendar wymaga polaczenia connectora przed uzyciem
+- Dane dostepu do Google Calendar sa przechowywane bezpiecznie przez gateway Lovable
