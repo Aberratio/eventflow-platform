@@ -49,6 +49,14 @@ export interface PriceTier {
   description?: string;
 }
 
+export interface DiscountCodeUsage {
+  userId: string;
+  userName: string;
+  usedAt: string;
+  registrationId: string;
+  distanceName: string;
+}
+
 export interface DiscountCode {
   id: string;
   code: string;
@@ -60,6 +68,7 @@ export interface DiscountCode {
   usedCount: number;
   distanceIds?: string[];
   active: boolean;
+  usedBy?: DiscountCodeUsage[];
 }
 
 export interface MerchandiseOrder {

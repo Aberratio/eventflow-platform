@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,9 @@ import { ParticipantsTab } from './components/ParticipantsTab';
 import { ResultsTab } from './components/ResultsTab';
 import { VirtualResultsVerificationTab } from './components/VirtualResultsVerificationTab';
 import { EventSettingsTab } from './components/EventSettingsTab';
-import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe } from 'lucide-react';
+import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
+import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe, Tag } from 'lucide-react';
+import { DiscountCode } from '@/types';
 
 const EventManage = () => {
   const { id } = useParams();
@@ -16,6 +19,8 @@ const EventManage = () => {
   
   const event = mockEvents.find(e => e.id === id);
   const registrations = mockRegistrations.filter(r => r.eventId === id);
+
+  const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 
   if (!event) {
     return (
@@ -47,7 +52,7 @@ const EventManage = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Przegląd</span>
@@ -59,6 +64,10 @@ const EventManage = () => {
             <TabsTrigger value="results" className="flex items-center gap-2">
               {event.isVirtual ? <Globe className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
               <span className="hidden sm:inline">{event.isVirtual ? 'Weryfikacja' : 'Wyniki'}</span>
+            </TabsTrigger>
+            <TabsTrigger value="discounts" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              <span className="hidden sm:inline">Kody rabatowe</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -80,6 +89,14 @@ const EventManage = () => {
             ) : (
               <ResultsTab event={event} registrations={registrations} />
             )}
+          </TabsContent>
+
+          <TabsContent value="discounts">
+            <DiscountCodesEditor
+              discountCodes={discountCodes}
+              distances={event.distances}
+              onChange={setDiscountCodes}
+            />
           </TabsContent>
 
           <TabsContent value="settings">
