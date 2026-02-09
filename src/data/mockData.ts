@@ -626,8 +626,18 @@ export const mockEvents: Event[] = [
       },
     ],
     discountCodes: [
-      { id: 'dc1', code: 'ULTRA2026', discountType: 'percent', discountValue: 15, validFrom: '2026-01-01', validTo: '2026-03-31', maxUses: 100, usedCount: 23, active: true },
-      { id: 'dc2', code: 'KLUB50', discountType: 'fixed', discountValue: 50, validFrom: '2026-01-01', validTo: '2026-06-01', maxUses: 200, usedCount: 87, active: true },
+      { id: 'dc1', code: 'ULTRA2026', discountType: 'percent', discountValue: 15, validFrom: '2026-01-01', validTo: '2026-03-31', maxUses: 100, usedCount: 23, active: true, usedBy: [
+        { userId: 'p1', userName: 'Jan Kowalski', usedAt: '2026-01-15T10:30:00Z', registrationId: 'r-dc1', distanceName: 'Ultra 80km' },
+        { userId: 'p2', userName: 'Anna Nowak', usedAt: '2026-01-18T14:20:00Z', registrationId: 'r-dc2', distanceName: 'Maraton 42km' },
+        { userId: 'p3', userName: 'Piotr Wiśniewski', usedAt: '2026-01-22T08:00:00Z', registrationId: 'r-dc3', distanceName: 'Ultra 80km' },
+        { userId: 'p6', userName: 'Magdalena Szybka', usedAt: '2026-01-25T11:15:00Z', registrationId: 'r-dc4', distanceName: 'Półmaraton 21km' },
+        { userId: 'p7', userName: 'Adam Biegacz', usedAt: '2026-02-01T09:45:00Z', registrationId: 'r-dc5', distanceName: 'Ultra 80km' },
+      ]},
+      { id: 'dc2', code: 'KLUB50', discountType: 'fixed', discountValue: 50, validFrom: '2026-01-01', validTo: '2026-06-01', maxUses: 200, usedCount: 87, active: true, usedBy: [
+        { userId: 'p4', userName: 'Katarzyna Biegacz', usedAt: '2026-01-10T12:00:00Z', registrationId: 'r-dc6', distanceName: 'Maraton 42km' },
+        { userId: 'p9', userName: 'Cezary Ultra', usedAt: '2026-01-12T16:30:00Z', registrationId: 'r-dc7', distanceName: 'Ultra 80km' },
+        { userId: 'p13', userName: 'Grzegorz Trail', usedAt: '2026-02-03T07:20:00Z', registrationId: 'r-dc8', distanceName: 'Półmaraton 21km' },
+      ]},
       { id: 'dc3', code: 'VIP100', discountType: 'fixed', discountValue: 100, validFrom: '2026-01-01', validTo: '2026-06-10', maxUses: 10, usedCount: 5, active: true },
     ],
     enableMerchandiseInRegistration: true,
@@ -748,7 +758,10 @@ export const mockEvents: Event[] = [
       },
     ],
     discountCodes: [
-      { id: 'dc4', code: 'LODZ10', discountType: 'percent', discountValue: 10, validTo: '2026-03-01', maxUses: 50, usedCount: 12, active: true },
+      { id: 'dc4', code: 'LODZ10', discountType: 'percent', discountValue: 10, validTo: '2026-03-01', maxUses: 50, usedCount: 12, active: true, usedBy: [
+        { userId: 'p5', userName: 'Tomasz Kolarz', usedAt: '2026-01-20T13:00:00Z', registrationId: 'r-dc9', distanceName: '10km' },
+        { userId: 'p8', userName: 'Beata Górska', usedAt: '2026-01-28T10:00:00Z', registrationId: 'r-dc10', distanceName: 'Półmaraton' },
+      ]},
     ],
     enableMerchandiseInRegistration: true,
     // Rich text - simple version

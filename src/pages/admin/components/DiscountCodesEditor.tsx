@@ -8,8 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Tag, Copy, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Tag, Copy, RefreshCw, Eye } from 'lucide-react';
 import { DiscountCode, Distance } from '@/types';
+import { DiscountCodeUsageDialog } from '@/components/organizer/DiscountCodeUsageDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -31,6 +32,8 @@ const generateRandomCode = () => {
 
 export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: DiscountCodesEditorProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [usageDialogOpen, setUsageDialogOpen] = useState(false);
+  const [selectedCodeForUsage, setSelectedCodeForUsage] = useState<DiscountCode | null>(null);
   const [newCode, setNewCode] = useState<Partial<DiscountCode>>({
     code: '',
     discountType: 'percent',
@@ -301,6 +304,15 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => { setSelectedCodeForUsage(code); setUsageDialogOpen(true); }}
+                          title="Pokaż użycia"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Switch
                           checked={code.active}
                           onCheckedChange={() => handleToggleActive(code.id)}
@@ -323,6 +335,12 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
           </Table>
         )}
       </CardContent>
+
+      <DiscountCodeUsageDialog
+        code={selectedCodeForUsage}
+        open={usageDialogOpen}
+        onOpenChange={setUsageDialogOpen}
+      />
     </Card>
   );
 };
