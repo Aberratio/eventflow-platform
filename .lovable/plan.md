@@ -1,160 +1,136 @@
 
 
-# Plan: Kody rabatowe per wydarzenie - dostep dla organizatorow, adminow i moderatorow
+# Plan: Strona /organizer/events + edycja kodow rabatowych
 
-## Stan obecny
+## 1. Nowa trasa /organizer/events
 
-System kodow rabatowych juz istnieje i zawiera:
-- Typ `DiscountCode` z polami: code, discountType (percent/fixed), discountValue, validFrom/To, maxUses, usedCount, distanceIds, active
-- Komponent `DiscountCodesEditor` (dodawanie, usuwanie, kopiowanie, toggle aktywnosci)
-- Walidacja kodow przy rejestracji (`validateDiscountCode`)
-- Mockowe kody rabatowe dla kilku wydarzen
+Obecnie brakuje trasy `/organizer/events` w routerze. Uzytkownik trafia na 404.
 
-**Czego brakuje:**
-- Sledzenie **kto** uzywal kodu (obecnie tylko `usedCount`, bez listy uzytkownikow)
-- Dostep do edytora dla **organizatorow** i **moderatorow** (obecnie tylko admin)
-- Widok szczegolowy uzycia kodu (dialog "kto skorzystal")
+### Rozwiazanie
 
----
+Dodanie trasy w `App.tsx` ktora renderuje dedykowana strone z lista wydarzen organizatora - podobna do zakladki "Moje wydarzenia" w dashboardzie, ale jako osobna strona.
 
-## Zmiany do wprowadzenia
+### Nowa strona: `src/pages/organizer/OrganizerEventsPage.tsx`
 
-### 1. Rozszerzenie typu DiscountCode
-
-Dodanie pola `usedBy` z lista uzytkownikow, ktorzy skorzystali z kodu:
-
-```typescript
-export interface DiscountCodeUsage {
-  userId: string;
-  userName: string;
-  usedAt: string;        // ISO date
-  registrationId: string;
-  distanceName: string;
-}
-
-export interface DiscountCode {
-  // ... istniejace pola ...
-  usedBy?: DiscountCodeUsage[];  // nowe pole
-}
-```
-
-### 2. Rozbudowa DiscountCodesEditor
-
-Dodanie przycisku "Szczegoly uzycia" przy kazdym kodzie, otwierajacego dialog z lista uzytkownikow:
+Strona wyswietli:
+- Naglowek "Moje wydarzenia" z przyciskiem "Nowe wydarzenie"
+- Filtry statusu (Wszystkie / Aktywne / Szkice / Zakonczone)
+- Lista wydarzen z ikonami dyscyplin, datami, liczbami uczestnikow, statusami
+- Przycisk "Zarzadzaj" prowadzacy do `/organizer/events/:id`
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Kod       │ Znizka │ Waznosc        │ Uzycia   │ Status   │ Akcje         │
-├───────────┼────────┼────────────────┼──────────┼──────────┼───────────────│
-│ ULTRA2026 │  15%   │ sty - mar 2026 │ 23 / 100 │ Aktywny  │ [👁] [⚙] [🗑] │
-│ KLUB50    │  50 zl │ sty - cze 2026 │ 87 / 200 │ Aktywny  │ [👁] [⚙] [🗑] │
+│ ← Powrot do panelu                                                          │
+│                                                                             │
+│ Moje wydarzenia                                    [+ Nowe wydarzenie]     │
+│                                                                             │
+│ [Wszystkie] [Aktywne] [Szkice] [Zakonczone]                                │
+│                                                                             │
+│ ┌─────────────────────────────────────────────────────────────────────────┐│
+│ │ 🏃 Maraton Warszawski                                                   ││
+│ │    Warszawa • 15 wrz 2026 • 450 uczestnikow            Aktywne [Zarzadzaj]│
+│ ├─────────────────────────────────────────────────────────────────────────┤│
+│ │ 🚴 Wyscig Kolarski                                                      ││
+│ │    Krakow • 20 paz 2026 • 120 uczestnikow              Szkic  [Zarzadzaj]│
+│ └─────────────────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────────────────┘
+```
 
-Dialog po kliknieciu [👁]:
+## 2. Edycja istniejacych kodow rabatowych
+
+Obecnie `DiscountCodesEditor` pozwala tylko dodawac, usuwac i przelaczac aktywnosc kodow. Brakuje mozliwosci edycji wartosci znizki, dat waznosci i limitu uzyc.
+
+### Rozwiazanie
+
+Dodanie przycisku "Edytuj" (ikona olowka) w wierszu tabeli, otwierajacego dialog edycji z pre-wypelnionymi danymi kodu.
+
+### Zmiany w `DiscountCodesEditor.tsx`
+
+- Nowy state: `editDialogOpen`, `editingCode`
+- Przycisk edycji w kolumnie "Akcje" (ikona `Pencil`)
+- Dialog edycji z polami: typ znizki, wartosc, daty waznosci, limit uzyc, dystanse
+- Kod (nazwa) jest tylko do odczytu w trybie edycji
+- Handler `handleEditCode` aktualizujacy kod w liscie
+
+```text
+Kolumna Akcje (nowy uklad):
+[👁 Uzycia] [✏️ Edytuj] [🔄 Wl/Wyl] [🗑️ Usun]
+```
+
+Dialog edycji:
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Uzycia kodu ULTRA2026 (23 z 100)                                           │
+│ Edytuj kod rabatowy: ULTRA2026                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ Uzytkownik          │ Dystans        │ Data uzycia        │                │
-│ Jan Kowalski        │ Ultra 80km     │ 15 sty 2026        │                │
-│ Anna Nowak          │ Marathon 42km  │ 18 sty 2026        │                │
-│ Piotr Wisniewski    │ Ultra 80km     │ 22 sty 2026        │                │
-│ ...                 │ ...            │ ...                 │                │
+│                                                                             │
+│ Typ znizki:    [Procentowa ▼]     Wartosc: [15]                            │
+│                                                                             │
+│ Wazny od:      [2026-01-01]       Wazny do: [2026-03-31]                   │
+│                                                                             │
+│ Limit uzyc:    [100]                                                        │
+│                                                                             │
+│ Dystanse:      [Ultra 80km] [Marathon 42km]                                │
+│                                                                             │
+│                              [Anuluj] [Zapisz zmiany]                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-### 3. Dodanie edytora do panelu organizatora
-
-W `EventManage.tsx` dodanie nowej zakladki "Kody rabatowe" (lub dodanie do istniejacych "Ustawien"):
-
-```text
-[Przeglad] [Uczestnicy] [Wyniki] [Kody rabatowe] [Ustawienia]
-```
-
-### 4. Dodanie widoku dla moderatora
-
-Moderator widzi kody rabatowe w trybie tylko do odczytu (moze podejrzec uzycia, ale nie moze edytowac). Albo - jesli wolisz - z pelnym dostepem do edycji. Wedlug planu: moderator rowniez moze konfigurowac kody.
-
----
 
 ## Pliki do modyfikacji/utworzenia
 
 | Plik | Akcja | Opis |
 |------|-------|------|
-| `src/types/index.ts` | Modyfikacja | Dodanie `DiscountCodeUsage`, pole `usedBy` w `DiscountCode` |
-| `src/data/mockData.ts` | Modyfikacja | Dodanie mockowych danych `usedBy` do istniejacych kodow |
-| `src/pages/admin/components/DiscountCodesEditor.tsx` | Modyfikacja | Dodanie dialogu "kto skorzystal" |
-| `src/pages/organizer/EventManage.tsx` | Modyfikacja | Dodanie zakladki z kodami rabatowymi |
-| `src/pages/moderator/ModeratorDashboard.tsx` | Modyfikacja | Dodanie widoku kodow rabatowych per wydarzenie |
-
----
-
-## Mockowe dane usedBy
-
-```typescript
-// Dla kodu ULTRA2026 (e11 Tatry Ultra)
-usedBy: [
-  { userId: 'u2', userName: 'Anna Biegaczka', usedAt: '2026-01-15T10:30:00Z', registrationId: 'r4', distanceName: 'Ultra 80km' },
-  { userId: 'u5', userName: 'Piotr Wisniewski', usedAt: '2026-01-18T14:20:00Z', registrationId: 'r7', distanceName: 'Marathon 42km' },
-  // ... wiecej przykladow
-]
-```
+| `src/pages/organizer/OrganizerEventsPage.tsx` | Nowy | Dedykowana strona listy wydarzen organizatora z filtrami statusu |
+| `src/App.tsx` | Modyfikacja | Dodanie trasy `/organizer/events` |
+| `src/pages/admin/components/DiscountCodesEditor.tsx` | Modyfikacja | Dodanie dialogu edycji kodu (wartosci, dat, limitu) |
 
 ## Szczegoly techniczne
 
-### Dialog uzycia kodu
+### OrganizerEventsPage - filtry statusu
 
-Nowy komponent wewnatrz `DiscountCodesEditor`:
+```typescript
+type StatusFilter = 'all' | 'published' | 'draft' | 'completed';
+const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-```tsx
-const [usageDialogOpen, setUsageDialogOpen] = useState(false);
-const [selectedCodeForUsage, setSelectedCodeForUsage] = useState<DiscountCode | null>(null);
-
-// Przycisk w wierszu tabeli:
-<Button variant="ghost" size="icon" onClick={() => { setSelectedCodeForUsage(code); setUsageDialogOpen(true); }}>
-  <Eye className="h-4 w-4" />
-</Button>
-
-// Dialog:
-<Dialog open={usageDialogOpen} onOpenChange={setUsageDialogOpen}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Uzycia kodu {selectedCodeForUsage?.code}</DialogTitle>
-    </DialogHeader>
-    <Table>
-      {selectedCodeForUsage?.usedBy?.map(usage => (
-        <TableRow key={usage.registrationId}>
-          <TableCell>{usage.userName}</TableCell>
-          <TableCell>{usage.distanceName}</TableCell>
-          <TableCell>{format(new Date(usage.usedAt), 'd MMM yyyy', { locale: pl })}</TableCell>
-        </TableRow>
-      ))}
-    </Table>
-  </DialogContent>
-</Dialog>
+const filteredEvents = myEvents.filter(e => {
+  if (statusFilter === 'all') return true;
+  if (statusFilter === 'completed') return e.status === 'completed';
+  if (statusFilter === 'draft') return ['draft', 'awaiting_approval'].includes(e.status);
+  return e.status === 'published';
+});
 ```
 
-### Integracja z EventManage organizatora
+### DiscountCodesEditor - edycja
 
-Dodanie nowej zakladki "Kody rabatowe" z ikonka Tag:
+```typescript
+const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [editingCode, setEditingCode] = useState<Partial<DiscountCode> & { id: string } | null>(null);
 
-```tsx
-import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
-import { Tag } from 'lucide-react';
+const handleStartEdit = (code: DiscountCode) => {
+  setEditingCode({
+    ...code,
+    validFrom: code.validFrom || '',
+    validTo: code.validTo || '',
+  });
+  setEditDialogOpen(true);
+};
 
-// W TabsList:
-<TabsTrigger value="discounts"><Tag className="h-4 w-4" /><span>Kody rabatowe</span></TabsTrigger>
-
-// W TabsContent:
-<TabsContent value="discounts">
-  <DiscountCodesEditor
-    discountCodes={discountCodes}
-    distances={event.distances}
-    onChange={setDiscountCodes}
-  />
-</TabsContent>
+const handleSaveEdit = () => {
+  if (!editingCode) return;
+  const updated = discountCodes.map(dc =>
+    dc.id === editingCode.id
+      ? {
+          ...dc,
+          discountType: editingCode.discountType || dc.discountType,
+          discountValue: editingCode.discountValue ?? dc.discountValue,
+          validFrom: editingCode.validFrom || undefined,
+          validTo: editingCode.validTo || undefined,
+          maxUses: editingCode.maxUses || undefined,
+          distanceIds: editingCode.distanceIds,
+        }
+      : dc
+  );
+  onChange(updated);
+  setEditDialogOpen(false);
+  toast.success('Kod rabatowy zaktualizowany');
+};
 ```
-
-### Widok moderatora
-
-Moderator uzyskuje dostep do kodow rabatowych poprzez widok wydarzen w swoim panelu. Dodam komponent umozliwiajacy wybor wydarzenia i podglad/edycje kodow rabatowych w zakladce moderacji lub jako nowa zakladka "Wydarzenia" w panelu moderatora.
-
