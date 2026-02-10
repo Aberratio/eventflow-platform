@@ -23,12 +23,14 @@ import { cn } from '@/lib/utils';
 const roleLabels = {
   participant: 'Uczestnik',
   organizer: 'Organizator',
+  moderator: 'Moderator',
   admin: 'Administrator',
 };
 
 const roleBadgeVariants = {
   participant: 'secondary',
   organizer: 'default',
+  moderator: 'outline',
   admin: 'destructive',
 } as const;
 
@@ -55,6 +57,7 @@ export const Header = () => {
     switch (user.role) {
       case 'participant': return '/participant';
       case 'organizer': return '/organizer';
+      case 'moderator': return '/moderator';
       case 'admin': return '/admin';
       default: return '/';
     }
@@ -114,6 +117,11 @@ export const Header = () => {
                   Na żywo
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/series" className="w-full">
+                  Serie i cykle
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -142,6 +150,16 @@ export const Header = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Link 
+            to="/athletes" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActive('/athletes') && "bg-accent text-accent-foreground"
+            )}
+          >
+            Zawodnicy
+          </Link>
 
           <Link 
             to="/sklep" 
@@ -185,7 +203,7 @@ export const Header = () => {
                 </DropdownMenuItem>
                 {user?.role === 'participant' && (
                   <DropdownMenuItem asChild>
-                    <Link to="/participant/events" className="flex items-center gap-2">
+                    <Link to="/participant?tab=registrations" className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       Moje zawody
                     </Link>
@@ -196,6 +214,14 @@ export const Header = () => {
                     <Link to="/organizer/events" className="flex items-center gap-2">
                       <Settings className="h-4 w-4" />
                       Zarządzaj wydarzeniami
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {user?.role === 'moderator' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/moderator" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Panel moderacji
                     </Link>
                   </DropdownMenuItem>
                 )}
@@ -253,6 +279,9 @@ export const Header = () => {
                   <Radio className="h-3 w-3 text-destructive" />
                   Na żywo
                 </Link>
+                <Link to="/series" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Serie i cykle
+                </Link>
               </CollapsibleContent>
             </Collapsible>
 
@@ -278,6 +307,9 @@ export const Header = () => {
               </CollapsibleContent>
             </Collapsible>
 
+            <Link to="/athletes" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+              Zawodnicy
+            </Link>
             <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
             </Link>

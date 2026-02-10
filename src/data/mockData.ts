@@ -266,6 +266,93 @@ export const mockInfoPages: InfoPage[] = [
       },
     ],
   },
+  {
+    id: 'page-polityka-prywatnosci',
+    title: 'Polityka prywatności',
+    slug: 'polityka-prywatnosci',
+    icon: 'FileText',
+    description: 'Polityka prywatności platformy SportTime',
+    published: true,
+    showInFooter: false,
+    showInHeader: false,
+    order: 7,
+    createdAt: '2025-01-25T00:00:00Z',
+    updatedAt: '2025-01-25T00:00:00Z',
+    content: [
+      {
+        id: 's-priv-1',
+        type: 'hero',
+        title: 'Polityka prywatności',
+        content: 'Informacje o przetwarzaniu danych osobowych',
+      },
+      {
+        id: 's-priv-2',
+        type: 'text',
+        title: 'Administrator danych',
+        content: 'Administratorem danych osobowych jest SportTime Sp. z o.o. z siedzibą w Warszawie przy ul. Sportowej 1, 00-001 Warszawa, wpisana do rejestru przedsiębiorców KRS pod numerem 0000123456.',
+      },
+      {
+        id: 's-priv-3',
+        type: 'text',
+        title: 'Cele przetwarzania danych',
+        content: 'Dane osobowe przetwarzamy w następujących celach:\n\n• Rejestracja i obsługa konta użytkownika\n• Rejestracja na wydarzenia sportowe\n• Publikacja wyników zawodów\n• Komunikacja z użytkownikami\n• Marketing własnych usług (za zgodą)\n• Realizacja obowiązków prawnych',
+      },
+      {
+        id: 's-priv-4',
+        type: 'faq',
+        title: 'Najczęstsze pytania o prywatność',
+        items: [
+          { id: 'pf1', title: 'Jak długo przechowujecie moje dane?', description: 'Dane przechowujemy przez okres korzystania z konta oraz 5 lat po jego usunięciu w celach archiwizacyjnych i prawnych.' },
+          { id: 'pf2', title: 'Czy mogę usunąć swoje dane?', description: 'Tak, masz prawo do usunięcia swoich danych. Skontaktuj się z nami przez formularz kontaktowy lub wyślij email na adres dane@sporttime.pl.' },
+          { id: 'pf3', title: 'Czy udostępniacie dane podmiotom trzecim?', description: 'Dane udostępniamy wyłącznie organizatorom wydarzeń, na które się rejestrujesz, oraz podmiotom przetwarzającym dane w naszym imieniu (hosting, płatności).' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'page-rodo',
+    title: 'RODO',
+    slug: 'rodo',
+    icon: 'Shield',
+    description: 'Informacje o prawach użytkownika wynikających z RODO',
+    published: true,
+    showInFooter: false,
+    showInHeader: false,
+    order: 8,
+    createdAt: '2025-01-25T00:00:00Z',
+    updatedAt: '2025-01-25T00:00:00Z',
+    content: [
+      {
+        id: 's-rodo-1',
+        type: 'hero',
+        title: 'RODO – Twoje prawa',
+        content: 'Informacje o ochronie danych osobowych zgodnie z Rozporządzeniem RODO',
+      },
+      {
+        id: 's-rodo-2',
+        type: 'text',
+        title: 'Czym jest RODO?',
+        content: 'RODO (Rozporządzenie o Ochronie Danych Osobowych) to unijne rozporządzenie, które reguluje zasady przetwarzania danych osobowych. Zapewnia Ci szereg praw dotyczących Twoich danych osobowych.',
+      },
+      {
+        id: 's-rodo-3',
+        type: 'cards',
+        title: 'Twoje prawa',
+        items: [
+          { id: 'r1', title: 'Prawo dostępu', description: 'Masz prawo wiedzieć, jakie dane o Tobie posiadamy i jak je przetwarzamy.', icon: 'Eye' },
+          { id: 'r2', title: 'Prawo do sprostowania', description: 'Możesz żądać poprawienia nieprawidłowych lub niekompletnych danych.', icon: 'Edit' },
+          { id: 'r3', title: 'Prawo do usunięcia', description: 'Możesz żądać usunięcia swoich danych osobowych ("prawo do bycia zapomnianym").', icon: 'Trash2' },
+          { id: 'r4', title: 'Prawo do przenoszenia', description: 'Masz prawo otrzymać swoje dane w formacie nadającym się do odczytu maszynowego.', icon: 'Download' },
+        ],
+      },
+      {
+        id: 's-rodo-4',
+        type: 'text',
+        title: 'Jak skorzystać ze swoich praw?',
+        content: 'Aby skorzystać z przysługujących Ci praw, skontaktuj się z naszym Inspektorem Ochrony Danych:\n\n• Email: iod@sporttime.pl\n• Adres: ul. Sportowa 1, 00-001 Warszawa\n\nNa Twoje żądanie odpowiemy w ciągu 30 dni.',
+      },
+    ],
+  },
 ];
 
 export const seriesTypeLabels: Record<SeriesType, string> = {
