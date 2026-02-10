@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Tag, Copy, RefreshCw, Eye } from 'lucide-react';
+import { Plus, Trash2, Tag, Copy, RefreshCw, Eye, Pencil } from 'lucide-react';
 import { DiscountCode, Distance } from '@/types';
 import { DiscountCodeUsageDialog } from '@/components/organizer/DiscountCodeUsageDialog';
 import { format } from 'date-fns';
@@ -34,6 +34,8 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
   const [dialogOpen, setDialogOpen] = useState(false);
   const [usageDialogOpen, setUsageDialogOpen] = useState(false);
   const [selectedCodeForUsage, setSelectedCodeForUsage] = useState<DiscountCode | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingCode, setEditingCode] = useState<Partial<DiscountCode> & { id: string } | null>(null);
   const [newCode, setNewCode] = useState<Partial<DiscountCode>>({
     code: '',
     discountType: 'percent',
@@ -105,6 +107,36 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
 
   const handleGenerateCode = () => {
     setNewCode(prev => ({ ...prev, code: generateRandomCode() }));
+  };
+
+  const handleStartEdit = (code: DiscountCode) => {
+    setEditingCode({
+      ...code,
+      validFrom: code.validFrom || '',
+      validTo: code.validTo || '',
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingCode) return;
+    const updated = discountCodes.map(dc =>
+      dc.id === editingCode.id
+        ? {
+            ...dc,
+            discountType: editingCode.discountType || dc.discountType,
+            discountValue: editingCode.discountValue ?? dc.discountValue,
+            validFrom: editingCode.validFrom || undefined,
+            validTo: editingCode.validTo || undefined,
+            maxUses: editingCode.maxUses || undefined,
+            distanceIds: editingCode.distanceIds,
+          }
+        : dc
+    );
+    onChange(updated);
+    setEditDialogOpen(false);
+    setEditingCode(null);
+    toast.success('Kod rabatowy zaktualizowany');
   };
 
   return (
@@ -313,6 +345,15 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleStartEdit(code)}
+                          title="Edytuj kod"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Switch
                           checked={code.active}
                           onCheckedChange={() => handleToggleActive(code.id)}
@@ -341,6 +382,100 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
         open={usageDialogOpen}
         onOpenChange={setUsageDialogOpen}
       />
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edytuj kod: {editingCode?.code}</DialogTitle>
+          </DialogHeader>
+          {editingCode && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Typ zniżki</Label>
+                  <Select
+                    value={editingCode.discountType}
+                    onValueChange={(v: 'percent' | 'fixed') => setEditingCode(prev => prev ? { ...prev, discountType: v } : prev)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percent">Procentowa (%)</SelectItem>
+                      <SelectItem value="fixed">Kwotowa (PLN)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Wartość</Label>
+                  <Input
+                    type="number"
+                    value={editingCode.discountValue || ''}
+                    onChange={(e) => setEditingCode(prev => prev ? { ...prev, discountValue: parseInt(e.target.value) || 0 } : prev)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Ważny od</Label>
+                  <Input
+                    type="date"
+                    value={editingCode.validFrom || ''}
+                    onChange={(e) => setEditingCode(prev => prev ? { ...prev, validFrom: e.target.value } : prev)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ważny do</Label>
+                  <Input
+                    type="date"
+                    value={editingCode.validTo || ''}
+                    onChange={(e) => setEditingCode(prev => prev ? { ...prev, validTo: e.target.value } : prev)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Limit użyć</Label>
+                <Input
+                  type="number"
+                  value={editingCode.maxUses || ''}
+                  onChange={(e) => setEditingCode(prev => prev ? { ...prev, maxUses: parseInt(e.target.value) || undefined } : prev)}
+                  placeholder="Bez limitu"
+                />
+              </div>
+
+              {distances.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Tylko dla dystansów</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {distances.map(d => (
+                      <Badge
+                        key={d.id}
+                        variant={editingCode.distanceIds?.includes(d.id) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          const current = editingCode.distanceIds || [];
+                          const updated = current.includes(d.id)
+                            ? current.filter(id => id !== d.id)
+                            : [...current, d.id];
+                          setEditingCode(prev => prev ? { ...prev, distanceIds: updated } : prev);
+                        }}
+                      >
+                        {d.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Anuluj</Button>
+            <Button onClick={handleSaveEdit}>Zapisz zmiany</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
