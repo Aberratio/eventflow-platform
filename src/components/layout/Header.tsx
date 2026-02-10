@@ -195,34 +195,51 @@ export const Header = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to={getDashboardLink()} className="flex items-center gap-2">
-                    <LayoutDashboard className="h-4 w-4" />
-                    Panel
-                  </Link>
+                <DropdownMenuItem onClick={() => {
+                  const target = getDashboardLink();
+                  if (location.pathname === target) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    navigate(target);
+                  }
+                }}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Panel
                 </DropdownMenuItem>
                 {user?.role === 'participant' && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/participant?tab=registrations" className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Moje zawody
-                    </Link>
+                  <DropdownMenuItem onClick={() => {
+                    if (location.pathname === '/participant') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      navigate('/participant?tab=registrations');
+                    }
+                  }}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Moje zawody
                   </DropdownMenuItem>
                 )}
                 {user?.role === 'organizer' && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/organizer/events" className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      Zarządzaj wydarzeniami
-                    </Link>
+                  <DropdownMenuItem onClick={() => {
+                    if (location.pathname === '/organizer/events') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      navigate('/organizer/events');
+                    }
+                  }}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Zarządzaj wydarzeniami
                   </DropdownMenuItem>
                 )}
                 {user?.role === 'moderator' && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/moderator" className="flex items-center gap-2">
-                      <Settings className="h-4 w-4" />
-                      Panel moderacji
-                    </Link>
+                  <DropdownMenuItem onClick={() => {
+                    if (location.pathname === '/moderator') {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      navigate('/moderator');
+                    }
+                  }}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Panel moderacji
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
