@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockRegistrations, mockResults, mockPersonalRecords, mockMessages, mockCertificates, mockTickets, mockShopOrders } from '@/data/mockData';
@@ -15,7 +16,9 @@ import ParticipantOrdersTab from './components/ParticipantOrdersTab';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
   
   // Filter data for current user
   const userRegistrations = mockRegistrations.filter(r => r.userId === user?.id);
