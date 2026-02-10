@@ -1,136 +1,121 @@
 
 
-# Plan: Strona /organizer/events + edycja kodow rabatowych
+# Plan: Naprawa nawigacji i brakujace strony
 
-## 1. Nowa trasa /organizer/events
+## Znalezione problemy
 
-Obecnie brakuje trasy `/organizer/events` w routerze. Uzytkownik trafia na 404.
+### 1. Martwy link: `/participant/events` (Header)
+W dropdown menu dla uczestnikow jest link "Moje zawody" prowadzacy do `/participant/events`. Trasa `/participant/*` jest obslugiwana przez wildcard, ale `ParticipantDashboard` nie parsuje sub-routes - zawsze renderuje dashboard z domyslna zakladka. Klikniecie w ten link nie otwiera zakladki "Moje starty".
 
-### Rozwiazanie
+**Rozwiazanie**: Zmiana linku na `/participant` z automatycznym przejsciem do zakladki "registrations" (np. przez state lub URL param).
 
-Dodanie trasy w `App.tsx` ktora renderuje dedykowana strone z lista wydarzen organizatora - podobna do zakladki "Moje wydarzenia" w dashboardzie, ale jako osobna strona.
+### 2. Placeholder linki w Footer: "Polityka prywatnosci" i "RODO"
+Oba linki prowadza do `to="#"` - nie istnieja zadne strony.
 
-### Nowa strona: `src/pages/organizer/OrganizerEventsPage.tsx`
+**Rozwiazanie**: Utworzenie mockowych stron CMS w `mockData.ts` z slugami `polityka-prywatnosci` i `rodo`. Beda obslugiwane przez istniejaca trase `/info/:slug`.
 
-Strona wyswietli:
-- Naglowek "Moje wydarzenia" z przyciskiem "Nowe wydarzenie"
-- Filtry statusu (Wszystkie / Aktywne / Szkice / Zakonczone)
-- Lista wydarzen z ikonami dyscyplin, datami, liczbami uczestnikow, statusami
-- Przycisk "Zarzadzaj" prowadzacy do `/organizer/events/:id`
+### 3. Brak roli `moderator` w Header
+`roleLabels` i `roleBadgeVariants` w Header.tsx nie zawieraja wpisu `moderator`. Zalogowany moderator widzi "Uczestnik" zamiast wlasciwej roli.
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ ← Powrot do panelu                                                          │
-│                                                                             │
-│ Moje wydarzenia                                    [+ Nowe wydarzenie]     │
-│                                                                             │
-│ [Wszystkie] [Aktywne] [Szkice] [Zakonczone]                                │
-│                                                                             │
-│ ┌─────────────────────────────────────────────────────────────────────────┐│
-│ │ 🏃 Maraton Warszawski                                                   ││
-│ │    Warszawa • 15 wrz 2026 • 450 uczestnikow            Aktywne [Zarzadzaj]│
-│ ├─────────────────────────────────────────────────────────────────────────┤│
-│ │ 🚴 Wyscig Kolarski                                                      ││
-│ │    Krakow • 20 paz 2026 • 120 uczestnikow              Szkic  [Zarzadzaj]│
-│ └─────────────────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+**Rozwiazanie**: Dodanie `moderator: 'Moderator'` do `roleLabels` i odpowiedniego wariantu do `roleBadgeVariants`.
 
-## 2. Edycja istniejacych kodow rabatowych
+### 4. Brak linkow do `/series` i `/athletes` w nawigacji
+Strony istnieja, ale nie sa nigdzie linkowane z glownej nawigacji. Uzytkownik nie ma sposobu na dotarcie do nich bez wpisania URL.
 
-Obecnie `DiscountCodesEditor` pozwala tylko dodawac, usuwac i przelaczac aktywnosc kodow. Brakuje mozliwosci edycji wartosci znizki, dat waznosci i limitu uzyc.
+**Rozwiazanie**: Dodanie linku "Serie i cykle" do dropdownu "Wyniki" oraz linku "Zawodnicy" do sekcji glownej nawigacji lub dropdownu "Informacje".
 
-### Rozwiazanie
+### 5. Brak linkow do moderatora w dropdown menu Header
+Gdy zalogowany jest moderator, brakuje dedykowanego linku w dropdown (tak jak organizator ma "Zarzadzaj wydarzeniami").
 
-Dodanie przycisku "Edytuj" (ikona olowka) w wierszu tabeli, otwierajacego dialog edycji z pre-wypelnionymi danymi kodu.
+**Rozwiazanie**: Dodanie opcji menu dla moderatora (np. "Panel moderacji").
 
-### Zmiany w `DiscountCodesEditor.tsx`
+---
 
-- Nowy state: `editDialogOpen`, `editingCode`
-- Przycisk edycji w kolumnie "Akcje" (ikona `Pencil`)
-- Dialog edycji z polami: typ znizki, wartosc, daty waznosci, limit uzyc, dystanse
-- Kod (nazwa) jest tylko do odczytu w trybie edycji
-- Handler `handleEditCode` aktualizujacy kod w liscie
+## Pliki do modyfikacji
 
-```text
-Kolumna Akcje (nowy uklad):
-[👁 Uzycia] [✏️ Edytuj] [🔄 Wl/Wyl] [🗑️ Usun]
-```
+| Plik | Zmiana |
+|------|--------|
+| `src/components/layout/Header.tsx` | Dodanie moderator do roleLabels/roleBadgeVariants, naprawa linku participant/events, dodanie linkow do /series i /athletes, dodanie opcji menu dla moderatora |
+| `src/components/layout/Footer.tsx` | Zmiana linkow # na /info/polityka-prywatnosci i /info/rodo |
+| `src/data/mockData.ts` | Dodanie mockowych stron CMS: "Polityka prywatnosci" i "RODO" |
 
-Dialog edycji:
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ Edytuj kod rabatowy: ULTRA2026                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│ Typ znizki:    [Procentowa ▼]     Wartosc: [15]                            │
-│                                                                             │
-│ Wazny od:      [2026-01-01]       Wazny do: [2026-03-31]                   │
-│                                                                             │
-│ Limit uzyc:    [100]                                                        │
-│                                                                             │
-│ Dystanse:      [Ultra 80km] [Marathon 42km]                                │
-│                                                                             │
-│                              [Anuluj] [Zapisz zmiany]                      │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-## Pliki do modyfikacji/utworzenia
-
-| Plik | Akcja | Opis |
-|------|-------|------|
-| `src/pages/organizer/OrganizerEventsPage.tsx` | Nowy | Dedykowana strona listy wydarzen organizatora z filtrami statusu |
-| `src/App.tsx` | Modyfikacja | Dodanie trasy `/organizer/events` |
-| `src/pages/admin/components/DiscountCodesEditor.tsx` | Modyfikacja | Dodanie dialogu edycji kodu (wartosci, dat, limitu) |
+---
 
 ## Szczegoly techniczne
 
-### OrganizerEventsPage - filtry statusu
+### Header.tsx - roleLabels i roleBadgeVariants
 
 ```typescript
-type StatusFilter = 'all' | 'published' | 'draft' | 'completed';
-const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+const roleLabels = {
+  participant: 'Uczestnik',
+  organizer: 'Organizator',
+  moderator: 'Moderator',
+  admin: 'Administrator',
+};
 
-const filteredEvents = myEvents.filter(e => {
-  if (statusFilter === 'all') return true;
-  if (statusFilter === 'completed') return e.status === 'completed';
-  if (statusFilter === 'draft') return ['draft', 'awaiting_approval'].includes(e.status);
-  return e.status === 'published';
-});
+const roleBadgeVariants = {
+  participant: 'secondary',
+  organizer: 'default',
+  moderator: 'outline',
+  admin: 'destructive',
+} as const;
 ```
 
-### DiscountCodesEditor - edycja
+### Header.tsx - getDashboardLink
+
+Dodanie brakujacego case `moderator`:
 
 ```typescript
-const [editDialogOpen, setEditDialogOpen] = useState(false);
-const [editingCode, setEditingCode] = useState<Partial<DiscountCode> & { id: string } | null>(null);
-
-const handleStartEdit = (code: DiscountCode) => {
-  setEditingCode({
-    ...code,
-    validFrom: code.validFrom || '',
-    validTo: code.validTo || '',
-  });
-  setEditDialogOpen(true);
-};
-
-const handleSaveEdit = () => {
-  if (!editingCode) return;
-  const updated = discountCodes.map(dc =>
-    dc.id === editingCode.id
-      ? {
-          ...dc,
-          discountType: editingCode.discountType || dc.discountType,
-          discountValue: editingCode.discountValue ?? dc.discountValue,
-          validFrom: editingCode.validFrom || undefined,
-          validTo: editingCode.validTo || undefined,
-          maxUses: editingCode.maxUses || undefined,
-          distanceIds: editingCode.distanceIds,
-        }
-      : dc
-  );
-  onChange(updated);
-  setEditDialogOpen(false);
-  toast.success('Kod rabatowy zaktualizowany');
-};
+case 'moderator': return '/moderator';
 ```
+
+### Header.tsx - link participant/events
+
+Zmiana z:
+```tsx
+<Link to="/participant/events">Moje zawody</Link>
+```
+na:
+```tsx
+<Link to="/participant" onClick={() => { /* trigger registrations tab */ }}>Moje zawody</Link>
+```
+Lub alternatywnie: dodanie query param `?tab=registrations` i obsluga w ParticipantDashboard.
+
+### Header.tsx - nowe linki w nawigacji
+
+W dropdown "Wyniki" dodanie:
+```tsx
+<DropdownMenuItem asChild>
+  <Link to="/series">Serie i cykle</Link>
+</DropdownMenuItem>
+```
+
+Nowy link "Zawodnicy" w nawigacji desktopowej i mobilnej:
+```tsx
+<Link to="/athletes">Zawodnicy</Link>
+```
+
+### Footer.tsx - linki prawne
+
+```tsx
+<li><Link to="/info/polityka-prywatnosci">Polityka prywatności</Link></li>
+<li><Link to="/info/rodo">RODO</Link></li>
+```
+
+### mockData.ts - nowe strony CMS
+
+Dwie nowe strony w `mockInfoPages`:
+
+1. **Polityka prywatnosci** (`slug: 'polityka-prywatnosci'`) - sekcje: hero, text z opisem przetwarzania danych, FAQ
+2. **RODO** (`slug: 'rodo'`) - sekcje: hero, text z informacja o prawach uzytkownika, cards z prawami RODO
+
+### ParticipantDashboard - obsluga query param tab
+
+Dodanie odczytu `?tab=` z URL i ustawienie odpowiedniej zakladki:
+
+```typescript
+const [searchParams] = useSearchParams();
+const initialTab = searchParams.get('tab') || 'overview';
+const [activeTab, setActiveTab] = useState(initialTab);
+```
+
