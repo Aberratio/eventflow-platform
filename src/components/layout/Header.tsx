@@ -162,6 +162,16 @@ export const Header = () => {
           </Link>
 
           <Link 
+            to="/challenges" 
+            className={cn(
+              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
+              isActivePrefix('/challenges') && "bg-accent text-accent-foreground"
+            )}
+          >
+            Wyzwania
+          </Link>
+
+          <Link 
             to="/sklep" 
             className={cn(
               "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
@@ -326,6 +336,9 @@ export const Header = () => {
 
             <Link to="/athletes" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Zawodnicy
+            </Link>
+            <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+              Wyzwania
             </Link>
             <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
