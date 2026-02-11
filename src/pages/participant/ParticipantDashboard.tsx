@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockRegistrations, mockResults, mockPersonalRecords, mockMessages, mockCertificates, mockTickets, mockShopOrders } from '@/data/mockData';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Ticket, History, Medal, Mail, UserCog, TicketIcon, Package } from 'lucide-react';
+import { LayoutDashboard, Ticket, History, Medal, Mail, UserCog, TicketIcon, Package, Trophy } from 'lucide-react';
 import ParticipantOverviewTab from './components/ParticipantOverviewTab';
 import ParticipantRegistrationsTab from './components/ParticipantRegistrationsTab';
 import ParticipantHistoryTab from './components/ParticipantHistoryTab';
@@ -13,6 +13,7 @@ import ParticipantMessagesTab from './components/ParticipantMessagesTab';
 import ParticipantProfileTab from './components/ParticipantProfileTab';
 import ParticipantTicketsTab from './components/ParticipantTicketsTab';
 import ParticipantOrdersTab from './components/ParticipantOrdersTab';
+import ParticipantChallengesTab from './components/ParticipantChallengesTab';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
@@ -36,6 +37,7 @@ const ParticipantDashboard = () => {
     { id: 'tickets', label: 'Bilety', icon: TicketIcon },
     { id: 'history', label: 'Historia', icon: History },
     { id: 'records', label: 'Rekordy', icon: Medal },
+    { id: 'challenges', label: 'Wyzwania', icon: Trophy },
     { id: 'orders', label: 'Zamówienia', icon: Package },
     { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
     { id: 'profile', label: 'Profil', icon: UserCog },
@@ -93,6 +95,10 @@ const ParticipantDashboard = () => {
 
           <TabsContent value="records" className="mt-0">
             <ParticipantRecordsTab personalRecords={mockPersonalRecords} results={userResults} />
+          </TabsContent>
+
+          <TabsContent value="challenges" className="mt-0">
+            <ParticipantChallengesTab />
           </TabsContent>
 
           <TabsContent value="orders" className="mt-0">

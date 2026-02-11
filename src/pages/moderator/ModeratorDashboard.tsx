@@ -7,7 +7,8 @@ import { UsersReadOnlyTab } from './components/UsersReadOnlyTab';
 import { ModeratorOrdersTab } from './components/ModeratorOrdersTab';
 import { ModeratorProfileTab } from './components/ModeratorProfileTab';
 import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTab';
-import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, UserCog, Lock, Tag } from 'lucide-react';
+import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
+import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, UserCog, Lock, Tag, Trophy } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ModeratorDashboard = () => {
@@ -19,6 +20,7 @@ const ModeratorDashboard = () => {
     { id: 'participants', label: 'Uczestnicy', icon: Users },
     { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
     { id: 'discounts', label: 'Kody rabatowe', icon: Tag },
+    { id: 'challenges', label: 'Wyzwania', icon: Trophy },
     { id: 'orders', label: 'Zamówienia', icon: ShoppingCart },
     { id: 'profile', label: 'Profil', icon: UserCog },
   ];
@@ -69,6 +71,10 @@ const ModeratorDashboard = () => {
 
           <TabsContent value="discounts">
             <ModeratorDiscountCodesTab />
+          </TabsContent>
+
+          <TabsContent value="challenges">
+            <ModeratorChallengesTab />
           </TabsContent>
 
           <TabsContent value="orders">
