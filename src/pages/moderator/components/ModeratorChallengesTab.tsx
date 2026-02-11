@@ -1,103 +1,194 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, CheckCircle2, Clock, XCircle, ExternalLink, Users } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Trophy, CheckCircle2, Clock, XCircle, ExternalLink, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { mockChallenges, mockChallengeParticipations } from '@/data/mockData';
+import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+
+const statusRowClass: Record<ChallengeEntryStatus, string> = {
+  approved: 'bg-green-50 dark:bg-green-950/30',
+  pending: 'bg-yellow-50 dark:bg-yellow-950/30',
+  rejected: 'bg-red-50 dark:bg-red-950/30',
+  not_submitted: '',
+};
+
+const statusIcon: Record<ChallengeEntryStatus, React.ReactNode> = {
+  approved: <CheckCircle2 className="h-4 w-4 text-green-600" />,
+  pending: <Clock className="h-4 w-4 text-yellow-600" />,
+  rejected: <XCircle className="h-4 w-4 text-red-600" />,
+  not_submitted: <div className="h-4 w-4 rounded border-2 border-muted-foreground/30" />,
+};
+
+const VerificationChallengeCard = ({
+  challenge, statusFilter,
+}: {
+  challenge: typeof mockChallenges[0];
+  statusFilter: string;
+}) => {
+  const participants = mockChallengeParticipations.filter(p => p.challengeId === challenge.id);
+  const allEntries = participants.flatMap(p => p.entries);
+  const pendingCount = allEntries.filter(e => e.status === 'pending').length;
+  const approvedCount = allEntries.filter(e => e.status === 'approved').length;
+  const rejectedCount = allEntries.filter(e => e.status === 'rejected').length;
+  const [open, setOpen] = useState(pendingCount > 0);
+
+  const filteredParticipants = participants.filter(p => {
+    if (statusFilter === 'all') return p.entries.length > 0;
+    return p.entries.some(e => e.status === statusFilter);
+  });
+
+  if (filteredParticipants.length === 0) return null;
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <Card>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="pb-3 cursor-pointer hover:bg-accent/50 transition-colors">
+            <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+              {open ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+              <Trophy className="h-4 w-4 text-primary shrink-0" />
+              <span className="truncate">{challenge.name}</span>
+              <div className="flex gap-1.5 ml-auto">
+                {pendingCount > 0 && <Badge variant="outline" className="text-yellow-600 border-yellow-300">⏳ {pendingCount}</Badge>}
+                <Badge variant="outline" className="text-green-600 border-green-300">✅ {approvedCount}</Badge>
+                {rejectedCount > 0 && <Badge variant="outline" className="text-red-600 border-red-300">❌ {rejectedCount}</Badge>}
+              </div>
+            </CardTitle>
+          </CardHeader>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="pt-0 space-y-4">
+            {filteredParticipants.map(p => {
+              const filteredEntries = statusFilter === 'all'
+                ? p.entries
+                : p.entries.filter(e => e.status === statusFilter);
+
+              return (
+                <div key={p.id} className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="font-medium">{p.userName}</span>
+                    <span className="text-muted-foreground">(postęp: {p.completedCount}/{challenge.rule.minCompleted})</span>
+                    {p.isCompleted && <Badge variant="default" className="text-xs">✅ Ukończone</Badge>}
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8"></TableHead>
+                        <TableHead>Bieg</TableHead>
+                        <TableHead className="hidden sm:table-cell">Czas</TableHead>
+                        <TableHead className="hidden sm:table-cell">Miejsce</TableHead>
+                        <TableHead className="hidden sm:table-cell">Dowód</TableHead>
+                        <TableHead className="text-right">Akcje</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredEntries.map(entry => {
+                        const event = challenge.events.find(e => e.eventId === entry.eventId);
+                        return (
+                          <TableRow key={entry.id} className={cn(statusRowClass[entry.status])}>
+                            <TableCell className="w-8">{statusIcon[entry.status]}</TableCell>
+                            <TableCell className="text-sm">{event?.eventName || '—'}</TableCell>
+                            <TableCell className="hidden sm:table-cell text-sm font-mono">{entry.submittedTime || '—'}</TableCell>
+                            <TableCell className="hidden sm:table-cell text-sm">{entry.submittedPosition ? `#${entry.submittedPosition}` : '—'}</TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              {entry.proofUrl && (
+                                <a href={entry.proofUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs flex items-center gap-1">
+                                  <ExternalLink className="h-3 w-3" /> Link
+                                </a>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {entry.status === 'pending' && (
+                                <div className="flex gap-1 justify-end">
+                                  <Button size="sm" variant="default" onClick={() => toast({ title: 'Zatwierdzone!' })}>
+                                    <CheckCircle2 className="h-3 w-3 mr-1" /> Zatwierdź
+                                  </Button>
+                                  <Button size="sm" variant="destructive" onClick={() => toast({ title: 'Odrzucone', variant: 'destructive' })}>
+                                    <XCircle className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                              {entry.status === 'approved' && <span className="text-xs text-green-600">Zatwierdzone</span>}
+                              {entry.status === 'rejected' && <span className="text-xs text-red-600">Odrzucone</span>}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
+};
 
 export const ModeratorChallengesTab = () => {
-  const allPending = mockChallengeParticipations.flatMap(p =>
-    p.entries.filter(e => e.status === 'pending').map(e => ({
-      ...e,
-      userName: p.userName,
-      challengeName: mockChallenges.find(c => c.id === p.challengeId)?.name || '',
-      eventName: mockChallenges.find(c => c.id === p.challengeId)?.events.find(ev => ev.eventId === e.eventId)?.eventName || '',
-    }))
-  );
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+
+  const allEntries = mockChallengeParticipations.flatMap(p => p.entries);
+  const pendingTotal = allEntries.filter(e => e.status === 'pending').length;
+  const approvedTotal = allEntries.filter(e => e.status === 'approved').length;
+  const rejectedTotal = allEntries.filter(e => e.status === 'rejected').length;
 
   return (
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-yellow-600">{allPending.length}</div>
+          <div className="text-2xl font-bold text-yellow-600">{pendingTotal}</div>
           <div className="text-xs text-muted-foreground">Oczekujące</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {mockChallengeParticipations.flatMap(p => p.entries).filter(e => e.status === 'approved').length}
-          </div>
+          <div className="text-2xl font-bold text-green-600">{approvedTotal}</div>
           <div className="text-xs text-muted-foreground">Zatwierdzone</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">
-            {mockChallengeParticipations.flatMap(p => p.entries).filter(e => e.status === 'rejected').length}
-          </div>
+          <div className="text-2xl font-bold text-red-600">{rejectedTotal}</div>
           <div className="text-xs text-muted-foreground">Odrzucone</div>
         </CardContent></Card>
       </div>
 
-      {/* Pending verifications */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="h-5 w-5 text-yellow-600" />
-            Zgłoszenia do weryfikacji
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {allPending.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-500" />
-              Brak zgłoszeń do weryfikacji
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Uczestnik</TableHead>
-                  <TableHead>Wyzwanie</TableHead>
-                  <TableHead>Bieg</TableHead>
-                  <TableHead className="hidden sm:table-cell">Czas</TableHead>
-                  <TableHead className="hidden sm:table-cell">Dowód</TableHead>
-                  <TableHead className="text-right">Akcje</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allPending.map(entry => (
-                  <TableRow key={entry.id} className="bg-yellow-50 dark:bg-yellow-950/30">
-                    <TableCell className="font-medium text-sm">{entry.userName}</TableCell>
-                    <TableCell className="text-sm">{entry.challengeName}</TableCell>
-                    <TableCell className="text-sm">{entry.eventName}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm font-mono">{entry.submittedTime || '—'}</TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      {entry.proofUrl && (
-                        <a href={entry.proofUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" /> Link
-                        </a>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        <Button size="sm" variant="default" onClick={() => toast({ title: 'Zatwierdzone!' })}>
-                          <CheckCircle2 className="h-3 w-3 mr-1" /> Zatwierdź
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => toast({ title: 'Odrzucone', variant: 'destructive' })}>
-                          <XCircle className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* Status filter */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          { key: 'all', label: 'Wszystkie', count: pendingTotal + approvedTotal + rejectedTotal },
+          { key: 'pending', label: 'Oczekujące', count: pendingTotal },
+          { key: 'approved', label: 'Zatwierdzone', count: approvedTotal },
+          { key: 'rejected', label: 'Odrzucone', count: rejectedTotal },
+        ] as const).map(f => (
+          <Button
+            key={f.key}
+            variant={statusFilter === f.key ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(f.key)}
+          >
+            {f.label} <Badge variant="secondary" className="ml-1.5">{f.count}</Badge>
+          </Button>
+        ))}
+      </div>
+
+      {/* Per-challenge verification cards */}
+      {mockChallenges.map(challenge => (
+        <VerificationChallengeCard
+          key={challenge.id}
+          challenge={challenge}
+          statusFilter={statusFilter}
+        />
+      ))}
 
       {/* Participants overview per challenge */}
+      <h3 className="font-semibold mt-6">Przegląd uczestników</h3>
       {mockChallenges.map(challenge => {
         const participants = mockChallengeParticipations.filter(p => p.challengeId === challenge.id);
         if (participants.length === 0) return null;
