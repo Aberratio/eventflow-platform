@@ -1,205 +1,119 @@
 
 
-# Plan: Wyzwania (Challenges) - produkty warunkowe
+# Plan: Ulepszenie weryfikacji wyzwan i pelny CRUD
 
-## Opis funkcjonalnosci
+## 1. Weryfikacja pogrupowana per wyzwanie
 
-System "Wyzwan" pozwala adminom/moderatorom definiowac zestawy zawodow do ukonczenia (np. "Korona Polmaratonow - ukonicz 10 z 20 polmaratonow"), a uczestnicy sami zglaszaja swoje udzialy z dowodami (czas, miejsce, link do wynikow). Admini/moderatorzy weryfikuja zgloszenia i przyznaja nagrody (platne produkty lub darmowe certyfikaty).
+### Problem
+Obecna zakladka "Weryfikacja" w panelu admina i moderatora pokazuje plaska liste wszystkich oczekujacych zgloszen ze wszystkich wyzwan w jednej tabeli. Przy wiekszej liczbie wyzwan jest to nieczytelne.
 
-## Architektura danych
+### Rozwiazanie
+Zastapienie plaskej listy widokiem **per wyzwanie** - kazde wyzwanie jako osobna karta (Card) z:
+- Naglowkiem: nazwa wyzwania + liczniki statusow (oczekujace/zatwierdzone/odrzucone)
+- Tabela zgloszen z kolorami wierszy (zielony/zolty/czerwony)
+- Przyciski zatwierdzania/odrzucania bezposrednio w wierszu
+- Mozliwosc filtrowania: "Wszystkie" / "Oczekujace" / "Zatwierdzone" / "Odrzucone"
+- Rozwijanie/zwijanie kart (domyslnie rozwiniety tylko te z oczekujacymi)
 
-### Nowe typy w `src/types/index.ts`
+Uzytkownicy (uczesnicy w tym wypadku) beda pogrupowani wewnatrz kazdej karty wyzwania, z ich wpisami w podtabeli.
 
-```typescript
-// Status weryfikacji pojedynczego biegu w wyzwaniu
-export type ChallengeEntryStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
+### Wizualizacja
 
-// Regula wyzwania
-export interface ChallengeRule {
-  minCompleted: number;        // Ile biegow trzeba ukonczyc (np. 10)
-  maxTime?: string;            // Opcjonalny limit czasu na kazdy bieg
-}
+```text
+[Filtr: Wszystkie | Oczekujace (3) | Zatwierdzone | Odrzucone]
 
-// Nagroda za ukonczenie wyzwania
-export interface ChallengeReward {
-  id: string;
-  name: string;               // np. "Medal Korony", "Dyplom"
-  type: 'product' | 'free';   // platny produkt lub darmowa nagroda
-  productId?: string;          // ID produktu ze sklepu (jesli type=product)
-  price?: number;              // Cena (jesli type=product)
-  sizes?: string[];            // Rozmiary (jesli fizyczny)
-  description?: string;
-}
+┌── Korona Polmaratonow 2026 ── ⏳ 2  ✅ 15  ❌ 1 ─── [Rozwin/Zwin] ──┐
+│                                                                         │
+│ Jan Kowalski (postep: 5/10)                                            │
+│ ┌────────────────────────────────────────────────────────────────────┐  │
+│ │ 🟢 Polmaraton Warszawski  01:42:13  #234  Link ✅                 │  │
+│ │ 🟡 Polmaraton Poznanski   01:50:22  #278  Link  [Zatwierdz] [❌] │  │
+│ │ 🔴 Polmaraton Lodzki      01:55:00  --    Link  (odrzucone)       │  │
+│ └────────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│ Anna Nowak (postep: 10/10 ✅ Ukonczone)                                │
+│ ┌────────────────────────────────────────────────────────────────────┐  │
+│ │ 🟢 Polmaraton Warszawski  01:55:30  #567  Link ✅                 │  │
+│ │ ...                                                                │  │
+│ └────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 
-// Wydarzenie w ramach wyzwania
-export interface ChallengeEvent {
-  eventId: string;
-  eventName: string;
-  eventDate: string;
-}
-
-// Definicja wyzwania (tworzona przez admina/moderatora)
-export interface Challenge {
-  id: string;
-  name: string;                // np. "Korona Polmaratonow 2026"
-  slug: string;
-  description: string;
-  imageUrl?: string;
-  seriesId?: string;           // Opcjonalne powiazanie z seria
-  events: ChallengeEvent[];    // Lista wydarzen do zaliczenia
-  rule: ChallengeRule;
-  rewards: ChallengeReward[];
-  status: 'active' | 'completed' | 'upcoming';
-  startDate?: string;
-  endDate?: string;
-  createdBy: string;
-}
-
-// Zgloszenie uczestnika do biegu w wyzwaniu
-export interface ChallengeEntry {
-  id: string;
-  challengeId: string;
-  userId: string;
-  eventId: string;
-  status: ChallengeEntryStatus;
-  submittedTime?: string;      // HH:MM:SS
-  submittedPosition?: number;
-  proofUrl?: string;           // Link do wynikow/Stravy
-  submittedAt?: string;
-  reviewedAt?: string;
-  reviewedBy?: string;
-  rejectionReason?: string;
-}
-
-// Uczestnictwo gracza w wyzwaniu
-export interface ChallengeParticipation {
-  id: string;
-  challengeId: string;
-  userId: string;
-  userName: string;
-  joinedAt: string;
-  entries: ChallengeEntry[];
-  completedCount: number;       // Ile zatwierdzonych
-  isCompleted: boolean;         // Czy spelnil warunki
-  rewardGranted: boolean;       // Czy nagroda przyznana
-  rewardGrantedAt?: string;
-  selectedRewards?: Array<{     // Wybrane nagrody
-    rewardId: string;
-    size?: string;
-  }>;
-  assignedNumber?: number;      // Nr nadania (jak "Nr Korony" ze screena)
-}
+┌── Wyzwanie 5 Dych ── ⏳ 1  ✅ 3  ❌ 0 ─── [Rozwin/Zwin] ────────────┐
+│ ...                                                                     │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Nowe pliki
+## 2. Pelny CRUD dla wyzwan (admin)
 
-| Plik | Opis |
-|------|------|
-| `src/pages/ChallengesListPage.tsx` | Publiczna lista dostepnych wyzwan |
-| `src/pages/ChallengeDetailsPage.tsx` | Strona szczegolowa wyzwania - lista biegow, postep, zglaszanie wynikow |
-| `src/pages/participant/components/ParticipantChallengesTab.tsx` | Zakladka "Wyzwania" w panelu uczestnika |
-| `src/pages/admin/components/AdminChallengesTab.tsx` | Zarzadzanie wyzwaniami (tworzenie, edycja, weryfikacja) |
-| `src/pages/moderator/components/ModeratorChallengesTab.tsx` | Weryfikacja zgloszen (uproszczony widok admina) |
+### Obecny stan
+Formularz tworzenia jest minimalny - brakuje: edycji, usuwania, zarzadzania eventami i nagrodami, zmiany statusu.
 
-## Modyfikowane pliki
+### Nowe mozliwosci
+
+**Tworzenie (rozbudowany dialog)**:
+- Wszystkie pola z obecnego formularza
+- Dynamiczne dodawanie/usuwanie wydarzen (nazwa + data)
+- Automatyczne ladowanie wydarzen z wybranej serii
+- Dynamiczne dodawanie/usuwanie nagrod (nazwa, typ, cena, rozmiary)
+- Podglad slug generowany automatycznie z nazwy
+
+**Edycja**:
+- Ten sam formularz co tworzenie, wstepnie wypelniony danymi
+- Przycisk "Edytuj" przy kazdym wyzwaniu na liscie
+
+**Usuwanie**:
+- AlertDialog z potwierdzeniem
+- Przycisk "Usun" przy kazdym wyzwaniu
+
+**Zmiana statusu**:
+- Dropdown/Select: aktywne / nadchodzace / zakonczone
+- Bezposrednio na liscie wyzwan
+
+## Pliki do modyfikacji
 
 | Plik | Zmiana |
 |------|--------|
-| `src/types/index.ts` | Nowe typy (powyzej) |
-| `src/data/mockData.ts` | Mock danych: 2 wyzwania, uczestnictwa, zgloszenia |
-| `src/App.tsx` | Trasy: `/challenges`, `/challenges/:slug` |
-| `src/components/layout/Header.tsx` | Link "Wyzwania" w nawigacji |
-| `src/pages/admin/AdminDashboard.tsx` | Nowa zakladka "Wyzwania" |
-| `src/pages/moderator/ModeratorDashboard.tsx` | Nowa zakladka "Wyzwania" |
-| `src/pages/participant/ParticipantDashboard.tsx` | Nowa zakladka "Wyzwania" |
+| `src/pages/admin/components/AdminChallengesTab.tsx` | Przebudowa weryfikacji per wyzwanie, rozbudowany CRUD (tworzenie, edycja, usuwanie, zmiana statusu) |
+| `src/pages/moderator/components/ModeratorChallengesTab.tsx` | Przebudowa weryfikacji per wyzwanie (bez CRUD - tylko podglad i weryfikacja) |
 
-## UI - widok uczestnika (ChallengeDetailsPage)
+## Szczegoly techniczne
 
-Inspiracja ze screenow - tabela z kolorami statusow:
+### AdminChallengesTab.tsx - glowne zmiany
 
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ ← Wyzwania                                                             │
-│                                                                         │
-│ Korona Polmaratonow 2026                                               │
-│ Ukonicz 10 z 20 polmaratonow                                          │
-│                                                                         │
-│ Twoj postep: ████████░░ 8/10                    [Dolacz do wyzwania]   │
-│                                                                         │
-│ Nagrody: 🏅 Medal Korony (45 zl) | 📜 Dyplom (darmowy)               │
-│                                                                         │
-│ ┌─ Lista biegow ───────────────────────────────────────────────────┐   │
-│ │ 🟢 Polmaraton Warszawski   2026-03-25  ✅  02:29:43  Miejsce 567│   │
-│ │ 🟢 Polmaraton Krakowski    2026-04-15  ✅  02:38:01  Miejsce 399│   │
-│ │ 🟡 Polmaraton Gdanski      2026-05-10  ⏳  02:36:47  Miejsce 900│   │
-│ │ 🔴 Polmaraton Poznanski    2026-06-20  ☐   [Zglos wynik]        │   │
-│ │ 🔴 Polmaraton Wroclawski   2026-07-15  ☐   [Zglos wynik]        │   │
-│ │ ...                                                               │   │
-│ └───────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────┘
+**Stan komponentu** - nowe zmienne:
+- `editingChallenge: Challenge | null` - wyzwanie w trybie edycji
+- `statusFilter: 'all' | 'pending' | 'approved' | 'rejected'` - filtr statusu zgloszen
+- `expandedChallenges: Set<string>` - ktore karty sa rozwiniety
+- `formData` - stan formularza (events array, rewards array)
+
+**Zakladka "Wyzwania"** - CRUD:
+- Kazde wyzwanie: wiersz z nazwa, statusem, licznikami + przyciski [Edytuj] [Usun] [Status dropdown]
+- Dialog tworzenia/edycji z sekcjami:
+  - Podstawowe (nazwa, slug auto-gen, opis, obrazek)
+  - Powiazanie z seria + przycisk "Zaladuj biegi z serii"
+  - Lista wydarzen - dynamiczne dodawanie/usuwanie wierszy (Input nazwa + Input data)
+  - Regula (min biegow, opcjonalny limit czasu)
+  - Nagrody - dynamiczne dodawanie/usuwanie (nazwa, typ select, cena, rozmiary input)
+  - Daty (start/koniec)
+
+**Zakladka "Weryfikacja"** - przebudowa:
+- Filtr statusow na gorze (badge z licznikami)
+- Collapsible Card per wyzwanie
+- Wewnatrz: uczestnicy pogrupowani, kazdy z tabela swoich entries
+- Kolorowe wiersze (green/yellow/red)
+- Przyciski zatwierdz/odrzuc inline
+
+### ModeratorChallengesTab.tsx - zmiany
+
+Analogiczna przebudowa weryfikacji per wyzwanie (ta sama struktura kart), bez sekcji CRUD. Moderator widzi liste wyzwan jako read-only i moze jedynie weryfikowac zgloszenia.
+
+### Generowanie slug
+
+```typescript
+const generateSlug = (name: string) =>
+  name.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 ```
-
-Kolory wierszy (jak na screenach):
-- **Zielony** (`bg-green-50`): zatwierdzony przez admina/moderatora
-- **Zolty** (`bg-yellow-50`): zgloszony, oczekuje na weryfikacje
-- **Czerwony/rozowy** (`bg-red-50`): niezgloszony lub odrzucony
-
-## UI - panel admina/moderatora (weryfikacja)
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ Weryfikacja zgloszen - Korona Polmaratonow 2026                        │
-│                                                                         │
-│ Oczekujace: 12    Zatwierdzone: 45    Odrzucone: 3                    │
-│                                                                         │
-│ ┌─ Uczestnik: Jan Kowalski ─────────────────────────────────────────┐ │
-│ │ Postep: 8/10  |  Status: W trakcie                                │ │
-│ │                                                                     │ │
-│ │ 🟢 Polmaraton Warszawski  ✅ 02:29:43  #567                       │ │
-│ │ 🟡 Polmaraton Gdanski     ⏳ 02:36:47  #900  [✅ Zatwierdz] [❌] │ │
-│ │ 🔴 Polmaraton Poznanski   ☐  --                                    │ │
-│ │                                                                     │ │
-│ │ ☐ Nagroda przyznana   Nr nadania: [___]                            │ │
-│ │ [Zapisz]                                                            │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-## UI - tworzenie wyzwania (admin)
-
-Dialog/formularz z polami:
-- Nazwa, opis, slug
-- Powiazanie z seria (opcjonalne - Select z lista serii)
-- Lista wydarzen (reczny wybor z checkboxami LUB automatycznie z serii)
-- Regula: ile biegow minimum do zaliczenia
-- Nagrody: dodawanie nagrod (typ, nazwa, cena, rozmiary)
-- Daty: start/koniec wyzwania
-
-## Mock data
-
-Dwa przykladowe wyzwania:
-
-1. **Korona Polmaratonow 2026** - powiazana z seria, 20 biegow, zalicz 10, nagrody: medal (45 zl) + dyplom (darmowy)
-2. **Wyzwanie 5 Dych** - niezalezne, 8 biegow 10km, zalicz 5, nagroda: koszulka okolicznosciowa (35 zl)
-
-Mock uczestnictwa z roznymi statusami (zatwierdzony, oczekujacy, niezgloszony) dla demonstracji kolorow.
-
-## Nawigacja
-
-- Header: nowy link "Wyzwania" w glownej nawigacji (obok "Zawodnicy")
-- Panel uczestnika: nowa zakladka z ikona Trophy
-- Panel admina: nowa zakladka "Wyzwania" z ikona Award
-- Panel moderatora: nowa zakladka "Wyzwania" z ikona Award
-
-## Kolejnosc implementacji
-
-1. Typy w `types/index.ts`
-2. Mock data w `mockData.ts`
-3. `ChallengesListPage.tsx` - publiczna lista wyzwan
-4. `ChallengeDetailsPage.tsx` - strona szczegolowa z tabela biegow i zglaszaniem
-5. `ParticipantChallengesTab.tsx` - zakladka w panelu uczestnika
-6. `AdminChallengesTab.tsx` - tworzenie wyzwan + weryfikacja zgloszen
-7. `ModeratorChallengesTab.tsx` - weryfikacja zgloszen (read-only tworzenie)
-8. Routing w `App.tsx` i linki w `Header.tsx`
-9. Zakladki w dashboardach (Admin, Moderator, Participant)
 
