@@ -19,7 +19,9 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   if (completedEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 animate-fade-in">
+    <section className="relative py-8 md:py-12 animate-fade-in bg-muted/20">
+      {/* Top gradient separator */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>

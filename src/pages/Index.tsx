@@ -1,4 +1,5 @@
 import { Layout } from '@/components/layout/Layout';
+import { HomeHero } from '@/components/home/HomeHero';
 import { UpcomingEvents } from '@/components/home/UpcomingEvents';
 import { LiveResultsSection } from '@/components/home/LiveResultsSection';
 import { RecentResultsSection } from '@/components/home/RecentResultsSection';
@@ -15,6 +16,7 @@ const Index = () => {
 
   return (
     <Layout>
+      <HomeHero />
       <UpcomingEvents 
         events={mockEvents}
         userRegistrations={userRegistrations}

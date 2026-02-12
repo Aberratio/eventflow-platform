@@ -20,7 +20,9 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
   if (liveEvents.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-destructive/5 border-y border-destructive/10 animate-fade-in">
+    <section className="relative py-8 md:py-12 bg-destructive/5 border-y border-destructive/10 animate-fade-in overflow-hidden">
+      {/* Radial gradient accent */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--destructive)/0.06)_0%,_transparent_70%)]" />
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
