@@ -1,36 +1,82 @@
+import { useState } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ModeratorOverviewTab } from './components/ModeratorOverviewTab';
 import { ModeratorModerationTab } from './components/ModeratorModerationTab';
 import { UsersReadOnlyTab } from './components/UsersReadOnlyTab';
 import { ModeratorOrdersTab } from './components/ModeratorOrdersTab';
-import { ModeratorProfileTab } from './components/ModeratorProfileTab';
 import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTab';
 import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
-import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, UserCog, Lock, Tag, Trophy } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, Lock, Tag, Trophy } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: 'Panel',
+    items: [
+      { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Moderacja',
+    items: [
+      { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
+      { id: 'participants', label: 'Uczestnicy', icon: Users },
+      { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
+    ],
+  },
+  {
+    label: 'Sklep',
+    items: [
+      { id: 'discounts', label: 'Kody rabatowe', icon: Tag },
+      { id: 'orders', label: 'Zamówienia', icon: ShoppingCart },
+      { id: 'challenges', label: 'Wyzwania', icon: Trophy },
+    ],
+  },
+];
+
+const allItems = navGroups.flatMap(g => g.items);
 
 const ModeratorDashboard = () => {
   const { user } = useAuth();
-  
-  const tabs = [
-    { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
-    { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
-    { id: 'participants', label: 'Uczestnicy', icon: Users },
-    { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
-    { id: 'discounts', label: 'Kody rabatowe', icon: Tag },
-    { id: 'challenges', label: 'Wyzwania', icon: Trophy },
-    { id: 'orders', label: 'Zamówienia', icon: ShoppingCart },
-    { id: 'profile', label: 'Profil', icon: UserCog },
-  ];
+  const [activeSection, setActiveSection] = useState('overview');
+  const isMobile = useIsMobile();
+
+  const activeItem = allItems.find(i => i.id === activeSection);
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'overview': return <ModeratorOverviewTab />;
+      case 'moderation': return <ModeratorModerationTab />;
+      case 'participants': return <UsersReadOnlyTab userType="participant" />;
+      case 'organizers': return <UsersReadOnlyTab userType="organizer" />;
+      case 'discounts': return <ModeratorDiscountCodesTab />;
+      case 'orders': return <ModeratorOrdersTab />;
+      case 'challenges': return <ModeratorChallengesTab />;
+      default: return <ModeratorOverviewTab />;
+    }
+  };
 
   return (
     <Layout>
       <div className="container py-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Panel Moderatora</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Panel Moderatora</h1>
             <p className="text-muted-foreground">Witaj, {user?.name}!</p>
           </div>
           <Badge variant="secondary" className="gap-1.5 self-start sm:self-auto">
@@ -39,52 +85,73 @@ const ModeratorDashboard = () => {
           </Badge>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1 lg:w-auto lg:inline-flex">
-            {tabs.map(tab => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id}
-                className="flex-1 lg:flex-none gap-2 text-sm py-2.5 data-[state=active]:bg-background"
-              >
-                <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {isMobile ? (
+          <>
+            <Select value={activeSection} onValueChange={setActiveSection}>
+              <SelectTrigger className="mb-6">
+                <SelectValue>
+                  {activeItem && (
+                    <span className="flex items-center gap-2">
+                      <activeItem.icon className="h-4 w-4" />
+                      {activeItem.label}
+                    </span>
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {navGroups.map(group => (
+                  <div key={group.label}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {group.label}
+                    </div>
+                    {group.items.map(item => (
+                      <SelectItem key={item.id} value={item.id}>
+                        <span className="flex items-center gap-2">
+                          <item.icon className="h-4 w-4" />
+                          {item.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+            {renderContent()}
+          </>
+        ) : (
+          <div className="flex gap-6">
+            <nav className="w-56 shrink-0 space-y-4">
+              {navGroups.map(group => (
+                <div key={group.label}>
+                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {group.label}
+                  </div>
+                  <div className="mt-1 space-y-0.5">
+                    {group.items.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveSection(item.id)}
+                        className={cn(
+                          'flex items-center gap-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                          activeSection === item.id
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </nav>
 
-          <TabsContent value="overview">
-            <ModeratorOverviewTab />
-          </TabsContent>
-
-          <TabsContent value="moderation">
-            <ModeratorModerationTab />
-          </TabsContent>
-
-          <TabsContent value="participants">
-            <UsersReadOnlyTab userType="participant" />
-          </TabsContent>
-
-          <TabsContent value="organizers">
-            <UsersReadOnlyTab userType="organizer" />
-          </TabsContent>
-
-          <TabsContent value="discounts">
-            <ModeratorDiscountCodesTab />
-          </TabsContent>
-
-          <TabsContent value="challenges">
-            <ModeratorChallengesTab />
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <ModeratorOrdersTab />
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <ModeratorProfileTab />
-          </TabsContent>
-        </Tabs>
+            <div className="flex-1 min-w-0">
+              {renderContent()}
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
