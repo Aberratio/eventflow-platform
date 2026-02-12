@@ -1,227 +1,81 @@
 
-# Plan: Profil w navbar + reorganizacja paneli admin/moderator
 
-## 1. Profil w dropdown navbar (wszystkie role)
+# Plan: Urozmaicenie designu strony glownej + delikatny gradient globalny
 
-Zamiast trzymac "Profil" jako tab w panelach, przeniesiony zostanie do dropdown menu w navbarze -- bezposrednio nad przyciskiem "Wyloguj". Dotyczy to wszystkich rol: uczestnik, organizator, moderator, admin.
+## Cel
+Dodanie wizualnego urozmaicenia strony glownej przy zachowaniu czytelnosci, minimalizmu i pelnej responsywnosci (mobile-first). Zmiany beda delikatne -- gradienty, subtelne tla sekcji, lekkie separatory -- bez naruszania struktury informacji.
 
-### Dropdown menu -- nowa struktura:
+## 1. Globalny gradient tla (index.css)
 
-```text
-┌──────────────────────────┐
-│ 📊 Panel                 │
-│ 📅 Moje zawody*          │  (* role-specific)
-│ ─────────────────────── │
-│ 👤 Mój profil            │  <-- NOWY
-│ ─────────────────────── │
-│ 🔴 Wyloguj               │
-└──────────────────────────┘
+Dodanie delikatnego gradientu na `body` -- od lekko zielonkawego (primary) do bialego. Bedzie widoczny na calej apce jako subtelny akcent.
+
+```css
+body {
+  background: linear-gradient(
+    180deg, 
+    hsl(var(--background)) 0%, 
+    hsl(var(--primary) / 0.02) 50%, 
+    hsl(var(--background)) 100%
+  );
+  background-attachment: fixed;
+}
 ```
 
-### Routing
-- Nowa trasa `/profile` w `App.tsx` -- renderuje komponent profilowy odpowiedni dla roli uzytkownika (reuse istniejacych ProfileTab komponentow)
-- Kazda rola kierowana na swoj formularz profilu
+W dark mode gradient dostosowany do ciemniejszego tla.
 
-### Pliki do zmiany:
-- `src/components/layout/Header.tsx` -- dodanie linku "Moj profil" w dropdown (desktop + mobile)
-- `src/App.tsx` -- nowa trasa `/profile`
-- Nowy plik: `src/pages/ProfilePage.tsx` -- wrapper ktory renderuje odpowiedni ProfileTab na podstawie roli
+## 2. Hero sekcja na stronie glownej (nowy komponent)
 
-### Usuwanie z paneli:
-- `src/pages/participant/ParticipantDashboard.tsx` -- usunac tab "Profil"
-- `src/pages/organizer/OrganizerDashboard.tsx` -- usunac tab "Profil"
-- `src/pages/moderator/ModeratorDashboard.tsx` -- usunac tab "Profil"
-- `src/pages/admin/AdminDashboard.tsx` -- usunac tab "Profil"
+Dodanie lekkiego hero bannera na gorze strony glownej -- nie pelnoekranowego, a kompaktowego paska z gradientem i haslem. Bedzie wizualnym "otwarciem" strony zamiast nagiego naglowka "Nadchodzace wydarzenia".
+
+- Gradient: od `primary/8` przez `transparent` do `secondary/5`
+- Dekoracyjne kola/blury w tle (CSS, bez obrazkow)
+- Krotkie haslo + 2 buttony CTA (Wydarzenia, Wyniki)
+- Na mobile: kompaktowy, bez zbednych paddingw
+
+**Nowy plik**: `src/components/home/HomeHero.tsx`
+
+## 3. Sekcja "Nadchodzace wydarzenia" -- delikatne ulepszenie
+
+- Lekki gradient separator miedzy hero a lista
+- Drobny ornament: delikatna linia z gradientem primary jako separator sekcji
+
+## 4. Sekcja LIVE -- wzmocnienie wizualne
+
+Obecny `bg-destructive/5` jest ok, ale mozna dodac:
+- Delikatny radialny gradient w tle (od center)
+- Subtelna animacja gradientu (pulsowanie koloru)
+
+## 5. Sekcja "Ostatnie wyniki" -- tlo z akcentem
+
+- Dodanie lekkiego tla `bg-muted/20` z gradientem do przezroczystego
+- Wizualne oddzielenie od sekcji LIVE
+
+## 6. Sekcja "Partnerzy" -- bez zmian
+
+Juz ma `bg-muted/30`, jest ok.
+
+## 7. Dekoracyjne separatory miedzy sekcjami
+
+Zamiast ostrych przejsc miedzy sekcjami -- delikatne gradienty jako separatory (linia o wysokosci 1-2px z gradientem primary -> transparent -> primary).
 
 ---
 
-## 2. Reorganizacja panelu admina
-
-Obecne 11 tabow jest za duzo. Podzielone zostana na logiczne grupy za pomoca **sidebar nawigacji** zamiast jednego rzedu tabow. Na mobile sidebar zamieni sie w dropdown/select lub hamburger.
-
-### Nowa struktura (sidebar z grupami):
-
-```text
-PANEL
-  ├ Pulpit
-
-MODERACJA
-  ├ Moderacja wydarzen
-  ├ Uczestnicy
-  ├ Organizatorzy
-
-SKLEP
-  ├ Produkty i zamowienia
-  ├ Wyzwania
-
-TRESCI
-  ├ Wydarzenia
-  ├ Partnerzy
-  ├ Strony CMS
-
-KONFIGURACJA
-  ├ Ustawienia
-```
-
-### Implementacja:
-- Zamiana `Tabs` na sidebar z `useState` i warunkowym renderowaniem
-- Na desktop: lewy sidebar (240px) + content po prawej
-- Na tablet: sidebar zwijany do ikon
-- Na mobile: dropdown Select na gorze strony do wyboru sekcji
-
-### Plik do zmiany:
-- `src/pages/admin/AdminDashboard.tsx` -- pelna przebudowa layoutu
-
----
-
-## 3. Reorganizacja panelu moderatora
-
-Moderator ma 8 tabow -- mniej niz admin, ale tez duzo. Zastosowane zostanie to samo podejscie z sidebar.
-
-### Nowa struktura:
-
-```text
-PANEL
-  ├ Pulpit
-
-MODERACJA
-  ├ Moderacja wydarzen
-  ├ Uczestnicy
-  ├ Organizatorzy
-
-SKLEP
-  ├ Kody rabatowe
-  ├ Zamowienia
-  ├ Wyzwania
-```
-
-### Plik do zmiany:
-- `src/pages/moderator/ModeratorDashboard.tsx` -- przebudowa layoutu (analogicznie do admina)
-
----
-
-## Szczegoly techniczne
-
-### ProfilePage.tsx (nowy plik)
-
-```typescript
-// Wrapper ktory na podstawie roli renderuje odpowiedni ProfileTab
-const ProfilePage = () => {
-  const { user } = useAuth();
-  // Renderuje ParticipantProfileTab / OrganizerProfileTab / 
-  // ModeratorProfileTab / AdminProfileTab w Layout
-};
-```
-
-### AdminDashboard.tsx -- sidebar layout
-
-```typescript
-// Grupy nawigacji
-const navGroups = [
-  {
-    label: 'Panel',
-    items: [
-      { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
-    ]
-  },
-  {
-    label: 'Moderacja',
-    items: [
-      { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
-      { id: 'participants', label: 'Uczestnicy', icon: Users },
-      { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
-    ]
-  },
-  {
-    label: 'Sklep',
-    items: [
-      { id: 'shop', label: 'Produkty', icon: ShoppingBag },
-      { id: 'challenges', label: 'Wyzwania', icon: Trophy },
-    ]
-  },
-  {
-    label: 'Tresci',
-    items: [
-      { id: 'events', label: 'Wydarzenia', icon: Calendar },
-      { id: 'partners', label: 'Partnerzy', icon: Handshake },
-      { id: 'pages', label: 'Strony', icon: FileText },
-    ]
-  },
-  {
-    label: 'Konfiguracja',
-    items: [
-      { id: 'settings', label: 'Ustawienia', icon: Settings },
-    ]
-  },
-];
-```
-
-**Desktop layout:**
-```text
-┌─────────────────────────────────────────────────────────┐
-│ Panel Administratora                                     │
-├──────────┬──────────────────────────────────────────────┤
-│ PANEL    │                                              │
-│  Pulpit  │    [Active section content]                  │
-│          │                                              │
-│ MODERACJA│                                              │
-│  Moderac │                                              │
-│  Uczestn │                                              │
-│  Organiz │                                              │
-│          │                                              │
-│ SKLEP    │                                              │
-│  Produkty│                                              │
-│  Wyzwania│                                              │
-│          │                                              │
-│ TRESCI   │                                              │
-│  Wydarzen│                                              │
-│  Partnerz│                                              │
-│  Strony  │                                              │
-│          │                                              │
-│ KONFIG   │                                              │
-│  Ustawien│                                              │
-└──────────┴──────────────────────────────────────────────┘
-```
-
-**Mobile layout:**
-```text
-┌─────────────────────────────┐
-│ Panel Administratora        │
-│ [▼ Pulpit          ]        │  <-- Select dropdown
-│                             │
-│ [Active section content]    │
-└─────────────────────────────┘
-```
-
-### Header.tsx -- zmiany w dropdown
-
-Dodanie pozycji "Moj profil" z ikona `User` nad separatorem i "Wyloguj":
-
-```typescript
-<DropdownMenuSeparator />
-<DropdownMenuItem onClick={() => navigate('/profile')}>
-  <User className="h-4 w-4 mr-2" />
-  Mój profil
-</DropdownMenuItem>
-<DropdownMenuSeparator />
-<DropdownMenuItem onClick={handleLogout} className="text-destructive">
-  <LogOut className="h-4 w-4 mr-2" />
-  Wyloguj
-</DropdownMenuItem>
-```
-
-Analogiczna zmiana w mobile menu -- dodanie linku "Moj profil" przed "Wyloguj".
-
----
-
-## Lista plikow
+## Pliki do zmiany/utworzenia
 
 | Plik | Operacja |
 |------|----------|
-| `src/pages/ProfilePage.tsx` | Nowy -- wrapper profilu per rola |
-| `src/App.tsx` | Edycja -- trasa `/profile` |
-| `src/components/layout/Header.tsx` | Edycja -- "Moj profil" w dropdown desktop + mobile |
-| `src/pages/admin/AdminDashboard.tsx` | Edycja -- sidebar z grupami zamiast tabow |
-| `src/pages/moderator/ModeratorDashboard.tsx` | Edycja -- sidebar z grupami zamiast tabow |
-| `src/pages/organizer/OrganizerDashboard.tsx` | Edycja -- usunac tab "Profil" |
-| `src/pages/participant/ParticipantDashboard.tsx` | Edycja -- usunac tab "Profil" |
+| `src/index.css` | Edycja -- gradient tla body, dekoracyjne klasy CSS |
+| `src/components/home/HomeHero.tsx` | Nowy -- kompaktowy hero z gradientem i CTA |
+| `src/pages/Index.tsx` | Edycja -- dodanie HomeHero na gorze |
+| `src/components/home/LiveResultsSection.tsx` | Edycja -- wzmocniony gradient tla |
+| `src/components/home/RecentResultsSection.tsx` | Edycja -- lekkie tlo sekcji |
+| `src/components/home/UpcomingEvents.tsx` | Edycja -- separator gradientowy |
+
+## Zasady
+
+- Zero zdjec, zero ciezkich assetow
+- Wszystko w CSS/Tailwind -- gradienty, blury, opacity
+- Mobile-first: na malych ekranach paddingi mniejsze, hero kompaktowy
+- Czytelnosc: kontrast tekstu bez zmian, gradienty tylko dekoracyjne
+- Dark mode: gradienty dostosowane automatycznie dzieki zmiennym CSS
+
