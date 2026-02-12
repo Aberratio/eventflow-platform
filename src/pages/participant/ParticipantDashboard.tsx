@@ -40,7 +40,6 @@ const ParticipantDashboard = () => {
     { id: 'challenges', label: 'Wyzwania', icon: Trophy },
     { id: 'orders', label: 'Zamówienia', icon: Package },
     { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
-    { id: 'profile', label: 'Profil', icon: UserCog },
   ];
 
   return (
@@ -107,10 +106,6 @@ const ParticipantDashboard = () => {
 
           <TabsContent value="messages" className="mt-0">
             <ParticipantMessagesTab messages={userMessages} />
-          </TabsContent>
-
-          <TabsContent value="profile" className="mt-0">
-            <ParticipantProfileTab />
           </TabsContent>
         </Tabs>
       </div>

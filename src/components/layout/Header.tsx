@@ -253,6 +253,11 @@ export const Header = () => {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/profile')}>
+                  <User className="h-4 w-4 mr-2" />
+                  Mój profil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
                   Wyloguj
@@ -355,6 +360,10 @@ export const Header = () => {
               <>
                 <Link to={getDashboardLink()} className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Panel {roleLabels[user?.role || 'participant']}
+                </Link>
+                <Link to="/profile" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                  <User className="h-4 w-4" />
+                  Mój profil
                 </Link>
                 <Button variant="outline" onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="justify-start mx-3">
                   <LogOut className="h-4 w-4 mr-2" />

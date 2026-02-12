@@ -46,7 +46,7 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ChallengesListPage from "./pages/ChallengesListPage";
 import ChallengeDetailsPage from "./pages/ChallengeDetailsPage";
-
+import ProfilePage from "./pages/ProfilePage";
 
 
 const queryClient = new QueryClient();
@@ -94,6 +94,7 @@ const App = () => (
                   <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
                   <Route path="/athletes" element={<AthletesPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/challenges" element={<ChallengesListPage />} />
                   <Route path="/challenges/:slug" element={<ChallengeDetailsPage />} />
                   <Route path="/participant" element={<ParticipantDashboard />} />

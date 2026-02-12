@@ -23,7 +23,6 @@ const OrganizerDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
     { id: 'events', label: 'Moje wydarzenia', icon: CalendarDays },
-    { id: 'profile', label: 'Profil', icon: UserCog },
   ];
 
   const getStatusBadge = (event: typeof myEvents[0]) => {
@@ -160,9 +159,6 @@ const OrganizerDashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="profile" className="mt-0">
-            <OrganizerProfileTab />
-          </TabsContent>
         </Tabs>
       </div>
     </Layout>
