@@ -41,7 +41,6 @@ export const Header = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
   
   const user = auth?.user ?? null;
   const isAuthenticated = auth?.isAuthenticated ?? false;
@@ -76,15 +75,7 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-1">
-          <Link 
-            to="/" 
-            className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActive('/') && "bg-accent text-accent-foreground"
-            )}
-          >
-            Strona Główna
-          </Link>
+          {/* Wydarzenia link */}
 
           <Link 
             to="/wydarzenia" 
@@ -122,44 +113,17 @@ export const Header = () => {
                   Serie i cykle
                 </Link>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-
-          {/* Informacje dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className={cn(
-              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActivePrefix('/info') && "bg-accent text-accent-foreground"
-            )}>
-              Informacje
-              <ChevronDown className="h-3 w-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/info/kontakt" className="w-full">Kontakt</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/info/oferta" className="w-full">Oferta</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/info/ubezpieczenia" className="w-full">Ubezpieczenia</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/info/o-nas" className="w-full">O nas</Link>
+                <Link to="/athletes" className="w-full">
+                  Zawodnicy
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link 
-            to="/athletes" 
-            className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActive('/athletes') && "bg-accent text-accent-foreground"
-            )}
-          >
-            Zawodnicy
-          </Link>
+
+          {/* Wyzwania link */}
 
           <Link 
             to="/challenges" 
@@ -291,9 +255,6 @@ export const Header = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t bg-card max-h-[calc(100vh-4rem)] overflow-y-auto">
           <nav className="container py-4 flex flex-col gap-1">
-            <Link to="/" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Strona Główna
-            </Link>
             <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Wydarzenia
             </Link>
@@ -314,34 +275,12 @@ export const Header = () => {
                 <Link to="/series" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Serie i cykle
                 </Link>
-              </CollapsibleContent>
-            </Collapsible>
-
-
-            <Collapsible open={infoOpen} onOpenChange={setInfoOpen}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent">
-                Informacje
-                <ChevronDown className={cn("h-4 w-4 transition-transform", infoOpen && "rotate-180")} />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pl-4">
-                <Link to="/info/kontakt" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Kontakt
-                </Link>
-                <Link to="/info/oferta" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Oferta
-                </Link>
-                <Link to="/info/ubezpieczenia" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Ubezpieczenia
-                </Link>
-                <Link to="/info/o-nas" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  O nas
+                <Link to="/athletes" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Zawodnicy
                 </Link>
               </CollapsibleContent>
             </Collapsible>
 
-            <Link to="/athletes" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Zawodnicy
-            </Link>
             <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Wyzwania
             </Link>
