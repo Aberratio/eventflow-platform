@@ -1,80 +1,43 @@
 
 
-# Plan: Uproszczenie nawigacji (navbar)
+# Plan: Implementacja akcji menu organizatorow w panelu admina
 
 ## Problem
-Navbar ma za duzo elementow: Strona Glowna, Wydarzenia, Wyniki (dropdown), Informacje (dropdown), Zawodnicy, Wyzwania, Sklep, ikona koszyka, powiadomienia, dropdown uzytkownika. Na desktopie jest ciasno, na mobile lista jest dluga.
+W zakladce "Organizatorzy" (`/admin`) kazdy wiersz ma dropdown menu z opcjami, ale "Podglad profilu" i "Zobacz wydarzenia" nie maja `onClick` -- sa nieaktywne. Dodatkowo "Zmien role", "Zablokuj" i "Usun" pokazuja tylko toast bez zadnej interakcji potwierdzajacej.
 
 ## Zmiany
 
-### 1. Usunac "Strona Glowna"
-Klikniecie w logo SportTime juz prowadzi na strone glowna -- oddzielny link jest zbedny.
+### 1. "Podglad profilu" -- dialog z danymi organizatora
+Otwarcie dialogu z informacjami o organizatorze (imie, email, firma, NIP, strona www, opis). Dane pobierane z obiektu `User`.
 
-### 2. Usunac "Informacje" dropdown
-Wszystkie linki informacyjne (Kontakt, Oferta, Ubezpieczenia, O nas) sa juz w footerze. Nie ma potrzeby duplikowac ich w navbarze.
+### 2. "Zobacz wydarzenia" -- dialog z lista wydarzen
+Otwarcie dialogu z lista wydarzen organizatora (pobieranych z `mockEvents`). Kazde wydarzenie bedzie linkiem do `/events/:slug`.
 
-### 3. Wciagnac "Zawodnicy" do dropdown "Wyniki"
-Zawodnicy sa tematycznie powiazani z wynikami. Dropdown "Wyniki" bedzie mial:
-- Kalendarz wynikow
-- Na zywo
-- Serie i cykle
-- Zawodnicy (nowa pozycja, z separatorem)
+### 3. "Zmien role" -- dialog z wyborem roli
+Dialog z selectem do wyboru nowej roli (participant/organizer/moderator/admin) + przycisk potwierdzenia.
 
-### 4. Wynik koncowy
+### 4. "Zablokuj" -- dialog potwierdzenia
+`AlertDialog` z pytaniem "Czy na pewno chcesz zablokowac...?" + przycisk potwierdzenia.
 
-**Desktop navbar (po zmianach):**
-```text
-[Logo SportTime]   Wydarzenia   Wyniki▼   Wyzwania   Sklep   🛒   🔔   [User▼]
-```
+### 5. "Usun" -- dialog potwierdzenia
+`AlertDialog` z pytaniem "Czy na pewno chcesz usunac...?" + ostrzezenie o nieodwracalnosci + przycisk potwierdzenia.
 
-Z 8 pozycji tekstowych do 4 -- znacznie czytelniej.
-
-**Mobile menu (po zmianach):**
-```text
-Wydarzenia
-Wyniki (collapsible)
-  - Kalendarz wynikow
-  - Na zywo
-  - Serie i cykle
-  - Zawodnicy
-Wyzwania
-Sklep
-Koszyk
-───
-Panel / Zaloguj
-Moj profil
-Wyloguj
-```
-
-Usuniety "Strona Glowna" (logo), "Informacje" (footer), "Zawodnicy" przeniesiony do "Wyniki".
-
-## Pliki do zmiany
+## Plik do zmiany
 
 | Plik | Zmiana |
 |------|--------|
-| `src/components/layout/Header.tsx` | Usunac link "Strona Glowna", usunac dropdown "Informacje", przeniesc "Zawodnicy" do dropdown "Wyniki", usunac stan `infoOpen`. Desktop + mobile. |
+| `src/pages/admin/components/UsersOrganizersTab.tsx` | Dodanie stanow dla dialogi, implementacja onClick dla kazdej opcji menu, 3 nowe dialogi (profil, wydarzenia, zmiana roli) + 2 alert dialogi (blokada, usuniecie) |
 
 ## Szczegoly techniczne
 
-### Desktop -- dropdown "Wyniki" po zmianach:
-```text
-┌─────────────────────┐
-│ Kalendarz wynikow   │
-│ 🔴 Na zywo          │
-│ Serie i cykle       │
-│ ─────────────────── │
-│ Zawodnicy           │
-└─────────────────────┘
-```
+Nowe stany:
+- `selectedUser` -- aktualnie wybrany organizator (User | null)
+- `profileDialogOpen` -- dialog podgladu profilu
+- `eventsDialogOpen` -- dialog wydarzen
+- `roleDialogOpen` -- dialog zmiany roli
+- `blockDialogOpen` -- alert dialog blokady
+- `deleteDialogOpen` -- alert dialog usuniecia
+- `selectedRole` -- wybrana nowa rola
 
-### Usuniete elementy:
-- Link `Strona Glowna` (linie 79-87)
-- Caly dropdown `Informacje` (linie 129-152)
-- Link `Zawodnicy` (linie 154-162)
-- Stan `infoOpen` i import `Collapsible` (jesli nie uzywany przez "Wyniki" w mobile)
-- W mobile: link "Strona Glowna", collapsible "Informacje", link "Zawodnicy"
-- Dodanie "Zawodnicy" jako `DropdownMenuItem` w dropdown "Wyniki" (desktop) i w `CollapsibleContent` (mobile)
-
-### Weryfikacja per rola
-Zmiany dotycza tylko czesci publicznej nawigacji -- identycznej dla wszystkich rol. Dropdown uzytkownika (Panel, Moj profil, Wyloguj) pozostaje bez zmian dla kazdej roli.
+Kazda opcja z dropdown ustawia `selectedUser` i otwiera odpowiedni dialog. Dialogi wyswietlaja dane z `selectedUser` i `mockEvents`.
 
