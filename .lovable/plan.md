@@ -1,81 +1,80 @@
 
 
-# Plan: Urozmaicenie designu strony glownej + delikatny gradient globalny
+# Plan: Uproszczenie nawigacji (navbar)
 
-## Cel
-Dodanie wizualnego urozmaicenia strony glownej przy zachowaniu czytelnosci, minimalizmu i pelnej responsywnosci (mobile-first). Zmiany beda delikatne -- gradienty, subtelne tla sekcji, lekkie separatory -- bez naruszania struktury informacji.
+## Problem
+Navbar ma za duzo elementow: Strona Glowna, Wydarzenia, Wyniki (dropdown), Informacje (dropdown), Zawodnicy, Wyzwania, Sklep, ikona koszyka, powiadomienia, dropdown uzytkownika. Na desktopie jest ciasno, na mobile lista jest dluga.
 
-## 1. Globalny gradient tla (index.css)
+## Zmiany
 
-Dodanie delikatnego gradientu na `body` -- od lekko zielonkawego (primary) do bialego. Bedzie widoczny na calej apce jako subtelny akcent.
+### 1. Usunac "Strona Glowna"
+Klikniecie w logo SportTime juz prowadzi na strone glowna -- oddzielny link jest zbedny.
 
-```css
-body {
-  background: linear-gradient(
-    180deg, 
-    hsl(var(--background)) 0%, 
-    hsl(var(--primary) / 0.02) 50%, 
-    hsl(var(--background)) 100%
-  );
-  background-attachment: fixed;
-}
+### 2. Usunac "Informacje" dropdown
+Wszystkie linki informacyjne (Kontakt, Oferta, Ubezpieczenia, O nas) sa juz w footerze. Nie ma potrzeby duplikowac ich w navbarze.
+
+### 3. Wciagnac "Zawodnicy" do dropdown "Wyniki"
+Zawodnicy sa tematycznie powiazani z wynikami. Dropdown "Wyniki" bedzie mial:
+- Kalendarz wynikow
+- Na zywo
+- Serie i cykle
+- Zawodnicy (nowa pozycja, z separatorem)
+
+### 4. Wynik koncowy
+
+**Desktop navbar (po zmianach):**
+```text
+[Logo SportTime]   Wydarzenia   Wyniki▼   Wyzwania   Sklep   🛒   🔔   [User▼]
 ```
 
-W dark mode gradient dostosowany do ciemniejszego tla.
+Z 8 pozycji tekstowych do 4 -- znacznie czytelniej.
 
-## 2. Hero sekcja na stronie glownej (nowy komponent)
+**Mobile menu (po zmianach):**
+```text
+Wydarzenia
+Wyniki (collapsible)
+  - Kalendarz wynikow
+  - Na zywo
+  - Serie i cykle
+  - Zawodnicy
+Wyzwania
+Sklep
+Koszyk
+───
+Panel / Zaloguj
+Moj profil
+Wyloguj
+```
 
-Dodanie lekkiego hero bannera na gorze strony glownej -- nie pelnoekranowego, a kompaktowego paska z gradientem i haslem. Bedzie wizualnym "otwarciem" strony zamiast nagiego naglowka "Nadchodzace wydarzenia".
+Usuniety "Strona Glowna" (logo), "Informacje" (footer), "Zawodnicy" przeniesiony do "Wyniki".
 
-- Gradient: od `primary/8` przez `transparent` do `secondary/5`
-- Dekoracyjne kola/blury w tle (CSS, bez obrazkow)
-- Krotkie haslo + 2 buttony CTA (Wydarzenia, Wyniki)
-- Na mobile: kompaktowy, bez zbednych paddingw
+## Pliki do zmiany
 
-**Nowy plik**: `src/components/home/HomeHero.tsx`
+| Plik | Zmiana |
+|------|--------|
+| `src/components/layout/Header.tsx` | Usunac link "Strona Glowna", usunac dropdown "Informacje", przeniesc "Zawodnicy" do dropdown "Wyniki", usunac stan `infoOpen`. Desktop + mobile. |
 
-## 3. Sekcja "Nadchodzace wydarzenia" -- delikatne ulepszenie
+## Szczegoly techniczne
 
-- Lekki gradient separator miedzy hero a lista
-- Drobny ornament: delikatna linia z gradientem primary jako separator sekcji
+### Desktop -- dropdown "Wyniki" po zmianach:
+```text
+┌─────────────────────┐
+│ Kalendarz wynikow   │
+│ 🔴 Na zywo          │
+│ Serie i cykle       │
+│ ─────────────────── │
+│ Zawodnicy           │
+└─────────────────────┘
+```
 
-## 4. Sekcja LIVE -- wzmocnienie wizualne
+### Usuniete elementy:
+- Link `Strona Glowna` (linie 79-87)
+- Caly dropdown `Informacje` (linie 129-152)
+- Link `Zawodnicy` (linie 154-162)
+- Stan `infoOpen` i import `Collapsible` (jesli nie uzywany przez "Wyniki" w mobile)
+- W mobile: link "Strona Glowna", collapsible "Informacje", link "Zawodnicy"
+- Dodanie "Zawodnicy" jako `DropdownMenuItem` w dropdown "Wyniki" (desktop) i w `CollapsibleContent` (mobile)
 
-Obecny `bg-destructive/5` jest ok, ale mozna dodac:
-- Delikatny radialny gradient w tle (od center)
-- Subtelna animacja gradientu (pulsowanie koloru)
-
-## 5. Sekcja "Ostatnie wyniki" -- tlo z akcentem
-
-- Dodanie lekkiego tla `bg-muted/20` z gradientem do przezroczystego
-- Wizualne oddzielenie od sekcji LIVE
-
-## 6. Sekcja "Partnerzy" -- bez zmian
-
-Juz ma `bg-muted/30`, jest ok.
-
-## 7. Dekoracyjne separatory miedzy sekcjami
-
-Zamiast ostrych przejsc miedzy sekcjami -- delikatne gradienty jako separatory (linia o wysokosci 1-2px z gradientem primary -> transparent -> primary).
-
----
-
-## Pliki do zmiany/utworzenia
-
-| Plik | Operacja |
-|------|----------|
-| `src/index.css` | Edycja -- gradient tla body, dekoracyjne klasy CSS |
-| `src/components/home/HomeHero.tsx` | Nowy -- kompaktowy hero z gradientem i CTA |
-| `src/pages/Index.tsx` | Edycja -- dodanie HomeHero na gorze |
-| `src/components/home/LiveResultsSection.tsx` | Edycja -- wzmocniony gradient tla |
-| `src/components/home/RecentResultsSection.tsx` | Edycja -- lekkie tlo sekcji |
-| `src/components/home/UpcomingEvents.tsx` | Edycja -- separator gradientowy |
-
-## Zasady
-
-- Zero zdjec, zero ciezkich assetow
-- Wszystko w CSS/Tailwind -- gradienty, blury, opacity
-- Mobile-first: na malych ekranach paddingi mniejsze, hero kompaktowy
-- Czytelnosc: kontrast tekstu bez zmian, gradienty tylko dekoracyjne
-- Dark mode: gradienty dostosowane automatycznie dzieki zmiennym CSS
+### Weryfikacja per rola
+Zmiany dotycza tylko czesci publicznej nawigacji -- identycznej dla wszystkich rol. Dropdown uzytkownika (Panel, Moj profil, Wyloguj) pozostaje bez zmian dla kazdej roli.
 
