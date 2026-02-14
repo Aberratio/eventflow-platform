@@ -1,54 +1,66 @@
 
-# Plan: Implementacja akcji menu w zakladce Uczestnicy
+
+# Filtrowanie uczestnikow po statusie (aktywny/zablokowany)
 
 ## Problem
-W zakladce "Uczestnicy" w panelu admina opcje menu (Podglad profilu, Resetuj haslo, Zablokuj, Usun) wywoluja tylko toasty bez dialogow potwierdzenia ani podgladu danych.
+Filtr statusu juz istnieje w UI (select z opcjami Wszyscy/Aktywni/Zablokowani), ale nie dziala -- `statusFilter` nie jest uzywany w logice filtrowania. Dodatkowo typ `User` nie ma pola `status`, wiec wszyscy uczestnicy sa zawsze wyswietlani jako "Aktywny".
 
-## Zmiany w pliku `src/pages/admin/components/UsersParticipantsTab.tsx`
+## Zmiany
 
-### 1. "Podglad profilu" -- dialog z danymi uczestnika
-Dialog wyswietlajacy dane uczestnika: imie, email, telefon, rok urodzenia, plec, klub. Dane pobierane z obiektu `User`.
+### 1. Dodac pole `status` do interfejsu `User` (`src/types/index.ts`)
+Nowe opcjonalne pole: `status?: 'active' | 'blocked'` (domyslnie traktowane jako `'active'`).
 
-### 2. "Zmien role" -- dialog z wyborem roli (nowa opcja)
-Analogicznie do organizatorow -- dialog z selectem do wyboru nowej roli + przycisk potwierdzenia. Dodanie nowej pozycji w dropdown menu.
+### 2. Sledzic zablokowanych uzytkownikow lokalnie (`UsersParticipantsTab.tsx`)
+Dodac stan `blockedUsers` (Set z ID) -- po kliknieciu "Zablokuj" ID trafia do setu, po odblokowaniu jest usuwane. Pozwoli to na dzialanie filtra bez backendu.
 
-### 3. "Resetuj haslo" -- dialog potwierdzenia
-`AlertDialog` z pytaniem "Czy na pewno chcesz wyslac link do resetowania hasla?" zamiast natychmiastowego toasta.
+### 3. Podlaczyc filtr statusu do logiki filtrowania
+W `filteredParticipants` uwzglednic `statusFilter`:
+- `all` -- bez filtrowania
+- `active` -- tylko uzytkownicy spoza `blockedUsers`
+- `blocked` -- tylko uzytkownicy z `blockedUsers`
 
-### 4. "Zablokuj" -- dialog potwierdzenia
-`AlertDialog` z pytaniem "Czy na pewno chcesz zablokowac uczestnika?"
+### 4. Dynamiczny badge statusu w tabeli
+Zamiast zawsze "Aktywny" (zielony), wyswietlac "Zablokowany" (czerwony) dla uzytkownikow w `blockedUsers`.
 
-### 5. "Usun" -- dialog potwierdzenia
-`AlertDialog` z ostrzezeniem o nieodwracalnosci operacji.
+### 5. Zmiana akcji "Zablokuj" na "Zablokuj/Odblokuj"
+- Jesli uzytkownik aktywny: opcja "Zablokuj" (Ban) -- dodaje do `blockedUsers`
+- Jesli uzytkownik zablokowany: opcja "Odblokuj" (RefreshCw/CheckCircle) -- usuwa z `blockedUsers`
+
+## Pliki do zmiany
+
+| Plik | Zmiana |
+|------|--------|
+| `src/types/index.ts` | Dodanie `status?: 'active' \| 'blocked'` do interfejsu `User` |
+| `src/pages/admin/components/UsersParticipantsTab.tsx` | Stan `blockedUsers`, filtrowanie po statusie, dynamiczny badge, toggle blokuj/odblokuj |
 
 ## Szczegoly techniczne
 
-Nowe stany:
-- `selectedUser` (User | null)
-- `profileDialogOpen`, `roleDialogOpen`, `resetPasswordDialogOpen`, `blockDialogOpen`, `deleteDialogOpen` (boolean)
-- `selectedRole` (UserRole)
+### Nowy stan:
+```
+const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
+```
 
-Nowe importy:
-- `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter`
-- `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogContent`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogHeader`, `AlertDialogTitle`
-- `Label`, `Separator`
-- `UserCog` (ikona dla zmiany roli)
-- `User`, `UserRole` z `@/types`
+### Filtrowanie:
+```
+const isBlocked = (userId: string) => blockedUsers.has(userId);
 
-Funkcja pomocnicza `openAction` -- identyczna jak w UsersOrganizersTab -- ustawia `selectedUser` i otwiera odpowiedni dialog.
+const filteredParticipants = participants.filter((user) => {
+  const matchesSearch = ...;
+  const matchesStatus =
+    statusFilter === 'all' ||
+    (statusFilter === 'active' && !isBlocked(user.id)) ||
+    (statusFilter === 'blocked' && isBlocked(user.id));
+  return matchesSearch && matchesStatus;
+});
+```
 
-### Profil uczestnika -- zawartosc dialogu:
-- Imie i nazwisko
-- Email
-- Telefon (jesli dostepny)
-- Rok urodzenia (jesli dostepny)
-- Plec (jesli dostepna, M/K)
-- Klub (jesli dostepny)
-- Liczba rejestracji
+### Badge w tabeli:
+```
+{isBlocked(user.id)
+  ? <Badge variant="outline" className="bg-destructive/10 text-destructive ...">Zablokowany</Badge>
+  : <Badge variant="outline" className="bg-primary/10 text-primary ...">Aktywny</Badge>}
+```
 
-### Dropdown menu -- kolejnosc opcji:
-1. Podglad profilu (Eye)
-2. Zmien role (UserCog) -- nowa pozycja
-3. Resetuj haslo (RefreshCw)
-4. Zablokuj (Ban)
-5. Usun (Trash2, destructive)
+### Akcja blokuj/odblokuj w dropdown:
+Dynamicznie zmieniac tekst i ikone w zaleznosci od statusu uzytkownika. Alert dialog rowniez dostosowany do kontekstu (blokowanie vs odblokowanie).
+
