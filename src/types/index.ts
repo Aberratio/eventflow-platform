@@ -35,6 +35,8 @@ export interface User {
   description?: string;
   // New user tracking
   isNewUser?: boolean;
+  // Account status
+  status?: 'active' | 'blocked';
 }
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
