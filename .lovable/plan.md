@@ -1,43 +1,54 @@
 
-
-# Plan: Implementacja akcji menu organizatorow w panelu admina
+# Plan: Implementacja akcji menu w zakladce Uczestnicy
 
 ## Problem
-W zakladce "Organizatorzy" (`/admin`) kazdy wiersz ma dropdown menu z opcjami, ale "Podglad profilu" i "Zobacz wydarzenia" nie maja `onClick` -- sa nieaktywne. Dodatkowo "Zmien role", "Zablokuj" i "Usun" pokazuja tylko toast bez zadnej interakcji potwierdzajacej.
+W zakladce "Uczestnicy" w panelu admina opcje menu (Podglad profilu, Resetuj haslo, Zablokuj, Usun) wywoluja tylko toasty bez dialogow potwierdzenia ani podgladu danych.
 
-## Zmiany
+## Zmiany w pliku `src/pages/admin/components/UsersParticipantsTab.tsx`
 
-### 1. "Podglad profilu" -- dialog z danymi organizatora
-Otwarcie dialogu z informacjami o organizatorze (imie, email, firma, NIP, strona www, opis). Dane pobierane z obiektu `User`.
+### 1. "Podglad profilu" -- dialog z danymi uczestnika
+Dialog wyswietlajacy dane uczestnika: imie, email, telefon, rok urodzenia, plec, klub. Dane pobierane z obiektu `User`.
 
-### 2. "Zobacz wydarzenia" -- dialog z lista wydarzen
-Otwarcie dialogu z lista wydarzen organizatora (pobieranych z `mockEvents`). Kazde wydarzenie bedzie linkiem do `/events/:slug`.
+### 2. "Zmien role" -- dialog z wyborem roli (nowa opcja)
+Analogicznie do organizatorow -- dialog z selectem do wyboru nowej roli + przycisk potwierdzenia. Dodanie nowej pozycji w dropdown menu.
 
-### 3. "Zmien role" -- dialog z wyborem roli
-Dialog z selectem do wyboru nowej roli (participant/organizer/moderator/admin) + przycisk potwierdzenia.
+### 3. "Resetuj haslo" -- dialog potwierdzenia
+`AlertDialog` z pytaniem "Czy na pewno chcesz wyslac link do resetowania hasla?" zamiast natychmiastowego toasta.
 
 ### 4. "Zablokuj" -- dialog potwierdzenia
-`AlertDialog` z pytaniem "Czy na pewno chcesz zablokowac...?" + przycisk potwierdzenia.
+`AlertDialog` z pytaniem "Czy na pewno chcesz zablokowac uczestnika?"
 
 ### 5. "Usun" -- dialog potwierdzenia
-`AlertDialog` z pytaniem "Czy na pewno chcesz usunac...?" + ostrzezenie o nieodwracalnosci + przycisk potwierdzenia.
-
-## Plik do zmiany
-
-| Plik | Zmiana |
-|------|--------|
-| `src/pages/admin/components/UsersOrganizersTab.tsx` | Dodanie stanow dla dialogi, implementacja onClick dla kazdej opcji menu, 3 nowe dialogi (profil, wydarzenia, zmiana roli) + 2 alert dialogi (blokada, usuniecie) |
+`AlertDialog` z ostrzezeniem o nieodwracalnosci operacji.
 
 ## Szczegoly techniczne
 
 Nowe stany:
-- `selectedUser` -- aktualnie wybrany organizator (User | null)
-- `profileDialogOpen` -- dialog podgladu profilu
-- `eventsDialogOpen` -- dialog wydarzen
-- `roleDialogOpen` -- dialog zmiany roli
-- `blockDialogOpen` -- alert dialog blokady
-- `deleteDialogOpen` -- alert dialog usuniecia
-- `selectedRole` -- wybrana nowa rola
+- `selectedUser` (User | null)
+- `profileDialogOpen`, `roleDialogOpen`, `resetPasswordDialogOpen`, `blockDialogOpen`, `deleteDialogOpen` (boolean)
+- `selectedRole` (UserRole)
 
-Kazda opcja z dropdown ustawia `selectedUser` i otwiera odpowiedni dialog. Dialogi wyswietlaja dane z `selectedUser` i `mockEvents`.
+Nowe importy:
+- `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter`
+- `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogContent`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogHeader`, `AlertDialogTitle`
+- `Label`, `Separator`
+- `UserCog` (ikona dla zmiany roli)
+- `User`, `UserRole` z `@/types`
 
+Funkcja pomocnicza `openAction` -- identyczna jak w UsersOrganizersTab -- ustawia `selectedUser` i otwiera odpowiedni dialog.
+
+### Profil uczestnika -- zawartosc dialogu:
+- Imie i nazwisko
+- Email
+- Telefon (jesli dostepny)
+- Rok urodzenia (jesli dostepny)
+- Plec (jesli dostepna, M/K)
+- Klub (jesli dostepny)
+- Liczba rejestracji
+
+### Dropdown menu -- kolejnosc opcji:
+1. Podglad profilu (Eye)
+2. Zmien role (UserCog) -- nowa pozycja
+3. Resetuj haslo (RefreshCw)
+4. Zablokuj (Ban)
+5. Usun (Trash2, destructive)
