@@ -21,13 +21,14 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { mockUsers, mockRegistrations } from '@/data/mockData';
-import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Eye, UserCog } from 'lucide-react';
+import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Eye, UserCog, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
 
 export const UsersParticipantsTab = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -37,13 +38,19 @@ export const UsersParticipantsTab = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('participant');
 
+  const isBlocked = (userId: string) => blockedUsers.has(userId);
+
   const participants = mockUsers.filter((u) => u.role === 'participant');
 
   const filteredParticipants = participants.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
-    return matchesSearch;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && !isBlocked(user.id)) ||
+      (statusFilter === 'blocked' && isBlocked(user.id));
+    return matchesSearch && matchesStatus;
   });
 
   const getUserRegistrations = (userId: string) => {
@@ -105,9 +112,15 @@ export const UsersParticipantsTab = () => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{getUserRegistrations(user.id)}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                    Aktywny
-                  </Badge>
+                  {isBlocked(user.id) ? (
+                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                      Zablokowany
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                      Aktywny
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -130,8 +143,17 @@ export const UsersParticipantsTab = () => {
                         Resetuj hasło
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'block')}>
-                        <Ban className="h-4 w-4 mr-2" />
-                        Zablokuj
+                        {isBlocked(user.id) ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Odblokuj
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="h-4 w-4 mr-2" />
+                            Zablokuj
+                          </>
+                        )}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive"
@@ -264,21 +286,41 @@ export const UsersParticipantsTab = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Block Alert */}
+      {/* Block/Unblock Alert */}
       <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Blokowanie użytkownika</AlertDialogTitle>
+            <AlertDialogTitle>
+              {selectedUser && isBlocked(selectedUser.id) ? 'Odblokowanie użytkownika' : 'Blokowanie użytkownika'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz zablokować użytkownika {selectedUser?.name}? Zablokowany użytkownik nie będzie mógł się zalogować.
+              {selectedUser && isBlocked(selectedUser.id)
+                ? `Czy na pewno chcesz odblokować użytkownika ${selectedUser?.name}? Użytkownik odzyska dostęp do konta.`
+                : `Czy na pewno chcesz zablokować użytkownika ${selectedUser?.name}? Zablokowany użytkownik nie będzie mógł się zalogować.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              toast.success(`Użytkownik ${selectedUser?.name} został zablokowany`);
+              if (selectedUser) {
+                const blocked = isBlocked(selectedUser.id);
+                setBlockedUsers((prev) => {
+                  const next = new Set(prev);
+                  if (blocked) {
+                    next.delete(selectedUser.id);
+                  } else {
+                    next.add(selectedUser.id);
+                  }
+                  return next;
+                });
+                toast.success(
+                  blocked
+                    ? `Użytkownik ${selectedUser.name} został odblokowany`
+                    : `Użytkownik ${selectedUser.name} został zablokowany`
+                );
+              }
             }}>
-              Zablokuj
+              {selectedUser && isBlocked(selectedUser.id) ? 'Odblokuj' : 'Zablokuj'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
