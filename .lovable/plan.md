@@ -1,66 +1,59 @@
 
 
-# Filtrowanie uczestnikow po statusie (aktywny/zablokowany)
+# Reorganizacja dropdown menu uczestnika w nawigacji
 
-## Problem
-Filtr statusu juz istnieje w UI (select z opcjami Wszyscy/Aktywni/Zablokowani), ale nie dziala -- `statusFilter` nie jest uzywany w logice filtrowania. Dodatkowo typ `User` nie ma pola `status`, wiec wszyscy uczestnicy sa zawsze wyswietlani jako "Aktywny".
+## Obecny stan
 
-## Zmiany
+Dropdown po kliknieciu w avatar uczestnika:
+1. Panel --> /participant
+2. Moje zawody --> /participant?tab=registrations (problematyczny link)
+3. Moj profil --> /profile
+4. Wyloguj
 
-### 1. Dodac pole `status` do interfejsu `User` (`src/types/index.ts`)
-Nowe opcjonalne pole: `status?: 'active' | 'blocked'` (domyslnie traktowane jako `'active'`).
+"Moje zawody" kieruje na zakladke "Moje starty" w dashboardzie, ale uzytkownik nie odczuwa tego jako dzialajacy link (jest juz na /participant, wiec klik nie daje widocznego efektu).
 
-### 2. Sledzic zablokowanych uzytkownikow lokalnie (`UsersParticipantsTab.tsx`)
-Dodac stan `blockedUsers` (Set z ID) -- po kliknieciu "Zablokuj" ID trafia do setu, po odblokowaniu jest usuwane. Pozwoli to na dzialanie filtra bez backendu.
+## Proponowana struktura
 
-### 3. Podlaczyc filtr statusu do logiki filtrowania
-W `filteredParticipants` uwzglednic `statusFilter`:
-- `all` -- bez filtrowania
-- `active` -- tylko uzytkownicy spoza `blockedUsers`
-- `blocked` -- tylko uzytkownicy z `blockedUsers`
-
-### 4. Dynamiczny badge statusu w tabeli
-Zamiast zawsze "Aktywny" (zielony), wyswietlac "Zablokowany" (czerwony) dla uzytkownikow w `blockedUsers`.
-
-### 5. Zmiana akcji "Zablokuj" na "Zablokuj/Odblokuj"
-- Jesli uzytkownik aktywny: opcja "Zablokuj" (Ban) -- dodaje do `blockedUsers`
-- Jesli uzytkownik zablokowany: opcja "Odblokuj" (RefreshCw/CheckCircle) -- usuwa z `blockedUsers`
-
-## Pliki do zmiany
-
-| Plik | Zmiana |
-|------|--------|
-| `src/types/index.ts` | Dodanie `status?: 'active' \| 'blocked'` do interfejsu `User` |
-| `src/pages/admin/components/UsersParticipantsTab.tsx` | Stan `blockedUsers`, filtrowanie po statusie, dynamiczny badge, toggle blokuj/odblokuj |
-
-## Szczegoly techniczne
-
-### Nowy stan:
 ```
-const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
++-----------------------------------+
+| Pulpit                    (ikona) |  --> /participant
+| Nadchodzace starty        (ikona) |  --> /participant?tab=registrations
+| Archiwum startow          (ikona) |  --> /participant?tab=history
+| Zamowienia                (ikona) |  --> /participant?tab=orders
+|-----------------------------------|
+| Moj profil                (ikona) |  --> /profile
+|-----------------------------------|
+| Wyloguj                   (ikona) |
++-----------------------------------+
 ```
 
-### Filtrowanie:
-```
-const isBlocked = (userId: string) => blockedUsers.has(userId);
+### Uzasadnienie:
 
-const filteredParticipants = participants.filter((user) => {
-  const matchesSearch = ...;
-  const matchesStatus =
-    statusFilter === 'all' ||
-    (statusFilter === 'active' && !isBlocked(user.id)) ||
-    (statusFilter === 'blocked' && isBlocked(user.id));
-  return matchesSearch && matchesStatus;
-});
-```
+- **Pulpit** -- zostaje, to glowny punkt wejscia do dashboardu (zakladka overview)
+- **Nadchodzace starty** -- zastepuje "Moje zawody", kieruje na zakladke registrations (przyszle zapisy)
+- **Archiwum startow** -- nowy skrot do zakladki history (przeszle wyniki i certyfikaty)
+- **Zamowienia** -- nowy skrot do zakladki orders (zamowienia ze sklepu)
+- **Moj profil** i **Wyloguj** -- bez zmian
 
-### Badge w tabeli:
-```
-{isBlocked(user.id)
-  ? <Badge variant="outline" className="bg-destructive/10 text-destructive ...">Zablokowany</Badge>
-  : <Badge variant="outline" className="bg-primary/10 text-primary ...">Aktywny</Badge>}
-```
+Pozostale zakladki (Bilety, Rekordy, Wyzwania, Wiadomosci) sa dostepne z poziomu dashboardu -- nie trzeba ich wszystkich ladowac do dropdown, bo byloby za duzo opcji.
 
-### Akcja blokuj/odblokuj w dropdown:
-Dynamicznie zmieniac tekst i ikone w zaleznosci od statusu uzytkownika. Alert dialog rowniez dostosowany do kontekstu (blokowanie vs odblokowanie).
+## Zmiany techniczne
+
+### Plik: `src/components/layout/Header.tsx`
+
+Zastapienie bloku "Moje zawody" (linie 183-194) trzema nowymi pozycjami:
+
+1. **Nadchodzace starty** (ikona: `Calendar`) --> nawigacja do `/participant?tab=registrations` z wymuszeniem ustawienia aktywnej zakladki
+2. **Archiwum startow** (ikona: `History`) --> nawigacja do `/participant?tab=history`
+3. **Zamowienia** (ikona: `Package`) --> nawigacja do `/participant?tab=orders`
+
+Kazdy link bedzie:
+- Jesli uzytkownik juz jest na `/participant`, ustawiac parametr `tab` w URL i wymuszac zmiane zakladki
+- Jesli uzytkownik jest na innej stronie, nawigowac do `/participant?tab=...`
+
+Dodatkowe importy: `History`, `Package` z `lucide-react`.
+
+### Plik: `src/pages/participant/ParticipantDashboard.tsx`
+
+Drobna zmiana -- synchronizacja `activeTab` z parametrem URL `tab` przy zmianie `searchParams`, aby klikniecie z dropdown faktycznie przelaczalo zakladke nawet gdy uzytkownik jest juz na `/participant`. Wymaga dodania `useEffect` sledzacego zmiany `searchParams`.
 
