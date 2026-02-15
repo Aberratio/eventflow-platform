@@ -53,6 +53,7 @@ import {
   Palette,
   Star,
   ImagePlus,
+  Tags,
 } from 'lucide-react';
 import { mockShopProducts, shopCategoryLabels, mockShopOrders, mockUsers } from '@/data/mockData';
 import { ShopProduct, ShopOrder, ShopCategory } from '@/types';
@@ -93,6 +94,12 @@ export const AdminShopTab = () => {
   const [newColorName, setNewColorName] = useState('');
   const [newColorHex, setNewColorHex] = useState('#000000');
   const [newImageUrl, setNewImageUrl] = useState('');
+
+  // Categories state
+  const [categories, setCategories] = useState<Record<string, string>>({ ...shopCategoryLabels });
+  const [newCategoryKey, setNewCategoryKey] = useState('');
+  const [newCategoryLabel, setNewCategoryLabel] = useState('');
+  const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
 
   
   // Orders state
@@ -285,6 +292,10 @@ export const AdminShopTab = () => {
             <ShoppingCart className="h-4 w-4" />
             Zamówienia
           </TabsTrigger>
+          <TabsTrigger value="categories" className="gap-2">
+            <Tags className="h-4 w-4" />
+            Kategorie
+          </TabsTrigger>
         </TabsList>
 
         {/* Products Tab */}
@@ -308,7 +319,7 @@ export const AdminShopTab = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie</SelectItem>
-                      {Object.entries(shopCategoryLabels).map(([key, label]) => (
+                      {Object.entries(categories).map(([key, label]) => (
                         <SelectItem key={key} value={key}>{label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -362,7 +373,7 @@ export const AdminShopTab = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {shopCategoryLabels[product.category]}
+                            {categories[product.category] || product.category}
                           </Badge>
                           {product.isService && (
                             <Badge variant="secondary" className="ml-1">Usługa</Badge>
@@ -514,7 +525,124 @@ export const AdminShopTab = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Categories Tab */}
+        <TabsContent value="categories" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Kategorie produktów</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Klucz</TableHead>
+                      <TableHead>Nazwa wyświetlana</TableHead>
+                      <TableHead className="text-center">Produktów</TableHead>
+                      <TableHead className="w-16">Akcje</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(categories).map(([key, label]) => {
+                      const count = products.filter(p => p.category === key).length;
+                      return (
+                        <TableRow key={key}>
+                          <TableCell className="font-mono text-sm">{key}</TableCell>
+                          <TableCell className="font-medium">{label}</TableCell>
+                          <TableCell className="text-center">{count}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={count > 0}
+                              onClick={() => setDeletingCategory(key)}
+                              title={count > 0 ? 'Nie można usunąć kategorii z przypisanymi produktami' : 'Usuń kategorię'}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="border rounded-lg p-4 space-y-3">
+                <p className="text-sm font-medium">Dodaj nową kategorię</p>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground">Klucz (bez spacji, małe litery)</Label>
+                    <Input
+                      value={newCategoryKey}
+                      onChange={(e) => setNewCategoryKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                      placeholder="np. supplements"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground">Nazwa wyświetlana</Label>
+                    <Input
+                      value={newCategoryLabel}
+                      onChange={(e) => setNewCategoryLabel(e.target.value)}
+                      placeholder="np. Suplementy"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      onClick={() => {
+                        if (newCategoryKey && newCategoryLabel && !categories[newCategoryKey]) {
+                          setCategories({ ...categories, [newCategoryKey]: newCategoryLabel });
+                          setNewCategoryKey('');
+                          setNewCategoryLabel('');
+                          toast.success(`Kategoria "${newCategoryLabel}" została dodana`);
+                        } else if (categories[newCategoryKey]) {
+                          toast.error('Kategoria o takim kluczu już istnieje');
+                        }
+                      }}
+                      disabled={!newCategoryKey || !newCategoryLabel}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Dodaj
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Delete Category Confirmation */}
+      <AlertDialog open={!!deletingCategory} onOpenChange={() => setDeletingCategory(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Usunąć kategorię?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Czy na pewno chcesz usunąć kategorię "{deletingCategory && categories[deletingCategory]}"?
+              Ta operacja jest nieodwracalna.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingCategory) {
+                  const updated = { ...categories };
+                  delete updated[deletingCategory];
+                  setCategories(updated);
+                  toast.success('Kategoria została usunięta');
+                  setDeletingCategory(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Usuń
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Product Edit/Add Dialog */}
       <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
@@ -587,7 +715,7 @@ export const AdminShopTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(shopCategoryLabels).map(([key, label]) => (
+                    {Object.entries(categories).map(([key, label]) => (
                       <SelectItem key={key} value={key}>{label}</SelectItem>
                     ))}
                   </SelectContent>
