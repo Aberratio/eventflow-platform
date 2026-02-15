@@ -48,7 +48,11 @@ import {
   Package, 
   ShoppingCart,
   Infinity,
-  Box
+  Box,
+  X,
+  Palette,
+  Star,
+  ImagePlus,
 } from 'lucide-react';
 import { mockShopProducts, shopCategoryLabels, mockShopOrders, mockUsers } from '@/data/mockData';
 import { ShopProduct, ShopOrder, ShopCategory } from '@/types';
@@ -83,6 +87,13 @@ export const AdminShopTab = () => {
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(null);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [deletingProduct, setDeletingProduct] = useState<ShopProduct | null>(null);
+
+  // Size/color/gallery editor state
+  const [newSize, setNewSize] = useState('');
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorHex, setNewColorHex] = useState('#000000');
+  const [newImageUrl, setNewImageUrl] = useState('');
+
   
   // Orders state
   const [orders, setOrders] = useState<ShopOrder[]>(mockShopOrders);
@@ -593,13 +604,65 @@ export const AdminShopTab = () => {
                 />
               </div>
               <div className="col-span-2">
-                <Label>URL obrazu</Label>
+                <Label>URL głównego obrazu</Label>
                 <Input
                   value={productForm.imageUrl || ''}
                   onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
                   placeholder="https://..."
                 />
               </div>
+
+              {/* Gallery images */}
+              <div className="col-span-2">
+                <Label className="flex items-center gap-2 mb-2">
+                  <ImagePlus className="h-4 w-4" />
+                  Galeria zdjęć
+                </Label>
+                <div className="space-y-2">
+                  {(productForm.images || []).map((img, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <img src={img} alt="" className="h-10 w-10 rounded object-cover bg-muted" />
+                      <Input value={img} readOnly className="flex-1 text-xs" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const updated = (productForm.images || []).filter((_, i) => i !== idx);
+                          setProductForm({ ...productForm, images: updated });
+                        }}
+                      >
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      placeholder="URL dodatkowego zdjęcia..."
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (newImageUrl.trim()) {
+                          setProductForm({
+                            ...productForm,
+                            images: [...(productForm.images || []), newImageUrl.trim()],
+                          });
+                          setNewImageUrl('');
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Dodaj
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Switches row */}
               <div className="flex items-center gap-2">
                 <Switch
                   checked={productForm.inStock || false}
@@ -609,11 +672,19 @@ export const AdminShopTab = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Switch
+                  checked={productForm.featured || false}
+                  onCheckedChange={(checked) => setProductForm({ ...productForm, featured: checked })}
+                />
+                <Label>Wyróżniony produkt</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
                   checked={productForm.isService || false}
                   onCheckedChange={(checked) => setProductForm({ ...productForm, isService: checked })}
                 />
                 <Label>To jest usługa (bez dostawy)</Label>
               </div>
+
               {productForm.isService && (
                 <>
                   <div className="col-span-2">
@@ -635,6 +706,169 @@ export const AdminShopTab = () => {
                     />
                   </div>
                 </>
+              )}
+
+              {/* Sizes editor - only for physical products */}
+              {!productForm.isService && (
+                <div className="col-span-2">
+                  <Label className="mb-2 block">Rozmiary</Label>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {(productForm.sizes || []).map((size) => (
+                      <Badge key={size} variant="secondary" className="gap-1 pr-1">
+                        {size}
+                        <button
+                          onClick={() => setProductForm({
+                            ...productForm,
+                            sizes: (productForm.sizes || []).filter(s => s !== size),
+                          })}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                    {(productForm.sizes || []).length === 0 && (
+                      <span className="text-sm text-muted-foreground">Brak rozmiarów</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={newSize}
+                      onChange={(e) => setNewSize(e.target.value)}
+                      placeholder="np. M, XL, 42..."
+                      className="w-32"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newSize.trim()) {
+                          e.preventDefault();
+                          if (!(productForm.sizes || []).includes(newSize.trim())) {
+                            setProductForm({
+                              ...productForm,
+                              sizes: [...(productForm.sizes || []), newSize.trim()],
+                            });
+                          }
+                          setNewSize('');
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (newSize.trim() && !(productForm.sizes || []).includes(newSize.trim())) {
+                          setProductForm({
+                            ...productForm,
+                            sizes: [...(productForm.sizes || []), newSize.trim()],
+                          });
+                          setNewSize('');
+                        }
+                      }}
+                    >
+                      Dodaj
+                    </Button>
+                    <div className="flex gap-1 ml-2">
+                      {productForm.category === 'apparel' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setProductForm({ ...productForm, sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] })}
+                        >
+                          Preset: odzież
+                        </Button>
+                      )}
+                      {productForm.category === 'footwear' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => setProductForm({ ...productForm, sizes: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'] })}
+                        >
+                          Preset: obuwie
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Colors editor - only for physical products */}
+              {!productForm.isService && (
+                <div className="col-span-2">
+                  <Label className="flex items-center gap-2 mb-2">
+                    <Palette className="h-4 w-4" />
+                    Kolory
+                  </Label>
+                  <div className="space-y-2 mb-2">
+                    {(productForm.colors || []).map((color) => (
+                      <div key={color.id} className="flex items-center gap-2">
+                        <div
+                          className="w-6 h-6 rounded-full border border-border"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span className="text-sm">{color.name}</span>
+                        <span className="text-xs text-muted-foreground">{color.hex}</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 ml-auto"
+                          onClick={() => setProductForm({
+                            ...productForm,
+                            colors: (productForm.colors || []).filter(c => c.id !== color.id),
+                          })}
+                        >
+                          <X className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={newColorName}
+                      onChange={(e) => setNewColorName(e.target.value)}
+                      placeholder="Nazwa koloru..."
+                      className="w-40"
+                    />
+                    <input
+                      type="color"
+                      value={newColorHex}
+                      onChange={(e) => setNewColorHex(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer border border-border"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (newColorName.trim()) {
+                          setProductForm({
+                            ...productForm,
+                            colors: [
+                              ...(productForm.colors || []),
+                              { id: `c-${Date.now()}`, name: newColorName.trim(), hex: newColorHex },
+                            ],
+                          });
+                          setNewColorName('');
+                          setNewColorHex('#000000');
+                        }
+                      }}
+                    >
+                      Dodaj kolor
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Rating info (read-only) */}
+              {editingProduct && editingProduct.rating !== undefined && (
+                <div className="col-span-2 p-3 bg-muted/50 rounded-lg">
+                  <Label className="flex items-center gap-2 mb-1">
+                    <Star className="h-4 w-4 text-warning" />
+                    Ocena i recenzje (tylko odczyt)
+                  </Label>
+                  <div className="flex items-center gap-4 text-sm">
+                    <span>Ocena: <strong>{editingProduct.rating.toFixed(1)}</strong> / 5</span>
+                    <span>Recenzji: <strong>{editingProduct.reviewCount}</strong></span>
+                  </div>
+                </div>
               )}
             </div>
           </div>

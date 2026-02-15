@@ -29,6 +29,7 @@ const ShopProductPage = () => {
     product?.colors?.[0]?.id
   );
   const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(product?.imageUrl || '');
 
   if (!product) {
     return (
@@ -74,17 +75,37 @@ const ShopProductPage = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-          {/* Product Image */}
-          <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="h-full w-full object-cover"
-            />
-            {hasDiscount && (
-              <Badge className="absolute top-4 right-4 bg-destructive text-lg px-3 py-1">
-                -{discountPercent}%
-              </Badge>
+          {/* Product Image & Gallery */}
+          <div className="space-y-3">
+            <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+              <img
+                src={selectedImage || product.imageUrl}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
+              {hasDiscount && (
+                <Badge className="absolute top-4 right-4 bg-destructive text-lg px-3 py-1">
+                  -{discountPercent}%
+                </Badge>
+              )}
+            </div>
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {product.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={cn(
+                      'w-16 h-16 rounded-md overflow-hidden border-2 flex-shrink-0 transition-all',
+                      (selectedImage || product.imageUrl) === img
+                        ? 'border-primary ring-1 ring-primary'
+                        : 'border-border hover:border-muted-foreground'
+                    )}
+                  >
+                    <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
