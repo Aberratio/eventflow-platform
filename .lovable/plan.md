@@ -1,59 +1,93 @@
 
 
-# Reorganizacja dropdown menu uczestnika w nawigacji
+# Dopracowanie konfiguracji produktow w sklepie
 
-## Obecny stan
+## Analiza obecnego stanu
 
-Dropdown po kliknieciu w avatar uczestnika:
-1. Panel --> /participant
-2. Moje zawody --> /participant?tab=registrations (problematyczny link)
-3. Moj profil --> /profile
-4. Wyloguj
+### Co juz dziala w formularzu admina:
+- Nazwa, slug, opis, marka
+- Cena i cena oryginalna (przecena)
+- Kategoria (select)
+- Stan magazynowy
+- URL obrazu (pojedynczy)
+- Przelacznik: dostepny / usliga
+- Pola uslugi: szczegoly, waznosc
 
-"Moje zawody" kieruje na zakladke "Moje starty" w dashboardzie, ale uzytkownik nie odczuwa tego jako dzialajacy link (jest juz na /participant, wiec klik nie daje widocznego efektu).
+### Czego BRAKUJE w formularzu admina:
+1. **Rozmiary** -- typ `sizes: string[]` istnieje, ale brak UI do dodawania/usuwania
+2. **Kolory** -- typ `colors: MerchandiseColor[]` istnieje, ale brak UI do zarzadzania
+3. **Galeria zdjec** -- typ `images: string[]` istnieje, ale brak UI (jest tylko jedno pole imageUrl)
+4. **Wyroznienie** -- typ `featured: boolean` istnieje, brak przelacznika
+5. **Ocena/recenzje** -- pola `rating` i `reviewCount` sa w typie, brak wyswietlania w formularzu
 
-## Proponowana struktura
+### Co juz dziala po stronie uczestnika (ShopProductPage):
+- Wyswietlanie rozmiarow jako przyciski
+- Wyswietlanie kolorow jako kolka z hex
+- Szczegoly uslug
+- Oceny (gwiazdki)
+- Galeria -- **BRAK**, wyswietla tylko jeden obraz
 
+## Plan zmian
+
+### 1. Formularz produktu w AdminShopTab -- rozszerzenie dialogu
+
+#### a) Edytor rozmiarow
+Pole tekstowe + przycisk "Dodaj". Rozmiary wyswietlane jako badge z "X" do usuwania. Wstepnie wypelniane presetami (np. XS-XXL dla odziezi, 36-46 dla obuwia) w zaleznosci od kategorii.
+
+#### b) Edytor kolorow
+Dla kazdego koloru: pole "Nazwa" + input `type="color"` (natywny color picker). Przycisk "Dodaj kolor", lista dodanych kolorow z podgladem i mozliwoscia usuniecia.
+
+#### c) Galeria zdjec (dodatkowe URL-e)
+Lista pol tekstowych na URL-e dodatkowych zdjec. Przycisk "Dodaj zdjecie" dodaje nowe pole. Mozliwosc usuwania.
+
+#### d) Przelacznik "Wyrozniony produkt"
+Switch analogiczny do "Dostepny w sprzedazy" i "To jest usluga".
+
+#### e) Ocena i recenzje (tylko odczyt)
+Przy edycji -- wyswietlanie aktualnej oceny i liczby recenzji (nieedytowalne, informacyjne).
+
+### 2. ShopProductPage -- galeria zdjec
+
+Jesli produkt ma tablice `images`, wyswietlic miniaturki pod glownym zdjeciem. Klikniecie w miniaturke zmienia glowne zdjecie. Obecny `imageUrl` jako domyslne zdjecie.
+
+### 3. Mockowe dane -- uzupelnienie
+
+Dodac pole `images` do kilku produktow (2-3 dodatkowe URL-e Unsplash), aby galeria miala co wyswietlic.
+
+## Szczegoly techniczne
+
+### Pliki do zmiany:
+
+| Plik | Zmiana |
+|------|--------|
+| `src/pages/admin/components/AdminShopTab.tsx` | Rozszerzenie dialogu produktu o edytory rozmiarow, kolorow, galerii, featured |
+| `src/pages/ShopProductPage.tsx` | Galeria zdjec z miniaturkami |
+| `src/data/mockData.ts` | Dodanie `images` do wybranych produktow |
+
+### Edytor rozmiarow (AdminShopTab):
 ```
-+-----------------------------------+
-| Pulpit                    (ikona) |  --> /participant
-| Nadchodzace starty        (ikona) |  --> /participant?tab=registrations
-| Archiwum startow          (ikona) |  --> /participant?tab=history
-| Zamowienia                (ikona) |  --> /participant?tab=orders
-|-----------------------------------|
-| Moj profil                (ikona) |  --> /profile
-|-----------------------------------|
-| Wyloguj                   (ikona) |
-+-----------------------------------+
+Stan: newSize (string)
+UI: Input + Button "Dodaj" + lista Badge z X
+Presety kategorii:
+  apparel -> ['XS','S','M','L','XL','XXL']
+  footwear -> ['36','37','38',...,'46']
 ```
 
-### Uzasadnienie:
+### Edytor kolorow (AdminShopTab):
+```
+Stan: newColorName (string), newColorHex (string)
+UI: Input[text] + Input[color] + Button "Dodaj"
+Lista: kolorowe kolka + nazwa + przycisk usun
+```
 
-- **Pulpit** -- zostaje, to glowny punkt wejscia do dashboardu (zakladka overview)
-- **Nadchodzace starty** -- zastepuje "Moje zawody", kieruje na zakladke registrations (przyszle zapisy)
-- **Archiwum startow** -- nowy skrot do zakladki history (przeszle wyniki i certyfikaty)
-- **Zamowienia** -- nowy skrot do zakladki orders (zamowienia ze sklepu)
-- **Moj profil** i **Wyloguj** -- bez zmian
+### Galeria (ShopProductPage):
+```
+Stan: selectedImage (string) -- domyslnie product.imageUrl
+Miniaturki: flex row pod glownym zdjeciem
+Klik na miniaturke -> zmiana selectedImage
+```
 
-Pozostale zakladki (Bilety, Rekordy, Wyzwania, Wiadomosci) sa dostepne z poziomu dashboardu -- nie trzeba ich wszystkich ladowac do dropdown, bo byloby za duzo opcji.
-
-## Zmiany techniczne
-
-### Plik: `src/components/layout/Header.tsx`
-
-Zastapienie bloku "Moje zawody" (linie 183-194) trzema nowymi pozycjami:
-
-1. **Nadchodzace starty** (ikona: `Calendar`) --> nawigacja do `/participant?tab=registrations` z wymuszeniem ustawienia aktywnej zakladki
-2. **Archiwum startow** (ikona: `History`) --> nawigacja do `/participant?tab=history`
-3. **Zamowienia** (ikona: `Package`) --> nawigacja do `/participant?tab=orders`
-
-Kazdy link bedzie:
-- Jesli uzytkownik juz jest na `/participant`, ustawiac parametr `tab` w URL i wymuszac zmiane zakladki
-- Jesli uzytkownik jest na innej stronie, nawigowac do `/participant?tab=...`
-
-Dodatkowe importy: `History`, `Package` z `lucide-react`.
-
-### Plik: `src/pages/participant/ParticipantDashboard.tsx`
-
-Drobna zmiana -- synchronizacja `activeTab` z parametrem URL `tab` przy zmianie `searchParams`, aby klikniecie z dropdown faktycznie przelaczalo zakladke nawet gdy uzytkownik jest juz na `/participant`. Wymaga dodania `useEffect` sledzacego zmiany `searchParams`.
+### Nowe importy:
+- AdminShopTab: `X` z lucide (juz moze byc), `Palette` ikona
+- ShopProductPage: brak nowych importow
 
