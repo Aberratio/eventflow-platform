@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCartSafe } from '@/contexts/CartContext';
-import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio } from 'lucide-react';
+import { Timer, Menu, X, User, LogOut, Calendar, Settings, LayoutDashboard, ShoppingCart, ChevronDown, Radio, History, Package } from 'lucide-react';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -181,16 +181,26 @@ export const Header = () => {
                   Panel
                 </DropdownMenuItem>
                 {user?.role === 'participant' && (
-                  <DropdownMenuItem onClick={() => {
-                    if (location.pathname === '/participant') {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } else {
+                  <>
+                    <DropdownMenuItem onClick={() => {
                       navigate('/participant?tab=registrations');
-                    }
-                  }}>
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Moje zawody
-                  </DropdownMenuItem>
+                    }}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Nadchodzące starty
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      navigate('/participant?tab=history');
+                    }}>
+                      <History className="h-4 w-4 mr-2" />
+                      Archiwum startów
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      navigate('/participant?tab=orders');
+                    }}>
+                      <Package className="h-4 w-4 mr-2" />
+                      Zamówienia
+                    </DropdownMenuItem>
+                  </>
                 )}
                 {user?.role === 'organizer' && (
                   <DropdownMenuItem onClick={() => {
