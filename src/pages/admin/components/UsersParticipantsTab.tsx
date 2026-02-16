@@ -3,7 +3,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -20,8 +19,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
 import { mockUsers, mockRegistrations } from '@/data/mockData';
-import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Eye, UserCog, CheckCircle } from 'lucide-react';
+import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Pencil, UserCog, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
 
@@ -131,8 +131,8 @@ export const UsersParticipantsTab = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openAction(user, 'profile')}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Podgląd profilu
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Podgląd / Edycja
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'role')}>
                         <UserCog className="h-4 w-4 mr-2" />
@@ -175,57 +175,20 @@ export const UsersParticipantsTab = () => {
         Znaleziono {filteredParticipants.length} uczestników
       </div>
 
-      {/* Profile Dialog */}
-      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Profil uczestnika</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">Imię i nazwisko</Label>
-                  <p className="font-medium">{selectedUser.name}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="font-medium">{selectedUser.email}</p>
-                </div>
-                {selectedUser.phone && (
-                  <div>
-                    <Label className="text-muted-foreground">Telefon</Label>
-                    <p className="font-medium">{selectedUser.phone}</p>
-                  </div>
-                )}
-                {selectedUser.birthYear && (
-                  <div>
-                    <Label className="text-muted-foreground">Rok urodzenia</Label>
-                    <p className="font-medium">{selectedUser.birthYear}</p>
-                  </div>
-                )}
-                {selectedUser.gender && (
-                  <div>
-                    <Label className="text-muted-foreground">Płeć</Label>
-                    <p className="font-medium">{selectedUser.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</p>
-                  </div>
-                )}
-                {selectedUser.club && (
-                  <div>
-                    <Label className="text-muted-foreground">Klub</Label>
-                    <p className="font-medium">{selectedUser.club}</p>
-                  </div>
-                )}
-              </div>
-              <Separator />
-              <div>
-                <Label className="text-muted-foreground">Liczba rejestracji</Label>
-                <p className="font-medium">{getUserRegistrations(selectedUser.id)}</p>
-              </div>
+      {/* Profile View/Edit Dialog */}
+      <UserViewEditDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+        user={selectedUser}
+        extraViewContent={
+          selectedUser && (
+            <div>
+              <Label className="text-muted-foreground">Liczba rejestracji</Label>
+              <p className="font-medium">{getUserRegistrations(selectedUser.id)}</p>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          )
+        }
+      />
 
       {/* Role Dialog */}
       <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
@@ -241,9 +204,7 @@ export const UsersParticipantsTab = () => {
               <div className="space-y-2">
                 <Label>Nowa rola</Label>
                 <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as UserRole)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="participant">Uczestnik</SelectItem>
                     <SelectItem value="organizer">Organizator</SelectItem>
@@ -295,8 +256,8 @@ export const UsersParticipantsTab = () => {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {selectedUser && isBlocked(selectedUser.id)
-                ? `Czy na pewno chcesz odblokować użytkownika ${selectedUser?.name}? Użytkownik odzyska dostęp do konta.`
-                : `Czy na pewno chcesz zablokować użytkownika ${selectedUser?.name}? Zablokowany użytkownik nie będzie mógł się zalogować.`}
+                ? `Czy na pewno chcesz odblokować użytkownika ${selectedUser?.name}?`
+                : `Czy na pewno chcesz zablokować użytkownika ${selectedUser?.name}?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -306,18 +267,10 @@ export const UsersParticipantsTab = () => {
                 const blocked = isBlocked(selectedUser.id);
                 setBlockedUsers((prev) => {
                   const next = new Set(prev);
-                  if (blocked) {
-                    next.delete(selectedUser.id);
-                  } else {
-                    next.add(selectedUser.id);
-                  }
+                  if (blocked) next.delete(selectedUser.id); else next.add(selectedUser.id);
                   return next;
                 });
-                toast.success(
-                  blocked
-                    ? `Użytkownik ${selectedUser.name} został odblokowany`
-                    : `Użytkownik ${selectedUser.name} został zablokowany`
-                );
+                toast.success(blocked ? `Użytkownik ${selectedUser.name} został odblokowany` : `Użytkownik ${selectedUser.name} został zablokowany`);
               }
             }}>
               {selectedUser && isBlocked(selectedUser.id) ? 'Odblokuj' : 'Zablokuj'}
@@ -332,16 +285,14 @@ export const UsersParticipantsTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Usuwanie użytkownika</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć użytkownika {selectedUser?.name}? Ta operacja jest nieodwracalna i usunie wszystkie dane powiązane z tym kontem.
+              Czy na pewno chcesz usunąć użytkownika {selectedUser?.name}? Ta operacja jest nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                toast.success(`Użytkownik ${selectedUser?.name} został usunięty`);
-              }}
+              onClick={() => { toast.success(`Użytkownik ${selectedUser?.name} został usunięty`); }}
             >
               Usuń
             </AlertDialogAction>

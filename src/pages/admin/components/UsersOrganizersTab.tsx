@@ -18,10 +18,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
 import { mockUsers, mockEvents } from '@/data/mockData';
-import { Search, MoreHorizontal, Ban, Trash2, Eye, UserPlus, Calendar, UserCog } from 'lucide-react';
+import { Search, MoreHorizontal, Ban, Trash2, Pencil, UserPlus, Calendar, UserCog, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import type { User, UserRole } from '@/types';
@@ -30,8 +32,17 @@ export const UsersOrganizersTab = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  // Add organizer - new user fields
   const [newOrganizerName, setNewOrganizerName] = useState('');
   const [newOrganizerEmail, setNewOrganizerEmail] = useState('');
+  const [newOrganizerPhone, setNewOrganizerPhone] = useState('');
+  const [newOrganizerCompany, setNewOrganizerCompany] = useState('');
+  const [newOrganizerNip, setNewOrganizerNip] = useState('');
+
+  // Add organizer - existing user fields
+  const [searchEmail, setSearchEmail] = useState('');
+  const [matchedUser, setMatchedUser] = useState<User | null>(null);
 
   // Action dialog states
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -43,6 +54,7 @@ export const UsersOrganizersTab = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('organizer');
 
   const organizers = mockUsers.filter((u) => u.role === 'organizer');
+  const nonOrganizers = mockUsers.filter((u) => u.role !== 'organizer');
 
   const filteredOrganizers = organizers.filter((user) => {
     const matchesSearch =
@@ -50,6 +62,10 @@ export const UsersOrganizersTab = () => {
       user.email.toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
+
+  const emailMatches = searchEmail.length >= 2
+    ? nonOrganizers.filter((u) => u.email.toLowerCase().includes(searchEmail.toLowerCase()))
+    : [];
 
   const getOrganizerEvents = (organizerId: string) => {
     return mockEvents.filter((e) => e.organizerId === organizerId);
@@ -72,23 +88,42 @@ export const UsersOrganizersTab = () => {
   const handleChangeRole = () => {
     if (!selectedUser) return;
     const roleLabels: Record<UserRole, string> = {
-      participant: 'Uczestnik',
-      organizer: 'Organizator',
-      moderator: 'Moderator',
-      admin: 'Administrator',
+      participant: 'Uczestnik', organizer: 'Organizator', moderator: 'Moderator', admin: 'Administrator',
     };
     toast.success(`Rola użytkownika ${selectedUser.name} została zmieniona na: ${roleLabels[selectedRole]}`);
     setRoleDialogOpen(false);
     setSelectedUser(null);
   };
 
-  const handleAddOrganizer = () => {
+  const handleAddNewOrganizer = () => {
     if (newOrganizerName && newOrganizerEmail) {
       toast.success(`Organizator ${newOrganizerName} został dodany`);
       setNewOrganizerName('');
       setNewOrganizerEmail('');
+      setNewOrganizerPhone('');
+      setNewOrganizerCompany('');
+      setNewOrganizerNip('');
       setIsAddDialogOpen(false);
     }
+  };
+
+  const handlePromoteToOrganizer = () => {
+    if (matchedUser) {
+      toast.success(`Użytkownik ${matchedUser.name} otrzymał rolę organizatora`);
+      setMatchedUser(null);
+      setSearchEmail('');
+      setIsAddDialogOpen(false);
+    }
+  };
+
+  const resetAddDialog = () => {
+    setNewOrganizerName('');
+    setNewOrganizerEmail('');
+    setNewOrganizerPhone('');
+    setNewOrganizerCompany('');
+    setNewOrganizerNip('');
+    setSearchEmail('');
+    setMatchedUser(null);
   };
 
   const openAction = (user: User, action: 'profile' | 'events' | 'role' | 'block' | 'delete') => {
@@ -122,28 +157,104 @@ export const UsersOrganizersTab = () => {
             <SelectItem value="blocked">Zablokowani</SelectItem>
           </SelectContent>
         </Select>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+
+        {/* Add Organizer Dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={(v) => { setIsAddDialogOpen(v); if (!v) resetAddDialog(); }}>
           <DialogTrigger asChild>
             <Button>
               <UserPlus className="h-4 w-4 mr-2" />
               Dodaj organizatora
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Dodaj nowego organizatora</DialogTitle>
+              <DialogTitle>Dodaj organizatora</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nazwa</Label>
-                <Input id="name" value={newOrganizerName} onChange={(e) => setNewOrganizerName(e.target.value)} placeholder="Nazwa organizatora" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={newOrganizerEmail} onChange={(e) => setNewOrganizerEmail(e.target.value)} placeholder="email@example.com" />
-              </div>
-              <Button onClick={handleAddOrganizer} className="w-full">Dodaj organizatora</Button>
-            </div>
+            <Tabs defaultValue="existing" className="pt-2">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="existing">Istniejący użytkownik</TabsTrigger>
+                <TabsTrigger value="new">Nowy użytkownik</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="existing" className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Wyszukaj po emailu</Label>
+                  <Input
+                    type="email"
+                    value={searchEmail}
+                    onChange={(e) => { setSearchEmail(e.target.value); setMatchedUser(null); }}
+                    placeholder="Wpisz email użytkownika..."
+                  />
+                </div>
+
+                {searchEmail.length >= 2 && !matchedUser && (
+                  <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                    {emailMatches.length === 0 ? (
+                      <p className="text-sm text-muted-foreground p-3 text-center">Nie znaleziono użytkowników</p>
+                    ) : (
+                      emailMatches.map((u) => (
+                        <button
+                          key={u.id}
+                          className="w-full flex items-center justify-between p-3 hover:bg-accent/50 transition-colors text-left border-b last:border-b-0"
+                          onClick={() => { setMatchedUser(u); setSearchEmail(u.email); }}
+                        >
+                          <div>
+                            <p className="text-sm font-medium">{u.name}</p>
+                            <p className="text-xs text-muted-foreground">{u.email}</p>
+                          </div>
+                          <Badge variant="outline" className="text-xs capitalize">{u.role}</Badge>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {matchedUser && (
+                  <div className="border rounded-md p-4 bg-accent/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{matchedUser.name}</p>
+                        <p className="text-sm text-muted-foreground">{matchedUser.email}</p>
+                      </div>
+                      <Badge variant="outline" className="capitalize">{matchedUser.role}</Badge>
+                    </div>
+                    <Button onClick={handlePromoteToOrganizer} className="w-full">
+                      <Check className="h-4 w-4 mr-2" />
+                      Nadaj rolę organizatora
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="new" className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Imię i nazwisko *</Label>
+                    <Input value={newOrganizerName} onChange={(e) => setNewOrganizerName(e.target.value)} placeholder="Jan Kowalski" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email *</Label>
+                    <Input type="email" value={newOrganizerEmail} onChange={(e) => setNewOrganizerEmail(e.target.value)} placeholder="email@example.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefon</Label>
+                    <Input type="tel" value={newOrganizerPhone} onChange={(e) => setNewOrganizerPhone(e.target.value)} placeholder="+48 123 456 789" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nazwa firmy</Label>
+                    <Input value={newOrganizerCompany} onChange={(e) => setNewOrganizerCompany(e.target.value)} placeholder="Firma Sp. z o.o." />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>NIP</Label>
+                    <Input value={newOrganizerNip} onChange={(e) => setNewOrganizerNip(e.target.value)} placeholder="1234567890" />
+                  </div>
+                </div>
+                <Button onClick={handleAddNewOrganizer} className="w-full" disabled={!newOrganizerName || !newOrganizerEmail}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Dodaj organizatora
+                </Button>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
@@ -180,7 +291,7 @@ export const UsersOrganizersTab = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openAction(user, 'profile')}>
-                        <Eye className="h-4 w-4 mr-2" />Podgląd profilu
+                        <Pencil className="h-4 w-4 mr-2" />Podgląd / Edycja
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'events')}>
                         <Calendar className="h-4 w-4 mr-2" />Zobacz wydarzenia
@@ -207,57 +318,20 @@ export const UsersOrganizersTab = () => {
         Znaleziono {filteredOrganizers.length} organizatorów
       </div>
 
-      {/* Profile Dialog */}
-      <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Profil organizatora</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-[120px_1fr] gap-y-3 text-sm">
-                <span className="text-muted-foreground">Nazwa</span>
-                <span className="font-medium">{selectedUser.name}</span>
-                <span className="text-muted-foreground">Email</span>
-                <span>{selectedUser.email}</span>
-                {selectedUser.companyName && (
-                  <>
-                    <span className="text-muted-foreground">Firma</span>
-                    <span>{selectedUser.companyName}</span>
-                  </>
-                )}
-                {selectedUser.nip && (
-                  <>
-                    <span className="text-muted-foreground">NIP</span>
-                    <span>{selectedUser.nip}</span>
-                  </>
-                )}
-                {selectedUser.website && (
-                  <>
-                    <span className="text-muted-foreground">Strona www</span>
-                    <a href={selectedUser.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{selectedUser.website}</a>
-                  </>
-                )}
-                {selectedUser.phone && (
-                  <>
-                    <span className="text-muted-foreground">Telefon</span>
-                    <span>{selectedUser.phone}</span>
-                  </>
-                )}
-              </div>
-              {selectedUser.description && (
-                <>
-                  <Separator />
-                  <div>
-                    <span className="text-sm text-muted-foreground">Opis</span>
-                    <p className="text-sm mt-1">{selectedUser.description}</p>
-                  </div>
-                </>
-              )}
+      {/* Profile View/Edit Dialog */}
+      <UserViewEditDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+        user={selectedUser}
+        extraViewContent={
+          selectedUser && (
+            <div>
+              <Label className="text-muted-foreground">Liczba wydarzeń</Label>
+              <p className="font-medium">{getOrganizerEvents(selectedUser.id).length}</p>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          )
+        }
+      />
 
       {/* Events Dialog */}
       <Dialog open={eventsDialogOpen} onOpenChange={setEventsDialogOpen}>
@@ -298,9 +372,7 @@ export const UsersOrganizersTab = () => {
             <div className="space-y-2">
               <Label>Nowa rola</Label>
               <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as UserRole)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="participant">Uczestnik</SelectItem>
                   <SelectItem value="organizer">Organizator</SelectItem>
@@ -339,7 +411,7 @@ export const UsersOrganizersTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Usunąć organizatora?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć <span className="font-medium">{selectedUser?.name}</span>? Ta operacja jest nieodwracalna. Wszystkie dane organizatora i powiązane wydarzenia zostaną trwale usunięte.
+              Czy na pewno chcesz usunąć <span className="font-medium">{selectedUser?.name}</span>? Ta operacja jest nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
