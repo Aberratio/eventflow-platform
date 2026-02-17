@@ -93,7 +93,7 @@ export const CookieConsent = () => {
               Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. 
               Możesz dostosować swoje preferencje lub zaakceptować wszystkie. 
               Więcej informacji znajdziesz w naszej{' '}
-              <a href="/polityka-prywatnosci" className="underline text-primary hover:text-primary/80 transition-colors">
+              <a href="/info/polityka-prywatnosci" className="underline text-primary hover:text-primary/80 transition-colors">
                 polityce prywatności
               </a>.
             </p>
