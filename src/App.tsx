@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { OnboardingDialog } from "@/components/OnboardingDialog";
+import { CookieConsent } from "@/components/CookieConsent";
 import { BottomNav } from "@/components/layout/BottomNav";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -61,6 +62,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <OnboardingDialog />
+              <CookieConsent />
               <div className="pb-16 md:pb-0">
                 <Routes>
                   <Route path="/" element={<Index />} />
