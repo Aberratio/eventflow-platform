@@ -73,7 +73,11 @@ export const CookieConsent = () => {
             <Cookie className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <p className="text-sm text-muted-foreground">
               Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. 
-              Możesz dostosować swoje preferencje lub zaakceptować wszystkie.
+              Możesz dostosować swoje preferencje lub zaakceptować wszystkie. 
+              Więcej informacji znajdziesz w naszej{' '}
+              <a href="/polityka-prywatnosci" className="underline text-primary hover:text-primary/80 transition-colors">
+                polityce prywatności
+              </a>.
             </p>
           </div>
 
