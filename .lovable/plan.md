@@ -1,95 +1,66 @@
 
 
-# Rozbudowa zarzadzania uzytkownikami w panelu admina
+# Baner cookies z opcjami i zapisem w localStorage
 
-## Zakres zmian
+## Opis
 
-### 1. Rozbudowa dialogu "Dodaj organizatora" -- wybor z istniejacych lub nowy
+Nowy komponent `CookieConsent` wyswietlany na dole ekranu jako sticky baner. Uzytkownik moze:
+- **Zaakceptowac wszystkie** cookies jednym kliknieciem
+- **Odrzucic opcjonalne** (tylko niezbedne)
+- **Dostosowac** -- rozwinac panel z checkboxami dla poszczegolnych kategorii
 
-Obecny dialog pozwala tylko na wpisanie nazwy i emaila (nowy user). Zmieniamy go na dwuetapowy:
+Wybor zapisywany w `localStorage` pod kluczem `cookie-consent`. Jesli klucz istnieje, baner sie nie pojawia.
 
-**Tryb 1: Wybierz istniejacego uzytkownika**
-- Pole wyszukiwania po emailu (autocomplete z listy mockUsers, filtrowane do userow z rola != organizer)
-- Po wybraniu usera -- wyswietla sie jego imie i email
-- Przycisk "Nadaj role organizatora" -- zmienia role wybranego usera
+## Kategorie cookies
 
-**Tryb 2: Dodaj nowego uzytkownika**
-- Formularz jak dotychczas (imie, email) + opcjonalne pola: telefon, nazwa firmy, NIP
-- Przelacznik miedzy trybami (Tabs lub przyciski radiowe)
+| Kategoria | Domyslnie | Mozna wylaczyc? | Opis |
+|-----------|-----------|-----------------|------|
+| Niezbedne | wl. | Nie | Dzialanie strony, sesja, koszyk |
+| Analityczne | wyl. | Tak | Statystyki odwiedzin, Google Analytics |
+| Marketingowe | wyl. | Tak | Reklamy, remarketing |
+| Funkcjonalne | wyl. | Tak | Personalizacja, preferencje wyswietlania |
 
-### 2. Dialog edycji danych uzytkownika -- wspolny dla obu zakladek
+## UI
 
-Zamiast obecnego dialogu "Podglad profilu" (read-only), nowy dialog z dwoma trybami:
-- **Tryb podgladu** (domyslny) -- jak dotychczas, dane w formie grid/label
-- **Tryb edycji** -- po kliknieciu "Edytuj" pola zamieniaja sie na inputy
+Baner na dole ekranu (`fixed bottom-0`), z-index powyzej bottom nav. Zawiera:
+- Krotki tekst informacyjny
+- Przycisk "Dostosuj" -- rozwija checkboxy kategorii
+- Przycisk "Tylko niezbedne" (outline)
+- Przycisk "Akceptuj wszystkie" (primary)
 
-Pola do edycji:
+Po rozwinieciu "Dostosuj" -- lista kategorii z opisami i switchami. "Niezbedne" zawsze wlaczone i zablokowane (disabled).
 
-| Pole | Typ | Dotyczy |
-|------|-----|---------|
-| Imie i nazwisko | Input text | wszyscy |
-| Email | Input email | wszyscy |
-| Telefon | Input tel | wszyscy |
-| Rok urodzenia | Input number | uczestnik |
-| Plec | Select M/K | uczestnik |
-| Klub | Input text | uczestnik |
-| Nazwa firmy | Input text | organizator |
-| NIP | Input text | organizator |
-| Strona www | Input url | organizator |
-| Opis | Textarea | organizator |
+## Zapis w localStorage
 
-Dialog automatycznie wyswietla odpowiednie pola w zaleznosci od roli usera.
+```
+klucz: "cookie-consent"
+wartosc: JSON {
+  necessary: true,
+  analytics: boolean,
+  marketing: boolean,
+  functional: boolean,
+  timestamp: string (ISO date)
+}
+```
 
-### 3. Zmiana w dropdown menu -- "Podglad profilu" zamieniony na "Podglad / Edycja"
-
-W obu zakladkach (Uczestnicy i Organizatorzy):
-- Akcja "Podglad profilu" otwiera nowy dialog z trybem podglad/edycja
-- Ikona zmieniona na `Pencil` (lub zostaje `Eye` + dodatkowa opcja `Pencil`)
-
-## Pliki do zmiany
-
-| Plik | Zmiana |
-|------|--------|
-| `src/pages/admin/components/UsersOrganizersTab.tsx` | Rozbudowa dialogu dodawania (nowy/istniejacy), dialog podgladu z trybem edycji |
-| `src/pages/admin/components/UsersParticipantsTab.tsx` | Dialog podgladu z trybem edycji |
+Przy starcie aplikacji komponent sprawdza `localStorage.getItem('cookie-consent')` -- jesli istnieje, baner nie renderuje sie wcale.
 
 ## Szczegoly techniczne
 
-### Dialog dodawania organizatora (UsersOrganizersTab):
+### Nowy plik: `src/components/CookieConsent.tsx`
 
-```
-Stan:
-  addMode: 'new' | 'existing' (domyslnie 'existing')
-  searchEmail: string
-  matchedUser: User | null
+Komponent standalone:
+- Stan `visible` -- na poczatku `!localStorage.getItem('cookie-consent')`
+- Stan `showDetails` -- rozwijanie panelu dostosowania
+- Stany checkboxow: `analytics`, `marketing`, `functional` (domyslnie `false`)
+- Funkcja `saveConsent(options)` -- zapisuje do localStorage i ustawia `visible = false`
+- "Akceptuj wszystkie" -> `saveConsent({ necessary: true, analytics: true, marketing: true, functional: true })`
+- "Tylko niezbedne" -> `saveConsent({ necessary: true, analytics: false, marketing: false, functional: false })`
+- "Zapisz preferencje" (w trybie dostosowania) -> `saveConsent({ necessary: true, analytics, marketing, functional })`
 
-Logika wyszukiwania:
-  const nonOrganizers = mockUsers.filter(u => u.role !== 'organizer');
-  const matches = nonOrganizers.filter(u => u.email.includes(searchEmail));
+Uzywa komponentow: `Button`, `Switch`, `Card`.
 
-UI:
-  Tabs "Istniejacy uzytkownik" | "Nowy uzytkownik"
-  - Istniejacy: Input email + lista podpowiedzi + przycisk "Nadaj role"
-  - Nowy: formularz name/email/phone/company/nip
-```
+### Zmiana w: `src/App.tsx`
 
-### Dialog podgladu/edycji (wspolny wzorzec dla obu zakladek):
-
-```
-Stan:
-  isEditing: boolean (domyslnie false)
-  editData: Partial<User>
-
-UI podglad:
-  Grid z label+value (jak dotychczas)
-  Przycisk "Edytuj dane" w prawym gornym rogu
-
-UI edycja:
-  Pola zamienione na Input/Select/Textarea
-  Dolne przyciski: "Anuluj" (wraca do podgladu) + "Zapisz zmiany" (toast + wraca do podgladu)
-
-Pola warunkowe:
-  if (user.role === 'participant') -> birthYear, gender, club
-  if (user.role === 'organizer') -> companyName, nip, website, description
-```
+Dodanie `<CookieConsent />` obok `<OnboardingDialog />` wewnatrz `BrowserRouter`, aby baner byl dostepny na kazdej stronie.
 
