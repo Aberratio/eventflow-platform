@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Timer, Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
+import { Timer, Facebook, Instagram, Youtube, Twitter, Cookie } from 'lucide-react';
 import { mockInfoPages } from '@/data/mockData';
 
 export const Footer = () => {
@@ -55,6 +55,15 @@ export const Footer = () => {
               <li><Link to="/info/regulamin" className="hover:text-foreground transition-colors">Regulamin</Link></li>
               <li><Link to="/info/polityka-prywatnosci" className="hover:text-foreground transition-colors">Polityka prywatności</Link></li>
               <li><Link to="/info/rodo" className="hover:text-foreground transition-colors">RODO</Link></li>
+              <li>
+                <button
+                  onClick={() => window.dispatchEvent(new Event('open-cookie-settings'))}
+                  className="hover:text-foreground transition-colors inline-flex items-center gap-1.5"
+                >
+                  <Cookie className="h-3.5 w-3.5" />
+                  Ustawienia cookies
+                </button>
+              </li>
             </ul>
           </div>
           
