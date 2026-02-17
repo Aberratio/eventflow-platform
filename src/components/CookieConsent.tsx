@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Cookie, ChevronDown, ChevronUp } from 'lucide-react';
@@ -46,6 +46,24 @@ export const CookieConsent = () => {
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [functional, setFunctional] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const prefs = JSON.parse(saved);
+          setAnalytics(prefs.analytics ?? false);
+          setMarketing(prefs.marketing ?? false);
+          setFunctional(prefs.functional ?? false);
+        } catch {}
+      }
+      setShowDetails(true);
+      setVisible(true);
+    };
+    window.addEventListener('open-cookie-settings', handleOpen);
+    return () => window.removeEventListener('open-cookie-settings', handleOpen);
+  }, []);
 
   if (!visible) return null;
 
