@@ -1,345 +1,257 @@
 
-
-# Warstwa API -- odseparowane zapytania REST z zamockowanymi odpowiedziami
+# System szablonów emaili z wyzwalaczami i harmonogramem
 
 ## Cel
 
-Stworzyc folder `src/api/` z pelna warstwa abstrakcji nad danymi. Kazdy "endpoint" to funkcja async, ktora teraz zwraca mockowane dane, ale jest gotowa na podmiane na `fetch()` do prawdziwego backendu. Dane mockowe przenosimy do podfolderu `src/api/mock/`. Caly pozostaly kod importuje wylacznie z `src/api/`, nigdy z `src/data/mockData.ts`.
+Stworzenie pełnego systemu automatycznych i ręcznych emaili dla administratorów, moderatorów i organizatorów. System obejmuje:
+- Edytor szablonów ze zmiennymi `{{zmienna}}`
+- Wyzwalacze automatyczne (triggery)
+- Filtrowanie odbiorców
+- Harmonogram wysyłki (planowanie)
+- Podgląd szablonu z podstawionymi danymi
 
-## Struktura folderow
+---
+
+## Nowe typy w `src/types/index.ts`
+
+```typescript
+// Dostępne zmienne szablonowe
+export type EmailTemplateVariable =
+  | '{{uczestnik.imie}}'
+  | '{{uczestnik.email}}'
+  | '{{uczestnik.numer_startowy}}'
+  | '{{uczestnik.dystans}}'
+  | '{{uczestnik.kategoria}}'
+  | '{{uczestnik.status}}'
+  | '{{uczestnik.druzyna}}'
+  | '{{wydarzenie.nazwa}}'
+  | '{{wydarzenie.data}}'
+  | '{{wydarzenie.miasto}}'
+  | '{{wydarzenie.link}}'
+  | '{{wydarzenie.termin_rejestracji}}'
+  | '{{platnosc.kwota}}'
+  | '{{platnosc.nr_konta}}'
+  | '{{platnosc.tytul_przelewu}}';
+
+// Trigger automatyczny
+export type EmailTriggerType =
+  | 'on_registration'        // Po rejestracji
+  | 'on_payment_confirmed'   // Po potwierdzeniu płatności
+  | 'on_registration_cancelled' // Po anulowaniu rejestracji
+  | 'on_event_approved'      // Po zatwierdzeniu wydarzenia (dla organizatora)
+  | 'on_bib_assigned'        // Po przypisaniu numeru startowego
+  | 'days_before_event'      // X dni przed wydarzeniem
+  | 'days_after_registration'// X dni po rejestracji (przypomnienie o płatności)
+  | 'manual';                // Ręczna wysyłka (jednorazowa)
+
+// Filtr odbiorców szablonu
+export interface EmailRecipientFilter {
+  distanceIds?: string[];     // puste = wszyscy dystanse
+  statuses?: Array<'pending' | 'confirmed' | 'cancelled'>;
+  paymentStatus?: 'paid' | 'unpaid' | 'all';
+}
+
+// Szablon emaila
+export interface EmailTemplate {
+  id: string;
+  eventId?: string;           // null = szablon globalny (admin)
+  name: string;               // Nazwa szablonu (wewnętrzna, dla admina)
+  subject: string;            // Temat emaila (może zawierać zmienne)
+  body: string;               // Treść emaila (może zawierać zmienne)
+  triggerType: EmailTriggerType;
+  triggerDaysOffset?: number; // Dla 'days_before_event' i 'days_after_registration'
+  recipientFilter: EmailRecipientFilter;
+  active: boolean;
+  createdAt: string;
+  createdBy: string;          // userId twórcy
+  lastSentAt?: string;
+  sentCount: number;
+}
+
+// Log wysyłki emaila
+export interface EmailSendLog {
+  id: string;
+  templateId: string;
+  templateName: string;
+  eventId?: string;
+  eventName?: string;
+  recipientEmail: string;
+  recipientName: string;
+  subject: string;
+  sentAt: string;
+  status: 'sent' | 'failed' | 'scheduled';
+  scheduledFor?: string;      // Dla zaplanowanych
+}
+```
+
+---
+
+## Nowe pliki
+
+### 1. `src/api/mock/email-templates.mock.ts`
+
+Dane mockowe: 3-4 przykładowe szablony (po rejestracji, przypomnienie o płatności, X dni przed startem).
+
+### 2. `src/api/email-templates.api.ts`
+
+```typescript
+getEmailTemplates(eventId?: string): Promise<PaginatedResponse<EmailTemplate>>
+getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>>
+createEmailTemplate(data: Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>): Promise<ApiResponse<EmailTemplate>>
+updateEmailTemplate(id: string, data: Partial<EmailTemplate>): Promise<ApiResponse<EmailTemplate>>
+deleteEmailTemplate(id: string): Promise<ApiResponse<void>>
+toggleEmailTemplate(id: string, active: boolean): Promise<ApiResponse<EmailTemplate>>
+sendEmailNow(templateId: string, recipientIds?: string[]): Promise<ApiResponse<{ sent: number }>>
+getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>>
+previewEmailTemplate(template: Pick<EmailTemplate, 'subject' | 'body'>, sampleRegistrationId?: string): Promise<ApiResponse<{ subject: string; body: string }>>
+```
+
+### 3. `src/components/email/EmailTemplateEditor.tsx`
+
+Główny komponent edytora szablonu. Dialog (lub drawer) z formularzem:
+
+**Sekcja 1 - Podstawowe info:**
+- Input: Nazwa szablonu (wewnętrzna)
+- Input: Temat emaila (z chip-ami dostępnych zmiennych do kliknięcia)
+- Textarea (duże): Treść emaila (z chip-ami zmiennych)
+
+**Sekcja 2 - Wyzwalacz:**
+- RadioGroup: typ triggera
+  - Po rejestracji uczestnika
+  - Po potwierdzeniu płatności
+  - Po anulowaniu rejestracji
+  - Po przypisaniu numeru startowego
+  - X dni przed wydarzeniem (+ input liczbowy)
+  - X dni po rejestracji (np. przypomnienie) (+ input liczbowy)
+  - Ręcznie (wyślij teraz lub zaplanuj)
+
+**Sekcja 3 - Odbiorcy:**
+- MultiSelect dystansów (opcjonalnie, puste = wszyscy)
+- Checkboxy statusów: Potwierdzeni / Oczekujący / Anulowani
+- Select: Status płatności (Opłaceni / Nieopłaceni / Wszyscy)
+
+**Sekcja 4 - Harmonogram (tylko dla trigger "manual"):**
+- Toggle: Wyślij teraz / Zaplanuj na datę
+- DateTimePicker (jeśli "Zaplanuj")
+
+**Pasek zmiennych:**
+- Pod polami Subject i Body wyświetlone jako małe badże do kliknięcia (wstawia zmienną do aktywnego pola)
+
+**Podgląd:**
+- Zakładka "Podgląd" (preview) zastępuje zmienne przykładowymi danymi z pierwszego uczestnika
+
+### 4. `src/components/email/EmailTemplateCard.tsx`
+
+Karta jednego szablonu na liście: nazwa, trigger, licznik wysłanych, status (aktywny/nieaktywny), przyciski Edytuj / Wyślij teraz / Usuń.
+
+### 5. `src/components/email/EmailTemplatesManager.tsx`
+
+Główny widok listy szablonów dla danego wydarzenia lub globalnie. Zawiera:
+- Nagłówek z przyciskiem "Nowy szablon"
+- Lista `EmailTemplateCard`
+- Zakładka "Historia wysyłek" z tabelą logów
+
+### 6. `src/components/email/VariableChipsList.tsx`
+
+Pomocniczy komponent — lista badży zmiennych do wstawiania w edytorze.
+
+---
+
+## Integracja w panelach
+
+### Panel Organizatora — `EventManage.tsx`
+
+Nowa zakładka "Emaile" (ikona: `Mail`) obok zakładki "Kody rabatowe". Renderuje `<EmailTemplatesManager eventId={event.id} />`. Grid zakładek zmienia się z `grid-cols-5` na `grid-cols-6`.
+
+### Panel Administratora — `AdminDashboard.tsx`
+
+Nowa pozycja "Emaile" w grupie nawigacyjnej "Treści" (obok Partnerzy, Strony). Renderuje `<EmailTemplatesManager />` (bez eventId = szablony globalne).
+
+### Panel Moderatora — `ModeratorDashboard.tsx`
+
+Nowa pozycja "Emaile" w grupie "Moderacja". Moderator może tylko przeglądać szablony i historię wysyłek (tryb readonly — bez tworzenia i usuwania).
+
+---
+
+## Dostępne zmienne — tabela
+
+| Zmienna | Opis |
+|---------|------|
+| `{{uczestnik.imie}}` | Imię i nazwisko uczestnika |
+| `{{uczestnik.email}}` | Adres email uczestnika |
+| `{{uczestnik.numer_startowy}}` | Przypisany numer startowy |
+| `{{uczestnik.dystans}}` | Nazwa dystansu |
+| `{{uczestnik.kategoria}}` | Kategoria wiekowa |
+| `{{uczestnik.status}}` | Status rejestracji |
+| `{{uczestnik.druzyna}}` | Nazwa drużyny |
+| `{{wydarzenie.nazwa}}` | Nazwa wydarzenia |
+| `{{wydarzenie.data}}` | Data wydarzenia |
+| `{{wydarzenie.miasto}}` | Miasto wydarzenia |
+| `{{wydarzenie.link}}` | Link do strony wydarzenia |
+| `{{wydarzenie.termin_rejestracji}}` | Deadline rejestracji |
+| `{{platnosc.kwota}}` | Kwota do zapłaty |
+| `{{platnosc.nr_konta}}` | Numer konta bankowego |
+| `{{platnosc.tytul_przelewu}}` | Tytuł przelewu |
+
+---
+
+## Szczegóły techniczne
+
+### Typy TypeScript
+
+- Wszystkie interfejsy z explicit `readonly` gdzie dane mockowe
+- Strict union types dla `EmailTriggerType` i `EmailTriggerType`
+- `Omit<EmailTemplate, ...>` przy tworzeniu szablonu
+- Generic constraints zgodne z `ApiResponse<T>` i `PaginatedResponse<T>`
+
+### Architektura komponentów
 
 ```text
-src/api/
-  client.ts            -- bazowy klient HTTP (fetch wrapper, przygotowany na backend)
-  types.ts             -- typy API: ApiResponse<T>, PaginatedResponse<T>, ApiError, filtry
-  index.ts             -- barrel export wszystkich serwisow
-  events.api.ts        -- CRUD wydarzen, dystanse, merchandise, kody rabatowe
-  users.api.ts         -- uzytkownicy, profil, role
-  auth.api.ts          -- logowanie, rejestracja, sesja
-  registrations.api.ts -- zapisy na wydarzenia
-  results.api.ts       -- wyniki, rekordy, dokumenty PDF, wyniki druzynowe
-  series.api.ts        -- serie wydarzen
-  shop.api.ts          -- produkty, zamowienia, dostawy, platnosci
-  challenges.api.ts    -- wyzwania, uczestnictwo
-  messages.api.ts      -- wiadomosci
-  tickets.api.ts       -- bilety, certyfikaty
-  partners.api.ts      -- partnerzy
-  insurance.api.ts     -- ustawienia ubezpieczen
-  admin.api.ts         -- logi, bezpieczenstwo, sesje online, statystyki, moderacja
-  cms.api.ts           -- strony informacyjne (CMS)
-  calendar.api.ts      -- integracja Google Calendar
-  virtual-results.api.ts -- wyniki wirtualne
-  mock/
-    events.mock.ts
-    users.mock.ts
-    registrations.mock.ts
-    results.mock.ts
-    series.mock.ts
-    shop.mock.ts
-    challenges.mock.ts
-    messages.mock.ts
-    tickets.mock.ts
-    partners.mock.ts
-    insurance.mock.ts
-    admin.mock.ts
-    cms.mock.ts
-    calendar.mock.ts
-    virtual-results.mock.ts
-    helpers.ts           -- getCurrentPrice, validateDiscountCode, validateTeamName, getExistingTeamsForEvent
-    labels.ts            -- seriesTypeLabels, disciplineLabels, shopCategoryLabels, defaultPaymentMethods
+EmailTemplatesManager
+├── EmailTemplateCard (x N)
+│   └── trigger: otwiera EmailTemplateEditor
+├── EmailTemplateEditor (Dialog)
+│   ├── VariableChipsList (Subject)
+│   ├── VariableChipsList (Body)
+│   ├── TriggerSelector
+│   ├── RecipientFilterForm
+│   └── SchedulerPanel
+└── EmailSendLogsTable (zakładka Historia)
 ```
 
-## Typy API (`src/api/types.ts`)
+### Logika wstawiania zmiennych
 
-```typescript
-// Generyczna odpowiedz API
-interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message?: string;
-}
+`VariableChipsList` otrzymuje ref do `<input>` lub `<textarea>` i przy kliknięciu badża wstawia zmienną w pozycji kursora (używając `selectionStart` / `selectionEnd`).
 
-// Odpowiedz z paginacja
-interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+### Mock danych
 
-// Blad API
-interface ApiError {
-  code: string;
-  message: string;
-  details?: Record<string, string>;
-}
+Szablony mockowe:
+1. `on_registration` — "Potwierdzenie rejestracji" — dostępny globalnie
+2. `on_payment_confirmed` — "Płatność potwierdzona" — per wydarzenie
+3. `days_before_event` (3 dni) — "Przypomnienie o starcie" — per wydarzenie
+4. `days_after_registration` (7 dni) — "Przypomnienie o płatności" — per wydarzenie
 
-// Filtry dla list
-interface EventFilters {
-  discipline?: SportDiscipline;
-  city?: string;
-  dateFrom?: string;
-  dateTo?: string;
-  status?: Event['status'];
-  seriesId?: string;
-  search?: string;
-  registrationStatus?: RegistrationStatus;
-}
+Logi mockowe: 10-15 wpisów z różnymi statusami.
 
-interface UserFilters {
-  role?: UserRole;
-  search?: string;
-  status?: 'active' | 'blocked';
-}
+### Pliki do modyfikacji
 
-interface ResultFilters {
-  eventId?: string;
-  distanceId?: string;
-  category?: string;
-  gender?: 'M' | 'K';
-  search?: string;
-}
+| Plik | Zmiana |
+|------|--------|
+| `src/types/index.ts` | Dodanie 4 nowych interfejsów/typów |
+| `src/pages/organizer/EventManage.tsx` | Nowa zakładka Mail (grid-cols-5 → grid-cols-6) |
+| `src/pages/admin/AdminDashboard.tsx` | Nowa pozycja nawigacyjna |
+| `src/pages/moderator/ModeratorDashboard.tsx` | Nowa pozycja nawigacyjna (readonly) |
+| `src/api/index.ts` | Barrel export nowego API |
 
-// ... i inne specyficzne filtry per domena
-```
+### Nowe pliki
 
-## Klient HTTP (`src/api/client.ts`)
-
-```typescript
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
-const MOCK_DELAY_MS = 200;
-
-// Symulacja opoznienia sieciowego
-async function simulateDelay(): Promise<void> { ... }
-
-// Bazowa funkcja fetch (przygotowana na prawdziwy backend)
-async function apiRequest<T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<ApiResponse<T>> {
-  // Na razie: mock delay + zwracanie danych
-  // W przyszlosci: fetch(`${API_BASE_URL}${endpoint}`, options)
-  await simulateDelay();
-  throw new Error(`Not implemented: ${endpoint}`);
-}
-
-export { apiRequest, simulateDelay };
-```
-
-## Przykladowy serwis (`src/api/events.api.ts`)
-
-```typescript
-import { simulateDelay } from './client';
-import { ApiResponse, PaginatedResponse, EventFilters } from './types';
-import { mockEvents } from './mock/events.mock';
-import { Event, Distance } from '@/types';
-
-// GET /api/events
-export async function getEvents(
-  filters?: EventFilters
-): Promise<PaginatedResponse<Event>> {
-  await simulateDelay();
-  let filtered = [...mockEvents];
-  if (filters?.discipline) filtered = filtered.filter(...);
-  if (filters?.city) filtered = filtered.filter(...);
-  // ... filtrowanie
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
-}
-
-// GET /api/events/:slug
-export async function getEventBySlug(slug: string): Promise<ApiResponse<Event | null>> {
-  await simulateDelay();
-  const event = mockEvents.find(e => e.slug === slug) || null;
-  return { data: event, success: !!event, message: event ? undefined : 'Event not found' };
-}
-
-// GET /api/events/:id
-export async function getEventById(id: string): Promise<ApiResponse<Event | null>> { ... }
-
-// POST /api/events
-export async function createEvent(data: Partial<Event>): Promise<ApiResponse<Event>> { ... }
-
-// PUT /api/events/:id
-export async function updateEvent(id: string, data: Partial<Event>): Promise<ApiResponse<Event>> { ... }
-
-// DELETE /api/events/:id
-export async function deleteEvent(id: string): Promise<ApiResponse<void>> { ... }
-
-// PUT /api/events/:id/status
-export async function updateEventStatus(
-  id: string, 
-  status: Event['status'], 
-  reason?: string
-): Promise<ApiResponse<Event>> { ... }
-
-// GET /api/events/featured
-export async function getFeaturedEvents(): Promise<ApiResponse<Event[]>> { ... }
-
-// GET /api/events/live
-export async function getLiveEvents(): Promise<ApiResponse<Event[]>> { ... }
-```
-
-## Pelna lista endpointow per domena
-
-### Events (events.api.ts)
-- `getEvents(filters?)` -- lista z filtrami
-- `getEventBySlug(slug)` -- po slug
-- `getEventById(id)` -- po ID
-- `createEvent(data)` -- tworzenie
-- `updateEvent(id, data)` -- edycja
-- `deleteEvent(id)` -- usuwanie
-- `updateEventStatus(id, status, reason?)` -- zmiana statusu (publish/approve/reject)
-- `getFeaturedEvents()` -- wyrozniowane
-- `getLiveEvents()` -- live wydarzenia
-- `getEventsByOrganizer(organizerId)` -- po organizatorze
-
-### Users (users.api.ts)
-- `getUsers(filters?)` -- lista z filtrami
-- `getUserById(id)` -- po ID
-- `getUserByEmail(email)` -- po emailu
-- `createUser(data)` -- tworzenie
-- `updateUser(id, data)` -- edycja
-- `deleteUser(id)` -- usuwanie
-- `updateUserRole(id, role)` -- zmiana roli
-- `updateUserStatus(id, status)` -- blokowanie/odblokowanie
-- `getParticipants()` -- tylko uczestnicy
-- `getOrganizers()` -- tylko organizatorzy
-
-### Auth (auth.api.ts)
-- `login(credentials)` -- logowanie
-- `logout()` -- wylogowanie
-- `getCurrentUser()` -- aktualny user
-- `register(data)` -- rejestracja
-- `resetPassword(email)` -- reset hasla
-- `changePassword(oldPassword, newPassword)` -- zmiana hasla
-
-### Registrations (registrations.api.ts)
-- `getRegistrations(filters?)` -- lista
-- `getRegistrationsByEvent(eventId)` -- po wydarzeniu
-- `getRegistrationsByUser(userId)` -- po uzytkowniku
-- `createRegistration(data)` -- rejestracja na wydarzenie
-- `updateRegistration(id, data)` -- edycja
-- `cancelRegistration(id)` -- anulowanie
-- `updatePaymentDetails(id, paymentDetails)` -- aktualizacja platnosci
-
-### Results (results.api.ts)
-- `getResults(filters?)` -- lista z filtrami
-- `getResultsByEvent(eventId, distanceId?)` -- po wydarzeniu
-- `getResultsByUser(userId)` -- po uzytkowniku
-- `createResult(data)` -- dodawanie wyniku
-- `updateResult(id, data)` -- edycja
-- `deleteResult(id)` -- usuwanie
-- `getPersonalRecords(userId)` -- rekordy osobiste
-- `getTeamResults(eventId)` -- wyniki druzynowe
-- `getResultDocuments(eventId)` -- dokumenty PDF
-- `uploadResultDocument(data)` -- upload dokumentu
-
-### Series (series.api.ts)
-- `getSeries(filters?)` -- lista serii
-- `getSeriesById(id)` -- po ID
-- `getSeriesBySlug(slug)` -- po slug
-
-### Shop (shop.api.ts)
-- `getProducts(filters?)` -- produkty
-- `getProductBySlug(slug)` -- po slug
-- `getProductById(id)` -- po ID
-- `getDeliveryMethods()` -- metody dostawy
-- `getShopPaymentMethods()` -- metody platnosci
-- `getOrders(userId?)` -- zamowienia
-- `getOrderById(id)` -- po ID
-- `createOrder(data)` -- tworzenie zamowienia
-- `updateOrderStatus(id, status, trackingNumber?)` -- zmiana statusu
-
-### Challenges (challenges.api.ts)
-- `getChallenges()` -- lista wyzwan
-- `getChallengeBySlug(slug)` -- po slug
-- `getChallengeById(id)` -- po ID
-- `getChallengeParticipations(challengeId?, userId?)` -- uczestnictwa
-- `joinChallenge(challengeId)` -- dolaczenie
-- `submitChallengeEntry(data)` -- zgloszenie
-- `reviewChallengeEntry(entryId, status, reason?)` -- weryfikacja
-
-### Messages (messages.api.ts)
-- `getMessages(userId)` -- wiadomosci
-- `getMessage(id)` -- po ID
-- `sendMessage(data)` -- wyslanie
-- `markAsRead(id)` -- przeczytanie
-
-### Tickets (tickets.api.ts)
-- `getTickets(userId)` -- bilety uzytkownika
-- `getCertificates(userId)` -- certyfikaty
-
-### Partners (partners.api.ts)
-- `getPartners()` -- lista
-- `getFeaturedPartners()` -- wyrozniowani
-
-### Insurance (insurance.api.ts)
-- `getGlobalInsuranceSettings()` -- globalne ustawienia
-- `updateGlobalInsuranceSettings(data)` -- aktualizacja
-
-### Admin (admin.api.ts)
-- `getActivityLogs(filters?)` -- logi aktywnosci
-- `getSecuritySettings()` -- ustawienia bezpieczenstwa
-- `updateSecuritySettings(data)` -- aktualizacja
-- `getOnlineSessions()` -- sesje online
-- `getSalesStats()` -- statystyki sprzedazy
-
-### CMS (cms.api.ts)
-- `getInfoPages()` -- lista stron
-- `getInfoPageBySlug(slug)` -- po slug
-- `createInfoPage(data)` -- tworzenie
-- `updateInfoPage(id, data)` -- edycja
-- `deleteInfoPage(id)` -- usuwanie
-- `reorderInfoPages(ids)` -- zmiana kolejnosci
-
-### Virtual Results (virtual-results.api.ts)
-- `getVirtualResultSubmissions(eventId?)` -- lista zgloszen
-- `submitVirtualResult(data)` -- zgloszenie wyniku
-- `reviewVirtualResult(id, status, reason?)` -- weryfikacja
-
-### Calendar (calendar.api.ts)
-- `getCalendarSettings()` -- ustawienia
-- `updateCalendarSettings(data)` -- aktualizacja
-- `addEventToCalendar(event)` -- dodanie wydarzenia
-
-## Migracja importow
-
-Po przeniesieniu danych do `src/api/mock/` i stworzeniu serwisow API, zaktualizujemy **wszystkie 55 plikow** ktore importuja z `src/data/mockData`:
-- Zamiast `import { mockEvents } from '@/data/mockData'` -> `import { getEvents } from '@/api'`
-- Komponenty synchroniczne (np. filtry, sidebar) moga uzywac wersji synchronicznej z `@/api/mock/labels` dla statycznych labeli
-- Plik `src/data/mockData.ts` zostanie usuniety po migracji
-
-**WAZNE**: Migracja importow NIE bedzie czescia pierwszego commitu. Najpierw tworzymy warstwe API + mock, a stary plik zachowujemy. Migracja krok po kroku w kolejnych iteracjach, zeby nie zepsuc 55 komponentow naraz.
-
-## Faza 1 (ten commit)
-
-1. Stworzyc `src/api/types.ts` z typami API
-2. Stworzyc `src/api/client.ts` z bazowym klientem
-3. Stworzyc `src/api/mock/*.mock.ts` -- dane mockowe przeniesione z `mockData.ts`
-4. Stworzyc `src/api/mock/helpers.ts` -- funkcje pomocnicze
-5. Stworzyc `src/api/mock/labels.ts` -- etykiety/labele
-6. Stworzyc wszystkie pliki `src/api/*.api.ts` z funkcjami async
-7. Stworzyc `src/api/index.ts` z barrel exportem
-8. **Zachowac** `src/data/mockData.ts` -- re-exporty z nowych lokalizacji (backward compatibility)
-
-## Szczegoly techniczne
-
-### Konwencja nazewnictwa
-- Pliki API: `{domena}.api.ts`
-- Pliki mock: `{domena}.mock.ts`
-- Funkcje: `get*`, `create*`, `update*`, `delete*` (REST semantyka)
-- Typy odpowiedzi: `ApiResponse<T>`, `PaginatedResponse<T>`
-
-### Zasady TypeScript
-- Strict mode: zadnych `any`
-- Readonly arrays w mockach: `as const` gdzie mozliwe
-- Discriminated unions dla statusow
-- Generic constraints na typach odpowiedzi
-- Explicit return types na wszystkich funkcjach API
-
-### Symulacja opoznienia
-- Domyslnie 150-300ms (losowe, realistyczne)
-- Konfigurowane przez `MOCK_DELAY_MS`
-- Mozliwosc wylaczenia w testach
-
+| Plik | Opis |
+|------|------|
+| `src/types/email.ts` | Typy dla systemu emaili (wydzielone) |
+| `src/api/mock/email-templates.mock.ts` | Dane mockowe |
+| `src/api/email-templates.api.ts` | Warstwa API |
+| `src/components/email/EmailTemplatesManager.tsx` | Główny widok |
+| `src/components/email/EmailTemplateCard.tsx` | Karta szablonu |
+| `src/components/email/EmailTemplateEditor.tsx` | Edytor szablonu (dialog) |
+| `src/components/email/VariableChipsList.tsx` | Lista zmiennych |
+| `src/components/email/EmailSendLogsTable.tsx` | Historia wysyłek |
