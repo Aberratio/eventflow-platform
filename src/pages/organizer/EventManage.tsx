@@ -10,8 +10,9 @@ import { ResultsTab } from './components/ResultsTab';
 import { VirtualResultsVerificationTab } from './components/VirtualResultsVerificationTab';
 import { EventSettingsTab } from './components/EventSettingsTab';
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
-import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe, Tag } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe, Tag, Mail } from 'lucide-react';
 import { DiscountCode } from '@/types';
+import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 
 const EventManage = () => {
   const { id } = useParams();
@@ -52,7 +53,7 @@ const EventManage = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Przegląd</span>
@@ -68,6 +69,10 @@ const EventManage = () => {
             <TabsTrigger value="discounts" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Kody rabatowe</span>
+            </TabsTrigger>
+            <TabsTrigger value="emails" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Emaile</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -97,6 +102,10 @@ const EventManage = () => {
               distances={event.distances}
               onChange={setDiscountCodes}
             />
+          </TabsContent>
+
+          <TabsContent value="emails">
+            <EmailTemplatesManager eventId={event.id} />
           </TabsContent>
 
           <TabsContent value="settings">

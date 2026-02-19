@@ -154,6 +154,19 @@ export {
   reviewVirtualResult,
 } from './virtual-results.api';
 
+// ─── Email Templates ───
+export {
+  getEmailTemplates,
+  getEmailTemplateById,
+  getEmailSendLogs,
+  createEmailTemplate,
+  updateEmailTemplate,
+  deleteEmailTemplate,
+  toggleEmailTemplate,
+  sendEmailNow,
+  previewEmailTemplate,
+} from './email-templates.api';
+
 // ─── Mock helpers & labels (synchronous, for filters/sidebars) ───
 export { getCurrentPrice, validateDiscountCode, validateTeamName, getExistingTeamsForEvent } from './mock/helpers';
 export { seriesTypeLabels, disciplineLabels, shopCategoryLabels, defaultPaymentMethods } from './mock/labels';
