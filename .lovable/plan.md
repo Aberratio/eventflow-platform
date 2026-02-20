@@ -1,257 +1,200 @@
 
-# System szablonów emaili z wyzwalaczami i harmonogramem
+# Nowa kolorystyka: czerwień, czerń, szarość, biel — z wydzielonym Design System
 
-## Cel
+## Problem do rozwiązania
 
-Stworzenie pełnego systemu automatycznych i ręcznych emaili dla administratorów, moderatorów i organizatorów. System obejmuje:
-- Edytor szablonów ze zmiennymi `{{zmienna}}`
-- Wyzwalacze automatyczne (triggery)
-- Filtrowanie odbiorców
-- Harmonogram wysyłki (planowanie)
-- Podgląd szablonu z podstawionymi danymi
+Klient chce zmienić kolorystykę z zielonej na **czerwono-czarno-szaro-białą**. Kluczowe wyzwanie: czerwony jest standardowo kolorem "alarmu/błędu" (semantyka `destructive`). Trzeba to sprytnie rozwiązać.
 
 ---
 
-## Nowe typy w `src/types/index.ts`
+## Strategia kolorystyczna — jak sensownie użyć czerwieni
+
+Czerwień jako kolor brandowy jest dobrze stosowana w wielu sportowych platformach (Nike, Under Armour, Formula 1, Red Bull). Kluczem jest **hierarchia i nasycenie**:
+
+- **Czerwień główna (brand red)**: ciemniejsza, bardziej opanowana — `hsl(0, 72%, 42%)` — używana jako `primary` (przyciski CTA, linki, aktywne elementy)
+- **Czerwień alertu (destructive)**: jaśniejsza/intensywniejsza — `hsl(0, 84%, 56%)` — zachowana jako `destructive` dla błędów
+- Obie są czerwone, ale różnią się **nasyceniem i jasnością** — użytkownik instynktownie odróżni "brand" od "błędu"
+- Biały tekst na czerwonym tle działa — wysoki kontrast (WCAG AA)
+
+---
+
+## Paleta barw — szczegółowe wartości HSL
+
+```text
+LIGHT MODE:
+  background:       0 0% 99%        (prawie czysty biały)
+  foreground:       0 0% 8%         (głęboka czerń)
+  card:             0 0% 100%       (biały)
+  card-foreground:  0 0% 8%
+  primary:          0 72% 42%       (głęboka czerwień brandowa)
+  primary-fg:       0 0% 100%       (biały tekst na czerwieni)
+  secondary:        0 0% 94%        (jasny szary)
+  secondary-fg:     0 0% 15%
+  muted:            0 0% 94%        (jasny szary — tła)
+  muted-fg:         0 0% 45%        (średni szary tekst)
+  accent:           0 60% 96%       (bardzo jasny różowo-szary — hover)
+  accent-fg:        0 72% 36%       (ciemna czerwień)
+  destructive:      0 84% 56%       (jaśniejsza czerwień — błędy)
+  border:           0 0% 88%        (szary border)
+  input:            0 0% 88%
+  ring:             0 72% 42%       (czerwień — focus ring)
+
+DARK MODE:
+  background:       0 0% 7%         (głęboka czerń)
+  foreground:       0 0% 96%        (biały)
+  card:             0 0% 11%        (ciemny szary karta)
+  primary:          0 72% 52%       (jaśniejsza czerwień na ciemnym tle)
+  primary-fg:       0 0% 100%
+  secondary:        0 0% 16%        (ciemny szary)
+  muted:            0 0% 16%
+  muted-fg:         0 0% 58%
+  accent:           0 40% 14%       (ciemna czerwień — hover w dark mode)
+  accent-fg:        0 72% 62%
+  border:           0 0% 18%
+  sidebar tło:      0 0% 5%         (prawie czarny — sidebar)
+```
+
+---
+
+## Nowy folder: `src/styles/`
+
+Wydzielamy design system do osobnego folderu, żeby łatwo nim zarządzać:
+
+```text
+src/styles/
+  tokens.css        — zmienne CSS (kolory, radius, shadows, fonts)
+  typography.css    — @import Google Fonts, klasy typograficzne
+  base.css          — reset i style bazowe body/html
+  index.css         — główny plik importujący wszystko (zastępuje src/index.css)
+```
+
+`src/index.css` zostanie zastąpiony importem z `src/styles/index.css`, albo przepiszemy go na miejscu z jasnym podziałem sekcji i komentarzami.
+
+---
+
+## Co konkretnie zmieniamy
+
+### 1. `src/index.css` (główny plik)
+
+Pełna zamiana zmiennych CSS:
+- `--primary` z zielonego `152 76% 36%` → czerwony `0 72% 42%`
+- `--accent` z zielonkawego → subtelny różowo-szary
+- `--ring` → czerwony
+- `--sidebar-*` → dopasowane do nowej palety
+- `--chart-*` → przepaleta wykresów (czerwień, szarości, neutralne akcenty)
+- `--success` → **zielony** (jedyny zielony na stronie — tylko dla "sukcesu") `142 71% 40%`
+- `--warning` → żółty (pozostaje)
+- `--info` → ciemny szary/granatowy
+
+Body gradient: `from-background via-primary/0.015 to-background` — delikatna czerwona poświata.
+
+### 2. `src/styles/` — nowy folder design systemu
+
+**`src/styles/tokens.css`** — wszystkie zmienne w jednym miejscu:
+```css
+/* === BRAND COLORS === */
+/* === NEUTRALS === */
+/* === SEMANTIC === */
+/* === SHADOWS === */
+/* === RADIUS === */
+```
+
+**`src/styles/typography.css`** — importy fontów + pomocnicze klasy `.heading-*, .body-*`.
+
+Wszystkie zmienne z `index.css` przenosimy do `tokens.css`, a `index.css` tylko importuje.
+
+### 3. `tailwind.config.ts` — dodajemy statyczne tokeny brand
 
 ```typescript
-// Dostępne zmienne szablonowe
-export type EmailTemplateVariable =
-  | '{{uczestnik.imie}}'
-  | '{{uczestnik.email}}'
-  | '{{uczestnik.numer_startowy}}'
-  | '{{uczestnik.dystans}}'
-  | '{{uczestnik.kategoria}}'
-  | '{{uczestnik.status}}'
-  | '{{uczestnik.druzyna}}'
-  | '{{wydarzenie.nazwa}}'
-  | '{{wydarzenie.data}}'
-  | '{{wydarzenie.miasto}}'
-  | '{{wydarzenie.link}}'
-  | '{{wydarzenie.termin_rejestracji}}'
-  | '{{platnosc.kwota}}'
-  | '{{platnosc.nr_konta}}'
-  | '{{platnosc.tytul_przelewu}}';
-
-// Trigger automatyczny
-export type EmailTriggerType =
-  | 'on_registration'        // Po rejestracji
-  | 'on_payment_confirmed'   // Po potwierdzeniu płatności
-  | 'on_registration_cancelled' // Po anulowaniu rejestracji
-  | 'on_event_approved'      // Po zatwierdzeniu wydarzenia (dla organizatora)
-  | 'on_bib_assigned'        // Po przypisaniu numeru startowego
-  | 'days_before_event'      // X dni przed wydarzeniem
-  | 'days_after_registration'// X dni po rejestracji (przypomnienie o płatności)
-  | 'manual';                // Ręczna wysyłka (jednorazowa)
-
-// Filtr odbiorców szablonu
-export interface EmailRecipientFilter {
-  distanceIds?: string[];     // puste = wszyscy dystanse
-  statuses?: Array<'pending' | 'confirmed' | 'cancelled'>;
-  paymentStatus?: 'paid' | 'unpaid' | 'all';
-}
-
-// Szablon emaila
-export interface EmailTemplate {
-  id: string;
-  eventId?: string;           // null = szablon globalny (admin)
-  name: string;               // Nazwa szablonu (wewnętrzna, dla admina)
-  subject: string;            // Temat emaila (może zawierać zmienne)
-  body: string;               // Treść emaila (może zawierać zmienne)
-  triggerType: EmailTriggerType;
-  triggerDaysOffset?: number; // Dla 'days_before_event' i 'days_after_registration'
-  recipientFilter: EmailRecipientFilter;
-  active: boolean;
-  createdAt: string;
-  createdBy: string;          // userId twórcy
-  lastSentAt?: string;
-  sentCount: number;
-}
-
-// Log wysyłki emaila
-export interface EmailSendLog {
-  id: string;
-  templateId: string;
-  templateName: string;
-  eventId?: string;
-  eventName?: string;
-  recipientEmail: string;
-  recipientName: string;
-  subject: string;
-  sentAt: string;
-  status: 'sent' | 'failed' | 'scheduled';
-  scheduledFor?: string;      // Dla zaplanowanych
+extend: {
+  colors: {
+    brand: {
+      red: '#C41E1E',       // primary brand red
+      'red-light': '#E53535', // destructive / lighter
+      'red-dark': '#8B1515', // hover state
+      black: '#141414',
+      gray: {
+        50: '#F9F9F9',
+        100: '#F0F0F0',
+        200: '#E0E0E0',
+        300: '#C4C4C4',
+        400: '#9A9A9A',
+        500: '#6E6E6E',
+        600: '#4A4A4A',
+        700: '#303030',
+        800: '#1F1F1F',
+        900: '#141414',
+      }
+    }
+  }
 }
 ```
 
 ---
+
+## Wpływ na komponenty — co się zmieni automatycznie
+
+Ponieważ cały UI korzysta z tokenów (`bg-primary`, `text-primary`, `bg-accent`, `hover:bg-accent` itp.), zmiana zmiennych CSS automatycznie przepisze wygląd:
+
+| Element | Teraz (zielony) | Po zmianie (czerwony) |
+|---|---|---|
+| Przyciski CTA | zielone | czerwone |
+| Linki aktywne w nav | zielone tło | czerwone tło |
+| Focus ring | zielony | czerwony |
+| Badge "default" | zielony | czerwony |
+| Ikona logo Timer | zielona | czerwona |
+| Licznik koszyka | zielony | czerwony |
+| Sidebar active | zielony | czerwony |
+| Wykresy (chart-1) | zielony | czerwony |
+
+**Nie zmienia się automatycznie** — trzeba ręcznie zaktualizować:
+- `GlitchText.tsx` — hardcoded `text-destructive` i `text-info` (różne kolory glitch)
+- Ewentualne inline klasy z `text-green-*` lub `bg-green-*` (ale projekt ich nie używa — sprawdzone)
+
+---
+
+## Obsługa "czerwony = błąd" vs "czerwony = brand"
+
+Kluczowe rozróżnienie wizualne żeby użytkownik nie mylił:
+
+| Sytuacja | Kolor | Token |
+|---|---|---|
+| Przycisk CTA, nav, logo | `hsl(0 72% 42%)` — głęboka burgundowa czerwień | `--primary` |
+| Błąd formularza, delete | `hsl(0 84% 56%)` — jasna jaskrawa czerwień | `--destructive` |
+| Success (zapisano, sukces) | `hsl(142 71% 40%)` — zielony | `--success` |
+| Warning | `hsl(45 93% 47%)` — żółty | `--warning` |
+
+Brand red jest **ciemniejszy i bardziej nasycony** — wygląda jak "premium/sport". Destructive red jest **jaśniejszy i bardziej krzyczący** — wyraźnie alarm.
+
+---
+
+## Pliki do modyfikacji
+
+| Plik | Co się zmienia |
+|---|---|
+| `src/index.css` | Pełna zamiana palety CSS variables — primary, accent, ring, sidebar, charts |
+| `tailwind.config.ts` | Dodanie `brand.*` kolorów statycznych |
 
 ## Nowe pliki
 
-### 1. `src/api/mock/email-templates.mock.ts`
+| Plik | Co zawiera |
+|---|---|
+| `src/styles/tokens.css` | Wszystkie zmienne CSS skopiowane z index.css — jeden plik do zarządzania |
+| `src/styles/typography.css` | @import fontów + klasy typograficzne |
+| `src/styles/base.css` | Style bazowe body, *, scrollbar |
+| `src/styles/index.css` | Importuje tokens + typography + base |
 
-Dane mockowe: 3-4 przykładowe szablony (po rejestracji, przypomnienie o płatności, X dni przed startem).
-
-### 2. `src/api/email-templates.api.ts`
-
-```typescript
-getEmailTemplates(eventId?: string): Promise<PaginatedResponse<EmailTemplate>>
-getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>>
-createEmailTemplate(data: Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>): Promise<ApiResponse<EmailTemplate>>
-updateEmailTemplate(id: string, data: Partial<EmailTemplate>): Promise<ApiResponse<EmailTemplate>>
-deleteEmailTemplate(id: string): Promise<ApiResponse<void>>
-toggleEmailTemplate(id: string, active: boolean): Promise<ApiResponse<EmailTemplate>>
-sendEmailNow(templateId: string, recipientIds?: string[]): Promise<ApiResponse<{ sent: number }>>
-getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>>
-previewEmailTemplate(template: Pick<EmailTemplate, 'subject' | 'body'>, sampleRegistrationId?: string): Promise<ApiResponse<{ subject: string; body: string }>>
-```
-
-### 3. `src/components/email/EmailTemplateEditor.tsx`
-
-Główny komponent edytora szablonu. Dialog (lub drawer) z formularzem:
-
-**Sekcja 1 - Podstawowe info:**
-- Input: Nazwa szablonu (wewnętrzna)
-- Input: Temat emaila (z chip-ami dostępnych zmiennych do kliknięcia)
-- Textarea (duże): Treść emaila (z chip-ami zmiennych)
-
-**Sekcja 2 - Wyzwalacz:**
-- RadioGroup: typ triggera
-  - Po rejestracji uczestnika
-  - Po potwierdzeniu płatności
-  - Po anulowaniu rejestracji
-  - Po przypisaniu numeru startowego
-  - X dni przed wydarzeniem (+ input liczbowy)
-  - X dni po rejestracji (np. przypomnienie) (+ input liczbowy)
-  - Ręcznie (wyślij teraz lub zaplanuj)
-
-**Sekcja 3 - Odbiorcy:**
-- MultiSelect dystansów (opcjonalnie, puste = wszyscy)
-- Checkboxy statusów: Potwierdzeni / Oczekujący / Anulowani
-- Select: Status płatności (Opłaceni / Nieopłaceni / Wszyscy)
-
-**Sekcja 4 - Harmonogram (tylko dla trigger "manual"):**
-- Toggle: Wyślij teraz / Zaplanuj na datę
-- DateTimePicker (jeśli "Zaplanuj")
-
-**Pasek zmiennych:**
-- Pod polami Subject i Body wyświetlone jako małe badże do kliknięcia (wstawia zmienną do aktywnego pola)
-
-**Podgląd:**
-- Zakładka "Podgląd" (preview) zastępuje zmienne przykładowymi danymi z pierwszego uczestnika
-
-### 4. `src/components/email/EmailTemplateCard.tsx`
-
-Karta jednego szablonu na liście: nazwa, trigger, licznik wysłanych, status (aktywny/nieaktywny), przyciski Edytuj / Wyślij teraz / Usuń.
-
-### 5. `src/components/email/EmailTemplatesManager.tsx`
-
-Główny widok listy szablonów dla danego wydarzenia lub globalnie. Zawiera:
-- Nagłówek z przyciskiem "Nowy szablon"
-- Lista `EmailTemplateCard`
-- Zakładka "Historia wysyłek" z tabelą logów
-
-### 6. `src/components/email/VariableChipsList.tsx`
-
-Pomocniczy komponent — lista badży zmiennych do wstawiania w edytorze.
+`src/index.css` zaczyna importować `src/styles/index.css` — jeden punkt wejścia.
 
 ---
 
-## Integracja w panelach
+## Kolejność implementacji
 
-### Panel Organizatora — `EventManage.tsx`
+1. Stworzyć `src/styles/tokens.css` z nową paletą czerwono-czarno-szarą
+2. Stworzyć `src/styles/typography.css` i `src/styles/base.css`
+3. Stworzyć `src/styles/index.css` łączący wszystko
+4. Zaktualizować `src/index.css` — importuje z `src/styles/` i usuwa duplikaty
+5. Zaktualizować `tailwind.config.ts` z tokenami `brand.*`
+6. Sprawdzić `GlitchText.tsx` — ewentualna korekta kolorów dla nowej palety
 
-Nowa zakładka "Emaile" (ikona: `Mail`) obok zakładki "Kody rabatowe". Renderuje `<EmailTemplatesManager eventId={event.id} />`. Grid zakładek zmienia się z `grid-cols-5` na `grid-cols-6`.
-
-### Panel Administratora — `AdminDashboard.tsx`
-
-Nowa pozycja "Emaile" w grupie nawigacyjnej "Treści" (obok Partnerzy, Strony). Renderuje `<EmailTemplatesManager />` (bez eventId = szablony globalne).
-
-### Panel Moderatora — `ModeratorDashboard.tsx`
-
-Nowa pozycja "Emaile" w grupie "Moderacja". Moderator może tylko przeglądać szablony i historię wysyłek (tryb readonly — bez tworzenia i usuwania).
-
----
-
-## Dostępne zmienne — tabela
-
-| Zmienna | Opis |
-|---------|------|
-| `{{uczestnik.imie}}` | Imię i nazwisko uczestnika |
-| `{{uczestnik.email}}` | Adres email uczestnika |
-| `{{uczestnik.numer_startowy}}` | Przypisany numer startowy |
-| `{{uczestnik.dystans}}` | Nazwa dystansu |
-| `{{uczestnik.kategoria}}` | Kategoria wiekowa |
-| `{{uczestnik.status}}` | Status rejestracji |
-| `{{uczestnik.druzyna}}` | Nazwa drużyny |
-| `{{wydarzenie.nazwa}}` | Nazwa wydarzenia |
-| `{{wydarzenie.data}}` | Data wydarzenia |
-| `{{wydarzenie.miasto}}` | Miasto wydarzenia |
-| `{{wydarzenie.link}}` | Link do strony wydarzenia |
-| `{{wydarzenie.termin_rejestracji}}` | Deadline rejestracji |
-| `{{platnosc.kwota}}` | Kwota do zapłaty |
-| `{{platnosc.nr_konta}}` | Numer konta bankowego |
-| `{{platnosc.tytul_przelewu}}` | Tytuł przelewu |
-
----
-
-## Szczegóły techniczne
-
-### Typy TypeScript
-
-- Wszystkie interfejsy z explicit `readonly` gdzie dane mockowe
-- Strict union types dla `EmailTriggerType` i `EmailTriggerType`
-- `Omit<EmailTemplate, ...>` przy tworzeniu szablonu
-- Generic constraints zgodne z `ApiResponse<T>` i `PaginatedResponse<T>`
-
-### Architektura komponentów
-
-```text
-EmailTemplatesManager
-├── EmailTemplateCard (x N)
-│   └── trigger: otwiera EmailTemplateEditor
-├── EmailTemplateEditor (Dialog)
-│   ├── VariableChipsList (Subject)
-│   ├── VariableChipsList (Body)
-│   ├── TriggerSelector
-│   ├── RecipientFilterForm
-│   └── SchedulerPanel
-└── EmailSendLogsTable (zakładka Historia)
-```
-
-### Logika wstawiania zmiennych
-
-`VariableChipsList` otrzymuje ref do `<input>` lub `<textarea>` i przy kliknięciu badża wstawia zmienną w pozycji kursora (używając `selectionStart` / `selectionEnd`).
-
-### Mock danych
-
-Szablony mockowe:
-1. `on_registration` — "Potwierdzenie rejestracji" — dostępny globalnie
-2. `on_payment_confirmed` — "Płatność potwierdzona" — per wydarzenie
-3. `days_before_event` (3 dni) — "Przypomnienie o starcie" — per wydarzenie
-4. `days_after_registration` (7 dni) — "Przypomnienie o płatności" — per wydarzenie
-
-Logi mockowe: 10-15 wpisów z różnymi statusami.
-
-### Pliki do modyfikacji
-
-| Plik | Zmiana |
-|------|--------|
-| `src/types/index.ts` | Dodanie 4 nowych interfejsów/typów |
-| `src/pages/organizer/EventManage.tsx` | Nowa zakładka Mail (grid-cols-5 → grid-cols-6) |
-| `src/pages/admin/AdminDashboard.tsx` | Nowa pozycja nawigacyjna |
-| `src/pages/moderator/ModeratorDashboard.tsx` | Nowa pozycja nawigacyjna (readonly) |
-| `src/api/index.ts` | Barrel export nowego API |
-
-### Nowe pliki
-
-| Plik | Opis |
-|------|------|
-| `src/types/email.ts` | Typy dla systemu emaili (wydzielone) |
-| `src/api/mock/email-templates.mock.ts` | Dane mockowe |
-| `src/api/email-templates.api.ts` | Warstwa API |
-| `src/components/email/EmailTemplatesManager.tsx` | Główny widok |
-| `src/components/email/EmailTemplateCard.tsx` | Karta szablonu |
-| `src/components/email/EmailTemplateEditor.tsx` | Edytor szablonu (dialog) |
-| `src/components/email/VariableChipsList.tsx` | Lista zmiennych |
-| `src/components/email/EmailSendLogsTable.tsx` | Historia wysyłek |
+Zmiana będzie natychmiastowa i globalna — wszystkie komponenty oparte na tokenach Tailwind zaktualizują się automatycznie.
