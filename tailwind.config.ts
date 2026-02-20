@@ -14,6 +14,26 @@ export default {
   	},
   	extend: {
   		colors: {
+  			/* === BRAND STATIC TOKENS === */
+  			brand: {
+  				red:         '#C41E1E',   /* primary brand red */
+  				'red-light': '#E53535',   /* destructive / lighter */
+  				'red-dark':  '#8B1515',   /* hover state */
+  				black:       '#141414',
+  				gray: {
+  					'50':  '#F9F9F9',
+  					'100': '#F0F0F0',
+  					'200': '#E0E0E0',
+  					'300': '#C4C4C4',
+  					'400': '#9A9A9A',
+  					'500': '#6E6E6E',
+  					'600': '#4A4A4A',
+  					'700': '#303030',
+  					'800': '#1F1F1F',
+  					'900': '#141414',
+  				}
+  			},
+  			/* === SEMANTIC TOKENS (CSS variables) === */
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',

@@ -1,130 +1,13 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+/* ============================================================
+   GŁÓWNY PUNKT WEJŚCIA CSS
+   Tailwind directives + import design systemu z src/styles/
+   ============================================================ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 98%;
-    --foreground: 220 20% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
-
-    --primary: 152 76% 36%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 10%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
-
-    --accent: 152 60% 95%;
-    --accent-foreground: 152 76% 28%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 152 76% 36%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 20% 10%;
-    --sidebar-primary: 152 76% 36%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 152 60% 95%;
-    --sidebar-accent-foreground: 152 76% 28%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 152 76% 36%;
-
-    --chart-1: 152 76% 36%;
-    --chart-2: 199 89% 48%;
-    --chart-3: 45 93% 47%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    --success: 152 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 45 93% 47%;
-    --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
-  }
-
-  .dark {
-    --background: 220 20% 10%;
-    --foreground: 0 0% 98%;
-
-    --card: 220 18% 14%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 220 18% 14%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 152 72% 46%;
-    --primary-foreground: 220 20% 10%;
-
-    --secondary: 220 14% 20%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 220 14% 20%;
-    --muted-foreground: 220 10% 60%;
-
-    --accent: 152 40% 18%;
-    --accent-foreground: 152 72% 60%;
-
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 14% 22%;
-    --input: 220 14% 22%;
-    --ring: 152 72% 46%;
-
-    --sidebar-background: 220 18% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 152 72% 46%;
-    --sidebar-primary-foreground: 220 20% 10%;
-    --sidebar-accent: 152 40% 18%;
-    --sidebar-accent-foreground: 152 72% 60%;
-    --sidebar-border: 220 14% 22%;
-    --sidebar-ring: 152 72% 46%;
-
-    --chart-1: 152 72% 46%;
-    --chart-2: 199 85% 55%;
-    --chart-3: 45 90% 55%;
-    --chart-4: 280 60% 65%;
-    --chart-5: 340 70% 60%;
-
-    --success: 152 72% 46%;
-    --success-foreground: 220 20% 10%;
-    --warning: 45 90% 55%;
-    --warning-foreground: 220 20% 10%;
-    --info: 199 85% 55%;
-    --info-foreground: 220 20% 10%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    background-image: linear-gradient(
-      180deg,
-      hsl(var(--background)) 0%,
-      hsl(var(--primary) / 0.025) 50%,
-      hsl(var(--background)) 100%
-    );
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
-}
+/* Design System — kolejność ma znaczenie */
+@import "./styles/tokens.css";
+@import "./styles/typography.css";
+@import "./styles/base.css";

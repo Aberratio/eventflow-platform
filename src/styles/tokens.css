@@ -1,0 +1,147 @@
+/* ============================================================
+   DESIGN SYSTEM — TOKENS
+   Centralne źródło prawdy dla wszystkich zmiennych CSS.
+   Edytuj tylko ten plik, aby zmienić kolorystykę całej aplikacji.
+   ============================================================ */
+
+  /* ── LIGHT MODE ─────────────────────────────────────────── */
+  :root {
+
+    /* === NEUTRALS === */
+    --background:           0 0% 99%;
+    --foreground:           0 0% 8%;
+
+    --card:                 0 0% 100%;
+    --card-foreground:      0 0% 8%;
+
+    --popover:              0 0% 100%;
+    --popover-foreground:   0 0% 8%;
+
+    /* === BRAND COLORS === */
+    /* Brand red: ciemniejsza, spokojna — przyciski, nav, akcenty  */
+    --primary:              0 72% 42%;
+    --primary-foreground:   0 0% 100%;
+
+    /* === SECONDARY / MUTED === */
+    --secondary:            0 0% 94%;
+    --secondary-foreground: 0 0% 15%;
+
+    --muted:                0 0% 94%;
+    --muted-foreground:     0 0% 45%;
+
+    /* Accent: bardzo jasny różowo-szary — hover, zaznaczenia */
+    --accent:               0 60% 96%;
+    --accent-foreground:    0 72% 36%;
+
+    /* === SEMANTIC === */
+    /* Destructive red: jaśniejsza, jaskrawa — błędy, usuwanie */
+    --destructive:          0 84% 56%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success:              142 71% 40%;
+    --success-foreground:   0 0% 100%;
+
+    --warning:              45 93% 47%;
+    --warning-foreground:   0 0% 8%;
+
+    --info:                 210 40% 40%;
+    --info-foreground:      0 0% 100%;
+
+    /* === BORDERS & INPUTS === */
+    --border:               0 0% 88%;
+    --input:                0 0% 88%;
+    --ring:                 0 72% 42%;
+
+    /* === RADIUS === */
+    --radius:               0.5rem;
+
+    /* === SIDEBAR === */
+    --sidebar-background:         0 0% 100%;
+    --sidebar-foreground:         0 0% 8%;
+    --sidebar-primary:            0 72% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent:             0 60% 96%;
+    --sidebar-accent-foreground:  0 72% 36%;
+    --sidebar-border:             0 0% 88%;
+    --sidebar-ring:               0 72% 42%;
+
+    /* === CHARTS — czerwień + neutralne szarości === */
+    --chart-1:              0 72% 42%;
+    --chart-2:              0 0% 45%;
+    --chart-3:              45 93% 47%;
+    --chart-4:              0 0% 65%;
+    --chart-5:              0 84% 56%;
+
+    /* === SHADOWS === */
+    --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+    --shadow-xs:  0 1px 3px 0 hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow-sm:  0 2px 4px -1px hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow-md:  0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
+    --shadow-lg:  0 10px 15px -3px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
+    --shadow-xl:  0 20px 25px -5px hsl(0 0% 0% / 0.10), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.20);
+  }
+
+  /* ── DARK MODE ──────────────────────────────────────────── */
+  .dark {
+
+    --background:           0 0% 7%;
+    --foreground:           0 0% 96%;
+
+    --card:                 0 0% 11%;
+    --card-foreground:      0 0% 96%;
+
+    --popover:              0 0% 11%;
+    --popover-foreground:   0 0% 96%;
+
+    --primary:              0 72% 52%;
+    --primary-foreground:   0 0% 100%;
+
+    --secondary:            0 0% 16%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted:                0 0% 16%;
+    --muted-foreground:     0 0% 58%;
+
+    --accent:               0 40% 14%;
+    --accent-foreground:    0 72% 62%;
+
+    --destructive:          0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success:              142 65% 45%;
+    --success-foreground:   0 0% 8%;
+
+    --warning:              45 90% 55%;
+    --warning-foreground:   0 0% 8%;
+
+    --info:                 210 35% 52%;
+    --info-foreground:      0 0% 100%;
+
+    --border:               0 0% 18%;
+    --input:                0 0% 18%;
+    --ring:                 0 72% 52%;
+
+    --sidebar-background:         0 0% 5%;
+    --sidebar-foreground:         0 0% 96%;
+    --sidebar-primary:            0 72% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent:             0 40% 14%;
+    --sidebar-accent-foreground:  0 72% 62%;
+    --sidebar-border:             0 0% 18%;
+    --sidebar-ring:               0 72% 52%;
+
+    --chart-1:              0 72% 52%;
+    --chart-2:              0 0% 55%;
+    --chart-3:              45 90% 55%;
+    --chart-4:              0 0% 40%;
+    --chart-5:              0 72% 68%;
+
+    --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.20);
+    --shadow-xs:  0 1px 3px 0 hsl(0 0% 0% / 0.30), 0 1px 2px -1px hsl(0 0% 0% / 0.20);
+    --shadow-sm:  0 2px 4px -1px hsl(0 0% 0% / 0.35), 0 1px 2px -1px hsl(0 0% 0% / 0.20);
+    --shadow-md:  0 4px 6px -1px hsl(0 0% 0% / 0.40), 0 2px 4px -2px hsl(0 0% 0% / 0.25);
+    --shadow-lg:  0 10px 15px -3px hsl(0 0% 0% / 0.45), 0 4px 6px -4px hsl(0 0% 0% / 0.25);
+    --shadow-xl:  0 20px 25px -5px hsl(0 0% 0% / 0.50), 0 8px 10px -6px hsl(0 0% 0% / 0.30);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.70);
+  }

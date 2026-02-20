@@ -36,10 +36,10 @@ export const GlitchText = ({ children, className, intensity = "medium" }: Glitch
         {children}
       </span>
       
-      {/* Warstwa glitch - niebieska */}
+      {/* Warstwa glitch - ciemna (brand red z przesunięciem) */}
       <span 
         className={cn(
-          "absolute inset-0 text-info opacity-70 font-bold animate-glitch-skew"
+          "absolute inset-0 text-foreground opacity-40 font-bold animate-glitch-skew"
         )}
         style={{ 
           clipPath: "polygon(0 55%, 100% 55%, 100% 100%, 0 100%)",
