@@ -19,19 +19,20 @@ export const UpcomingEvents = ({ events, userRegistrations }: UpcomingEventsProp
   if (upcomingEvents.length === 0) return null;
 
   return (
-    <section className="relative py-8 md:py-12 animate-fade-in">
-      {/* Top gradient separator */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
+    <section className="relative py-10 md:py-14 animate-fade-in">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold">Nadchodzące wydarzenia</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Najbliższe zawody w kalendarzu</p>
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-1 bg-primary rounded-full shrink-0" />
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold leading-tight">Nadchodzące wydarzenia</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Najbliższe zawody w kalendarzu</p>
+            </div>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
             <Link to="/events">
               Kalendarz
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>

@@ -7,6 +7,76 @@
   /* ── LIGHT MODE ─────────────────────────────────────────── */
   :root {
 
+    /* === EXTENDED BRAND TOKENS === */
+    --primary-subtle:       0 72% 95%;   /* bardzo jasne tło z czerwienią */
+    --primary-glow:         0 72% 52%;   /* jaśniejsza czerwień — efekt glow */
+    --primary-dark:         0 72% 30%;   /* ciemna czerwień — hover states */
+
+    /* === HEADER === */
+    --header-bg:            0 0% 100%;
+    --header-border:        0 0% 92%;
+
+    /* === GRADIENT TOKENS === */
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(0 72% 42% / 0.08) 0%,
+      hsl(0 0% 99%) 40%,
+      hsl(0 0% 99%) 60%,
+      hsl(0 72% 42% / 0.04) 100%
+    );
+    --gradient-section-alt: linear-gradient(
+      180deg,
+      hsl(0 0% 97%) 0%,
+      hsl(0 0% 100%) 100%
+    );
+    --gradient-card-hover: linear-gradient(
+      135deg,
+      hsl(0 72% 42% / 0.03) 0%,
+      transparent 100%
+    );
+    --gradient-footer: linear-gradient(
+      180deg,
+      hsl(0 0% 10%) 0%,
+      hsl(0 0% 6%) 100%
+    );
+    --gradient-divider: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(0 72% 42% / 0.25) 50%,
+      transparent 100%
+    );
+
+    /* === TYPOGRAPHY SCALE === */
+    --font-size-xs:   0.75rem;
+    --font-size-sm:   0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg:   1.125rem;
+    --font-size-xl:   1.25rem;
+    --font-size-2xl:  1.5rem;
+    --font-size-3xl:  1.875rem;
+    --font-size-4xl:  2.25rem;
+    --font-size-5xl:  3rem;
+    --font-size-6xl:  3.75rem;
+
+    /* === LINE HEIGHTS === */
+    --lh-tight:   1.2;
+    --lh-snug:    1.35;
+    --lh-normal:  1.5;
+    --lh-relaxed: 1.65;
+
+    /* === TRANSITIONS === */
+    --transition-fast:   all 0.15s ease;
+    --transition-base:   all 0.2s ease;
+    --transition-slow:   all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* === SPACING EXTRAS === */
+    --section-gap: 5rem;
+
+    /* === Z-INDEX === */
+    --z-header: 50;
+    --z-modal:  100;
+    --z-toast:  200;
+
     /* === NEUTRALS === */
     --background:           0 0% 99%;
     --foreground:           0 0% 8%;

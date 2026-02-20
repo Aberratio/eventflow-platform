@@ -71,54 +71,59 @@ export const EventListRow = ({
   return (
     <Link 
       to={`/events/${event.slug}`}
-      className={`group flex items-start gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-colors ${
-        isRegistered || hasCompleted ? 'bg-primary/5' : ''
+      className={`group flex items-start gap-0 border-b border-border/40 last:border-b-0 hover:bg-muted/40 transition-all duration-200 ${
+        isRegistered || hasCompleted ? 'bg-primary/[0.03]' : ''
       }`}
     >
-      {/* Date column with color accent */}
-      <div className="w-12 sm:w-14 shrink-0 text-center pt-0.5 pr-2 sm:pr-3 border-r-2 border-primary/20">
-        <span className="text-xs sm:text-sm font-medium text-foreground">{dateDisplay}</span>
+      {/* Date column — red accent */}
+      <div className="w-14 sm:w-16 shrink-0 text-center py-3 px-2 flex flex-col items-center justify-center border-r border-border/40 group-hover:border-primary/30 transition-colors">
+        <span className="text-xs sm:text-sm font-bold text-foreground leading-none">{dateDisplay.split(' ')[0]}</span>
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">{dateDisplay.split(' ')[1] || ''}</span>
       </div>
       
+      {/* Red side accent bar on hover */}
+      <div className="w-0.5 self-stretch bg-transparent group-hover:bg-primary/40 transition-all duration-200 shrink-0" />
+      
       {/* Main content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+      <div className="flex-1 min-w-0 py-3 px-3">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors text-sm sm:text-base">
             {event.name}
           </span>
           {event.isVirtual && (
-            <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0 bg-primary/10 text-primary border-primary/30">
+            <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 bg-primary/8 text-primary border-primary/25 shrink-0">
               <Globe className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />
-              <span className="hidden sm:inline">Wirtualny</span>
-              <span className="sm:hidden">Wirt.</span>
+              Wirt.
             </Badge>
           )}
           {hasCompleted ? (
-            <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">Ukończony</Badge>
+            <Badge variant="secondary" className="text-[9px] sm:text-[10px] px-1.5 py-0 shrink-0">Ukończony</Badge>
           ) : isRegistered ? (
-            <Badge variant="default" className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">Zapisany</Badge>
+            <Badge className="text-[9px] sm:text-[10px] px-1.5 py-0 shrink-0">Zapisany</Badge>
           ) : null}
-          <span className="text-muted-foreground hidden sm:inline">•</span>
-          <span className="text-muted-foreground text-sm hidden sm:inline">
-            {event.isVirtual ? 'Cały świat' : event.city}
-          </span>
         </div>
         
-        {/* Distances as inline text + mobile location */}
-        <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-          <span className="sm:hidden">
+        <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+          <span className="truncate">
             {event.isVirtual ? 'Cały świat' : event.city}
-            {showDetails && distancesText && ' • '}
           </span>
-          {showDetails && <span className="truncate">{distancesText}</span>}
+          {showDetails && distancesText && (
+            <>
+              <span className="opacity-40">·</span>
+              <span className="truncate">{distancesText}</span>
+            </>
+          )}
         </div>
       </div>
       
       {/* Status + counter + arrow */}
-      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 py-3 pr-3">
         {showDetails && (
           <>
-            <Badge variant={statusDisplay.variant} className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0 whitespace-nowrap">
+            <Badge
+              variant={statusDisplay.variant}
+              className="text-[9px] sm:text-[10px] px-1.5 py-0 whitespace-nowrap"
+            >
               {statusDisplay.showTrophy && <Trophy className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />}
               {statusDisplay.label}
             </Badge>
@@ -130,7 +135,7 @@ export const EventListRow = ({
             </span>
           </>
         )}
-        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
       </div>
     </Link>
   );
