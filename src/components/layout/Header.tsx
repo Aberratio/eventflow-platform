@@ -66,22 +66,25 @@ export const Header = () => {
   const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/98 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Timer className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl">SportTime</span>
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="relative">
+            <Timer className="h-6 w-6 text-primary transition-transform group-hover:rotate-12 duration-300" />
+          </div>
+          <span className="font-bold text-xl tracking-tight">
+            Sport<span className="text-primary">Time</span>
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-0.5">
           {/* Wydarzenia link */}
-
           <Link 
             to="/wydarzenia" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground"
+              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
+              (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground font-semibold"
             )}
           >
             Wydarzenia
@@ -90,11 +93,11 @@ export const Header = () => {
           {/* Wyniki dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
-              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActivePrefix('/wyniki') && "bg-accent text-accent-foreground"
+              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
+              isActivePrefix('/wyniki') && "bg-accent text-accent-foreground font-semibold"
             )}>
               Wyniki
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3 w-3 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem asChild>
@@ -122,14 +125,12 @@ export const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-
           {/* Wyzwania link */}
-
           <Link 
             to="/challenges" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              isActivePrefix('/challenges') && "bg-accent text-accent-foreground"
+              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
+              isActivePrefix('/challenges') && "bg-accent text-accent-foreground font-semibold"
             )}
           >
             Wyzwania
@@ -138,18 +139,21 @@ export const Header = () => {
           <Link 
             to="/sklep" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-              (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground"
+              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
+              (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground font-semibold"
             )}
           >
             Sklep
           </Link>
 
+          {/* Separator */}
+          <div className="w-px h-5 bg-border mx-1" />
+
           {/* Cart */}
-          <Link to="/cart" className="relative p-2" aria-label="Koszyk">
-            <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+          <Link to="/cart" className="relative p-2 rounded-md hover:bg-accent transition-colors" aria-label="Koszyk">
+            <ShoppingCart className="h-4.5 w-4.5 text-muted-foreground hover:text-foreground transition-colors" />
             {totalItems > 0 && (
-              <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+              <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold leading-none min-w-[18px] px-1">
                 {totalItems > 9 ? '9+' : totalItems}
               </span>
             )}

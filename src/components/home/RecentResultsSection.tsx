@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, ArrowRight, Calendar, MapPin } from 'lucide-react';
+import { Trophy, ArrowRight, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -19,57 +19,57 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   if (completedEvents.length === 0) return null;
 
   return (
-    <section className="relative py-8 md:py-12 animate-fade-in bg-muted/20">
-      {/* Top gradient separator */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
-      <div className="container mx-auto px-4">
+    <section className="relative py-10 md:py-14 animate-fade-in">
+      {/* Subtle alt background */}
+      <div className="absolute inset-0 bg-muted/30" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      
+      <div className="container mx-auto px-4 relative">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Trophy className="h-5 w-5 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold">Ostatnie wyniki</h2>
+          <div className="flex items-center gap-3">
+            {/* Red accent bar */}
+            <div className="h-8 w-1 bg-primary rounded-full shrink-0" />
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold leading-tight">Ostatnie wyniki</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Sprawdź wyniki zakończonych zawodów</p>
             </div>
-            <p className="text-sm text-muted-foreground">Sprawdź wyniki zakończonych zawodów</p>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
             <Link to="/wyniki">
-              Kalendarz
-              <ArrowRight className="h-4 w-4" />
+              Wszystkie
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </div>
 
-        <div className="space-y-2">
-          {completedEvents.map(event => (
-            <Card key={event.id} className="transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5">
-              <CardContent className="p-3 md:p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <Link 
-                      to={`/results?eventId=${event.id}`}
-                      className="font-medium text-sm md:text-base hover:text-primary transition-colors line-clamp-1"
-                    >
-                      {event.name}
-                    </Link>
-                    <div className="flex flex-wrap gap-2 md:gap-3 text-xs text-muted-foreground mt-0.5">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {event.city}
-                      </span>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="shrink-0" asChild>
-                    <Link to={`/results?eventId=${event.id}`}>
-                      Zobacz wyniki
-                    </Link>
-                  </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {completedEvents.map((event, index) => (
+            <Link 
+              key={event.id}
+              to={`/results?eventId=${event.id}`}
+              className="group flex items-center justify-between gap-4 p-4 rounded-lg border border-border/60 bg-card hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-md bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
+                  <Trophy className="h-4 w-4 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="min-w-0">
+                  <div className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-1">{event.name}</div>
+                  <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-2.5 w-2.5" />
+                      {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-2.5 w-2.5" />
+                      {event.city}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+            </Link>
           ))}
         </div>
 

@@ -15,16 +15,14 @@ export const ListGroup = ({ title, count, children, className, sticky = true }: 
     <div className={cn('', className)}>
       {title && (
         <div className={cn(
-          'flex items-center justify-between px-3 sm:px-4 py-2.5',
-          'bg-accent/40 border-l-4 border-l-primary',
-          'border-b border-border',
+          'flex items-center justify-between px-3 sm:px-4 py-2',
+          'bg-foreground/[0.03] border-l-2 border-l-primary',
+          'border-b border-border/50',
           sticky && 'sticky top-0 z-10'
         )}>
-          <h3 className="text-sm font-semibold text-foreground capitalize">{title}</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
           {count !== undefined && (
-            <Badge className="text-xs px-2 py-0.5 bg-primary/15 text-primary border-0 hover:bg-primary/20">
-              {count}
-            </Badge>
+            <span className="text-xs text-muted-foreground font-medium">{count}</span>
           )}
         </div>
       )}
