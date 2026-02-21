@@ -1,200 +1,253 @@
 
-# Nowa kolorystyka: czerwień, czerń, szarość, biel — z wydzielonym Design System
+# Redesign: Dark Enterprise UI z kontrolowanym czerwonym akcentem
 
-## Problem do rozwiązania
+## Filozofia zmiany
 
-Klient chce zmienić kolorystykę z zielonej na **czerwono-czarno-szaro-białą**. Kluczowe wyzwanie: czerwony jest standardowo kolorem "alarmu/błędu" (semantyka `destructive`). Trzeba to sprytnie rozwiązać.
+Obecna strona jest jasna (light mode) z ciemnym hero i lekko sportowym charakterem. Nowy design to **ciemny, warstwowy system** w stylu enterprise dashboard, gdzie:
 
----
+- Czarny/grafit = baza (nie absolutne #000000)
+- Szary = warstwy, karty, granice, tekst pomocniczy
+- Czerwony = tylko akcenty, CTA, focus, aktywne elementy
+- Bialy = tekst glowny (nie czysty #FFFFFF, lecz lagodny jasny szary)
 
-## Strategia kolorystyczna — jak sensownie użyć czerwieni
+## Nowa paleta kolorow
 
-Czerwień jako kolor brandowy jest dobrze stosowana w wielu sportowych platformach (Nike, Under Armour, Formula 1, Red Bull). Kluczem jest **hierarchia i nasycenie**:
+| Token | Wartosc HSL | Hex przyblizony | Rola |
+|-------|-------------|-----------------|------|
+| `--background` | `0 0% 7%` | #121212 | Glowne tlo aplikacji |
+| `--foreground` | `0 0% 87%` | #DEDEDE | Tekst glowny (nie czysty bialy) |
+| `--card` | `0 0% 10%` | #1A1A1A | Karty, panele |
+| `--card-foreground` | `0 0% 87%` | #DEDEDE | Tekst na kartach |
+| `--popover` | `0 0% 12%` | #1F1F1F | Dropdowny, popovery |
+| `--primary` | `0 72% 45%` | #C53030 | Czerwony brand — CTA, focus |
+| `--primary-foreground` | `0 0% 100%` | #FFFFFF | Tekst na czerwonym |
+| `--secondary` | `0 0% 14%` | #242424 | Tla przyciskow drugorzednych |
+| `--secondary-foreground` | `0 0% 80%` | #CCCCCC | Tekst secondary |
+| `--muted` | `0 0% 14%` | #242424 | Tla wyciszone |
+| `--muted-foreground` | `0 0% 50%` | #808080 | Tekst przygaszony |
+| `--accent` | `0 0% 16%` | #292929 | Hover states |
+| `--accent-foreground` | `0 0% 87%` | #DEDEDE | Tekst na hover |
+| `--destructive` | `0 84% 56%` | #E53E3E | Bleedy, usuwanie (jasniejszy niz brand) |
+| `--border` | `0 0% 16%` | #292929 | Granice subtlene |
+| `--input` | `0 0% 16%` | #292929 | Inputy |
+| `--ring` | `0 72% 45%` | #C53030 | Focus ring |
 
-- **Czerwień główna (brand red)**: ciemniejsza, bardziej opanowana — `hsl(0, 72%, 42%)` — używana jako `primary` (przyciski CTA, linki, aktywne elementy)
-- **Czerwień alertu (destructive)**: jaśniejsza/intensywniejsza — `hsl(0, 84%, 56%)` — zachowana jako `destructive` dla błędów
-- Obie są czerwone, ale różnią się **nasyceniem i jasnością** — użytkownik instynktownie odróżni "brand" od "błędu"
-- Biały tekst na czerwonym tle działa — wysoki kontrast (WCAG AA)
+Sidebar: jeszcze ciemniejszy niz content (`0 0% 5%` = #0D0D0D).
 
----
+## Kluczowa zasada: Czerwony NIE jest uzywany jako
 
-## Paleta barw — szczegółowe wartości HSL
+- Tlo calych sekcji (nie ma `bg-primary` sekcji)
+- Kolor duzych powierzchni
+- Kolor tekstu systemowego
+- Obramowanie tabel
+
+Czerwony = przycisk CTA, ikona aktywna, focus ring, thin accent bar, badge krytyczny, hover underline.
+
+## Zmieniane pliki
+
+### 1. `src/styles/tokens.css` — pelna nowa paleta
+
+Zmiana `:root` na ciemna palete jako domyslna (nie `.dark` class). Usuniecie light mode — cala aplikacja jest dark-first. Ewentualny `.light` class na przyszlosc.
+
+Nowe tokeny:
+- `--surface-elevated`: `0 0% 13%` — karty uniesione (modals, dialogs)
+- `--surface-overlay`: `0 0% 8%` — overlay/backdrop
+- `--border-subtle`: `0 0% 14%` — subtelne granice
+- `--border-active`: `0 0% 22%` — aktywne/hover granice
+- `--text-primary`: alias foreground
+- `--text-secondary`: `0 0% 60%`
+- `--text-muted`: `0 0% 42%`
+- Gradient tokens: usuniete jasne gradienty, nowe ciemne
+
+### 2. `src/styles/base.css` — ciemne style bazowe
+
+- Body: `background: var(--background)` (ciemny grafit)
+- Scrollbar: ciemne tlo, szary thumb
+- Naglowki: `color: hsl(var(--foreground))` (jasny szary)
+- Usunac gradient body (z light mode)
+- Nowe utility classes:
+  - `.surface-card` — tlo karty z subtlena granica
+  - `.surface-elevated` — uniesiona karta (modal, dropdown)
+  - `.row-hover` — subtelne rozjasnienie wiersza tabeli
+
+### 3. `src/styles/typography.css` — bez zmian (fonty zostaja)
+
+### 4. `src/index.css` — bez zmian (importy)
+
+### 5. `tailwind.config.ts` — aktualizacja brand tokeny
+
+Aktualizacja `brand.gray` na ciemniejsze wartosci pasujace do dark theme.
+
+### 6. `src/components/layout/Header.tsx`
+
+- Tlo: ciemny grafit (#121212) z subtlena granica dolna
+- Logo: bialy tekst, "Time" w czerwonym
+- Nawigacja: szary tekst, aktywny = bialy tekst (nie czerwone tlo!)
+- Aktywny link: dolny cienki czerwony pasek (2px border-bottom), nie zmiana tla
+- Cart icon badge: czerwony
+- Mobilne menu: ciemne tlo, szare teksty
+
+### 7. `src/components/layout/Footer.tsx`
+
+- Tlo: najciemniejszy (#0D0D0D)
+- Teksty: szare, linki na hover jasniejsze (nie czerwone)
+- Separator gory: subtleny szary, nie gradient
+- Social icons: szare, hover = jasniejsze
+
+### 8. `src/components/home/HomeHero.tsx`
+
+- Tlo: gradient od `#0D0D0D` do `#161616`
+- Usunac czerwone poswiety i grid pattern (zbyt gamingowe)
+- Tekst: jasny szary, bez czerwonego slowa
+- CTA button: czerwony (jedyny czerwony element)
+- Secondary button: szary outline
+- Stats row: szare z subtlena granica
+
+### 9. `src/components/ui/card.tsx` — bez zmian kodu
+
+Automatycznie zmieni sie dzieki nowym tokenenom `--card` i `--border`.
+
+### 10. `src/components/ui/button.tsx` — bez zmian kodu
+
+Automatycznie: `bg-primary` bedzie czerwony, `bg-secondary` szary.
+
+### 11. `src/components/ui/badge.tsx` — dodanie nowych wariantow
+
+Nowy wariant `muted` (szary badge) i `accent` (czerwony ale subtleny — czerwone tlo/10, czerwony tekst). Obecne warianty zaczytalja dzialac automatycznie.
+
+### 12. `src/components/ui/table.tsx` — naprzemienne wiersze
+
+Dodanie `even:bg-muted/30` do `TableRow` i `hover:bg-accent/50` zamiast `hover:bg-muted/50`.
+
+### 13. `src/components/ui/input.tsx` — bez zmian kodu
+
+Automatycznie ciemne tlo + szara granica.
+
+### 14. `src/components/ui/tabs.tsx` — aktualizacja stylow
+
+TabsList: ciemniejsze tlo (`bg-secondary`). TabsTrigger active: nie bialy shadow, lecz subtleny bottom border czerwony + jasny tekst.
+
+### 15. `src/components/lists/EventListRow.tsx`
+
+- Usunac `hover:bg-muted/40` na `hover:bg-accent/40`
+- Czerwony accent bar po lewej — zostawic (pasuje)
+- Date column: szare tlo, bez bordera z prawej (zbyt kliniczne)
+- Hover: delikatne rozjasnienie calego wiersza
+
+### 16. `src/components/lists/ListContainer.tsx`
+
+- Card: ciemne tlo z subtlena granica
+- ListGroup header: ciemniejsze tlo, cienki czerwony border-left
+
+### 17. `src/components/home/UpcomingEvents.tsx`
+
+- Section: brak tla (transparentne — dziedziczy dark background)
+- Naglowek: szary tekst, czerwony accent bar (zostawic)
+
+### 18. `src/components/home/LiveResultsSection.tsx`
+
+- Usunac `bg-destructive/5` sekcji (naruszona zasada — nie uzywac czerwonego jako tla sekcji)
+- Live indicator: malutka czerwona kropka + tekst "LIVE" w czerwonym — OK
+- Karta: ciemna z subtlena granica, nie `border-destructive`
+
+### 19. `src/components/home/RecentResultsSection.tsx`
+
+- Usunac `bg-muted/30` — uzyc transparentnego tla
+- Ikona Trophy: szara, nie czerwona (to nie akcja)
+- Hover karty: rozjasnienie tla
+
+### 20. `src/components/home/PartnersSection.tsx`
+
+- Ciemne tlo
+- Logo partnerow: szare (opacity), na hover jasniejsze
+- Usunac `hover:border-primary` — zastapic `hover:border-border-active`
+
+### 21. `src/pages/admin/AdminDashboard.tsx`
+
+- Sidebar: najciemniejsze tlo (#0D0D0D)
+- Aktywna pozycja: cienki czerwony pasek po lewej (3px) + jasny tekst, NIE zmiana tla
+- Nieaktywne: szary tekst
+- Content area: standardowe ciemne tlo
+- Grupy: separatory jako cienkie szare linie
+
+### 22. `src/pages/moderator/ModeratorDashboard.tsx`
+
+Identyczne zmiany jak AdminDashboard — ten sam sidebar pattern.
+
+### 23. `src/pages/organizer/EventManage.tsx`
+
+- Tabs: ciemniejsze tlo, aktywna zakladka z dolnym czerwonym paskiem
+- Content area: standardowe ciemne tlo
+
+### 24. `src/components/layout/BottomNav.tsx`
+
+- Tlo: ciemne (#121212) z gorna granica
+- Aktywna ikona: czerwona
+- Nieaktywna: szara
+
+### 25. Hardcoded kolory do poprawienia
+
+Pliki uzywajace `bg-green-*`, `text-green-*`, `bg-blue-*`, `text-blue-*`:
+- `OnboardingDialog.tsx` — ikony `text-green-500` / `text-blue-500` → `text-muted-foreground` lub ikonka w czerwonym
+- `EventOverviewTab.tsx` — `bg-green-500/10` → `bg-muted`
+- `AthleteProfilePage.tsx` — `bg-green-600` badge → success token
+- `ParticipantOrdersTab.tsx` — statusy kolorowe → uzywac `--success`, `--warning`, `--info`
+- `ResultsTab.tsx` — `bg-green-500/10` → success token
+- `RegistrationForm.tsx` — `bg-green-50` / `text-green-*` → success token
+- `NotificationCenter.tsx` — kolorowe ikony → szare + czerwony dla waznych
+- `SeriesDetailsPage.tsx` — kolorowe badze → szare warianty
+
+### 26. `src/components/EventCard.tsx`
+
+- Card: ciemne tlo, subtlena granica
+- Hover: rozjasnienie granicy, nie `border-primary/30`
+- Discipline icon: szara (nie czerwona na hover)
+
+### 27. `src/components/CookieConsent.tsx`
+
+- Ciemne tlo panelu
+- Przyciski: szary "Tylko niezbedne", czerwony "Akceptuj"
+
+## Streszczenie zasad uzycia czerwonego
 
 ```text
-LIGHT MODE:
-  background:       0 0% 99%        (prawie czysty biały)
-  foreground:       0 0% 8%         (głęboka czerń)
-  card:             0 0% 100%       (biały)
-  card-foreground:  0 0% 8%
-  primary:          0 72% 42%       (głęboka czerwień brandowa)
-  primary-fg:       0 0% 100%       (biały tekst na czerwieni)
-  secondary:        0 0% 94%        (jasny szary)
-  secondary-fg:     0 0% 15%
-  muted:            0 0% 94%        (jasny szary — tła)
-  muted-fg:         0 0% 45%        (średni szary tekst)
-  accent:           0 60% 96%       (bardzo jasny różowo-szary — hover)
-  accent-fg:        0 72% 36%       (ciemna czerwień)
-  destructive:      0 84% 56%       (jaśniejsza czerwień — błędy)
-  border:           0 0% 88%        (szary border)
-  input:            0 0% 88%
-  ring:             0 72% 42%       (czerwień — focus ring)
+CZERWONY (--primary) UZYWAJ TYLKO DLA:
+  [x] Przycisk CTA (primary button)
+  [x] Focus ring
+  [x] Aktywna pozycja nawigacji (cienki pasek, nie tlo)
+  [x] Badge krytyczny / LIVE indicator
+  [x] Link hover (underline lub kolor tekstu)
+  [x] Thin accent bar (3px border-left)
+  [x] Cart badge counter
 
-DARK MODE:
-  background:       0 0% 7%         (głęboka czerń)
-  foreground:       0 0% 96%        (biały)
-  card:             0 0% 11%        (ciemny szary karta)
-  primary:          0 72% 52%       (jaśniejsza czerwień na ciemnym tle)
-  primary-fg:       0 0% 100%
-  secondary:        0 0% 16%        (ciemny szary)
-  muted:            0 0% 16%
-  muted-fg:         0 0% 58%
-  accent:           0 40% 14%       (ciemna czerwień — hover w dark mode)
-  accent-fg:        0 72% 62%
-  border:           0 0% 18%
-  sidebar tło:      0 0% 5%         (prawie czarny — sidebar)
+CZERWONY NIE UZYWAJ DLA:
+  [ ] Tlo calych sekcji
+  [ ] Tlo sidebar
+  [ ] Obramowanie tabel
+  [ ] Tekst systemowy / informacyjny
+  [ ] Ikony nieinteraktywne (np. Trophy, Calendar)
+  [ ] Gradienty na duzych powierzchniach
 ```
 
----
+## Kolejnosc implementacji
 
-## Nowy folder: `src/styles/`
-
-Wydzielamy design system do osobnego folderu, żeby łatwo nim zarządzać:
-
-```text
-src/styles/
-  tokens.css        — zmienne CSS (kolory, radius, shadows, fonts)
-  typography.css    — @import Google Fonts, klasy typograficzne
-  base.css          — reset i style bazowe body/html
-  index.css         — główny plik importujący wszystko (zastępuje src/index.css)
-```
-
-`src/index.css` zostanie zastąpiony importem z `src/styles/index.css`, albo przepiszemy go na miejscu z jasnym podziałem sekcji i komentarzami.
-
----
-
-## Co konkretnie zmieniamy
-
-### 1. `src/index.css` (główny plik)
-
-Pełna zamiana zmiennych CSS:
-- `--primary` z zielonego `152 76% 36%` → czerwony `0 72% 42%`
-- `--accent` z zielonkawego → subtelny różowo-szary
-- `--ring` → czerwony
-- `--sidebar-*` → dopasowane do nowej palety
-- `--chart-*` → przepaleta wykresów (czerwień, szarości, neutralne akcenty)
-- `--success` → **zielony** (jedyny zielony na stronie — tylko dla "sukcesu") `142 71% 40%`
-- `--warning` → żółty (pozostaje)
-- `--info` → ciemny szary/granatowy
-
-Body gradient: `from-background via-primary/0.015 to-background` — delikatna czerwona poświata.
-
-### 2. `src/styles/` — nowy folder design systemu
-
-**`src/styles/tokens.css`** — wszystkie zmienne w jednym miejscu:
-```css
-/* === BRAND COLORS === */
-/* === NEUTRALS === */
-/* === SEMANTIC === */
-/* === SHADOWS === */
-/* === RADIUS === */
-```
-
-**`src/styles/typography.css`** — importy fontów + pomocnicze klasy `.heading-*, .body-*`.
-
-Wszystkie zmienne z `index.css` przenosimy do `tokens.css`, a `index.css` tylko importuje.
-
-### 3. `tailwind.config.ts` — dodajemy statyczne tokeny brand
-
-```typescript
-extend: {
-  colors: {
-    brand: {
-      red: '#C41E1E',       // primary brand red
-      'red-light': '#E53535', // destructive / lighter
-      'red-dark': '#8B1515', // hover state
-      black: '#141414',
-      gray: {
-        50: '#F9F9F9',
-        100: '#F0F0F0',
-        200: '#E0E0E0',
-        300: '#C4C4C4',
-        400: '#9A9A9A',
-        500: '#6E6E6E',
-        600: '#4A4A4A',
-        700: '#303030',
-        800: '#1F1F1F',
-        900: '#141414',
-      }
-    }
-  }
-}
-```
-
----
-
-## Wpływ na komponenty — co się zmieni automatycznie
-
-Ponieważ cały UI korzysta z tokenów (`bg-primary`, `text-primary`, `bg-accent`, `hover:bg-accent` itp.), zmiana zmiennych CSS automatycznie przepisze wygląd:
-
-| Element | Teraz (zielony) | Po zmianie (czerwony) |
-|---|---|---|
-| Przyciski CTA | zielone | czerwone |
-| Linki aktywne w nav | zielone tło | czerwone tło |
-| Focus ring | zielony | czerwony |
-| Badge "default" | zielony | czerwony |
-| Ikona logo Timer | zielona | czerwona |
-| Licznik koszyka | zielony | czerwony |
-| Sidebar active | zielony | czerwony |
-| Wykresy (chart-1) | zielony | czerwony |
-
-**Nie zmienia się automatycznie** — trzeba ręcznie zaktualizować:
-- `GlitchText.tsx` — hardcoded `text-destructive` i `text-info` (różne kolory glitch)
-- Ewentualne inline klasy z `text-green-*` lub `bg-green-*` (ale projekt ich nie używa — sprawdzone)
-
----
-
-## Obsługa "czerwony = błąd" vs "czerwony = brand"
-
-Kluczowe rozróżnienie wizualne żeby użytkownik nie mylił:
-
-| Sytuacja | Kolor | Token |
-|---|---|---|
-| Przycisk CTA, nav, logo | `hsl(0 72% 42%)` — głęboka burgundowa czerwień | `--primary` |
-| Błąd formularza, delete | `hsl(0 84% 56%)` — jasna jaskrawa czerwień | `--destructive` |
-| Success (zapisano, sukces) | `hsl(142 71% 40%)` — zielony | `--success` |
-| Warning | `hsl(45 93% 47%)` — żółty | `--warning` |
-
-Brand red jest **ciemniejszy i bardziej nasycony** — wygląda jak "premium/sport". Destructive red jest **jaśniejszy i bardziej krzyczący** — wyraźnie alarm.
-
----
-
-## Pliki do modyfikacji
-
-| Plik | Co się zmienia |
-|---|---|
-| `src/index.css` | Pełna zamiana palety CSS variables — primary, accent, ring, sidebar, charts |
-| `tailwind.config.ts` | Dodanie `brand.*` kolorów statycznych |
-
-## Nowe pliki
-
-| Plik | Co zawiera |
-|---|---|
-| `src/styles/tokens.css` | Wszystkie zmienne CSS skopiowane z index.css — jeden plik do zarządzania |
-| `src/styles/typography.css` | @import fontów + klasy typograficzne |
-| `src/styles/base.css` | Style bazowe body, *, scrollbar |
-| `src/styles/index.css` | Importuje tokens + typography + base |
-
-`src/index.css` zaczyna importować `src/styles/index.css` — jeden punkt wejścia.
-
----
-
-## Kolejność implementacji
-
-1. Stworzyć `src/styles/tokens.css` z nową paletą czerwono-czarno-szarą
-2. Stworzyć `src/styles/typography.css` i `src/styles/base.css`
-3. Stworzyć `src/styles/index.css` łączący wszystko
-4. Zaktualizować `src/index.css` — importuje z `src/styles/` i usuwa duplikaty
-5. Zaktualizować `tailwind.config.ts` z tokenami `brand.*`
-6. Sprawdzić `GlitchText.tsx` — ewentualna korekta kolorów dla nowej palety
-
-Zmiana będzie natychmiastowa i globalna — wszystkie komponenty oparte na tokenach Tailwind zaktualizują się automatycznie.
+1. `src/styles/tokens.css` — nowa paleta (dark-first, usunac light `:root`)
+2. `src/styles/base.css` — ciemne bazowe style, nowe utility classes
+3. `tailwind.config.ts` — brand tokeny ciemne
+4. `src/components/layout/Header.tsx` — ciemny header z aktywnymi stanami
+5. `src/components/layout/Footer.tsx` — najciemniejszy footer
+6. `src/components/home/HomeHero.tsx` — minimalistyczny ciemny hero
+7. `src/components/ui/badge.tsx` — nowe warianty
+8. `src/components/ui/table.tsx` — naprzemienne wiersze
+9. `src/components/ui/tabs.tsx` — ciemne taby z czerwonym akcentem
+10. `src/components/home/LiveResultsSection.tsx` — usunac czerwone tlo
+11. `src/components/home/RecentResultsSection.tsx` — ciemne tlo
+12. `src/components/home/UpcomingEvents.tsx` — ciemne tlo
+13. `src/components/home/PartnersSection.tsx` — ciemne tlo
+14. `src/components/lists/EventListRow.tsx` — ciemne wiersze
+15. `src/components/lists/ListContainer.tsx` — ciemne kontenery
+16. `src/pages/admin/AdminDashboard.tsx` — sidebar z czerwonym akcentem
+17. `src/pages/moderator/ModeratorDashboard.tsx` — sidebar
+18. `src/components/layout/BottomNav.tsx` — ciemna nawigacja
+19. `src/components/EventCard.tsx` — ciemne karty
+20. Poprawki hardcoded kolorow w ~10 plikach
