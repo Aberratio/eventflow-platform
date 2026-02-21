@@ -54,10 +54,10 @@ import { useMemo, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const seriesTypeColors: Record<string, string> = {
-  virtual: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  local: 'bg-green-500/10 text-green-600 border-green-500/20',
-  championship: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  cup: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  virtual: 'bg-info/10 text-info border-info/20',
+  local: 'bg-success/10 text-success border-success/20',
+  championship: 'bg-warning/10 text-warning border-warning/20',
+  cup: 'bg-muted text-muted-foreground border-muted-foreground/20',
 };
 
 const seriesTypeIcons: Record<string, React.ReactNode> = {
@@ -237,9 +237,9 @@ const SeriesDetailsPage = () => {
   }
 
   const getPositionDisplay = (position: number) => {
-    if (position === 1) return <span className="text-amber-500 font-bold">🥇 1</span>;
-    if (position === 2) return <span className="text-slate-400 font-bold">🥈 2</span>;
-    if (position === 3) return <span className="text-amber-700 font-bold">🥉 3</span>;
+    if (position === 1) return <span className="text-warning font-bold">🥇 1</span>;
+    if (position === 2) return <span className="text-muted-foreground font-bold">🥈 2</span>;
+    if (position === 3) return <span className="text-warning/70 font-bold">🥉 3</span>;
     return position;
   };
 

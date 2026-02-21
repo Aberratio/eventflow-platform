@@ -86,8 +86,8 @@ const ResetPasswordPage = () => {
             <CardHeader className="text-center">
               {isSuccess ? (
                 <>
-                  <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
+                    <CheckCircle className="h-8 w-8 text-success" />
                   </div>
                   <CardTitle className="text-2xl">Hasło zmienione!</CardTitle>
                   <CardDescription>

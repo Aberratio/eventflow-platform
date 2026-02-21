@@ -33,7 +33,7 @@ export const StatsSection = ({ events, registrations, results }: StatsSectionPro
   ];
 
   return (
-    <section className="py-12 md:py-16 bg-primary/5">
+    <section className="py-12 md:py-16 bg-secondary/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold">SportTime w liczbach</h2>
@@ -43,8 +43,8 @@ export const StatsSection = ({ events, registrations, results }: StatsSectionPro
           {stats.map((stat, index) => (
             <Card key={index} className="border-0 bg-background/50 backdrop-blur">
               <CardContent className="p-6 text-center">
-                <stat.icon className="h-8 w-8 mx-auto mb-3 text-primary" />
-                <p className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</p>
+                <stat.icon className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                <p className="text-3xl md:text-4xl font-bold text-foreground mb-1">{stat.value}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </CardContent>
             </Card>

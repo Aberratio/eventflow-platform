@@ -72,7 +72,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'published':
-        return <Badge className="bg-green-500/10 text-green-600">Opublikowane</Badge>;
+        return <Badge className="bg-success/10 text-success">Opublikowane</Badge>;
       case 'draft':
         return <Badge variant="secondary">Szkic</Badge>;
       case 'completed':
@@ -133,7 +133,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
               onClick={() => handleStatusChange('published')}
             >
               <CardContent className="pt-6 text-center">
-                <Eye className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                <Eye className="h-8 w-8 mx-auto mb-2 text-success" />
                 <h4 className="font-medium">Opublikowane</h4>
                 <p className="text-sm text-muted-foreground">
                   Widoczne dla wszystkich

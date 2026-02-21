@@ -32,7 +32,7 @@ export const DisciplinesSection = ({ events }: DisciplinesSectionProps) => {
             const count = getDisciplineStats(discipline);
             return (
               <Link key={discipline} to={`/wydarzenia?discipline=${discipline}`}>
-                <Card className="hover:shadow-lg hover:border-primary/50 transition-all h-full">
+                <Card className="hover:shadow-lg hover:border-muted-foreground/30 transition-all h-full">
                   <CardContent className="p-6 text-center">
                     <div className="flex justify-center mb-3">
                       <DisciplineIcon discipline={discipline} size="lg" className="h-12 w-12" />

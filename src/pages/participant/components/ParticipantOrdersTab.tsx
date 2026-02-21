@@ -28,11 +28,11 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
       case 'pending':
         return <Badge variant="secondary">Oczekuje na płatność</Badge>;
       case 'paid':
-        return <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20">Opłacone</Badge>;
+        return <Badge className="bg-info/10 text-info hover:bg-info/20">Opłacone</Badge>;
       case 'shipped':
-        return <Badge className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20">Wysłane</Badge>;
+        return <Badge className="bg-warning/10 text-warning hover:bg-warning/20">Wysłane</Badge>;
       case 'delivered':
-        return <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">Dostarczone</Badge>;
+        return <Badge className="bg-success/10 text-success hover:bg-success/20">Dostarczone</Badge>;
       case 'cancelled':
         return <Badge variant="destructive">Anulowane</Badge>;
       default:

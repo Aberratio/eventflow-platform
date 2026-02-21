@@ -164,7 +164,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'finished':
-        return <Badge className="bg-green-500/10 text-green-600">Ukończył</Badge>;
+        return <Badge className="bg-success/10 text-success">Ukończył</Badge>;
       case 'dnf':
         return <Badge variant="secondary">DNF</Badge>;
       case 'dsq':
@@ -329,9 +329,9 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
                             {result.status === 'finished' ? (
                               <div className="flex items-center gap-1">
                                 {index < 3 && <Trophy className={`h-4 w-4 ${
-                                  index === 0 ? 'text-yellow-500' :
-                                  index === 1 ? 'text-gray-400' :
-                                  'text-amber-600'
+                                  index === 0 ? 'text-warning' :
+                                  index === 1 ? 'text-muted-foreground' :
+                                  'text-warning/70'
                                 }`} />}
                                 <span className="font-medium">{index + 1}</span>
                               </div>

@@ -26,7 +26,7 @@ export const OpenRegistrations = ({ events }: OpenRegistrationsProps) => {
   };
 
   return (
-    <section className="py-8 md:py-12 bg-muted/30">
+    <section className="py-8 md:py-12 bg-card/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -44,7 +44,7 @@ export const OpenRegistrations = ({ events }: OpenRegistrationsProps) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {openEvents.map(event => (
             <Link key={event.id} to={`/events/${event.slug}`} className="group">
-              <Card className="h-full transition-all hover:shadow-md hover:border-primary/30">
+              <Card className="h-full transition-all hover:shadow-md hover:border-muted-foreground/30">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div className="p-1.5 rounded bg-muted shrink-0"><DisciplineIcon discipline={event.discipline} size="md" /></div>

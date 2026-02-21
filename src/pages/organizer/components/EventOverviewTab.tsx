@@ -87,8 +87,8 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-yellow-500/10">
-                <Users className="h-6 w-6 text-yellow-500" />
+              <div className="p-3 rounded-full bg-warning/10">
+                <Users className="h-6 w-6 text-warning" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{pendingRegistrations.length}</div>
@@ -101,8 +101,8 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-green-500/10">
-                <TrendingUp className="h-6 w-6 text-green-500" />
+              <div className="p-3 rounded-full bg-success/10">
+                <TrendingUp className="h-6 w-6 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} PLN</div>
