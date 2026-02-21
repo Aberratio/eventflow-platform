@@ -27,12 +27,12 @@ const participantSteps: OnboardingStep[] = [
     description: 'Przeglądaj wydarzenia sportowe i zapisuj się na biegi, wyścigi rowerowe czy triathlony jednym kliknięciem.',
   },
   {
-    icon: <Trophy className="h-8 w-8 text-amber-500" />,
+    icon: <Trophy className="h-8 w-8 text-muted-foreground" />,
     title: 'Śledź swoje wyniki',
     description: 'Wszystkie Twoje wyniki i rekordy życiowe w jednym miejscu. Porównuj się z innymi zawodnikami.',
   },
   {
-    icon: <ShoppingBag className="h-8 w-8 text-green-500" />,
+    icon: <ShoppingBag className="h-8 w-8 text-muted-foreground" />,
     title: 'Kupuj sprzęt sportowy',
     description: 'Sprawdzony sprzęt i gadżety w naszym sklepie. Specjalne oferty dla uczestników wydarzeń.',
   },
@@ -45,12 +45,12 @@ const organizerSteps: OnboardingStep[] = [
     description: 'Łatwo stwórz i opublikuj swoje wydarzenie sportowe. Dodaj dystanse, kategorie i ceny.',
   },
   {
-    icon: <Users className="h-8 w-8 text-blue-500" />,
+    icon: <Users className="h-8 w-8 text-muted-foreground" />,
     title: 'Zarządzaj uczestnikami',
     description: 'Pełna kontrola nad listą startową, statusami płatności i komunikacją z zawodnikami.',
   },
   {
-    icon: <Trophy className="h-8 w-8 text-amber-500" />,
+    icon: <Trophy className="h-8 w-8 text-muted-foreground" />,
     title: 'Publikuj wyniki',
     description: 'Wprowadzaj wyniki ręcznie lub importuj z pliku. Uczestnicy zobaczą je natychmiast.',
   },

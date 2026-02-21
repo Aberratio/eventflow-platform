@@ -27,71 +27,53 @@ export const EventListRow = ({
     r => r.eventId === event.id && r.status === 'finished'
   );
 
-  // Check if event is in the past
   const isPast = new Date(event.date) < new Date();
-
   const registrationStatus = event.registrationStatus || 'open';
   
-  // For past events, show "Wyniki" instead of registration status
   const getStatusDisplay = () => {
     if (isPast) {
-      return {
-        label: 'Wyniki',
-        variant: 'secondary' as const,
-        showTrophy: true
-      };
+      return { label: 'Wyniki', variant: 'secondary' as const, showTrophy: true };
     }
-    
     return {
-      label: registrationStatus === 'open' 
-        ? 'Otwarte' 
-        : registrationStatus === 'closed' 
-        ? 'Zamkn.' 
-        : 'Brak',
-      variant: registrationStatus === 'open' 
-        ? 'default' as const
-        : registrationStatus === 'closed' 
-        ? 'secondary' as const
-        : 'outline' as const,
+      label: registrationStatus === 'open' ? 'Otwarte' : registrationStatus === 'closed' ? 'Zamkn.' : 'Brak',
+      variant: registrationStatus === 'open' ? 'default' as const : 'secondary' as const,
       showTrophy: false
     };
   };
   
   const statusDisplay = getStatusDisplay();
 
-  // Format date for display
   const eventDate = new Date(event.date);
   const dateDisplay = event.isVirtual && event.startDate && event.endDate 
     ? `${format(new Date(event.startDate), 'd', { locale: pl })}-${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
     : format(eventDate, 'd MMM', { locale: pl });
 
-  // Format distances as inline text
   const distancesText = event.distances.map(d => d.name).join(', ');
 
   return (
     <Link 
       to={`/events/${event.slug}`}
-      className={`group flex items-start gap-0 border-b border-border/40 last:border-b-0 hover:bg-muted/40 transition-all duration-200 ${
-        isRegistered || hasCompleted ? 'bg-primary/[0.03]' : ''
+      className={`group flex items-start gap-0 border-b border-border last:border-b-0 hover:bg-accent transition-all duration-200 ${
+        isRegistered || hasCompleted ? 'bg-accent/30' : ''
       }`}
     >
-      {/* Date column — red accent */}
-      <div className="w-14 sm:w-16 shrink-0 text-center py-3 px-2 flex flex-col items-center justify-center border-r border-border/40 group-hover:border-primary/30 transition-colors">
+      {/* Date column */}
+      <div className="w-14 sm:w-16 shrink-0 text-center py-3 px-2 flex flex-col items-center justify-center border-r border-border">
         <span className="text-xs sm:text-sm font-bold text-foreground leading-none">{dateDisplay.split(' ')[0]}</span>
         <span className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">{dateDisplay.split(' ')[1] || ''}</span>
       </div>
       
-      {/* Red side accent bar on hover */}
-      <div className="w-0.5 self-stretch bg-transparent group-hover:bg-primary/40 transition-all duration-200 shrink-0" />
+      {/* Red accent bar on hover */}
+      <div className="w-0.5 self-stretch bg-transparent group-hover:bg-primary transition-all duration-200 shrink-0" />
       
       {/* Main content */}
       <div className="flex-1 min-w-0 py-3 px-3">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-medium text-foreground truncate group-hover:text-primary transition-colors text-sm sm:text-base">
+          <span className="font-medium text-foreground truncate group-hover:text-foreground transition-colors text-sm sm:text-base">
             {event.name}
           </span>
           {event.isVirtual && (
-            <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 bg-primary/8 text-primary border-primary/25 shrink-0">
+            <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 shrink-0">
               <Globe className="h-2 sm:h-2.5 w-2 sm:w-2.5 mr-0.5" />
               Wirt.
             </Badge>
@@ -135,7 +117,7 @@ export const EventListRow = ({
             </span>
           </>
         )}
-        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+        <ChevronRight className="h-3.5 sm:h-4 w-3.5 sm:w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors" />
       </div>
     </Link>
   );

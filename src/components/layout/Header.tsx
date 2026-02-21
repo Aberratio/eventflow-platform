@@ -66,44 +66,42 @@ export const Header = () => {
   const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/98 backdrop-blur-md supports-[backdrop-filter]:bg-card/80 shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="relative">
-            <Timer className="h-6 w-6 text-primary transition-transform group-hover:rotate-12 duration-300" />
-          </div>
-          <span className="font-bold text-xl tracking-tight">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+      <div className="container flex h-14 items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 group">
+          <Timer className="h-5 w-5 text-primary" />
+          <span className="font-bold text-lg tracking-tight text-foreground">
             Sport<span className="text-primary">Time</span>
           </span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          {/* Wydarzenia link */}
           <Link 
             to="/wydarzenia" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
-              (isActive('/wydarzenia') || isActive('/events')) && "bg-accent text-accent-foreground font-semibold"
+              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
+              (isActive('/wydarzenia') || isActive('/events'))
+                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
+                : "text-muted-foreground"
             )}
           >
             Wydarzenia
           </Link>
 
-          {/* Wyniki dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
-              "flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
-              isActivePrefix('/wyniki') && "bg-accent text-accent-foreground font-semibold"
+              "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
+              isActivePrefix('/wyniki')
+                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
+                : "text-muted-foreground"
             )}>
               Wyniki
               <ChevronDown className="h-3 w-3 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem asChild>
-                <Link to="/wyniki" className="w-full">
-                  Kalendarz wyników
-                </Link>
+                <Link to="/wyniki" className="w-full">Kalendarz wyników</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/wyniki/live" className="w-full flex items-center gap-2">
@@ -112,25 +110,22 @@ export const Header = () => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/series" className="w-full">
-                  Serie i cykle
-                </Link>
+                <Link to="/series" className="w-full">Serie i cykle</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/athletes" className="w-full">
-                  Zawodnicy
-                </Link>
+                <Link to="/athletes" className="w-full">Zawodnicy</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Wyzwania link */}
           <Link 
             to="/challenges" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
-              isActivePrefix('/challenges') && "bg-accent text-accent-foreground font-semibold"
+              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
+              isActivePrefix('/challenges')
+                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
+                : "text-muted-foreground"
             )}
           >
             Wyzwania
@@ -139,21 +134,21 @@ export const Header = () => {
           <Link 
             to="/sklep" 
             className={cn(
-              "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 hover:bg-accent hover:text-accent-foreground",
-              (isActive('/sklep') || isActive('/shop')) && "bg-accent text-accent-foreground font-semibold"
+              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
+              (isActive('/sklep') || isActive('/shop'))
+                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
+                : "text-muted-foreground"
             )}
           >
             Sklep
           </Link>
 
-          {/* Separator */}
           <div className="w-px h-5 bg-border mx-1" />
 
-          {/* Cart */}
           <Link to="/cart" className="relative p-2 rounded-md hover:bg-accent transition-colors" aria-label="Koszyk">
-            <ShoppingCart className="h-4.5 w-4.5 text-muted-foreground hover:text-foreground transition-colors" />
+            <ShoppingCart className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
             {totalItems > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4.5 w-4.5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold leading-none min-w-[18px] px-1">
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold leading-none">
                 {totalItems > 9 ? '9+' : totalItems}
               </span>
             )}
@@ -164,7 +159,7 @@ export const Header = () => {
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 ml-2">
+                <Button variant="ghost" className="gap-2 ml-2 text-muted-foreground hover:text-foreground">
                   <User className="h-4 w-4" />
                   <span className="max-w-[100px] truncate">{user?.name}</span>
                   <Badge variant={roleBadgeVariants[user?.role || 'participant']} className="text-xs">
@@ -186,21 +181,15 @@ export const Header = () => {
                 </DropdownMenuItem>
                 {user?.role === 'participant' && (
                   <>
-                    <DropdownMenuItem onClick={() => {
-                      navigate('/participant?tab=registrations');
-                    }}>
+                    <DropdownMenuItem onClick={() => navigate('/participant?tab=registrations')}>
                       <Calendar className="h-4 w-4 mr-2" />
                       Nadchodzące starty
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      navigate('/participant?tab=history');
-                    }}>
+                    <DropdownMenuItem onClick={() => navigate('/participant?tab=history')}>
                       <History className="h-4 w-4 mr-2" />
                       Archiwum startów
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      navigate('/participant?tab=orders');
-                    }}>
+                    <DropdownMenuItem onClick={() => navigate('/participant?tab=orders')}>
                       <Package className="h-4 w-4 mr-2" />
                       Zamówienia
                     </DropdownMenuItem>
@@ -244,17 +233,16 @@ export const Header = () => {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2 ml-2">
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
                 <Link to="/logowanie">Zaloguj</Link>
               </Button>
-              <Button asChild>
+              <Button asChild size="sm">
                 <Link to="/rejestracja">Zarejestruj</Link>
               </Button>
             </div>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
         <Button
           variant="ghost"
           size="icon"
@@ -267,54 +255,54 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t bg-card max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="lg:hidden border-t border-border bg-background max-h-[calc(100vh-3.5rem)] overflow-y-auto">
           <nav className="container py-4 flex flex-col gap-1">
-            <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Wydarzenia
             </Link>
 
             <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent">
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent">
                 Wyniki
                 <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-4">
-                <Link to="/wyniki" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/wyniki" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Kalendarz wyników
                 </Link>
-                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   <Radio className="h-3 w-3 text-destructive" />
                   Na żywo
                 </Link>
-                <Link to="/series" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/series" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Serie i cykle
                 </Link>
-                <Link to="/athletes" className="block px-3 py-2 text-sm rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/athletes" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Zawodnicy
                 </Link>
               </CollapsibleContent>
             </Collapsible>
 
-            <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Wyzwania
             </Link>
-            <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
             </Link>
-            <Link to="/cart" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/cart" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
               <ShoppingCart className="h-4 w-4" />
               Koszyk
               {totalItems > 0 && <Badge variant="secondary">{totalItems}</Badge>}
             </Link>
 
-            <div className="border-t my-2" />
+            <div className="border-t border-border my-2" />
 
             {isAuthenticated ? (
               <>
-                <Link to={getDashboardLink()} className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                <Link to={getDashboardLink()} className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Panel {roleLabels[user?.role || 'participant']}
                 </Link>
-                <Link to="/profile" className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/profile" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <User className="h-4 w-4" />
                   Mój profil
                 </Link>
