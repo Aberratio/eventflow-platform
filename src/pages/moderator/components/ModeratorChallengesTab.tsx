@@ -12,16 +12,16 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const statusRowClass: Record<ChallengeEntryStatus, string> = {
-  approved: 'bg-green-50 dark:bg-green-950/30',
-  pending: 'bg-yellow-50 dark:bg-yellow-950/30',
-  rejected: 'bg-red-50 dark:bg-red-950/30',
+  approved: 'bg-success/5',
+  pending: 'bg-warning/5',
+  rejected: 'bg-destructive/5',
   not_submitted: '',
 };
 
 const statusIcon: Record<ChallengeEntryStatus, React.ReactNode> = {
-  approved: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-  pending: <Clock className="h-4 w-4 text-yellow-600" />,
-  rejected: <XCircle className="h-4 w-4 text-red-600" />,
+  approved: <CheckCircle2 className="h-4 w-4 text-success" />,
+  pending: <Clock className="h-4 w-4 text-warning" />,
+  rejected: <XCircle className="h-4 w-4 text-destructive" />,
   not_submitted: <div className="h-4 w-4 rounded border-2 border-muted-foreground/30" />,
 };
 
@@ -55,9 +55,9 @@ const VerificationChallengeCard = ({
               <Trophy className="h-4 w-4 text-primary shrink-0" />
               <span className="truncate">{challenge.name}</span>
               <div className="flex gap-1.5 ml-auto">
-                {pendingCount > 0 && <Badge variant="outline" className="text-yellow-600 border-yellow-300">⏳ {pendingCount}</Badge>}
-                <Badge variant="outline" className="text-green-600 border-green-300">✅ {approvedCount}</Badge>
-                {rejectedCount > 0 && <Badge variant="outline" className="text-red-600 border-red-300">❌ {rejectedCount}</Badge>}
+                {pendingCount > 0 && <Badge variant="outline" className="text-warning border-warning/30">⏳ {pendingCount}</Badge>}
+                <Badge variant="outline" className="text-success border-success/30">✅ {approvedCount}</Badge>
+                {rejectedCount > 0 && <Badge variant="outline" className="text-destructive border-destructive/30">❌ {rejectedCount}</Badge>}
               </div>
             </CardTitle>
           </CardHeader>
@@ -115,8 +115,8 @@ const VerificationChallengeCard = ({
                                   </Button>
                                 </div>
                               )}
-                              {entry.status === 'approved' && <span className="text-xs text-green-600">Zatwierdzone</span>}
-                              {entry.status === 'rejected' && <span className="text-xs text-red-600">Odrzucone</span>}
+                              {entry.status === 'approved' && <span className="text-xs text-success">Zatwierdzone</span>}
+                              {entry.status === 'rejected' && <span className="text-xs text-destructive">Odrzucone</span>}
                             </TableCell>
                           </TableRow>
                         );
@@ -146,15 +146,15 @@ export const ModeratorChallengesTab = () => {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-yellow-600">{pendingTotal}</div>
+          <div className="text-2xl font-bold text-warning">{pendingTotal}</div>
           <div className="text-xs text-muted-foreground">Oczekujące</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">{approvedTotal}</div>
+          <div className="text-2xl font-bold text-success">{approvedTotal}</div>
           <div className="text-xs text-muted-foreground">Zatwierdzone</div>
         </CardContent></Card>
         <Card><CardContent className="p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">{rejectedTotal}</div>
+          <div className="text-2xl font-bold text-destructive">{rejectedTotal}</div>
           <div className="text-xs text-muted-foreground">Odrzucone</div>
         </CardContent></Card>
       </div>

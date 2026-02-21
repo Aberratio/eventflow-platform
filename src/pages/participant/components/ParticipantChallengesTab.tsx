@@ -66,16 +66,16 @@ const ParticipantChallengesTab = () => {
               </div>
 
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className="flex items-center gap-1 text-green-600">
+                <span className="flex items-center gap-1 text-success">
                   <CheckCircle2 className="h-3 w-3" /> {participation.completedCount} zatwierdzone
                 </span>
                 {pendingCount > 0 && (
-                  <span className="flex items-center gap-1 text-yellow-600">
+                  <span className="flex items-center gap-1 text-warning">
                     <Clock className="h-3 w-3" /> {pendingCount} oczekujące
                   </span>
                 )}
                 {rejectedCount > 0 && (
-                  <span className="flex items-center gap-1 text-red-600">
+                  <span className="flex items-center gap-1 text-destructive">
                     <XCircle className="h-3 w-3" /> {rejectedCount} odrzucone
                   </span>
                 )}

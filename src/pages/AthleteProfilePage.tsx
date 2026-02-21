@@ -64,7 +64,7 @@ const AthleteProfilePage = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "finished":
-        return <Badge variant="default" className="bg-green-600">Ukończył</Badge>;
+        return <Badge variant="default" className="bg-success">Ukończył</Badge>;
       case "dnf":
         return <Badge variant="secondary">DNF</Badge>;
       case "dsq":
@@ -75,9 +75,9 @@ const AthleteProfilePage = () => {
   };
 
   const getPositionIcon = (position: number) => {
-    if (position === 1) return <Trophy className="h-4 w-4 text-yellow-500" />;
-    if (position === 2) return <Medal className="h-4 w-4 text-gray-400" />;
-    if (position === 3) return <Medal className="h-4 w-4 text-amber-600" />;
+    if (position === 1) return <Trophy className="h-4 w-4 text-warning" />;
+    if (position === 2) return <Medal className="h-4 w-4 text-muted-foreground" />;
+    if (position === 3) return <Medal className="h-4 w-4 text-warning/70" />;
     return null;
   };
 

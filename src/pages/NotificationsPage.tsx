@@ -30,9 +30,9 @@ import { pl } from 'date-fns/locale';
 
 const notificationIcons: Record<NotificationType, React.ReactNode> = {
   registration: <Calendar className="h-5 w-5 text-primary" />,
-  moderation: <AlertCircle className="h-5 w-5 text-amber-500" />,
-  order: <ShoppingBag className="h-5 w-5 text-green-500" />,
-  message: <Mail className="h-5 w-5 text-blue-500" />,
+  moderation: <AlertCircle className="h-5 w-5 text-warning" />,
+  order: <ShoppingBag className="h-5 w-5 text-success" />,
+  message: <Mail className="h-5 w-5 text-info" />,
   system: <Info className="h-5 w-5 text-muted-foreground" />,
 };
 

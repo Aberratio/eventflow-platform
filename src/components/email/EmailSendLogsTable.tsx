@@ -19,7 +19,7 @@ const STATUS_CONFIG = {
   sent: {
     icon: CheckCircle2,
     label: 'Wysłany',
-    className: 'text-green-600 dark:text-green-400',
+    className: 'text-success',
     badgeVariant: 'default' as const,
   },
   failed: {

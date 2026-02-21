@@ -24,8 +24,8 @@ export const OnlineStaffCard = ({ session }: OnlineStaffCardProps) => {
   const activity = getActivityStatus(session.lastActiveAt);
   
   const statusColors = {
-    online: 'bg-green-500',
-    away: 'bg-yellow-500',
+    online: 'bg-success',
+    away: 'bg-warning',
     idle: 'bg-muted-foreground/50',
   };
   

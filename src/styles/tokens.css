@@ -122,6 +122,11 @@
     --info:                 210 40% 50%;
     --info-foreground:      0 0% 100%;
 
+    /* === SUBTLE STATUS BACKGROUNDS === */
+    --success-subtle:       142 71% 40%;
+    --warning-subtle:       45 93% 47%;
+    --info-subtle:          210 40% 50%;
+
     /* === BORDERS & INPUTS === */
     --border:               0 0% 16%;
     --input:                0 0% 16%;

@@ -19,7 +19,7 @@ interface ResultListRowProps {
 
 const getMedalIcon = (position: number) => {
   if (position <= 3) {
-    return <Medal className={`h-4 w-4 ${position === 1 ? 'text-yellow-500' : position === 2 ? 'text-gray-400' : 'text-amber-600'}`} />;
+    return <Medal className={`h-4 w-4 ${position === 1 ? 'text-warning' : position === 2 ? 'text-muted-foreground' : 'text-warning/70'}`} />;
   }
   return null;
 };

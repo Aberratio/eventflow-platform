@@ -225,9 +225,9 @@ const ResultsPage = () => {
                               <div className="flex items-center gap-1">
                                 {result.position <= 3 && (
                                   <Trophy className={`h-4 w-4 ${
-                                    result.position === 1 ? 'text-yellow-500' :
-                                    result.position === 2 ? 'text-gray-400' :
-                                    'text-amber-600'
+                                    result.position === 1 ? 'text-warning' :
+                                    result.position === 2 ? 'text-muted-foreground' :
+                                    'text-warning/70'
                                   }`} />
                                 )}
                                 <span className="font-bold">{result.position}</span>

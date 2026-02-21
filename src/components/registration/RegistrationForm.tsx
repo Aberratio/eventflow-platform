@@ -469,10 +469,10 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
           <CardContent className="space-y-6">
             {/* Profile completeness callout */}
             {isProfileComplete ? (
-              <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <AlertTitle className="text-green-800 dark:text-green-200">Dane pobrane z profilu</AlertTitle>
-                <AlertDescription className="text-green-700 dark:text-green-300">
+              <Alert className="border-success/30 bg-success/10">
+                <CheckCircle2 className="h-4 w-4 text-success" />
+                <AlertTitle className="text-success">Dane pobrane z profilu</AlertTitle>
+                <AlertDescription className="text-success/80">
                   <span>
                     Rok urodzenia: <strong>{user?.birthYear}</strong> ({currentYear - (user?.birthYear || 0)} lat) • 
                     Płeć: <strong>{user?.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</strong>
@@ -831,9 +831,9 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
           </CardHeader>
           <CardContent>
             {appliedDiscount ? (
-              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="bg-success/10 border border-success/30 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <div className="flex items-center gap-2 text-success">
                     <Check className="h-5 w-5" />
                     <span className="font-medium">
                       Kod <span className="font-bold">{discountCode.toUpperCase()}</span> zastosowany!
@@ -843,7 +843,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                     Usuń
                   </Button>
                 </div>
-                <p className="text-sm text-green-600 dark:text-green-500 mt-1">
+                <p className="text-sm text-success mt-1">
                   Oszczędzasz {discountAmount} zł
                 </p>
               </div>
@@ -958,7 +958,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
               {discountAmount > 0 && (
                 <>
                   <Separator />
-                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                  <div className="flex justify-between text-success">
                     <span>Rabat ({discountCode})</span>
                     <span>-{discountAmount} zł</span>
                   </div>
@@ -1077,8 +1077,8 @@ const BankTransferDetails = ({ event, user, selectedDistance, totalAmount }: Ban
   if (!event.paymentConfig) return null;
 
   return (
-    <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg space-y-4">
-      <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+    <div className="mt-6 p-4 bg-warning/10 border border-warning/30 rounded-lg space-y-4">
+      <div className="flex items-center gap-2 text-warning">
         <Building2 className="h-5 w-5" />
         <h4 className="font-semibold">Dane do przelewu bankowego</h4>
       </div>
@@ -1146,7 +1146,7 @@ const BankTransferDetails = ({ event, user, selectedDistance, totalAmount }: Ban
       </div>
       
       {/* Warning */}
-      <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 pt-2 border-t border-amber-200 dark:border-amber-800">
+      <div className="flex items-start gap-2 text-xs text-warning pt-2 border-t border-warning/30">
         <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
         <p>
           Płatność przelewem bankowym wymaga ręcznego potwierdzenia przez organizatora. 

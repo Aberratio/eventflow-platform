@@ -234,16 +234,16 @@ const AdminProfileTab = () => {
 
   const getActionIcon = (action: AdminActionType) => {
     const icons: Record<AdminActionType, React.ReactNode> = {
-      login: <LogIn className="h-4 w-4 text-green-600" />,
+      login: <LogIn className="h-4 w-4 text-success" />,
       logout: <LogOut className="h-4 w-4 text-muted-foreground" />,
-      user_edit: <UserCog className="h-4 w-4 text-blue-600" />,
+      user_edit: <UserCog className="h-4 w-4 text-info" />,
       user_delete: <UserX className="h-4 w-4 text-destructive" />,
-      event_approve: <CheckCircle className="h-4 w-4 text-green-600" />,
+      event_approve: <CheckCircle className="h-4 w-4 text-success" />,
       event_reject: <XCircle className="h-4 w-4 text-destructive" />,
-      order_update: <Package className="h-4 w-4 text-purple-600" />,
-      product_edit: <ShoppingBag className="h-4 w-4 text-orange-600" />,
+      order_update: <Package className="h-4 w-4 text-muted-foreground" />,
+      product_edit: <ShoppingBag className="h-4 w-4 text-warning" />,
       settings_change: <Settings className="h-4 w-4 text-muted-foreground" />,
-      password_change: <Key className="h-4 w-4 text-yellow-600" />,
+      password_change: <Key className="h-4 w-4 text-warning" />,
     };
     return icons[action];
   };
@@ -466,12 +466,12 @@ const AdminProfileTab = () => {
                     </TableCell>
                     <TableCell className="text-center">
                       {entry.success ? (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           Sukces
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                        <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
                           <XCircle className="h-3 w-3 mr-1" />
                           Nieudana
                         </Badge>
@@ -634,8 +634,8 @@ const AdminProfileTab = () => {
                       <div 
                         key={i}
                         className={`h-1.5 flex-1 rounded-full ${
-                          i <= strength 
-                            ? strength <= 2 ? 'bg-destructive' : strength <= 3 ? 'bg-yellow-500' : 'bg-green-500'
+                           i <= strength 
+                            ? strength <= 2 ? 'bg-destructive' : strength <= 3 ? 'bg-warning' : 'bg-success'
                             : 'bg-muted'
                         }`}
                       />
@@ -645,19 +645,19 @@ const AdminProfileTab = () => {
                     Siła hasła: {strength <= 2 ? 'Słabe' : strength <= 3 ? 'Średnie' : strength <= 4 ? 'Dobre' : 'Bardzo dobre'}
                   </p>
                   <ul className="text-xs space-y-1">
-                    <li className={checks.length ? 'text-green-600' : 'text-muted-foreground'}>
+                    <li className={checks.length ? 'text-success' : 'text-muted-foreground'}>
                       {checks.length ? '✓' : '○'} Min. 8 znaków
                     </li>
-                    <li className={checks.uppercase ? 'text-green-600' : 'text-muted-foreground'}>
+                    <li className={checks.uppercase ? 'text-success' : 'text-muted-foreground'}>
                       {checks.uppercase ? '✓' : '○'} Wielka litera
                     </li>
-                    <li className={checks.lowercase ? 'text-green-600' : 'text-muted-foreground'}>
+                    <li className={checks.lowercase ? 'text-success' : 'text-muted-foreground'}>
                       {checks.lowercase ? '✓' : '○'} Mała litera
                     </li>
-                    <li className={checks.number ? 'text-green-600' : 'text-muted-foreground'}>
+                    <li className={checks.number ? 'text-success' : 'text-muted-foreground'}>
                       {checks.number ? '✓' : '○'} Cyfra
                     </li>
-                    <li className={checks.special ? 'text-green-600' : 'text-muted-foreground'}>
+                    <li className={checks.special ? 'text-success' : 'text-muted-foreground'}>
                       {checks.special ? '✓' : '○'} Znak specjalny
                     </li>
                   </ul>

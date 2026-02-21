@@ -17,9 +17,9 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const statusConfig: Record<ChallengeEntryStatus, { label: string; icon: React.ReactNode; rowClass: string }> = {
-  approved: { label: 'Zatwierdzone', icon: <CheckCircle2 className="h-4 w-4 text-green-600" />, rowClass: 'bg-green-50 dark:bg-green-950/30' },
-  pending: { label: 'Oczekuje', icon: <Clock className="h-4 w-4 text-yellow-600" />, rowClass: 'bg-yellow-50 dark:bg-yellow-950/30' },
-  rejected: { label: 'Odrzucone', icon: <XCircle className="h-4 w-4 text-red-600" />, rowClass: 'bg-red-50 dark:bg-red-950/30' },
+  approved: { label: 'Zatwierdzone', icon: <CheckCircle2 className="h-4 w-4 text-success" />, rowClass: 'bg-success/5' },
+  pending: { label: 'Oczekuje', icon: <Clock className="h-4 w-4 text-warning" />, rowClass: 'bg-warning/5' },
+  rejected: { label: 'Odrzucone', icon: <XCircle className="h-4 w-4 text-destructive" />, rowClass: 'bg-destructive/5' },
   not_submitted: { label: 'Niezgłoszone', icon: <div className="h-4 w-4 rounded border-2 border-muted-foreground/30" />, rowClass: '' },
 };
 
