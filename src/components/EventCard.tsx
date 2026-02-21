@@ -29,18 +29,18 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [] }: E
 
   return (
     <Link to={`/events/${event.slug}`} className="block group">
-      <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1">
+      <Card className="h-full transition-all duration-200 hover:border-[hsl(var(--border-active))]">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-muted shrink-0 transition-colors group-hover:bg-primary/10">
-              <DisciplineIcon discipline={event.discipline} size="md" className="transition-colors group-hover:text-primary" />
+            <div className="p-1.5 rounded bg-muted shrink-0">
+              <DisciplineIcon discipline={event.discipline} size="md" className="text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-medium text-sm line-clamp-2 leading-tight transition-colors group-hover:text-primary">{event.name}</h3>
+                  <h3 className="font-medium text-sm line-clamp-2 leading-tight group-hover:text-foreground transition-colors">{event.name}</h3>
                   {event.isVirtual && (
-                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                    <Badge variant="outline" className="text-xs">
                       <Globe className="h-3 w-3 mr-1" />
                       Wirtualny
                     </Badge>

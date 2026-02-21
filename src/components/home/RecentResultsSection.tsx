@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trophy, ArrowRight, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { Event } from '@/types';
@@ -20,15 +19,9 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
 
   return (
     <section className="relative py-10 md:py-14 animate-fade-in">
-      {/* Subtle alt background */}
-      <div className="absolute inset-0 bg-muted/30" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-      
       <div className="container mx-auto px-4 relative">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            {/* Red accent bar */}
             <div className="h-8 w-1 bg-primary rounded-full shrink-0" />
             <div>
               <h2 className="text-xl md:text-2xl font-bold leading-tight">Ostatnie wyniki</h2>
@@ -44,18 +37,18 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {completedEvents.map((event, index) => (
+          {completedEvents.map((event) => (
             <Link 
               key={event.id}
               to={`/results?eventId=${event.id}`}
-              className="group flex items-center justify-between gap-4 p-4 rounded-lg border border-border/60 bg-card hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+              className="group flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card hover:bg-accent transition-all duration-200"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-md bg-primary/8 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
-                  <Trophy className="h-4 w-4 text-primary" />
+                <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0 group-hover:bg-accent transition-colors">
+                  <Trophy className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-1">{event.name}</div>
+                  <div className="font-medium text-sm group-hover:text-foreground transition-colors line-clamp-1">{event.name}</div>
                   <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-2.5 w-2.5" />
@@ -68,7 +61,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
                   </div>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-foreground transition-colors shrink-0" />
             </Link>
           ))}
         </div>

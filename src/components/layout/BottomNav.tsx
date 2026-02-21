@@ -62,7 +62,7 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t safe-area-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-bottom">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => (
           <Link

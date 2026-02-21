@@ -11,7 +11,6 @@ interface LiveResultsSectionProps {
 }
 
 export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
-  // Get live events
   const today = new Date().toISOString().split('T')[0];
   const liveEvents = events.filter(e => 
     e.isLive || (e.liveResultsUrl && e.date === today)
@@ -20,9 +19,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
   if (liveEvents.length === 0) return null;
 
   return (
-    <section className="relative py-8 md:py-12 bg-destructive/5 border-y border-destructive/10 animate-fade-in overflow-hidden">
-      {/* Radial gradient accent */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(var(--destructive)/0.06)_0%,_transparent_70%)]" />
+    <section className="relative py-8 md:py-12 animate-fade-in overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -35,7 +32,7 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
             </div>
             <p className="text-sm text-muted-foreground">Śledź aktualnie trwające zawody</p>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex">
+          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
             <Link to="/wyniki/live">
               Wszystkie
               <ArrowRight className="h-4 w-4" />
@@ -45,11 +42,11 @@ export const LiveResultsSection = ({ events }: LiveResultsSectionProps) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {liveEvents.map(event => (
-            <Card key={event.id} className="border-destructive/20 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-destructive/40 hover:-translate-y-1">
+            <Card key={event.id} className="overflow-hidden transition-all duration-200 hover:border-border-active">
               <CardContent className="p-0">
                 <div className="flex">
                   {/* Live indicator */}
-                  <div className="bg-destructive/10 p-4 flex items-center justify-center w-16 shrink-0">
+                  <div className="bg-muted p-4 flex items-center justify-center w-16 shrink-0">
                     <div className="flex flex-col items-center gap-1">
                       <span className="h-2.5 w-2.5 bg-destructive rounded-full animate-pulse" />
                       <span className="text-destructive font-bold text-xs">LIVE</span>

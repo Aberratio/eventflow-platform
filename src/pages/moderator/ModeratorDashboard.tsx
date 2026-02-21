@@ -123,7 +123,7 @@ const ModeratorDashboard = () => {
           </>
         ) : (
           <div className="flex gap-6">
-            <nav className="w-56 shrink-0 space-y-4">
+            <nav className="w-56 shrink-0 space-y-4 bg-[hsl(var(--surface-overlay))] rounded-lg p-3 border border-border">
               {navGroups.map(group => (
                 <div key={group.label}>
                   <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -137,8 +137,8 @@ const ModeratorDashboard = () => {
                         className={cn(
                           'flex items-center gap-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
                           activeSection === item.id
-                            ? 'bg-accent text-accent-foreground'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            ? 'text-foreground border-l-[3px] border-l-primary bg-accent/50 pl-[9px]'
+                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                         )}
                       >
                         <item.icon className="h-4 w-4" />
