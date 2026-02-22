@@ -4,7 +4,7 @@
  * Available template variables that get replaced per-recipient at send time.
  * Format: {{namespace.field}}
  */
-export type EmailTemplateVariable =
+export type EventEmailTemplateVariable =
   | '{{uczestnik.imie}}'
   | '{{uczestnik.email}}'
   | '{{uczestnik.numer_startowy}}'
@@ -21,30 +21,70 @@ export type EmailTemplateVariable =
   | '{{platnosc.nr_konta}}'
   | '{{platnosc.tytul_przelewu}}';
 
+export type SystemEmailTemplateVariable =
+  | '{{uzytkownik.imie}}'
+  | '{{uzytkownik.email}}'
+  | '{{platforma.nazwa}}'
+  | '{{platforma.link}}';
+
+export type EmailTemplateVariable = EventEmailTemplateVariable | SystemEmailTemplateVariable;
+
 /** Human-readable metadata for each template variable */
 export interface EmailVariableMeta {
   readonly variable: EmailTemplateVariable;
   readonly label: string;
   readonly description: string;
-  readonly group: 'uczestnik' | 'wydarzenie' | 'platnosc';
+  readonly group: 'uczestnik' | 'wydarzenie' | 'platnosc' | 'uzytkownik' | 'platforma';
 }
 
+// ──────────────── Trigger types ────────────────
+
 /**
- * What event triggers this email to be sent automatically.
- * Use 'manual' for one-off or scheduled sends initiated by the admin/organizer.
+ * Event-scoped triggers — available to organizers per event.
  */
-export type EmailTriggerType =
-  | 'on_registration'            // immediately after participant registers
-  | 'on_payment_confirmed'       // when payment is confirmed
-  | 'on_registration_cancelled'  // when registration is cancelled
-  | 'on_event_approved'          // when organizer's event gets approved by admin
-  | 'on_bib_assigned'            // when a bib number is assigned to participant
-  | 'days_before_event'          // N days before event date
-  | 'days_after_registration'    // N days after registration (e.g. payment reminder)
-  | 'manual';                    // manually triggered, possibly scheduled
+export type EventTriggerType =
+  | 'on_registration'
+  | 'on_payment_confirmed'
+  | 'on_registration_cancelled'
+  | 'on_event_approved'
+  | 'on_bib_assigned'
+  | 'days_before_event'
+  | 'days_after_registration'
+  | 'manual';
+
+/**
+ * System-scoped triggers — available only to admins for global templates.
+ */
+export type SystemTriggerType =
+  | 'on_account_created'
+  | 'on_password_reset'
+  | 'on_account_deleted'
+  | 'on_email_verified';
+
+export type EmailTriggerType = EventTriggerType | SystemTriggerType;
+
+/** Arrays for filtering in UI */
+export const EVENT_TRIGGER_TYPES: EventTriggerType[] = [
+  'on_registration',
+  'on_payment_confirmed',
+  'on_registration_cancelled',
+  'on_event_approved',
+  'on_bib_assigned',
+  'days_before_event',
+  'days_after_registration',
+  'manual',
+];
+
+export const SYSTEM_TRIGGER_TYPES: SystemTriggerType[] = [
+  'on_account_created',
+  'on_password_reset',
+  'on_account_deleted',
+  'on_email_verified',
+];
 
 /** Labels for display in UI */
 export const EMAIL_TRIGGER_LABELS: Record<EmailTriggerType, string> = {
+  // Event triggers
   on_registration: 'Po rejestracji uczestnika',
   on_payment_confirmed: 'Po potwierdzeniu płatności',
   on_registration_cancelled: 'Po anulowaniu rejestracji',
@@ -53,6 +93,11 @@ export const EMAIL_TRIGGER_LABELS: Record<EmailTriggerType, string> = {
   days_before_event: 'Dni przed wydarzeniem',
   days_after_registration: 'Dni po rejestracji',
   manual: 'Ręcznie (jednorazowo / zaplanowane)',
+  // System triggers
+  on_account_created: 'Po utworzeniu konta',
+  on_password_reset: 'Po resecie hasła',
+  on_account_deleted: 'Po usunięciu konta',
+  on_email_verified: 'Po weryfikacji adresu email',
 } as const;
 
 /**
@@ -136,9 +181,12 @@ export interface EmailPreviewResult {
   body: string;
 }
 
+/** Scope for email templates: event-level or system-level */
+export type EmailTemplateScope = 'event' | 'system';
+
 // ──────────────── Variable metadata registry ────────────────
 
-export const EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
+export const EVENT_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
   // Participant group
   { variable: '{{uczestnik.imie}}',           label: 'Imię i nazwisko',        description: 'Pełne imię i nazwisko uczestnika',     group: 'uczestnik' },
   { variable: '{{uczestnik.email}}',          label: 'Email',                  description: 'Adres email uczestnika',               group: 'uczestnik' },
@@ -157,4 +205,17 @@ export const EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
   { variable: '{{platnosc.kwota}}',           label: 'Kwota do zapłaty',       description: 'Cena wpisowego za wybrany dystans',   group: 'platnosc' },
   { variable: '{{platnosc.nr_konta}}',        label: 'Numer konta',            description: 'Numer konta bankowego organizatora',  group: 'platnosc' },
   { variable: '{{platnosc.tytul_przelewu}}',  label: 'Tytuł przelewu',         description: 'Wymagany tytuł przelewu bankowego',   group: 'platnosc' },
+] as const;
+
+export const SYSTEM_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
+  { variable: '{{uzytkownik.imie}}',  label: 'Imię użytkownika',  description: 'Imię i nazwisko użytkownika',    group: 'uzytkownik' },
+  { variable: '{{uzytkownik.email}}', label: 'Email użytkownika', description: 'Adres email użytkownika',        group: 'uzytkownik' },
+  { variable: '{{platforma.nazwa}}',  label: 'Nazwa platformy',  description: 'Nazwa platformy (SportTime)',    group: 'platforma' },
+  { variable: '{{platforma.link}}',   label: 'Link do platformy', description: 'Link do strony głównej platformy', group: 'platforma' },
+] as const;
+
+/** All variables — kept for backward compatibility */
+export const EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
+  ...EVENT_EMAIL_VARIABLES,
+  ...SYSTEM_EMAIL_VARIABLES,
 ] as const;

@@ -16,7 +16,9 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
   EmailTemplateVariable,
+  EmailTemplateScope,
 } from '@/types/email';
+import { SYSTEM_TRIGGER_TYPES } from '@/types/email';
 import { EMAIL_VARIABLES } from '@/types/email';
 import { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';
 
@@ -42,11 +44,11 @@ export async function getEmailTemplates(
   let filtered: EmailTemplate[];
 
   if (eventId === null) {
-    // Only global templates
-    filtered = templates.filter(t => t.eventId === undefined);
+    // Only system/global templates (no eventId, system trigger)
+    filtered = templates.filter(t => t.eventId === undefined && SYSTEM_TRIGGER_TYPES.includes(t.triggerType as any));
   } else if (eventId) {
-    // Global + this specific event
-    filtered = templates.filter(t => !t.eventId || t.eventId === eventId);
+    // Only this specific event's templates
+    filtered = templates.filter(t => t.eventId === eventId);
   } else {
     // All templates
     filtered = [...templates];
@@ -222,6 +224,10 @@ export async function previewEmailTemplate(
     '{{platnosc.kwota}}': '149,00',
     '{{platnosc.nr_konta}}': '12 3456 7890 1234 5678 9012 3456',
     '{{platnosc.tytul_przelewu}}': 'REJESTRACJA-247-MARATON2026',
+    '{{uzytkownik.imie}}': 'Jan Kowalski',
+    '{{uzytkownik.email}}': 'jan.kowalski@example.com',
+    '{{platforma.nazwa}}': 'SportTime',
+    '{{platforma.link}}': 'https://sporttime.pl',
   };
 
   let subject = request.subject;

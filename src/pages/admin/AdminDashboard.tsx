@@ -88,7 +88,7 @@ const AdminDashboard = () => {
       case 'challenges': return <AdminChallengesTab />;
       case 'partners': return <AdminPartnersTab />;
       case 'pages': return <AdminPagesTab />;
-      case 'emails': return <EmailTemplatesManager />;
+      case 'emails': return <EmailTemplatesManager scope="system" />;
       case 'settings': return <AdminSettingsTab />;
       default: return <AdminOverviewTab />;
     }

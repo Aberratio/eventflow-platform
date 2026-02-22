@@ -18,7 +18,7 @@ import {
   Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EmailTemplate, CreateEmailTemplatePayload } from '@/types/email';
+import type { EmailTemplate, CreateEmailTemplatePayload, EmailTemplateScope } from '@/types/email';
 import type { EmailSendLog } from '@/types/email';
 import {
   getEmailTemplates,
@@ -38,6 +38,8 @@ interface EmailTemplatesManagerProps {
   eventId?: string;
   /** When true, only shows read-only view (no create/edit/delete/send). For moderators. */
   readonly?: boolean;
+  /** Scope: 'event' for per-event templates, 'system' for global/admin templates */
+  scope?: EmailTemplateScope;
 }
 
 interface SendConfirmDialogState {
@@ -48,6 +50,7 @@ interface SendConfirmDialogState {
 export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
   eventId,
   readonly = false,
+  scope = 'event',
 }) => {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [logs, setLogs] = useState<EmailSendLog[]>([]);
@@ -65,14 +68,15 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const res = await getEmailTemplates(eventId ?? null);
+      const queryId = scope === 'system' ? null : (eventId ?? undefined);
+      const res = await getEmailTemplates(queryId);
       setTemplates(res.data);
     } catch {
       setError('Nie udało się załadować szablonów');
     } finally {
       setLoading(false);
     }
-  }, [eventId]);
+  }, [eventId, scope]);
 
   const loadLogs = useCallback(async () => {
     setLogsLoading(true);
@@ -187,9 +191,11 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
           <div>
             <h2 className="text-lg font-semibold">Szablony emaili</h2>
             <p className="text-sm text-muted-foreground">
-              {eventId
-                ? 'Automatyczne i ręczne emaile dla tego wydarzenia'
-                : 'Globalne szablony emaili platformy'}
+              {scope === 'system'
+                ? 'Szablony emaili systemowych (rejestracja konta, reset hasła itp.)'
+                : eventId
+                  ? 'Automatyczne i ręczne emaile dla tego wydarzenia'
+                  : 'Globalne szablony emaili platformy'}
             </p>
           </div>
           {!readonly && (
@@ -265,6 +271,7 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
         onClose={() => setEditorOpen(false)}
         template={editingTemplate}
         eventId={eventId}
+        scope={scope}
         onSave={handleSave}
       />
 
