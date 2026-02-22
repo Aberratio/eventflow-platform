@@ -2,8 +2,9 @@ import { useMemo, useRef, useEffect } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { mockEvents } from '@/data/mockData';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { ListContainer, ListGroup, ListEmptyState, EventListRow } from '@/components/lists';
+import { YearNavigation } from '@/components/lists/YearNavigation';
 import { format, getYear, getMonth, parse } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useEventFilters, distanceRangeOptions } from '@/hooks/useEventFilters';
@@ -183,25 +184,11 @@ const EventsPage = () => {
           </div>
 
           {/* Year Navigation */}
-          <div className="flex items-center justify-center gap-4 mb-6 bg-card/50 border border-warning/10 rounded-lg py-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => updateFilter('selectedYear', filters.selectedYear - 1)}
-              disabled={!availableYears.includes(filters.selectedYear - 1)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-xl font-bold min-w-[80px] text-center">{filters.selectedYear}</span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => updateFilter('selectedYear', filters.selectedYear + 1)}
-              disabled={!availableYears.includes(filters.selectedYear + 1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <YearNavigation
+            selectedYear={filters.selectedYear}
+            availableYears={availableYears}
+            onYearChange={(year) => updateFilter('selectedYear', year)}
+          />
 
           {/* Results count */}
           <p className="text-sm text-muted-foreground mb-4">
