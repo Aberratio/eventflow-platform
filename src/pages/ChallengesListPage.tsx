@@ -26,11 +26,14 @@ const ChallengesListPage = () => {
     <Layout>
       <div className="container py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Trophy className="h-8 w-8 text-primary" />
-            Wyzwania
-          </h1>
-          <p className="text-muted-foreground mt-1">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="h-8 w-1 bg-warning rounded-full" />
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Trophy className="h-8 w-8 text-primary" />
+              Wyzwania
+            </h1>
+          </div>
+          <p className="text-muted-foreground mt-1 ml-4">
             Ukończ wymagane biegi i zdobądź nagrody!
           </p>
         </div>

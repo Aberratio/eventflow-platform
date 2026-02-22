@@ -93,7 +93,10 @@ const ResultsPage = () => {
       <div className="container py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Wyniki zawodów</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-8 w-1 bg-warning rounded-full" />
+            <h1 className="text-3xl font-bold">Wyniki zawodów</h1>
+          </div>
           <p className="text-muted-foreground">
             Przeszukuj wyniki wszystkich zakończonych wydarzeń.
           </p>

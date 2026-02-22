@@ -10,11 +10,9 @@ const Index = () => {
   return (
     <Layout>
       <HomeHero />
-      <div className="bg-gradient-to-b from-secondary via-background to-background">
-        <LiveResultsBanner events={mockEvents} />
-        <FeaturedEventsSection events={mockEvents} />
-        <RecentResultsSection events={mockEvents} />
-      </div>
+      <LiveResultsBanner events={mockEvents} />
+      <FeaturedEventsSection events={mockEvents} />
+      <RecentResultsSection events={mockEvents} />
       <PartnersSection partners={mockPartners} />
     </Layout>
   );

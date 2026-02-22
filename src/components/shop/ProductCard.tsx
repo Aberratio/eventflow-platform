@@ -16,7 +16,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/shop/${product.slug}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
+      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 hover:border-warning/30">
         <div className="aspect-square overflow-hidden bg-muted relative">
           <img
             src={product.imageUrl}
