@@ -333,8 +333,8 @@ const EventDetailsPage = () => {
               <CardContent className="pt-6">
                 <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Calendar className="h-5 w-5 text-primary" />
+                    <div className="p-2 rounded-lg bg-warning/10">
+                      <Calendar className="h-5 w-5 text-warning" />
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">
@@ -349,11 +349,11 @@ const EventDetailsPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
+                    <div className="p-2 rounded-lg bg-warning/10">
                       {event.isVirtual ? (
-                        <Globe className="h-5 w-5 text-primary" />
+                        <Globe className="h-5 w-5 text-warning" />
                       ) : (
-                        <MapPin className="h-5 w-5 text-primary" />
+                        <MapPin className="h-5 w-5 text-warning" />
                       )}
                     </div>
                     <div>
@@ -366,8 +366,8 @@ const EventDetailsPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Users className="h-5 w-5 text-primary" />
+                    <div className="p-2 rounded-lg bg-warning/10">
+                      <Users className="h-5 w-5 text-warning" />
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Zapisanych</div>
@@ -375,8 +375,8 @@ const EventDetailsPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Clock className="h-5 w-5 text-primary" />
+                    <div className="p-2 rounded-lg bg-warning/10">
+                      <Clock className="h-5 w-5 text-warning" />
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Zapisy do</div>

@@ -23,7 +23,7 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-1 bg-warning rounded-full shrink-0" />
+            <div className="h-8 w-1 bg-warning rounded-full shrink-0 shadow-[0_0_8px_hsl(var(--warning)/0.3)]" />
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl md:text-2xl font-bold leading-tight">Polecane wydarzenia</h2>

@@ -16,7 +16,7 @@ export const ListGroup = ({ title, count, children, className, sticky = true }: 
       {title && (
         <div className={cn(
           'flex items-center justify-between px-3 sm:px-4 py-2',
-          'bg-foreground/[0.03] border-l-2 border-l-primary',
+          'bg-foreground/[0.03] border-l-2 border-l-warning',
           'border-b border-border/50',
           sticky && 'sticky top-0 z-10'
         )}>
