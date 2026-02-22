@@ -161,7 +161,10 @@ const EventsPage = () => {
           <div className="mb-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="text-2xl lg:text-3xl font-bold mb-2">Wydarzenia sportowe</h1>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-warning rounded-full" />
+                  <h1 className="text-2xl lg:text-3xl font-bold">Wydarzenia sportowe</h1>
+                </div>
                 <p className="text-muted-foreground text-sm lg:text-base">
                   Znajdź idealne zawody dla siebie
                 </p>
@@ -180,7 +183,7 @@ const EventsPage = () => {
           </div>
 
           {/* Year Navigation */}
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center justify-center gap-4 mb-6 bg-card/50 border border-warning/10 rounded-lg py-3">
             <Button
               variant="outline"
               size="icon"

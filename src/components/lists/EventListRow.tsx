@@ -64,7 +64,7 @@ export const EventListRow = ({
       </div>
       
       {/* Red accent bar on hover */}
-      <div className="w-0.5 self-stretch bg-transparent group-hover:bg-primary transition-all duration-200 shrink-0" />
+      <div className="w-0.5 self-stretch bg-transparent group-hover:bg-warning transition-all duration-200 shrink-0" />
       
       {/* Main content */}
       <div className="flex-1 min-w-0 py-3 px-3">

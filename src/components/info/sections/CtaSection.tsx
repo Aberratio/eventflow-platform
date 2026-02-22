@@ -8,9 +8,10 @@ interface CtaSectionProps {
 
 export const CtaSection = ({ section }: CtaSectionProps) => {
   return (
-    <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+    <section className="py-16 md:py-24 bg-primary text-primary-foreground border-t-2 border-t-warning/30">
       <div className="container">
         <div className="max-w-2xl mx-auto text-center">
+          <div className="inline-block h-1 w-12 bg-warning rounded-full mb-6" />
           <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.title}</h2>
           {section.content && (
             <p className="text-lg opacity-90 mb-8">{section.content}</p>
