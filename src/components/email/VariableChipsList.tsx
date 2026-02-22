@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { EMAIL_VARIABLES } from '@/types/email';
-import type { EmailVariableMeta } from '@/types/email';
+import { EMAIL_VARIABLES, EVENT_EMAIL_VARIABLES, SYSTEM_EMAIL_VARIABLES } from '@/types/email';
+import type { EmailVariableMeta, EmailTemplateScope } from '@/types/email';
 
 interface VariableChipsListProps {
   /** Ref to the input/textarea where variable will be inserted at cursor position */
@@ -13,6 +13,8 @@ interface VariableChipsListProps {
   currentValue: string;
   /** Optionally limit to one variable group */
   filterGroup?: EmailVariableMeta['group'];
+  /** Scope determines which variable set to show */
+  scope?: EmailTemplateScope;
   className?: string;
 }
 
@@ -20,12 +22,16 @@ const GROUP_LABELS: Record<EmailVariableMeta['group'], string> = {
   uczestnik: 'Uczestnik',
   wydarzenie: 'Wydarzenie',
   platnosc: 'Płatność',
+  uzytkownik: 'Użytkownik',
+  platforma: 'Platforma',
 };
 
 const GROUP_COLORS: Record<EmailVariableMeta['group'], string> = {
   uczestnik: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
   wydarzenie: 'bg-secondary/10 text-secondary-foreground border-secondary/30 hover:bg-secondary/20',
   platnosc: 'bg-accent/30 text-accent-foreground border-accent/40 hover:bg-accent/50',
+  uzytkownik: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
+  platforma: 'bg-secondary/10 text-secondary-foreground border-secondary/30 hover:bg-secondary/20',
 };
 
 export const VariableChipsList: React.FC<VariableChipsListProps> = ({
@@ -33,15 +39,28 @@ export const VariableChipsList: React.FC<VariableChipsListProps> = ({
   onInsert,
   currentValue,
   filterGroup,
+  scope,
   className,
 }) => {
+  const baseVariables = scope === 'system'
+    ? SYSTEM_EMAIL_VARIABLES
+    : scope === 'event'
+      ? EVENT_EMAIL_VARIABLES
+      : EMAIL_VARIABLES;
+
   const variables = filterGroup
-    ? EMAIL_VARIABLES.filter(v => v.group === filterGroup)
-    : EMAIL_VARIABLES;
+    ? baseVariables.filter(v => v.group === filterGroup)
+    : baseVariables;
+
+  const allGroups = scope === 'system'
+    ? (['uzytkownik', 'platforma'] as const)
+    : scope === 'event'
+      ? (['uczestnik', 'wydarzenie', 'platnosc'] as const)
+      : (['uczestnik', 'wydarzenie', 'platnosc', 'uzytkownik', 'platforma'] as const);
 
   const groups = filterGroup
     ? [filterGroup]
-    : (['uczestnik', 'wydarzenie', 'platnosc'] as const);
+    : allGroups;
 
   const insertVariable = (variable: string) => {
     const el = targetRef.current;

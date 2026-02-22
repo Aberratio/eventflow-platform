@@ -3,9 +3,10 @@ import type { EmailTemplate, EmailSendLog } from '@/types/email';
 // ──────────────── Mock Email Templates ────────────────
 
 export const mockEmailTemplates: EmailTemplate[] = [
+  // ── Event templates ──
   {
     id: 'tpl-registration-confirm',
-    eventId: undefined, // global template
+    eventId: 'evt-1',
     name: 'Potwierdzenie rejestracji',
     subject: 'Potwierdzenie zapisu na {{wydarzenie.nazwa}}',
     body: `Cześć {{uczestnik.imie}},
@@ -164,6 +165,104 @@ Zespół SportTime`,
     createdBy: 'user-organizer-1',
     sentCount: 0,
   },
+
+  // ── System (global) templates ──
+  {
+    id: 'tpl-sys-welcome',
+    eventId: undefined,
+    name: 'Witamy na SportTime',
+    subject: 'Witaj na platformie {{platforma.nazwa}}!',
+    body: `Cześć {{uzytkownik.imie}},
+
+Dziękujemy za rejestrację na platformie **{{platforma.nazwa}}**! 🎉
+
+Twoje konto zostało pomyślnie utworzone. Od teraz możesz:
+- Przeglądać nadchodzące wydarzenia sportowe
+- Rejestrować się na zawody
+- Śledzić swoje wyniki i statystyki
+
+Zacznij od odwiedzenia strony głównej: {{platforma.link}}
+
+Życzymy wielu sportowych sukcesów!
+Zespół {{platforma.nazwa}}`,
+    triggerType: 'on_account_created',
+    recipientFilter: {},
+    active: true,
+    createdAt: '2025-01-01T00:00:00Z',
+    createdBy: 'user-admin-1',
+    lastSentAt: '2026-02-20T10:00:00Z',
+    sentCount: 1240,
+  },
+  {
+    id: 'tpl-sys-password-reset',
+    eventId: undefined,
+    name: 'Reset hasła',
+    subject: 'Reset hasła — {{platforma.nazwa}}',
+    body: `Cześć {{uzytkownik.imie}},
+
+Otrzymaliśmy prośbę o reset hasła do Twojego konta na **{{platforma.nazwa}}**.
+
+Jeśli to Ty złożyłeś/złożyłaś tę prośbę, kliknij poniższy link aby ustawić nowe hasło:
+{{platforma.link}}/reset-password
+
+⚠️ Jeśli nie prosiłeś/prosiłaś o reset hasła, zignoruj tę wiadomość. Twoje konto jest bezpieczne.
+
+Link jest ważny przez 24 godziny.
+
+Pozdrawiamy,
+Zespół {{platforma.nazwa}}`,
+    triggerType: 'on_password_reset',
+    recipientFilter: {},
+    active: true,
+    createdAt: '2025-01-01T00:00:00Z',
+    createdBy: 'user-admin-1',
+    lastSentAt: '2026-02-21T15:30:00Z',
+    sentCount: 456,
+  },
+  {
+    id: 'tpl-sys-account-deleted',
+    eventId: undefined,
+    name: 'Potwierdzenie usunięcia konta',
+    subject: 'Twoje konto na {{platforma.nazwa}} zostało usunięte',
+    body: `Cześć {{uzytkownik.imie}},
+
+Potwierdzamy, że Twoje konto na platformie **{{platforma.nazwa}}** zostało trwale usunięte.
+
+Wszystkie Twoje dane osobowe zostały usunięte z naszych systemów zgodnie z RODO.
+
+Jeśli chcesz wrócić, zawsze możesz założyć nowe konto: {{platforma.link}}/register
+
+Dziękujemy za czas spędzony z nami!
+Zespół {{platforma.nazwa}}`,
+    triggerType: 'on_account_deleted',
+    recipientFilter: {},
+    active: true,
+    createdAt: '2025-01-01T00:00:00Z',
+    createdBy: 'user-admin-1',
+    sentCount: 23,
+  },
+  {
+    id: 'tpl-sys-email-verified',
+    eventId: undefined,
+    name: 'Potwierdzenie adresu email',
+    subject: 'Adres email zweryfikowany — {{platforma.nazwa}}',
+    body: `Cześć {{uzytkownik.imie}},
+
+Twój adres email ({{uzytkownik.email}}) został pomyślnie zweryfikowany! ✅
+
+Twoje konto na **{{platforma.nazwa}}** jest teraz w pełni aktywne.
+
+Odwiedź nas: {{platforma.link}}
+
+Pozdrawiamy,
+Zespół {{platforma.nazwa}}`,
+    triggerType: 'on_email_verified',
+    recipientFilter: {},
+    active: true,
+    createdAt: '2025-01-01T00:00:00Z',
+    createdBy: 'user-admin-1',
+    sentCount: 980,
+  },
 ];
 
 // ──────────────── Mock Email Send Logs ────────────────
@@ -289,6 +388,27 @@ export const mockEmailSendLogs: EmailSendLog[] = [
     recipientName: 'Beata Szymańska',
     subject: '✅ Płatność zatwierdzona — Triathlon Krakowski',
     sentAt: '2026-02-13T10:22:41Z',
+    status: 'sent',
+  },
+  // System email logs
+  {
+    id: 'log-sys-001',
+    templateId: 'tpl-sys-welcome',
+    templateName: 'Witamy na SportTime',
+    recipientEmail: 'nowy.uzytkownik@email.com',
+    recipientName: 'Nowy Użytkownik',
+    subject: 'Witaj na platformie SportTime!',
+    sentAt: '2026-02-20T10:00:00Z',
+    status: 'sent',
+  },
+  {
+    id: 'log-sys-002',
+    templateId: 'tpl-sys-password-reset',
+    templateName: 'Reset hasła',
+    recipientEmail: 'jan.kowalski@email.com',
+    recipientName: 'Jan Kowalski',
+    subject: 'Reset hasła — SportTime',
+    sentAt: '2026-02-21T15:30:00Z',
     status: 'sent',
   },
 ];

@@ -8,9 +8,8 @@ import { ModeratorOrdersTab } from './components/ModeratorOrdersTab';
 import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTab';
 import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
 import { AdminFeaturedEventsTab } from '@/pages/admin/components/AdminFeaturedEventsTab';
-import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, Lock, Tag, Trophy, Mail, Star } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, Lock, Tag, Trophy, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,7 +39,6 @@ const navGroups: NavGroup[] = [
       { id: 'featured', label: 'Polecane', icon: Star },
       { id: 'participants', label: 'Uczestnicy', icon: Users },
       { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
-      { id: 'emails', label: 'Emaile', icon: Mail },
     ],
   },
   {
@@ -72,7 +70,6 @@ const ModeratorDashboard = () => {
       case 'discounts': return <ModeratorDiscountCodesTab />;
       case 'orders': return <ModeratorOrdersTab />;
       case 'challenges': return <ModeratorChallengesTab />;
-      case 'emails': return <EmailTemplatesManager readonly />;
       default: return <ModeratorOverviewTab />;
     }
   };

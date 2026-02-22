@@ -105,7 +105,7 @@ const EventManage = () => {
           </TabsContent>
 
           <TabsContent value="emails">
-            <EmailTemplatesManager eventId={event.id} />
+            <EmailTemplatesManager eventId={event.id} scope="event" />
           </TabsContent>
 
           <TabsContent value="settings">

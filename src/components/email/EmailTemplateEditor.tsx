@@ -38,8 +38,9 @@ import type {
   EmailTemplate,
   EmailTriggerType,
   CreateEmailTemplatePayload,
+  EmailTemplateScope,
 } from '@/types/email';
-import { EMAIL_TRIGGER_LABELS, EMAIL_VARIABLES } from '@/types/email';
+import { EMAIL_TRIGGER_LABELS, EVENT_TRIGGER_TYPES, SYSTEM_TRIGGER_TYPES, EVENT_EMAIL_VARIABLES, SYSTEM_EMAIL_VARIABLES } from '@/types/email';
 import { VariableChipsList } from './VariableChipsList';
 import { previewEmailTemplate } from '@/api/email-templates.api';
 
@@ -49,16 +50,7 @@ const schema = z.object({
   name: z.string().trim().min(1, 'Podaj nazwę szablonu').max(120),
   subject: z.string().trim().min(1, 'Podaj temat emaila').max(200),
   body: z.string().trim().min(10, 'Treść musi mieć co najmniej 10 znaków').max(10_000),
-  triggerType: z.enum([
-    'on_registration',
-    'on_payment_confirmed',
-    'on_registration_cancelled',
-    'on_event_approved',
-    'on_bib_assigned',
-    'days_before_event',
-    'days_after_registration',
-    'manual',
-  ] as const),
+  triggerType: z.string(),
   triggerDaysOffset: z.number().min(1).max(365).optional(),
   active: z.boolean(),
   filterStatuses: z.array(z.string()),
@@ -73,16 +65,18 @@ type FormValues = z.infer<typeof schema>;
 
 // ──────────────── Helpers ────────────────
 
-const TRIGGER_OPTIONS: Array<{ value: EmailTriggerType; label: string }> = (
-  Object.entries(EMAIL_TRIGGER_LABELS) as Array<[EmailTriggerType, string]>
-).map(([value, label]) => ({ value, label }));
+function getTriggerOptions(scope: EmailTemplateScope): Array<{ value: EmailTriggerType; label: string }> {
+  const triggers = scope === 'system' ? SYSTEM_TRIGGER_TYPES : EVENT_TRIGGER_TYPES;
+  return triggers.map(value => ({ value, label: EMAIL_TRIGGER_LABELS[value] }));
+}
 
-function templateToFormValues(t?: EmailTemplate): FormValues {
+function templateToFormValues(t: EmailTemplate | undefined, scope: EmailTemplateScope): FormValues {
+  const defaultTrigger = scope === 'system' ? 'on_account_created' : 'on_registration';
   return {
     name: t?.name ?? '',
     subject: t?.subject ?? '',
     body: t?.body ?? '',
-    triggerType: t?.triggerType ?? 'on_registration',
+    triggerType: t?.triggerType ?? defaultTrigger,
     triggerDaysOffset: t?.triggerDaysOffset,
     active: t?.active ?? true,
     filterStatuses: t?.recipientFilter?.statuses ?? ['pending', 'confirmed'],
@@ -100,6 +94,7 @@ interface EmailTemplateEditorProps {
   onClose: () => void;
   template?: EmailTemplate;
   eventId?: string;
+  scope?: EmailTemplateScope;
   onSave: (payload: CreateEmailTemplatePayload) => Promise<void>;
 }
 
@@ -114,8 +109,11 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
   onClose,
   template,
   eventId,
+  scope = 'event',
   onSave,
 }) => {
+  const isEvent = scope === 'event';
+  const triggerOptions = getTriggerOptions(scope);
   const isEdit = !!template;
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [preview, setPreview] = useState<{ subject: string; body: string } | null>(null);
@@ -136,17 +134,17 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: templateToFormValues(template),
+    defaultValues: templateToFormValues(template, scope),
   });
 
   // Reset form when dialog opens with a (possibly new) template
   useEffect(() => {
     if (open) {
-      reset(templateToFormValues(template));
+      reset(templateToFormValues(template, scope));
       setActiveTab('edit');
       setPreview(null);
     }
-  }, [open, template, reset]);
+  }, [open, template, reset, scope]);
 
   const triggerType = watch('triggerType');
   const subjectValue = watch('subject');
@@ -172,22 +170,24 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
     setSaving(true);
     try {
       const payload: CreateEmailTemplatePayload = {
-        eventId: eventId,
+        eventId: isEvent ? eventId : undefined,
         name: values.name,
         subject: values.subject,
         body: values.body,
-        triggerType: values.triggerType,
+        triggerType: values.triggerType as EmailTriggerType,
         triggerDaysOffset:
           values.triggerType === 'days_before_event' ||
           values.triggerType === 'days_after_registration'
             ? values.triggerDaysOffset
             : undefined,
-        recipientFilter: {
-          statuses: values.filterStatuses as Array<'pending' | 'confirmed' | 'cancelled'>,
-          paymentStatus: values.filterPaymentStatus,
-        },
+        recipientFilter: isEvent
+          ? {
+              statuses: values.filterStatuses as Array<'pending' | 'confirmed' | 'cancelled'>,
+              paymentStatus: values.filterPaymentStatus,
+            }
+          : {},
         active: values.active,
-        createdBy: 'current-user', // will be set by server
+        createdBy: 'current-user',
       };
       await onSave(payload);
       onClose();
@@ -337,6 +337,7 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
                         targetRef={currentFieldRef}
                         onInsert={handleVariableInsert}
                         currentValue={currentFieldValue}
+                        scope={scope}
                       />
                     </div>
                   </div>
@@ -356,7 +357,7 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
                           onValueChange={field.onChange}
                           className="space-y-2"
                         >
-                          {TRIGGER_OPTIONS.map(({ value, label }) => (
+                          {triggerOptions.map(({ value, label }) => (
                             <div key={value} className="flex items-center gap-3">
                               <RadioGroupItem value={value} id={`trigger-${value}`} />
                               <Label
@@ -420,69 +421,73 @@ export const EmailTemplateEditor: React.FC<EmailTemplateEditorProps> = ({
                     )}
                   </div>
 
-                  <Separator />
+                  {isEvent && (
+                    <>
+                      <Separator />
 
-                  {/* ── Section 3: Recipients ── */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-foreground">Odbiorcy</h3>
+                      {/* ── Section 3: Recipients ── */}
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold text-foreground">Odbiorcy</h3>
 
-                    <div className="space-y-3">
-                      <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Status rejestracji
-                      </Label>
-                      <div className="flex flex-wrap gap-4">
-                        {REGISTRATION_STATUSES.map(({ value, label }) => (
+                        <div className="space-y-3">
+                          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+                            Status rejestracji
+                          </Label>
+                          <div className="flex flex-wrap gap-4">
+                            {REGISTRATION_STATUSES.map(({ value, label }) => (
+                              <Controller
+                                key={value}
+                                name="filterStatuses"
+                                control={control}
+                                render={({ field }) => (
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox
+                                      id={`status-${value}`}
+                                      checked={field.value.includes(value)}
+                                      onCheckedChange={(checked) => {
+                                        const next = checked
+                                          ? [...field.value, value]
+                                          : field.value.filter((s) => s !== value);
+                                        field.onChange(next);
+                                      }}
+                                    />
+                                    <Label
+                                      htmlFor={`status-${value}`}
+                                      className="font-normal cursor-pointer"
+                                    >
+                                      {label}
+                                    </Label>
+                                  </div>
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+                            Status płatności
+                          </Label>
                           <Controller
-                            key={value}
-                            name="filterStatuses"
+                            name="filterPaymentStatus"
                             control={control}
                             render={({ field }) => (
-                              <div className="flex items-center gap-2">
-                                <Checkbox
-                                  id={`status-${value}`}
-                                  checked={field.value.includes(value)}
-                                  onCheckedChange={(checked) => {
-                                    const next = checked
-                                      ? [...field.value, value]
-                                      : field.value.filter((s) => s !== value);
-                                    field.onChange(next);
-                                  }}
-                                />
-                                <Label
-                                  htmlFor={`status-${value}`}
-                                  className="font-normal cursor-pointer"
-                                >
-                                  {label}
-                                </Label>
-                              </div>
+                              <Select value={field.value} onValueChange={field.onChange}>
+                                <SelectTrigger className="w-48">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">Wszyscy</SelectItem>
+                                  <SelectItem value="paid">Tylko opłaceni</SelectItem>
+                                  <SelectItem value="unpaid">Tylko nieopłaceni</SelectItem>
+                                </SelectContent>
+                              </Select>
                             )}
                           />
-                        ))}
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground uppercase tracking-wide">
-                        Status płatności
-                      </Label>
-                      <Controller
-                        name="filterPaymentStatus"
-                        control={control}
-                        render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger className="w-48">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">Wszyscy</SelectItem>
-                              <SelectItem value="paid">Tylko opłaceni</SelectItem>
-                              <SelectItem value="unpaid">Tylko nieopłaceni</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   <Separator />
 
