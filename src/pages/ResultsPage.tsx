@@ -103,7 +103,7 @@ const ResultsPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-card border rounded-lg p-4 mb-8 space-y-4">
+        <div className="bg-card border border-warning/10 rounded-lg p-4 mb-8 space-y-4">
           {/* Search Row */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
@@ -186,7 +186,7 @@ const ResultsPage = () => {
               if (!event) return null;
 
               return (
-                <Card key={eventId}>
+                <Card key={eventId} className="border-l-2 border-l-warning/30">
                   <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                       <div>
