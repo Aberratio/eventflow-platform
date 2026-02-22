@@ -1,13 +1,12 @@
 /* ============================================================
    GŁÓWNY PUNKT WEJŚCIA CSS
-   Tailwind directives + import design systemu z src/styles/
+   Import design systemu PRZED dyrektywami Tailwind
    ============================================================ */
+
+@import "./styles/tokens.css";
+@import "./styles/typography.css";
+@import "./styles/base.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Design System — kolejność ma znaczenie */
-@import "./styles/tokens.css";
-@import "./styles/typography.css";
-@import "./styles/base.css";
