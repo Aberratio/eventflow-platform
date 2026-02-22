@@ -1,28 +1,20 @@
 import { Layout } from '@/components/layout/Layout';
 import { HomeHero } from '@/components/home/HomeHero';
-import { UpcomingEvents } from '@/components/home/UpcomingEvents';
-import { LiveResultsSection } from '@/components/home/LiveResultsSection';
+import { FeaturedEventsSection } from '@/components/home/FeaturedEventsSection';
+import { LiveResultsBanner } from '@/components/home/LiveResultsBanner';
 import { RecentResultsSection } from '@/components/home/RecentResultsSection';
 import { PartnersSection } from '@/components/home/PartnersSection';
-import { mockEvents, mockRegistrations, mockPartners } from '@/data/mockData';
-import { useAuth } from '@/contexts/AuthContext';
+import { mockEvents, mockPartners } from '@/data/mockData';
 
 const Index = () => {
-  const { user } = useAuth();
-
-  const userRegistrations = user 
-    ? mockRegistrations.filter(r => r.userId === user.id)
-    : [];
-
   return (
     <Layout>
       <HomeHero />
-      <UpcomingEvents 
-        events={mockEvents}
-        userRegistrations={userRegistrations}
-      />
-      <LiveResultsSection events={mockEvents} />
-      <RecentResultsSection events={mockEvents} />
+      <div className="bg-gradient-to-b from-secondary via-background to-background">
+        <LiveResultsBanner events={mockEvents} />
+        <FeaturedEventsSection events={mockEvents} />
+        <RecentResultsSection events={mockEvents} />
+      </div>
       <PartnersSection partners={mockPartners} />
     </Layout>
   );

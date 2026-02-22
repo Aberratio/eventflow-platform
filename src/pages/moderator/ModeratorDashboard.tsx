@@ -7,7 +7,8 @@ import { UsersReadOnlyTab } from './components/UsersReadOnlyTab';
 import { ModeratorOrdersTab } from './components/ModeratorOrdersTab';
 import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTab';
 import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
-import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, Lock, Tag, Trophy, Mail } from 'lucide-react';
+import { AdminFeaturedEventsTab } from '@/pages/admin/components/AdminFeaturedEventsTab';
+import { LayoutDashboard, Users, Building2, ShoppingCart, ShieldCheck, Lock, Tag, Trophy, Mail, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ const navGroups: NavGroup[] = [
     label: 'Moderacja',
     items: [
       { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
+      { id: 'featured', label: 'Polecane', icon: Star },
       { id: 'participants', label: 'Uczestnicy', icon: Users },
       { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
       { id: 'emails', label: 'Emaile', icon: Mail },
@@ -64,6 +66,7 @@ const ModeratorDashboard = () => {
     switch (activeSection) {
       case 'overview': return <ModeratorOverviewTab />;
       case 'moderation': return <ModeratorModerationTab />;
+      case 'featured': return <AdminFeaturedEventsTab />;
       case 'participants': return <UsersReadOnlyTab userType="participant" />;
       case 'organizers': return <UsersReadOnlyTab userType="organizer" />;
       case 'discounts': return <ModeratorDiscountCodesTab />;
