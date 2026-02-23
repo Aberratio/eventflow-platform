@@ -47,6 +47,15 @@ export type PriceTierMode = 'date' | 'participants';
 export type ParticipantCountType = 'registered' | 'paid';
 export type PriceTierDiscountType = 'percent' | 'fixed';
 
+export interface VipPrice {
+  id: string;
+  name: string;
+  discountType: PriceTierDiscountType;
+  discountValue: number;
+  customFieldLabel?: string;
+  customFieldRequired?: boolean;
+}
+
 export interface PriceTier {
   id: string;
   name: string;
@@ -55,6 +64,7 @@ export interface PriceTier {
   endDate?: string;
   participantLimit?: number;
   description?: string;
+  vipPrices?: VipPrice[];
   /** @deprecated Use discountType+discountValue. Kept for backward compat in views. */
   price?: number;
 }

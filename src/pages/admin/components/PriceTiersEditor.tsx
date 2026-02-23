@@ -7,14 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, DollarSign, Calendar, Users, Percent, ArrowRight } from 'lucide-react';
-import { Distance, PriceTier, PriceTierMode, ParticipantCountType, PriceTierDiscountType } from '@/types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Plus, Trash2, DollarSign, Calendar, Users, ArrowRight, ChevronDown, Star, AlertCircle } from 'lucide-react';
+import { Distance, PriceTier, PriceTierMode, ParticipantCountType, PriceTierDiscountType, VipPrice } from '@/types';
 import { applyDiscount } from '@/api/mock/helpers';
 
 interface PriceTiersEditorProps {
   distances: Distance[];
   onChange: (distances: Distance[]) => void;
 }
+
+const SESSION_KEY_PREFIX = 'priceTiers';
+
+const getSessionKey = (distanceId: string, mode: PriceTierMode) =>
+  `${SESSION_KEY_PREFIX}-${distanceId}-${mode}`;
 
 export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps) => {
   const [expandedDistance, setExpandedDistance] = useState<string | null>(
@@ -30,6 +37,26 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
 
   const updateDistanceTiers = (distanceId: string, tiers: PriceTier[]) => {
     updateDistance(distanceId, { priceTiers: tiers });
+  };
+
+  const handleModeChange = (distance: Distance, newMode: PriceTierMode) => {
+    const currentMode = distance.priceTierMode || 'date';
+    if (currentMode === newMode) return;
+
+    // Save current tiers to session storage
+    const currentTiers = distance.priceTiers || [];
+    const saveKey = getSessionKey(distance.id, currentMode);
+    sessionStorage.setItem(saveKey, JSON.stringify(currentTiers));
+
+    // Try to load tiers from session storage for new mode
+    const loadKey = getSessionKey(distance.id, newMode);
+    const saved = sessionStorage.getItem(loadKey);
+    const restoredTiers: PriceTier[] = saved ? JSON.parse(saved) : [];
+
+    updateDistance(distance.id, {
+      priceTierMode: newMode,
+      priceTiers: restoredTiers,
+    });
   };
 
   const addTier = (distanceId: string) => {
@@ -64,6 +91,44 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
     const distance = distances.find(d => d.id === distanceId);
     if (!distance?.priceTiers) return;
     updateDistanceTiers(distanceId, distance.priceTiers.filter(t => t.id !== tierId));
+  };
+
+  // VIP helpers
+  const addVipPrice = (distanceId: string, tierId: string) => {
+    const distance = distances.find(d => d.id === distanceId);
+    if (!distance?.priceTiers) return;
+    const newVip: VipPrice = {
+      id: `vip-${Date.now()}`,
+      name: '',
+      discountType: 'percent',
+      discountValue: 10,
+    };
+    const updatedTiers = distance.priceTiers.map(t =>
+      t.id === tierId ? { ...t, vipPrices: [...(t.vipPrices || []), newVip] } : t
+    );
+    updateDistanceTiers(distanceId, updatedTiers);
+  };
+
+  const updateVipPrice = (distanceId: string, tierId: string, vipId: string, updates: Partial<VipPrice>) => {
+    const distance = distances.find(d => d.id === distanceId);
+    if (!distance?.priceTiers) return;
+    const updatedTiers = distance.priceTiers.map(t =>
+      t.id === tierId
+        ? { ...t, vipPrices: (t.vipPrices || []).map(v => v.id === vipId ? { ...v, ...updates } : v) }
+        : t
+    );
+    updateDistanceTiers(distanceId, updatedTiers);
+  };
+
+  const removeVipPrice = (distanceId: string, tierId: string, vipId: string) => {
+    const distance = distances.find(d => d.id === distanceId);
+    if (!distance?.priceTiers) return;
+    const updatedTiers = distance.priceTiers.map(t =>
+      t.id === tierId
+        ? { ...t, vipPrices: (t.vipPrices || []).filter(v => v.id !== vipId) }
+        : t
+    );
+    updateDistanceTiers(distanceId, updatedTiers);
   };
 
   const createDefaultTiers = (distanceId: string) => {
@@ -143,9 +208,7 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                     <Label className="text-sm font-medium">Tryb progów cenowych</Label>
                     <RadioGroup
                       value={mode}
-                      onValueChange={(v: PriceTierMode) => {
-                        updateDistance(distance.id, { priceTierMode: v, priceTiers: [] });
-                      }}
+                      onValueChange={(v: PriceTierMode) => handleModeChange(distance, v)}
                       className="flex gap-6"
                     >
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -159,6 +222,15 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                         <span className="text-sm">Po liczbie uczestników</span>
                       </label>
                     </RadioGroup>
+
+                    {/* Info about single mode */}
+                    <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 p-2.5 rounded-md">
+                      <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                      <span>
+                        Uwaga: Dla każdego dystansu można wybrać tylko jeden tryb naliczania progów cenowych. 
+                        Zmiana trybu spowoduje zapisanie poprzedniej konfiguracji — wrócisz do niej po ponownym przełączeniu.
+                      </span>
+                    </div>
 
                     {mode === 'participants' && (
                       <div className="ml-6">
@@ -234,6 +306,9 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                               isOverLimit={!!isOverLimit}
                               onUpdate={(updates) => updateTier(distance.id, tier.id, updates)}
                               onRemove={() => removeTier(distance.id, tier.id)}
+                              onAddVip={() => addVipPrice(distance.id, tier.id)}
+                              onUpdateVip={(vipId, updates) => updateVipPrice(distance.id, tier.id, vipId, updates)}
+                              onRemoveVip={(vipId) => removeVipPrice(distance.id, tier.id, vipId)}
                             />
                           );
                         })}
@@ -265,6 +340,9 @@ const TierEditor = ({
   isOverLimit,
   onUpdate,
   onRemove,
+  onAddVip,
+  onUpdateVip,
+  onRemoveVip,
 }: {
   tier: PriceTier;
   index: number;
@@ -275,11 +353,15 @@ const TierEditor = ({
   isOverLimit: boolean;
   onUpdate: (updates: Partial<PriceTier>) => void;
   onRemove: () => void;
+  onAddVip: () => void;
+  onUpdateVip: (vipId: string, updates: Partial<VipPrice>) => void;
+  onRemoveVip: (vipId: string) => void;
 }) => {
   const dimmed = isPast || isOverLimit;
+  const vipPrices = tier.vipPrices || [];
 
   return (
-    <div className={`p-4 border rounded-lg space-y-4 ${dimmed ? 'opacity-50' : ''}`}>
+    <div className={`p-4 border-2 border-yellow-400 rounded-lg space-y-4 ${dimmed ? 'opacity-50' : ''}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-medium">Próg {index + 1}</span>
@@ -369,6 +451,132 @@ const TierEditor = ({
           placeholder="np. Zaoszczędź 30%! Zapisz się wcześniej."
         />
       </div>
+
+      {/* VIP Prices Section */}
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="w-full justify-between text-muted-foreground hover:text-foreground">
+            <span className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              Ceny specjalne (VIP)
+              {vipPrices.length > 0 && (
+                <Badge variant="secondary" className="text-xs">{vipPrices.length}</Badge>
+              )}
+            </span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-2">
+          {vipPrices.map((vip) => {
+            const vipBasePrice = calculatedPrice;
+            const vipFinalPrice = applyDiscount(vipBasePrice, vip.discountType, vip.discountValue);
+
+            return (
+              <div key={vip.id} className="p-3 border rounded-lg bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5 text-yellow-500" />
+                    {vip.name || 'Nowa cena VIP'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-xs font-semibold">
+                      {vipFinalPrice} zł
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onRemoveVip(vip.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Nazwa ceny VIP</Label>
+                    <Input
+                      value={vip.name}
+                      onChange={(e) => onUpdateVip(vip.id, { name: e.target.value })}
+                      placeholder="np. Osoba niepełnosprawna"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Typ rabatu</Label>
+                    <Select
+                      value={vip.discountType}
+                      onValueChange={(v: PriceTierDiscountType) => onUpdateVip(vip.id, { discountType: v })}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percent">Procentowy (%)</SelectItem>
+                        <SelectItem value="fixed">Kwotowy (PLN)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">
+                      Rabat {vip.discountType === 'percent' ? '(%)' : '(zł)'} od ceny progu
+                    </Label>
+                    <Input
+                      type="number"
+                      value={vip.discountValue}
+                      onChange={(e) => onUpdateVip(vip.id, { discountValue: parseFloat(e.target.value) || 0 })}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Custom field toggle */}
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id={`vip-field-${vip.id}`}
+                    checked={!!vip.customFieldLabel}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        onUpdateVip(vip.id, { customFieldLabel: '', customFieldRequired: false });
+                      } else {
+                        onUpdateVip(vip.id, { customFieldLabel: undefined, customFieldRequired: undefined });
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`vip-field-${vip.id}`} className="text-xs cursor-pointer">
+                    Dodaj pole dodatkowe (np. numer licencji)
+                  </Label>
+                </div>
+
+                {vip.customFieldLabel !== undefined && (
+                  <div className="grid sm:grid-cols-2 gap-3 ml-7">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Nazwa pola</Label>
+                      <Input
+                        value={vip.customFieldLabel || ''}
+                        onChange={(e) => onUpdateVip(vip.id, { customFieldLabel: e.target.value })}
+                        placeholder="np. Nr orzeczenia"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 pt-4">
+                      <Checkbox
+                        id={`vip-req-${vip.id}`}
+                        checked={!!vip.customFieldRequired}
+                        onCheckedChange={(checked) => onUpdateVip(vip.id, { customFieldRequired: !!checked })}
+                      />
+                      <Label htmlFor={`vip-req-${vip.id}`} className="text-xs cursor-pointer">
+                        Pole wymagane
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <Button variant="outline" size="sm" onClick={onAddVip} className="w-full">
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Dodaj cenę VIP
+          </Button>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
