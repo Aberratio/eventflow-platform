@@ -64,7 +64,6 @@ export interface PriceTier {
   endDate?: string;
   participantLimit?: number;
   description?: string;
-  vipPrices?: VipPrice[];
   /** @deprecated Use discountType+discountValue. Kept for backward compat in views. */
   price?: number;
 }
@@ -113,6 +112,7 @@ export interface Distance {
   priceTierMode?: PriceTierMode;
   participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
+  vipPrices?: VipPrice[];
 }
 
 export interface OrganizerContact {

@@ -644,12 +644,13 @@ export const mockEvents: Event[] = [
         registeredCount: 187, 
         price: 450,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'percent', discountValue: 30, endDate: '2026-02-28', description: 'Zaoszczędź 30%!', vipPrices: [
-            { id: 'vip1', name: 'Osoba niepełnosprawna', discountType: 'percent', discountValue: 50, customFieldLabel: 'Nr orzeczenia o niepełnosprawności', customFieldRequired: true },
-            { id: 'vip2', name: 'Wolontariusz edycji 2025', discountType: 'fixed', discountValue: 100 },
-          ] },
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'percent', discountValue: 30, endDate: '2026-02-28', description: 'Zaoszczędź 30%!' },
           { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-31', description: 'Standardowa cena' },
           { id: 'pt3', name: 'Ostatnia chwila', discountType: 'percent', discountValue: -20, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+        ],
+        vipPrices: [
+          { id: 'vip1', name: 'Osoba niepełnosprawna', discountType: 'percent', discountValue: 50, customFieldLabel: 'Nr orzeczenia o niepełnosprawności', customFieldRequired: true },
+          { id: 'vip2', name: 'Wolontariusz edycji 2025', discountType: 'fixed', discountValue: 100 },
         ]
       },
       { 
@@ -1206,11 +1207,11 @@ export const mockEvents: Event[] = [
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     distances: [
       { id: 'd5', name: 'Olimpijski', length: 51.5, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1500, registeredCount: 1234, price: 350, priceTierMode: 'participants', participantCountType: 'registered', priceTiers: [
-        { id: 'pt1', name: 'Pierwsze 500 osób', discountType: 'percent', discountValue: 25, participantLimit: 500, description: 'Najlepsza cena dla pierwszych 500!', vipPrices: [
-          { id: 'vip3', name: 'Członek klubu PZTri', discountType: 'percent', discountValue: 15, customFieldLabel: 'Nr licencji PZTri', customFieldRequired: true },
-        ] },
+        { id: 'pt1', name: 'Pierwsze 500 osób', discountType: 'percent', discountValue: 25, participantLimit: 500, description: 'Najlepsza cena dla pierwszych 500!' },
         { id: 'pt2', name: '500-1000 osób', discountType: 'percent', discountValue: 10, participantLimit: 1000, description: 'Mniejszy rabat' },
         { id: 'pt3', name: 'Powyżej 1000', discountType: 'percent', discountValue: 0, participantLimit: 1500, description: 'Cena standardowa' }
+      ], vipPrices: [
+        { id: 'vip3', name: 'Członek klubu PZTri', discountType: 'percent', discountValue: 15, customFieldLabel: 'Nr licencji PZTri', customFieldRequired: true },
       ] },
       { id: 'd6', name: 'Sprint', length: 25.75, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1000, registeredCount: 876, price: 250, priceTierMode: 'participants', participantCountType: 'registered', priceTiers: [
         { id: 'pt1', name: 'Pierwsze 300 osób', discountType: 'fixed', discountValue: 50, participantLimit: 300, description: '50 zł taniej!' },
