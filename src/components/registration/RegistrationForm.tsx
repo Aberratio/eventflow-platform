@@ -173,18 +173,16 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   }, [hasInsurance, wantsInsurance, age]);
 
   // Find current active VIP price object
-  const activeVip = useMemo(() => {
+   const activeVip = useMemo(() => {
     if (!selectedDistance || !selectedVipId) return null;
-    const { tierName } = getCurrentPrice(selectedDistance);
-    const currentTier = selectedDistance.priceTiers?.find(t => t.name === tierName);
-    return currentTier?.vipPrices?.find(v => v.id === selectedVipId) || null;
+    return selectedDistance.vipPrices?.find(v => v.id === selectedVipId) || null;
   }, [selectedDistance, selectedVipId]);
 
   const distancePrice = useMemo(() => {
     if (!selectedDistance) return 0;
     const { price } = getCurrentPrice(selectedDistance);
     if (activeVip) {
-      return applyDiscount(price, activeVip.discountType, activeVip.discountValue);
+      return applyDiscount(selectedDistance.price, activeVip.discountType, activeVip.discountValue);
     }
     return price;
   }, [selectedDistance, activeVip]);
@@ -485,12 +483,9 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
             {/* VIP Price Selection */}
             {selectedDistance && (() => {
-              const { tierName } = getCurrentPrice(selectedDistance);
-              const currentTier = selectedDistance.priceTiers?.find(t => t.name === tierName);
-              const vipOptions = currentTier?.vipPrices || [];
+              const { price: tierPrice } = getCurrentPrice(selectedDistance);
+              const vipOptions = selectedDistance.vipPrices || [];
               if (vipOptions.length === 0) return null;
-
-              const tierPrice = applyDiscount(selectedDistance.price, currentTier!.discountType, currentTier!.discountValue);
 
               return (
                 <div className="mt-4 p-4 border rounded-lg space-y-3">
@@ -508,7 +503,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                         <span className="text-sm">Cena standardowa — {tierPrice} zł</span>
                       </label>
                       {vipOptions.map(vip => {
-                        const vipFinalPrice = applyDiscount(tierPrice, vip.discountType, vip.discountValue);
+                        const vipFinalPrice = applyDiscount(selectedDistance.price, vip.discountType, vip.discountValue);
                         return (
                           <div key={vip.id}>
                             <label className="flex items-center gap-3 p-2 rounded-md border cursor-pointer hover:bg-muted/50">
