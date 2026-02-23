@@ -27,9 +27,10 @@ import {
   Copy,
   AlertTriangle,
   CheckCircle2,
-  UserCog
+  UserCog,
+  Star
 } from 'lucide-react';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
 import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes, getExistingTeamsForEvent, validateTeamName, mockGlobalInsuranceSettings } from '@/data/mockData';
 import { applyDiscount } from '@/api/mock/helpers';
 import { format } from 'date-fns';
@@ -55,6 +56,9 @@ export interface RegistrationData {
   insurancePrice?: number;
   totalAmount: number;
   teamName?: string;
+  vipPriceId?: string;
+  vipPriceName?: string;
+  vipCustomFieldValue?: string;
 }
 
 // Generate years for birth date (18-80 years old)
@@ -99,6 +103,10 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   const [teamName, setTeamName] = useState('');
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
+
+  // VIP price state
+  const [selectedVipId, setSelectedVipId] = useState<string>('');
+  const [vipCustomFieldValue, setVipCustomFieldValue] = useState<string>('');
 
   // Profile completeness check
   const isProfileComplete = useMemo(() => {
@@ -164,11 +172,22 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
     return Math.round(baseFee + Math.max(0, age - 18) * ageMultiplier);
   }, [hasInsurance, wantsInsurance, age]);
 
+  // Find current active VIP price object
+  const activeVip = useMemo(() => {
+    if (!selectedDistance || !selectedVipId) return null;
+    const { tierName } = getCurrentPrice(selectedDistance);
+    const currentTier = selectedDistance.priceTiers?.find(t => t.name === tierName);
+    return currentTier?.vipPrices?.find(v => v.id === selectedVipId) || null;
+  }, [selectedDistance, selectedVipId]);
+
   const distancePrice = useMemo(() => {
     if (!selectedDistance) return 0;
     const { price } = getCurrentPrice(selectedDistance);
+    if (activeVip) {
+      return applyDiscount(price, activeVip.discountType, activeVip.discountValue);
+    }
     return price;
-  }, [selectedDistance]);
+  }, [selectedDistance, activeVip]);
 
   const merchandiseTotal = useMemo(() => {
     let total = 0;
@@ -314,6 +333,9 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
       teamName: getFinalTeamName(),
+      vipPriceId: activeVip ? selectedVipId : undefined,
+      vipPriceName: activeVip?.name,
+      vipCustomFieldValue: activeVip?.customFieldLabel ? vipCustomFieldValue : undefined,
     });
   };
 
@@ -460,6 +482,59 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                 })}
               </div>
             </RadioGroup>
+
+            {/* VIP Price Selection */}
+            {selectedDistance && (() => {
+              const { tierName } = getCurrentPrice(selectedDistance);
+              const currentTier = selectedDistance.priceTiers?.find(t => t.name === tierName);
+              const vipOptions = currentTier?.vipPrices || [];
+              if (vipOptions.length === 0) return null;
+
+              const tierPrice = applyDiscount(selectedDistance.price, currentTier!.discountType, currentTier!.discountValue);
+
+              return (
+                <div className="mt-4 p-4 border rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <Label className="text-sm font-medium">Ceny specjalne (VIP)</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Jeśli kwalifikujesz się do ceny specjalnej, wybierz odpowiednią opcję poniżej.
+                  </p>
+                  <RadioGroup value={selectedVipId} onValueChange={(v) => { setSelectedVipId(v); setVipCustomFieldValue(''); }}>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-3 p-2 rounded-md border cursor-pointer hover:bg-muted/50">
+                        <RadioGroupItem value="" />
+                        <span className="text-sm">Cena standardowa — {tierPrice} zł</span>
+                      </label>
+                      {vipOptions.map(vip => {
+                        const vipFinalPrice = applyDiscount(tierPrice, vip.discountType, vip.discountValue);
+                        return (
+                          <div key={vip.id}>
+                            <label className="flex items-center gap-3 p-2 rounded-md border cursor-pointer hover:bg-muted/50">
+                              <RadioGroupItem value={vip.id} />
+                              <span className="text-sm flex-1">{vip.name}</span>
+                              <span className="text-sm font-semibold text-primary">{vipFinalPrice} zł</span>
+                            </label>
+                            {selectedVipId === vip.id && vip.customFieldLabel && (
+                              <div className="ml-7 mt-2 space-y-1">
+                                <Label className="text-xs">{vip.customFieldLabel} {vip.customFieldRequired && <span className="text-destructive">*</span>}</Label>
+                                <Input
+                                  value={vipCustomFieldValue}
+                                  onChange={(e) => setVipCustomFieldValue(e.target.value)}
+                                  placeholder={vip.customFieldLabel}
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </RadioGroup>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       )}
