@@ -43,12 +43,20 @@ export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport'
 
 export type RegistrationStatus = 'open' | 'closed' | 'none';
 
+export type PriceTierMode = 'date' | 'participants';
+export type ParticipantCountType = 'registered' | 'paid';
+export type PriceTierDiscountType = 'percent' | 'fixed';
+
 export interface PriceTier {
   id: string;
   name: string;
-  price: number;
-  endDate: string;
+  discountType: PriceTierDiscountType;
+  discountValue: number;
+  endDate?: string;
+  participantLimit?: number;
   description?: string;
+  /** @deprecated Use discountType+discountValue. Kept for backward compat in views. */
+  price?: number;
 }
 
 export interface DiscountCodeUsage {
@@ -92,6 +100,8 @@ export interface Distance {
   limit?: number;
   registeredCount: number;
   price: number;
+  priceTierMode?: PriceTierMode;
+  participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
 }
 
