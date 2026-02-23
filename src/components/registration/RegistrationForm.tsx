@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes, getExistingTeamsForEvent, validateTeamName, mockGlobalInsuranceSettings } from '@/data/mockData';
+import { applyDiscount } from '@/api/mock/helpers';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -415,19 +416,25 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                           <div className="mt-3 space-y-1">
                             {distance.priceTiers.map(tier => {
                               const isCurrentTier = tier.name === tierName;
-                              const isPast = new Date(tier.endDate) < new Date();
+                              const mode = distance.priceTierMode || 'date';
+                              const tierPrice = applyDiscount(distance.price, tier.discountType, tier.discountValue);
+                              const isPast = mode === 'date' && tier.endDate ? new Date(tier.endDate) < new Date() : false;
+                              const isOverLimit = mode === 'participants' && tier.participantLimit != null && distance.registeredCount >= tier.participantLimit;
+                              const dimmed = isPast || isOverLimit;
                               
                               return (
                                 <div 
                                   key={tier.id} 
                                   className={`text-xs flex justify-between ${
                                     isCurrentTier ? 'text-primary font-medium' : 
-                                    isPast ? 'text-muted-foreground line-through' : 'text-muted-foreground'
+                                    dimmed ? 'text-muted-foreground line-through' : 'text-muted-foreground'
                                   }`}
                                 >
                                   <span>{tier.name}</span>
                                   <span>
-                                    {tier.price} zł do {format(new Date(tier.endDate), 'd MMM', { locale: pl })}
+                                    {tierPrice} zł
+                                    {mode === 'date' && tier.endDate && ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
+                                    {mode === 'participants' && tier.participantLimit != null && ` (do ${tier.participantLimit} os.)`}
                                   </span>
                                 </div>
                               );

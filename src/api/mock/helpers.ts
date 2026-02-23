@@ -1,27 +1,94 @@
-import type { PriceTier, Event, Registration } from '@/types';
+import type { PriceTier, PriceTierDiscountType, Event, Registration, Distance } from '@/types';
+
+/** Calculate price after applying a discount to a base price. */
+export const applyDiscount = (
+  basePrice: number,
+  discountType: PriceTierDiscountType,
+  discountValue: number,
+): number => {
+  if (discountType === 'percent') {
+    return Math.round(basePrice * (1 - discountValue / 100));
+  }
+  return Math.max(0, basePrice - discountValue);
+};
 
 /** Get the current active price tier for a distance. */
 export const getCurrentPrice = (
-  distance: { price: number; priceTiers?: PriceTier[] },
-): { price: number; tierName: string; nextTier?: PriceTier } => {
+  distance: Distance,
+  context?: { paidCount?: number },
+): {
+  price: number;
+  tierName: string;
+  nextTier?: { name: string; price: number; threshold: string };
+  discount?: { type: PriceTierDiscountType; value: number };
+} => {
   if (!distance.priceTiers || distance.priceTiers.length === 0) {
     return { price: distance.price, tierName: 'Cena standardowa' };
   }
 
+  const basePrice = distance.price;
+  const mode = distance.priceTierMode || 'date';
+
+  if (mode === 'participants') {
+    const countType = distance.participantCountType || 'registered';
+    const count = countType === 'paid' ? (context?.paidCount ?? 0) : distance.registeredCount;
+
+    const sortedTiers = [...distance.priceTiers]
+      .filter((t) => t.participantLimit != null)
+      .sort((a, b) => (a.participantLimit ?? 0) - (b.participantLimit ?? 0));
+
+    for (let i = 0; i < sortedTiers.length; i++) {
+      const tier = sortedTiers[i];
+      if (count < (tier.participantLimit ?? 0)) {
+        const price = applyDiscount(basePrice, tier.discountType, tier.discountValue);
+        const nextTier = sortedTiers[i + 1];
+        return {
+          price,
+          tierName: tier.name,
+          discount: { type: tier.discountType, value: tier.discountValue },
+          nextTier: nextTier
+            ? {
+                name: nextTier.name,
+                price: applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
+                threshold: `od ${tier.participantLimit} uczestnika`,
+              }
+            : undefined,
+        };
+      }
+    }
+
+    // Past all tiers — base price
+    return { price: basePrice, tierName: 'Cena standardowa' };
+  }
+
+  // mode === 'date'
   const now = new Date();
-  const sortedTiers = [...distance.priceTiers].sort(
-    (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
-  );
+  const sortedTiers = [...distance.priceTiers]
+    .filter((t) => t.endDate != null)
+    .sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime());
 
   for (let i = 0; i < sortedTiers.length; i++) {
     const tier = sortedTiers[i];
-    if (new Date(tier.endDate) >= now) {
-      return { price: tier.price, tierName: tier.name, nextTier: sortedTiers[i + 1] };
+    if (new Date(tier.endDate!) >= now) {
+      const price = applyDiscount(basePrice, tier.discountType, tier.discountValue);
+      const nextTier = sortedTiers[i + 1];
+      return {
+        price,
+        tierName: tier.name,
+        discount: { type: tier.discountType, value: tier.discountValue },
+        nextTier: nextTier
+          ? {
+              name: nextTier.name,
+              price: applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
+              threshold: `od ${tier.endDate}`,
+            }
+          : undefined,
+      };
     }
   }
 
-  const lastTier = sortedTiers[sortedTiers.length - 1];
-  return { price: lastTier?.price || distance.price, tierName: lastTier?.name || 'Cena standardowa' };
+  // All tiers expired — base price
+  return { price: basePrice, tierName: 'Cena standardowa' };
 };
 
 /** Validate a discount code for an event. */

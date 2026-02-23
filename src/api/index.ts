@@ -168,5 +168,5 @@ export {
 } from './email-templates.api';
 
 // ─── Mock helpers & labels (synchronous, for filters/sidebars) ───
-export { getCurrentPrice, validateDiscountCode, validateTeamName, getExistingTeamsForEvent } from './mock/helpers';
+export { getCurrentPrice, applyDiscount, validateDiscountCode, validateTeamName, getExistingTeamsForEvent } from './mock/helpers';
 export { seriesTypeLabels, disciplineLabels, shopCategoryLabels, defaultPaymentMethods } from './mock/labels';

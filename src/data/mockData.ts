@@ -552,7 +552,7 @@ export const mockPartners: Partner[] = [
   { id: 'partner6', name: 'Endomondo', logoUrl: 'https://via.placeholder.com/200x80?text=Endomondo', websiteUrl: 'https://endomondo.com', featured: true },
 ];
 
-// Helper for creating price tiers relative to current date
+// Helper for creating price tiers relative to current date (date mode with discounts)
 const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => {
   const event = new Date(eventDate);
   const earlyBirdEnd = new Date(event);
@@ -564,21 +564,24 @@ const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => 
     {
       id: 'pt1',
       name: 'Wczesna rezerwacja',
-      price: Math.round(basePrice * 0.7),
+      discountType: 'percent',
+      discountValue: 30,
       endDate: earlyBirdEnd.toISOString().split('T')[0],
       description: 'Zapisz się wcześniej i zaoszczędź 30%!'
     },
     {
       id: 'pt2',
       name: 'Cena regularna',
-      price: basePrice,
+      discountType: 'percent',
+      discountValue: 0,
       endDate: regularEnd.toISOString().split('T')[0],
       description: 'Standardowa cena startowa'
     },
     {
       id: 'pt3',
       name: 'Ostatnia chwila',
-      price: Math.round(basePrice * 1.2),
+      discountType: 'percent',
+      discountValue: -20,
       endDate: eventDate,
       description: 'Ostatnia szansa na zapis!'
     }
@@ -641,9 +644,9 @@ export const mockEvents: Event[] = [
         registeredCount: 187, 
         price: 450,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 315, endDate: '2026-02-28', description: 'Zaoszczędź 135 zł!' },
-          { id: 'pt2', name: 'Cena regularna', price: 450, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Ostatnia chwila', price: 540, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'percent', discountValue: 30, endDate: '2026-02-28', description: 'Zaoszczędź 30%!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-31', description: 'Standardowa cena' },
+          { id: 'pt3', name: 'Ostatnia chwila', discountType: 'percent', discountValue: -20, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
       { 
@@ -656,9 +659,9 @@ export const mockEvents: Event[] = [
         registeredCount: 312, 
         price: 300,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 210, endDate: '2026-02-28', description: 'Zaoszczędź 90 zł!' },
-          { id: 'pt2', name: 'Cena regularna', price: 300, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Ostatnia chwila', price: 360, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'fixed', discountValue: 90, endDate: '2026-02-28', description: 'Zaoszczędź 90 zł!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-31', description: 'Standardowa cena' },
+          { id: 'pt3', name: 'Ostatnia chwila', discountType: 'percent', discountValue: -20, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
       { 
@@ -671,9 +674,9 @@ export const mockEvents: Event[] = [
         registeredCount: 543, 
         price: 180,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 126, endDate: '2026-02-28', description: 'Zaoszczędź 54 zł!' },
-          { id: 'pt2', name: 'Cena regularna', price: 180, endDate: '2026-05-31', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Ostatnia chwila', price: 216, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'percent', discountValue: 30, endDate: '2026-02-28', description: 'Zaoszczędź 30%!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-31', description: 'Standardowa cena' },
+          { id: 'pt3', name: 'Ostatnia chwila', discountType: 'percent', discountValue: -20, endDate: '2026-06-10', description: 'Ostatnie miejsca!' }
         ]
       },
     ],
@@ -827,8 +830,8 @@ export const mockEvents: Event[] = [
         registeredCount: 234, 
         price: 90,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 65, endDate: '2026-02-15', description: 'Najlepsza cena!' },
-          { id: 'pt2', name: 'Cena regularna', price: 90, endDate: '2026-04-05', description: 'Standardowa cena' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'fixed', discountValue: 25, endDate: '2026-02-15', description: 'Najlepsza cena!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-04-05', description: 'Standardowa cena' }
         ]
       },
       { 
@@ -841,8 +844,8 @@ export const mockEvents: Event[] = [
         registeredCount: 456, 
         price: 60,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 45, endDate: '2026-02-15', description: 'Najlepsza cena!' },
-          { id: 'pt2', name: 'Cena regularna', price: 60, endDate: '2026-04-05', description: 'Standardowa cena' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'fixed', discountValue: 15, endDate: '2026-02-15', description: 'Najlepsza cena!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-04-05', description: 'Standardowa cena' }
         ]
       },
     ],
@@ -911,9 +914,9 @@ export const mockEvents: Event[] = [
         registeredCount: 156, 
         price: 220,
         priceTiers: [
-          { id: 'pt1', name: 'Wczesna rezerwacja', price: 160, endDate: '2026-04-30', description: 'Zaoszczędź 60 zł!' },
-          { id: 'pt2', name: 'Cena regularna', price: 220, endDate: '2026-06-30', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Ostatnia chwila', price: 270, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
+          { id: 'pt1', name: 'Wczesna rezerwacja', discountType: 'fixed', discountValue: 60, endDate: '2026-04-30', description: 'Zaoszczędź 60 zł!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-06-30', description: 'Standardowa cena' },
+          { id: 'pt3', name: 'Ostatnia chwila', discountType: 'percent', discountValue: -23, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
         ]
       },
       { 
@@ -926,9 +929,9 @@ export const mockEvents: Event[] = [
         registeredCount: 287, 
         price: 150,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 110, endDate: '2026-04-30', description: 'Zaoszczędź 40 zł!' },
-          { id: 'pt2', name: 'Cena regularna', price: 150, endDate: '2026-06-30', description: 'Standardowa cena' },
-          { id: 'pt3', name: 'Last Minute', price: 180, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
+          { id: 'pt1', name: 'Early Bird', discountType: 'fixed', discountValue: 40, endDate: '2026-04-30', description: 'Zaoszczędź 40 zł!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-06-30', description: 'Standardowa cena' },
+          { id: 'pt3', name: 'Last Minute', discountType: 'percent', discountValue: -20, endDate: '2026-07-08', description: 'Ostatnia szansa!' }
         ]
       },
       { 
@@ -941,8 +944,8 @@ export const mockEvents: Event[] = [
         registeredCount: 432, 
         price: 80,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 60, endDate: '2026-04-30', description: 'Najlepsza cena!' },
-          { id: 'pt2', name: 'Cena regularna', price: 80, endDate: '2026-07-08', description: 'Standardowa cena' }
+          { id: 'pt1', name: 'Early Bird', discountType: 'fixed', discountValue: 20, endDate: '2026-04-30', description: 'Najlepsza cena!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-07-08', description: 'Standardowa cena' }
         ]
       },
     ],
@@ -1026,8 +1029,8 @@ export const mockEvents: Event[] = [
         registeredCount: 234, 
         price: 200,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 150, endDate: '2026-03-15', description: 'Zapisz się wcześniej!' },
-          { id: 'pt2', name: 'Cena regularna', price: 200, endDate: '2026-05-17', description: 'Standardowa cena' }
+          { id: 'pt1', name: 'Early Bird', discountType: 'percent', discountValue: 25, endDate: '2026-03-15', description: 'Zapisz się wcześniej!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-17', description: 'Standardowa cena' }
         ]
       },
       { 
@@ -1040,8 +1043,8 @@ export const mockEvents: Event[] = [
         registeredCount: 178, 
         price: 140,
         priceTiers: [
-          { id: 'pt1', name: 'Early Bird', price: 100, endDate: '2026-03-15', description: 'Zapisz się wcześniej!' },
-          { id: 'pt2', name: 'Cena regularna', price: 140, endDate: '2026-05-17', description: 'Standardowa cena' }
+          { id: 'pt1', name: 'Early Bird', discountType: 'fixed', discountValue: 40, endDate: '2026-03-15', description: 'Zapisz się wcześniej!' },
+          { id: 'pt2', name: 'Cena regularna', discountType: 'percent', discountValue: 0, endDate: '2026-05-17', description: 'Standardowa cena' }
         ]
       },
     ],
@@ -1199,8 +1202,16 @@ export const mockEvents: Event[] = [
     description: 'Kultowy triathlon z pływaniem w Zatoce Gdańskiej. Dystans olimpijski i sprint.',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     distances: [
-      { id: 'd5', name: 'Olimpijski', length: 51.5, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1500, registeredCount: 1234, price: 350 },
-      { id: 'd6', name: 'Sprint', length: 25.75, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1000, registeredCount: 876, price: 250 },
+      { id: 'd5', name: 'Olimpijski', length: 51.5, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1500, registeredCount: 1234, price: 350, priceTierMode: 'participants', participantCountType: 'registered', priceTiers: [
+        { id: 'pt1', name: 'Pierwsze 500 osób', discountType: 'percent', discountValue: 25, participantLimit: 500, description: 'Najlepsza cena dla pierwszych 500!' },
+        { id: 'pt2', name: '500-1000 osób', discountType: 'percent', discountValue: 10, participantLimit: 1000, description: 'Mniejszy rabat' },
+        { id: 'pt3', name: 'Powyżej 1000', discountType: 'percent', discountValue: 0, participantLimit: 1500, description: 'Cena standardowa' }
+      ] },
+      { id: 'd6', name: 'Sprint', length: 25.75, unit: 'km', categories: ['M18-24', 'M25-29', 'M30-34', 'M35-39', 'M40-44', 'M45-49', 'M50+', 'K18-24', 'K25-29', 'K30-34', 'K35-39', 'K40-44', 'K45-49', 'K50+'], limit: 1000, registeredCount: 876, price: 250, priceTierMode: 'participants', participantCountType: 'registered', priceTiers: [
+        { id: 'pt1', name: 'Pierwsze 300 osób', discountType: 'fixed', discountValue: 50, participantLimit: 300, description: '50 zł taniej!' },
+        { id: 'pt2', name: '300-700 osób', discountType: 'fixed', discountValue: 20, participantLimit: 700, description: '20 zł taniej' },
+        { id: 'pt3', name: 'Powyżej 700', discountType: 'percent', discountValue: 0, participantLimit: 1000, description: 'Cena standardowa' }
+      ] },
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
@@ -3307,33 +3318,8 @@ export const mockCertificates: Certificate[] = [
   },
 ];
 
-
-// Helper function to get current price for a distance
-export const getCurrentPrice = (distance: { price: number; priceTiers?: PriceTier[] }): { price: number; tierName: string; nextTier?: PriceTier } => {
-  if (!distance.priceTiers || distance.priceTiers.length === 0) {
-    return { price: distance.price, tierName: 'Cena standardowa' };
-  }
-  
-  const now = new Date();
-  const sortedTiers = [...distance.priceTiers].sort((a, b) => 
-    new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
-  );
-  
-  for (let i = 0; i < sortedTiers.length; i++) {
-    const tier = sortedTiers[i];
-    if (new Date(tier.endDate) >= now) {
-      return { 
-        price: tier.price, 
-        tierName: tier.name,
-        nextTier: sortedTiers[i + 1]
-      };
-    }
-  }
-  
-  // Fallback to last tier or base price
-  const lastTier = sortedTiers[sortedTiers.length - 1];
-  return { price: lastTier?.price || distance.price, tierName: lastTier?.name || 'Cena standardowa' };
-};
+// Re-export getCurrentPrice from helpers (canonical source)
+export { getCurrentPrice } from '@/api/mock/helpers';
 
 // Helper to validate discount code
 export const validateDiscountCode = (
