@@ -43,6 +43,7 @@ export interface EventFilters {
   seriesId?: string;
   search?: string;
   registrationStatus?: RegistrationStatus;
+  includePrivate?: boolean;
 }
 
 export interface UserFilters {

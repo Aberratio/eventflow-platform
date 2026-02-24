@@ -15,7 +15,7 @@ export const DisciplinesSection = ({ events }: DisciplinesSectionProps) => {
   
   const getDisciplineStats = (discipline: string) => {
     const upcomingCount = events.filter(
-      e => e.discipline === discipline && new Date(e.date) > now && e.status === 'published'
+      e => !e.isPrivate && e.discipline === discipline && new Date(e.date) > now && e.status === 'published'
     ).length;
     return upcomingCount;
   };

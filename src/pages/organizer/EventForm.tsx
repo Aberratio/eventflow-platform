@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { SportDiscipline, BannerCropArea, PaymentConfigType } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -53,7 +53,13 @@ const EventForm = () => {
   const [isVirtual, setIsVirtual] = useState(existingEvent?.isVirtual || false);
   const [startDate, setStartDate] = useState(existingEvent?.startDate || '');
   const [endDate, setEndDate] = useState(existingEvent?.endDate || '');
-  
+
+  // Private event fields
+  const [isPrivate, setIsPrivate] = useState(existingEvent?.isPrivate || false);
+  const [accessCode, setAccessCode] = useState(existingEvent?.accessCode || '');
+
+  const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
+
   // Media - Banner and Logo
   const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
   const [bannerCropArea, setBannerCropArea] = useState<BannerCropArea | undefined>(existingEvent?.bannerCropArea);
@@ -321,6 +327,69 @@ const EventForm = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Private event toggle */}
+                <div className="p-4 rounded-lg border bg-muted/30 space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox 
+                      id="isPrivate" 
+                      checked={isPrivate} 
+                      onCheckedChange={(checked) => {
+                        const val = checked === true;
+                        setIsPrivate(val);
+                        if (val && !accessCode) {
+                          setAccessCode(generateAccessCode());
+                        }
+                      }} 
+                    />
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-primary" />
+                      <Label htmlFor="isPrivate" className="cursor-pointer font-medium">Wydarzenie prywatne</Label>
+                    </div>
+                  </div>
+                  {isPrivate && (
+                    <div className="pl-6 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Prywatne wydarzenie nie będzie widoczne publicznie. Uczestnicy mogą dołączyć tylko przez specjalny link.
+                      </p>
+                      <div className="space-y-2">
+                        <Label htmlFor="accessCode">Kod dostępu</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="accessCode" 
+                            value={accessCode} 
+                            onChange={e => setAccessCode(e.target.value)} 
+                            placeholder="np. abc123xyz"
+                            className="font-mono"
+                          />
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => setAccessCode(generateAccessCode())}
+                            title="Wygeneruj nowy kod"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              const slug = name ? generateSlug(name) : 'wydarzenie';
+                              const url = `${window.location.origin}/events/${slug}?access=${accessCode}`;
+                              navigator.clipboard.writeText(url);
+                              toast({ title: 'Skopiowano', description: 'Link do prywatnego wydarzenia został skopiowany do schowka.' });
+                            }}
+                            title="Kopiuj link"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Location fields - hidden for virtual events */}
                 {!isVirtual && (

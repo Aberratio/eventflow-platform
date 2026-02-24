@@ -23,7 +23,7 @@ export const AdminFeaturedEventsTab = () => {
   const [events, setEvents] = useState<Event[]>(mockEvents);
   const [search, setSearch] = useState('');
 
-  const publishedEvents = events.filter(e => e.status === 'published' || e.status === 'completed');
+  const publishedEvents = events.filter(e => !e.isPrivate && (e.status === 'published' || e.status === 'completed'));
   const featuredEvents = events.filter(e => e.featured);
 
   const filteredEvents = publishedEvents.filter(e =>

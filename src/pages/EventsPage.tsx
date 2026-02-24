@@ -28,6 +28,7 @@ const EventsPage = () => {
   const availableYears = useMemo(() => {
     const years = new Set<number>();
     mockEvents
+      .filter(e => !e.isPrivate)
       .filter(e => e.status === 'published' || e.status === 'completed')
       .forEach(e => years.add(getYear(new Date(e.date))));
     return Array.from(years).sort((a, b) => a - b);
@@ -35,6 +36,7 @@ const EventsPage = () => {
 
   const filteredEvents = useMemo(() => {
     return mockEvents
+      .filter(e => !e.isPrivate)
       .filter(e => e.status === 'published' || e.status === 'completed')
       .filter(e => getYear(new Date(e.date)) === filters.selectedYear)
       .filter(e => {

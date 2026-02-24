@@ -8,7 +8,7 @@ interface LiveResultsBannerProps {
 }
 
 export const LiveResultsBanner = ({ events }: LiveResultsBannerProps) => {
-  const liveEvents = events.filter(e => e.isLive && e.liveResultsUrl);
+  const liveEvents = events.filter(e => !e.isPrivate && e.isLive && e.liveResultsUrl);
 
   if (liveEvents.length === 0) return null;
 

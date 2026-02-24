@@ -12,7 +12,7 @@ interface UpcomingEventsProps {
 export const UpcomingEvents = ({ events, userRegistrations }: UpcomingEventsProps) => {
   const now = new Date();
   const upcomingEvents = events
-    .filter(e => new Date(e.date) > now && e.status === 'published')
+    .filter(e => !e.isPrivate && new Date(e.date) > now && e.status === 'published')
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 6);
 
