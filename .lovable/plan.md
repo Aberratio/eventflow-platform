@@ -1,117 +1,148 @@
 
 
-# Podglad zawodow draft + pelna edycja dla adminow i moderatorow
+# Wydarzenia prywatne — specjalny link dostepu
 
 ## Cel
 
-1. **Podglad draft** — admini, moderatorzy i organizator danego wydarzenia moga ogladac strone wydarzenia w statusie `draft` lub `awaiting_approval`. Inni uzytkownicy widza 404.
-2. **Latwy dostep z moderacji** — w kartach moderacji (AdminModerationTab, ModeratorModerationTab) dodac przycisk "Podglad wydarzenia" linkujacy do `/events/{slug}` oraz "Zarzadzaj" linkujacy do pelnego edytora.
-3. **Pelna edycja** — admini i moderatorzy maja dostep do EventManage (ten sam co organizator) dla dowolnego wydarzenia — przez route `/admin/events/:id` i nowy `/moderator/events/:id`.
+Dodanie mozliwosci tworzenia wydarzen prywatnych. Wydarzenie prywatne:
+- Nie pojawia sie nigdzie w publicznych listach, wynikach wyszukiwania, sekcjach na stronie glownej
+- Dostepne wylacznie przez specjalny link z kodem dostepu: `/events/{slug}?access={accessCode}`
+- Uzytkownik zapisany na takie wydarzenie widzi je normalnie w swoim profilu (rejestracje, historia)
+- Organizator, admin i moderator widza je bez kodu dostepu (jak drafty)
 
 ## Co sie zmieni
 
-### 1. EventDetailsPage — dostep do draft/awaiting_approval
+### 1. Model danych (`src/types/index.ts`)
 
-**Plik:** `src/pages/EventDetailsPage.tsx`
+Nowe pola w interfejsie `Event`:
 
-Obecnie strona filtruje eventy tylko po `slug` i nie sprawdza statusu — ale publiczna lista EventsPage filtruje do `published`/`completed`. Problem: jesli ktos ma link do draftu, widzi go.
-
-Zmiany:
-- Po znalezieniu eventu po slug, sprawdz jego `status`
-- Jesli status to `draft`, `awaiting_approval` lub `rejected`:
-  - Sprawdz czy zalogowany user to admin, moderator, lub organizator tego wydarzenia (`event.organizerId === user?.id`)
-  - Jesli nie — pokaz "Wydarzenie nie zostalo znalezione" (jak teraz przy braku eventu)
-  - Jesli tak — pokaz wydarzenie z banerem informacyjnym na gorze (np. "To wydarzenie jest w trybie roboczym i nie jest widoczne publicznie")
-- Baner bedzie mial rozne warianty:
-  - `draft`: "Szkic — wydarzenie nie jest widoczne publicznie"
-  - `awaiting_approval`: "Oczekuje na akceptacje — wydarzenie nie jest jeszcze opublikowane"
-  - `rejected`: "Odrzucone — wydarzenie wymaga poprawek" + powod odrzucenia
-
-### 2. AdminModerationTab — przyciski podgladu i zarzadzania
-
-**Plik:** `src/pages/admin/components/AdminModerationTab.tsx`
-
-W kazdej karcie wydarzenia oczekujacego dodac:
-- Przycisk **"Podglad"** — link do `/events/{event.slug}` (otwiera strone wydarzenia w trybie podgladu)
-- Przycisk **"Zarzadzaj"** — link do `/admin/events/{event.id}` (otwiera pelny edytor EventManage)
-
-W dialogu szczegolow rowniez dodac link "Otworz pelny podglad" i "Zarzadzaj wydarzeniem".
-
-### 3. ModeratorModerationTab — przyciski podgladu i zarzadzania
-
-**Plik:** `src/pages/moderator/components/ModeratorModerationTab.tsx`
-
-Analogiczne zmiany jak w AdminModerationTab:
-- Przycisk "Podglad" -> `/events/{event.slug}`
-- Przycisk "Zarzadzaj" -> `/moderator/events/{event.id}`
-
-### 4. Nowy route dla moderatora — zarzadzanie wydarzeniem
-
-**Plik:** `src/App.tsx`
-
-Dodac route:
 ```
-<Route path="/moderator/events/:id" element={<EventManage />} />
+Event {
+  ...
+  isPrivate?: boolean;        // czy wydarzenie jest prywatne
+  accessCode?: string;        // kod dostepu do prywatnego wydarzenia (np. "abc123xyz")
+}
 ```
 
-### 5. EventManage — obsluga wielu rol
+### 2. Mock data (`src/data/mockData.ts`)
 
-**Plik:** `src/pages/organizer/EventManage.tsx`
+- Jedno istniejace wydarzenie (np. e5 lub nowe) oznaczone jako `isPrivate: true` z `accessCode`
+- Reszta wydarzen bez zmian (`isPrivate` undefined = publiczne)
 
-Zmiany:
-- Zamiast hardkodowanego "Powrot do panelu" -> `/organizer`, dynamicznie ustalac sciezke powrotu na podstawie roli zalogowanego usera:
-  - admin -> `/admin`
-  - moderator -> `/moderator`
-  - organizer -> `/organizer`
-- Sprawdzic dostep: user musi byc adminem, moderatorem, lub organizatorem tego wydarzenia. Jesli nie — przekierowanie na 403.
+### 3. Filtrowanie publicznych list
 
-### 6. EventsPage — bez zmian
+We wszystkich miejscach gdzie wyswietlaja sie wydarzenia publicznie, dodac filtr `!e.isPrivate`:
 
-Lista wydarzen dalej filtruje do `published`/`completed` — drafty nie pojawiaja sie na liscie publicznej. Dostep tylko przez bezposredni link.
+| Plik | Miejsce filtrowania |
+|---|---|
+| `src/pages/EventsPage.tsx` | Lista wydarzen — dodac `.filter(e => !e.isPrivate)` |
+| `src/components/home/FeaturedEvents.tsx` | Sekcja polecanych |
+| `src/components/home/FeaturedEventsSection.tsx` | Sekcja polecanych (wariant) |
+| `src/components/home/OpenRegistrations.tsx` | Otwarte zapisy |
+| `src/components/home/DisciplinesSection.tsx` | Statystyki dyscyplin |
+| `src/components/home/UpcomingEvents.tsx` | Nadchodzace wydarzenia |
+| `src/components/home/RecentResults.tsx` | Ostatnie wyniki |
+| `src/components/home/LiveResultsBanner.tsx` | Baner live |
+| `src/pages/admin/components/AdminFeaturedEventsTab.tsx` | Lista opublikowanych w adminie |
+| `src/pages/ResultsCalendarPage.tsx` | Kalendarz wynikow |
+| `src/api/events.api.ts` | Funkcja `getEvents` — filtr domyslny |
+
+Wazne: `ParticipantRegistrationsTab` i `ParticipantHistoryTab` NIE filtruja po `isPrivate` — uzytkownik zapisany na prywatne wydarzenie widzi je w swoim profilu.
+
+### 4. Dostep do strony wydarzenia (`src/pages/EventDetailsPage.tsx`)
+
+Rozszerzenie logiki dostepu:
+
+```
+Jesli event.isPrivate:
+  - Admin / Moderator / Organizator wydarzenia -> dostep bez kodu
+  - Uzytkownik z ?access={accessCode} w URL -> dostep (kod zapisuje sie do sessionStorage)
+  - Uzytkownik zapisany na wydarzenie (ma rejestracje) -> dostep
+  - Inaczej -> "Wydarzenie nie znalezione" (identycznie jak brak eventu)
+```
+
+Po poprawnym wejsciu z kodem, kod zapisuje sie do `sessionStorage` pod kluczem `private-event-{eventId}`, zeby user nie musial go wpisywac ponownie w tej sesji.
+
+Na gorze strony prywatnego wydarzenia wyswietli sie baner (analogiczny do DraftBanner):
+- Ikona zamka + "Wydarzenie prywatne — dostepne tylko przez zaproszenie"
+
+### 5. Formularz tworzenia/edycji wydarzenia (`src/pages/organizer/EventForm.tsx`)
+
+W kroku 1 (Basic info), nowa sekcja:
+
+- **Checkbox "Wydarzenie prywatne"** z opisem: "Prywatne wydarzenie nie bedzie widoczne publicznie. Uczestnicy moga dolaczyc tylko przez specjalny link."
+- Gdy zaznaczone: wyswietl pole **"Kod dostepu"** (generowany automatycznie, mozna zmienic) + przycisk "Kopiuj link" (kopiuje pelny URL z kodem)
+
+### 6. Ustawienia wydarzenia (`src/pages/organizer/components/EventSettingsTab.tsx`)
+
+Nowa karta "Prywatnosc":
+- Przelacznik prywatne/publiczne
+- Wyswietlenie kodu dostepu i linku do kopiowania
+- Przycisk "Wygeneruj nowy kod" (zmienia kod, stary przestaje dzialac)
+
+### 7. API (`src/api/events.api.ts`)
+
+Funkcja `getEvents` — dodac domyslny filtr `!e.isPrivate` (chyba ze jawnie przekazano `filters.includePrivate = true`).
+
+Nowe pole w `EventFilters` (`src/api/types.ts`):
+```
+includePrivate?: boolean;
+```
 
 ## Szczegoly techniczne
 
-### Logika dostepu do draftu
+### Generowanie kodu dostepu
 
-```text
-canViewDraft(event, user) =
-  user.role === 'admin' ||
-  user.role === 'moderator' ||
-  (user.role === 'organizer' && event.organizerId === user.id)
+Prosta funkcja generujaca losowy kod 12 znakow (litery + cyfry):
+```
+generateAccessCode(): string => Math.random().toString(36).substring(2, 14)
 ```
 
-### Logika dostepu do EventManage
+### Pelny link prywatny
 
-```text
-canManageEvent(event, user) =
-  user.role === 'admin' ||
-  user.role === 'moderator' ||
-  (user.role === 'organizer' && event.organizerId === user.id)
+Format: `{baseUrl}/events/{slug}?access={accessCode}`
+
+Kopiowanie do schowka przez `navigator.clipboard.writeText(url)`.
+
+### Logika dostepu w EventDetailsPage
+
+Pseudokod:
 ```
-
-### Baner statusu draft (EventDetailsPage)
-
-Komponent `DraftBanner` wyswietlany nad trescia wydarzenia:
-- Zolte tlo dla `draft` i `awaiting_approval`
-- Czerwone tlo dla `rejected`
-- Zawiera tekst statusu i opcjonalnie powod odrzucenia
-- Dla admina/moderatora: dodatkowe przyciski "Zatwierdz" / "Odrzuc" gdy status = `awaiting_approval`
+1. Znajdz event po slug
+2. Jesli nie znaleziono -> 404
+3. Jesli event.isPrivate:
+   a. Jesli user to admin/moderator/organizator -> OK
+   b. Jesli user ma rejestracje na to wydarzenie -> OK  
+   c. Jesli URL ma ?access= i pasuje do event.accessCode -> OK, zapisz do sessionStorage
+   d. Jesli sessionStorage ma zapisany kod -> OK
+   e. Inaczej -> 404
+4. Istniejaca logika draftu (bez zmian)
+5. Wyswietl PrivateBanner jesli event.isPrivate
+```
 
 ### Pliki do zmiany
 
 | Plik | Zmiana |
 |---|---|
-| `src/pages/EventDetailsPage.tsx` | Kontrola dostepu do draftow + baner statusu |
-| `src/pages/admin/components/AdminModerationTab.tsx` | Przyciski "Podglad" i "Zarzadzaj" |
-| `src/pages/moderator/components/ModeratorModerationTab.tsx` | Przyciski "Podglad" i "Zarzadzaj" |
-| `src/pages/organizer/EventManage.tsx` | Dynamiczny powrot + kontrola dostepu wielorolowego |
-| `src/App.tsx` | Nowy route `/moderator/events/:id` |
+| `src/types/index.ts` | `isPrivate`, `accessCode` w Event |
+| `src/api/types.ts` | `includePrivate` w EventFilters |
+| `src/data/mockData.ts` | Jedno prywatne wydarzenie |
+| `src/pages/EventDetailsPage.tsx` | Logika dostepu prywatnego + PrivateBanner |
+| `src/pages/EventsPage.tsx` | Filtr `!isPrivate` |
+| `src/components/home/FeaturedEvents.tsx` | Filtr `!isPrivate` |
+| `src/components/home/FeaturedEventsSection.tsx` | Filtr `!isPrivate` |
+| `src/components/home/OpenRegistrations.tsx` | Filtr `!isPrivate` |
+| `src/components/home/DisciplinesSection.tsx` | Filtr `!isPrivate` |
+| `src/pages/organizer/EventForm.tsx` | Checkbox + pole kodu dostepu |
+| `src/pages/organizer/components/EventSettingsTab.tsx` | Karta prywatnosci |
+| `src/api/events.api.ts` | Filtr domyslny |
 
 ### Kolejnosc implementacji
 
-1. `EventDetailsPage.tsx` — kontrola dostepu + baner
-2. `EventManage.tsx` — wielorolowy dostep i dynamiczny powrot
-3. `App.tsx` — nowy route moderatora
-4. `AdminModerationTab.tsx` — przyciski podgladu/zarzadzania
-5. `ModeratorModerationTab.tsx` — przyciski podgladu/zarzadzania
+1. Typy (`types/index.ts`, `api/types.ts`)
+2. Mock data (jedno prywatne wydarzenie)
+3. Filtrowanie list publicznych (EventsPage, home sections)
+4. Logika dostepu w EventDetailsPage + baner
+5. EventForm — tworzenie prywatnego wydarzenia
+6. EventSettingsTab — zarzadzanie prywatnoscia
 
