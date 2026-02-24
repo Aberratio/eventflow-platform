@@ -13,23 +13,34 @@ import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEdito
 import { ArrowLeft, LayoutDashboard, Users, Trophy, Settings, Globe, Tag, Mail } from 'lucide-react';
 import { DiscountCode } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const event = mockEvents.find(e => e.id === id);
   const registrations = mockRegistrations.filter(r => r.eventId === id);
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 
-  if (!event) {
+  // Role-based access check
+  const canManage = user?.role === 'admin' || user?.role === 'moderator' || 
+    (user?.role === 'organizer' && event?.organizerId === user?.id);
+
+  // Dynamic back path based on role
+  const backPath = user?.role === 'admin' ? '/admin' : user?.role === 'moderator' ? '/moderator' : '/organizer';
+
+  if (!event || !canManage) {
     return (
       <Layout>
         <div className="container py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Wydarzenie nie znalezione</h1>
-            <Button onClick={() => navigate('/organizer')}>
+            <h1 className="text-2xl font-bold mb-4">
+              {!event ? 'Wydarzenie nie znalezione' : 'Brak dostępu'}
+            </h1>
+            <Button onClick={() => navigate(backPath)}>
               Powrót do panelu
             </Button>
           </div>
@@ -41,7 +52,7 @@ const EventManage = () => {
   return (
     <Layout>
       <div className="container py-8">
-        <Button variant="ghost" onClick={() => navigate('/organizer')} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 

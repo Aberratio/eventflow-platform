@@ -107,6 +107,7 @@ const App = () => (
                   <Route path="/organizer/events/:id" element={<EventManage />} />
                   <Route path="/organizer/events/:id/edit" element={<EventForm />} />
                   <Route path="/moderator" element={<ModeratorDashboard />} />
+                  <Route path="/moderator/events/:id" element={<EventManage />} />
                   <Route path="/moderator/*" element={<ModeratorDashboard />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/events/:id" element={<AdminEventManage />} />

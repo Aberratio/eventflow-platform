@@ -173,6 +173,18 @@ export const AdminModerationTab = () => {
                 <Eye className="h-4 w-4 mr-2" />
                 Szczegóły
               </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/events/${event.slug}`}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Podgląd
+                </a>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/admin/events/${event.id}`}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Zarządzaj
+                </a>
+              </Button>
               {!showRejection && (
                 <>
                   <Button 
