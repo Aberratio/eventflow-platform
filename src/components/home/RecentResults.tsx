@@ -15,7 +15,7 @@ interface RecentResultsProps {
 
 export const RecentResults = ({ events, results, userId }: RecentResultsProps) => {
   const completedEvents = events
-    .filter(e => e.status === 'completed')
+    .filter(e => !e.isPrivate && e.status === 'completed')
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 

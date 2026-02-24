@@ -20,7 +20,7 @@ import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
-import { AlertTriangle, FileEdit, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, FileEdit, ShieldCheck, Lock } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Draft/unpublished status banner
@@ -101,6 +101,19 @@ const DraftBanner = ({ event, user, onApprove, onReject }: {
     </div>
   );
 };
+
+// Private event banner
+const PrivateBanner = () => (
+  <div className="container pt-4">
+    <Alert className="border-primary/30 bg-primary/5">
+      <Lock className="h-4 w-4" />
+      <AlertTitle>Wydarzenie prywatne</AlertTitle>
+      <AlertDescription>
+        To wydarzenie jest dostępne tylko przez zaproszenie i nie jest widoczne publicznie.
+      </AlertDescription>
+    </Alert>
+  </div>
+);
 
 // Results Section Component
 const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: Result[] }) => {
@@ -277,7 +290,30 @@ const EventDetailsPage = () => {
   const canViewDraft = user?.role === 'admin' || user?.role === 'moderator' || 
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
-  if (!event || (isUnpublished && !canViewDraft)) {
+  // Private event access control
+  const accessCodeFromUrl = searchParams.get('access');
+  const isPrivateEvent = event?.isPrivate;
+  
+  const hasPrivateAccess = (() => {
+    if (!isPrivateEvent) return true;
+    if (!event) return false;
+    // Admin/moderator/organizer bypass
+    if (user?.role === 'admin' || user?.role === 'moderator') return true;
+    if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
+    // User has registration for this event
+    if (isAuthenticated && mockRegistrations.some(r => r.eventId === event.id && r.userId === user?.id)) return true;
+    // URL access code matches
+    if (accessCodeFromUrl && accessCodeFromUrl === event.accessCode) {
+      sessionStorage.setItem(`private-event-${event.id}`, accessCodeFromUrl);
+      return true;
+    }
+    // Session storage has valid code
+    const storedCode = sessionStorage.getItem(`private-event-${event.id}`);
+    if (storedCode && storedCode === event.accessCode) return true;
+    return false;
+  })();
+
+  if (!event || (isUnpublished && !canViewDraft) || (isPrivateEvent && !hasPrivateAccess)) {
     return (
       <Layout>
         <div className="container py-12 text-center">
@@ -336,6 +372,8 @@ const EventDetailsPage = () => {
     <Layout>
       {/* Draft status banner */}
       {isUnpublished && <DraftBanner event={event} user={user} />}
+      {/* Private event banner */}
+      {isPrivateEvent && !isUnpublished && <PrivateBanner />}
 
       {/* Header with optional banner */}
       {event.bannerUrl ? (

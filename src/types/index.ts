@@ -187,6 +187,9 @@ export interface Event {
   rulesHtml?: string;               // HTML with rules/regulations (links to PDFs)
   finalAcceptanceHtml?: string;     // HTML with final acceptance text for registration
   requireFinalAcceptance?: boolean; // Whether to show final acceptance checkbox
+  // Private event fields
+  isPrivate?: boolean;              // Whether the event is private (hidden from public listings)
+  accessCode?: string;              // Access code for private event link
 }
 
 // Payment configuration types

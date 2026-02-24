@@ -8,6 +8,9 @@ export async function getEvents(filters?: EventFilters): Promise<PaginatedRespon
   await simulateDelay();
   let filtered = [...mockEvents];
 
+  // Exclude private events by default
+  if (!filters?.includePrivate) filtered = filtered.filter((e) => !e.isPrivate);
+
   if (filters?.discipline) filtered = filtered.filter((e) => e.discipline === filters.discipline);
   if (filters?.city) filtered = filtered.filter((e) => e.city.toLowerCase().includes(filters.city!.toLowerCase()));
   if (filters?.status) filtered = filtered.filter((e) => e.status === filters.status);

@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Event } from '@/types';
-import { Edit, Trash2, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Edit, Trash2, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Lock, Copy, RefreshCw } from 'lucide-react';
 
 interface EventSettingsTabProps {
   event: Event;
@@ -35,6 +38,10 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<'draft' | 'published' | 'cancelled'>('draft');
+  const [isPrivate, setIsPrivate] = useState(event.isPrivate || false);
+  const [accessCode, setAccessCode] = useState(event.accessCode || '');
+
+  const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
 
   const handleEdit = () => {
     navigate(`/organizer/events/${event.id}/edit`);
@@ -183,6 +190,86 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Privacy settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Prywatność
+          </CardTitle>
+          <CardDescription>
+            Prywatne wydarzenie nie jest widoczne publicznie — uczestnicy mogą dołączyć tylko przez specjalny link.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="privacy-toggle" className="cursor-pointer">
+              Wydarzenie prywatne
+            </Label>
+            <Switch
+              id="privacy-toggle"
+              checked={isPrivate}
+              onCheckedChange={(checked) => {
+                setIsPrivate(checked);
+                if (checked && !accessCode) {
+                  setAccessCode(generateAccessCode());
+                }
+                toast({
+                  title: checked ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
+                  description: checked 
+                    ? 'Wydarzenie nie będzie widoczne publicznie.' 
+                    : 'Wydarzenie będzie widoczne dla wszystkich.',
+                });
+              }}
+            />
+          </div>
+          {isPrivate && (
+            <div className="space-y-3 pt-2 border-t">
+              <div className="space-y-2">
+                <Label>Kod dostępu</Label>
+                <div className="flex gap-2">
+                  <Input value={accessCode} readOnly className="font-mono" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const newCode = generateAccessCode();
+                      setAccessCode(newCode);
+                      toast({ title: 'Nowy kod', description: 'Wygenerowano nowy kod dostępu. Stary kod przestaje działać.' });
+                    }}
+                    title="Wygeneruj nowy kod"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Link do wydarzenia</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={`${window.location.origin}/events/${event.slug}?access=${accessCode}`} 
+                    readOnly 
+                    className="text-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      const url = `${window.location.origin}/events/${event.slug}?access=${accessCode}`;
+                      navigator.clipboard.writeText(url);
+                      toast({ title: 'Skopiowano', description: 'Link skopiowany do schowka.' });
+                    }}
+                    title="Kopiuj link"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Danger zone */}
       <Card className="border-destructive/50">

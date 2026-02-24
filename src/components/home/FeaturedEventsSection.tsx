@@ -13,7 +13,7 @@ interface FeaturedEventsSectionProps {
 
 export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) => {
   const featuredEvents = events
-    .filter(e => e.featured && e.status === 'published')
+    .filter(e => !e.isPrivate && e.featured && e.status === 'published')
     .slice(0, 4);
 
   if (featuredEvents.length === 0) return null;

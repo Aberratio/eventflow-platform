@@ -14,7 +14,7 @@ interface OpenRegistrationsProps {
 export const OpenRegistrations = ({ events }: OpenRegistrationsProps) => {
   const now = new Date();
   const openEvents = events
-    .filter(e => new Date(e.registrationDeadline) > now && e.status === 'published')
+    .filter(e => !e.isPrivate && new Date(e.registrationDeadline) > now && e.status === 'published')
     .sort((a, b) => new Date(a.registrationDeadline).getTime() - new Date(b.registrationDeadline).getTime())
     .slice(0, 6);
 

@@ -29,7 +29,7 @@ const ResultsCalendarPage = () => {
 
   const completedEvents = useMemo(() => {
     return mockEvents
-      .filter(e => e.status === 'completed')
+      .filter(e => !e.isPrivate && e.status === 'completed')
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, []);
 
