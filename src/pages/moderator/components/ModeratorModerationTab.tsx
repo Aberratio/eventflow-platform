@@ -15,7 +15,7 @@ import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { CheckCircle, XCircle, Calendar, MapPin, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Calendar, MapPin, Clock, AlertCircle, Eye, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ModeratorModerationTab = () => {
@@ -119,7 +119,7 @@ export const ModeratorModerationTab = () => {
                   </p>
                 )}
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex flex-wrap gap-2 pt-2">
                   <Button 
                     onClick={() => handleApprove(event)} 
                     className="gap-2"
@@ -134,6 +134,18 @@ export const ModeratorModerationTab = () => {
                   >
                     <XCircle className="h-4 w-4" />
                     Odrzuć
+                  </Button>
+                  <Button variant="outline" size="default" asChild className="gap-2">
+                    <a href={`/events/${event.slug}`}>
+                      <Eye className="h-4 w-4" />
+                      Podgląd
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="default" asChild className="gap-2">
+                    <a href={`/moderator/events/${event.id}`}>
+                      <FileText className="h-4 w-4" />
+                      Zarządzaj
+                    </a>
                   </Button>
                 </div>
               </div>

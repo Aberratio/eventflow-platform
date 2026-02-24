@@ -20,6 +20,87 @@ import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
+import { AlertTriangle, FileEdit, ShieldCheck } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+// Draft/unpublished status banner
+const DraftBanner = ({ event, user, onApprove, onReject }: { 
+  event: Event; 
+  user: any;
+  onApprove?: () => void;
+  onReject?: () => void;
+}) => {
+  const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';
+  
+  const config: Record<string, { variant: 'default' | 'destructive'; icon: React.ReactNode; title: string; description: string }> = {
+    draft: {
+      variant: 'default',
+      icon: <FileEdit className="h-4 w-4" />,
+      title: 'Szkic',
+      description: 'Wydarzenie nie jest widoczne publicznie.',
+    },
+    awaiting_approval: {
+      variant: 'default',
+      icon: <Clock className="h-4 w-4" />,
+      title: 'Oczekuje na akceptację',
+      description: 'Wydarzenie nie jest jeszcze opublikowane.',
+    },
+    rejected: {
+      variant: 'destructive',
+      icon: <AlertTriangle className="h-4 w-4" />,
+      title: 'Odrzucone',
+      description: 'Wydarzenie wymaga poprawek.',
+    },
+  };
+
+  const c = config[event.status];
+  if (!c) return null;
+
+  const manageUrl = user?.role === 'admin' 
+    ? `/admin/events/${event.id}` 
+    : user?.role === 'moderator' 
+      ? `/moderator/events/${event.id}` 
+      : `/organizer/events/${event.id}`;
+
+  return (
+    <div className="container pt-4">
+      <Alert variant={c.variant} className={event.status !== 'rejected' ? 'border-warning bg-warning/10' : ''}>
+        {c.icon}
+        <AlertTitle>{c.title}</AlertTitle>
+        <AlertDescription className="flex flex-col gap-2">
+          <span>{c.description}</span>
+          {event.status === 'rejected' && event.rejectionReason && (
+            <span className="font-medium">Powód: {event.rejectionReason}</span>
+          )}
+          <div className="flex flex-wrap gap-2 mt-1">
+            <Button size="sm" variant="outline" asChild>
+              <Link to={manageUrl}>
+                <FileEdit className="h-3 w-3 mr-1" />
+                Zarządzaj
+              </Link>
+            </Button>
+            {isAdminOrMod && event.status === 'awaiting_approval' && (
+              <>
+                {onApprove && (
+                  <Button size="sm" onClick={onApprove}>
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                    Zatwierdź
+                  </Button>
+                )}
+                {onReject && (
+                  <Button size="sm" variant="destructive" onClick={onReject}>
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Odrzuć
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
+};
 
 // Results Section Component
 const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: Result[] }) => {
@@ -191,7 +272,12 @@ const EventDetailsPage = () => {
 
   const event = mockEvents.find(e => e.slug === slug);
 
-  if (!event) {
+  // Access control for draft/unpublished events
+  const isUnpublished = event && ['draft', 'awaiting_approval', 'rejected'].includes(event.status);
+  const canViewDraft = user?.role === 'admin' || user?.role === 'moderator' || 
+    (user?.role === 'organizer' && event?.organizerId === user?.id);
+
+  if (!event || (isUnpublished && !canViewDraft)) {
     return (
       <Layout>
         <div className="container py-12 text-center">
@@ -248,6 +334,9 @@ const EventDetailsPage = () => {
 
   return (
     <Layout>
+      {/* Draft status banner */}
+      {isUnpublished && <DraftBanner event={event} user={user} />}
+
       {/* Header with optional banner */}
       {event.bannerUrl ? (
         <div className="relative h-64 md:h-80 overflow-hidden bg-muted">
