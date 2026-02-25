@@ -627,22 +627,109 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
             {/* Category selection */}
             <div className="space-y-3">
               <Label className="text-base font-medium">Kategoria wiekowa</Label>
-              <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {selectedDistance.categories.map(category => (
-                    <label
-                      key={category}
-                      className={`
-                        flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                        ${selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
-                      `}
-                    >
-                      <RadioGroupItem value={category} />
-                      <span className="font-medium">{category}</span>
-                    </label>
-                  ))}
-                </div>
-              </RadioGroup>
+              {selectedDistance.ageCategories && selectedDistance.ageCategories.length > 0 ? (
+                (() => {
+                  // Auto-assign based on birth year and gender from profile
+                  const userGender = user?.gender;
+                  const userBirthYear = birthYear ? parseInt(birthYear) : null;
+                  const matchedCategory = userGender && userBirthYear
+                    ? selectedDistance.ageCategories.find(
+                        cat => cat.gender === userGender && userBirthYear >= cat.birthYearFrom && userBirthYear <= cat.birthYearTo
+                      )
+                    : null;
+
+                  // Auto-select matched category
+                  if (matchedCategory && selectedCategory !== matchedCategory.name) {
+                    // Use setTimeout to avoid setState during render
+                    setTimeout(() => setSelectedCategory(matchedCategory.name), 0);
+                  }
+
+                  return (
+                    <>
+                      {matchedCategory ? (
+                        <div className="p-3 rounded-lg border-2 border-primary bg-primary/5">
+                          <p className="text-sm text-muted-foreground mb-1">Automatycznie przypisana kategoria:</p>
+                          <p className="font-semibold text-lg">{matchedCategory.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Płeć: {matchedCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki: {matchedCategory.birthYearFrom}–{matchedCategory.birthYearTo}
+                          </p>
+                        </div>
+                      ) : (
+                        <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {selectedDistance.ageCategories.map(cat => (
+                              <label
+                                key={cat.id}
+                                className={`
+                                  flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                                  ${selectedCategory === cat.name ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                                `}
+                              >
+                                <RadioGroupItem value={cat.name} />
+                                <div>
+                                  <span className="font-medium">{cat.name}</span>
+                                  <p className="text-xs text-muted-foreground">{cat.birthYearFrom}–{cat.birthYearTo}</p>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        </RadioGroup>
+                      )}
+
+                      {/* Special categories as checkboxes */}
+                      {selectedDistance.specialCategories && selectedDistance.specialCategories.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                          <Separator />
+                          <Label className="text-base font-medium">Kategorie specjalne (opcjonalne)</Label>
+                          <div className="space-y-2">
+                            {selectedDistance.specialCategories.map(cat => (
+                              <label
+                                key={cat.id}
+                                className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
+                              >
+                                <Checkbox
+                                  checked={selectedCategory.includes(cat.name)}
+                                  onCheckedChange={(checked) => {
+                                    // Append/remove special category from selected
+                                    if (checked) {
+                                      setSelectedCategory(prev => prev ? `${prev}, ${cat.name}` : cat.name);
+                                    } else {
+                                      setSelectedCategory(prev => prev.replace(`, ${cat.name}`, '').replace(cat.name, '').replace(/^, |, $/g, ''));
+                                    }
+                                  }}
+                                />
+                                <div>
+                                  <span className="font-medium">{cat.name}</span>
+                                  {cat.description && (
+                                    <p className="text-xs text-muted-foreground">{cat.description}</p>
+                                  )}
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {selectedDistance.categories.map(category => (
+                      <label
+                        key={category}
+                        className={`
+                          flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
+                          ${selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
+                        `}
+                      >
+                        <RadioGroupItem value={category} />
+                        <span className="font-medium">{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1138,7 +1138,21 @@ export const mockEvents: Event[] = [
     description: 'Największy maraton w Polsce. Trasa prowadzi przez najpiękniejsze miejsca stolicy. Limit czasu 6 godzin.',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     distances: [
-      { id: 'd1', name: 'Maraton', length: 42.195, unit: 'km', categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], limit: 10000, registeredCount: 8543, price: 150 },
+      { id: 'd1', name: 'Maraton', length: 42.195, unit: 'km', categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], limit: 10000, registeredCount: 8543, price: 150,
+        ageCategories: [
+          { id: 'cat-k1829', name: 'K18-29', gender: 'K', birthYearFrom: 1996, birthYearTo: 2007 },
+          { id: 'cat-k3039', name: 'K30-39', gender: 'K', birthYearFrom: 1986, birthYearTo: 1995 },
+          { id: 'cat-k4049', name: 'K40-49', gender: 'K', birthYearFrom: 1976, birthYearTo: 1985 },
+          { id: 'cat-k50', name: 'K50+', gender: 'K', birthYearFrom: 1925, birthYearTo: 1975 },
+          { id: 'cat-m1829', name: 'M18-29', gender: 'M', birthYearFrom: 1996, birthYearTo: 2007 },
+          { id: 'cat-m3039', name: 'M30-39', gender: 'M', birthYearFrom: 1986, birthYearTo: 1995 },
+          { id: 'cat-m4049', name: 'M40-49', gender: 'M', birthYearFrom: 1976, birthYearTo: 1985 },
+          { id: 'cat-m50', name: 'M50+', gender: 'M', birthYearFrom: 1925, birthYearTo: 1975 },
+        ],
+        specialCategories: [
+          { id: 'scat-1', name: 'Mieszkaniec Warszawy', description: 'Osoby zameldowane w Warszawie' },
+        ],
+      },
       { id: 'd2', name: 'Bieg na 10km', length: 10, unit: 'km', categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], limit: 5000, registeredCount: 4231, price: 70 },
     ],
     organizerId: 'o1',

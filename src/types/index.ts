@@ -100,12 +100,28 @@ export interface MerchandiseOrder {
   price: number;
 }
 
+export interface AgeCategory {
+  id: string;
+  name: string;
+  gender: 'K' | 'M';
+  birthYearFrom: number;
+  birthYearTo: number;
+}
+
+export interface SpecialCategory {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface Distance {
   id: string;
   name: string;
   length: number;
   unit: 'km' | 'm';
   categories: string[];
+  ageCategories?: AgeCategory[];
+  specialCategories?: SpecialCategory[];
   limit?: number;
   registeredCount: number;
   price: number;
