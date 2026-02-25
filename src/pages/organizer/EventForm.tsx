@@ -12,8 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { SportDiscipline, BannerCropArea, PaymentConfigType } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw } from 'lucide-react';
+import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory } from '@/types';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -24,10 +24,9 @@ interface DistanceForm {
   unit: 'km' | 'm';
   price: string;
   limit: string;
-  categories: string[];
+  ageCategories: AgeCategory[];
+  specialCategories: SpecialCategory[];
 }
-
-const defaultCategories = ['K18-29', 'K30-39', 'K40-49', 'K50-59', 'K60+', 'M18-29', 'M30-39', 'M40-49', 'M50-59', 'M60+'];
 
 const EventForm = () => {
   const { id } = useParams();
@@ -93,7 +92,8 @@ const EventForm = () => {
       unit: d.unit,
       price: d.price.toString(),
       limit: d.limit?.toString() || '',
-      categories: d.categories
+      ageCategories: d.ageCategories || [],
+      specialCategories: d.specialCategories || [],
     })) || []
   );
 
@@ -111,7 +111,8 @@ const EventForm = () => {
       unit: 'km',
       price: '',
       limit: '',
-      categories: [...defaultCategories]
+      ageCategories: [],
+      specialCategories: [],
     }]);
   };
 
@@ -119,18 +120,110 @@ const EventForm = () => {
     setDistances(distances.filter((_, i) => i !== index));
   };
 
-  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[]) => {
+  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[] | AgeCategory[] | SpecialCategory[]) => {
     const updated = [...distances];
     updated[index] = { ...updated[index], [field]: value };
     setDistances(updated);
   };
 
-  const toggleCategory = (distIndex: number, category: string) => {
-    const dist = distances[distIndex];
-    const newCategories = dist.categories.includes(category)
-      ? dist.categories.filter(c => c !== category)
-      : [...dist.categories, category];
-    updateDistance(distIndex, 'categories', newCategories);
+  const getEventYear = () => {
+    return date ? parseInt(date.substring(0, 4)) || new Date().getFullYear() : new Date().getFullYear();
+  };
+
+  const generateStandardAgeCategories = (): AgeCategory[] => {
+    const eventYear = getEventYear();
+    const ranges: Array<{ label: string; from: number; to: number }> = [
+      { label: '18-29', from: eventYear - 29, to: eventYear - 18 },
+      { label: '30-39', from: eventYear - 39, to: eventYear - 30 },
+      { label: '40-49', from: eventYear - 49, to: eventYear - 40 },
+      { label: '50-59', from: eventYear - 59, to: eventYear - 50 },
+      { label: '60+', from: eventYear - 100, to: eventYear - 60 },
+    ];
+    const categories: AgeCategory[] = [];
+    for (const gender of ['K', 'M'] as const) {
+      for (const r of ranges) {
+        categories.push({
+          id: `cat-${gender}-${r.label}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          name: `${gender}${r.label}`,
+          gender,
+          birthYearFrom: r.from,
+          birthYearTo: r.to,
+        });
+      }
+    }
+    return categories;
+  };
+
+  const addAgeCategory = (distIndex: number) => {
+    const updated = [...distances];
+    const eventYear = getEventYear();
+    updated[distIndex] = {
+      ...updated[distIndex],
+      ageCategories: [...updated[distIndex].ageCategories, {
+        id: `cat-${Date.now()}`,
+        name: '',
+        gender: 'M',
+        birthYearFrom: eventYear - 39,
+        birthYearTo: eventYear - 30,
+      }],
+    };
+    setDistances(updated);
+  };
+
+  const removeAgeCategory = (distIndex: number, catIndex: number) => {
+    const updated = [...distances];
+    updated[distIndex] = {
+      ...updated[distIndex],
+      ageCategories: updated[distIndex].ageCategories.filter((_, i) => i !== catIndex),
+    };
+    setDistances(updated);
+  };
+
+  const updateAgeCategory = (distIndex: number, catIndex: number, field: keyof AgeCategory, value: string | number) => {
+    const updated = [...distances];
+    const cats = [...updated[distIndex].ageCategories];
+    cats[catIndex] = { ...cats[catIndex], [field]: value };
+    updated[distIndex] = { ...updated[distIndex], ageCategories: cats };
+    setDistances(updated);
+  };
+
+  const addSpecialCategory = (distIndex: number) => {
+    const updated = [...distances];
+    updated[distIndex] = {
+      ...updated[distIndex],
+      specialCategories: [...updated[distIndex].specialCategories, {
+        id: `scat-${Date.now()}`,
+        name: '',
+        description: '',
+      }],
+    };
+    setDistances(updated);
+  };
+
+  const removeSpecialCategory = (distIndex: number, catIndex: number) => {
+    const updated = [...distances];
+    updated[distIndex] = {
+      ...updated[distIndex],
+      specialCategories: updated[distIndex].specialCategories.filter((_, i) => i !== catIndex),
+    };
+    setDistances(updated);
+  };
+
+  const updateSpecialCategory = (distIndex: number, catIndex: number, field: keyof SpecialCategory, value: string) => {
+    const updated = [...distances];
+    const cats = [...updated[distIndex].specialCategories];
+    cats[catIndex] = { ...cats[catIndex], [field]: value };
+    updated[distIndex] = { ...updated[distIndex], specialCategories: cats };
+    setDistances(updated);
+  };
+
+  const applyStandardTemplate = (distIndex: number) => {
+    const updated = [...distances];
+    updated[distIndex] = {
+      ...updated[distIndex],
+      ageCategories: generateStandardAgeCategories(),
+    };
+    setDistances(updated);
   };
 
   const validateStep1 = () => {
@@ -716,20 +809,136 @@ const EventForm = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Kategorie wiekowe</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {defaultCategories.map(cat => (
-                        <Badge
-                          key={cat}
-                          variant={dist.categories.includes(cat) ? 'default' : 'outline'}
-                          className="cursor-pointer"
-                          onClick={() => toggleCategory(index, cat)}
-                        >
-                          {cat}
-                        </Badge>
-                      ))}
+                  {/* Age Categories */}
+                  <div className="space-y-3 border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">Kategorie wiekowe</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => applyStandardTemplate(index)}
+                      >
+                        <ListPlus className="mr-2 h-4 w-4" /> Dodaj szablon standardowy
+                      </Button>
                     </div>
+
+                    {dist.ageCategories.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="hidden md:grid md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
+                          <span>Nazwa</span>
+                          <span>Płeć</span>
+                          <span>Rok od</span>
+                          <span>Rok do</span>
+                          <span></span>
+                        </div>
+                        {dist.ageCategories.map((cat, catIdx) => (
+                          <div key={cat.id} className="grid grid-cols-2 md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 items-center">
+                            <Input
+                              value={cat.name}
+                              onChange={e => updateAgeCategory(index, catIdx, 'name', e.target.value)}
+                              placeholder="np. K18-29"
+                              className="h-9"
+                            />
+                            <Select
+                              value={cat.gender}
+                              onValueChange={(v: 'K' | 'M') => updateAgeCategory(index, catIdx, 'gender', v)}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="K">K</SelectItem>
+                                <SelectItem value="M">M</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              type="number"
+                              value={cat.birthYearFrom}
+                              onChange={e => updateAgeCategory(index, catIdx, 'birthYearFrom', parseInt(e.target.value) || 0)}
+                              placeholder="1990"
+                              className="h-9"
+                            />
+                            <Input
+                              type="number"
+                              value={cat.birthYearTo}
+                              onChange={e => updateAgeCategory(index, catIdx, 'birthYearTo', parseInt(e.target.value) || 0)}
+                              placeholder="2000"
+                              className="h-9"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-destructive hover:text-destructive"
+                              onClick={() => removeAgeCategory(index, catIdx)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => addAgeCategory(index)}
+                      className="text-primary"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię wiekową
+                    </Button>
+                  </div>
+
+                  {/* Special Categories */}
+                  <div className="space-y-3 border-t pt-4">
+                    <Label className="text-base font-medium">Kategorie specjalne</Label>
+
+                    {dist.specialCategories.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="hidden md:grid md:grid-cols-[1fr_1fr_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
+                          <span>Nazwa</span>
+                          <span>Opis (opcjonalnie)</span>
+                          <span></span>
+                        </div>
+                        {dist.specialCategories.map((cat, catIdx) => (
+                          <div key={cat.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_40px] gap-2 items-center">
+                            <Input
+                              value={cat.name}
+                              onChange={e => updateSpecialCategory(index, catIdx, 'name', e.target.value)}
+                              placeholder="np. Mieszkaniec Warszawy"
+                              className="h-9"
+                            />
+                            <Input
+                              value={cat.description || ''}
+                              onChange={e => updateSpecialCategory(index, catIdx, 'description', e.target.value)}
+                              placeholder="np. Osoby zameldowane w Warszawie"
+                              className="h-9"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-destructive hover:text-destructive"
+                              onClick={() => removeSpecialCategory(index, catIdx)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => addSpecialCategory(index)}
+                      className="text-primary"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
