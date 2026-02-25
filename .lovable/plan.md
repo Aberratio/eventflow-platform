@@ -1,148 +1,152 @@
 
 
-# Wydarzenia prywatne — specjalny link dostepu
+# System kategorii wiekowych i specjalnych w edytorze dystansow
 
 ## Cel
 
-Dodanie mozliwosci tworzenia wydarzen prywatnych. Wydarzenie prywatne:
-- Nie pojawia sie nigdzie w publicznych listach, wynikach wyszukiwania, sekcjach na stronie glownej
-- Dostepne wylacznie przez specjalny link z kodem dostepu: `/events/{slug}?access={accessCode}`
-- Uzytkownik zapisany na takie wydarzenie widzi je normalnie w swoim profilu (rejestracje, historia)
-- Organizator, admin i moderator widza je bez kodu dostepu (jak drafty)
+Zamiana obecnego systemu kategorii (statyczne badge'e toggleowane z listy `defaultCategories`) na pelny konfigurator pozwalajacy:
 
-## Co sie zmieni
+1. **Kategorie wiekowe** — definiowanie kategorii z nazwa, plcia (K/M), zakresem dat urodzenia (rok od - rok do)
+2. **Kategorie specjalne** — dodawanie dowolnych kategorii z nazwa i opisem (np. "Mieszkaniec Warszawy", "Weteran")
+3. **Predefiniowane szablony** — szybkie dodanie standardowego zestawu kategorii jednym kliknieciem
 
-### 1. Model danych (`src/types/index.ts`)
+## Zmiany w typach (`src/types/index.ts`)
 
-Nowe pola w interfejsie `Event`:
+Nowe interfejsy:
 
-```
-Event {
-  ...
-  isPrivate?: boolean;        // czy wydarzenie jest prywatne
-  accessCode?: string;        // kod dostepu do prywatnego wydarzenia (np. "abc123xyz")
+```text
+AgeCategory {
+  id: string
+  name: string           // np. "K18-29"
+  gender: 'K' | 'M'
+  birthYearFrom: number  // np. 1995 (starsi — mniejszy rok)
+  birthYearTo: number    // np. 2007 (mlodsi — wiekszy rok)
+}
+
+SpecialCategory {
+  id: string
+  name: string           // np. "Mieszkaniec Warszawy"
+  description?: string   // np. "Kategoria dla osob zameldowanych w Warszawie"
 }
 ```
 
-### 2. Mock data (`src/data/mockData.ts`)
+Zmiany w `Distance`:
+- Obecne pole `categories: string[]` zostaje (backward compat — bedzie generowane z `ageCategories`)
+- Nowe pola: `ageCategories?: AgeCategory[]`, `specialCategories?: SpecialCategory[]`
 
-- Jedno istniejace wydarzenie (np. e5 lub nowe) oznaczone jako `isPrivate: true` z `accessCode`
-- Reszta wydarzen bez zmian (`isPrivate` undefined = publiczne)
+Zmiany w `DistanceForm` (wewnatrz EventForm):
+- Usunac `categories: string[]`
+- Dodac `ageCategories: AgeCategory[]`, `specialCategories: SpecialCategory[]`
 
-### 3. Filtrowanie publicznych list
+## Zmiany w EventForm.tsx — Step 2
 
-We wszystkich miejscach gdzie wyswietlaja sie wydarzenia publicznie, dodac filtr `!e.isPrivate`:
+### Usuniecie starego systemu
 
-| Plik | Miejsce filtrowania |
-|---|---|
-| `src/pages/EventsPage.tsx` | Lista wydarzen — dodac `.filter(e => !e.isPrivate)` |
-| `src/components/home/FeaturedEvents.tsx` | Sekcja polecanych |
-| `src/components/home/FeaturedEventsSection.tsx` | Sekcja polecanych (wariant) |
-| `src/components/home/OpenRegistrations.tsx` | Otwarte zapisy |
-| `src/components/home/DisciplinesSection.tsx` | Statystyki dyscyplin |
-| `src/components/home/UpcomingEvents.tsx` | Nadchodzace wydarzenia |
-| `src/components/home/RecentResults.tsx` | Ostatnie wyniki |
-| `src/components/home/LiveResultsBanner.tsx` | Baner live |
-| `src/pages/admin/components/AdminFeaturedEventsTab.tsx` | Lista opublikowanych w adminie |
-| `src/pages/ResultsCalendarPage.tsx` | Kalendarz wynikow |
-| `src/api/events.api.ts` | Funkcja `getEvents` — filtr domyslny |
+Usunac:
+- Stala `defaultCategories`
+- Sekcja "Kategorie wiekowe" z Badge toggleami
+- Funkcja `toggleCategory`
 
-Wazne: `ParticipantRegistrationsTab` i `ParticipantHistoryTab` NIE filtruja po `isPrivate` — uzytkownik zapisany na prywatne wydarzenie widzi je w swoim profilu.
+### Nowa sekcja: Kategorie wiekowe
 
-### 4. Dostep do strony wydarzenia (`src/pages/EventDetailsPage.tsx`)
+Pod polami dystansu (nazwa, dlugosc, cena, limit) pojawi sie rozbudowana sekcja:
 
-Rozszerzenie logiki dostepu:
+**A) Kategorie wiekowe**
 
+Przycisk "Dodaj szablon standardowy" — dodaje predefiniowany zestaw:
+```text
+K18-29 (K, 1997-2008), K30-39 (K, 1987-1996), K40-49 (K, 1977-1986),
+K50-59 (K, 1967-1976), K60+ (K, 1925-1966),
+M18-29 (M, 1997-2008), M30-39 (M, 1987-1996), M40-49 (M, 1977-1986),
+M50-59 (M, 1967-1976), M60+ (M, 1925-1966)
 ```
-Jesli event.isPrivate:
-  - Admin / Moderator / Organizator wydarzenia -> dostep bez kodu
-  - Uzytkownik z ?access={accessCode} w URL -> dostep (kod zapisuje sie do sessionStorage)
-  - Uzytkownik zapisany na wydarzenie (ma rejestracje) -> dostep
-  - Inaczej -> "Wydarzenie nie znalezione" (identycznie jak brak eventu)
+(Lata beda wyliczone dynamicznie na podstawie roku wydarzenia)
+
+Kazda kategoria wiekowa to wiersz z polami:
+- Nazwa (Input, np. "K18-29")
+- Plec (Select: K / M)
+- Rok urodzenia OD (Input number)
+- Rok urodzenia DO (Input number)
+- Przycisk usuwania (Trash2 icon)
+
+Przycisk "Dodaj kategorie wiekowa" na dole.
+
+**B) Kategorie specjalne**
+
+Pod kategoriami wiekowymi oddzielona sekcja:
+- Przycisk "Dodaj kategorie specjalna"
+- Kazda kategoria specjalna to wiersz:
+  - Nazwa (Input, np. "Weteran")
+  - Opis (Input, opcjonalny, np. "Uczestnicy powyzej 65 roku zycia")
+  - Przycisk usuwania
+
+### Generowanie `categories: string[]`
+
+Przy zapisie/submit, pole `categories` w Distance bedzie generowane automatycznie z polaczenia nazw `ageCategories` i `specialCategories` — dla backward compatibility z reszta systemu (wyniki, rejestracje).
+
+## Zmiany w mock data (`src/data/mockData.ts`)
+
+Dodanie `ageCategories` i `specialCategories` do kilku wydarzen (e1, e3), zeby nowe pola mialy dane przy edycji. Istniejace `categories: string[]` pozostaje bez zmian.
+
+Przykladowo dla e1 Maraton Warszawski, dystans "Maraton 42km":
+```text
+ageCategories: [
+  { id: 'cat-1', name: 'K18-29', gender: 'K', birthYearFrom: 1996, birthYearTo: 2007 },
+  { id: 'cat-2', name: 'K30-39', gender: 'K', birthYearFrom: 1986, birthYearTo: 1995 },
+  ...
+]
+specialCategories: [
+  { id: 'scat-1', name: 'Mieszkaniec Warszawy', description: 'Osoby zameldowane w Warszawie' }
+]
 ```
 
-Po poprawnym wejsciu z kodem, kod zapisuje sie do `sessionStorage` pod kluczem `private-event-{eventId}`, zeby user nie musial go wpisywac ponownie w tej sesji.
+## Zmiany w RegistrationForm.tsx
 
-Na gorze strony prywatnego wydarzenia wyswietli sie baner (analogiczny do DraftBanner):
-- Ikona zamka + "Wydarzenie prywatne — dostepne tylko przez zaproszenie"
-
-### 5. Formularz tworzenia/edycji wydarzenia (`src/pages/organizer/EventForm.tsx`)
-
-W kroku 1 (Basic info), nowa sekcja:
-
-- **Checkbox "Wydarzenie prywatne"** z opisem: "Prywatne wydarzenie nie bedzie widoczne publicznie. Uczestnicy moga dolaczyc tylko przez specjalny link."
-- Gdy zaznaczone: wyswietl pole **"Kod dostepu"** (generowany automatycznie, mozna zmienic) + przycisk "Kopiuj link" (kopiuje pelny URL z kodem)
-
-### 6. Ustawienia wydarzenia (`src/pages/organizer/components/EventSettingsTab.tsx`)
-
-Nowa karta "Prywatnosc":
-- Przelacznik prywatne/publiczne
-- Wyswietlenie kodu dostepu i linku do kopiowania
-- Przycisk "Wygeneruj nowy kod" (zmienia kod, stary przestaje dzialac)
-
-### 7. API (`src/api/events.api.ts`)
-
-Funkcja `getEvents` — dodac domyslny filtr `!e.isPrivate` (chyba ze jawnie przekazano `filters.includePrivate = true`).
-
-Nowe pole w `EventFilters` (`src/api/types.ts`):
-```
-includePrivate?: boolean;
-```
+Przy wyborze kategorii w rejestracji — jesli dystans ma `ageCategories`, automatycznie przypisywac kategorie na podstawie roku urodzenia i plci uczestnika (z profilu). Kategorie specjalne wyswietlic jako dodatkowe checkboxy do samodzielnego zaznaczenia przez uczestnika.
 
 ## Szczegoly techniczne
 
-### Generowanie kodu dostepu
-
-Prosta funkcja generujaca losowy kod 12 znakow (litery + cyfry):
-```
-generateAccessCode(): string => Math.random().toString(36).substring(2, 14)
-```
-
-### Pelny link prywatny
-
-Format: `{baseUrl}/events/{slug}?access={accessCode}`
-
-Kopiowanie do schowka przez `navigator.clipboard.writeText(url)`.
-
-### Logika dostepu w EventDetailsPage
-
-Pseudokod:
-```
-1. Znajdz event po slug
-2. Jesli nie znaleziono -> 404
-3. Jesli event.isPrivate:
-   a. Jesli user to admin/moderator/organizator -> OK
-   b. Jesli user ma rejestracje na to wydarzenie -> OK  
-   c. Jesli URL ma ?access= i pasuje do event.accessCode -> OK, zapisz do sessionStorage
-   d. Jesli sessionStorage ma zapisany kod -> OK
-   e. Inaczej -> 404
-4. Istniejaca logika draftu (bez zmian)
-5. Wyswietl PrivateBanner jesli event.isPrivate
-```
-
-### Pliki do zmiany
-
-| Plik | Zmiana |
-|---|---|
-| `src/types/index.ts` | `isPrivate`, `accessCode` w Event |
-| `src/api/types.ts` | `includePrivate` w EventFilters |
-| `src/data/mockData.ts` | Jedno prywatne wydarzenie |
-| `src/pages/EventDetailsPage.tsx` | Logika dostepu prywatnego + PrivateBanner |
-| `src/pages/EventsPage.tsx` | Filtr `!isPrivate` |
-| `src/components/home/FeaturedEvents.tsx` | Filtr `!isPrivate` |
-| `src/components/home/FeaturedEventsSection.tsx` | Filtr `!isPrivate` |
-| `src/components/home/OpenRegistrations.tsx` | Filtr `!isPrivate` |
-| `src/components/home/DisciplinesSection.tsx` | Filtr `!isPrivate` |
-| `src/pages/organizer/EventForm.tsx` | Checkbox + pole kodu dostepu |
-| `src/pages/organizer/components/EventSettingsTab.tsx` | Karta prywatnosci |
-| `src/api/events.api.ts` | Filtr domyslny |
-
 ### Kolejnosc implementacji
 
-1. Typy (`types/index.ts`, `api/types.ts`)
-2. Mock data (jedno prywatne wydarzenie)
-3. Filtrowanie list publicznych (EventsPage, home sections)
-4. Logika dostepu w EventDetailsPage + baner
-5. EventForm — tworzenie prywatnego wydarzenia
-6. EventSettingsTab — zarzadzanie prywatnoscia
+| Krok | Plik | Zmiana |
+|---|---|---|
+| 1 | `src/types/index.ts` | Nowe interfejsy `AgeCategory`, `SpecialCategory`; nowe pola w `Distance` |
+| 2 | `src/data/mockData.ts` | Przykladowe dane kategorii w e1 i e3 |
+| 3 | `src/pages/organizer/EventForm.tsx` | Nowy konfigurator kategorii w Step 2 |
+| 4 | `src/components/registration/RegistrationForm.tsx` | Auto-przypisanie kategorii wiekowej + checkboxy specjalnych |
+
+### UI kategorii wiekowych (w kazdym dystansie)
+
+```text
++----------------------------------------------------------+
+| Kategorie wiekowe                    [Dodaj szablon std.] |
++----------------------------------------------------------+
+| Nazwa       | Plec | Rok od | Rok do |                   |
+| [K18-29   ] | [K ] | [1997] | [2008] | [x]              |
+| [K30-39   ] | [K ] | [1987] | [1996] | [x]              |
+| [M18-29   ] | [M ] | [1997] | [2008] | [x]              |
+| ...                                                       |
+|                              [+ Dodaj kategorie wiekowa]  |
++----------------------------------------------------------+
+
++----------------------------------------------------------+
+| Kategorie specjalne                                       |
++----------------------------------------------------------+
+| Nazwa              | Opis                        |       |
+| [Mieszkaniec Waw ] | [Zameldowani w Warszawie  ] | [x]  |
+| [Weteran         ] | [                         ] | [x]  |
+|                         [+ Dodaj kategorie specjalna]     |
++----------------------------------------------------------+
+```
+
+### Dynamiczne lata szablonu
+
+Standardowy szablon wylicza lata na podstawie roku wydarzenia:
+```text
+eventYear = parseInt(date.substring(0,4)) || new Date().getFullYear()
+K18-29: birthYearFrom = eventYear - 29, birthYearTo = eventYear - 18
+K30-39: birthYearFrom = eventYear - 39, birthYearTo = eventYear - 30
+...
+K60+:   birthYearFrom = eventYear - 100, birthYearTo = eventYear - 60
+```
 
