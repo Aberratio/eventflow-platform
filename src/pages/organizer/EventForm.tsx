@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
 import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus, X } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -24,8 +24,7 @@ interface DistanceForm {
   unit: 'km' | 'm';
   price: string;
   limit: string;
-  ageCategories: AgeCategory[];
-  specialCategories: SpecialCategory[];
+  disabledCategoryIds: string[];
 }
 
 const EventForm = () => {
@@ -84,48 +83,8 @@ const EventForm = () => {
   const [rulesHtml, setRulesHtml] = useState(existingEvent?.rulesHtml || '');
   const [requireFinalAcceptance, setRequireFinalAcceptance] = useState(existingEvent?.requireFinalAcceptance || false);
   const [finalAcceptanceHtml, setFinalAcceptanceHtml] = useState(existingEvent?.finalAcceptanceHtml || '');
-  const [distances, setDistances] = useState<DistanceForm[]>(
-    existingEvent?.distances.map(d => ({
-      id: d.id,
-      name: d.name,
-      length: d.length.toString(),
-      unit: d.unit,
-      price: d.price.toString(),
-      limit: d.limit?.toString() || '',
-      ageCategories: d.ageCategories || [],
-      specialCategories: d.specialCategories || [],
-    })) || []
-  );
 
-  // Step 3 - Status
-  const [status, setStatus] = useState<'draft' | 'awaiting_approval' | 'published'>(
-    existingEvent?.status === 'published' ? 'published' : 
-    existingEvent?.status === 'awaiting_approval' ? 'awaiting_approval' : 'draft'
-  );
-
-  const addDistance = () => {
-    setDistances([...distances, {
-      id: `dist-${Date.now()}`,
-      name: '',
-      length: '',
-      unit: 'km',
-      price: '',
-      limit: '',
-      ageCategories: [],
-      specialCategories: [],
-    }]);
-  };
-
-  const removeDistance = (index: number) => {
-    setDistances(distances.filter((_, i) => i !== index));
-  };
-
-  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[] | AgeCategory[] | SpecialCategory[]) => {
-    const updated = [...distances];
-    updated[index] = { ...updated[index], [field]: value };
-    setDistances(updated);
-  };
-
+  // ---- Helpers ----
   const getEventYear = () => {
     return date ? parseInt(date.substring(0, 4)) || new Date().getFullYear() : new Date().getFullYear();
   };
@@ -154,101 +113,144 @@ const EventForm = () => {
     return categories;
   };
 
-  const addAgeCategory = (distIndex: number) => {
+  // ---- Event-level categories (shared across all distances) ----
+  const existingAgeCats = existingEvent?.distances?.[0]?.ageCategories;
+  const existingSpecialCats = existingEvent?.distances?.[0]?.specialCategories;
+
+  const [ageCategories, setAgeCategories] = useState<AgeCategory[]>(
+    existingAgeCats && existingAgeCats.length > 0
+      ? existingAgeCats
+      : generateStandardAgeCategories()
+  );
+  const [specialCategories, setSpecialCategories] = useState<SpecialCategory[]>(
+    existingSpecialCats || []
+  );
+
+  // ---- Distances (without per-distance categories, but with disabledCategoryIds) ----
+  const [distances, setDistances] = useState<DistanceForm[]>(
+    existingEvent?.distances.map(d => ({
+      id: d.id,
+      name: d.name,
+      length: d.length.toString(),
+      unit: d.unit,
+      price: d.price.toString(),
+      limit: d.limit?.toString() || '',
+      disabledCategoryIds: [],
+    })) || []
+  );
+
+  // Step 3 - Status
+  const [status, setStatus] = useState<'draft' | 'awaiting_approval' | 'published'>(
+    existingEvent?.status === 'published' ? 'published' : 
+    existingEvent?.status === 'awaiting_approval' ? 'awaiting_approval' : 'draft'
+  );
+
+  // ---- Distance handlers ----
+  const addDistance = () => {
+    setDistances([...distances, {
+      id: `dist-${Date.now()}`,
+      name: '',
+      length: '',
+      unit: 'km',
+      price: '',
+      limit: '',
+      disabledCategoryIds: [],
+    }]);
+  };
+
+  const removeDistance = (index: number) => {
+    setDistances(distances.filter((_, i) => i !== index));
+  };
+
+  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[]) => {
     const updated = [...distances];
+    updated[index] = { ...updated[index], [field]: value };
+    setDistances(updated);
+  };
+
+  const toggleCategoryForDistance = (distIndex: number, categoryId: string) => {
+    const updated = [...distances];
+    const dist = updated[distIndex];
+    const disabled = dist.disabledCategoryIds.includes(categoryId)
+      ? dist.disabledCategoryIds.filter(id => id !== categoryId)
+      : [...dist.disabledCategoryIds, categoryId];
+    updated[distIndex] = { ...dist, disabledCategoryIds: disabled };
+    setDistances(updated);
+  };
+
+  // ---- Event-level age category handlers ----
+  const addAgeCategory = () => {
     const eventYear = getEventYear();
-    updated[distIndex] = {
-      ...updated[distIndex],
-      ageCategories: [...updated[distIndex].ageCategories, {
-        id: `cat-${Date.now()}`,
-        name: '',
-        gender: 'M',
-        birthYearFrom: eventYear - 39,
-        birthYearTo: eventYear - 30,
-      }],
-    };
-    setDistances(updated);
+    setAgeCategories([...ageCategories, {
+      id: `cat-${Date.now()}`,
+      name: '',
+      gender: 'M',
+      birthYearFrom: eventYear - 39,
+      birthYearTo: eventYear - 30,
+    }]);
   };
 
-  const removeAgeCategory = (distIndex: number, catIndex: number) => {
-    const updated = [...distances];
-    updated[distIndex] = {
-      ...updated[distIndex],
-      ageCategories: updated[distIndex].ageCategories.filter((_, i) => i !== catIndex),
-    };
-    setDistances(updated);
+  const removeAgeCategory = (catIndex: number) => {
+    const removedId = ageCategories[catIndex].id;
+    setAgeCategories(ageCategories.filter((_, i) => i !== catIndex));
+    // Clean up disabled references in distances
+    setDistances(distances.map(d => ({
+      ...d,
+      disabledCategoryIds: d.disabledCategoryIds.filter(id => id !== removedId),
+    })));
   };
 
-  const updateAgeCategory = (distIndex: number, catIndex: number, field: keyof AgeCategory, value: string | number) => {
-    const updated = [...distances];
-    const cats = [...updated[distIndex].ageCategories];
+  const updateAgeCategory = (catIndex: number, field: keyof AgeCategory, value: string | number) => {
+    const cats = [...ageCategories];
     cats[catIndex] = { ...cats[catIndex], [field]: value };
-    updated[distIndex] = { ...updated[distIndex], ageCategories: cats };
-    setDistances(updated);
+    setAgeCategories(cats);
   };
 
-  const addSpecialCategory = (distIndex: number) => {
-    const updated = [...distances];
-    updated[distIndex] = {
-      ...updated[distIndex],
-      specialCategories: [...updated[distIndex].specialCategories, {
-        id: `scat-${Date.now()}`,
-        name: '',
-        description: '',
-      }],
-    };
-    setDistances(updated);
+  const applyStandardTemplate = () => {
+    setAgeCategories(generateStandardAgeCategories());
   };
 
-  const removeSpecialCategory = (distIndex: number, catIndex: number) => {
-    const updated = [...distances];
-    updated[distIndex] = {
-      ...updated[distIndex],
-      specialCategories: updated[distIndex].specialCategories.filter((_, i) => i !== catIndex),
-    };
-    setDistances(updated);
+  // ---- Event-level special category handlers ----
+  const addSpecialCategory = () => {
+    setSpecialCategories([...specialCategories, {
+      id: `scat-${Date.now()}`,
+      name: '',
+      description: '',
+    }]);
   };
 
-  const updateSpecialCategory = (distIndex: number, catIndex: number, field: keyof SpecialCategory, value: string) => {
-    const updated = [...distances];
-    const cats = [...updated[distIndex].specialCategories];
+  const removeSpecialCategory = (catIndex: number) => {
+    const removedId = specialCategories[catIndex].id;
+    setSpecialCategories(specialCategories.filter((_, i) => i !== catIndex));
+    setDistances(distances.map(d => ({
+      ...d,
+      disabledCategoryIds: d.disabledCategoryIds.filter(id => id !== removedId),
+    })));
+  };
+
+  const updateSpecialCategory = (catIndex: number, field: keyof SpecialCategory, value: string) => {
+    const cats = [...specialCategories];
     cats[catIndex] = { ...cats[catIndex], [field]: value };
-    updated[distIndex] = { ...updated[distIndex], specialCategories: cats };
-    setDistances(updated);
+    setSpecialCategories(cats);
   };
 
-  const applyStandardTemplate = (distIndex: number) => {
-    const updated = [...distances];
-    updated[distIndex] = {
-      ...updated[distIndex],
-      ageCategories: generateStandardAgeCategories(),
-    };
-    setDistances(updated);
-  };
-
+  // ---- Validation ----
   const validateStep1 = () => {
     if (!name || !date || !registrationDeadline) {
       toast({ title: 'Błąd', description: 'Wypełnij wszystkie wymagane pola', variant: 'destructive' });
       return false;
     }
-    // For non-virtual events, location and city are required
     if (!isVirtual && (!location || !city)) {
       toast({ title: 'Błąd', description: 'Wypełnij lokalizację i miasto', variant: 'destructive' });
       return false;
     }
-    // For virtual events, start and end dates are required
     if (isVirtual && (!startDate || !endDate)) {
       toast({ title: 'Błąd', description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego', variant: 'destructive' });
       return false;
     }
-    // Validate bank transfer payment configuration
     if (paymentConfigType === 'organizer_bank') {
       if (!bankAccountNumber.trim() || !bankAccountHolder.trim()) {
-        toast({ 
-          title: 'Błąd', 
-          description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym', 
-          variant: 'destructive' 
-        });
+        toast({ title: 'Błąd', description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym', variant: 'destructive' });
         return false;
       }
     }
@@ -306,6 +308,11 @@ const EventForm = () => {
       .replace(/^-|-$/g, '');
   };
 
+  const allCategories = [
+    ...ageCategories.map(c => ({ id: c.id, name: c.name, type: 'age' as const })),
+    ...specialCategories.map(c => ({ id: c.id, name: c.name, type: 'special' as const })),
+  ];
+
   return (
     <Layout>
       <div className="container py-8 max-w-4xl">
@@ -318,7 +325,7 @@ const EventForm = () => {
         </h1>
         <p className="text-muted-foreground mb-8">
           {step === 1 && 'Krok 1 z 3: Podstawowe informacje'}
-          {step === 2 && 'Krok 2 z 3: Dystanse i kategorie'}
+          {step === 2 && 'Krok 2 z 3: Kategorie i dystanse'}
           {step === 3 && 'Krok 3 z 3: Podsumowanie i publikacja'}
         </p>
 
@@ -554,7 +561,6 @@ const EventForm = () => {
                     onValueChange={(value: PaymentConfigType) => setPaymentConfigType(value)}
                     className="space-y-4"
                   >
-                    {/* Admin Gateway Option */}
                     <div className={`relative flex items-start gap-3 p-4 rounded-lg border transition-colors ${
                       paymentConfigType === 'admin_gateway' 
                         ? 'border-primary bg-primary/5' 
@@ -573,7 +579,6 @@ const EventForm = () => {
                       </div>
                     </div>
 
-                    {/* Organizer Bank Transfer Option */}
                     <div className={`relative flex items-start gap-3 p-4 rounded-lg border transition-colors ${
                       paymentConfigType === 'organizer_bank' 
                         ? 'border-primary bg-primary/5' 
@@ -590,7 +595,6 @@ const EventForm = () => {
                           Musisz ręcznie potwierdzać otrzymane wpłaty w panelu organizatora.
                         </p>
 
-                        {/* Bank transfer fields - shown when selected */}
                         {paymentConfigType === 'organizer_bank' && (
                           <div className="mt-4 pt-4 border-t border-dashed space-y-4">
                             <div className="space-y-2">
@@ -644,7 +648,6 @@ const EventForm = () => {
                   </p>
                   
                   <div className="space-y-6">
-                    {/* Organizers HTML */}
                     <div className="space-y-2">
                       <Label>Organizatorzy</Label>
                       <p className="text-sm text-muted-foreground">
@@ -658,7 +661,6 @@ const EventForm = () => {
                       />
                     </div>
 
-                    {/* Rules HTML */}
                     <div className="space-y-2">
                       <Label>Regulamin</Label>
                       <p className="text-sm text-muted-foreground">
@@ -672,7 +674,6 @@ const EventForm = () => {
                       />
                     </div>
 
-                    {/* Final Acceptance */}
                     <div className="space-y-4">
                       <div className="flex items-center space-x-3">
                         <Checkbox
@@ -718,9 +719,153 @@ const EventForm = () => {
           </>
         )}
 
-        {/* Step 2: Distances */}
+        {/* Step 2: Categories & Distances */}
         {step === 2 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* ===== EVENT-LEVEL CATEGORIES ===== */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz wyłączyć wybrane kategorie.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Age Categories */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-medium">Kategorie wiekowe ({ageCategories.length})</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={applyStandardTemplate}
+                    >
+                      <ListPlus className="mr-2 h-4 w-4" /> Załaduj szablon standardowy
+                    </Button>
+                  </div>
+
+                  {ageCategories.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="hidden md:grid md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
+                        <span>Nazwa</span>
+                        <span>Płeć</span>
+                        <span>Rok od</span>
+                        <span>Rok do</span>
+                        <span></span>
+                      </div>
+                      {ageCategories.map((cat, catIdx) => (
+                        <div key={cat.id} className="grid grid-cols-2 md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 items-center">
+                          <Input
+                            value={cat.name}
+                            onChange={e => updateAgeCategory(catIdx, 'name', e.target.value)}
+                            placeholder="np. K18-29"
+                            className="h-9"
+                          />
+                          <Select
+                            value={cat.gender}
+                            onValueChange={(v: 'K' | 'M') => updateAgeCategory(catIdx, 'gender', v)}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="K">K</SelectItem>
+                              <SelectItem value="M">M</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            type="number"
+                            value={cat.birthYearFrom}
+                            onChange={e => updateAgeCategory(catIdx, 'birthYearFrom', parseInt(e.target.value) || 0)}
+                            placeholder="1990"
+                            className="h-9"
+                          />
+                          <Input
+                            type="number"
+                            value={cat.birthYearTo}
+                            onChange={e => updateAgeCategory(catIdx, 'birthYearTo', parseInt(e.target.value) || 0)}
+                            placeholder="2000"
+                            className="h-9"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-destructive hover:text-destructive"
+                            onClick={() => removeAgeCategory(catIdx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addAgeCategory}
+                    className="text-primary"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię wiekową
+                  </Button>
+                </div>
+
+                {/* Special Categories */}
+                <div className="space-y-3 border-t pt-4">
+                  <Label className="text-base font-medium">Kategorie specjalne ({specialCategories.length})</Label>
+
+                  {specialCategories.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="hidden md:grid md:grid-cols-[1fr_1fr_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
+                        <span>Nazwa</span>
+                        <span>Opis (opcjonalnie)</span>
+                        <span></span>
+                      </div>
+                      {specialCategories.map((cat, catIdx) => (
+                        <div key={cat.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_40px] gap-2 items-center">
+                          <Input
+                            value={cat.name}
+                            onChange={e => updateSpecialCategory(catIdx, 'name', e.target.value)}
+                            placeholder="np. Mieszkaniec Warszawy"
+                            className="h-9"
+                          />
+                          <Input
+                            value={cat.description || ''}
+                            onChange={e => updateSpecialCategory(catIdx, 'description', e.target.value)}
+                            placeholder="np. Osoby zameldowane w Warszawie"
+                            className="h-9"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-destructive hover:text-destructive"
+                            onClick={() => removeSpecialCategory(catIdx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addSpecialCategory}
+                    className="text-primary"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ===== DISTANCES ===== */}
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Dystanse ({distances.length})</h2>
               <Button onClick={addDistance} variant="outline">
@@ -809,137 +954,30 @@ const EventForm = () => {
                     </div>
                   </div>
 
-                  {/* Age Categories */}
-                  <div className="space-y-3 border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-medium">Kategorie wiekowe</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => applyStandardTemplate(index)}
-                      >
-                        <ListPlus className="mr-2 h-4 w-4" /> Dodaj szablon standardowy
-                      </Button>
+                  {/* Per-distance category toggles */}
+                  {allCategories.length > 0 && (
+                    <div className="border-t pt-4 space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Kategorie w tym dystansie (odznacz, aby wyłączyć)
+                      </Label>
+                      <div className="flex flex-wrap gap-2">
+                        {allCategories.map(cat => {
+                          const isDisabled = dist.disabledCategoryIds.includes(cat.id);
+                          return (
+                            <Badge
+                              key={cat.id}
+                              variant={isDisabled ? 'outline' : 'secondary'}
+                              className={`cursor-pointer select-none transition-opacity ${isDisabled ? 'opacity-40 line-through' : ''}`}
+                              onClick={() => toggleCategoryForDistance(index, cat.id)}
+                            >
+                              {cat.name}
+                              {cat.type === 'special' && ' ★'}
+                            </Badge>
+                          );
+                        })}
+                      </div>
                     </div>
-
-                    {dist.ageCategories.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="hidden md:grid md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
-                          <span>Nazwa</span>
-                          <span>Płeć</span>
-                          <span>Rok od</span>
-                          <span>Rok do</span>
-                          <span></span>
-                        </div>
-                        {dist.ageCategories.map((cat, catIdx) => (
-                          <div key={cat.id} className="grid grid-cols-2 md:grid-cols-[1fr_80px_100px_100px_40px] gap-2 items-center">
-                            <Input
-                              value={cat.name}
-                              onChange={e => updateAgeCategory(index, catIdx, 'name', e.target.value)}
-                              placeholder="np. K18-29"
-                              className="h-9"
-                            />
-                            <Select
-                              value={cat.gender}
-                              onValueChange={(v: 'K' | 'M') => updateAgeCategory(index, catIdx, 'gender', v)}
-                            >
-                              <SelectTrigger className="h-9">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="K">K</SelectItem>
-                                <SelectItem value="M">M</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Input
-                              type="number"
-                              value={cat.birthYearFrom}
-                              onChange={e => updateAgeCategory(index, catIdx, 'birthYearFrom', parseInt(e.target.value) || 0)}
-                              placeholder="1990"
-                              className="h-9"
-                            />
-                            <Input
-                              type="number"
-                              value={cat.birthYearTo}
-                              onChange={e => updateAgeCategory(index, catIdx, 'birthYearTo', parseInt(e.target.value) || 0)}
-                              placeholder="2000"
-                              className="h-9"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-destructive hover:text-destructive"
-                              onClick={() => removeAgeCategory(index, catIdx)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => addAgeCategory(index)}
-                      className="text-primary"
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię wiekową
-                    </Button>
-                  </div>
-
-                  {/* Special Categories */}
-                  <div className="space-y-3 border-t pt-4">
-                    <Label className="text-base font-medium">Kategorie specjalne</Label>
-
-                    {dist.specialCategories.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="hidden md:grid md:grid-cols-[1fr_1fr_40px] gap-2 text-xs text-muted-foreground font-medium px-1">
-                          <span>Nazwa</span>
-                          <span>Opis (opcjonalnie)</span>
-                          <span></span>
-                        </div>
-                        {dist.specialCategories.map((cat, catIdx) => (
-                          <div key={cat.id} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_40px] gap-2 items-center">
-                            <Input
-                              value={cat.name}
-                              onChange={e => updateSpecialCategory(index, catIdx, 'name', e.target.value)}
-                              placeholder="np. Mieszkaniec Warszawy"
-                              className="h-9"
-                            />
-                            <Input
-                              value={cat.description || ''}
-                              onChange={e => updateSpecialCategory(index, catIdx, 'description', e.target.value)}
-                              placeholder="np. Osoby zameldowane w Warszawie"
-                              className="h-9"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-destructive hover:text-destructive"
-                              onClick={() => removeSpecialCategory(index, catIdx)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => addSpecialCategory(index)}
-                      className="text-primary"
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
-                    </Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -1020,6 +1058,17 @@ const EventForm = () => {
                     <p className="font-medium">{description}</p>
                   </div>
                 )}
+
+                <div>
+                  <p className="text-sm text-muted-foreground mb-2">Kategorie ({allCategories.length})</p>
+                  <div className="flex flex-wrap gap-2">
+                    {allCategories.map(cat => (
+                      <Badge key={cat.id} variant={cat.type === 'special' ? 'outline' : 'secondary'}>
+                        {cat.name}{cat.type === 'special' ? ' ★' : ''}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
 
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Dystanse ({distances.length})</p>
