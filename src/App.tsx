@@ -41,6 +41,7 @@ import ModeratorDashboard from "./pages/moderator/ModeratorDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
 import { PageEditorPage } from "./pages/admin/components/PageEditorPage";
+import { AdminProductEditPage } from "./pages/admin/components/AdminProductEditPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
@@ -111,6 +112,8 @@ const App = () => (
                   <Route path="/moderator/*" element={<ModeratorDashboard />} />
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/events/:id" element={<AdminEventManage />} />
+                  <Route path="/admin/shop/products/new" element={<AdminProductEditPage />} />
+                  <Route path="/admin/shop/products/:id/edit" element={<AdminProductEditPage />} />
                   <Route path="/admin/pages/new" element={<PageEditorPage />} />
                   <Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
                   <Route path="/admin/*" element={<AdminDashboard />} />

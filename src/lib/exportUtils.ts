@@ -218,3 +218,51 @@ export const generatePrintableHTML = (title: string, columns: string[], rows: (s
   `;
   printToPDF(title, tableHtml);
 };
+
+// XML Export Utility
+const escapeXml = (value: unknown): string => {
+  const str = String(value ?? '');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+};
+
+const objectToXml = (obj: Record<string, unknown>, indent = '  '): string => {
+  return Object.entries(obj).map(([key, value]) => {
+    const tag = key.replace(/[^a-zA-Z0-9_]/g, '_');
+    if (Array.isArray(value)) {
+      const items = value.map(item => {
+        if (typeof item === 'object' && item !== null) {
+          return `${indent}  <item>\n${objectToXml(item as Record<string, unknown>, indent + '    ')}\n${indent}  </item>`;
+        }
+        return `${indent}  <item>${escapeXml(item)}</item>`;
+      }).join('\n');
+      return `${indent}<${tag}>\n${items}\n${indent}</${tag}>`;
+    }
+    if (typeof value === 'object' && value !== null) {
+      return `${indent}<${tag}>\n${objectToXml(value as Record<string, unknown>, indent + '  ')}\n${indent}</${tag}>`;
+    }
+    return `${indent}<${tag}>${escapeXml(value)}</${tag}>`;
+  }).join('\n');
+};
+
+export const exportToXML = (data: Record<string, unknown>[], rootName: string, itemName: string, filename: string) => {
+  if (data.length === 0) return;
+
+  const xmlItems = data.map(item =>
+    `  <${itemName}>\n${objectToXml(item, '    ')}\n  </${itemName}>`
+  ).join('\n');
+
+  const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootName}>\n${xmlItems}\n</${rootName}>`;
+
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + xmlContent], { type: 'application/xml;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${filename}.xml`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
