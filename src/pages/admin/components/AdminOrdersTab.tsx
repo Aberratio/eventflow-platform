@@ -288,7 +288,7 @@ export const AdminOrdersTab = () => {
             <DialogTitle>Zamówienie {viewingOrder?.orderNumber}</DialogTitle>
           </DialogHeader>
           {viewingOrder && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Klient</p>
@@ -300,6 +300,41 @@ export const AdminOrdersTab = () => {
                   <p className="font-medium">{format(new Date(viewingOrder.createdAt), 'd MMMM yyyy, HH:mm', { locale: pl })}</p>
                 </div>
               </div>
+
+              {/* Shipping address */}
+              {viewingOrder.shippingAddress && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm font-medium mb-1">Adres dostawy</p>
+                  <div className="text-sm space-y-0.5">
+                    <p>{viewingOrder.shippingAddress.fullName}</p>
+                    <p>{viewingOrder.shippingAddress.street}</p>
+                    <p>{viewingOrder.shippingAddress.postalCode} {viewingOrder.shippingAddress.city}</p>
+                    {viewingOrder.shippingAddress.phone && <p>Tel: {viewingOrder.shippingAddress.phone}</p>}
+                    {viewingOrder.shippingAddress.paczkomatId && <p>Paczkomat: <span className="font-mono">{viewingOrder.shippingAddress.paczkomatId}</span></p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Invoice data */}
+              {viewingOrder.invoiceData && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm font-medium mb-1">Dane do faktury</p>
+                  <div className="text-sm space-y-0.5">
+                    <p>{viewingOrder.invoiceData.companyName}</p>
+                    <p>NIP: {viewingOrder.invoiceData.nip}</p>
+                    <p>{viewingOrder.invoiceData.street}</p>
+                    <p>{viewingOrder.invoiceData.postalCode} {viewingOrder.invoiceData.city}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Customer notes */}
+              {viewingOrder.customerNotes && (
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm font-medium mb-1">Notatki klienta</p>
+                  <p className="text-sm">{viewingOrder.customerNotes}</p>
+                </div>
+              )}
 
               <div>
                 <Label>Status</Label>

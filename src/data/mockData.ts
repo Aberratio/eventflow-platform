@@ -3834,6 +3834,22 @@ export const mockShopOrders: ShopOrder[] = [
     status: 'delivered',
     createdAt: '2026-01-02T14:30:00Z',
     trackingNumber: 'INP0012345678',
+    shippingAddress: {
+      fullName: 'Jan Kowalski',
+      street: 'ul. Biegowa 15/3',
+      city: 'Warszawa',
+      postalCode: '00-123',
+      phone: '+48 600 100 200',
+      paczkomatId: 'WAW12A',
+    },
+    customerNotes: 'Proszę o zapakowanie jako prezent.',
+    invoiceData: {
+      companyName: 'RunTech Sp. z o.o.',
+      nip: '1234567890',
+      street: 'ul. Firmowa 8',
+      city: 'Warszawa',
+      postalCode: '00-456',
+    },
   },
   {
     id: 'order2',
@@ -3851,6 +3867,14 @@ export const mockShopOrders: ShopOrder[] = [
     status: 'shipped',
     createdAt: '2026-01-08T09:15:00Z',
     trackingNumber: 'DPD987654321',
+    shippingAddress: {
+      fullName: 'Jan Kowalski',
+      street: 'ul. Biegowa 15/3',
+      city: 'Warszawa',
+      postalCode: '00-123',
+      phone: '+48 600 100 200',
+    },
+    customerNotes: 'Dzwonek nie działa, proszę dzwonić na telefon.',
   },
   {
     id: 'order3',
@@ -3868,6 +3892,20 @@ export const mockShopOrders: ShopOrder[] = [
     totalPrice: 254.99,
     status: 'pending',
     createdAt: '2026-01-10T16:45:00Z',
+    shippingAddress: {
+      fullName: 'Jan Kowalski',
+      street: 'ul. Sportowa 7',
+      city: 'Kraków',
+      postalCode: '30-001',
+      phone: '+48 600 100 200',
+    },
+    invoiceData: {
+      companyName: 'FitLife Jan Kowalski',
+      nip: '9876543210',
+      street: 'ul. Sportowa 7',
+      city: 'Kraków',
+      postalCode: '30-001',
+    },
   },
 ];
 
