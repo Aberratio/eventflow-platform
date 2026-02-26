@@ -463,6 +463,25 @@ export interface Ticket {
   registrationId: string;
 }
 
+// Shop order address
+export interface ShopOrderAddress {
+  fullName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  phone?: string;
+  paczkomatId?: string;
+}
+
+// Shop order invoice data
+export interface ShopOrderInvoice {
+  companyName: string;
+  nip: string;
+  street: string;
+  city: string;
+  postalCode: string;
+}
+
 // Shop order types
 export interface ShopOrder {
   id: string;
@@ -485,6 +504,9 @@ export interface ShopOrder {
   status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   createdAt: string;
   trackingNumber?: string;
+  shippingAddress?: ShopOrderAddress;
+  invoiceData?: ShopOrderInvoice;
+  customerNotes?: string;
 }
 
 // Extended discount code with group discounts
