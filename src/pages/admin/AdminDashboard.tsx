@@ -11,8 +11,9 @@ import { AdminPagesTab } from './components/AdminPagesTab';
 import { AdminSettingsTab } from './components/AdminSettingsTab';
 import { AdminChallengesTab } from './components/AdminChallengesTab';
 import { AdminFeaturedEventsTab } from './components/AdminFeaturedEventsTab';
-import { LayoutDashboard, Users, Building2, Calendar, Handshake, ShoppingBag, ShieldCheck, FileText, Settings, Trophy, Mail, Star } from 'lucide-react';
+import { LayoutDashboard, Users, Building2, Calendar, Handshake, ShoppingBag, ShieldCheck, FileText, Settings, Trophy, Mail, Star, ClipboardList } from 'lucide-react';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
+import { AdminOrdersTab } from './components/AdminOrdersTab';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -47,6 +48,7 @@ const navGroups: NavGroup[] = [
     label: 'Sklep',
     items: [
       { id: 'shop', label: 'Produkty', icon: ShoppingBag },
+      { id: 'orders', label: 'Zamówienia', icon: ClipboardList },
       { id: 'challenges', label: 'Wyzwania', icon: Trophy },
     ],
   },
@@ -85,6 +87,7 @@ const AdminDashboard = () => {
       case 'events': return <AdminEventsTab />;
       case 'featured': return <AdminFeaturedEventsTab />;
       case 'shop': return <AdminShopTab />;
+      case 'orders': return <AdminOrdersTab />;
       case 'challenges': return <AdminChallengesTab />;
       case 'partners': return <AdminPartnersTab />;
       case 'pages': return <AdminPagesTab />;
