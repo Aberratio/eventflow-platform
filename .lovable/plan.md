@@ -1,152 +1,114 @@
 
-
-# System kategorii wiekowych i specjalnych w edytorze dystansow
+# Edycja produktow na pelnej stronie + podglad + zakladka Zamowienia
 
 ## Cel
 
-Zamiana obecnego systemu kategorii (statyczne badge'e toggleowane z listy `defaultCategories`) na pelny konfigurator pozwalajacy:
+1. **Edycja produktow na pelnej stronie** — zamiast modalu, edycja/dodawanie produktu otwiera dedykowana strone `/admin/shop/products/:id/edit` (i `/admin/shop/products/new`).
+2. **Podglad produktu** — przycisk "Podglad" otwiera strone produktu tak jak ja widzi uzytkownik (`/shop/:slug`) w nowej karcie.
+3. **Zakladka "Zamowienia" w sidebarze** — osobna pozycja w kategorii "Sklep" z pelnym widokiem zamowien: filtrowanie, sortowanie, eksport do CSV/XML.
 
-1. **Kategorie wiekowe** — definiowanie kategorii z nazwa, plcia (K/M), zakresem dat urodzenia (rok od - rok do)
-2. **Kategorie specjalne** — dodawanie dowolnych kategorii z nazwa i opisem (np. "Mieszkaniec Warszawy", "Weteran")
-3. **Predefiniowane szablony** — szybkie dodanie standardowego zestawu kategorii jednym kliknieciem
+## Co sie zmieni
 
-## Zmiany w typach (`src/types/index.ts`)
+### 1. Nowa strona: AdminProductEditPage
 
-Nowe interfejsy:
+**Nowy plik:** `src/pages/admin/components/AdminProductEditPage.tsx`
+
+Pelnostronicowy edytor produktu (przeniesiony z obecnego modalu w AdminShopTab):
+- Naglowek z przyciskiem "Powrot do produktow" (`/admin` -> sekcja shop)
+- Przycisk "Podglad w sklepie" otwierajacy `/shop/{slug}` w nowej karcie
+- Formularz identyczny jak obecny modal, ale rozlozony na pelna szerokosc strony (wygodniejszy layout)
+- Zapis przekierowuje z powrotem do listy produktow
+
+### 2. Nowe route w App.tsx
 
 ```text
-AgeCategory {
-  id: string
-  name: string           // np. "K18-29"
-  gender: 'K' | 'M'
-  birthYearFrom: number  // np. 1995 (starsi — mniejszy rok)
-  birthYearTo: number    // np. 2007 (mlodsi — wiekszy rok)
-}
-
-SpecialCategory {
-  id: string
-  name: string           // np. "Mieszkaniec Warszawy"
-  description?: string   // np. "Kategoria dla osob zameldowanych w Warszawie"
-}
+/admin/shop/products/new     -> AdminProductEditPage (tryb tworzenia)
+/admin/shop/products/:id/edit -> AdminProductEditPage (tryb edycji)
 ```
 
-Zmiany w `Distance`:
-- Obecne pole `categories: string[]` zostaje (backward compat — bedzie generowane z `ageCategories`)
-- Nowe pola: `ageCategories?: AgeCategory[]`, `specialCategories?: SpecialCategory[]`
+### 3. Zmiany w AdminShopTab
 
-Zmiany w `DistanceForm` (wewnatrz EventForm):
-- Usunac `categories: string[]`
-- Dodac `ageCategories: AgeCategory[]`, `specialCategories: SpecialCategory[]`
+- Usunac caly modal edycji produktu (Dialog) — ok. 350 linii kodu
+- Usunac zwiazany state (`isProductDialogOpen`, `editingProduct`, `productForm`, `newSize`, `newColorName` itd.)
+- Przycisk "Dodaj produkt" linkuje do `/admin/shop/products/new`
+- Przycisk "Edytuj" (olowek) w tabeli linkuje do `/admin/shop/products/{id}/edit`
+- Przycisk "Podglad" (oko) linkuje do `/shop/{slug}` (target=_blank)
+- Usunac zakladke "Zamowienia" z Tabs (przeniesiona do osobnej sekcji w sidebarze)
+- Zakladka zostaje z "Produkty" i "Kategorie"
 
-## Zmiany w EventForm.tsx — Step 2
+### 4. Nowa zakladka "Zamowienia" w sidebarze AdminDashboard
 
-### Usuniecie starego systemu
+**Plik:** `src/pages/admin/AdminDashboard.tsx`
 
-Usunac:
-- Stala `defaultCategories`
-- Sekcja "Kategorie wiekowe" z Badge toggleami
-- Funkcja `toggleCategory`
-
-### Nowa sekcja: Kategorie wiekowe
-
-Pod polami dystansu (nazwa, dlugosc, cena, limit) pojawi sie rozbudowana sekcja:
-
-**A) Kategorie wiekowe**
-
-Przycisk "Dodaj szablon standardowy" — dodaje predefiniowany zestaw:
+W grupie "Sklep" dodac nowa pozycje:
 ```text
-K18-29 (K, 1997-2008), K30-39 (K, 1987-1996), K40-49 (K, 1977-1986),
-K50-59 (K, 1967-1976), K60+ (K, 1925-1966),
-M18-29 (M, 1997-2008), M30-39 (M, 1987-1996), M40-49 (M, 1977-1986),
-M50-59 (M, 1967-1976), M60+ (M, 1925-1966)
+{ id: 'orders', label: 'Zamowienia', icon: ShoppingCart }
 ```
-(Lata beda wyliczone dynamicznie na podstawie roku wydarzenia)
 
-Kazda kategoria wiekowa to wiersz z polami:
-- Nazwa (Input, np. "K18-29")
-- Plec (Select: K / M)
-- Rok urodzenia OD (Input number)
-- Rok urodzenia DO (Input number)
-- Przycisk usuwania (Trash2 icon)
+Renderowanie: `case 'orders': return <AdminOrdersTab />`
 
-Przycisk "Dodaj kategorie wiekowa" na dole.
+### 5. Nowy komponent: AdminOrdersTab
 
-**B) Kategorie specjalne**
+**Nowy plik:** `src/pages/admin/components/AdminOrdersTab.tsx`
 
-Pod kategoriami wiekowymi oddzielona sekcja:
-- Przycisk "Dodaj kategorie specjalna"
-- Kazda kategoria specjalna to wiersz:
-  - Nazwa (Input, np. "Weteran")
-  - Opis (Input, opcjonalny, np. "Uczestnicy powyzej 65 roku zycia")
-  - Przycisk usuwania
+Dedykowany widok zamowien (przeniesiony i rozbudowany z AdminShopTab):
+- Naglowek "Zamowienia" z licznikami (wszystkie, oczekujace, oplacone)
+- **Filtry**: szukaj (nr zamowienia, klient), status, zakres dat (od-do)
+- **Sortowanie**: klikalne naglowki kolumn (data, kwota, status) z ikonami kierunku
+- **Tabela**: nr zamowienia, klient (imie + email), data, produkty (skrocona lista), kwota, status, akcje
+- **Dialog szczegolow** zamowienia (przeniesiony z AdminShopTab — bez zmian)
+- **Eksport**:
+  - Przycisk z DropdownMenu: "Eksportuj CSV" i "Eksportuj XML"
+  - CSV: wykorzystuje istniejacy `exportToCSV` z `src/lib/exportUtils.ts`
+  - XML: nowa funkcja `exportToXML` w `src/lib/exportUtils.ts`
 
-### Generowanie `categories: string[]`
+### 6. Nowa funkcja exportToXML w exportUtils.ts
 
-Przy zapisie/submit, pole `categories` w Distance bedzie generowane automatycznie z polaczenia nazw `ageCategories` i `specialCategories` — dla backward compatibility z reszta systemu (wyniki, rejestracje).
+**Plik:** `src/lib/exportUtils.ts`
 
-## Zmiany w mock data (`src/data/mockData.ts`)
-
-Dodanie `ageCategories` i `specialCategories` do kilku wydarzen (e1, e3), zeby nowe pola mialy dane przy edycji. Istniejace `categories: string[]` pozostaje bez zmian.
-
-Przykladowo dla e1 Maraton Warszawski, dystans "Maraton 42km":
 ```text
-ageCategories: [
-  { id: 'cat-1', name: 'K18-29', gender: 'K', birthYearFrom: 1996, birthYearTo: 2007 },
-  { id: 'cat-2', name: 'K30-39', gender: 'K', birthYearFrom: 1986, birthYearTo: 1995 },
-  ...
-]
-specialCategories: [
-  { id: 'scat-1', name: 'Mieszkaniec Warszawy', description: 'Osoby zameldowane w Warszawie' }
-]
+exportToXML(data, rootName, itemName, filename)
 ```
 
-## Zmiany w RegistrationForm.tsx
-
-Przy wyborze kategorii w rejestracji — jesli dystans ma `ageCategories`, automatycznie przypisywac kategorie na podstawie roku urodzenia i plci uczestnika (z profilu). Kategorie specjalne wyswietlic jako dodatkowe checkboxy do samodzielnego zaznaczenia przez uczestnika.
+Generuje plik XML:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<orders>
+  <order>
+    <orderNumber>ORD-001</orderNumber>
+    <customer>Jan Kowalski</customer>
+    <date>2026-01-15</date>
+    <totalPrice>149.99</totalPrice>
+    <status>paid</status>
+    <items>
+      <item>
+        <name>Koszulka</name>
+        <quantity>2</quantity>
+        <price>49.99</price>
+      </item>
+    </items>
+  </order>
+</orders>
+```
 
 ## Szczegoly techniczne
 
+### Pliki do zmiany/utworzenia
+
+| Plik | Zmiana |
+|---|---|
+| `src/pages/admin/components/AdminProductEditPage.tsx` | NOWY — pelnostronicowy edytor produktu |
+| `src/pages/admin/components/AdminOrdersTab.tsx` | NOWY — dedykowana zakladka zamowien |
+| `src/pages/admin/components/AdminShopTab.tsx` | Usunac modal edycji, usunac tab zamowien, dodac linki |
+| `src/pages/admin/AdminDashboard.tsx` | Dodac "Zamowienia" do sidebar + renderContent |
+| `src/App.tsx` | Nowe route: `/admin/shop/products/new` i `/admin/shop/products/:id/edit` |
+| `src/lib/exportUtils.ts` | Nowa funkcja `exportToXML` |
+
 ### Kolejnosc implementacji
 
-| Krok | Plik | Zmiana |
-|---|---|---|
-| 1 | `src/types/index.ts` | Nowe interfejsy `AgeCategory`, `SpecialCategory`; nowe pola w `Distance` |
-| 2 | `src/data/mockData.ts` | Przykladowe dane kategorii w e1 i e3 |
-| 3 | `src/pages/organizer/EventForm.tsx` | Nowy konfigurator kategorii w Step 2 |
-| 4 | `src/components/registration/RegistrationForm.tsx` | Auto-przypisanie kategorii wiekowej + checkboxy specjalnych |
-
-### UI kategorii wiekowych (w kazdym dystansie)
-
-```text
-+----------------------------------------------------------+
-| Kategorie wiekowe                    [Dodaj szablon std.] |
-+----------------------------------------------------------+
-| Nazwa       | Plec | Rok od | Rok do |                   |
-| [K18-29   ] | [K ] | [1997] | [2008] | [x]              |
-| [K30-39   ] | [K ] | [1987] | [1996] | [x]              |
-| [M18-29   ] | [M ] | [1997] | [2008] | [x]              |
-| ...                                                       |
-|                              [+ Dodaj kategorie wiekowa]  |
-+----------------------------------------------------------+
-
-+----------------------------------------------------------+
-| Kategorie specjalne                                       |
-+----------------------------------------------------------+
-| Nazwa              | Opis                        |       |
-| [Mieszkaniec Waw ] | [Zameldowani w Warszawie  ] | [x]  |
-| [Weteran         ] | [                         ] | [x]  |
-|                         [+ Dodaj kategorie specjalna]     |
-+----------------------------------------------------------+
-```
-
-### Dynamiczne lata szablonu
-
-Standardowy szablon wylicza lata na podstawie roku wydarzenia:
-```text
-eventYear = parseInt(date.substring(0,4)) || new Date().getFullYear()
-K18-29: birthYearFrom = eventYear - 29, birthYearTo = eventYear - 18
-K30-39: birthYearFrom = eventYear - 39, birthYearTo = eventYear - 30
-...
-K60+:   birthYearFrom = eventYear - 100, birthYearTo = eventYear - 60
-```
-
+1. `exportUtils.ts` — dodac `exportToXML`
+2. `AdminProductEditPage.tsx` — nowa strona edycji produktu
+3. `AdminOrdersTab.tsx` — nowa zakladka zamowien z filtrami, sortowaniem i eksportem
+4. `AdminShopTab.tsx` — usunac modal i tab zamowien, dodac linki do nowej strony
+5. `AdminDashboard.tsx` — dodac "Zamowienia" do sidebara
+6. `App.tsx` — nowe route
