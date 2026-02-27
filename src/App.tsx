@@ -42,6 +42,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AdminEventManage } from "./pages/admin/components/AdminEventManage";
 import { PageEditorPage } from "./pages/admin/components/PageEditorPage";
 import { AdminProductEditPage } from "./pages/admin/components/AdminProductEditPage";
+import { AdminOrderEditPage } from "./pages/admin/components/AdminOrderEditPage";
+import { AdminChallengeEditPage } from "./pages/admin/components/AdminChallengeEditPage";
+import { AdminPartnerEditPage } from "./pages/admin/components/AdminPartnerEditPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
 import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
@@ -116,6 +119,11 @@ const App = () => (
                   <Route path="/admin/shop/products/:id/edit" element={<AdminProductEditPage />} />
                   <Route path="/admin/pages/new" element={<PageEditorPage />} />
                   <Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
+                  <Route path="/admin/orders/:id/edit" element={<AdminOrderEditPage />} />
+                  <Route path="/admin/challenges/new" element={<AdminChallengeEditPage />} />
+                  <Route path="/admin/challenges/:id/edit" element={<AdminChallengeEditPage />} />
+                  <Route path="/admin/partners/new" element={<AdminPartnerEditPage />} />
+                  <Route path="/admin/partners/:id/edit" element={<AdminPartnerEditPage />} />
                   <Route path="/admin/*" element={<AdminDashboard />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="/500" element={<ServerError />} />

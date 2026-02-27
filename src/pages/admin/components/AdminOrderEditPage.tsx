@@ -1,0 +1,334 @@
+import { useState, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Layout } from '@/components/layout/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, Trash2, Plus, Package, FileText, MessageSquare, Truck, CreditCard, Clock } from 'lucide-react';
+import { mockShopOrders, mockShopProducts, mockUsers } from '@/data/mockData';
+import { ShopOrder } from '@/types';
+import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
+import { toast } from 'sonner';
+
+const statusLabels: Record<ShopOrder['status'], string> = {
+  pending: 'Oczekujące',
+  paid: 'Opłacone',
+  shipped: 'Wysłane',
+  delivered: 'Dostarczone',
+  cancelled: 'Anulowane',
+  refunded: 'Zwrócone',
+};
+
+const statusColors: Record<ShopOrder['status'], string> = {
+  pending: 'bg-warning/20 text-warning-foreground border-warning',
+  paid: 'bg-primary/20 text-primary border-primary',
+  shipped: 'bg-accent/20 text-accent-foreground border-accent',
+  delivered: 'bg-success/20 text-success border-success',
+  cancelled: 'bg-destructive/20 text-destructive border-destructive',
+  refunded: 'bg-muted text-muted-foreground border-muted-foreground',
+};
+
+export const AdminOrderEditPage = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const originalOrder = mockShopOrders.find(o => o.id === id);
+  const customer = originalOrder ? mockUsers.find(u => u.id === originalOrder.userId) : null;
+
+  const [items, setItems] = useState(() => originalOrder ? [...originalOrder.items] : []);
+  const [status, setStatus] = useState<ShopOrder['status']>(() => originalOrder?.status || 'pending');
+  const [trackingNumber, setTrackingNumber] = useState(() => originalOrder?.trackingNumber || '');
+  const [adminNotes, setAdminNotes] = useState(() => originalOrder?.adminNotes || '');
+  const [cancelReason, setCancelReason] = useState(() => originalOrder?.cancelReason || '');
+  const [priceAdjustment, setPriceAdjustment] = useState(() => originalOrder?.priceAdjustment || 0);
+
+  const productTotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items]);
+  const totalPrice = useMemo(() =>
+    productTotal + (originalOrder?.deliveryPrice || 0) + (originalOrder?.paymentSurcharge || 0) + priceAdjustment,
+    [productTotal, originalOrder?.deliveryPrice, originalOrder?.paymentSurcharge, priceAdjustment]
+  );
+
+  if (!originalOrder) {
+    return (
+      <Layout>
+        <div className="container py-8">
+          <p className="text-muted-foreground">Zamówienie nie zostało znalezione.</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate('/admin')}>
+            <ArrowLeft className="h-4 w-4 mr-2" /> Powrót
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const updateItemQuantity = (idx: number, qty: number) => {
+    if (qty < 0) return;
+    setItems(prev => prev.map((item, i) => i === idx ? { ...item, quantity: Math.max(0, qty) } : item));
+  };
+
+  const removeItem = (idx: number) => {
+    setItems(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const addItem = () => {
+    const product = mockShopProducts[0];
+    if (!product) return;
+    setItems(prev => [...prev, {
+      productId: product.id,
+      productName: product.name,
+      quantity: 1,
+      price: product.price,
+    }]);
+  };
+
+  const handleSave = () => {
+    toast.success('Zamówienie zostało zaktualizowane');
+    navigate('/admin');
+  };
+
+  return (
+    <Layout>
+      <div className="container py-8 max-w-4xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-3">
+                {originalOrder.orderNumber}
+                <Badge variant="outline" className={statusColors[status]}>
+                  {statusLabels[status]}
+                </Badge>
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(originalOrder.createdAt), 'd MMMM yyyy, HH:mm', { locale: pl })}
+              </p>
+            </div>
+          </div>
+          <Button onClick={handleSave}>Zapisz zmiany</Button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Customer & shipping info */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Package className="h-4 w-4" /> Klient
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-1">
+                <p className="font-medium">{customer?.name || 'Nieznany'}</p>
+                <p className="text-muted-foreground">{customer?.email}</p>
+              </CardContent>
+            </Card>
+
+            {originalOrder.shippingAddress && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Truck className="h-4 w-4" /> Adres dostawy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-0.5">
+                  <p>{originalOrder.shippingAddress.fullName}</p>
+                  <p>{originalOrder.shippingAddress.street}</p>
+                  <p>{originalOrder.shippingAddress.postalCode} {originalOrder.shippingAddress.city}</p>
+                  {originalOrder.shippingAddress.phone && <p>Tel: {originalOrder.shippingAddress.phone}</p>}
+                  {originalOrder.shippingAddress.paczkomatId && <p>Paczkomat: <span className="font-mono">{originalOrder.shippingAddress.paczkomatId}</span></p>}
+                </CardContent>
+              </Card>
+            )}
+
+            {originalOrder.invoiceData && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Dane do faktury
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-0.5">
+                  <p>{originalOrder.invoiceData.companyName}</p>
+                  <p>NIP: {originalOrder.invoiceData.nip}</p>
+                  <p>{originalOrder.invoiceData.street}</p>
+                  <p>{originalOrder.invoiceData.postalCode} {originalOrder.invoiceData.city}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {originalOrder.customerNotes && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" /> Notatki klienta
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm">{originalOrder.customerNotes}</CardContent>
+            </Card>
+          )}
+
+          {/* Editable items */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Produkty w zamówieniu</CardTitle>
+                <Button variant="outline" size="sm" onClick={addItem}>
+                  <Plus className="h-4 w-4 mr-1" /> Dodaj pozycję
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Produkt</TableHead>
+                    <TableHead className="w-20">Rozmiar</TableHead>
+                    <TableHead className="w-20">Kolor</TableHead>
+                    <TableHead className="w-24 text-center">Ilość</TableHead>
+                    <TableHead className="w-28 text-right">Cena jedn.</TableHead>
+                    <TableHead className="w-28 text-right">Suma</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">{item.productName}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.size || '—'}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.color || '—'}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={item.quantity}
+                          onChange={e => updateItemQuantity(idx, parseInt(e.target.value) || 0)}
+                          className="w-20 text-center mx-auto"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">{item.price.toFixed(2)} zł</TableCell>
+                      <TableCell className="text-right font-medium">{(item.price * item.quantity).toFixed(2)} zł</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeItem(idx)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {items.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
+                        Brak produktów w zamówieniu
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Shop operations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Operacje</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status zamówienia</Label>
+                  <Select value={status} onValueChange={v => setStatus(v as ShopOrder['status'])}>
+                    <SelectTrigger id="status"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(statusLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tracking">Numer przesyłki</Label>
+                  <Input id="tracking" value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} placeholder="Wprowadź numer przesyłki..." />
+                </div>
+              </div>
+
+              {(status === 'cancelled' || status === 'refunded') && (
+                <div className="space-y-2">
+                  <Label htmlFor="cancelReason">Powód anulowania / zwrotu</Label>
+                  <Textarea id="cancelReason" value={cancelReason} onChange={e => setCancelReason(e.target.value)} placeholder="Opisz powód..." rows={2} />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="adminNotes">Notatka admina (wewnętrzna)</Label>
+                <Textarea id="adminNotes" value={adminNotes} onChange={e => setAdminNotes(e.target.value)} placeholder="np. Klient prosił o zamianę rozmiaru..." rows={3} />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CreditCard className="h-4 w-4" /> Podsumowanie finansowe
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span>Produkty</span>
+                <span>{productTotal.toFixed(2)} zł</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Dostawa ({originalOrder.deliveryMethod.name})</span>
+                <span>{originalOrder.deliveryPrice.toFixed(2)} zł</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Dopłata za płatność ({originalOrder.paymentMethod.name})</span>
+                <span>{originalOrder.paymentSurcharge.toFixed(2)} zł</span>
+              </div>
+              <div className="flex justify-between text-sm items-center">
+                <Label htmlFor="adjustment" className="text-sm font-normal">Korekta ręczna</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="adjustment"
+                    type="number"
+                    step="0.01"
+                    value={priceAdjustment}
+                    onChange={e => setPriceAdjustment(parseFloat(e.target.value) || 0)}
+                    className="w-28 text-right"
+                  />
+                  <span className="text-sm">zł</span>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-semibold text-lg">
+                <span>SUMA</span>
+                <span>{totalPrice.toFixed(2)} zł</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* History placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="h-4 w-4" /> Historia zmian
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Historia zmian będzie dostępna wkrótce.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </Layout>
+  );
+};

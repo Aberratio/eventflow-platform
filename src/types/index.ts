@@ -501,12 +501,15 @@ export interface ShopOrder {
   deliveryPrice: number;
   paymentSurcharge: number;
   totalPrice: number;
-  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   createdAt: string;
   trackingNumber?: string;
   shippingAddress?: ShopOrderAddress;
   invoiceData?: ShopOrderInvoice;
   customerNotes?: string;
+  adminNotes?: string;
+  cancelReason?: string;
+  priceAdjustment?: number;
 }
 
 // Extended discount code with group discounts

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -11,19 +11,15 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
-import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Search, Eye, Pencil, ShoppingCart, Package, Clock, Download, ArrowUpDown, ArrowUp, ArrowDown,
+  Search, Pencil, ShoppingCart, Package, Clock, Download, ArrowUpDown, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { mockShopOrders, mockUsers } from '@/data/mockData';
 import { ShopOrder } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { toast } from 'sonner';
 import { exportToCSV, exportToXML } from '@/lib/exportUtils';
 
 const orderStatusLabels: Record<ShopOrder['status'], string> = {
@@ -32,6 +28,7 @@ const orderStatusLabels: Record<ShopOrder['status'], string> = {
   shipped: 'Wysłane',
   delivered: 'Dostarczone',
   cancelled: 'Anulowane',
+  refunded: 'Zwrócone',
 };
 
 const orderStatusColors: Record<ShopOrder['status'], string> = {
@@ -40,25 +37,21 @@ const orderStatusColors: Record<ShopOrder['status'], string> = {
   shipped: 'bg-accent/20 text-accent-foreground border-accent',
   delivered: 'bg-success/20 text-success border-success',
   cancelled: 'bg-destructive/20 text-destructive border-destructive',
+  refunded: 'bg-muted text-muted-foreground border-muted-foreground',
 };
 
 type SortField = 'createdAt' | 'totalPrice' | 'status';
 type SortDir = 'asc' | 'desc';
 
 export const AdminOrdersTab = () => {
-  const [orders, setOrders] = useState<ShopOrder[]>(mockShopOrders);
+  const navigate = useNavigate();
+  const [orders] = useState<ShopOrder[]>(mockShopOrders);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ShopOrder['status'] | 'all'>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
-
-  // Order detail dialog
-  const [viewingOrder, setViewingOrder] = useState<ShopOrder | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [newStatus, setNewStatus] = useState<ShopOrder['status']>('pending');
 
   const getCustomerName = (userId: string) => mockUsers.find(u => u.id === userId)?.name || 'Nieznany';
   const getCustomerEmail = (userId: string) => mockUsers.find(u => u.id === userId)?.email || '';
@@ -94,23 +87,6 @@ export const AdminOrdersTab = () => {
 
     return result;
   }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir]);
-
-  const handleViewOrder = (order: ShopOrder) => {
-    setViewingOrder(order);
-    setTrackingNumber(order.trackingNumber || '');
-    setNewStatus(order.status);
-    setIsDialogOpen(true);
-  };
-
-  const handleSaveOrder = () => {
-    if (viewingOrder) {
-      setOrders(orders.map(o =>
-        o.id === viewingOrder.id ? { ...o, status: newStatus, trackingNumber: trackingNumber || undefined } : o
-      ));
-      toast.success('Zamówienie zostało zaktualizowane');
-      setIsDialogOpen(false);
-    }
-  };
 
   const prepareOrdersExport = () => {
     return filteredOrders.map(order => ({
@@ -241,7 +217,7 @@ export const AdminOrdersTab = () => {
                   <TableHead className="text-center cursor-pointer select-none" onClick={() => toggleSort('status')}>
                     <span className="flex items-center justify-center">Status <SortIcon field="status" /></span>
                   </TableHead>
-                  <TableHead className="w-24">Akcje</TableHead>
+                  <TableHead className="w-16">Akcje</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -265,10 +241,9 @@ export const AdminOrdersTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleViewOrder(order)}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleViewOrder(order)}><Pencil className="h-4 w-4" /></Button>
-                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/orders/${order.id}/edit`)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -280,110 +255,6 @@ export const AdminOrdersTab = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Order Details Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Zamówienie {viewingOrder?.orderNumber}</DialogTitle>
-          </DialogHeader>
-          {viewingOrder && (
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Klient</p>
-                  <p className="font-medium">{getCustomerName(viewingOrder.userId)}</p>
-                  <p className="text-sm text-muted-foreground">{getCustomerEmail(viewingOrder.userId)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Data zamówienia</p>
-                  <p className="font-medium">{format(new Date(viewingOrder.createdAt), 'd MMMM yyyy, HH:mm', { locale: pl })}</p>
-                </div>
-              </div>
-
-              {/* Shipping address */}
-              {viewingOrder.shippingAddress && (
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-sm font-medium mb-1">Adres dostawy</p>
-                  <div className="text-sm space-y-0.5">
-                    <p>{viewingOrder.shippingAddress.fullName}</p>
-                    <p>{viewingOrder.shippingAddress.street}</p>
-                    <p>{viewingOrder.shippingAddress.postalCode} {viewingOrder.shippingAddress.city}</p>
-                    {viewingOrder.shippingAddress.phone && <p>Tel: {viewingOrder.shippingAddress.phone}</p>}
-                    {viewingOrder.shippingAddress.paczkomatId && <p>Paczkomat: <span className="font-mono">{viewingOrder.shippingAddress.paczkomatId}</span></p>}
-                  </div>
-                </div>
-              )}
-
-              {/* Invoice data */}
-              {viewingOrder.invoiceData && (
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-sm font-medium mb-1">Dane do faktury</p>
-                  <div className="text-sm space-y-0.5">
-                    <p>{viewingOrder.invoiceData.companyName}</p>
-                    <p>NIP: {viewingOrder.invoiceData.nip}</p>
-                    <p>{viewingOrder.invoiceData.street}</p>
-                    <p>{viewingOrder.invoiceData.postalCode} {viewingOrder.invoiceData.city}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Customer notes */}
-              {viewingOrder.customerNotes && (
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-sm font-medium mb-1">Notatki klienta</p>
-                  <p className="text-sm">{viewingOrder.customerNotes}</p>
-                </div>
-              )}
-
-              <div>
-                <Label>Status</Label>
-                <Select value={newStatus} onValueChange={v => setNewStatus(v as ShopOrder['status'])}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(orderStatusLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium mb-2">Produkty</p>
-                <div className="space-y-2 bg-muted/50 rounded-lg p-3">
-                  {viewingOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
-                      <span>{item.quantity}x {item.productName}{item.size && ` (${item.size})`}{item.color && `, ${item.color}`}</span>
-                      <span className="font-medium">{(item.price * item.quantity).toFixed(2)} zł</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div><p className="text-muted-foreground">Dostawa</p><p>{viewingOrder.deliveryMethod.name}</p></div>
-                <div className="text-right"><p className="text-muted-foreground">Koszt</p><p>{viewingOrder.deliveryPrice.toFixed(2)} zł</p></div>
-                <div><p className="text-muted-foreground">Płatność</p><p>{viewingOrder.paymentMethod.name}</p></div>
-                <div className="text-right"><p className="text-muted-foreground">Dopłata</p><p>{viewingOrder.paymentSurcharge.toFixed(2)} zł</p></div>
-              </div>
-
-              <div className="flex justify-between items-center border-t pt-4">
-                <span className="font-semibold">SUMA</span>
-                <span className="text-xl font-bold">{viewingOrder.totalPrice.toFixed(2)} zł</span>
-              </div>
-
-              <div>
-                <Label>Numer przesyłki</Label>
-                <Input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} placeholder="Wprowadź numer przesyłki..." />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Zamknij</Button>
-            <Button onClick={handleSaveOrder}>Zapisz zmiany</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
