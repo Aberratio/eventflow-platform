@@ -1,114 +1,168 @@
 
-# Edycja produktow na pelnej stronie + podglad + zakladka Zamowienia
+# Pelnostronicowa edycja zamowien i wyzwan + przeglad modali
 
-## Cel
+## Podsumowanie
 
-1. **Edycja produktow na pelnej stronie** — zamiast modalu, edycja/dodawanie produktu otwiera dedykowana strone `/admin/shop/products/:id/edit` (i `/admin/shop/products/new`).
-2. **Podglad produktu** — przycisk "Podglad" otwiera strone produktu tak jak ja widzi uzytkownik (`/shop/:slug`) w nowej karcie.
-3. **Zakladka "Zamowienia" w sidebarze** — osobna pozycja w kategorii "Sklep" z pelnym widokiem zamowien: filtrowanie, sortowanie, eksport do CSV/XML.
+Trzy glowne zmiany:
+1. **Zamowienia** — edycja na osobnej stronie z operacjami sklepowymi (zwroty, wymiany, korekty)
+2. **Wyzwania** — edycja/tworzenie na osobnej stronie zamiast modalu
+3. **Partnerzy** — edycja na osobnej stronie zamiast modalu
+4. **Przeglad i poprawki UX** w pozostalych formularzach
 
-## Co sie zmieni
+---
 
-### 1. Nowa strona: AdminProductEditPage
+## 1. Edycja zamowienia na pelnej stronie
 
-**Nowy plik:** `src/pages/admin/components/AdminProductEditPage.tsx`
+### Nowa strona: `AdminOrderEditPage.tsx`
 
-Pelnostronicowy edytor produktu (przeniesiony z obecnego modalu w AdminShopTab):
-- Naglowek z przyciskiem "Powrot do produktow" (`/admin` -> sekcja shop)
-- Przycisk "Podglad w sklepie" otwierajacy `/shop/{slug}` w nowej karcie
-- Formularz identyczny jak obecny modal, ale rozlozony na pelna szerokosc strony (wygodniejszy layout)
-- Zapis przekierowuje z powrotem do listy produktow
+**Route:** `/admin/orders/:id/edit`
 
-### 2. Nowe route w App.tsx
+Pelnostronicowy widok zamowienia z nastepujacymi sekcjami:
 
-```text
-/admin/shop/products/new     -> AdminProductEditPage (tryb tworzenia)
-/admin/shop/products/:id/edit -> AdminProductEditPage (tryb edycji)
-```
+**A) Naglowek**
+- Przycisk "Powrot do zamowien" (wraca do `/admin` z aktywna zakladka orders)
+- Numer zamowienia + data + aktualny status (Badge)
 
-### 3. Zmiany w AdminShopTab
+**B) Dane klienta i dostawy** (read-only, w kartach)
+- Klient (imie, email)
+- Adres dostawy (ulica, miasto, kod, telefon, paczkomat)
+- Dane do faktury (jesli sa)
+- Notatki klienta
 
-- Usunac caly modal edycji produktu (Dialog) — ok. 350 linii kodu
-- Usunac zwiazany state (`isProductDialogOpen`, `editingProduct`, `productForm`, `newSize`, `newColorName` itd.)
-- Przycisk "Dodaj produkt" linkuje do `/admin/shop/products/new`
-- Przycisk "Edytuj" (olowek) w tabeli linkuje do `/admin/shop/products/{id}/edit`
-- Przycisk "Podglad" (oko) linkuje do `/shop/{slug}` (target=_blank)
-- Usunac zakladke "Zamowienia" z Tabs (przeniesiona do osobnej sekcji w sidebarze)
-- Zakladka zostaje z "Produkty" i "Kategorie"
+**C) Produkty w zamowieniu** (edytowalna tabela)
+- Kazdy wiersz: nazwa, rozmiar, kolor, ilosc (edytowalna), cena jednostkowa, suma
+- Przycisk usuwania pozycji (np. produkt niedostepny)
+- Mozliwosc dodania nowej pozycji (zamiana produktu)
+- Automatyczne przeliczanie sumy
 
-### 4. Nowa zakladka "Zamowienia" w sidebarze AdminDashboard
+**D) Operacje sklepowe** (nowa sekcja)
+- **Zmiana statusu** — Select z opcjami: Oczekujace, Oplacone, Wysłane, Dostarczone, Anulowane + nowy status `refunded` (Zwrocone)
+- **Numer przesylki** — Input
+- **Notatka admina** — Textarea (wewnetrzna notatka, np. "Klient prosil o zamiane rozmiaru")
+- **Powod anulowania/zwrotu** — widoczny gdy status = cancelled lub refunded
 
-**Plik:** `src/pages/admin/AdminDashboard.tsx`
+**E) Podsumowanie finansowe**
+- Produkty (przeliczone po edycji)
+- Dostawa
+- Doplata za platnosc
+- Korekta reczna (Input number, np. -20 zl za reklamacje)
+- SUMA (przeliczona)
 
-W grupie "Sklep" dodac nowa pozycje:
-```text
-{ id: 'orders', label: 'Zamowienia', icon: ShoppingCart }
-```
+**F) Historia zmian** (przyszlosciowo, na razie placeholder)
 
-Renderowanie: `case 'orders': return <AdminOrdersTab />`
-
-### 5. Nowy komponent: AdminOrdersTab
-
-**Nowy plik:** `src/pages/admin/components/AdminOrdersTab.tsx`
-
-Dedykowany widok zamowien (przeniesiony i rozbudowany z AdminShopTab):
-- Naglowek "Zamowienia" z licznikami (wszystkie, oczekujace, oplacone)
-- **Filtry**: szukaj (nr zamowienia, klient), status, zakres dat (od-do)
-- **Sortowanie**: klikalne naglowki kolumn (data, kwota, status) z ikonami kierunku
-- **Tabela**: nr zamowienia, klient (imie + email), data, produkty (skrocona lista), kwota, status, akcje
-- **Dialog szczegolow** zamowienia (przeniesiony z AdminShopTab — bez zmian)
-- **Eksport**:
-  - Przycisk z DropdownMenu: "Eksportuj CSV" i "Eksportuj XML"
-  - CSV: wykorzystuje istniejacy `exportToCSV` z `src/lib/exportUtils.ts`
-  - XML: nowa funkcja `exportToXML` w `src/lib/exportUtils.ts`
-
-### 6. Nowa funkcja exportToXML w exportUtils.ts
-
-**Plik:** `src/lib/exportUtils.ts`
+### Zmiany w typach
 
 ```text
-exportToXML(data, rootName, itemName, filename)
+ShopOrder.status: dodac 'refunded'
+ShopOrder.adminNotes?: string
+ShopOrder.cancelReason?: string
+ShopOrder.priceAdjustment?: number
 ```
 
-Generuje plik XML:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<orders>
-  <order>
-    <orderNumber>ORD-001</orderNumber>
-    <customer>Jan Kowalski</customer>
-    <date>2026-01-15</date>
-    <totalPrice>149.99</totalPrice>
-    <status>paid</status>
-    <items>
-      <item>
-        <name>Koszulka</name>
-        <quantity>2</quantity>
-        <price>49.99</price>
-      </item>
-    </items>
-  </order>
-</orders>
-```
+### Zmiany w AdminOrdersTab
+
+- Usunac Dialog szczegolow zamowienia (linie 284-389)
+- Przycisk Eye/Pencil kieruje do `/admin/orders/:id/edit`
+- Lista zamowien zostaje bez zmian (filtry, sortowanie, eksport)
+
+---
+
+## 2. Edycja wyzwan na pelnej stronie
+
+### Nowa strona: `AdminChallengeEditPage.tsx`
+
+**Route:** `/admin/challenges/new` i `/admin/challenges/:id/edit`
+
+Przeniesienie ChallengeFormDialog (linie 61-242) na pelna strone:
+
+**A) Naglowek**
+- "Powrot do wyzwan"
+- Tytul: "Nowe wyzwanie" lub "Edytuj: {nazwa}"
+
+**B) Formularz** (rozlozony na pelna szerokosc, dwukolumnowy layout)
+- **Podstawowe**: nazwa, slug, opis (Textarea), URL obrazka
+- **Seria i daty**: powiazanie z seria + przycisk "Zaladuj biegi", data startu/konca
+- **Regula**: min. biegow do zaliczenia, limit czasu
+- **Wydarzenia**: tabela z nazwa biegu i data, dodawanie/usuwanie
+- **Nagrody**: karty z nazwa, typ (darmowa/platna), cena, rozmiary, opis
+
+**C) Walidacja**
+- Nazwa wymagana (min 3 znaki)
+- Slug auto-generowany, ale edytowalny
+- Min. biegow >= 1
+- Data konca >= data startu
+- Nagroda musi miec nazwe
+
+### Zmiany w AdminChallengesTab
+
+- Usunac ChallengeFormDialog (linie 61-242)
+- Przycisk "Nowe wyzwanie" linkuje do `/admin/challenges/new`
+- Przycisk edycji (olowek) linkuje do `/admin/challenges/:id/edit`
+
+---
+
+## 3. Partnerzy — edycja na osobnej stronie
+
+### Nowa strona: `AdminPartnerEditPage.tsx`
+
+**Route:** `/admin/partners/new` i `/admin/partners/:id/edit`
+
+Prosty formularz (4 pola) rozlozony na pelna strone:
+- Nazwa partnera (wymagana)
+- URL logotypu (wymagany, walidacja URL)
+- Strona internetowa (opcjonalna, walidacja URL)
+- Wyswietlaj na stronie glownej (Switch)
+- Podglad logotypu (jesli URL podany)
+
+### Zmiany w AdminPartnersTab
+
+- Usunac oba Dialogi (dodawanie i edycja)
+- Przycisk "Dodaj partnera" linkuje do `/admin/partners/new`
+- Przycisk "Edytuj" linkuje do `/admin/partners/:id/edit`
+
+---
+
+## 4. Przeglad UX i walidacji
+
+Formularze ktore pozostaja w modalach (bo sa male/kontekstowe i to jest OK):
+- **DiscountCodesEditor** — inline w EventForm, krotki formularz, modal jest uzasadniony
+- **MerchandiseEditor** — inline w EventForm, j.w.
+- **UsersOrganizersTab** — "Dodaj organizatora" to wyszukiwanie + nadanie roli, modal pasuje
+- **Role/Block/Delete dialogi** — to potwierdzenia akcji, modal jest poprawny
+
+Poprawki UX we wszystkich formularzach:
+- Dodanie `required` i `aria-describedby` do wymaganych pol
+- Czytelne komunikaty bledow po polsku (np. "Nazwa jest wymagana", "Podaj poprawny adres URL")
+- Placeholder'y opisujace format (np. "https://example.com/logo.png")
+
+---
 
 ## Szczegoly techniczne
 
-### Pliki do zmiany/utworzenia
+### Nowe pliki
+
+| Plik | Opis |
+|---|---|
+| `src/pages/admin/components/AdminOrderEditPage.tsx` | Pelnostronicowy edytor zamowienia |
+| `src/pages/admin/components/AdminChallengeEditPage.tsx` | Pelnostronicowy edytor wyzwania |
+| `src/pages/admin/components/AdminPartnerEditPage.tsx` | Pelnostronicowy edytor partnera |
+
+### Zmiany w istniejacych plikach
 
 | Plik | Zmiana |
 |---|---|
-| `src/pages/admin/components/AdminProductEditPage.tsx` | NOWY — pelnostronicowy edytor produktu |
-| `src/pages/admin/components/AdminOrdersTab.tsx` | NOWY — dedykowana zakladka zamowien |
-| `src/pages/admin/components/AdminShopTab.tsx` | Usunac modal edycji, usunac tab zamowien, dodac linki |
-| `src/pages/admin/AdminDashboard.tsx` | Dodac "Zamowienia" do sidebar + renderContent |
-| `src/App.tsx` | Nowe route: `/admin/shop/products/new` i `/admin/shop/products/:id/edit` |
-| `src/lib/exportUtils.ts` | Nowa funkcja `exportToXML` |
+| `src/types/index.ts` | Nowe pola w ShopOrder (refunded, adminNotes, cancelReason, priceAdjustment) |
+| `src/pages/admin/components/AdminOrdersTab.tsx` | Usunac Dialog, dodac linki do strony edycji |
+| `src/pages/admin/components/AdminChallengesTab.tsx` | Usunac ChallengeFormDialog, dodac linki |
+| `src/pages/admin/components/AdminPartnersTab.tsx` | Usunac Dialogi, dodac linki |
+| `src/App.tsx` | Nowe route: orders/:id/edit, challenges/new, challenges/:id/edit, partners/new, partners/:id/edit |
 
 ### Kolejnosc implementacji
 
-1. `exportUtils.ts` — dodac `exportToXML`
-2. `AdminProductEditPage.tsx` — nowa strona edycji produktu
-3. `AdminOrdersTab.tsx` — nowa zakladka zamowien z filtrami, sortowaniem i eksportem
-4. `AdminShopTab.tsx` — usunac modal i tab zamowien, dodac linki do nowej strony
-5. `AdminDashboard.tsx` — dodac "Zamowienia" do sidebara
-6. `App.tsx` — nowe route
+1. Typy — rozszerzyc ShopOrder
+2. AdminOrderEditPage — nowa strona
+3. AdminChallengeEditPage — nowa strona
+4. AdminPartnerEditPage — nowa strona
+5. Aktualizacja AdminOrdersTab, AdminChallengesTab, AdminPartnersTab — usuniecie modali
+6. App.tsx — nowe route
+7. Przeglad walidacji i UX we wszystkich formularzach
