@@ -40,6 +40,7 @@ const orderStatusLabels: Record<ShopOrder['status'], string> = {
   shipped: 'Wysłane',
   delivered: 'Dostarczone',
   cancelled: 'Anulowane',
+  refunded: 'Zwrócone',
 };
 
 const orderStatusColors: Record<ShopOrder['status'], string> = {
@@ -48,6 +49,7 @@ const orderStatusColors: Record<ShopOrder['status'], string> = {
   shipped: 'bg-accent/20 text-accent-foreground border-accent',
   delivered: 'bg-success/20 text-success border-success',
   cancelled: 'bg-destructive/20 text-destructive border-destructive',
+  refunded: 'bg-muted text-muted-foreground border-muted-foreground',
 };
 
 // Only allow forward status changes (no cancellation)
@@ -57,6 +59,7 @@ const allowedStatusTransitions: Record<ShopOrder['status'], ShopOrder['status'][
   shipped: ['delivered'],
   delivered: [],
   cancelled: [],
+  refunded: [],
 };
 
 export const ModeratorOrdersTab = () => {

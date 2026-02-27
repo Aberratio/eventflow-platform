@@ -1,20 +1,17 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Trophy, Plus, CheckCircle2, Clock, XCircle, Target, Users, Eye, ExternalLink, Pencil, Trash2, ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { Trophy, Plus, CheckCircle2, Clock, XCircle, Target, Users, ExternalLink, Pencil, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { mockChallenges, mockChallengeParticipations, mockSeries, mockEvents } from '@/data/mockData';
-import { Challenge, ChallengeEvent, ChallengeReward, ChallengeEntryStatus } from '@/types';
+import { Challenge, ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -30,216 +27,6 @@ const statusIcon: Record<ChallengeEntryStatus, React.ReactNode> = {
   pending: <Clock className="h-4 w-4 text-warning" />,
   rejected: <XCircle className="h-4 w-4 text-destructive" />,
   not_submitted: <div className="h-4 w-4 rounded border-2 border-muted-foreground/30" />,
-};
-
-const generateSlug = (name: string) =>
-  name.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-
-interface FormData {
-  name: string;
-  slug: string;
-  description: string;
-  imageUrl: string;
-  seriesId: string;
-  startDate: string;
-  endDate: string;
-  minCompleted: number;
-  maxTime: string;
-  events: ChallengeEvent[];
-  rewards: ChallengeReward[];
-}
-
-const emptyForm: FormData = {
-  name: '', slug: '', description: '', imageUrl: '', seriesId: '',
-  startDate: '', endDate: '', minCompleted: 1, maxTime: '',
-  events: [], rewards: [],
-};
-
-const ChallengeFormDialog = ({
-  open, onOpenChange, initialData, title,
-}: {
-  open: boolean; onOpenChange: (o: boolean) => void;
-  initialData?: FormData; title: string;
-}) => {
-  const [form, setForm] = useState<FormData>(initialData || emptyForm);
-
-  const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
-    setForm(prev => {
-      const next = { ...prev, [key]: value };
-      if (key === 'name') next.slug = generateSlug(value as string);
-      return next;
-    });
-  };
-
-  const addEvent = () => setForm(prev => ({
-    ...prev,
-    events: [...prev.events, { eventId: crypto.randomUUID(), eventName: '', eventDate: '' }],
-  }));
-
-  const removeEvent = (idx: number) => setForm(prev => ({
-    ...prev, events: prev.events.filter((_, i) => i !== idx),
-  }));
-
-  const updateEvent = (idx: number, field: keyof ChallengeEvent, val: string) =>
-    setForm(prev => ({
-      ...prev,
-      events: prev.events.map((e, i) => i === idx ? { ...e, [field]: val } : e),
-    }));
-
-  const addReward = () => setForm(prev => ({
-    ...prev,
-    rewards: [...prev.rewards, { id: crypto.randomUUID(), name: '', type: 'free' as const }],
-  }));
-
-  const removeReward = (idx: number) => setForm(prev => ({
-    ...prev, rewards: prev.rewards.filter((_, i) => i !== idx),
-  }));
-
-  const updateReward = (idx: number, field: string, val: any) =>
-    setForm(prev => ({
-      ...prev,
-      rewards: prev.rewards.map((r, i) => i === idx ? { ...r, [field]: val } : r),
-    }));
-
-  const loadEventsFromSeries = () => {
-    if (!form.seriesId) return;
-    const series = mockSeries.find(s => s.id === form.seriesId);
-    if (!series) return;
-    const seriesEvents = series.eventIds
-      .map(id => mockEvents.find(ev => ev.id === id))
-      .filter(Boolean);
-    const events: ChallengeEvent[] = seriesEvents.map(e => ({
-      eventId: e!.id,
-      eventName: e!.name,
-      eventDate: e!.date,
-    }));
-    setForm(prev => ({ ...prev, events }));
-    toast({ title: `Załadowano ${events.length} biegów z serii` });
-  };
-
-  const handleSave = () => {
-    if (!form.name.trim()) { toast({ title: 'Podaj nazwę wyzwania', variant: 'destructive' }); return; }
-    onOpenChange(false);
-    toast({ title: initialData ? 'Wyzwanie zaktualizowane!' : 'Wyzwanie utworzone!' });
-    setForm(emptyForm);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
-        <div className="space-y-5">
-          {/* Basic */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Podstawowe</h4>
-            <div><Label>Nazwa</Label><Input value={form.name} onChange={e => updateField('name', e.target.value)} placeholder="np. Korona Półmaratonów 2026" /></div>
-            <div><Label>Slug (URL)</Label><Input value={form.slug} onChange={e => updateField('slug', e.target.value)} placeholder="korona-polmaratonow-2026" className="font-mono text-sm" /></div>
-            <div><Label>Opis</Label><Textarea value={form.description} onChange={e => updateField('description', e.target.value)} placeholder="Opis wyzwania..." /></div>
-            <div><Label>URL obrazka</Label><Input value={form.imageUrl} onChange={e => updateField('imageUrl', e.target.value)} placeholder="https://..." /></div>
-          </div>
-
-          {/* Series & dates */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Seria i daty</h4>
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <Label>Powiązanie z serią (opcjonalne)</Label>
-                <Select value={form.seriesId} onValueChange={v => updateField('seriesId', v === 'none' ? '' : v)}>
-                  <SelectTrigger><SelectValue placeholder="Brak" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Brak</SelectItem>
-                    {mockSeries.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              {form.seriesId && (
-                <Button type="button" variant="outline" size="sm" onClick={loadEventsFromSeries}>
-                  <Download className="h-3 w-3 mr-1" /> Załaduj biegi
-                </Button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label>Data startu</Label><Input type="date" value={form.startDate} onChange={e => updateField('startDate', e.target.value)} /></div>
-              <div><Label>Data końca</Label><Input type="date" value={form.endDate} onChange={e => updateField('endDate', e.target.value)} /></div>
-            </div>
-          </div>
-
-          {/* Rule */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Reguła</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label>Min. biegów do zaliczenia</Label><Input type="number" min={1} value={form.minCompleted} onChange={e => updateField('minCompleted', parseInt(e.target.value) || 1)} /></div>
-              <div><Label>Limit czasu (opcjonalnie)</Label><Input value={form.maxTime} onChange={e => updateField('maxTime', e.target.value)} placeholder="HH:MM:SS" /></div>
-            </div>
-          </div>
-
-          {/* Events */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wydarzenia ({form.events.length})</h4>
-              <Button type="button" variant="outline" size="sm" onClick={addEvent}><Plus className="h-3 w-3 mr-1" /> Dodaj</Button>
-            </div>
-            {form.events.length === 0 && <p className="text-sm text-muted-foreground">Brak wydarzeń. Dodaj ręcznie lub załaduj z serii.</p>}
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {form.events.map((ev, idx) => (
-                <div key={ev.eventId} className="flex gap-2 items-center">
-                  <Input className="flex-1" placeholder="Nazwa biegu" value={ev.eventName} onChange={e => updateEvent(idx, 'eventName', e.target.value)} />
-                  <Input type="date" className="w-40" value={ev.eventDate} onChange={e => updateEvent(idx, 'eventDate', e.target.value)} />
-                  <Button type="button" variant="ghost" size="icon" className="shrink-0" onClick={() => removeEvent(idx)}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Rewards */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Nagrody ({form.rewards.length})</h4>
-              <Button type="button" variant="outline" size="sm" onClick={addReward}><Plus className="h-3 w-3 mr-1" /> Dodaj</Button>
-            </div>
-            {form.rewards.length === 0 && <p className="text-sm text-muted-foreground">Brak nagród.</p>}
-            <div className="space-y-3">
-              {form.rewards.map((rw, idx) => (
-                <Card key={rw.id} className="p-3">
-                  <div className="flex gap-2 items-start">
-                    <div className="flex-1 space-y-2">
-                      <Input placeholder="Nazwa nagrody" value={rw.name} onChange={e => updateReward(idx, 'name', e.target.value)} />
-                      <div className="grid grid-cols-3 gap-2">
-                        <Select value={rw.type} onValueChange={v => updateReward(idx, 'type', v)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="free">Darmowa</SelectItem>
-                            <SelectItem value="product">Płatna</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {rw.type === 'product' && (
-                          <Input type="number" placeholder="Cena (zł)" value={rw.price || ''} onChange={e => updateReward(idx, 'price', parseFloat(e.target.value) || 0)} />
-                        )}
-                        <Input placeholder="Rozmiary (S,M,L)" value={rw.sizes?.join(',') || ''} onChange={e => updateReward(idx, 'sizes', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
-                      </div>
-                      <Input placeholder="Opis nagrody (opcjonalnie)" value={rw.description || ''} onChange={e => updateReward(idx, 'description', e.target.value)} />
-                    </div>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => removeReward(idx)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Anuluj</Button>
-          <Button onClick={handleSave}>{initialData ? 'Zapisz zmiany' : 'Utwórz wyzwanie'}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 };
 
 // ─── Verification card per challenge ───
@@ -353,31 +140,13 @@ const VerificationChallengeCard = ({
 
 // ─── Main component ───
 export const AdminChallengesTab = () => {
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   const allEntries = mockChallengeParticipations.flatMap(p => p.entries);
   const pendingTotal = allEntries.filter(e => e.status === 'pending').length;
   const approvedTotal = allEntries.filter(e => e.status === 'approved').length;
   const rejectedTotal = allEntries.filter(e => e.status === 'rejected').length;
-
-  const editFormData = useMemo<FormData | undefined>(() => {
-    if (!editingChallenge) return undefined;
-    return {
-      name: editingChallenge.name,
-      slug: editingChallenge.slug,
-      description: editingChallenge.description,
-      imageUrl: editingChallenge.imageUrl || '',
-      seriesId: editingChallenge.seriesId || '',
-      startDate: editingChallenge.startDate || '',
-      endDate: editingChallenge.endDate || '',
-      minCompleted: editingChallenge.rule.minCompleted,
-      maxTime: editingChallenge.rule.maxTime || '',
-      events: editingChallenge.events,
-      rewards: editingChallenge.rewards,
-    };
-  }, [editingChallenge]);
 
   const handleStatusChange = (challengeId: string, newStatus: string) => {
     toast({ title: `Status zmieniony na: ${newStatus === 'active' ? 'Aktywne' : newStatus === 'completed' ? 'Zakończone' : 'Nadchodzące'}` });
@@ -411,18 +180,10 @@ export const AdminChallengesTab = () => {
         <TabsContent value="challenges" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-semibold">Lista wyzwań</h3>
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Button size="sm" onClick={() => navigate('/admin/challenges/new')}>
               <Plus className="h-4 w-4 mr-1" /> Nowe wyzwanie
             </Button>
           </div>
-
-          <ChallengeFormDialog open={createOpen} onOpenChange={setCreateOpen} title="Utwórz wyzwanie" />
-          <ChallengeFormDialog
-            open={!!editingChallenge}
-            onOpenChange={o => { if (!o) setEditingChallenge(null); }}
-            initialData={editFormData}
-            title="Edytuj wyzwanie"
-          />
 
           {mockChallenges.map(challenge => {
             const participantCount = mockChallengeParticipations.filter(p => p.challengeId === challenge.id).length;
@@ -453,7 +214,7 @@ export const AdminChallengesTab = () => {
                           <SelectItem value="completed">Zakończone</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setEditingChallenge(challenge)}>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigate(`/admin/challenges/${challenge.id}/edit`)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <AlertDialog>
@@ -485,7 +246,6 @@ export const AdminChallengesTab = () => {
 
         {/* ─── Verification per challenge ─── */}
         <TabsContent value="verification" className="space-y-4">
-          {/* Status filter */}
           <div className="flex flex-wrap gap-2">
             {([
               { key: 'all', label: 'Wszystkie', count: pendingTotal + approvedTotal + rejectedTotal },
@@ -504,7 +264,6 @@ export const AdminChallengesTab = () => {
             ))}
           </div>
 
-          {/* Per-challenge cards */}
           {mockChallenges.map(challenge => (
             <VerificationChallengeCard
               key={challenge.id}
@@ -514,7 +273,7 @@ export const AdminChallengesTab = () => {
           ))}
         </TabsContent>
 
-        {/* ─── Participants tab (unchanged) ─── */}
+        {/* ─── Participants tab ─── */}
         <TabsContent value="participants" className="space-y-4">
           {mockChallenges.map(challenge => {
             const participants = mockChallengeParticipations.filter(p => p.challengeId === challenge.id);
