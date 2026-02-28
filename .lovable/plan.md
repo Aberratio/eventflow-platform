@@ -1,168 +1,81 @@
 
-# Pelnostronicowa edycja zamowien i wyzwan + przeglad modali
 
-## Podsumowanie
+# Zamkniete zapisy + automatyczne kategorie + przeglad flow rejestracji
 
-Trzy glowne zmiany:
-1. **Zamowienia** — edycja na osobnej stronie z operacjami sklepowymi (zwroty, wymiany, korekty)
-2. **Wyzwania** — edycja/tworzenie na osobnej stronie zamiast modalu
-3. **Partnerzy** — edycja na osobnej stronie zamiast modalu
-4. **Przeglad i poprawki UX** w pozostalych formularzach
+## 1. Wyłączony przycisk "Zapisz się" gdy zapisy zamknięte
 
----
+### EventDetailsPage.tsx (sidebar, linie 779-794)
 
-## 1. Edycja zamowienia na pelnej stronie
+Obecnie gdy zapisy zamknięte wyświetla się prosty tekst "Zapisy zamknięte". Zmiana:
+- Przycisk "Zapisz się" pozostaje widoczny ale jest **wyłączony** (`disabled`)
+- Pod przyciskiem wyświetla się komunikat z powodem:
+  - "Zawody już się odbyły" — gdy `isPast`
+  - "Termin zapisów minął (dd MMMM yyyy)" — gdy deadline minął
+  - "Zapisy zamknięte przez organizatora" — gdy `registrationStatus === 'closed'`
+  - "Wszystkie miejsca zajęte" — gdy wszystkie dystanse pełne
 
-### Nowa strona: `AdminOrderEditPage.tsx`
+### EventRegistrationPage.tsx (linia 45-56)
 
-**Route:** `/admin/orders/:id/edit`
-
-Pelnostronicowy widok zamowienia z nastepujacymi sekcjami:
-
-**A) Naglowek**
-- Przycisk "Powrot do zamowien" (wraca do `/admin` z aktywna zakladka orders)
-- Numer zamowienia + data + aktualny status (Badge)
-
-**B) Dane klienta i dostawy** (read-only, w kartach)
-- Klient (imie, email)
-- Adres dostawy (ulica, miasto, kod, telefon, paczkomat)
-- Dane do faktury (jesli sa)
-- Notatki klienta
-
-**C) Produkty w zamowieniu** (edytowalna tabela)
-- Kazdy wiersz: nazwa, rozmiar, kolor, ilosc (edytowalna), cena jednostkowa, suma
-- Przycisk usuwania pozycji (np. produkt niedostepny)
-- Mozliwosc dodania nowej pozycji (zamiana produktu)
-- Automatyczne przeliczanie sumy
-
-**D) Operacje sklepowe** (nowa sekcja)
-- **Zmiana statusu** — Select z opcjami: Oczekujace, Oplacone, Wysłane, Dostarczone, Anulowane + nowy status `refunded` (Zwrocone)
-- **Numer przesylki** — Input
-- **Notatka admina** — Textarea (wewnetrzna notatka, np. "Klient prosil o zamiane rozmiaru")
-- **Powod anulowania/zwrotu** — widoczny gdy status = cancelled lub refunded
-
-**E) Podsumowanie finansowe**
-- Produkty (przeliczone po edycji)
-- Dostawa
-- Doplata za platnosc
-- Korekta reczna (Input number, np. -20 zl za reklamacje)
-- SUMA (przeliczona)
-
-**F) Historia zmian** (przyszlosciowo, na razie placeholder)
-
-### Zmiany w typach
-
-```text
-ShopOrder.status: dodac 'refunded'
-ShopOrder.adminNotes?: string
-ShopOrder.cancelReason?: string
-ShopOrder.priceAdjustment?: number
-```
-
-### Zmiany w AdminOrdersTab
-
-- Usunac Dialog szczegolow zamowienia (linie 284-389)
-- Przycisk Eye/Pencil kieruje do `/admin/orders/:id/edit`
-- Lista zamowien zostaje bez zmian (filtry, sortowanie, eksport)
+Dodatkowe zabezpieczenie: gdy zapisy zamknięte, zamiast renderować formularz — przekierowanie z powrotem na stronę wydarzenia z toastem "Zapisy na te zawody są zamknięte".
 
 ---
 
-## 2. Edycja wyzwan na pelnej stronie
+## 2. Automatyczny wybór kategorii wiekowej
 
-### Nowa strona: `AdminChallengeEditPage.tsx`
+### RegistrationForm.tsx — Krok 2 (linie 627-733)
 
-**Route:** `/admin/challenges/new` i `/admin/challenges/:id/edit`
+Zmiana logiki kategorii:
+- **Kategorie wiekowe** — wybierane automatycznie na podstawie `user.birthYear` i `user.gender`. Użytkownik NIE widzi listy do wyboru — widzi tylko przypisaną kategorię (read-only).
+- Jeśli profil niekompletny (brak `birthYear` lub `gender`), wtedy pokaz alert z info że trzeba uzupełnić profil i dopiero wtedy kategoria się przypisze.
+- **Kategorie specjalne** — zostawione jako checkboxy do ręcznego wyboru (bez zmian).
 
-Przeniesienie ChallengeFormDialog (linie 61-242) na pelna strone:
-
-**A) Naglowek**
-- "Powrot do wyzwan"
-- Tytul: "Nowe wyzwanie" lub "Edytuj: {nazwa}"
-
-**B) Formularz** (rozlozony na pelna szerokosc, dwukolumnowy layout)
-- **Podstawowe**: nazwa, slug, opis (Textarea), URL obrazka
-- **Seria i daty**: powiazanie z seria + przycisk "Zaladuj biegi", data startu/konca
-- **Regula**: min. biegow do zaliczenia, limit czasu
-- **Wydarzenia**: tabela z nazwa biegu i data, dodawanie/usuwanie
-- **Nagrody**: karty z nazwa, typ (darmowa/platna), cena, rozmiary, opis
-
-**C) Walidacja**
-- Nazwa wymagana (min 3 znaki)
-- Slug auto-generowany, ale edytowalny
-- Min. biegow >= 1
-- Data konca >= data startu
-- Nagroda musi miec nazwe
-
-### Zmiany w AdminChallengesTab
-
-- Usunac ChallengeFormDialog (linie 61-242)
-- Przycisk "Nowe wyzwanie" linkuje do `/admin/challenges/new`
-- Przycisk edycji (olowek) linkuje do `/admin/challenges/:id/edit`
+Obecny kod już częściowo to robi (auto-assign z `setTimeout`), ale nadal pokazuje RadioGroup gdy nie ma matcha. Zmiana:
+- Usunąć RadioGroup dla age categories — zawsze auto-assign
+- Gdy brak matcha: wyświetlić komunikat "Nie znaleziono pasującej kategorii wiekowej dla Twoich danych (rok: X, płeć: Y). Sprawdź dane w profilu."
+- `canProceed` dla step 2: wymaga tylko `birthYear` i `birthDay` i `birthMonth`. Kategoria wiekowa musi być automatycznie przypisana (lub brak kategorii wiekowych w wydarzeniu).
 
 ---
 
-## 3. Partnerzy — edycja na osobnej stronie
+## 3. Przeglad calego flow rejestracji — brakujace elementy
 
-### Nowa strona: `AdminPartnerEditPage.tsx`
+Po przejrzeniu kodu EventDetailsPage i RegistrationForm zidentyfikowano:
 
-**Route:** `/admin/partners/new` i `/admin/partners/:id/edit`
+### A) Brak informacji o ubezpieczeniu na stronie wydarzenia
+Na stronie szczegółów wydarzenia (tab "Informacje") nie ma informacji o dostępności ubezpieczenia NNW. Dodać:
+- Sekcja "Ubezpieczenie NNW dostępne" w tab "info" jeśli `event.insuranceOption?.enabled`
 
-Prosty formularz (4 pola) rozlozony na pelna strone:
-- Nazwa partnera (wymagana)
-- URL logotypu (wymagany, walidacja URL)
-- Strona internetowa (opcjonalna, walidacja URL)
-- Wyswietlaj na stronie glownej (Switch)
-- Podglad logotypu (jesli URL podany)
+### B) Brak informacji o gadżetach na stronie wydarzenia
+Jeśli wydarzenie ma `enableMerchandiseInRegistration && merchandise.length > 0`, dodać sekcję w tab "info":
+- "Pakiet gadżetów" z listą dostępnych produktów i cenami
 
-### Zmiany w AdminPartnersTab
+### C) Tab "Dystanse" — brakujące dane
+Dystanse na stronie wydarzenia (linie 657-697) pokazują tylko `categories.join(', ')` — stary format. Powinny wyświetlać:
+- Kategorie wiekowe (z `ageCategories`) zamiast starych string categories
+- Progi cenowe (price tiers) jeśli są
+- Info o VIP cenach jeśli są
 
-- Usunac oba Dialogi (dodawanie i edycja)
-- Przycisk "Dodaj partnera" linkuje do `/admin/partners/new`
-- Przycisk "Edytuj" linkuje do `/admin/partners/:id/edit`
+### D) Walidacja VIP custom field
+W step 1, jeśli wybrano VIP z `customFieldRequired === true`, `canProceed` nie sprawdza czy `vipCustomFieldValue` jest wypełnione. Dodać walidację.
 
----
-
-## 4. Przeglad UX i walidacji
-
-Formularze ktore pozostaja w modalach (bo sa male/kontekstowe i to jest OK):
-- **DiscountCodesEditor** — inline w EventForm, krotki formularz, modal jest uzasadniony
-- **MerchandiseEditor** — inline w EventForm, j.w.
-- **UsersOrganizersTab** — "Dodaj organizatora" to wyszukiwanie + nadanie roli, modal pasuje
-- **Role/Block/Delete dialogi** — to potwierdzenia akcji, modal jest poprawny
-
-Poprawki UX we wszystkich formularzach:
-- Dodanie `required` i `aria-describedby` do wymaganych pol
-- Czytelne komunikaty bledow po polsku (np. "Nazwa jest wymagana", "Podaj poprawny adres URL")
-- Placeholder'y opisujace format (np. "https://example.com/logo.png")
+### E) Zabezpieczenie przed zapisem na pełny dystans
+W `handleSubmit` — dodać sprawdzenie czy wybrany dystans nie jest pełny (limit osiągnięty) w momencie wysyłki.
 
 ---
 
 ## Szczegoly techniczne
 
-### Nowe pliki
-
-| Plik | Opis |
-|---|---|
-| `src/pages/admin/components/AdminOrderEditPage.tsx` | Pelnostronicowy edytor zamowienia |
-| `src/pages/admin/components/AdminChallengeEditPage.tsx` | Pelnostronicowy edytor wyzwania |
-| `src/pages/admin/components/AdminPartnerEditPage.tsx` | Pelnostronicowy edytor partnera |
-
-### Zmiany w istniejacych plikach
+### Pliki do zmiany
 
 | Plik | Zmiana |
 |---|---|
-| `src/types/index.ts` | Nowe pola w ShopOrder (refunded, adminNotes, cancelReason, priceAdjustment) |
-| `src/pages/admin/components/AdminOrdersTab.tsx` | Usunac Dialog, dodac linki do strony edycji |
-| `src/pages/admin/components/AdminChallengesTab.tsx` | Usunac ChallengeFormDialog, dodac linki |
-| `src/pages/admin/components/AdminPartnersTab.tsx` | Usunac Dialogi, dodac linki |
-| `src/App.tsx` | Nowe route: orders/:id/edit, challenges/new, challenges/:id/edit, partners/new, partners/:id/edit |
+| `src/pages/EventDetailsPage.tsx` | Sidebar: disabled button z powodami, sekcje ubezpieczenia i gadżetów w info tab, dystanse z ageCategories i price tiers |
+| `src/pages/EventRegistrationPage.tsx` | Redirect gdy zapisy zamknięte |
+| `src/components/registration/RegistrationForm.tsx` | Auto-assign kategorii (usunięcie RadioGroup), walidacja VIP field, sprawdzenie pełności dystansu |
 
 ### Kolejnosc implementacji
 
-1. Typy — rozszerzyc ShopOrder
-2. AdminOrderEditPage — nowa strona
-3. AdminChallengeEditPage — nowa strona
-4. AdminPartnerEditPage — nowa strona
-5. Aktualizacja AdminOrdersTab, AdminChallengesTab, AdminPartnersTab — usuniecie modali
-6. App.tsx — nowe route
-7. Przeglad walidacji i UX we wszystkich formularzach
+1. EventDetailsPage — disabled button + powody zamknięcia zapisów
+2. EventRegistrationPage — redirect zabezpieczenie
+3. RegistrationForm — automatyczne kategorie wiekowe + walidacje
+4. EventDetailsPage — dodatkowe sekcje info (ubezpieczenie, gadżety, lepsze dystanse)
+
