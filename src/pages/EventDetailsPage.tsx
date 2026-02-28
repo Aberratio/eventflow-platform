@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { mockEvents, mockRegistrations, mockResults, mockResultDocuments, mockTeamResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +20,8 @@ import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
+import { getCurrentPrice } from '@/data/mockData';
+import { applyDiscount } from '@/api/mock/helpers';
 import { AlertTriangle, FileEdit, ShieldCheck, Lock } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -327,7 +329,18 @@ const EventDetailsPage = () => {
   }
 
   const isPast = new Date(event.date) < new Date();
-  const isRegistrationOpen = !isPast && new Date(event.registrationDeadline) > new Date();
+  const deadlinePassed = new Date(event.registrationDeadline) < new Date();
+  const isClosedByOrganizer = event.registrationStatus === 'closed';
+  const allDistancesFull = event.distances.length > 0 && event.distances.every(d => d.limit != null && d.registeredCount >= d.limit);
+  const isRegistrationOpen = !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+  
+  const getClosedReason = (): string | null => {
+    if (isPast) return 'Zawody już się odbyły';
+    if (deadlinePassed) return `Termin zapisów minął (${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })})`;
+    if (isClosedByOrganizer) return 'Zapisy zamknięte przez organizatora';
+    if (allDistancesFull) return 'Wszystkie miejsca zajęte';
+    return null;
+  };
   const eventResults = mockResults.filter(r => r.eventId === event.id);
   const eventRegistrations = mockRegistrations.filter(r => r.eventId === event.id);
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
@@ -588,6 +601,37 @@ const EventDetailsPage = () => {
                         <p className="text-muted-foreground">{event.location}, {event.city}</p>
                       </div>
                     )}
+
+                    {/* Insurance info */}
+                    {event.insuranceOption?.enabled && (
+                      <div>
+                        <h4 className="font-semibold mb-2 flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-primary" />
+                          Ubezpieczenie NNW
+                        </h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Merchandise info */}
+                    {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2">
+                          <ShoppingBag className="h-4 w-4 text-primary" />
+                          Gadżety dostępne przy rejestracji
+                        </h4>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {event.merchandise.map(item => (
+                            <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                              <span className="text-sm">{item.name}</span>
+                              <Badge variant="secondary">{item.price} zł</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <div>
                       <h4 className="font-semibold mb-3">Organizator</h4>
@@ -659,23 +703,84 @@ const EventDetailsPage = () => {
                   {event.distances.map((distance) => {
                     const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
                     const isFull = spotsLeft !== null && spotsLeft <= 0;
+                    const { price: currentPrice, tierName } = getCurrentPrice(distance);
                     
                     return (
                       <Card key={distance.id}>
                         <CardContent className="pt-6">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div>
-                              <h4 className="font-semibold text-lg">{distance.name}</h4>
-                              <div className="text-2xl font-bold text-primary">
-                                {distance.length} {distance.unit}
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            <div className="flex-1 space-y-3">
+                              <div>
+                                <h4 className="font-semibold text-lg">{distance.name}</h4>
+                                <div className="text-2xl font-bold text-primary">
+                                  {distance.length} {distance.unit}
+                                </div>
                               </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                Kategorie: {distance.categories.join(', ')}
-                              </div>
+
+                              {/* Age categories */}
+                              {distance.ageCategories && distance.ageCategories.length > 0 ? (
+                                <div>
+                                  <p className="text-sm font-medium mb-1">Kategorie wiekowe:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {distance.ageCategories.map(cat => (
+                                      <Badge key={cat.id} variant="outline" className="text-xs">
+                                        {cat.name} ({cat.gender}) {cat.birthYearFrom}–{cat.birthYearTo}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">
+                                  Kategorie: {distance.categories.join(', ')}
+                                </div>
+                              )}
+
+                              {/* Price tiers */}
+                              {distance.priceTiers && distance.priceTiers.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-medium mb-1">Progi cenowe:</p>
+                                  <div className="space-y-1">
+                                    {distance.priceTiers.map(tier => {
+                                      const tierPrice = applyDiscount(distance.price, tier.discountType, tier.discountValue);
+                                      const mode = distance.priceTierMode || 'date';
+                                      const isPastTier = mode === 'date' && tier.endDate ? new Date(tier.endDate) < new Date() : false;
+                                      return (
+                                        <div key={tier.id} className={`text-xs flex justify-between ${isPastTier ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}>
+                                          <span>{tier.name}</span>
+                                          <span>
+                                            {tierPrice} zł
+                                            {mode === 'date' && tier.endDate && ` do ${format(new Date(tier.endDate), 'd MMM yyyy', { locale: pl })}`}
+                                            {mode === 'participants' && tier.participantLimit != null && ` (do ${tier.participantLimit} os.)`}
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* VIP prices */}
+                              {distance.vipPrices && distance.vipPrices.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-medium mb-1">Ceny specjalne:</p>
+                                  <div className="space-y-1">
+                                    {distance.vipPrices.map(vip => {
+                                      const vipPrice = applyDiscount(distance.price, vip.discountType, vip.discountValue);
+                                      return (
+                                        <div key={vip.id} className="text-xs flex justify-between text-muted-foreground">
+                                          <span>{vip.name}</span>
+                                          <span className="text-primary font-medium">{vipPrice} zł</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold">{distance.price} zł</div>
-                              <div className="text-sm text-muted-foreground">
+                            <div className="text-right min-w-[120px]">
+                              <div className="text-2xl font-bold">{currentPrice} zł</div>
+                              <Badge variant="secondary" className="text-xs">{tierName}</Badge>
+                              <div className="text-sm text-muted-foreground mt-1">
                                 {distance.registeredCount.toLocaleString()} 
                                 {distance.limit && ` / ${distance.limit.toLocaleString()}`} zapisanych
                               </div>
@@ -776,22 +881,24 @@ const EventDetailsPage = () => {
                       {userRegistration.status === 'confirmed' ? 'Potwierdzony' : 'Oczekuje'}
                     </Badge>
                   </div>
-                ) : isRegistrationOpen ? (
+                ) : (
                   <>
                     <p className="text-sm text-muted-foreground">
                       Ceny od <span className="font-bold text-foreground">{Math.min(...event.distances.map(d => d.price))} zł</span>
                     </p>
-                    <Button onClick={handleRegister} className="w-full" size="lg">
+                    <Button onClick={handleRegister} className="w-full" size="lg" disabled={!isRegistrationOpen}>
                       Zapisz się teraz
                     </Button>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Zapisy do {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
-                    </p>
+                    {isRegistrationOpen ? (
+                      <p className="text-xs text-muted-foreground text-center">
+                        Zapisy do {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-destructive text-center font-medium">
+                        {getClosedReason()}
+                      </p>
+                    )}
                   </>
-                ) : (
-                  <p className="text-muted-foreground text-center py-4">
-                    {isPast ? 'Zawody zakończone' : 'Zapisy zamknięte'}
-                  </p>
                 )}
 
                 <div className="pt-4 border-t">

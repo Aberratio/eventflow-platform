@@ -288,7 +288,15 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
   const canProceed = () => {
     switch (step) {
-      case 1: return !!selectedDistanceId;
+      case 1: {
+        if (!selectedDistanceId) return false;
+        // VIP custom field validation
+        if (activeVip?.customFieldRequired && !vipCustomFieldValue.trim()) return false;
+        // Check distance capacity
+        const dist = event.distances.find(d => d.id === selectedDistanceId);
+        if (dist?.limit != null && dist.registeredCount >= dist.limit) return false;
+        return true;
+      }
       case 2: return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
       case 25: 
         // Team is optional, but if user wants a team, validate
@@ -640,7 +648,6 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
                   // Auto-select matched category
                   if (matchedCategory && selectedCategory !== matchedCategory.name) {
-                    // Use setTimeout to avoid setState during render
                     setTimeout(() => setSelectedCategory(matchedCategory.name), 0);
                   }
 
@@ -654,26 +661,22 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                             Płeć: {matchedCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki: {matchedCategory.birthYearFrom}–{matchedCategory.birthYearTo}
                           </p>
                         </div>
+                      ) : !userGender || !userBirthYear ? (
+                        <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                          <UserCog className="h-4 w-4 text-amber-600" />
+                          <AlertTitle className="text-amber-800 dark:text-amber-200">Uzupełnij profil</AlertTitle>
+                          <AlertDescription className="text-amber-700 dark:text-amber-300">
+                            Aby automatycznie przypisać kategorię wiekową, uzupełnij datę urodzenia i płeć w swoim profilu.
+                          </AlertDescription>
+                        </Alert>
                       ) : (
-                        <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory}>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {selectedDistance.ageCategories.map(cat => (
-                              <label
-                                key={cat.id}
-                                className={`
-                                  flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                                  ${selectedCategory === cat.name ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}
-                                `}
-                              >
-                                <RadioGroupItem value={cat.name} />
-                                <div>
-                                  <span className="font-medium">{cat.name}</span>
-                                  <p className="text-xs text-muted-foreground">{cat.birthYearFrom}–{cat.birthYearTo}</p>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        </RadioGroup>
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Brak pasującej kategorii</AlertTitle>
+                          <AlertDescription>
+                            Nie znaleziono pasującej kategorii wiekowej dla Twoich danych (rok: {userBirthYear}, płeć: {userGender === 'K' ? 'Kobieta' : 'Mężczyzna'}). Sprawdź dane w profilu.
+                          </AlertDescription>
+                        </Alert>
                       )}
 
                       {/* Special categories as checkboxes */}
@@ -690,7 +693,6 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                                 <Checkbox
                                   checked={selectedCategory.includes(cat.name)}
                                   onCheckedChange={(checked) => {
-                                    // Append/remove special category from selected
                                     if (checked) {
                                       setSelectedCategory(prev => prev ? `${prev}, ${cat.name}` : cat.name);
                                     } else {
