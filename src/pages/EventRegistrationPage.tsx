@@ -43,22 +43,24 @@ const EventRegistrationPage = () => {
   }
 
   const isPast = new Date(event.date) < new Date();
-  const isRegistrationOpen = !isPast && new Date(event.registrationDeadline) > new Date();
+  const deadlinePassed = new Date(event.registrationDeadline) < new Date();
+  const isClosedByOrganizer = event.registrationStatus === 'closed';
+  const allDistancesFull = event.distances.length > 0 && event.distances.every(d => d.limit != null && d.registeredCount >= d.limit);
+  const isRegistrationOpen = !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+
+  useEffect(() => {
+    if (!isRegistrationOpen) {
+      toast({
+        title: 'Zapisy zamknięte',
+        description: 'Zapisy na te zawody są zamknięte.',
+        variant: 'destructive',
+      });
+      navigate(`/events/${slug}`);
+    }
+  }, [isRegistrationOpen, navigate, slug]);
 
   if (!isRegistrationOpen) {
-    return (
-      <Layout>
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-bold mb-4">Zapisy zamknięte</h1>
-          <p className="text-muted-foreground mb-4">
-            {isPast ? 'Zawody już się odbyły.' : 'Termin zapisów minął.'}
-          </p>
-          <Button asChild>
-            <Link to={`/events/${slug}`}>Wróć do wydarzenia</Link>
-          </Button>
-        </div>
-      </Layout>
-    );
+    return null;
   }
 
   const handleComplete = (data: RegistrationData) => {
