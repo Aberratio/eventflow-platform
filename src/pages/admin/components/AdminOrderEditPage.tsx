@@ -12,7 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Trash2, Plus, Package, FileText, MessageSquare, Truck, CreditCard, Clock } from 'lucide-react';
 import { mockShopOrders, mockShopProducts, mockUsers } from '@/data/mockData';
-import { ShopOrder } from '@/types';
+import { ShopOrder, OrderHistoryEntry } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { OrderHistoryTimeline } from '@/components/admin/OrderHistoryTimeline';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -48,6 +50,9 @@ export const AdminOrderEditPage = () => {
   const [adminNotes, setAdminNotes] = useState(() => originalOrder?.adminNotes || '');
   const [cancelReason, setCancelReason] = useState(() => originalOrder?.cancelReason || '');
   const [priceAdjustment, setPriceAdjustment] = useState(() => originalOrder?.priceAdjustment || 0);
+  const [history, setHistory] = useState<OrderHistoryEntry[]>(() => originalOrder?.history || []);
+
+  const { user } = useAuth();
 
   const productTotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items]);
   const totalPrice = useMemo(() =>
@@ -89,6 +94,42 @@ export const AdminOrderEditPage = () => {
   };
 
   const handleSave = () => {
+    const now = new Date().toISOString();
+    const userName = user?.name || 'Admin';
+    const userId = user?.id || 'unknown';
+    const newEntries: OrderHistoryEntry[] = [];
+    let counter = 0;
+    const makeId = () => `h-new-${Date.now()}-${counter++}`;
+
+    if (status !== originalOrder.status) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'status_change', description: `Status zmieniony z ${statusLabels[originalOrder.status]} na ${statusLabels[status]}`, previousValue: originalOrder.status, newValue: status });
+    }
+
+    const itemsChanged = JSON.stringify(items) !== JSON.stringify(originalOrder.items);
+    if (itemsChanged) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'items_edited', description: 'Zmieniono pozycje zamówienia' });
+    }
+
+    if (priceAdjustment !== (originalOrder.priceAdjustment || 0)) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'price_adjustment', description: `Zastosowano korektę cenową: ${priceAdjustment.toFixed(2)} zł`, newValue: priceAdjustment.toString() });
+    }
+
+    if (trackingNumber !== (originalOrder.trackingNumber || '')) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'tracking_updated', description: `Zaktualizowano numer przesyłki: ${trackingNumber}`, newValue: trackingNumber });
+    }
+
+    if (adminNotes !== (originalOrder.adminNotes || '')) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'notes_updated', description: 'Zaktualizowano notatkę admina' });
+    }
+
+    if (cancelReason !== (originalOrder.cancelReason || '')) {
+      newEntries.push({ id: makeId(), orderId: originalOrder.id, timestamp: now, userId, userName, action: 'cancel_reason', description: 'Dodano powód anulowania/zwrotu' });
+    }
+
+    if (newEntries.length > 0) {
+      setHistory(prev => [...prev, ...newEntries]);
+    }
+
     toast.success('Zamówienie zostało zaktualizowane');
     navigate('/admin');
   };
@@ -324,7 +365,7 @@ export const AdminOrderEditPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Historia zmian będzie dostępna wkrótce.</p>
+              <OrderHistoryTimeline entries={history} />
             </CardContent>
           </Card>
         </div>

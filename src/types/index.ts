@@ -482,6 +482,21 @@ export interface ShopOrderInvoice {
   postalCode: string;
 }
 
+// Order history entry
+export type OrderHistoryAction = 'status_change' | 'items_edited' | 'price_adjustment' | 'tracking_updated' | 'notes_updated' | 'cancel_reason' | 'created';
+
+export interface OrderHistoryEntry {
+  id: string;
+  orderId: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  action: OrderHistoryAction;
+  description: string;
+  previousValue?: string;
+  newValue?: string;
+}
+
 // Shop order types
 export interface ShopOrder {
   id: string;
@@ -510,6 +525,7 @@ export interface ShopOrder {
   adminNotes?: string;
   cancelReason?: string;
   priceAdjustment?: number;
+  history?: OrderHistoryEntry[];
 }
 
 // Extended discount code with group discounts
