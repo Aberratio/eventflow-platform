@@ -3850,6 +3850,13 @@ export const mockShopOrders: ShopOrder[] = [
       city: 'Warszawa',
       postalCode: '00-456',
     },
+    history: [
+      { id: 'h1-1', orderId: 'order1', timestamp: '2026-01-02T14:30:00Z', userId: 'p1', userName: 'Jan Kowalski', action: 'created', description: 'Zamówienie utworzone' },
+      { id: 'h1-2', orderId: 'order1', timestamp: '2026-01-02T15:10:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'status_change', description: 'Status zmieniony z Oczekujące na Opłacone', previousValue: 'pending', newValue: 'paid' },
+      { id: 'h1-3', orderId: 'order1', timestamp: '2026-01-03T09:00:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'tracking_updated', description: 'Dodano numer przesyłki: INP0012345678', newValue: 'INP0012345678' },
+      { id: 'h1-4', orderId: 'order1', timestamp: '2026-01-03T09:01:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'status_change', description: 'Status zmieniony z Opłacone na Wysłane', previousValue: 'paid', newValue: 'shipped' },
+      { id: 'h1-5', orderId: 'order1', timestamp: '2026-01-05T11:20:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'status_change', description: 'Status zmieniony z Wysłane na Dostarczone', previousValue: 'shipped', newValue: 'delivered' },
+    ],
   },
   {
     id: 'order2',
@@ -3875,6 +3882,12 @@ export const mockShopOrders: ShopOrder[] = [
       phone: '+48 600 100 200',
     },
     customerNotes: 'Dzwonek nie działa, proszę dzwonić na telefon.',
+    history: [
+      { id: 'h2-1', orderId: 'order2', timestamp: '2026-01-08T09:15:00Z', userId: 'p1', userName: 'Jan Kowalski', action: 'created', description: 'Zamówienie utworzone' },
+      { id: 'h2-2', orderId: 'order2', timestamp: '2026-01-08T10:00:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'status_change', description: 'Status zmieniony z Oczekujące na Opłacone', previousValue: 'pending', newValue: 'paid' },
+      { id: 'h2-3', orderId: 'order2', timestamp: '2026-01-09T08:30:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'tracking_updated', description: 'Dodano numer przesyłki: DPD987654321', newValue: 'DPD987654321' },
+      { id: 'h2-4', orderId: 'order2', timestamp: '2026-01-09T08:31:00Z', userId: 'admin1', userName: 'Admin Główny', action: 'status_change', description: 'Status zmieniony z Opłacone na Wysłane', previousValue: 'paid', newValue: 'shipped' },
+    ],
   },
   {
     id: 'order3',
@@ -3906,6 +3919,9 @@ export const mockShopOrders: ShopOrder[] = [
       city: 'Kraków',
       postalCode: '30-001',
     },
+    history: [
+      { id: 'h3-1', orderId: 'order3', timestamp: '2026-01-10T16:45:00Z', userId: 'p1', userName: 'Jan Kowalski', action: 'created', description: 'Zamówienie utworzone' },
+    ],
   },
 ];
 
