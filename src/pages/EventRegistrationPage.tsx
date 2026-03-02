@@ -87,11 +87,9 @@ const EventRegistrationPage = () => {
       {/* Header */}
       <div className="bg-muted/30 border-b">
         <div className="container py-6">
-          <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link to={`/events/${slug}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Wróć do wydarzenia
-            </Link>
+          <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Wróć do wydarzenia
           </Button>
           
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

@@ -170,7 +170,7 @@ export const PageEditorPage = () => {
       title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
       description: `Strona "${formData.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,
     });
-    navigate('/admin?tab=pages');
+    navigate(-1);
   };
 
   const handlePreview = () => {
@@ -184,7 +184,7 @@ export const PageEditorPage = () => {
         <Button
           variant="ghost"
           className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate('/admin?tab=pages')}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Wróć do listy stron

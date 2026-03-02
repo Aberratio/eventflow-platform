@@ -29,8 +29,7 @@ const EventManage = () => {
   const canManage = user?.role === 'admin' || user?.role === 'moderator' || 
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
-  // Dynamic back path based on role
-  const backPath = user?.role === 'admin' ? '/admin' : user?.role === 'moderator' ? '/moderator' : '/organizer';
+  // Back navigation
 
   if (!event || !canManage) {
     return (
@@ -40,7 +39,7 @@ const EventManage = () => {
             <h1 className="text-2xl font-bold mb-4">
               {!event ? 'Wydarzenie nie znalezione' : 'Brak dostępu'}
             </h1>
-            <Button onClick={() => navigate(backPath)}>
+            <Button onClick={() => navigate(-1)}>
               Powrót do panelu
             </Button>
           </div>
@@ -52,7 +51,7 @@ const EventManage = () => {
   return (
     <Layout>
       <div className="container py-8">
-        <Button variant="ghost" onClick={() => navigate(backPath)} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 

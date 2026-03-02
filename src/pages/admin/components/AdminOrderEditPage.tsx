@@ -131,7 +131,7 @@ export const AdminOrderEditPage = () => {
     }
 
     toast.success('Zamówienie zostało zaktualizowane');
-    navigate('/admin');
+    navigate(-1);
   };
 
   return (
@@ -140,7 +140,7 @@ export const AdminOrderEditPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>

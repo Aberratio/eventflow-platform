@@ -58,7 +58,7 @@ const OrganizerEventsPage = () => {
   return (
     <Layout>
       <div className="container py-8">
-        <Button variant="ghost" onClick={() => navigate('/organizer')} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 

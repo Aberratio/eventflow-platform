@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { mockEvents, mockRegistrations, mockResults, mockResultDocuments, mockTeamResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag, Eye, Pencil, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,10 +22,17 @@ import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
 import { getCurrentPrice } from '@/data/mockData';
 import { applyDiscount } from '@/api/mock/helpers';
-import { AlertTriangle, FileEdit, ShieldCheck, Lock } from 'lucide-react';
+import { AlertTriangle, Lock } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Draft/unpublished status banner
+// Helper to get edit URL based on role
+const getEditUrl = (event: Event, user: any) => {
+  if (user?.role === 'admin') return `/admin/events/${event.id}`;
+  if (user?.role === 'moderator') return `/moderator/events/${event.id}`;
+  return `/organizer/events/${event.id}`;
+};
+
+// Draft/unpublished status banner — full-width yellow bar
 const DraftBanner = ({ event, user, onApprove, onReject }: { 
   event: Event; 
   user: any;
@@ -34,72 +41,50 @@ const DraftBanner = ({ event, user, onApprove, onReject }: {
 }) => {
   const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';
   
-  const config: Record<string, { variant: 'default' | 'destructive'; icon: React.ReactNode; title: string; description: string }> = {
-    draft: {
-      variant: 'default',
-      icon: <FileEdit className="h-4 w-4" />,
-      title: 'Szkic',
-      description: 'Wydarzenie nie jest widoczne publicznie.',
-    },
-    awaiting_approval: {
-      variant: 'default',
-      icon: <Clock className="h-4 w-4" />,
-      title: 'Oczekuje na akceptację',
-      description: 'Wydarzenie nie jest jeszcze opublikowane.',
-    },
-    rejected: {
-      variant: 'destructive',
-      icon: <AlertTriangle className="h-4 w-4" />,
-      title: 'Odrzucone',
-      description: 'Wydarzenie wymaga poprawek.',
-    },
+  const messages: Record<string, string> = {
+    draft: 'Podgląd — wydarzenie nie jest widoczne publicznie',
+    awaiting_approval: 'Podgląd — wydarzenie oczekuje na akceptację',
+    rejected: 'Podgląd — wydarzenie zostało odrzucone',
   };
 
-  const c = config[event.status];
-  if (!c) return null;
-
-  const manageUrl = user?.role === 'admin' 
-    ? `/admin/events/${event.id}` 
-    : user?.role === 'moderator' 
-      ? `/moderator/events/${event.id}` 
-      : `/organizer/events/${event.id}`;
+  const message = messages[event.status];
+  if (!message) return null;
 
   return (
-    <div className="container pt-4">
-      <Alert variant={c.variant} className={event.status !== 'rejected' ? 'border-warning bg-warning/10' : ''}>
-        {c.icon}
-        <AlertTitle>{c.title}</AlertTitle>
-        <AlertDescription className="flex flex-col gap-2">
-          <span>{c.description}</span>
+    <div className="bg-warning text-warning-foreground">
+      <div className="container py-2 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Eye className="h-4 w-4 shrink-0" />
+          <span>{message}</span>
           {event.status === 'rejected' && event.rejectionReason && (
-            <span className="font-medium">Powód: {event.rejectionReason}</span>
+            <span className="font-normal">— {event.rejectionReason}</span>
           )}
-          <div className="flex flex-wrap gap-2 mt-1">
-            <Button size="sm" variant="outline" asChild>
-              <Link to={manageUrl}>
-                <FileEdit className="h-3 w-3 mr-1" />
-                Zarządzaj
-              </Link>
-            </Button>
-            {isAdminOrMod && event.status === 'awaiting_approval' && (
-              <>
-                {onApprove && (
-                  <Button size="sm" onClick={onApprove}>
-                    <ShieldCheck className="h-3 w-3 mr-1" />
-                    Zatwierdź
-                  </Button>
-                )}
-                {onReject && (
-                  <Button size="sm" variant="destructive" onClick={onReject}>
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    Odrzuć
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </AlertDescription>
-      </Alert>
+        </div>
+        <div className="flex items-center gap-2">
+          {isAdminOrMod && event.status === 'awaiting_approval' && (
+            <>
+              {onApprove && (
+                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onApprove}>
+                  <ShieldCheck className="h-3 w-3 mr-1" />
+                  Zatwierdź
+                </Button>
+              )}
+              {onReject && (
+                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onReject}>
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Odrzuć
+                </Button>
+              )}
+            </>
+          )}
+          <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" asChild>
+            <Link to={getEditUrl(event, user)}>
+              <Pencil className="h-3 w-3 mr-1" />
+              Edytuj
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -383,7 +368,7 @@ const EventDetailsPage = () => {
 
   return (
     <Layout>
-      {/* Draft status banner */}
+      {/* Draft status banner — full width under header */}
       {isUnpublished && <DraftBanner event={event} user={user} />}
       {/* Private event banner */}
       {isPrivateEvent && !isUnpublished && <PrivateBanner />}
@@ -412,11 +397,9 @@ const EventDetailsPage = () => {
           
           <div className="absolute bottom-0 left-0 right-0">
             <div className="container pb-6">
-              <Button variant="ghost" size="sm" asChild className="mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40">
-                <Link to="/events">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Wszystkie wydarzenia
-                </Link>
+              <Button variant="ghost" size="sm" className="mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Wróć
               </Button>
               <div className="flex flex-wrap gap-2 mb-3">
                 <Badge className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm">
@@ -440,11 +423,9 @@ const EventDetailsPage = () => {
         /* Clean Header (no banner) */
         <div className="bg-muted/30 border-b">
           <div className="container py-6">
-            <Button variant="ghost" size="sm" asChild className="mb-4">
-              <Link to="/events">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Wszystkie wydarzenia
-              </Link>
+            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Wróć
             </Button>
             <div className="flex flex-wrap gap-2 mb-3">
               <Badge className="flex items-center gap-1.5">
@@ -901,12 +882,24 @@ const EventDetailsPage = () => {
                   </>
                 )}
 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-2">
                   <Button variant="outline" className="w-full" onClick={handleShare}>
                     <Share2 className="h-4 w-4 mr-2" />
                     Udostępnij
                   </Button>
                 </div>
+
+                {/* Edit button for admin/moderator/organizer */}
+                {(user?.role === 'admin' || user?.role === 'moderator' || (user?.role === 'organizer' && event.organizerId === user?.id)) && (
+                  <div className="pt-4 border-t">
+                    <Button variant="secondary" className="w-full" asChild>
+                      <Link to={getEditUrl(event, user)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edytuj wydarzenie
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

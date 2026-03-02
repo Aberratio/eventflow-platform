@@ -49,7 +49,7 @@ export const AdminPartnerEditPage = () => {
   const handleSave = () => {
     if (!validate()) return;
     toast.success(isEditing ? `Partner ${formData.name} został zaktualizowany` : `Partner ${formData.name} został dodany`);
-    navigate('/admin');
+    navigate(-1);
   };
 
   const updateField = (field: string, value: string | boolean) => {
@@ -78,7 +78,7 @@ export const AdminPartnerEditPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-2xl font-bold flex items-center gap-2">

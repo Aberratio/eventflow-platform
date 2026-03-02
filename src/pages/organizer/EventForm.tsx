@@ -289,7 +289,7 @@ const EventForm = () => {
       title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
       description: messages[status],
     });
-    navigate('/organizer');
+    navigate(-1);
   };
 
   const generateSlug = (name: string) => {
@@ -316,7 +316,7 @@ const EventForm = () => {
   return (
     <Layout>
       <div className="container py-8 max-w-4xl">
-        <Button variant="ghost" onClick={() => navigate('/organizer')} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
