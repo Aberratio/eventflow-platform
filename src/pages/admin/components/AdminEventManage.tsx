@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import {
 
 export const AdminEventManage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const event = mockEvents.find((e) => e.id === id);
   const eventRegistrations = mockRegistrations.filter((r) => r.eventId === id);
 
@@ -67,11 +68,9 @@ export const AdminEventManage = () => {
     <Layout>
       <div className="container py-8">
         <div className="mb-6">
-          <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link to="/admin">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Powrót do panelu
-            </Link>
+          <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Powrót do panelu
           </Button>
           <h1 className="text-3xl font-bold">{event.name}</h1>
           <p className="text-muted-foreground">Zarządzanie wydarzeniem (widok administratora)</p>

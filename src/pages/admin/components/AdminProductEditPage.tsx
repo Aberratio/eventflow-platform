@@ -45,7 +45,7 @@ export const AdminProductEditPage = () => {
       if (product) setForm({ ...product });
       else {
         toast.error('Nie znaleziono produktu');
-        navigate('/admin');
+        navigate(-1);
       }
     }
   }, [id, navigate]);
@@ -56,7 +56,7 @@ export const AdminProductEditPage = () => {
       return;
     }
     toast.success(isNew ? 'Produkt został dodany' : 'Produkt został zaktualizowany');
-    navigate('/admin');
+    navigate(-1);
   };
 
   return (
@@ -65,7 +65,7 @@ export const AdminProductEditPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>

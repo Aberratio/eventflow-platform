@@ -141,7 +141,7 @@ export const AdminChallengeEditPage = () => {
   const handleSave = () => {
     if (!validate()) return;
     toast.success(isEditing ? 'Wyzwanie zaktualizowane!' : 'Wyzwanie utworzone!');
-    navigate('/admin');
+    navigate(-1);
   };
 
   if (isEditing && !challenge) {
@@ -163,7 +163,7 @@ export const AdminChallengeEditPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
