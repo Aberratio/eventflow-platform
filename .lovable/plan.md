@@ -1,88 +1,80 @@
 
-# Poprawki nawigacji, przycisk edycji i pasek preview
 
-## Podsumowanie
+# Artefakty tras przy dystansach (mapki, GPX, zdjecia)
 
-Trzy obszary zmian:
-1. **Back button** — wszedzie uzyc `navigate(-1)` zamiast hardcodowanych sciezek
-2. **Przycisk edycji** na stronie wydarzenia dla admina/moderatora/organizatora
-3. **Zolty pasek preview** pod headerem dla nieopublikowanych wydarzen (zamiana obecnego Alert na pelnej szerokosci pasek)
+## Obecny stan
 
----
+Obecnie wydarzenie ma **jedną trasę na poziomie całego eventu** (`routeMapUrl`, `routeGpxUrl`, `routeElevationProfile`), wyswietlaną w zakładce "Trasa". Dystanse (`Distance`) nie mają żadnych pól na artefakty tras.
 
-## 1. Back button — navigate(-1)
+## Zakres zmian
 
-Wszystkie back buttony w aplikacji prowadza do hardcodowanych sciezek (np. `/admin`, `/organizer`). Zmiana na `navigate(-1)` aby zawsze wracac na strone, z ktorej uzytkownik przyszedl.
+### 1. Rozszerzenie typu `Distance` o artefakty trasy
 
-### Pliki do zmiany
+Dodanie opcjonalnych pól do interfejsu `Distance` w `src/types/index.ts`:
 
-| Plik | Obecne zachowanie | Nowe |
-|---|---|---|
-| `EventDetailsPage.tsx` (linie 416, 444) | `Link to="/events"` | `onClick={() => navigate(-1)}` |
-| `EventRegistrationPage.tsx` (linia 91) | `Link to={/events/${slug}}` | `onClick={() => navigate(-1)}` |
-| `EventManage.tsx` (linia 55) | `navigate(backPath)` | `navigate(-1)` |
-| `AdminEventManage.tsx` (linia 71) | `Link to="/admin"` | `onClick={() => navigate(-1)}` |
-| `AdminOrderEditPage.tsx` (linia 143) | `navigate('/admin')` | `navigate(-1)` |
-| `AdminChallengeEditPage.tsx` (linia 166) | `navigate('/admin')` | `navigate(-1)` |
-| `AdminPartnerEditPage.tsx` (linia 81) | `navigate('/admin')` | `navigate(-1)` |
-| `AdminProductEditPage.tsx` (linia 68) | `navigate('/admin')` | `navigate(-1)` |
-| `OrganizerEventsPage.tsx` (linia 61) | `navigate('/organizer')` | `navigate(-1)` |
-| `EventForm.tsx` (linia 319) | `navigate('/organizer')` | `navigate(-1)` |
-| `PageEditorPage.tsx` (linia 187) | `navigate('/admin?tab=pages')` | `navigate(-1)` |
+```typescript
+export interface DistanceRouteFile {
+  id: string;
+  name: string;
+  type: 'map' | 'elevation' | 'gpx' | 'image';
+  url: string;
+}
 
-Fallback buttony w stanach bledow (np. "Wydarzenie nie znalezione") zostaja bez zmian — tam hardcodowane sciezki sa poprawne.
+export interface Distance {
+  // ... istniejące pola
+  routeMapUrl?: string;
+  routeElevationProfile?: string;
+  routeGpxUrl?: string;
+  routeFiles?: DistanceRouteFile[];  // dodatkowe pliki/zdjęcia
+}
+```
 
----
+### 2. Formularz edycji dystansu — sekcja "Trasa" (`EventForm.tsx`)
 
-## 2. Przycisk edycji na stronie wydarzenia
+W kroku 2, pod polami każdego dystansu (nazwa, długość, cena, limit), dodanie rozwijalnej sekcji "Trasa i mapy":
 
-Na stronie `EventDetailsPage.tsx`, w sidebarze (obok przycisku "Udostepnij"), dodac przycisk "Edytuj wydarzenie" widoczny tylko dla:
-- Admina
-- Moderatora
-- Organizatora tego wydarzenia (`event.organizerId === user.id`)
+- **URL mapy trasy** — input tekstowy
+- **URL profilu wysokościowego** — input tekstowy
+- **URL pliku GPX** — input tekstowy
+- **Dodatkowe pliki** — lista dynamiczna (nazwa + URL + typ), z przyciskiem "Dodaj plik"
 
-Przycisk prowadzi do:
-- Admin: `/admin/events/{event.id}`
-- Moderator: `/moderator/events/{event.id}`
-- Organizator: `/organizer/events/{event.id}`
+Sekcja będzie w `Collapsible` aby nie zaśmiecać formularza gdy organizator nie chce dodawać artefaktów.
 
-Umieszczenie: w sidebarze, po sekcji z przyciskiem "Udostepnij", w osobnym `div` z `border-t`.
+Rozszerzenie `DistanceForm` o nowe pola i `updateDistance` o ich obsługę.
 
----
+### 3. Widok dystansów na stronie wydarzenia (`EventDetailsPage.tsx`)
 
-## 3. Zolty pasek preview pod headerem
+W zakładce "Dystanse", pod każdym dystansem, jeśli ma artefakty trasy — wyświetlenie:
+- Miniaturka mapy (klikalna → powiększenie w Dialog)
+- Przycisk "Pobierz GPX" 
+- Miniaturka profilu wysokościowego
+- Lista dodatkowych plików jako linki
 
-Obecny `DraftBanner` to Alert wewnatrz kontenera. Zmiana na pelnej szerokosci zolty pasek pod headerem (przed banerem wydarzenia):
+### 4. Podgląd trasy dystansu przy rejestracji
 
-- Styl: `bg-warning text-warning-foreground` pelna szerokosc, kompaktowy (py-2)
-- Tresc:
-  - Szkic: "Podglad — wydarzenie nie jest widoczne publicznie"
-  - Oczekuje na akceptacje: "Podglad — wydarzenie oczekuje na akceptacje"
-  - Odrzucone: "Podglad — wydarzenie zostalo odrzucone" + powod
-- Ikona po lewej (Eye), przycisk "Edytuj" po prawej (prowadzi do trybu edycji jak w pkt 2)
-- Przyciski "Zatwierdz" i "Odrzuc" dla admina/moderatora przy statusie `awaiting_approval`
+W `RegistrationForm.tsx`, po wybraniu dystansu, jeśli ma artefakty — pokazanie małego przycisku "Zobacz trasę" otwierającego Dialog z mapką i plikami.
+
+### 5. Mock data
+
+Dodanie przykładowych artefaktów do 2-3 dystansów w `mockData.ts`.
 
 ---
 
-## Szczegoly techniczne
-
-### Pliki do zmiany
+## Pliki do zmiany
 
 | Plik | Zmiana |
 |---|---|
-| `src/pages/EventDetailsPage.tsx` | DraftBanner na pelny pasek, back button na navigate(-1), przycisk edycji w sidebar |
-| `src/pages/EventRegistrationPage.tsx` | Back button navigate(-1) |
-| `src/pages/organizer/EventManage.tsx` | Back button navigate(-1) |
-| `src/pages/organizer/EventForm.tsx` | Back button navigate(-1) |
-| `src/pages/organizer/OrganizerEventsPage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/AdminEventManage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/AdminOrderEditPage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/AdminChallengeEditPage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/AdminPartnerEditPage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/AdminProductEditPage.tsx` | Back button navigate(-1) |
-| `src/pages/admin/components/PageEditorPage.tsx` | Back button navigate(-1) |
+| `src/types/index.ts` | Dodanie `DistanceRouteFile`, rozszerzenie `Distance` |
+| `src/pages/organizer/EventForm.tsx` | Sekcja "Trasa" w edycji dystansu (Collapsible) |
+| `src/pages/EventDetailsPage.tsx` | Wyświetlenie artefaktów w zakładce Dystanse |
+| `src/components/registration/RegistrationForm.tsx` | Przycisk "Zobacz trasę" po wybraniu dystansu |
+| `src/data/mockData.ts` | Przykładowe dane tras dla dystansów |
 
-### Kolejnosc implementacji
+## Kolejność implementacji
 
-1. EventDetailsPage — DraftBanner, back button, przycisk edycji
-2. Pozostale strony — back button navigate(-1)
+1. Typy (`types/index.ts`)
+2. Mock data
+3. EventForm — sekcja trasy w dystansie
+4. EventDetailsPage — wyświetlanie artefaktów
+5. RegistrationForm — podgląd trasy
+
