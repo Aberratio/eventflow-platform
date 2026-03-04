@@ -651,7 +651,14 @@ export const mockEvents: Event[] = [
         vipPrices: [
           { id: 'vip1', name: 'Osoba niepełnosprawna', discountType: 'percent', discountValue: 50, customFieldLabel: 'Nr orzeczenia o niepełnosprawności', customFieldRequired: true },
           { id: 'vip2', name: 'Wolontariusz edycji 2025', discountType: 'fixed', discountValue: 100 },
-        ]
+        ],
+        routeMapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800',
+        routeElevationProfile: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
+        routeGpxUrl: 'https://example.com/gpx/ultra-80k.gpx',
+        routeFiles: [
+          { id: 'rf-u1', name: 'Szczegółowa mapa z oznaczeniami', type: 'map', url: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800' },
+          { id: 'rf-u2', name: 'Profil GPS z punktami kontrolnymi', type: 'elevation', url: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=600' },
+        ],
       },
       { 
         id: 'd21', 
@@ -1152,8 +1159,17 @@ export const mockEvents: Event[] = [
         specialCategories: [
           { id: 'scat-1', name: 'Mieszkaniec Warszawy', description: 'Osoby zameldowane w Warszawie' },
         ],
+        routeMapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800',
+        routeElevationProfile: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
+        routeGpxUrl: 'https://example.com/gpx/maraton-warszawski-42k.gpx',
+        routeFiles: [
+          { id: 'rf1', name: 'Mapa z punktami nawadniania', type: 'image', url: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800' },
+        ],
       },
-      { id: 'd2', name: 'Bieg na 10km', length: 10, unit: 'km', categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], limit: 5000, registeredCount: 4231, price: 70 },
+      { id: 'd2', name: 'Bieg na 10km', length: 10, unit: 'km', categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'], limit: 5000, registeredCount: 4231, price: 70,
+        routeMapUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800',
+        routeGpxUrl: 'https://example.com/gpx/maraton-warszawski-10k.gpx',
+      },
     ],
     organizerId: 'o1',
     organizerName: 'Fundacja Maraton Warszawski',
@@ -1194,8 +1210,15 @@ export const mockEvents: Event[] = [
     description: 'Amatorska edycja legendarnego wyścigu. Przejedź tą samą trasą co zawodowcy!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
     distances: [
-      { id: 'd3', name: 'Gran Fondo', length: 140, unit: 'km', categories: ['M18-34', 'M35-49', 'M50+', 'K18-34', 'K35-49', 'K50+'], limit: 2000, registeredCount: 1456, price: 200 },
-      { id: 'd4', name: 'Medio Fondo', length: 80, unit: 'km', categories: ['M18-34', 'M35-49', 'M50+', 'K18-34', 'K35-49', 'K50+'], limit: 2000, registeredCount: 1832, price: 150 },
+      { id: 'd3', name: 'Gran Fondo', length: 140, unit: 'km', categories: ['M18-34', 'M35-49', 'M50+', 'K18-34', 'K35-49', 'K50+'], limit: 2000, registeredCount: 1456, price: 200,
+        routeMapUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800',
+        routeElevationProfile: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
+        routeGpxUrl: 'https://example.com/gpx/gran-fondo.gpx',
+      },
+      { id: 'd4', name: 'Medio Fondo', length: 80, unit: 'km', categories: ['M18-34', 'M35-49', 'M50+', 'K18-34', 'K35-49', 'K50+'], limit: 2000, registeredCount: 1832, price: 150,
+        routeMapUrl: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800',
+        routeGpxUrl: 'https://example.com/gpx/medio-fondo.gpx',
+      },
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',

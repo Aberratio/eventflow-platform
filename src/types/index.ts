@@ -114,6 +114,15 @@ export interface SpecialCategory {
   description?: string;
 }
 
+export type DistanceRouteFileType = 'map' | 'elevation' | 'gpx' | 'image';
+
+export interface DistanceRouteFile {
+  id: string;
+  name: string;
+  type: DistanceRouteFileType;
+  url: string;
+}
+
 export interface Distance {
   id: string;
   name: string;
@@ -129,6 +138,10 @@ export interface Distance {
   participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
   vipPrices?: VipPrice[];
+  routeMapUrl?: string;
+  routeElevationProfile?: string;
+  routeGpxUrl?: string;
+  routeFiles?: DistanceRouteFile[];
 }
 
 export interface OrganizerContact {

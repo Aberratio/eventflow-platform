@@ -31,6 +31,7 @@ import {
   Star
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
+import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes, getExistingTeamsForEvent, validateTeamName, mockGlobalInsuranceSettings } from '@/data/mockData';
 import { applyDiscount } from '@/api/mock/helpers';
 import { format } from 'date-fns';
@@ -482,6 +483,13 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
                             <span>{distance.registeredCount} zapisanych{distance.limit && ` / ${distance.limit}`}</span>
                           )}
                         </div>
+
+                        {/* Route preview button */}
+                        {hasRouteArtifacts(distance) && (
+                          <div className="mt-2" onClick={e => e.preventDefault()}>
+                            <DistanceRouteDialog distance={distance} />
+                          </div>
+                        )}
                       </div>
                     </label>
                   );
