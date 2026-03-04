@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { mockEvents, mockRegistrations, mockResults, mockResultDocuments, mockTeamResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag, Eye, Pencil, ShieldCheck } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag, Eye, Pencil, ShieldCheck, Map, Download, Mountain } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +20,7 @@ import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Result } from '@/types';
+import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { getCurrentPrice } from '@/data/mockData';
 import { applyDiscount } from '@/api/mock/helpers';
 import { AlertTriangle, Lock } from 'lucide-react';
@@ -775,6 +776,41 @@ const EventDetailsPage = () => {
                               )}
                             </div>
                           </div>
+
+                          {/* Route artifacts */}
+                          {hasRouteArtifacts(distance) && (
+                            <div className="mt-4 pt-4 border-t">
+                              <div className="flex flex-wrap items-center gap-3">
+                                {distance.routeMapUrl && (
+                                  <div className="flex items-center gap-2">
+                                    <img
+                                      src={distance.routeMapUrl}
+                                      alt={`Mapa ${distance.name}`}
+                                      className="h-12 w-20 object-cover rounded border"
+                                    />
+                                  </div>
+                                )}
+                                {distance.routeElevationProfile && (
+                                  <div className="flex items-center gap-2">
+                                    <img
+                                      src={distance.routeElevationProfile}
+                                      alt={`Profil ${distance.name}`}
+                                      className="h-12 w-20 object-cover rounded border"
+                                    />
+                                  </div>
+                                )}
+                                {distance.routeGpxUrl && (
+                                  <Button variant="outline" size="sm" asChild>
+                                    <a href={distance.routeGpxUrl} download className="gap-1.5">
+                                      <Download className="h-3.5 w-3.5" />
+                                      GPX
+                                    </a>
+                                  </Button>
+                                )}
+                                <DistanceRouteDialog distance={distance} />
+                              </div>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     );

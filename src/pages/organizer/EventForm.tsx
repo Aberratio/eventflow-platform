@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus, X } from 'lucide-react';
+import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory, DistanceRouteFile } from '@/types';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus, X, Map, ChevronDown } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
@@ -25,6 +26,10 @@ interface DistanceForm {
   price: string;
   limit: string;
   disabledCategoryIds: string[];
+  routeMapUrl: string;
+  routeElevationProfile: string;
+  routeGpxUrl: string;
+  routeFiles: DistanceRouteFile[];
 }
 
 const EventForm = () => {
@@ -136,6 +141,10 @@ const EventForm = () => {
       price: d.price.toString(),
       limit: d.limit?.toString() || '',
       disabledCategoryIds: [],
+      routeMapUrl: d.routeMapUrl || '',
+      routeElevationProfile: d.routeElevationProfile || '',
+      routeGpxUrl: d.routeGpxUrl || '',
+      routeFiles: d.routeFiles || [],
     })) || []
   );
 
@@ -155,6 +164,10 @@ const EventForm = () => {
       price: '',
       limit: '',
       disabledCategoryIds: [],
+      routeMapUrl: '',
+      routeElevationProfile: '',
+      routeGpxUrl: '',
+      routeFiles: [],
     }]);
   };
 
@@ -162,9 +175,39 @@ const EventForm = () => {
     setDistances(distances.filter((_, i) => i !== index));
   };
 
-  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[]) => {
+  const updateDistance = (index: number, field: keyof DistanceForm, value: string | string[] | DistanceRouteFile[]) => {
     const updated = [...distances];
     updated[index] = { ...updated[index], [field]: value };
+    setDistances(updated);
+  };
+
+  const addRouteFile = (distIndex: number) => {
+    const updated = [...distances];
+    const dist = updated[distIndex];
+    updated[distIndex] = {
+      ...dist,
+      routeFiles: [...dist.routeFiles, { id: `rf-${Date.now()}`, name: '', type: 'image', url: '' }],
+    };
+    setDistances(updated);
+  };
+
+  const removeRouteFile = (distIndex: number, fileId: string) => {
+    const updated = [...distances];
+    const dist = updated[distIndex];
+    updated[distIndex] = {
+      ...dist,
+      routeFiles: dist.routeFiles.filter(f => f.id !== fileId),
+    };
+    setDistances(updated);
+  };
+
+  const updateRouteFile = (distIndex: number, fileId: string, field: keyof DistanceRouteFile, value: string) => {
+    const updated = [...distances];
+    const dist = updated[distIndex];
+    updated[distIndex] = {
+      ...dist,
+      routeFiles: dist.routeFiles.map(f => f.id === fileId ? { ...f, [field]: value } : f),
+    };
     setDistances(updated);
   };
 
@@ -978,6 +1021,101 @@ const EventForm = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Route artifacts - Collapsible */}
+                  <Collapsible>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground w-full justify-start border-t pt-4 mt-2 rounded-none">
+                        <Map className="h-4 w-4" />
+                        Trasa i mapy
+                        <ChevronDown className="h-4 w-4 ml-auto transition-transform [[data-state=open]_&]:rotate-180" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4 pt-4">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">URL mapy trasy</Label>
+                          <Input
+                            value={dist.routeMapUrl}
+                            onChange={e => updateDistance(index, 'routeMapUrl', e.target.value)}
+                            placeholder="https://..."
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">URL profilu przewyższeń</Label>
+                          <Input
+                            value={dist.routeElevationProfile}
+                            onChange={e => updateDistance(index, 'routeElevationProfile', e.target.value)}
+                            placeholder="https://..."
+                            className="h-9"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">URL pliku GPX</Label>
+                          <Input
+                            value={dist.routeGpxUrl}
+                            onChange={e => updateDistance(index, 'routeGpxUrl', e.target.value)}
+                            placeholder="https://..."
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Additional files */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Dodatkowe pliki</Label>
+                        {dist.routeFiles.map(file => (
+                          <div key={file.id} className="grid grid-cols-[1fr_1fr_100px_32px] gap-2 items-center">
+                            <Input
+                              value={file.name}
+                              onChange={e => updateRouteFile(index, file.id, 'name', e.target.value)}
+                              placeholder="Nazwa pliku"
+                              className="h-9"
+                            />
+                            <Input
+                              value={file.url}
+                              onChange={e => updateRouteFile(index, file.id, 'url', e.target.value)}
+                              placeholder="URL"
+                              className="h-9"
+                            />
+                            <Select
+                              value={file.type}
+                              onValueChange={(v) => updateRouteFile(index, file.id, 'type', v)}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="map">Mapa</SelectItem>
+                                <SelectItem value="elevation">Profil</SelectItem>
+                                <SelectItem value="gpx">GPX</SelectItem>
+                                <SelectItem value="image">Zdjęcie</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 text-destructive hover:text-destructive"
+                              onClick={() => removeRouteFile(index, file.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addRouteFile(index)}
+                          className="text-primary"
+                        >
+                          <Plus className="mr-2 h-4 w-4" /> Dodaj plik
+                        </Button>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </CardContent>
               </Card>
             ))}
