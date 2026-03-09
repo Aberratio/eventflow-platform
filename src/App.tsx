@@ -69,7 +69,6 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   {/* Polish routes */}
                   <Route path="/wydarzenia" element={<EventsPage />} />
-                  <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
                   
                   {/* Dynamic info pages - jedna trasa dla wszystkich stron informacyjnych */}
