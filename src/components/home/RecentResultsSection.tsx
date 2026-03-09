@@ -68,7 +68,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
 
         <div className="mt-4 text-center sm:hidden">
           <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/wyniki">
+            <Link to="/wydarzenia">
               Wszystkie wyniki
               <ArrowRight className="h-4 w-4" />
             </Link>

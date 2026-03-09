@@ -6,4 +6,4 @@ export { EventListRow } from './EventListRow';
 export { RegistrationListRow } from './RegistrationListRow';
 export { SeriesListRow } from './SeriesListRow';
 export { ResultListRow } from './ResultListRow';
-export { ResultEventListRow } from './ResultEventListRow';
+

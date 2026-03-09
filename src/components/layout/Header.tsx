@@ -263,18 +263,15 @@ export const Header = () => {
                 <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-4">
-                <Link to="/wyniki" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Kalendarz wyników
-                </Link>
-                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  <Radio className="h-3 w-3 text-destructive" />
-                  Na żywo
+                <Link to="/wydarzenia" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Kalendarz
                 </Link>
                 <Link to="/series" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Serie i cykle
                 </Link>
-                <Link to="/athletes" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Zawodnicy
+                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  <Radio className="h-3 w-3 text-destructive" />
+                  Wyniki na żywo
                 </Link>
               </CollapsibleContent>
             </Collapsible>

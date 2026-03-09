@@ -38,8 +38,8 @@ export const BottomNav = () => {
     {
       icon: Calendar,
       label: 'Wydarzenia',
-      href: '/events',
-      active: location.pathname.startsWith('/events'),
+      href: '/wydarzenia',
+      active: location.pathname === '/wydarzenia' || location.pathname.startsWith('/events'),
     },
     {
       icon: ShoppingCart,
