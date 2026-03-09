@@ -77,26 +77,14 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          <Link 
-            to="/wydarzenia" 
-            className={cn(
-              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActive('/wydarzenia') || isActive('/events'))
-                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
-                : "text-muted-foreground"
-            )}
-          >
-            Wydarzenia
-          </Link>
-
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
               "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActivePrefix('/wyniki') || isActivePrefix('/series'))
+              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events'))
                 ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground"
             )}>
-              Wyniki
+              Wydarzenia
               <ChevronDown className="h-3 w-3 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
@@ -253,13 +241,9 @@ export const Header = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-border bg-background max-h-[calc(100vh-3.5rem)] overflow-y-auto">
           <nav className="container py-4 flex flex-col gap-1">
-            <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Wydarzenia
-            </Link>
-
             <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent">
-                Wyniki
+                Wydarzenia
                 <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-4">
