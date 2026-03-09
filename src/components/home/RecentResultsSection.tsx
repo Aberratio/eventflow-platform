@@ -40,7 +40,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
           {completedEvents.map((event) => (
             <Link 
               key={event.id}
-              to={`/results?eventId=${event.id}`}
+              to={`/events/${event.slug}?tab=results`}
               className="group flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card hover:bg-accent transition-all duration-200"
             >
               <div className="flex items-center gap-3 min-w-0">
