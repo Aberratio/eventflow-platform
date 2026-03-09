@@ -77,26 +77,14 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          <Link 
-            to="/wydarzenia" 
-            className={cn(
-              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActive('/wydarzenia') || isActive('/events'))
-                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
-                : "text-muted-foreground"
-            )}
-          >
-            Wydarzenia
-          </Link>
-
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
               "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActivePrefix('/wyniki') || isActivePrefix('/series'))
+              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events'))
                 ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground"
             )}>
-              Wyniki
+              Wydarzenia
               <ChevronDown className="h-3 w-3 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
