@@ -241,13 +241,9 @@ export const Header = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-border bg-background max-h-[calc(100vh-3.5rem)] overflow-y-auto">
           <nav className="container py-4 flex flex-col gap-1">
-            <Link to="/wydarzenia" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Wydarzenia
-            </Link>
-
             <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent">
-                Wyniki
+                Wydarzenia
                 <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-4">
