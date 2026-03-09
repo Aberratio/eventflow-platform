@@ -29,7 +29,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
             </div>
           </div>
           <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
-            <Link to="/wyniki">
+            <Link to="/wydarzenia">
               Wszystkie
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -40,7 +40,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
           {completedEvents.map((event) => (
             <Link 
               key={event.id}
-              to={`/results?eventId=${event.id}`}
+              to={`/events/${event.slug}?tab=results`}
               className="group flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card hover:bg-accent transition-all duration-200"
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -68,7 +68,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
 
         <div className="mt-4 text-center sm:hidden">
           <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/wyniki">
+            <Link to="/wydarzenia">
               Wszystkie wyniki
               <ArrowRight className="h-4 w-4" />
             </Link>

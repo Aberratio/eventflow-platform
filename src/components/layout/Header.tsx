@@ -92,7 +92,7 @@ export const Header = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
               "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              isActivePrefix('/wyniki')
+              (isActivePrefix('/wyniki') || isActivePrefix('/series'))
                 ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground"
             )}>
@@ -101,20 +101,16 @@ export const Header = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem asChild>
-                <Link to="/wyniki" className="w-full">Kalendarz wyników</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/wyniki/live" className="w-full flex items-center gap-2">
-                  <Radio className="h-3 w-3 text-destructive" />
-                  Na żywo
-                </Link>
+                <Link to="/wydarzenia" className="w-full">Kalendarz</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/series" className="w-full">Serie i cykle</Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/athletes" className="w-full">Zawodnicy</Link>
+                <Link to="/wyniki/live" className="w-full flex items-center gap-2">
+                  <Radio className="h-3 w-3 text-destructive" />
+                  Wyniki na żywo
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -267,18 +263,15 @@ export const Header = () => {
                 <ChevronDown className={cn("h-4 w-4 transition-transform", resultsOpen && "rotate-180")} />
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-4">
-                <Link to="/wyniki" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Kalendarz wyników
-                </Link>
-                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  <Radio className="h-3 w-3 text-destructive" />
-                  Na żywo
+                <Link to="/wydarzenia" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Kalendarz
                 </Link>
                 <Link to="/series" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
                   Serie i cykle
                 </Link>
-                <Link to="/athletes" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-                  Zawodnicy
+                <Link to="/wyniki/live" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  <Radio className="h-3 w-3 text-destructive" />
+                  Wyniki na żywo
                 </Link>
               </CollapsibleContent>
             </Collapsible>

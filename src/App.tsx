@@ -22,8 +22,6 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
-import ResultsPage from "./pages/ResultsPage";
-import ResultsCalendarPage from "./pages/ResultsCalendarPage";
 import LiveResultsPage from "./pages/LiveResultsPage";
 
 import { DynamicInfoPage } from './components/info/DynamicInfoPage';
@@ -46,7 +44,6 @@ import { AdminOrderEditPage } from "./pages/admin/components/AdminOrderEditPage"
 import { AdminChallengeEditPage } from "./pages/admin/components/AdminChallengeEditPage";
 import { AdminPartnerEditPage } from "./pages/admin/components/AdminPartnerEditPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
-import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ChallengesListPage from "./pages/ChallengesListPage";
@@ -72,7 +69,6 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   {/* Polish routes */}
                   <Route path="/wydarzenia" element={<EventsPage />} />
-                  <Route path="/wyniki" element={<ResultsCalendarPage />} />
                   <Route path="/wyniki/live" element={<LiveResultsPage />} />
                   
                   {/* Dynamic info pages - jedna trasa dla wszystkich stron informacyjnych */}
@@ -90,7 +86,7 @@ const App = () => (
                   <Route path="/events/:slug" element={<EventDetailsPage />} />
                   <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
                   <Route path="/events/:slug/register/success" element={<RegistrationSuccessPage />} />
-                  <Route path="/results" element={<ResultsPage />} />
+                  
                   <Route path="/series" element={<SeriesListPage />} />
                   <Route path="/series/:slug" element={<SeriesDetailsPage />} />
                   <Route path="/shop" element={<ShopPage />} />
@@ -98,7 +94,6 @@ const App = () => (
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/order-success" element={<OrderSuccessPage />} />
                   <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
-                  <Route path="/athletes" element={<AthletesPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/challenges" element={<ChallengesListPage />} />

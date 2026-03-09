@@ -26,7 +26,7 @@ const defaultFilters: EventFiltersState = {
   distanceRanges: [],
   organizerId: null,
   hasEarlyBird: false,
-  selectedYear: 2026,
+  selectedYear: new Date().getFullYear(),
 };
 
 export const distanceRangeOptions = [

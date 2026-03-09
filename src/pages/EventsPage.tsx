@@ -22,7 +22,7 @@ const EventsPage = () => {
     hasActiveFilters,
   } = useEventFilters();
 
-  const currentYear = 2026;
+  const currentYear = new Date().getFullYear();
 
   // Available years from mock data
   const availableYears = useMemo(() => {
