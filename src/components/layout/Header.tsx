@@ -249,12 +249,11 @@ export const Header = () => {
                   <Radio className="h-3 w-3 text-destructive" />
                   Wyniki na żywo
                 </Link>
+                <Link to="/challenges" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Wyzwania
+                </Link>
               </CollapsibleContent>
             </Collapsible>
-
-            <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Wyzwania
-            </Link>
             <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
             </Link>
