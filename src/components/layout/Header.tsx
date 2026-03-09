@@ -80,7 +80,7 @@ export const Header = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
               "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events'))
+              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events') || isActivePrefix('/challenges'))
                 ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground"
             )}>
