@@ -22,8 +22,6 @@ import EventsPage from "./pages/EventsPage";
 import EventDetailsPage from "./pages/EventDetailsPage";
 import EventRegistrationPage from "./pages/EventRegistrationPage";
 import RegistrationSuccessPage from "./pages/RegistrationSuccessPage";
-import ResultsPage from "./pages/ResultsPage";
-import ResultsCalendarPage from "./pages/ResultsCalendarPage";
 import LiveResultsPage from "./pages/LiveResultsPage";
 
 import { DynamicInfoPage } from './components/info/DynamicInfoPage';
