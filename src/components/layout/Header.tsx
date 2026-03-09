@@ -100,20 +100,12 @@ export const Header = () => {
                   Wyniki na żywo
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/challenges" className="w-full">Wyzwania</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Link 
-            to="/challenges" 
-            className={cn(
-              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              isActivePrefix('/challenges')
-                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
-                : "text-muted-foreground"
-            )}
-          >
-            Wyzwania
-          </Link>
 
           <Link 
             to="/sklep" 
