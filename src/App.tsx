@@ -44,7 +44,6 @@ import { AdminOrderEditPage } from "./pages/admin/components/AdminOrderEditPage"
 import { AdminChallengeEditPage } from "./pages/admin/components/AdminChallengeEditPage";
 import { AdminPartnerEditPage } from "./pages/admin/components/AdminPartnerEditPage";
 import AthleteProfilePage from "./pages/AthleteProfilePage";
-import AthletesPage from "./pages/AthletesPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ChallengesListPage from "./pages/ChallengesListPage";
