@@ -29,7 +29,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
             </div>
           </div>
           <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
-            <Link to="/wyniki">
+            <Link to="/wydarzenia">
               Wszystkie
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
