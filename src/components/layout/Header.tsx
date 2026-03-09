@@ -80,7 +80,7 @@ export const Header = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className={cn(
               "relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events'))
+              (isActive('/wydarzenia') || isActivePrefix('/wyniki') || isActivePrefix('/series') || isActivePrefix('/events') || isActivePrefix('/challenges'))
                 ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground"
             )}>
@@ -100,20 +100,12 @@ export const Header = () => {
                   Wyniki na żywo
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/challenges" className="w-full">Wyzwania</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Link 
-            to="/challenges" 
-            className={cn(
-              "relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground",
-              isActivePrefix('/challenges')
-                ? "text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:bg-primary after:rounded-full"
-                : "text-muted-foreground"
-            )}
-          >
-            Wyzwania
-          </Link>
 
           <Link 
             to="/sklep" 
@@ -257,12 +249,11 @@ export const Header = () => {
                   <Radio className="h-3 w-3 text-destructive" />
                   Wyniki na żywo
                 </Link>
+                <Link to="/challenges" className="block px-3 py-2 text-sm text-muted-foreground rounded-md hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
+                  Wyzwania
+                </Link>
               </CollapsibleContent>
             </Collapsible>
-
-            <Link to="/challenges" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
-              Wyzwania
-            </Link>
             <Link to="/sklep" className="px-3 py-2 text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setMobileMenuOpen(false)}>
               Sklep
             </Link>
