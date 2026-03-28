@@ -49,7 +49,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import ChallengesListPage from "./pages/ChallengesListPage";
 import ChallengeDetailsPage from "./pages/ChallengeDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
-
+import EventRegistrationEmbed from "./pages/EventRegistrationEmbed";
 
 const queryClient = new QueryClient();
 
