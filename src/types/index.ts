@@ -160,6 +160,36 @@ export interface InsuranceOption {
   enabled: boolean;
 }
 
+export interface RegistrationEmbedConfig {
+  enabled: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CustomRegistrationField {
+  id: string;
+  label: string;
+  type: 'text' | 'select' | 'checkbox';
+  required: boolean;
+  options?: string[];
+}
+
+export interface RegistrationFormConfig {
+  collectPhone: boolean;
+  collectClub: boolean;
+  collectBirthDate: boolean;
+  collectTeam: boolean;
+  collectInsurance: boolean;
+  collectMerchandise: boolean;
+  customFields: CustomRegistrationField[];
+}
+
+export interface EventDisplayOptions {
+  defaultSort: 'name' | 'bib' | 'date' | 'distance';
+  uppercaseNames: boolean;
+  hideUnpaid: boolean;
+}
+
 export interface BannerCropArea {
   x: number;      // % od lewej
   y: number;      // % od góry
@@ -217,8 +247,14 @@ export interface Event {
   finalAcceptanceHtml?: string;     // HTML with final acceptance text for registration
   requireFinalAcceptance?: boolean; // Whether to show final acceptance checkbox
   // Private event fields
-  isPrivate?: boolean;              // Whether the event is private (hidden from public listings)
-  accessCode?: string;              // Access code for private event link
+  isPrivate?: boolean;
+  accessCode?: string;
+  // Registration embed config
+  registrationEmbed?: RegistrationEmbedConfig;
+  // Registration form field config
+  registrationFormConfig?: RegistrationFormConfig;
+  // Display options
+  displayOptions?: EventDisplayOptions;
 }
 
 // Payment configuration types

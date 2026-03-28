@@ -813,6 +813,28 @@ export const mockEvents: Event[] = [
       </ol>
     `,
     requireFinalAcceptance: true,
+    registrationEmbed: {
+      enabled: true,
+      startDate: '2026-01-01',
+      endDate: '2026-06-10',
+    },
+    registrationFormConfig: {
+      collectPhone: true,
+      collectClub: true,
+      collectBirthDate: true,
+      collectTeam: true,
+      collectInsurance: true,
+      collectMerchandise: true,
+      customFields: [
+        { id: 'cf-1', label: 'Rozmiar buta', type: 'select', required: false, options: ['38', '39', '40', '41', '42', '43', '44', '45'] },
+        { id: 'cf-2', label: 'Kontakt ICE (telefon)', type: 'text', required: true },
+      ],
+    },
+    displayOptions: {
+      defaultSort: 'distance',
+      uppercaseNames: true,
+      hideUnpaid: false,
+    },
   },
   // City Trail Łódź - medium options - LIVE EVENT
   {
