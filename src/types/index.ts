@@ -160,6 +160,36 @@ export interface InsuranceOption {
   enabled: boolean;
 }
 
+export interface RegistrationEmbedConfig {
+  enabled: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CustomRegistrationField {
+  id: string;
+  label: string;
+  type: 'text' | 'select' | 'checkbox';
+  required: boolean;
+  options?: string[];
+}
+
+export interface RegistrationFormConfig {
+  collectPhone: boolean;
+  collectClub: boolean;
+  collectBirthDate: boolean;
+  collectTeam: boolean;
+  collectInsurance: boolean;
+  collectMerchandise: boolean;
+  customFields: CustomRegistrationField[];
+}
+
+export interface EventDisplayOptions {
+  defaultSort: 'name' | 'bib' | 'date' | 'distance';
+  uppercaseNames: boolean;
+  hideUnpaid: boolean;
+}
+
 export interface BannerCropArea {
   x: number;      // % od lewej
   y: number;      // % od góry
