@@ -85,6 +85,7 @@ const App = () => (
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/events/:slug" element={<EventDetailsPage />} />
                   <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
+                  <Route path="/events/:slug/embed" element={<EventRegistrationEmbed />} />
                   <Route path="/events/:slug/register/success" element={<RegistrationSuccessPage />} />
                   
                   <Route path="/series" element={<SeriesListPage />} />
