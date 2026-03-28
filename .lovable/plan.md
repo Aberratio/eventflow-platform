@@ -1,80 +1,114 @@
 
 
-# Artefakty tras przy dystansach (mapki, GPX, zdjecia)
+# Plan: Implement 5.3, 5.17, and 5.18
 
-## Obecny stan
-
-Obecnie wydarzenie ma **jedną trasę na poziomie całego eventu** (`routeMapUrl`, `routeGpxUrl`, `routeElevationProfile`), wyswietlaną w zakładce "Trasa". Dystanse (`Distance`) nie mają żadnych pól na artefakty tras.
-
-## Zakres zmian
-
-### 1. Rozszerzenie typu `Distance` o artefakty trasy
-
-Dodanie opcjonalnych pól do interfejsu `Distance` w `src/types/index.ts`:
-
-```typescript
-export interface DistanceRouteFile {
-  id: string;
-  name: string;
-  type: 'map' | 'elevation' | 'gpx' | 'image';
-  url: string;
-}
-
-export interface Distance {
-  // ... istniejące pola
-  routeMapUrl?: string;
-  routeElevationProfile?: string;
-  routeGpxUrl?: string;
-  routeFiles?: DistanceRouteFile[];  // dodatkowe pliki/zdjęcia
-}
-```
-
-### 2. Formularz edycji dystansu — sekcja "Trasa" (`EventForm.tsx`)
-
-W kroku 2, pod polami każdego dystansu (nazwa, długość, cena, limit), dodanie rozwijalnej sekcji "Trasa i mapy":
-
-- **URL mapy trasy** — input tekstowy
-- **URL profilu wysokościowego** — input tekstowy
-- **URL pliku GPX** — input tekstowy
-- **Dodatkowe pliki** — lista dynamiczna (nazwa + URL + typ), z przyciskiem "Dodaj plik"
-
-Sekcja będzie w `Collapsible` aby nie zaśmiecać formularza gdy organizator nie chce dodawać artefaktów.
-
-Rozszerzenie `DistanceForm` o nowe pola i `updateDistance` o ich obsługę.
-
-### 3. Widok dystansów na stronie wydarzenia (`EventDetailsPage.tsx`)
-
-W zakładce "Dystanse", pod każdym dystansem, jeśli ma artefakty trasy — wyświetlenie:
-- Miniaturka mapy (klikalna → powiększenie w Dialog)
-- Przycisk "Pobierz GPX" 
-- Miniaturka profilu wysokościowego
-- Lista dodatkowych plików jako linki
-
-### 4. Podgląd trasy dystansu przy rejestracji
-
-W `RegistrationForm.tsx`, po wybraniu dystansu, jeśli ma artefakty — pokazanie małego przycisku "Zobacz trasę" otwierającego Dialog z mapką i plikami.
-
-### 5. Mock data
-
-Dodanie przykładowych artefaktów do 2-3 dystansów w `mockData.ts`.
+Points 3.4, 4.3, and 4.4 are already fully implemented in the current codebase. The real work is on 5.3, 5.17, and 5.18.
 
 ---
 
-## Pliki do zmiany
+## Status of Already-Complete Features
 
-| Plik | Zmiana |
-|---|---|
-| `src/types/index.ts` | Dodanie `DistanceRouteFile`, rozszerzenie `Distance` |
-| `src/pages/organizer/EventForm.tsx` | Sekcja "Trasa" w edycji dystansu (Collapsible) |
-| `src/pages/EventDetailsPage.tsx` | Wyświetlenie artefaktów w zakładce Dystanse |
-| `src/components/registration/RegistrationForm.tsx` | Przycisk "Zobacz trasę" po wybraniu dystansu |
-| `src/data/mockData.ts` | Przykładowe dane tras dla dystansów |
+- **3.4 (Registration)**: Full multi-step form with distance, category, merchandise, insurance, discount codes, team, terms acceptance
+- **4.3 (Moderator)**: Dashboard with moderation, featured events, readonly users, orders, challenges, event management routes
+- **4.4 (Admin)**: All 16 sidebar sections including users, shop, CMS, emails, settings, challenges, partners
 
-## Kolejność implementacji
+---
 
-1. Typy (`types/index.ts`)
-2. Mock data
-3. EventForm — sekcja trasy w dystansie
-4. EventDetailsPage — wyświetlanie artefaktów
-5. RegistrationForm — podgląd trasy
+## 1. External Registration Embed (5.3)
+
+Create an embeddable registration widget that external sites can load via iframe.
+
+**Changes:**
+- Add `registrationEmbedEnabled` and `registrationEmbedConfig` fields to the `Event` type (embed start/end dates, allowed origin)
+- Create a new route `/events/:slug/embed` rendering a standalone `RegistrationEmbed` page (no Layout wrapper, minimal chrome, branded header)
+- The embed page shows event name, dates, a "Zapisz sie" button linking to the full registration form
+- Add configuration UI in `EventForm.tsx` (Step 1) -- toggle "Zapisy przez iframe", date inputs for embed window, and a copyable embed code snippet (`<iframe src="..." />`)
+- Add configuration in `AdminEventManage.tsx` advanced tab as well
+
+**New files:**
+- `src/pages/EventRegistrationEmbed.tsx` -- lightweight embed page
+
+**Modified files:**
+- `src/types/index.ts` -- add `RegistrationEmbedConfig` interface and fields on `Event`
+- `src/pages/organizer/EventForm.tsx` -- add embed config UI in Step 1
+- `src/App.tsx` -- add `/events/:slug/embed` route
+
+---
+
+## 2. Registration Form Field Configuration (5.17)
+
+Allow organizers to configure which fields are collected during registration.
+
+**Changes:**
+- Add `registrationFormConfig` to `Event` type with boolean flags: `collectPhone`, `collectClub`, `collectBirthDate` (default true), `collectTeam`, `collectInsurance`, `collectMerchandise`, `customFields` array
+- Add `CustomRegistrationField` interface (label, type: text/select/checkbox, required, options)
+- Add configuration UI in `EventForm.tsx` Step 1 -- a collapsible "Konfiguracja formularza zapisow" section with checkboxes for standard fields and ability to add custom fields
+- Update `RegistrationForm.tsx` to read `event.registrationFormConfig` and conditionally show/hide steps and fields (e.g., skip team step if `collectTeam` is false, skip insurance if disabled)
+
+**Modified files:**
+- `src/types/index.ts` -- add `RegistrationFormConfig`, `CustomRegistrationField`
+- `src/pages/organizer/EventForm.tsx` -- add config UI
+- `src/components/registration/RegistrationForm.tsx` -- respect config, render custom fields in Step 2
+- `src/data/mockData.ts` -- add sample config to some events
+
+---
+
+## 3. Event Display Options (5.18)
+
+Add per-event display settings for participant lists.
+
+**Changes:**
+- Add `displayOptions` to `Event` type: `defaultSort` (name/bib/date/distance), `uppercaseNames` (boolean), `hideUnpaid` (boolean)
+- Add configuration UI in `EventForm.tsx` Step 1 -- a collapsible "Opcje wyswietlania" section with select for sorting and two switches
+- Apply options in `ParticipantsTab.tsx`: sort by selected field, transform names to uppercase if enabled, filter out unpaid if enabled
+
+**Modified files:**
+- `src/types/index.ts` -- add `EventDisplayOptions`
+- `src/pages/organizer/EventForm.tsx` -- add display options UI
+- `src/pages/organizer/components/ParticipantsTab.tsx` -- apply sorting, uppercase, filtering
+- `src/data/mockData.ts` -- add sample displayOptions
+
+---
+
+## Technical Details
+
+### New types (src/types/index.ts)
+```typescript
+interface RegistrationEmbedConfig {
+  enabled: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface CustomRegistrationField {
+  id: string;
+  label: string;
+  type: 'text' | 'select' | 'checkbox';
+  required: boolean;
+  options?: string[]; // for select type
+}
+
+interface RegistrationFormConfig {
+  collectPhone: boolean;
+  collectClub: boolean;
+  collectBirthDate: boolean;
+  collectTeam: boolean;
+  collectInsurance: boolean;
+  collectMerchandise: boolean;
+  customFields: CustomRegistrationField[];
+}
+
+interface EventDisplayOptions {
+  defaultSort: 'name' | 'bib' | 'date' | 'distance';
+  uppercaseNames: boolean;
+  hideUnpaid: boolean;
+}
+```
+
+### New route
+- `/events/:slug/embed` -- renders `EventRegistrationEmbed` (standalone, no navigation)
+
+### File count
+- 1 new file
+- ~6 modified files
 
