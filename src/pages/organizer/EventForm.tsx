@@ -998,6 +998,8 @@ const EventForm = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {bannerUrl && (
               <ImageCropper
                 imageUrl={bannerUrl}
                 open={showBannerCropper}
