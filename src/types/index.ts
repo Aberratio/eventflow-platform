@@ -247,8 +247,14 @@ export interface Event {
   finalAcceptanceHtml?: string;     // HTML with final acceptance text for registration
   requireFinalAcceptance?: boolean; // Whether to show final acceptance checkbox
   // Private event fields
-  isPrivate?: boolean;              // Whether the event is private (hidden from public listings)
-  accessCode?: string;              // Access code for private event link
+  isPrivate?: boolean;
+  accessCode?: string;
+  // Registration embed config
+  registrationEmbed?: RegistrationEmbedConfig;
+  // Registration form field config
+  registrationFormConfig?: RegistrationFormConfig;
+  // Display options
+  displayOptions?: EventDisplayOptions;
 }
 
 // Payment configuration types
