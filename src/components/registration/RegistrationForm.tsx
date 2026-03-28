@@ -130,9 +130,10 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   }, [event.id]);
 
   const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
-  const hasMerchandise = event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
-  const hasInsurance = event.insuranceOption?.enabled;
-  const hasTeamOption = true; // Always show team option
+  const formCfg = event.registrationFormConfig;
+  const hasMerchandise = (formCfg?.collectMerchandise ?? true) && event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
+  const hasInsurance = (formCfg?.collectInsurance ?? true) && event.insuranceOption?.enabled;
+  const hasTeamOption = formCfg?.collectTeam ?? true;
   
   // Build steps dynamically
   const buildSteps = () => {
@@ -141,7 +142,6 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       { id: 2, name: 'Dane', icon: User },
     ];
     
-    // Add team step after personal data
     if (hasTeamOption) {
       steps.push({ id: 25, name: 'Drużyna', icon: Users });
     }

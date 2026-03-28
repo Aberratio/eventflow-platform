@@ -102,10 +102,13 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
 
   // Filter registrations based on view mode and filters
   const filteredRegistrations = useMemo(() => {
-    return localRegistrations.filter(reg => {
+    let result = localRegistrations.filter(reg => {
       // View mode filter
       if (viewMode === 'active' && reg.status === 'removed') return false;
       if (viewMode === 'removed' && reg.status !== 'removed') return false;
+
+      // Display options: hide unpaid
+      if (event.displayOptions?.hideUnpaid && reg.status === 'pending') return false;
 
       // Search filter
       const matchesSearch = 
@@ -122,7 +125,25 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
 
       return matchesSearch && matchesDistance && matchesStatus;
     });
-  }, [localRegistrations, viewMode, search, distanceFilter, statusFilter]);
+
+    // Apply display options: sorting
+    const sortKey = event.displayOptions?.defaultSort || 'name';
+    result.sort((a, b) => {
+      switch (sortKey) {
+        case 'bib':
+          return (a.bibNumber || '').localeCompare(b.bibNumber || '', undefined, { numeric: true });
+        case 'date':
+          return new Date(a.registeredAt).getTime() - new Date(b.registeredAt).getTime();
+        case 'distance':
+          return a.distanceName.localeCompare(b.distanceName);
+        case 'name':
+        default:
+          return a.userName.localeCompare(b.userName);
+      }
+    });
+
+    return result;
+  }, [localRegistrations, viewMode, search, distanceFilter, statusFilter, event.displayOptions]);
 
   // Count unpaid registrations
   const unpaidCount = useMemo(() => {
