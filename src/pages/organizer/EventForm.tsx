@@ -90,7 +90,36 @@ const EventForm = () => {
   const [requireFinalAcceptance, setRequireFinalAcceptance] = useState(existingEvent?.requireFinalAcceptance || false);
   const [finalAcceptanceHtml, setFinalAcceptanceHtml] = useState(existingEvent?.finalAcceptanceHtml || '');
 
-  // ---- Helpers ----
+  // Registration embed config
+  const [embedEnabled, setEmbedEnabled] = useState(existingEvent?.registrationEmbed?.enabled || false);
+  const [embedStartDate, setEmbedStartDate] = useState(existingEvent?.registrationEmbed?.startDate || '');
+  const [embedEndDate, setEmbedEndDate] = useState(existingEvent?.registrationEmbed?.endDate || '');
+
+  // Registration form config
+  const defaultFormConfig: RegistrationFormConfig = {
+    collectPhone: true,
+    collectClub: true,
+    collectBirthDate: true,
+    collectTeam: true,
+    collectInsurance: true,
+    collectMerchandise: true,
+    customFields: [],
+  };
+  const [formConfig, setFormConfig] = useState<RegistrationFormConfig>(
+    existingEvent?.registrationFormConfig || defaultFormConfig
+  );
+
+  // Display options
+  const defaultDisplayOptions: EventDisplayOptions = {
+    defaultSort: 'name',
+    uppercaseNames: false,
+    hideUnpaid: false,
+  };
+  const [displayOptions, setDisplayOptions] = useState<EventDisplayOptions>(
+    existingEvent?.displayOptions || defaultDisplayOptions
+  );
+
+
   const getEventYear = () => {
     return date ? parseInt(date.substring(0, 4)) || new Date().getFullYear() : new Date().getFullYear();
   };
