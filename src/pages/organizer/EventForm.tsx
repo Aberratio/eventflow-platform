@@ -13,8 +13,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { mockEvents, disciplineLabels } from '@/data/mockData';
-import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory, DistanceRouteFile } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus, X, Map, ChevronDown } from 'lucide-react';
+import { SportDiscipline, BannerCropArea, PaymentConfigType, AgeCategory, SpecialCategory, DistanceRouteFile, RegistrationFormConfig, CustomRegistrationField, EventDisplayOptions, RegistrationEmbedConfig } from '@/types';
+import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Eye, Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, ListPlus, X, Map, ChevronDown, Code, Settings2, Monitor } from 'lucide-react';
 import { ImageCropper, CropArea } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
