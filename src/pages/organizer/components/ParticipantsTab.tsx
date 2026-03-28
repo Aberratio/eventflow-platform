@@ -573,7 +573,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                             to={`/athlete/${reg.userId}`}
                             className="font-medium hover:text-primary hover:underline transition-colors"
                           >
-                            {reg.userName}
+                            {event.displayOptions?.uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
                           </Link>
                           <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
                           {reg.teamName && (
