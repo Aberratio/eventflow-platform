@@ -779,7 +779,225 @@ const EventForm = () => {
               </CardContent>
             </Card>
 
-            {bannerUrl && (
+            {/* Registration Embed Config */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Code className="h-5 w-5 text-primary" />
+                  Zapisy przez iframe (embed)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Włącz widget do osadzenia</Label>
+                    <p className="text-sm text-muted-foreground">Partnerzy mogą umieścić formularz zapisów na swojej stronie</p>
+                  </div>
+                  <Switch checked={embedEnabled} onCheckedChange={setEmbedEnabled} />
+                </div>
+                {embedEnabled && (
+                  <div className="space-y-4 pt-2 border-t">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Embed aktywny od</Label>
+                        <Input type="date" value={embedStartDate} onChange={e => setEmbedStartDate(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Embed aktywny do</Label>
+                        <Input type="date" value={embedEndDate} onChange={e => setEmbedEndDate(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Kod do osadzenia</Label>
+                      <div className="relative">
+                        <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto">
+                          {`<iframe src="${window.location.origin}/events/${name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'slug'}/embed" width="100%" height="500" frameborder="0"></iframe>`}
+                        </pre>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="absolute top-2 right-2"
+                          onClick={() => {
+                            const slug = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'slug';
+                            navigator.clipboard.writeText(`<iframe src="${window.location.origin}/events/${slug}/embed" width="100%" height="500" frameborder="0"></iframe>`);
+                            toast({ title: 'Skopiowano', description: 'Kod iframe został skopiowany do schowka.' });
+                          }}
+                        >
+                          <Copy className="h-3 w-3 mr-1" /> Kopiuj
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Registration Form Config */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Settings2 className="h-5 w-5 text-primary" />
+                  Konfiguracja formularza zapisów
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Wybierz, które dane chcesz zbierać od uczestników podczas rejestracji.</p>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {[
+                    { key: 'collectPhone' as const, label: 'Numer telefonu' },
+                    { key: 'collectClub' as const, label: 'Nazwa klubu' },
+                    { key: 'collectBirthDate' as const, label: 'Data urodzenia' },
+                    { key: 'collectTeam' as const, label: 'Rejestracja drużynowa' },
+                    { key: 'collectInsurance' as const, label: 'Ubezpieczenie NNW' },
+                    { key: 'collectMerchandise' as const, label: 'Gadżety przy rejestracji' },
+                  ].map(({ key, label }) => (
+                    <div key={key} className="flex items-center space-x-3 p-3 rounded-lg border">
+                      <Checkbox
+                        id={`fc-${key}`}
+                        checked={formConfig[key]}
+                        onCheckedChange={(checked) => setFormConfig(prev => ({ ...prev, [key]: checked === true }))}
+                      />
+                      <Label htmlFor={`fc-${key}`} className="cursor-pointer">{label}</Label>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Custom fields */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button type="button" variant="ghost" size="sm" className="w-full justify-between">
+                      Pola niestandardowe ({formConfig.customFields.length})
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-3 pt-3">
+                    {formConfig.customFields.map((field, idx) => (
+                      <div key={field.id} className="flex items-start gap-2 p-3 rounded-lg border">
+                        <div className="flex-1 grid sm:grid-cols-3 gap-2">
+                          <Input
+                            placeholder="Nazwa pola"
+                            value={field.label}
+                            onChange={e => {
+                              const updated = [...formConfig.customFields];
+                              updated[idx] = { ...updated[idx], label: e.target.value };
+                              setFormConfig(prev => ({ ...prev, customFields: updated }));
+                            }}
+                          />
+                          <Select
+                            value={field.type}
+                            onValueChange={(v: 'text' | 'select' | 'checkbox') => {
+                              const updated = [...formConfig.customFields];
+                              updated[idx] = { ...updated[idx], type: v };
+                              setFormConfig(prev => ({ ...prev, customFields: updated }));
+                            }}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Tekst</SelectItem>
+                              <SelectItem value="select">Lista wyboru</SelectItem>
+                              <SelectItem value="checkbox">Checkbox</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={field.required}
+                              onCheckedChange={(checked) => {
+                                const updated = [...formConfig.customFields];
+                                updated[idx] = { ...updated[idx], required: checked === true };
+                                setFormConfig(prev => ({ ...prev, customFields: updated }));
+                              }}
+                            />
+                            <Label className="text-sm">Wymagane</Label>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setFormConfig(prev => ({
+                              ...prev,
+                              customFields: prev.customFields.filter((_, i) => i !== idx),
+                            }));
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFormConfig(prev => ({
+                          ...prev,
+                          customFields: [...prev.customFields, {
+                            id: `cf-${Date.now()}`,
+                            label: '',
+                            type: 'text',
+                            required: false,
+                          }],
+                        }));
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Dodaj pole
+                    </Button>
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            </Card>
+
+            {/* Display Options */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Monitor className="h-5 w-5 text-primary" />
+                  Opcje wyświetlania
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Ustawienia wpływające na wyświetlanie listy startowej i danych uczestników.</p>
+                <div className="space-y-2">
+                  <Label>Domyślne sortowanie listy startowej</Label>
+                  <Select
+                    value={displayOptions.defaultSort}
+                    onValueChange={(v: EventDisplayOptions['defaultSort']) =>
+                      setDisplayOptions(prev => ({ ...prev, defaultSort: v }))
+                    }
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Imię i nazwisko</SelectItem>
+                      <SelectItem value="bib">Numer startowy</SelectItem>
+                      <SelectItem value="date">Data rejestracji</SelectItem>
+                      <SelectItem value="distance">Dystans</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <Label>Wielkie litery w nazwiskach</Label>
+                    <p className="text-xs text-muted-foreground">Wyświetlaj imiona i nazwiska WIELKIMI LITERAMI</p>
+                  </div>
+                  <Switch
+                    checked={displayOptions.uppercaseNames}
+                    onCheckedChange={(checked) => setDisplayOptions(prev => ({ ...prev, uppercaseNames: checked }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <Label>Ukryj nieopłaconych</Label>
+                    <p className="text-xs text-muted-foreground">Uczestnicy z nieopłaconymi zapisami nie będą widoczni na liście startowej</p>
+                  </div>
+                  <Switch
+                    checked={displayOptions.hideUnpaid}
+                    onCheckedChange={(checked) => setDisplayOptions(prev => ({ ...prev, hideUnpaid: checked }))}
+                  />
+                </div>
+              </CardContent>
+            </Card>
               <ImageCropper
                 imageUrl={bannerUrl}
                 open={showBannerCropper}
