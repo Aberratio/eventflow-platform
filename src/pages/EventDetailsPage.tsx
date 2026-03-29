@@ -201,6 +201,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
                 ))}
               </TableBody>
             </Table>
+            </div>
           ) : (
             <p className="text-muted-foreground text-center py-8">
               {eventResults.length === 0 ? 'Wyniki będą dostępne wkrótce.' : 'Brak wyników spełniających kryteria.'}
