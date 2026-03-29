@@ -137,6 +137,7 @@ export const TeamResultsManager = ({
               </Button>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
