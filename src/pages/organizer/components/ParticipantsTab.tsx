@@ -435,7 +435,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                 />
               </div>
               <Select value={distanceFilter} onValueChange={setDistanceFilter}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Dystans" />
                 </SelectTrigger>
                 <SelectContent>
