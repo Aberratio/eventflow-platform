@@ -375,6 +375,7 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
               })}
             </TableBody>
           </Table>
+          </div>
         )}
       </CardContent>
 
