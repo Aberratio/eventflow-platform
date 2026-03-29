@@ -277,6 +277,7 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
             <p className="text-sm">Dodaj pierwszy kod rabatowy dla tego wydarzenia</p>
           </div>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
