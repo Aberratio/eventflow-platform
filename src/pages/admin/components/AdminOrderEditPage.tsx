@@ -229,6 +229,7 @@ export const AdminOrderEditPage = () => {
               </div>
             </CardHeader>
             <CardContent>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
