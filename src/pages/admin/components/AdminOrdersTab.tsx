@@ -188,7 +188,7 @@ export const AdminOrdersTab = () => {
               <Input placeholder="Szukaj (nr zamówienia, klient)..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={v => setStatusFilter(v as ShopOrder['status'] | 'all')}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie</SelectItem>
                 {Object.entries(orderStatusLabels).map(([key, label]) => (
