@@ -304,6 +304,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
                   </Button>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
