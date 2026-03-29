@@ -852,6 +852,7 @@ const EventDetailsPage = () => {
                           ))}
                         </TableBody>
                       </Table>
+                      </div>
                     ) : (
                       <p className="text-muted-foreground text-center py-8">
                         Lista startowa będzie dostępna wkrótce.
