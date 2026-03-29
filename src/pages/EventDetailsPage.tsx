@@ -254,6 +254,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -356,6 +356,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
                       ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>
