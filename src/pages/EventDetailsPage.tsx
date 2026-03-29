@@ -220,6 +220,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
