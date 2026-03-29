@@ -198,6 +198,7 @@ export const TeamResultsManager = ({
                   ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
