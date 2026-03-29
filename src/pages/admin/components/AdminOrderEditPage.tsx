@@ -275,6 +275,7 @@ export const AdminOrderEditPage = () => {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
 
