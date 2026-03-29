@@ -824,6 +824,7 @@ const EventDetailsPage = () => {
                 <Card>
                   <CardContent className="pt-6">
                     {eventRegistrations.length > 0 ? (
+                      <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
