@@ -164,6 +164,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
         </CardHeader>
         <CardContent>
           {filteredResults.length > 0 ? (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
