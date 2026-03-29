@@ -41,12 +41,12 @@ const OrganizerDashboard = () => {
   return (
     <Layout>
       <div className="container py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Panel Organizatora</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Panel Organizatora</h1>
             <p className="text-muted-foreground">Zarządzaj swoimi wydarzeniami</p>
           </div>
-          <Button asChild>
+          <Button asChild className="self-start sm:self-auto">
             <Link to="/organizer/events/new"><Plus className="mr-2 h-4 w-4" /> Nowe wydarzenie</Link>
           </Button>
         </div>

@@ -108,6 +108,24 @@ export const ImageCropper = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={(e) => {
+              const touch = e.touches[0];
+              setIsDragging(true);
+              setDragStart({ x: touch.clientX, y: touch.clientY });
+            }}
+            onTouchMove={(e) => {
+              if (!isDragging || !containerRef.current) return;
+              const touch = e.touches[0];
+              const rect = containerRef.current.getBoundingClientRect();
+              const deltaX = ((touch.clientX - dragStart.x) / rect.width) * 100;
+              const deltaY = ((touch.clientY - dragStart.y) / rect.height) * 100;
+              setPosition(prev => ({
+                x: Math.max(0, Math.min(100, prev.x - deltaX)),
+                y: Math.max(0, Math.min(100, prev.y - deltaY)),
+              }));
+              setDragStart({ x: touch.clientX, y: touch.clientY });
+            }}
+            onTouchEnd={() => setIsDragging(false)}
           >
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
