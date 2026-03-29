@@ -304,6 +304,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
                   </Button>
                 </div>
               ) : (
+                <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -355,6 +356,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
                       ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>

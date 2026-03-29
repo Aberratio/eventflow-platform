@@ -120,7 +120,7 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
 
       {/* Full-size image preview */}
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-4xl p-2">
+        <DialogContent className="max-w-4xl p-2 sm:p-4 mx-2 sm:mx-auto">
           {previewImage && (
             <img src={previewImage} alt="Podgląd" className="w-full rounded-lg" />
           )}

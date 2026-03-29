@@ -188,7 +188,7 @@ export const AdminOrdersTab = () => {
               <Input placeholder="Szukaj (nr zamówienia, klient)..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={v => setStatusFilter(v as ShopOrder['status'] | 'all')}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie</SelectItem>
                 {Object.entries(orderStatusLabels).map(([key, label]) => (
@@ -196,12 +196,12 @@ export const AdminOrdersTab = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" placeholder="Od" />
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" placeholder="Do" />
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full sm:w-[150px]" placeholder="Od" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full sm:w-[150px]" placeholder="Do" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

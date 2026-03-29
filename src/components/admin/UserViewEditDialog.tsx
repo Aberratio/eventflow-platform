@@ -137,7 +137,7 @@ export const UserViewEditDialog = ({ open, onOpenChange, user, extraViewContent 
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-[120px_1fr] gap-y-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-y-2 sm:gap-y-3 text-sm">
               <span className="text-muted-foreground">Imię i nazwisko</span>
               <span className="font-medium">{user.name}</span>
               <span className="text-muted-foreground">Email</span>

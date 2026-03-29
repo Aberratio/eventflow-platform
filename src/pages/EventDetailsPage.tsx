@@ -164,6 +164,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
         </CardHeader>
         <CardContent>
           {filteredResults.length > 0 ? (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -200,6 +201,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
                 ))}
               </TableBody>
             </Table>
+            </div>
           ) : (
             <p className="text-muted-foreground text-center py-8">
               {eventResults.length === 0 ? 'Wyniki będą dostępne wkrótce.' : 'Brak wyników spełniających kryteria.'}
@@ -218,6 +220,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -251,6 +254,7 @@ const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: R
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -822,6 +826,7 @@ const EventDetailsPage = () => {
                 <Card>
                   <CardContent className="pt-6">
                     {eventRegistrations.length > 0 ? (
+                      <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -849,6 +854,7 @@ const EventDetailsPage = () => {
                           ))}
                         </TableBody>
                       </Table>
+                      </div>
                     ) : (
                       <p className="text-muted-foreground text-center py-8">
                         Lista startowa będzie dostępna wkrótce.
