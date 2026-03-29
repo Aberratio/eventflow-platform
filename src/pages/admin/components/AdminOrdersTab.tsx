@@ -196,8 +196,8 @@ export const AdminOrdersTab = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-[150px]" placeholder="Od" />
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-[150px]" placeholder="Do" />
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full sm:w-[150px]" placeholder="Od" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full sm:w-[150px]" placeholder="Do" />
           </div>
         </CardHeader>
         <CardContent>
