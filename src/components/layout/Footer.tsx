@@ -73,7 +73,7 @@ export const Footer = () => {
             <div>
               <h4 className="font-semibold mb-4 text-xs uppercase tracking-wider text-muted-foreground">Kontakt</h4>
               <ul className="space-y-2.5 text-sm mb-5">
-                <li className="text-muted-foreground">kontakt@zmierzymyczs.pl</li>
+                <li className="text-muted-foreground">kontakt@zmierzymyczas.pl</li>
                 <li className="text-muted-foreground">+48 123 456 789</li>
               </ul>
               <div className="flex gap-3">

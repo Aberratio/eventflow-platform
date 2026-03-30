@@ -127,7 +127,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           titleLabel: 'Tytuł karty',
           titlePlaceholder: 'np. Email',
           descLabel: 'Opis / wartość',
-          descPlaceholder: 'np. kontakt@zmierzymyczs.pl',
+          descPlaceholder: 'np. kontakt@zmierzymyczas.pl',
           showIcon: true,
           showLink: true,
         };
