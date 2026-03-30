@@ -168,7 +168,7 @@ const ShopPage = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -203,8 +203,8 @@ const ShopPage = () => {
             </Drawer>
           ) : (
             <div className="flex gap-3 items-end">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Kategoria</label>
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-muted-foreground mb-1">Kategoria</label>
                 <Select value={category} onValueChange={(v) => setCategory(v as ShopCategory | 'all')}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Wszystkie kategorie" />
@@ -218,8 +218,8 @@ const ShopPage = () => {
                 </Select>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Marka</label>
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-muted-foreground mb-1">Marka</label>
                 <Select value={brand} onValueChange={setBrand}>
                   <SelectTrigger className="w-[160px]">
                     <SelectValue placeholder="Wszystkie marki" />
@@ -233,8 +233,8 @@ const ShopPage = () => {
                 </Select>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">Sortuj</label>
+              <div className="flex flex-col">
+                <label className="text-xs font-medium text-muted-foreground mb-1">Sortuj</label>
                 <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
                   <SelectTrigger className="w-[170px]">
                     <SelectValue />
@@ -248,7 +248,7 @@ const ShopPage = () => {
               </div>
 
               {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground hover:text-destructive gap-1">
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground hover:text-destructive gap-1 mb-0">
                   <X className="h-4 w-4" />
                   Wyczyść
                 </Button>
