@@ -69,7 +69,7 @@ export const OnboardingDialog = () => {
   useEffect(() => {
     if (!user) return;
     
-    const storageKey = `sporttime_onboarding_${user.id}`;
+    const storageKey = `zmierzymyczs_onboarding_${user.id}`;
     const hasSeenOnboarding = localStorage.getItem(storageKey);
     
     // Show dialog for new users or users who haven't completed onboarding
@@ -81,7 +81,7 @@ export const OnboardingDialog = () => {
 
   const handleClose = () => {
     if (dontShowAgain && user) {
-      localStorage.setItem(`sporttime_onboarding_${user.id}`, 'true');
+      localStorage.setItem(`zmierzymyczs_onboarding_${user.id}`, 'true');
     }
     setOpen(false);
   };
@@ -115,7 +115,7 @@ export const OnboardingDialog = () => {
             </span>
           </div>
           <DialogTitle className="text-2xl">
-            Witaj w SportTime, {user.name.split(' ')[0]}!
+            Witaj w ZmierzymyCzas, {user.name.split(' ')[0]}!
           </DialogTitle>
           <DialogDescription>
             {user.role === 'organizer' 

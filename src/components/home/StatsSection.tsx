@@ -36,7 +36,7 @@ export const StatsSection = ({ events, registrations, results }: StatsSectionPro
     <section className="py-12 md:py-16 bg-secondary/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">SportTime w liczbach</h2>
+          <h2 className="text-2xl md:text-3xl font-bold">ZmierzymyCzas w liczbach</h2>
           <p className="text-muted-foreground mt-1">Dołącz do naszej społeczności sportowców</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
