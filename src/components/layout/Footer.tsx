@@ -11,7 +11,7 @@ export const Footer = () => {
     <footer className="mt-auto border-t border-border">
       <div className="bg-[hsl(0_0%_5%)]">
         <div className="container py-10 md:py-14">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Logo & description */}
             <div className="col-span-2 md:col-span-1 space-y-4">
               <Link to="/" className="flex items-center gap-2">
@@ -23,17 +23,6 @@ export const Footer = () => {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Profesjonalna platforma do organizacji wydarzeń sportowych.
               </p>
-            </div>
-            
-            {/* Wydarzenia */}
-            <div>
-              <h4 className="font-semibold mb-4 text-xs uppercase tracking-wider text-muted-foreground">Wydarzenia</h4>
-              <ul className="space-y-2.5 text-sm">
-                <li><Link to="/wydarzenia" className="text-muted-foreground hover:text-foreground transition-colors">Kalendarz</Link></li>
-                <li><Link to="/wydarzenia?discipline=running" className="text-muted-foreground hover:text-foreground transition-colors">Bieganie</Link></li>
-                <li><Link to="/wydarzenia?discipline=cycling" className="text-muted-foreground hover:text-foreground transition-colors">Kolarstwo</Link></li>
-                <li><Link to="/wydarzenia?discipline=triathlon" className="text-muted-foreground hover:text-foreground transition-colors">Triathlon</Link></li>
-              </ul>
             </div>
             
             {/* Informacje */}
