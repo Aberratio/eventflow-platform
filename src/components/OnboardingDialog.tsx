@@ -69,7 +69,7 @@ export const OnboardingDialog = () => {
   useEffect(() => {
     if (!user) return;
     
-    const storageKey = `zmierzymyczs_onboarding_${user.id}`;
+    const storageKey = `zmierzymyczas_onboarding_${user.id}`;
     const hasSeenOnboarding = localStorage.getItem(storageKey);
     
     // Show dialog for new users or users who haven't completed onboarding
@@ -81,7 +81,7 @@ export const OnboardingDialog = () => {
 
   const handleClose = () => {
     if (dontShowAgain && user) {
-      localStorage.setItem(`zmierzymyczs_onboarding_${user.id}`, 'true');
+      localStorage.setItem(`zmierzymyczas_onboarding_${user.id}`, 'true');
     }
     setOpen(false);
   };
