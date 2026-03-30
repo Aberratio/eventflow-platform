@@ -202,41 +202,57 @@ const ShopPage = () => {
               </DrawerContent>
             </Drawer>
           ) : (
-            <div className="flex gap-2">
-              <Select value={category} onValueChange={(v) => setCategory(v as ShopCategory | 'all')}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Kategoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Wszystkie</SelectItem>
-                  {Object.entries(shopCategoryLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex gap-3 items-end">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Kategoria</label>
+                <Select value={category} onValueChange={(v) => setCategory(v as ShopCategory | 'all')}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Wszystkie kategorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Wszystkie kategorie</SelectItem>
+                    {Object.entries(shopCategoryLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={brand} onValueChange={setBrand}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Marka" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Wszystkie</SelectItem>
-                  {brands.map((b) => (
-                    <SelectItem key={b} value={b}>{b}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Marka</label>
+                <Select value={brand} onValueChange={setBrand}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Wszystkie marki" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Wszystkie marki</SelectItem>
+                    {brands.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(sortLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Sortuj</label>
+                <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+                  <SelectTrigger className="w-[170px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(sortLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {activeFiltersCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground hover:text-destructive gap-1">
+                  <X className="h-4 w-4" />
+                  Wyczyść
+                </Button>
+              )}
             </div>
           )}
         </div>
