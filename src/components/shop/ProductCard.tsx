@@ -48,12 +48,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 </span>
               )}
             </div>
-            {product.rating && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                <span>{product.rating.toFixed(1)}</span>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
