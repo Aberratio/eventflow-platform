@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Star, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield } from 'lucide-react';
 import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
