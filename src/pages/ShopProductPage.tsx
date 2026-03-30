@@ -124,28 +124,6 @@ const ShopProductPage = () => {
             <p className="text-sm text-muted-foreground mb-1">{product.brand}</p>
             <h1 className="text-2xl md:text-3xl font-bold mb-4">{product.name}</h1>
 
-            {/* Rating */}
-            {product.rating && (
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={cn(
-                        'h-4 w-4',
-                        star <= Math.round(product.rating!)
-                          ? 'fill-warning text-warning'
-                          : 'text-muted'
-                      )}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-medium">{product.rating.toFixed(1)}</span>
-                <span className="text-sm text-muted-foreground">
-                  ({product.reviewCount} opinii)
-                </span>
-              </div>
-            )}
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
