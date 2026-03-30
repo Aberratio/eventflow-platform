@@ -17,7 +17,7 @@ export const Footer = () => {
               <Link to="/" className="flex items-center gap-2">
                 <Timer className="h-5 w-5 text-primary" />
                 <span className="font-bold text-lg tracking-tight text-foreground">
-                  Sport<span className="text-primary">Time</span>
+                  Zmierzymy<span className="text-primary">Czas</span>
                 </span>
               </Link>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -73,7 +73,7 @@ export const Footer = () => {
             <div>
               <h4 className="font-semibold mb-4 text-xs uppercase tracking-wider text-muted-foreground">Kontakt</h4>
               <ul className="space-y-2.5 text-sm mb-5">
-                <li className="text-muted-foreground">kontakt@sporttime.pl</li>
+                <li className="text-muted-foreground">kontakt@zmierzymyczas.pl</li>
                 <li className="text-muted-foreground">+48 123 456 789</li>
               </ul>
               <div className="flex gap-3">
@@ -88,7 +88,7 @@ export const Footer = () => {
           
           {/* Bottom row */}
           <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} SportTime. Wszystkie prawa zastrzeżone.</p>
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ZmierzymyCzas. Wszystkie prawa zastrzeżone.</p>
             <div className="flex items-center gap-1">
               <span className="text-xs text-muted-foreground">Made with</span>
               <span className="text-primary text-xs">♥</span>

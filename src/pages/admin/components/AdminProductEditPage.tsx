@@ -106,7 +106,7 @@ export const AdminProductEditPage = () => {
               </div>
               <div>
                 <Label>Marka</Label>
-                <Input value={form.brand || ''} onChange={e => setForm({ ...form, brand: e.target.value })} placeholder="SportTime" />
+                <Input value={form.brand || ''} onChange={e => setForm({ ...form, brand: e.target.value })} placeholder="ZmierzymyCzas" />
               </div>
               <div className="md:col-span-2">
                 <Label>Opis</Label>

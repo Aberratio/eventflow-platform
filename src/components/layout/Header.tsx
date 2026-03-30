@@ -71,7 +71,7 @@ export const Header = () => {
         <Link to="/" className="flex items-center gap-2 group">
           <Timer className="h-5 w-5 text-primary" />
           <span className="font-bold text-lg tracking-tight text-foreground">
-            Sport<span className="text-primary">Time</span>
+            Zmierzymy<span className="text-primary">Czas</span>
           </span>
         </Link>
 

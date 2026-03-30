@@ -219,15 +219,15 @@ export async function previewEmailTemplate(
     '{{wydarzenie.nazwa}}': 'Maraton Warszawski 2026',
     '{{wydarzenie.data}}': '15 marca 2026, 09:00',
     '{{wydarzenie.miasto}}': 'Warszawa',
-    '{{wydarzenie.link}}': 'https://sporttime.pl/events/maraton-warszawski-2026',
+    '{{wydarzenie.link}}': 'https://zmierzymyczas.pl/events/maraton-warszawski-2026',
     '{{wydarzenie.termin_rejestracji}}': '28 lutego 2026',
     '{{platnosc.kwota}}': '149,00',
     '{{platnosc.nr_konta}}': '12 3456 7890 1234 5678 9012 3456',
     '{{platnosc.tytul_przelewu}}': 'REJESTRACJA-247-MARATON2026',
     '{{uzytkownik.imie}}': 'Jan Kowalski',
     '{{uzytkownik.email}}': 'jan.kowalski@example.com',
-    '{{platforma.nazwa}}': 'SportTime',
-    '{{platforma.link}}': 'https://sporttime.pl',
+    '{{platforma.nazwa}}': 'ZmierzymyCzas',
+    '{{platforma.link}}': 'https://zmierzymyczas.pl',
   };
 
   let subject = request.subject;

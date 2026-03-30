@@ -18,7 +18,7 @@ const coverageItems = [
 const faqItems = [
   {
     question: 'Kto może wykupić ubezpieczenie?',
-    answer: 'Ubezpieczenie NNW Zawodnika jest dostępne dla wszystkich uczestników wydarzeń organizowanych za pośrednictwem platformy SportTime. Można je wykupić podczas rejestracji na zawody.',
+    answer: 'Ubezpieczenie NNW Zawodnika jest dostępne dla wszystkich uczestników wydarzeń organizowanych za pośrednictwem platformy ZmierzymyCzas. Można je wykupić podczas rejestracji na zawody.',
   },
   {
     question: 'Na jaki okres obowiązuje ubezpieczenie?',

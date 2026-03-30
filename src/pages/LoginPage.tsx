@@ -69,7 +69,7 @@ const LoginPage = () => {
     <Layout>
       <div className="container py-12 md:py-24">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Zaloguj się do SportTime</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Zaloguj się do ZmierzymyCzas</h1>
           <p className="text-lg text-muted-foreground">
             To jest wersja demonstracyjna. Wybierz rolę, jako która chcesz się zalogować.
           </p>

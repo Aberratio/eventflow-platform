@@ -7,7 +7,7 @@ export const mockInfoPages: InfoPage[] = [
     title: 'Kontakt',
     slug: 'kontakt',
     icon: 'Mail',
-    description: 'Skontaktuj się z zespołem SportTime - formularz kontaktowy i dane firmy',
+    description: 'Skontaktuj się z zespołem ZmierzymyCzas - formularz kontaktowy i dane firmy',
     published: true,
     showInFooter: true,
     showInHeader: false,
@@ -26,7 +26,7 @@ export const mockInfoPages: InfoPage[] = [
         type: 'cards',
         title: 'Dane kontaktowe',
         items: [
-          { id: 'c1', title: 'Email', description: 'kontakt@sporttime.pl', icon: 'Mail' },
+          { id: 'c1', title: 'Email', description: 'kontakt@zmierzymyczas.pl', icon: 'Mail' },
           { id: 'c2', title: 'Telefon', description: '+48 123 456 789', icon: 'Phone' },
           { id: 'c3', title: 'Adres', description: 'ul. Sportowa 1, 00-001 Warszawa', icon: 'MapPin' },
           { id: 'c4', title: 'Godziny pracy', description: 'Pon-Pt: 9:00-17:00', icon: 'Clock' },
@@ -142,7 +142,7 @@ export const mockInfoPages: InfoPage[] = [
     title: 'O nas',
     slug: 'o-nas',
     icon: 'Users',
-    description: 'Poznaj historię i zespół SportTime - platformy do organizacji wydarzeń sportowych',
+    description: 'Poznaj historię i zespół ZmierzymyCzas - platformy do organizacji wydarzeń sportowych',
     published: true,
     showInFooter: true,
     showInHeader: true,
@@ -159,7 +159,7 @@ export const mockInfoPages: InfoPage[] = [
       {
         id: 's-onas-2',
         type: 'stats',
-        title: 'SportTime w liczbach',
+        title: 'ZmierzymyCzas w liczbach',
         items: [
           { id: 's1', title: '500+', description: 'Wydarzeń' },
           { id: 's2', title: '150 000+', description: 'Uczestników' },
@@ -171,7 +171,7 @@ export const mockInfoPages: InfoPage[] = [
         id: 's-onas-3',
         type: 'text',
         title: 'Nasza historia',
-        content: 'SportTime powstał w 2016 roku z pasji do sportu i technologii. Założyciele - sami aktywni sportowcy - dostrzegli potrzebę stworzenia nowoczesnej platformy łączącej organizatorów z uczestnikami.\n\nOd tego czasu nieprzerwanie rozwijamy naszą platformę, dodając nowe funkcje i usprawnienia. Współpracujemy z największymi organizatorami wydarzeń sportowych w Polsce.\n\nNaszą misją jest ułatwianie organizacji i uczestnictwa w wydarzeniach sportowych. Wierzymy, że sport łączy ludzi i chcemy być częścią tej społeczności.',
+        content: 'ZmierzymyCzas powstał w 2016 roku z pasji do sportu i technologii. Założyciele - sami aktywni sportowcy - dostrzegli potrzebę stworzenia nowoczesnej platformy łączącej organizatorów z uczestnikami.\n\nOd tego czasu nieprzerwanie rozwijamy naszą platformę, dodając nowe funkcje i usprawnienia. Współpracujemy z największymi organizatorami wydarzeń sportowych w Polsce.\n\nNaszą misją jest ułatwianie organizacji i uczestnictwa w wydarzeniach sportowych. Wierzymy, że sport łączy ludzi i chcemy być częścią tej społeczności.',
       },
       {
         id: 's-onas-4',
@@ -197,7 +197,7 @@ export const mockInfoPages: InfoPage[] = [
     title: 'FAQ',
     slug: 'faq',
     icon: 'HelpCircle',
-    description: 'Najczęściej zadawane pytania dotyczące platformy SportTime',
+    description: 'Najczęściej zadawane pytania dotyczące platformy ZmierzymyCzas',
     published: true,
     showInFooter: true,
     showInHeader: false,
@@ -238,7 +238,7 @@ export const mockInfoPages: InfoPage[] = [
     title: 'Regulamin',
     slug: 'regulamin',
     icon: 'FileText',
-    description: 'Regulamin korzystania z platformy SportTime',
+    description: 'Regulamin korzystania z platformy ZmierzymyCzas',
     published: true,
     showInFooter: true,
     showInHeader: false,
@@ -250,13 +250,13 @@ export const mockInfoPages: InfoPage[] = [
         id: 's-reg-1',
         type: 'hero',
         title: 'Regulamin platformy',
-        content: 'Zasady korzystania z serwisu SportTime',
+        content: 'Zasady korzystania z serwisu ZmierzymyCzas',
       },
       {
         id: 's-reg-2',
         type: 'text',
         title: '§1 Postanowienia ogólne',
-        content: 'Niniejszy regulamin określa zasady korzystania z platformy SportTime. Korzystając z serwisu, akceptujesz poniższe warunki.\n\nPlatforma SportTime jest własnością SportTime Sp. z o.o. z siedzibą w Warszawie przy ul. Sportowej 1.',
+        content: 'Niniejszy regulamin określa zasady korzystania z platformy ZmierzymyCzas. Korzystając z serwisu, akceptujesz poniższe warunki.\n\nPlatforma ZmierzymyCzas jest własnością ZmierzymyCzas Sp. z o.o. z siedzibą w Warszawie przy ul. Sportowej 1.',
       },
       {
         id: 's-reg-3',
@@ -271,7 +271,7 @@ export const mockInfoPages: InfoPage[] = [
     title: 'Polityka prywatności',
     slug: 'polityka-prywatnosci',
     icon: 'FileText',
-    description: 'Polityka prywatności platformy SportTime',
+    description: 'Polityka prywatności platformy ZmierzymyCzas',
     published: true,
     showInFooter: false,
     showInHeader: false,
@@ -289,7 +289,7 @@ export const mockInfoPages: InfoPage[] = [
         id: 's-priv-2',
         type: 'text',
         title: 'Administrator danych',
-        content: 'Administratorem danych osobowych jest SportTime Sp. z o.o. z siedzibą w Warszawie przy ul. Sportowej 1, 00-001 Warszawa, wpisana do rejestru przedsiębiorców KRS pod numerem 0000123456.\n\nKontakt z Inspektorem Ochrony Danych: iod@sporttime.pl',
+        content: 'Administratorem danych osobowych jest ZmierzymyCzas Sp. z o.o. z siedzibą w Warszawie przy ul. Sportowej 1, 00-001 Warszawa, wpisana do rejestru przedsiębiorców KRS pod numerem 0000123456.\n\nKontakt z Inspektorem Ochrony Danych: iod@zmierzymyczas.pl',
       },
       {
         id: 's-priv-3',
@@ -301,7 +301,7 @@ export const mockInfoPages: InfoPage[] = [
         id: 's-priv-4',
         type: 'text',
         title: 'Prawa użytkownika (RODO)',
-        content: 'Na podstawie RODO przysługują Ci następujące prawa:\n\n• **Prawo dostępu** – możesz uzyskać informację, jakie dane przetwarzamy i w jakim celu\n• **Prawo do sprostowania** – możesz poprawić nieprawidłowe lub niekompletne dane\n• **Prawo do usunięcia** („prawo do bycia zapomnianym") – możesz zażądać usunięcia swoich danych\n• **Prawo do ograniczenia przetwarzania** – możesz ograniczyć sposób wykorzystania danych\n• **Prawo do przenoszenia danych** – możesz otrzymać dane w ustrukturyzowanym formacie\n• **Prawo do sprzeciwu** – możesz sprzeciwić się przetwarzaniu opartemu na prawnie uzasadnionym interesie\n• **Prawo do cofnięcia zgody** – w dowolnym momencie, bez wpływu na zgodność z prawem wcześniejszego przetwarzania\n\nAby skorzystać z tych praw, skontaktuj się z nami: dane@sporttime.pl lub przez formularz kontaktowy.',
+        content: 'Na podstawie RODO przysługują Ci następujące prawa:\n\n• **Prawo dostępu** – możesz uzyskać informację, jakie dane przetwarzamy i w jakim celu\n• **Prawo do sprostowania** – możesz poprawić nieprawidłowe lub niekompletne dane\n• **Prawo do usunięcia** („prawo do bycia zapomnianym") – możesz zażądać usunięcia swoich danych\n• **Prawo do ograniczenia przetwarzania** – możesz ograniczyć sposób wykorzystania danych\n• **Prawo do przenoszenia danych** – możesz otrzymać dane w ustrukturyzowanym formacie\n• **Prawo do sprzeciwu** – możesz sprzeciwić się przetwarzaniu opartemu na prawnie uzasadnionym interesie\n• **Prawo do cofnięcia zgody** – w dowolnym momencie, bez wpływu na zgodność z prawem wcześniejszego przetwarzania\n\nAby skorzystać z tych praw, skontaktuj się z nami: dane@zmierzymyczas.pl lub przez formularz kontaktowy.',
       },
       {
         id: 's-priv-5',
@@ -327,7 +327,7 @@ export const mockInfoPages: InfoPage[] = [
         title: 'Najczęstsze pytania o prywatność',
         items: [
           { id: 'pf1', title: 'Jak długo przechowujecie moje dane?', description: 'Dane przechowujemy przez okres korzystania z konta oraz 5 lat po jego usunięciu w celach archiwizacyjnych i prawnych.' },
-          { id: 'pf2', title: 'Czy mogę usunąć swoje dane?', description: 'Tak, masz prawo do usunięcia swoich danych. Skontaktuj się z nami przez formularz kontaktowy lub wyślij email na adres dane@sporttime.pl.' },
+          { id: 'pf2', title: 'Czy mogę usunąć swoje dane?', description: 'Tak, masz prawo do usunięcia swoich danych. Skontaktuj się z nami przez formularz kontaktowy lub wyślij email na adres dane@zmierzymyczas.pl.' },
           { id: 'pf3', title: 'Czy udostępniacie dane podmiotom trzecim?', description: 'Dane udostępniamy wyłącznie organizatorom wydarzeń, na które się rejestrujesz, oraz podmiotom przetwarzającym dane w naszym imieniu (hosting, płatności).' },
           { id: 'pf4', title: 'Jak zmienić ustawienia cookies?', description: 'Kliknij „Ustawienia cookies" w stopce strony. Możesz tam włączyć lub wyłączyć poszczególne kategorie plików cookies w dowolnym momencie.' },
           { id: 'pf5', title: 'Gdzie mogę złożyć skargę?', description: 'Masz prawo złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa), jeśli uważasz, że przetwarzanie Twoich danych narusza przepisy RODO.' },
@@ -375,7 +375,7 @@ export const mockInfoPages: InfoPage[] = [
         id: 's-rodo-4',
         type: 'text',
         title: 'Jak skorzystać ze swoich praw?',
-        content: 'Aby skorzystać z przysługujących Ci praw, skontaktuj się z naszym Inspektorem Ochrony Danych:\n\n• Email: iod@sporttime.pl\n• Adres: ul. Sportowa 1, 00-001 Warszawa\n\nNa Twoje żądanie odpowiemy w ciągu 30 dni.',
+        content: 'Aby skorzystać z przysługujących Ci praw, skontaktuj się z naszym Inspektorem Ochrony Danych:\n\n• Email: iod@zmierzymyczas.pl\n• Adres: ul. Sportowa 1, 00-001 Warszawa\n\nNa Twoje żądanie odpowiemy w ciągu 30 dni.',
       },
     ],
   },
@@ -483,13 +483,13 @@ export const mockUsers: User[] = [
   { id: 'p29', name: 'Artur Wyczynowy', email: 'artur@example.com', role: 'participant', birthYear: 1984, gender: 'M', club: 'Pro Runners' },
   { id: 'p30', name: 'Barbara Amatorka', email: 'barbara@example.com', role: 'participant', birthYear: 1999, gender: 'K' },
   // Moderator (mini-admin)
-  { id: 'mod1', name: 'Monika Moderator', email: 'monika@sporttime.pl', role: 'moderator', phone: '+48 500 200 300' },
+  { id: 'mod1', name: 'Monika Moderator', email: 'monika@zmierzymyczas.pl', role: 'moderator', phone: '+48 500 200 300' },
   // Organizers
   { id: 'o1', name: 'Marek Organizator', email: 'marek@timing.pl', role: 'organizer', phone: '+48 600 111 222', companyName: 'Timing Marek Kowalczyk', nip: '1234567890', website: 'https://timing.pl', description: 'Profesjonalne zawody biegowe od 2010 roku. Organizujemy wydarzenia w całej Polsce.' },
   { id: 'o2', name: 'Sportowe Wydarzenia Sp. z o.o.', email: 'info@sportevents.pl', role: 'organizer', phone: '+48 32 987 65 43', companyName: 'Sportowe Wydarzenia Sp. z o.o.', nip: '9876543210', website: 'https://sportevents.pl', description: 'Największy organizator imprez sportowych na Śląsku.' },
   { id: 'o3', name: 'RunPoland', email: 'kontakt@runpoland.pl', role: 'organizer', phone: '+48 22 123 45 67', companyName: 'RunPoland S.A.', website: 'https://runpoland.pl', description: 'Ogólnopolska sieć biegów ulicznych i górskich.' },
   // Admin
-  { id: 'a1', name: 'Admin Platformy', email: 'admin@sporttime.pl', role: 'admin', phone: '+48 800 123 456' },
+  { id: 'a1', name: 'Admin Platformy', email: 'admin@zmierzymyczas.pl', role: 'admin', phone: '+48 800 123 456' },
 ];
 
 export const defaultPaymentMethods: PaymentMethod[] = [
@@ -3478,7 +3478,7 @@ export const mockShopProducts: ShopProduct[] = [
     price: 129,
     originalPrice: 169,
     category: 'apparel',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
@@ -3530,7 +3530,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Ultralekkie spodenki z wbudowanymi majtkami kompresyjnymi. Kieszeń na żel i telefon. Idealne na długie dystanse.',
     price: 149,
     category: 'apparel',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
@@ -3574,7 +3574,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Lekka czapka z daszkiem chroniącym przed słońcem. Materiał odprowadzający pot. Regulowany obwód.',
     price: 79,
     category: 'accessories',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     colors: [
       { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
       { id: 'c2', name: 'Czarny', hex: '#000000' },
@@ -3625,7 +3625,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Zestaw 3 par skarpetek kompresyjnych. Wsparcie łuku stopy, wentylowane strefy. Zmniejszają zmęczenie mięśni.',
     price: 119,
     category: 'accessories',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     sizes: ['35-38', '39-42', '43-46'],
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
@@ -3663,7 +3663,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Legginsy z termoaktywnego materiału na chłodniejsze dni. Kompresja wspierająca mięśnie, odblaski 360°.',
     price: 189,
     category: 'apparel',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
@@ -3681,7 +3681,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Elastyczny pas na telefon do 6.7". Nie podskakuje podczas biegu. Dodatkowa kieszeń na klucze i żele.',
     price: 69,
     category: 'accessories',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
       { id: 'c2', name: 'Różowy', hex: '#EC4899' },
@@ -3733,7 +3733,7 @@ export const mockShopProducts: ShopProduct[] = [
     description: 'Opaska chroniąca uszy przed zimnem. Materiał termoaktywny, odbijające elementy. Uniwersalny rozmiar.',
     price: 49,
     category: 'accessories',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     colors: [
       { id: 'c1', name: 'Czarny', hex: '#000000' },
       { id: 'c2', name: 'Szary', hex: '#6B7280' },
@@ -3781,12 +3781,12 @@ export const mockShopProducts: ShopProduct[] = [
   },
   {
     id: 'service-organizer',
-    name: 'Licencja Organizatora SportTime',
+    name: 'Licencja Organizatora ZmierzymyCzas',
     slug: 'licencja-organizatora',
-    description: 'Zostań organizatorem na platformie SportTime! Licencja umożliwia tworzenie i zarządzanie własnymi zawodami, publikowanie wydarzeń, zbieranie zapisów oraz wprowadzanie wyników. Pełen dostęp do panelu organizatora przez 12 miesięcy.',
+    description: 'Zostań organizatorem na platformie ZmierzymyCzas! Licencja umożliwia tworzenie i zarządzanie własnymi zawodami, publikowanie wydarzeń, zbieranie zapisów oraz wprowadzanie wyników. Pełen dostęp do panelu organizatora przez 12 miesięcy.',
     price: 499,
     category: 'services',
-    brand: 'SportTime',
+    brand: 'ZmierzymyCzas',
     imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400',
     inStock: true,
     rating: 5.0,

@@ -50,7 +50,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           <Input
             value={section.title || ''}
             onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder="np. Witamy w SportTime"
+            placeholder="np. Witamy w ZmierzymyCzas"
           />
         </div>
         <div className="space-y-2">
@@ -127,7 +127,7 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
           titleLabel: 'Tytuł karty',
           titlePlaceholder: 'np. Email',
           descLabel: 'Opis / wartość',
-          descPlaceholder: 'np. kontakt@sporttime.pl',
+          descPlaceholder: 'np. kontakt@zmierzymyczas.pl',
           showIcon: true,
           showLink: true,
         };

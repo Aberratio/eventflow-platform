@@ -69,7 +69,7 @@ const initialNotifications: Notification[] = [
     id: 'notif-6',
     userId: 'p1',
     type: 'system',
-    title: 'Witaj w SportTime!',
+    title: 'Witaj w ZmierzymyCzas!',
     message: 'Dziękujemy za dołączenie do platformy. Sprawdź nadchodzące wydarzenia.',
     read: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(), // 3 days ago
@@ -79,12 +79,12 @@ const initialNotifications: Notification[] = [
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const stored = localStorage.getItem('sporttime_notifications');
+    const stored = localStorage.getItem('zmierzymyczas_notifications');
     return stored ? JSON.parse(stored) : initialNotifications;
   });
 
   useEffect(() => {
-    localStorage.setItem('sporttime_notifications', JSON.stringify(notifications));
+    localStorage.setItem('zmierzymyczas_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
   const unreadCount = notifications.filter(n => !n.read).length;

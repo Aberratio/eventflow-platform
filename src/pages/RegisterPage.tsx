@@ -84,7 +84,7 @@ const RegisterPage = () => {
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Zarejestruj się</CardTitle>
               <CardDescription>
-                Utwórz konto w platformie SportTime
+                Utwórz konto w platformie ZmierzymyCzas
               </CardDescription>
             </CardHeader>
             <CardContent>

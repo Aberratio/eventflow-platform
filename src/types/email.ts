@@ -210,7 +210,7 @@ export const EVENT_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
 export const SYSTEM_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
   { variable: '{{uzytkownik.imie}}',  label: 'Imię użytkownika',  description: 'Imię i nazwisko użytkownika',    group: 'uzytkownik' },
   { variable: '{{uzytkownik.email}}', label: 'Email użytkownika', description: 'Adres email użytkownika',        group: 'uzytkownik' },
-  { variable: '{{platforma.nazwa}}',  label: 'Nazwa platformy',  description: 'Nazwa platformy (SportTime)',    group: 'platforma' },
+  { variable: '{{platforma.nazwa}}',  label: 'Nazwa platformy',  description: 'Nazwa platformy (ZmierzymyCzas)',    group: 'platforma' },
   { variable: '{{platforma.link}}',   label: 'Link do platformy', description: 'Link do strony głównej platformy', group: 'platforma' },
 ] as const;
 

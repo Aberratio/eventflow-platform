@@ -159,7 +159,7 @@ export const printToPDF = (title: string, content: HTMLElement | string) => {
       </div>
       ${htmlContent}
       <div class="footer">
-        SportTime - Platforma wydarzeń sportowych
+        ZmierzymyCzas - Platforma wydarzeń sportowych
       </div>
     </body>
     </html>
