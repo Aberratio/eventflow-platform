@@ -31,7 +31,7 @@ const team = [
   {
     name: 'Marek Kowalski',
     role: 'CEO & Founder',
-    description: 'Maratończyk z 20-letnim stażem. Założył SportTime w 2016 roku.',
+    description: 'Maratończyk z 20-letnim stażem. Założył ZmierzymyCzas w 2016 roku.',
   },
   {
     name: 'Anna Nowak',
@@ -56,7 +56,7 @@ const AboutPage = () => {
               <Timer className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">O SportTime</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">O ZmierzymyCzas</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Jesteśmy zespołem pasjonatów sportu, którzy od ponad 10 lat dostarczają 
             profesjonalne rozwiązania dla organizatorów wydarzeń sportowych w Polsce.
@@ -81,7 +81,7 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4 text-muted-foreground">
               <p>
-                SportTime powstał w 2016 roku z prostej potrzeby - jako organizatorzy biegów 
+                ZmierzymyCzas powstał w 2016 roku z prostej potrzeby - jako organizatorzy biegów 
                 sami szukaliśmy narzędzia, które połączy rejestrację uczestników, pomiar czasu 
                 i publikację wyników w jednym miejscu.
               </p>

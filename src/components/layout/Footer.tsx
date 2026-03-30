@@ -88,7 +88,7 @@ export const Footer = () => {
           
           {/* Bottom row */}
           <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} SportTime. Wszystkie prawa zastrzeżone.</p>
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ZmierzymyCzas. Wszystkie prawa zastrzeżone.</p>
             <div className="flex items-center gap-1">
               <span className="text-xs text-muted-foreground">Made with</span>
               <span className="text-primary text-xs">♥</span>

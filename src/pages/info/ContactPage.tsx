@@ -107,8 +107,8 @@ const ContactPage = () => {
                     <Mail className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <p className="font-medium">Email</p>
-                      <a href="mailto:kontakt@sporttime.pl" className="text-sm text-muted-foreground hover:text-primary">
-                        kontakt@sporttime.pl
+                      <a href="mailto:kontakt@zmierzymyczas.pl" className="text-sm text-muted-foreground hover:text-primary">
+                        kontakt@zmierzymyczas.pl
                       </a>
                     </div>
                   </div>

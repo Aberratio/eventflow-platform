@@ -28,7 +28,7 @@ Prosimy o dokonanie płatności w ciągu 7 dni. Po zaksięgowaniu przelewu statu
 Szczegóły wydarzenia: {{wydarzenie.link}}
 
 Do zobaczenia na trasie!
-Zespół SportTime`,
+Zespół ZmierzymyCzas`,
     triggerType: 'on_registration',
     recipientFilter: {
       statuses: ['pending'],
@@ -59,7 +59,7 @@ Szczegółowe informacje techniczne znajdziesz na stronie wydarzenia:
 {{wydarzenie.link}}
 
 Życzymy udanego startu!
-Zespół SportTime`,
+Zespół ZmierzymyCzas`,
     triggerType: 'on_payment_confirmed',
     recipientFilter: {
       statuses: ['confirmed'],
@@ -93,7 +93,7 @@ Nie zapomnij o:
 Pełne informacje techniczne: {{wydarzenie.link}}
 
 Powodzenia!
-Zespół SportTime`,
+Zespół ZmierzymyCzas`,
     triggerType: 'days_before_event',
     triggerDaysOffset: 3,
     recipientFilter: {
@@ -123,7 +123,7 @@ Prosimy o dokonanie przelewu, aby potwierdzić swój udział:
 
 ⚠️ Jeśli płatność nie wpłynie w ciągu 7 dni, Twoja rejestracja może zostać anulowana.
 
-Masz pytania? Odpowiemy pod adresem kontakt@sporttime.pl
+Masz pytania? Odpowiemy pod adresem kontakt@zmierzymyczas.pl
 
 Rejestracja: {{wydarzenie.link}}`,
     triggerType: 'days_after_registration',
@@ -154,7 +154,7 @@ Twój numer startowy na **{{wydarzenie.nazwa}}** jest już gotowy!
 Numer startowy będzie wymagany przy odbiorze pakietu startowego.
 
 Do zobaczenia!
-Zespół SportTime`,
+Zespół ZmierzymyCzas`,
     triggerType: 'on_bib_assigned',
     recipientFilter: {
       statuses: ['confirmed'],
@@ -170,7 +170,7 @@ Zespół SportTime`,
   {
     id: 'tpl-sys-welcome',
     eventId: undefined,
-    name: 'Witamy na SportTime',
+    name: 'Witamy na ZmierzymyCzas',
     subject: 'Witaj na platformie {{platforma.nazwa}}!',
     body: `Cześć {{uzytkownik.imie}},
 
@@ -394,10 +394,10 @@ export const mockEmailSendLogs: EmailSendLog[] = [
   {
     id: 'log-sys-001',
     templateId: 'tpl-sys-welcome',
-    templateName: 'Witamy na SportTime',
+    templateName: 'Witamy na ZmierzymyCzas',
     recipientEmail: 'nowy.uzytkownik@email.com',
     recipientName: 'Nowy Użytkownik',
-    subject: 'Witaj na platformie SportTime!',
+    subject: 'Witaj na platformie ZmierzymyCzas!',
     sentAt: '2026-02-20T10:00:00Z',
     status: 'sent',
   },
@@ -407,7 +407,7 @@ export const mockEmailSendLogs: EmailSendLog[] = [
     templateName: 'Reset hasła',
     recipientEmail: 'jan.kowalski@email.com',
     recipientName: 'Jan Kowalski',
-    subject: 'Reset hasła — SportTime',
+    subject: 'Reset hasła — ZmierzymyCzas',
     sentAt: '2026-02-21T15:30:00Z',
     status: 'sent',
   },
