@@ -63,6 +63,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <OnboardingDialog />
               <CookieConsent />
               <div className="pb-16 md:pb-0">
