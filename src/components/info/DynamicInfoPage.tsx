@@ -12,65 +12,72 @@ import { CtaSection } from './sections/CtaSection';
 import { InfoPageSection } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const SectionRenderer = ({ section }: { section: InfoPageSection }) => {
-  switch (section.type) {
-    case 'hero':
-      return <HeroSection section={section} />;
-    case 'text':
-      return <TextSection section={section} />;
-    case 'cards':
-      return <CardsSection section={section} />;
-    case 'faq':
-      return <FaqSection section={section} />;
-    case 'stats':
-      return <StatsSection section={section} />;
-    case 'team':
-      return <TeamSection section={section} />;
-    case 'pricing':
-      return <PricingSection section={section} />;
-    case 'cta':
-      return <CtaSection section={section} />;
-    default:
-      return null;
+const SectionRenderer = ({ section, index }: { section: InfoPageSection; index: number }) => {
+  const isEven = index % 2 === 0;
+
+  const content = (() => {
+    switch (section.type) {
+      case 'hero':
+        return <HeroSection section={section} />;
+      case 'text':
+        return <TextSection section={section} />;
+      case 'cards':
+        return <CardsSection section={section} />;
+      case 'faq':
+        return <FaqSection section={section} />;
+      case 'stats':
+        return <StatsSection section={section} />;
+      case 'team':
+        return <TeamSection section={section} />;
+      case 'pricing':
+        return <PricingSection section={section} />;
+      case 'cta':
+        return <CtaSection section={section} />;
+      default:
+        return null;
+    }
+  })();
+
+  if (!content) return null;
+
+  // Hero, stats, and cta handle their own backgrounds
+  if (['hero', 'stats', 'cta'].includes(section.type)) {
+    return content;
   }
+
+  return (
+    <div className={isEven ? '' : 'bg-muted/20'}>
+      {content}
+    </div>
+  );
 };
 
-/**
- * Komponent strony informacyjnej ładowanej dynamicznie na podstawie sluga.
- * Symuluje pobieranie struktury strony (JSON) z backendu.
- */
 export const DynamicInfoPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { page, isLoading, error } = useInfoPage(slug);
 
-  // Stan ładowania - pokazujemy szkielety
   if (isLoading) {
     return (
       <Layout>
         <div className="min-h-screen">
-          {/* Skeleton dla sekcji Hero */}
-          <section className="bg-gradient-to-b from-primary/10 to-background py-16 md:py-24">
+          <section className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16">
             <div className="container">
-              <div className="max-w-3xl mx-auto text-center space-y-4">
-                <Skeleton className="h-12 w-3/4 mx-auto" />
-                <Skeleton className="h-6 w-1/2 mx-auto" />
+              <div className="max-w-3xl mx-auto text-center space-y-3">
+                <Skeleton className="h-6 w-24 mx-auto rounded-full" />
+                <Skeleton className="h-9 w-3/4 mx-auto" />
+                <Skeleton className="h-5 w-1/2 mx-auto" />
               </div>
             </div>
           </section>
-          
-          {/* Skeleton dla treści */}
-          <div className="container py-12">
-            <div className="max-w-3xl mx-auto space-y-6">
-              <Skeleton className="h-8 w-1/3" />
+          <div className="container py-8 md:py-12">
+            <div className="max-w-3xl mx-auto space-y-5">
+              <Skeleton className="h-7 w-1/3" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <Skeleton className="h-40 rounded-lg" />
-                <Skeleton className="h-40 rounded-lg" />
-                <Skeleton className="h-40 rounded-lg" />
-              </div>
+              <Skeleton className="h-7 w-1/4 mt-6" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
             </div>
           </div>
         </div>
@@ -78,17 +85,15 @@ export const DynamicInfoPage = () => {
     );
   }
 
-  // Błąd lub brak strony - przekierowanie na 404
   if (error || !page) {
     return <Navigate to="/404" replace />;
   }
 
-  // Renderowanie strony na podstawie struktury JSON z backendu
   return (
     <Layout>
       <div className="min-h-screen">
-        {page.content.map((section) => (
-          <SectionRenderer key={section.id} section={section} />
+        {page.content.map((section, index) => (
+          <SectionRenderer key={section.id} section={section} index={index} />
         ))}
       </div>
     </Layout>
