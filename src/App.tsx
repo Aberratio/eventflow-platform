@@ -50,6 +50,7 @@ import ChallengesListPage from "./pages/ChallengesListPage";
 import ChallengeDetailsPage from "./pages/ChallengeDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
 import EventRegistrationEmbed from "./pages/EventRegistrationEmbed";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
