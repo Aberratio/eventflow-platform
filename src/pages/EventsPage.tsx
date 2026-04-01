@@ -225,15 +225,29 @@ const EventsPage = () => {
               />
             }
           >
-          {Object.entries(groupedEvents).map(([monthKey, events]) => (
-              <div key={monthKey} ref={el => monthRefs.current[monthKey] = el} className="scroll-mt-4">
-                <ListGroup title={monthKey} count={events.length}>
-                  {events.map(event => (
-                    <EventListRow key={event.id} event={event} showDetails={true} />
-                  ))}
-                </ListGroup>
-              </div>
-            ))}
+          {Object.entries(groupedEvents).map(([monthKey, events]) => {
+              // Determine if this month is current
+              const now = new Date();
+              let isCurrentMonth = false;
+              try {
+                const parsed = parse(monthKey, 'LLLL yyyy', new Date(), { locale: pl });
+                isCurrentMonth = getMonth(parsed) === getMonth(now) && getYear(parsed) === getYear(now);
+              } catch {}
+
+              return (
+                <div key={monthKey} ref={el => monthRefs.current[monthKey] = el} className="scroll-mt-4">
+                  <ListGroup 
+                    title={monthKey} 
+                    count={events.length}
+                    highlighted={isCurrentMonth}
+                  >
+                    {events.map(event => (
+                      <EventListRow key={event.id} event={event} showDetails={true} />
+                    ))}
+                  </ListGroup>
+                </div>
+              );
+            })}
           </ListContainer>
         </div>
       </div>
