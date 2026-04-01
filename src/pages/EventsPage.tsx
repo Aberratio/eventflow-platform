@@ -117,32 +117,44 @@ const EventsPage = () => {
     return groups;
   }, [filteredEvents]);
 
-  // Auto-scroll to current month on load (only for current year)
+  // Auto-scroll to current/nearest month on load
   useEffect(() => {
-    if (filters.selectedYear !== currentYear) return;
-    
-    const currentMonth = new Date().getMonth();
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    const nowMonth = now.getMonth();
     const monthKeys = Object.keys(groupedEvents);
     
-    // Find first month >= current month
-    const targetMonth = monthKeys.find(key => {
-      try {
-        const parsed = parse(key, 'LLLL yyyy', new Date(), { locale: pl });
-        return getMonth(parsed) >= currentMonth;
-      } catch {
-        return false;
-      }
-    }) || monthKeys[0];
+    if (monthKeys.length === 0) return;
+
+    let targetMonth: string | undefined;
+
+    if (filters.selectedYear === nowYear) {
+      // Current year: scroll to current month or next available
+      targetMonth = monthKeys.find(key => {
+        try {
+          const parsed = parse(key, 'LLLL yyyy', new Date(), { locale: pl });
+          return getMonth(parsed) >= nowMonth;
+        } catch {
+          return false;
+        }
+      }) || monthKeys[monthKeys.length - 1];
+    } else if (filters.selectedYear < nowYear) {
+      // Past year: scroll to last month (most recent)
+      targetMonth = monthKeys[monthKeys.length - 1];
+    } else {
+      // Future year: scroll to first month
+      targetMonth = monthKeys[0];
+    }
     
     if (targetMonth && monthRefs.current[targetMonth]) {
       setTimeout(() => {
-        monthRefs.current[targetMonth]?.scrollIntoView({ 
+        monthRefs.current[targetMonth!]?.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start' 
         });
-      }, 100);
+      }, 150);
     }
-  }, [filters.selectedYear, groupedEvents, currentYear]);
+  }, [filters.selectedYear, groupedEvents]);
 
   return (
     <Layout>
@@ -213,15 +225,29 @@ const EventsPage = () => {
               />
             }
           >
-          {Object.entries(groupedEvents).map(([monthKey, events]) => (
-              <div key={monthKey} ref={el => monthRefs.current[monthKey] = el} className="scroll-mt-4">
-                <ListGroup title={monthKey} count={events.length}>
-                  {events.map(event => (
-                    <EventListRow key={event.id} event={event} showDetails={true} />
-                  ))}
-                </ListGroup>
-              </div>
-            ))}
+          {Object.entries(groupedEvents).map(([monthKey, events]) => {
+              // Determine if this month is current
+              const now = new Date();
+              let isCurrentMonth = false;
+              try {
+                const parsed = parse(monthKey, 'LLLL yyyy', new Date(), { locale: pl });
+                isCurrentMonth = getMonth(parsed) === getMonth(now) && getYear(parsed) === getYear(now);
+              } catch {}
+
+              return (
+                <div key={monthKey} ref={el => monthRefs.current[monthKey] = el} className="scroll-mt-4">
+                  <ListGroup 
+                    title={monthKey} 
+                    count={events.length}
+                    highlighted={isCurrentMonth}
+                  >
+                    {events.map(event => (
+                      <EventListRow key={event.id} event={event} showDetails={true} />
+                    ))}
+                  </ListGroup>
+                </div>
+              );
+            })}
           </ListContainer>
         </div>
       </div>

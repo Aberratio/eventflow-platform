@@ -8,19 +8,29 @@ interface ListGroupProps {
   children: React.ReactNode;
   className?: string;
   sticky?: boolean;
+  highlighted?: boolean;
 }
 
-export const ListGroup = ({ title, count, children, className, sticky = true }: ListGroupProps) => {
+export const ListGroup = ({ title, count, children, className, sticky = true, highlighted = false }: ListGroupProps) => {
   return (
     <div className={cn('', className)}>
       {title && (
         <div className={cn(
           'flex items-center justify-between px-3 sm:px-4 py-2',
-          'bg-foreground/[0.03] border-l-2 border-l-warning',
           'border-b border-border/50',
+          highlighted 
+            ? 'bg-primary/[0.08] border-l-2 border-l-primary'
+            : 'bg-foreground/[0.03] border-l-2 border-l-warning',
           sticky && 'sticky top-0 z-10'
         )}>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
+            {highlighted && (
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary font-medium">
+                Teraz
+              </Badge>
+            )}
+          </div>
           {count !== undefined && (
             <span className="text-xs text-muted-foreground font-medium">{count}</span>
           )}
