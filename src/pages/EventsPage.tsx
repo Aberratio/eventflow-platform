@@ -117,32 +117,44 @@ const EventsPage = () => {
     return groups;
   }, [filteredEvents]);
 
-  // Auto-scroll to current month on load (only for current year)
+  // Auto-scroll to current/nearest month on load
   useEffect(() => {
-    if (filters.selectedYear !== currentYear) return;
-    
-    const currentMonth = new Date().getMonth();
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    const nowMonth = now.getMonth();
     const monthKeys = Object.keys(groupedEvents);
     
-    // Find first month >= current month
-    const targetMonth = monthKeys.find(key => {
-      try {
-        const parsed = parse(key, 'LLLL yyyy', new Date(), { locale: pl });
-        return getMonth(parsed) >= currentMonth;
-      } catch {
-        return false;
-      }
-    }) || monthKeys[0];
+    if (monthKeys.length === 0) return;
+
+    let targetMonth: string | undefined;
+
+    if (filters.selectedYear === nowYear) {
+      // Current year: scroll to current month or next available
+      targetMonth = monthKeys.find(key => {
+        try {
+          const parsed = parse(key, 'LLLL yyyy', new Date(), { locale: pl });
+          return getMonth(parsed) >= nowMonth;
+        } catch {
+          return false;
+        }
+      }) || monthKeys[monthKeys.length - 1];
+    } else if (filters.selectedYear < nowYear) {
+      // Past year: scroll to last month (most recent)
+      targetMonth = monthKeys[monthKeys.length - 1];
+    } else {
+      // Future year: scroll to first month
+      targetMonth = monthKeys[0];
+    }
     
     if (targetMonth && monthRefs.current[targetMonth]) {
       setTimeout(() => {
-        monthRefs.current[targetMonth]?.scrollIntoView({ 
+        monthRefs.current[targetMonth!]?.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start' 
         });
-      }, 100);
+      }, 150);
     }
-  }, [filters.selectedYear, groupedEvents, currentYear]);
+  }, [filters.selectedYear, groupedEvents]);
 
   return (
     <Layout>
