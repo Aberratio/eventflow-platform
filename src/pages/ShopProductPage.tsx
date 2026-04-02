@@ -4,14 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield, Package, Truck, RotateCcw } from 'lucide-react';
 import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
@@ -62,30 +55,38 @@ const ShopProductPage = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
-        {/* Breadcrumb */}
-        <div className="mb-6">
+      {/* Breadcrumb with warm background */}
+      <div className="bg-gradient-to-r from-primary/5 via-background to-warning/5 border-b border-border/50">
+        <div className="container py-4">
           <Link 
             to="/shop" 
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors gap-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             Powrót do sklepu
           </Link>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+      <div className="container py-8 md:py-12">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-14">
           {/* Product Image & Gallery */}
           <div className="space-y-3">
-            <div className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+            <div className="aspect-square rounded-2xl overflow-hidden bg-muted/30 relative border border-border/50">
               <img
                 src={selectedImage || product.imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover"
               />
               {hasDiscount && (
-                <Badge className="absolute top-4 right-4 bg-destructive text-lg px-3 py-1">
+                <Badge className="absolute top-4 right-4 bg-destructive text-destructive-foreground text-lg px-3 py-1.5 font-bold">
                   -{discountPercent}%
+                </Badge>
+              )}
+              {product.isService && (
+                <Badge variant="default" className="absolute top-4 left-4 gap-1">
+                  <Zap className="h-3 w-3" />
+                  Usługa cyfrowa
                 </Badge>
               )}
             </div>
@@ -96,9 +97,9 @@ const ShopProductPage = () => {
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     className={cn(
-                      'w-16 h-16 rounded-md overflow-hidden border-2 flex-shrink-0 transition-all',
+                      'w-18 h-18 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all',
                       (selectedImage || product.imageUrl) === img
-                        ? 'border-primary ring-1 ring-primary'
+                        ? 'border-primary ring-2 ring-primary/30'
                         : 'border-border hover:border-muted-foreground'
                     )}
                   >
@@ -111,33 +112,47 @@ const ShopProductPage = () => {
 
           {/* Product Details */}
           <div>
-            <div className="mb-2 flex gap-2">
-              <Badge variant="secondary">{shopCategoryLabels[product.category]}</Badge>
-              {product.isService && (
-                <Badge variant="default" className="gap-1">
-                  <Zap className="h-3 w-3" />
-                  Usługa cyfrowa
+            <div className="mb-3 flex gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-xs">{shopCategoryLabels[product.category]}</Badge>
+              {product.featured && (
+                <Badge className="bg-warning/20 text-warning-foreground border border-warning/30 text-xs">
+                  Wyróżniony
                 </Badge>
               )}
             </div>
             
-            <p className="text-sm text-muted-foreground mb-1">{product.brand}</p>
-            <h1 className="text-2xl md:text-3xl font-bold mb-4">{product.name}</h1>
+            <p className="text-sm text-muted-foreground mb-1 uppercase tracking-wider">{product.brand}</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-5">{product.name}</h1>
 
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3 mb-6">
-              <span className="text-3xl font-bold">{product.price} zł</span>
-              {hasDiscount && (
-                <span className="text-xl text-muted-foreground line-through">
-                  {product.originalPrice} zł
-                </span>
+            {/* Price Card */}
+            <div className="bg-gradient-to-r from-primary/5 to-warning/5 rounded-xl p-5 border border-primary/10 mb-6">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-bold text-foreground">{product.price} zł</span>
+                {hasDiscount && (
+                  <>
+                    <span className="text-xl text-muted-foreground line-through">
+                      {product.originalPrice} zł
+                    </span>
+                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20">
+                      Oszczędzasz {(product.originalPrice! - product.price)} zł
+                    </Badge>
+                  </>
+                )}
+              </div>
+              {product.inStock ? (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                  <span className="text-sm text-success font-medium">Dostępny</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="h-2 w-2 rounded-full bg-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Niedostępny</span>
+                </div>
               )}
             </div>
 
-            <Separator className="my-6" />
-
-            {/* Size Selection - only for physical products */}
+            {/* Size Selection */}
             {!product.isService && product.sizes && product.sizes.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-3 block">Rozmiar</label>
@@ -157,11 +172,11 @@ const ShopProductPage = () => {
               </div>
             )}
 
-            {/* Color Selection - only for physical products */}
+            {/* Color Selection */}
             {!product.isService && product.colors && product.colors.length > 0 && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-3 block">
-                  Kolor: {selectedColorData?.name}
+                  Kolor: <span className="text-muted-foreground">{selectedColorData?.name}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.map((color) => (
@@ -193,22 +208,22 @@ const ShopProductPage = () => {
 
             {/* Service Details */}
             {product.isService && product.serviceDetails && (
-              <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <div className="mb-6 p-5 bg-primary/5 rounded-xl border border-primary/15">
                 <h3 className="font-medium mb-2 flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   Informacje o usłudze
                 </h3>
                 <p className="text-sm text-muted-foreground">{product.serviceDetails}</p>
                 {product.validityDays && (
-                  <p className="text-sm mt-2 flex items-center gap-2">
+                  <p className="text-sm mt-3 flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    Ważność: {product.validityDays} dni
+                    Ważność: <span className="font-medium text-foreground">{product.validityDays} dni</span>
                   </p>
                 )}
               </div>
             )}
 
-            {/* Quantity - only for physical products */}
+            {/* Quantity */}
             {!product.isService && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-3 block">Ilość</label>
@@ -221,7 +236,7 @@ const ShopProductPage = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
+                  <span className="w-12 text-center font-bold text-lg">{quantity}</span>
                   <Button
                     variant="outline"
                     size="icon"
@@ -242,7 +257,7 @@ const ShopProductPage = () => {
             {/* Add to Cart */}
             <Button 
               size="lg" 
-              className="w-full gap-2" 
+              className="w-full gap-2 h-12 text-base" 
               onClick={handleAddToCart}
               disabled={!product.inStock}
             >
@@ -252,20 +267,32 @@ const ShopProductPage = () => {
                 : 'Produkt niedostępny'}
             </Button>
 
-            {product.inStock && (
-              <p className="text-sm text-muted-foreground text-center mt-3">
-                <Check className="h-4 w-4 inline mr-1 text-success" />
-                {product.isService 
-                  ? 'Usługa zostanie aktywowana w ciągu 24h'
-                  : 'Produkt dostępny - wysyłka w 24h'}
-              </p>
-            )}
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-3 mt-6">
+              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
+                <Truck className="h-4 w-4 text-primary mb-1.5" />
+                <span className="text-[10px] text-muted-foreground leading-tight">
+                  {product.isService ? 'Aktywacja 24h' : 'Wysyłka 24h'}
+                </span>
+              </div>
+              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
+                <Shield className="h-4 w-4 text-primary mb-1.5" />
+                <span className="text-[10px] text-muted-foreground leading-tight">Bezpieczna płatność</span>
+              </div>
+              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
+                <RotateCcw className="h-4 w-4 text-primary mb-1.5" />
+                <span className="text-[10px] text-muted-foreground leading-tight">14 dni na zwrot</span>
+              </div>
+            </div>
 
             <Separator className="my-6" />
 
             {/* Description */}
-            <div>
-              <h2 className="font-semibold mb-3">Opis produktu</h2>
+            <div className="bg-muted/20 rounded-xl p-5 border border-border/50">
+              <h2 className="font-semibold mb-3 flex items-center gap-2">
+                <Package className="h-4 w-4 text-primary" />
+                Opis produktu
+              </h2>
               <p className="text-muted-foreground leading-relaxed">
                 {product.description}
               </p>
