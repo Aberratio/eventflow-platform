@@ -6,12 +6,16 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (role: UserRole) => void;
+  loginWithCredentials: (email: string, password: string) => boolean;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_STORAGE_KEY = 'zmierzymyczas_auth';
+
+// All mock accounts use this password
+const MOCK_PASSWORD = 'demo1234';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -36,13 +40,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const loginWithCredentials = (email: string, password: string): boolean => {
+    if (password !== MOCK_PASSWORD) return false;
+    const foundUser = mockUsers.find(u => u.email === email);
+    if (!foundUser) return false;
+    setUser(foundUser);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(foundUser));
+    return true;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, loginWithCredentials, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -56,7 +69,7 @@ export const useAuth = () => {
   return context;
 };
 
-// Safe version that returns null if not in provider (for components that may render during initialization)
+// Safe version that returns null if not in provider
 export const useAuthSafe = () => {
   return useContext(AuthContext);
 };

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Layout } from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { KeyRound, CheckCircle } from 'lucide-react';
+import { KeyRound, CheckCircle, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, 'Hasło musi mieć minimum 8 znaków'),
@@ -22,56 +22,46 @@ const resetPasswordSchema = z.object({
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const token = searchParams.get('token');
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      password: '',
-      confirmPassword: '',
-    },
+    defaultValues: { password: '', confirmPassword: '' },
   });
 
-  const onSubmit = async (data: ResetPasswordFormData) => {
+  const onSubmit = async () => {
     setIsLoading(true);
-    
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
     setIsSuccess(true);
-    toast({
-      title: 'Hasło zmienione',
-      description: 'Twoje hasło zostało pomyślnie zmienione. Możesz się teraz zalogować.',
-    });
-    
+    toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zmienione.' });
     setIsLoading(false);
   };
 
-  // If no token, show error
   if (!token && !isSuccess) {
     return (
       <Layout>
-        <div className="container py-12 md:py-24">
-          <div className="max-w-md mx-auto">
-            <Card>
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Nieprawidłowy link</CardTitle>
-                <CardDescription>
-                  Link do resetowania hasła jest nieprawidłowy lub wygasł.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild className="w-full">
-                  <Link to="/forgot-password">Wyślij nowy link</Link>
-                </Button>
-              </CardContent>
-            </Card>
+        <div className="bg-gradient-to-b from-destructive/5 via-background to-background">
+          <div className="container py-12 md:py-24">
+            <div className="max-w-md mx-auto text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-destructive/10 mb-4">
+                <AlertTriangle className="h-8 w-8 text-destructive" />
+              </div>
+              <h1 className="text-3xl font-bold mb-2">Nieprawidłowy link</h1>
+              <p className="text-muted-foreground mb-6">Link do resetowania hasła jest nieprawidłowy lub wygasł.</p>
+              <Card className="shadow-lg border-border/50">
+                <CardContent className="pt-6">
+                  <Button asChild className="w-full" size="lg">
+                    <Link to="/forgot-password">Wyślij nowy link</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </Layout>
@@ -80,76 +70,89 @@ const ResetPasswordPage = () => {
 
   return (
     <Layout>
-      <div className="container py-12 md:py-24">
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardHeader className="text-center">
-              {isSuccess ? (
-                <>
-                  <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-success" />
-                  </div>
-                  <CardTitle className="text-2xl">Hasło zmienione!</CardTitle>
-                  <CardDescription>
-                    Twoje hasło zostało pomyślnie zmienione. Możesz się teraz zalogować nowym hasłem.
-                  </CardDescription>
-                </>
-              ) : (
-                <>
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <KeyRound className="h-8 w-8 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">Ustaw nowe hasło</CardTitle>
-                  <CardDescription>
-                    Wprowadź nowe hasło dla swojego konta.
-                  </CardDescription>
-                </>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isSuccess ? (
-                <Button asChild className="w-full">
-                  <Link to="/login">Przejdź do logowania</Link>
-                </Button>
-              ) : (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nowe hasło</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
+        <div className="container py-12 md:py-24">
+          <div className="max-w-md mx-auto">
+            <div className="text-center mb-8">
+              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}>
+                {isSuccess ? <CheckCircle className="h-8 w-8 text-success" /> : <KeyRound className="h-8 w-8 text-primary" />}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                {isSuccess ? 'Hasło zmienione!' : 'Ustaw nowe hasło'}
+              </h1>
+              <p className="text-muted-foreground">
+                {isSuccess ? 'Możesz się teraz zalogować nowym hasłem.' : 'Wprowadź nowe hasło dla swojego konta.'}
+              </p>
+            </div>
 
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Potwierdź nowe hasło</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Zapisywanie...' : 'Zmień hasło'}
+            <Card className="shadow-lg border-border/50">
+              <CardContent className="pt-6">
+                {isSuccess ? (
+                  <div className="space-y-4">
+                    <div className="rounded-lg bg-success/5 border border-success/20 p-4 text-center">
+                      <CheckCircle className="h-6 w-6 text-success mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">Hasło zostało pomyślnie zaktualizowane</p>
+                    </div>
+                    <Button asChild className="w-full" size="lg">
+                      <Link to="/login">Przejdź do logowania</Link>
                     </Button>
-                  </form>
-                </Form>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                ) : (
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nowe hasło</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Min. 8 znaków"
+                                  className="pl-10 pr-10"
+                                  {...field}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Potwierdź nowe hasło</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input type="password" placeholder="Powtórz hasło" className="pl-10" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                        {isLoading ? 'Zapisywanie...' : 'Zmień hasło'}
+                      </Button>
+                    </form>
+                  </Form>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle, KeyRound } from 'lucide-react';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Nieprawidłowy adres email'),
@@ -24,104 +24,94 @@ const ForgotPasswordPage = () => {
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: '',
-    },
+    defaultValues: { email: '' },
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
-    
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
     setIsSuccess(true);
-    toast({
-      title: 'Link wysłany',
-      description: `Na adres ${data.email} wysłaliśmy link do resetowania hasła.`,
-    });
-    
+    toast({ title: 'Link wysłany', description: `Na adres ${data.email} wysłaliśmy link do resetowania hasła.` });
     setIsLoading(false);
   };
 
   return (
     <Layout>
-      <div className="container py-12 md:py-24">
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardHeader className="text-center">
-              {isSuccess ? (
-                <>
-                  <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
-                    <CheckCircle className="h-8 w-8 text-success" />
-                  </div>
-                  <CardTitle className="text-2xl">Sprawdź swoją skrzynkę</CardTitle>
-                  <CardDescription>
-                    Wysłaliśmy Ci link do resetowania hasła. Sprawdź również folder spam.
-                  </CardDescription>
-                </>
-              ) : (
-                <>
-                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Mail className="h-8 w-8 text-primary" />
-                  </div>
-                  <CardTitle className="text-2xl">Zapomniałeś hasła?</CardTitle>
-                  <CardDescription>
-                    Podaj adres email powiązany z Twoim kontem, a wyślemy Ci link do zresetowania hasła.
-                  </CardDescription>
-                </>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isSuccess ? (
-                <div className="space-y-4">
-                  <Button asChild className="w-full">
-                    <Link to="/login">Powrót do logowania</Link>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => setIsSuccess(false)}
-                  >
-                    Wyślij ponownie
-                  </Button>
-                </div>
-              ) : (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="jan@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
+        <div className="container py-12 md:py-24">
+          <div className="max-w-md mx-auto">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}>
+                {isSuccess ? (
+                  <CheckCircle className="h-8 w-8 text-success" />
+                ) : (
+                  <KeyRound className="h-8 w-8 text-primary" />
+                )}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                {isSuccess ? 'Sprawdź skrzynkę' : 'Resetuj hasło'}
+              </h1>
+              <p className="text-muted-foreground">
+                {isSuccess
+                  ? 'Wysłaliśmy link do resetowania hasła. Sprawdź też folder spam.'
+                  : 'Podaj email powiązany z kontem, a wyślemy link do zresetowania hasła.'}
+              </p>
+            </div>
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Wysyłanie...' : 'Wyślij link resetujący'}
+            <Card className="shadow-lg border-border/50">
+              <CardContent className="pt-6">
+                {isSuccess ? (
+                  <div className="space-y-4">
+                    <div className="rounded-lg bg-success/5 border border-success/20 p-4 text-center">
+                      <Mail className="h-6 w-6 text-success mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Email z instrukcjami został wysłany na adres <strong>{form.getValues('email')}</strong>
+                      </p>
+                    </div>
+                    <Button asChild className="w-full" size="lg">
+                      <Link to="/login">Powrót do logowania</Link>
                     </Button>
-                  </form>
-                </Form>
+                    <Button variant="outline" className="w-full" onClick={() => setIsSuccess(false)}>
+                      Wyślij ponownie
+                    </Button>
+                  </div>
+                ) : (
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Adres email</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input type="email" placeholder="twoj@email.com" className="pl-10" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                        {isLoading ? 'Wysyłanie...' : 'Wyślij link resetujący'}
+                      </Button>
+                    </form>
+                  </Form>
+                )}
+              </CardContent>
+              {!isSuccess && (
+                <CardFooter className="border-t pt-6">
+                  <Link to="/login" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+                    <ArrowLeft className="h-4 w-4" />
+                    Powrót do logowania
+                  </Link>
+                </CardFooter>
               )}
-            </CardContent>
-            {!isSuccess && (
-              <CardFooter>
-                <Link 
-                  to="/login" 
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Powrót do logowania
-                </Link>
-              </CardFooter>
-            )}
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>
