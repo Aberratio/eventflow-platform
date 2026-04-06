@@ -380,7 +380,7 @@ const EventDetailsPage = () => {
 
       {/* Header with optional banner */}
       {event.bannerUrl ? (
-        <div className="relative h-64 md:h-80 overflow-hidden bg-muted">
+        <div className="relative h-56 sm:h-64 md:h-80 overflow-hidden bg-muted">
           <img
             src={event.bannerUrl}
             alt={event.name}
@@ -391,74 +391,75 @@ const EventDetailsPage = () => {
           
           {/* Organizer logo */}
           {event.organizerLogoUrl && (
-            <div className="absolute top-4 right-4 md:top-6 md:right-6">
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6">
               <img
                 src={event.organizerLogoUrl}
                 alt={event.organizerName}
-                className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover border-2 border-background shadow-lg"
+                className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg object-cover border-2 border-background shadow-lg"
               />
             </div>
           )}
           
           <div className="absolute bottom-0 left-0 right-0">
-            <div className="container pb-6">
-              <Button variant="ghost" size="sm" className="mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40" onClick={() => navigate(-1)}>
+            <div className="container pb-4 sm:pb-6">
+              <Button variant="ghost" size="sm" className="mb-3 sm:mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Wróć
               </Button>
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Badge className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                <Badge className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm text-xs sm:text-sm">
                   <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
                   {disciplineLabels[event.discipline]}
                 </Badge>
                 {event.isVirtual && (
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 backdrop-blur-sm">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 backdrop-blur-sm text-xs sm:text-sm">
                     <Globe className="h-3 w-3 mr-1" />
                     Wirtualny
                   </Badge>
                 )}
-                {isPast && <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">Zakończone</Badge>}
+                {isPast && <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs sm:text-sm">Zakończone</Badge>}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground drop-shadow-md">{event.name}</h1>
-              <p className="text-muted-foreground mt-1">Organizator: {event.organizerName}</p>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground drop-shadow-md">{event.name}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">Organizator: {event.organizerName}</p>
             </div>
           </div>
         </div>
       ) : (
-        /* Clean Header (no banner) */
-        <div className="bg-muted/30 border-b">
-          <div className="container py-6">
-            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+        /* Clean Header (no banner) — warm gradient */
+        <div className="bg-gradient-to-br from-primary/10 via-background to-warning/5 border-b">
+          <div className="container py-5 sm:py-6">
+            <Button variant="ghost" size="sm" className="mb-3 sm:mb-4" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Wróć
             </Button>
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge className="flex items-center gap-1.5">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+              <Badge className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
                 {disciplineLabels[event.discipline]}
               </Badge>
               {event.isVirtual && (
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs sm:text-sm">
                   <Globe className="h-3 w-3 mr-1" />
                   Wirtualny
                 </Badge>
               )}
-              {isPast && <Badge variant="secondary">Zakończone</Badge>}
+              {isPast && <Badge variant="secondary" className="text-xs sm:text-sm">Zakończone</Badge>}
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold">{event.name}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{event.name}</h1>
+            <p className="text-sm text-muted-foreground mt-1">Organizator: {event.organizerName}</p>
           </div>
         </div>
       )}
 
-      <div className="container py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="container py-5 sm:py-8">
+        <div className="grid lg:grid-cols-3 gap-5 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Event Info */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-3">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-8">
+            {/* Event Info — stats strip */}
+            <Card className="border-border/50 shadow-sm">
+              <CardContent className="pt-5 sm:pt-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2.5 sm:gap-3">
                     <div className="p-2 rounded-lg bg-warning/10">
                       <Calendar className="h-5 w-5 text-warning" />
                     </div>
@@ -532,7 +533,7 @@ const EventDetailsPage = () => {
 
             {/* Tabs */}
             <Tabs defaultValue={defaultTab}>
-              <TabsList className="w-full justify-start flex-wrap h-auto">
+              <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
                 {event.routeMapUrl && (
                   <TabsTrigger value="route">
@@ -881,22 +882,23 @@ const EventDetailsPage = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Registration Card */}
-            <Card className="sticky top-20">
-              <CardHeader>
-                <CardTitle>
-                  {userRegistration ? 'Jesteś zapisany!' : 'Zapisz się'}
+            <Card className="sticky top-20 border-primary/20 shadow-md overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">
+                  {userRegistration ? '✅ Jesteś zapisany!' : 'Zapisz się'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {userRegistration ? (
                   <div className="space-y-3">
-                    <div className="p-4 bg-accent rounded-lg">
-                      <div className="text-sm text-muted-foreground">Twój dystans</div>
-                      <div className="font-semibold">{userRegistration.distanceName}</div>
+                    <div className="p-4 bg-gradient-to-br from-primary/5 to-warning/5 rounded-lg border border-primary/10">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">Twój dystans</div>
+                      <div className="font-semibold mt-0.5">{userRegistration.distanceName}</div>
                       {userRegistration.bibNumber && (
                         <>
-                          <div className="text-sm text-muted-foreground mt-2">Numer startowy</div>
-                          <div className="font-semibold text-2xl">{userRegistration.bibNumber}</div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide mt-3">Numer startowy</div>
+                          <div className="font-bold text-3xl text-primary mt-0.5">{userRegistration.bibNumber}</div>
                         </>
                       )}
                     </div>
@@ -906,9 +908,11 @@ const EventDetailsPage = () => {
                   </div>
                 ) : (
                   <>
-                    <p className="text-sm text-muted-foreground">
-                      Ceny od <span className="font-bold text-foreground">{Math.min(...event.distances.map(d => d.price))} zł</span>
-                    </p>
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Ceny od <span className="font-bold text-lg text-primary">{Math.min(...event.distances.map(d => d.price))} zł</span>
+                      </p>
+                    </div>
                     <Button onClick={handleRegister} className="w-full" size="lg" disabled={!isRegistrationOpen}>
                       Zapisz się teraz
                     </Button>

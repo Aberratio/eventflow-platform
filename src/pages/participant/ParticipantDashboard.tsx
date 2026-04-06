@@ -51,32 +51,44 @@ const ParticipantDashboard = () => {
 
   return (
     <Layout>
-      <div className="container py-6 sm:py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Witaj, {user?.name?.split(' ')[0]}!</h1>
-          <p className="text-muted-foreground">Twój panel uczestnika</p>
+      {/* Hero header with gradient */}
+      <div className="bg-gradient-to-br from-primary/10 via-background to-warning/5 border-b">
+        <div className="container py-5 sm:py-8">
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex p-3 rounded-full bg-primary/10 shrink-0">
+              <LayoutDashboard className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Witaj, {user?.name?.split(' ')[0]}! 👋</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Twój panel uczestnika</p>
+            </div>
+          </div>
         </div>
+      </div>
 
+      <div className="container py-5 sm:py-8">
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full h-auto flex-wrap gap-1 bg-muted/50 p-1">
-            {tabs.map(tab => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id}
-                className="flex-1 min-w-[60px] sm:min-w-[100px] gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 data-[state=active]:bg-background"
-              >
-                <tab.icon className="h-4 w-4" />
-                <span className="hidden xs:inline sm:inline">{tab.label}</span>
-                {tab.badge && tab.badge > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-destructive text-destructive-foreground">
-                    {tab.badge}
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5 sm:space-y-6">
+          {/* Mobile: horizontal scroll tabs */}
+          <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-none">
+            <TabsList className="w-max sm:w-full h-auto flex-nowrap sm:flex-wrap gap-1 bg-muted/50 p-1">
+              {tabs.map(tab => (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="whitespace-nowrap sm:flex-1 sm:min-w-[100px] gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                >
+                  <tab.icon className="h-4 w-4 shrink-0" />
+                  <span>{tab.label}</span>
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-destructive text-destructive-foreground">
+                      {tab.badge}
+                    </span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="mt-0">
             <ParticipantOverviewTab 
