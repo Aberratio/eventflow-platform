@@ -533,7 +533,7 @@ const EventDetailsPage = () => {
 
             {/* Tabs */}
             <Tabs defaultValue={defaultTab}>
-              <TabsList className="w-full justify-start flex-wrap h-auto">
+              <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
                 {event.routeMapUrl && (
                   <TabsTrigger value="route">
