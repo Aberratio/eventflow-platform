@@ -451,15 +451,15 @@ const EventDetailsPage = () => {
         </div>
       )}
 
-      <div className="container py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="container py-5 sm:py-8">
+        <div className="grid lg:grid-cols-3 gap-5 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Event Info */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-3">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-8">
+            {/* Event Info — stats strip */}
+            <Card className="border-border/50 shadow-sm">
+              <CardContent className="pt-5 sm:pt-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2.5 sm:gap-3">
                     <div className="p-2 rounded-lg bg-warning/10">
                       <Calendar className="h-5 w-5 text-warning" />
                     </div>
