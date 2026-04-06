@@ -882,22 +882,23 @@ const EventDetailsPage = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Registration Card */}
-            <Card className="sticky top-20">
-              <CardHeader>
-                <CardTitle>
-                  {userRegistration ? 'Jesteś zapisany!' : 'Zapisz się'}
+            <Card className="sticky top-20 border-primary/20 shadow-md overflow-hidden">
+              <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">
+                  {userRegistration ? '✅ Jesteś zapisany!' : 'Zapisz się'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {userRegistration ? (
                   <div className="space-y-3">
-                    <div className="p-4 bg-accent rounded-lg">
-                      <div className="text-sm text-muted-foreground">Twój dystans</div>
-                      <div className="font-semibold">{userRegistration.distanceName}</div>
+                    <div className="p-4 bg-gradient-to-br from-primary/5 to-warning/5 rounded-lg border border-primary/10">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wide">Twój dystans</div>
+                      <div className="font-semibold mt-0.5">{userRegistration.distanceName}</div>
                       {userRegistration.bibNumber && (
                         <>
-                          <div className="text-sm text-muted-foreground mt-2">Numer startowy</div>
-                          <div className="font-semibold text-2xl">{userRegistration.bibNumber}</div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide mt-3">Numer startowy</div>
+                          <div className="font-bold text-3xl text-primary mt-0.5">{userRegistration.bibNumber}</div>
                         </>
                       )}
                     </div>
@@ -907,9 +908,11 @@ const EventDetailsPage = () => {
                   </div>
                 ) : (
                   <>
-                    <p className="text-sm text-muted-foreground">
-                      Ceny od <span className="font-bold text-foreground">{Math.min(...event.distances.map(d => d.price))} zł</span>
-                    </p>
+                    <div className="p-3 rounded-lg bg-muted/50 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Ceny od <span className="font-bold text-lg text-primary">{Math.min(...event.distances.map(d => d.price))} zł</span>
+                      </p>
+                    </div>
                     <Button onClick={handleRegister} className="w-full" size="lg" disabled={!isRegistrationOpen}>
                       Zapisz się teraz
                     </Button>
