@@ -1,15 +1,48 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Layout } from '@/components/layout/Layout';
-import { User, Briefcase, Shield, UserCheck } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Timer, Lock, Mail, Eye, EyeOff, Copy, Check, Shield, User, Briefcase, UserCheck } from 'lucide-react';
 import { UserRole } from '@/types';
-import { useEffect } from 'react';
+
+const loginSchema = z.object({
+  email: z.string().email('Nieprawidłowy adres email'),
+  password: z.string().min(1, 'Hasło jest wymagane'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+interface MockCredential {
+  role: UserRole;
+  label: string;
+  email: string;
+  password: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+const mockCredentials: MockCredential[] = [
+  { role: 'participant', label: 'Uczestnik', email: 'jan@example.com', password: 'demo1234', icon: User, color: 'bg-accent/10 text-accent-foreground border-accent/30' },
+  { role: 'organizer', label: 'Organizator', email: 'marek@timing.pl', password: 'demo1234', icon: Briefcase, color: 'bg-primary/10 text-primary border-primary/30' },
+  { role: 'moderator', label: 'Moderator', email: 'monika@zmierzymyczas.pl', password: 'demo1234', icon: UserCheck, color: 'bg-warning/10 text-warning-foreground border-warning/30' },
+  { role: 'admin', label: 'Super Admin', email: 'admin@zmierzymyczas.pl', password: 'demo1234', icon: Shield, color: 'bg-destructive/10 text-destructive border-destructive/30' },
+];
 
 const LoginPage = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { loginWithCredentials, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -23,95 +56,192 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleLogin = (role: UserRole) => {
-    login(role);
-    const redirectPath = {
-      participant: '/participant',
-      organizer: '/organizer',
-      moderator: '/moderator',
-      admin: '/admin',
-    }[role];
-    navigate(redirectPath);
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const success = loginWithCredentials(data.email, data.password);
+    if (success) {
+      toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
+    } else {
+      toast({ title: 'Błąd logowania', description: 'Nieprawidłowy email lub hasło.', variant: 'destructive' });
+    }
+    setIsLoading(false);
   };
 
-  const roles = [
-    {
-      role: 'participant' as UserRole,
-      icon: User,
-      title: 'Uczestnik',
-      description: 'Przeglądaj zawody, rejestruj się na wydarzenia, śledź swoje wyniki.',
-      color: 'bg-accent text-accent-foreground',
-    },
-    {
-      role: 'organizer' as UserRole,
-      icon: Briefcase,
-      title: 'Organizator',
-      description: 'Twórz i zarządzaj wydarzeniami, dodawaj wyniki uczestników.',
-      color: 'bg-primary text-primary-foreground',
-    },
-    {
-      role: 'moderator' as UserRole,
-      icon: UserCheck,
-      title: 'Moderator',
-      description: 'Moderuj wydarzenia, przeglądaj użytkowników i zarządzaj zamówieniami.',
-      color: 'bg-warning text-warning-foreground',
-    },
-    {
-      role: 'admin' as UserRole,
-      icon: Shield,
-      title: 'Super Admin',
-      description: 'Pełny dostęp do platformy i wszystkich ustawień systemowych.',
-      color: 'bg-destructive text-destructive-foreground',
-    },
-  ];
+  const handleCopy = (text: string, fieldId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    setTimeout(() => setCopiedField(null), 1500);
+  };
+
+  const handleFillCredentials = (cred: MockCredential) => {
+    form.setValue('email', cred.email);
+    form.setValue('password', cred.password);
+  };
 
   return (
     <Layout>
-      <div className="container py-12 md:py-24">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Zaloguj się do ZmierzymyCzas</h1>
-          <p className="text-lg text-muted-foreground">
-            To jest wersja demonstracyjna. Wybierz rolę, jako która chcesz się zalogować.
-          </p>
-        </div>
+      {/* Hero gradient */}
+      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
+        <div className="container py-12 md:py-20">
+          <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+                <Timer className="h-8 w-8 text-primary" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">Zaloguj się</h1>
+              <p className="text-muted-foreground text-lg">Wejdź na platformę ZmierzymyCzas</p>
+            </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {roles.map(({ role, icon: Icon, title, description, color }) => (
-            <Card key={role} className="relative overflow-hidden hover:shadow-lg transition-shadow">
-              <CardHeader className="text-center pb-2">
-                <div className={`w-16 h-16 rounded-full ${color} flex items-center justify-center mx-auto mb-4`}>
-                  <Icon className="h-8 w-8" />
+            <div className="grid lg:grid-cols-2 gap-8 items-start">
+              {/* Login form */}
+              <Card className="shadow-lg border-border/50">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-primary" />
+                    Dane logowania
+                  </CardTitle>
+                  <CardDescription>Wprowadź email i hasło aby się zalogować</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input type="email" placeholder="twoj@email.com" className="pl-10" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center justify-between">
+                              <FormLabel>Hasło</FormLabel>
+                              <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                                Zapomniałeś hasła?
+                              </Link>
+                            </div>
+                            <FormControl>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="••••••••"
+                                  className="pl-10 pr-10"
+                                  {...field}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                        {isLoading ? 'Logowanie...' : 'Zaloguj się'}
+                      </Button>
+                    </form>
+                  </Form>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-3 border-t pt-6">
+                  <p className="text-sm text-muted-foreground">
+                    Nie masz konta?{' '}
+                    <Link to="/register" className="text-primary font-medium hover:underline">
+                      Zarejestruj się
+                    </Link>
+                  </p>
+                </CardFooter>
+              </Card>
+
+              {/* Mock credentials panel */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Konta testowe (demo)</span>
+                  <div className="h-px flex-1 bg-border" />
                 </div>
-                <CardTitle>{title}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-center">
-                <CardDescription className="mb-6 min-h-[60px]">
-                  {description}
-                </CardDescription>
-                <Button 
-                  onClick={() => handleLogin(role)} 
-                  className="w-full"
-                  variant={role === 'organizer' ? 'default' : 'outline'}
-                >
-                  Zaloguj jako {title}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
-        <div className="mt-8 text-center space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
-            <Link to="/register" className="text-primary hover:underline font-medium">
-              Zarejestruj się
-            </Link>
-            <span className="hidden sm:inline text-muted-foreground">|</span>
-            <Link to="/forgot-password" className="text-muted-foreground hover:text-primary">
-              Zapomniałeś hasła?
-            </Link>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>💡 Tip: Dane logowania są zapisywane w localStorage przeglądarki.</p>
+                <div className="grid gap-3">
+                  {mockCredentials.map((cred) => {
+                    const Icon = cred.icon;
+                    return (
+                      <Card
+                        key={cred.role}
+                        className={`border ${cred.color} cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5`}
+                        onClick={() => handleFillCredentials(cred)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="shrink-0">
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm">{cred.label}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono truncate">
+                                  {cred.email}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleCopy(cred.email, `${cred.role}-email`); }}
+                                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                                >
+                                  {copiedField === `${cred.role}-email` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono">
+                                  demo1234
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleCopy('demo1234', `${cred.role}-pass`); }}
+                                  className="shrink-0 text-muted-foreground hover:text-foreground"
+                                >
+                                  {copiedField === `${cred.role}-pass` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                            </div>
+                            <Button size="sm" variant="ghost" className="shrink-0 text-xs">
+                              Użyj
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  💡 Kliknij kartę, aby automatycznie wypełnić formularz danymi testowymi.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
