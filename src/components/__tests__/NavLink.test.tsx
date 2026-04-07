@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import NavLink from '../NavLink';
+import { NavLink } from '../NavLink';
 
 describe('NavLink', () => {
   it('renders link text', () => {

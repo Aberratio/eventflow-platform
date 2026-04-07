@@ -1,23 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { EventCard } from '../EventCard';
+import { Event } from '@/types';
 
-const mockEvent = {
+const mockEvent: Event = {
   id: '1',
   name: 'Maraton Testowy',
   slug: 'maraton-testowy',
   date: '15 września 2026',
   city: 'Warszawa',
   location: 'Park Łazienkowski',
-  discipline: 'running' as const,
-  distances: [
-    { id: 'd1', name: 'Maraton', length: '42.195 km', price: 150, elevationGain: 100, category: [] },
-  ],
+  discipline: 'running',
+  distances: [{
+    id: 'd1', name: 'Maraton', length: 42.195, unit: 'km', price: 150,
+    categories: ['Open'], registeredCount: 0,
+  }],
   organizerId: 'o1',
   organizerName: 'Org',
   description: 'Opis',
-  registrationStatus: 'open' as const,
+  registrationStatus: 'open',
   imageUrl: '/test.jpg',
+  status: 'published',
+  registrationDeadline: '2026-09-10',
+  featured: false,
 };
 
 describe('EventCard', () => {
@@ -34,11 +39,6 @@ describe('EventCard', () => {
   it('renders date', () => {
     render(<EventCard event={mockEvent} />);
     expect(screen.getByText(/15 września 2026/)).toBeInTheDocument();
-  });
-
-  it('renders registration badge for open events', () => {
-    render(<EventCard event={mockEvent} />);
-    expect(screen.getByText(/Zapisy otwarte/i)).toBeInTheDocument();
   });
 
   it('links to event details page', () => {

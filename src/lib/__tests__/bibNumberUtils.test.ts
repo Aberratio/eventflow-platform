@@ -5,6 +5,7 @@ import { Registration } from '@/types';
 const makeReg = (id: string, bib?: string): Registration => ({
   id,
   eventId: 'e1',
+  eventName: 'Test Event',
   userId: 'u1',
   userName: 'Test',
   userEmail: 'test@test.pl',
