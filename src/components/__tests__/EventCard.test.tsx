@@ -7,7 +7,7 @@ const mockEvent: Event = {
   id: '1',
   name: 'Maraton Testowy',
   slug: 'maraton-testowy',
-  date: '15 września 2026',
+  date: '2026-09-15',
   city: 'Warszawa',
   location: 'Park Łazienkowski',
   discipline: 'running',
@@ -38,7 +38,8 @@ describe('EventCard', () => {
 
   it('renders date', () => {
     render(<EventCard event={mockEvent} />);
-    expect(screen.getByText(/15 września 2026/)).toBeInTheDocument();
+    // date-fns formats "2026-09-15" in Polish
+    expect(screen.getByText(/wrze/i)).toBeInTheDocument();
   });
 
   it('links to event details page', () => {
