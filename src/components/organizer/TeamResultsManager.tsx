@@ -227,7 +227,7 @@ export const TeamResultsManager = ({
               <Label>
                 Członkowie drużyny ({selectedMembers.length} wybranych)
               </Label>
-              <div className="border rounded-lg max-h-[200px] overflow-y-auto">
+              <div className="border border-border/50 rounded-lg max-h-[200px] overflow-y-auto">
                 {availableMembers.length === 0 ? (
                   <p className="p-4 text-center text-muted-foreground text-sm">
                     Brak dostępnych uczestników z wynikami
