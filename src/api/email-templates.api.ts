@@ -45,7 +45,7 @@ export async function getEmailTemplates(
 
   if (eventId === null) {
     // Only system/global templates (no eventId, system trigger)
-    filtered = templates.filter(t => t.eventId === undefined && SYSTEM_TRIGGER_TYPES.includes(t.triggerType as any));
+    filtered = templates.filter(t => t.eventId === undefined && (SYSTEM_TRIGGER_TYPES as readonly string[]).includes(t.triggerType));
   } else if (eventId) {
     // Only this specific event's templates
     filtered = templates.filter(t => t.eventId === eventId);

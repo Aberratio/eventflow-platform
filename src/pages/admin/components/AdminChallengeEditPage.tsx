@@ -106,7 +106,7 @@ export const AdminChallengeEditPage = () => {
     ...prev, rewards: prev.rewards.filter((_, i) => i !== idx),
   }));
 
-  const updateReward = (idx: number, field: string, val: any) =>
+  const updateReward = (idx: number, field: string, val: string | number | boolean | string[]) =>
     setForm(prev => ({
       ...prev,
       rewards: prev.rewards.map((r, i) => i === idx ? { ...r, [field]: val } : r),
