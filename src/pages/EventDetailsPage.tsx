@@ -6,9 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { mockEvents, mockRegistrations, mockResults, mockResultDocuments, mockTeamResults, disciplineLabels } from '@/data/mockData';
+import { mockEvents, mockRegistrations, mockResults, disciplineLabels } from '@/data/mockData';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe, Radio, Images, Route, Trophy, Medal, Shield, ShoppingBag, Eye, Pencil, ShieldCheck, Map, Download, Mountain } from 'lucide-react';
+import {
+  Calendar, MapPin, Users, Clock, ArrowLeft, Share2, Mail, Phone, Globe,
+  Radio, Images, Route, Shield, ShoppingBag, Pencil, Download, Lock as LockIcon,
+  Mountain,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,290 +20,40 @@ import { toast } from '@/hooks/use-toast';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
 import { RouteMap } from '@/components/RouteMap';
-import { ResultsFilters } from '@/components/results/ResultsFilters';
-import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
-import { Event, Result } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { getCurrentPrice } from '@/data/mockData';
 import { applyDiscount } from '@/api/mock/helpers';
-import { AlertTriangle, Lock } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-// Helper to get edit URL based on role
-const getEditUrl = (event: Event, user: any) => {
-  if (user?.role === 'admin') return `/admin/events/${event.id}`;
-  if (user?.role === 'moderator') return `/moderator/events/${event.id}`;
-  return `/organizer/events/${event.id}`;
-};
-
-// Draft/unpublished status banner — full-width yellow bar
-const DraftBanner = ({ event, user, onApprove, onReject }: { 
-  event: Event; 
-  user: any;
-  onApprove?: () => void;
-  onReject?: () => void;
-}) => {
-  const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';
-  
-  const messages: Record<string, string> = {
-    draft: 'Podgląd — wydarzenie nie jest widoczne publicznie',
-    awaiting_approval: 'Podgląd — wydarzenie oczekuje na akceptację',
-    rejected: 'Podgląd — wydarzenie zostało odrzucone',
-  };
-
-  const message = messages[event.status];
-  if (!message) return null;
-
-  return (
-    <div className="bg-warning text-warning-foreground">
-      <div className="container py-2 flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2 text-sm font-medium">
-          <Eye className="h-4 w-4 shrink-0" />
-          <span>{message}</span>
-          {event.status === 'rejected' && event.rejectionReason && (
-            <span className="font-normal">— {event.rejectionReason}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isAdminOrMod && event.status === 'awaiting_approval' && (
-            <>
-              {onApprove && (
-                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onApprove}>
-                  <ShieldCheck className="h-3 w-3 mr-1" />
-                  Zatwierdź
-                </Button>
-              )}
-              {onReject && (
-                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onReject}>
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  Odrzuć
-                </Button>
-              )}
-            </>
-          )}
-          <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" asChild>
-            <Link to={getEditUrl(event, user)}>
-              <Pencil className="h-3 w-3 mr-1" />
-              Edytuj
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Private event banner
-const PrivateBanner = () => (
-  <div className="container pt-4">
-    <Alert className="border-primary/30 bg-primary/5">
-      <Lock className="h-4 w-4" />
-      <AlertTitle>Wydarzenie prywatne</AlertTitle>
-      <AlertDescription>
-        To wydarzenie jest dostępne tylko przez zaproszenie i nie jest widoczne publicznie.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
-
-// Results Section Component
-const ResultsSection = ({ event, eventResults }: { event: Event; eventResults: Result[] }) => {
-  const [selectedDistance, setSelectedDistance] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedGender, setSelectedGender] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const eventDocuments = mockResultDocuments.filter(d => d.eventId === event.id);
-  const eventTeamResults = mockTeamResults.filter(t => t.eventId === event.id);
-
-  // Get unique categories
-  const categories = useMemo(() => {
-    const cats = new Set(eventResults.map(r => r.category));
-    return Array.from(cats).sort();
-  }, [eventResults]);
-
-  // Filter results
-  const filteredResults = useMemo(() => {
-    return eventResults.filter(r => {
-      if (selectedDistance !== 'all' && r.distanceId !== selectedDistance) return false;
-      if (selectedCategory !== 'all' && r.category !== selectedCategory) return false;
-      if (selectedGender !== 'all' && r.gender !== selectedGender) return false;
-      if (searchQuery && !r.userName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      return true;
-    }).sort((a, b) => a.position - b.position);
-  }, [eventResults, selectedDistance, selectedCategory, selectedGender, searchQuery]);
-
-  const getMedalIcon = (position: number) => {
-    if (position === 1) return <Medal className="h-4 w-4 text-warning" />;
-    if (position === 2) return <Medal className="h-4 w-4 text-muted-foreground" />;
-    if (position === 3) return <Medal className="h-4 w-4 text-warning/70" />;
-    return null;
-  };
-
-  return (
-    <>
-      {/* Filters */}
-      <ResultsFilters
-        distances={event.distances}
-        selectedDistance={selectedDistance}
-        onDistanceChange={setSelectedDistance}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedGender={selectedGender}
-        onGenderChange={setSelectedGender}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        categories={categories}
-      />
-
-      {/* Results Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            Wyniki oficjalne
-            <Badge variant="secondary" className="ml-2">{filteredResults.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredResults.length > 0 ? (
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Poz.</TableHead>
-                  <TableHead>Uczestnik</TableHead>
-                  <TableHead className="hidden sm:table-cell">Dystans</TableHead>
-                  <TableHead>Czas</TableHead>
-                  <TableHead className="hidden md:table-cell">Kat.</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredResults.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {getMedalIcon(result.position)}
-                        <span className="font-bold">{result.position}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link 
-                        to={`/athlete/${result.userId}`}
-                        className="font-medium hover:text-primary hover:underline transition-colors"
-                      >
-                        {result.userName}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">{result.distanceName}</TableCell>
-                    <TableCell className="font-mono">{result.time}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {result.categoryPosition}. {result.category}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-8">
-              {eventResults.length === 0 ? 'Wyniki będą dostępne wkrótce.' : 'Brak wyników spełniających kryteria.'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Team Results */}
-      {eventTeamResults.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Klasyfikacja drużynowa
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Poz.</TableHead>
-                  <TableHead>Drużyna</TableHead>
-                  <TableHead className="hidden sm:table-cell">Członkowie</TableHead>
-                  <TableHead>Łączny czas</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {eventTeamResults.sort((a, b) => a.position - b.position).map((team) => (
-                  <TableRow key={team.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        {getMedalIcon(team.position)}
-                        <span className="font-bold">{team.position}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{team.teamName}</TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {team.members.map((m) => (
-                          <Badge key={m.userId} variant="outline" className="text-xs">
-                            {m.userName}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono">{team.totalTime}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* PDF Documents */}
-      {eventDocuments.length > 0 && (
-        <ResultDocumentsList documents={eventDocuments} />
-      )}
-    </>
-  );
-};
+import { DraftBanner, PrivateBanner, ResultsSection, getEditUrl } from '@/components/event-details';
 
 const EventDetailsPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
-  
-  const defaultTab = searchParams.get('tab') || 'info';
 
+  const defaultTab = searchParams.get('tab') || 'info';
   const event = mockEvents.find(e => e.slug === slug);
 
   // Access control for draft/unpublished events
   const isUnpublished = event && ['draft', 'awaiting_approval', 'rejected'].includes(event.status);
-  const canViewDraft = user?.role === 'admin' || user?.role === 'moderator' || 
+  const canViewDraft = user?.role === 'admin' || user?.role === 'moderator' ||
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
   // Private event access control
   const accessCodeFromUrl = searchParams.get('access');
   const isPrivateEvent = event?.isPrivate;
-  
+
   const hasPrivateAccess = (() => {
     if (!isPrivateEvent) return true;
     if (!event) return false;
-    // Admin/moderator/organizer bypass
     if (user?.role === 'admin' || user?.role === 'moderator') return true;
     if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
-    // User has registration for this event
     if (isAuthenticated && mockRegistrations.some(r => r.eventId === event.id && r.userId === user?.id)) return true;
-    // URL access code matches
     if (accessCodeFromUrl && accessCodeFromUrl === event.accessCode) {
       sessionStorage.setItem(`private-event-${event.id}`, accessCodeFromUrl);
       return true;
     }
-    // Session storage has valid code
     const storedCode = sessionStorage.getItem(`private-event-${event.id}`);
     if (storedCode && storedCode === event.accessCode) return true;
     return false;
@@ -323,7 +77,7 @@ const EventDetailsPage = () => {
   const isClosedByOrganizer = event.registrationStatus === 'closed';
   const allDistancesFull = event.distances.length > 0 && event.distances.every(d => d.limit != null && d.registeredCount >= d.limit);
   const isRegistrationOpen = !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
-  
+
   const getClosedReason = (): string | null => {
     if (isPast) return 'Zawody już się odbyły';
     if (deadlinePassed) return `Termin zapisów minął (${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })})`;
@@ -331,15 +85,15 @@ const EventDetailsPage = () => {
     if (allDistancesFull) return 'Wszystkie miejsca zajęte';
     return null;
   };
+
   const eventResults = mockResults.filter(r => r.eventId === event.id);
   const eventRegistrations = mockRegistrations.filter(r => r.eventId === event.id);
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
 
-  const userRegistration = isAuthenticated 
+  const userRegistration = isAuthenticated
     ? mockRegistrations.find(r => r.eventId === event.id && r.userId === user?.id)
     : null;
 
-  // Show live results tab if event is upcoming or ongoing (has liveResultsUrl)
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
   const handleRegister = () => {
@@ -362,23 +116,17 @@ const EventDetailsPage = () => {
     });
   };
 
-  // Calculate banner position based on crop area
   const getBannerStyle = () => {
     if (!event.bannerCropArea) return {};
     const { y, height } = event.bannerCropArea;
-    return {
-      objectPosition: `center ${y + height / 2}%`,
-    };
+    return { objectPosition: `center ${y + height / 2}%` };
   };
 
   return (
     <Layout>
-      {/* Draft status banner — full width under header */}
       {isUnpublished && <DraftBanner event={event} user={user} />}
-      {/* Private event banner */}
       {isPrivateEvent && !isUnpublished && <PrivateBanner />}
 
-      {/* Header with optional banner */}
       {event.bannerUrl ? (
         <div className="relative h-56 sm:h-64 md:h-80 overflow-hidden bg-muted">
           <img
@@ -388,8 +136,6 @@ const EventDetailsPage = () => {
             style={getBannerStyle()}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          
-          {/* Organizer logo */}
           {event.organizerLogoUrl && (
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6">
               <img
@@ -399,7 +145,6 @@ const EventDetailsPage = () => {
               />
             </div>
           )}
-          
           <div className="absolute bottom-0 left-0 right-0">
             <div className="container pb-4 sm:pb-6">
               <Button variant="ghost" size="sm" className="mb-3 sm:mb-4 bg-background/20 backdrop-blur-sm hover:bg-background/40" onClick={() => navigate(-1)}>
@@ -425,7 +170,6 @@ const EventDetailsPage = () => {
           </div>
         </div>
       ) : (
-        /* Clean Header (no banner) — warm gradient */
         <div className="bg-gradient-to-br from-primary/10 via-background to-warning/5 border-b">
           <div className="container py-5 sm:py-6">
             <Button variant="ghost" size="sm" className="mb-3 sm:mb-4" onClick={() => navigate(-1)}>
@@ -468,7 +212,7 @@ const EventDetailsPage = () => {
                         {event.isVirtual ? 'Okno startowe' : 'Data'}
                       </div>
                       <div className="font-medium">
-                        {event.isVirtual && event.startDate && event.endDate 
+                        {event.isVirtual && event.startDate && event.endDate
                           ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
                           : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })
                         }
@@ -514,7 +258,6 @@ const EventDetailsPage = () => {
                   </div>
                 </div>
 
-                {/* Virtual event info banner */}
                 {event.isVirtual && (
                   <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
                     <div className="flex items-start gap-3">
@@ -565,8 +308,7 @@ const EventDetailsPage = () => {
                       <h3 className="font-semibold mb-4">O wydarzeniu</h3>
                       <p className="text-muted-foreground">{event.description}</p>
                     </div>
-                    
-                    {/* Organizers HTML */}
+
                     {event.organizersHtml && (
                       <div>
                         <h4 className="font-semibold mb-3">Organizatorzy</h4>
@@ -574,14 +316,13 @@ const EventDetailsPage = () => {
                       </div>
                     )}
 
-                    {/* Rules HTML */}
                     {event.rulesHtml && (
                       <div>
                         <h4 className="font-semibold mb-3">Regulamin</h4>
                         <RichTextDisplay html={event.rulesHtml} />
                       </div>
                     )}
-                    
+
                     {!event.organizersHtml && (
                       <div>
                         <h4 className="font-semibold mb-2">Lokalizacja</h4>
@@ -589,7 +330,6 @@ const EventDetailsPage = () => {
                       </div>
                     )}
 
-                    {/* Insurance info */}
                     {event.insuranceOption?.enabled && (
                       <div>
                         <h4 className="font-semibold mb-2 flex items-center gap-2">
@@ -602,7 +342,6 @@ const EventDetailsPage = () => {
                       </div>
                     )}
 
-                    {/* Merchandise info */}
                     {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
                       <div>
                         <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -619,16 +358,16 @@ const EventDetailsPage = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <h4 className="font-semibold mb-3">Organizator</h4>
                       {!event.organizersHtml && (
                         <p className="font-medium mb-3">{event.organizerName}</p>
                       )}
-                      
+
                       {event.organizerContact && (
                         <div className="space-y-2">
-                          <a 
+                          <a
                             href={`mailto:${event.organizerContact.email}`}
                             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                           >
@@ -636,7 +375,7 @@ const EventDetailsPage = () => {
                             {event.organizerContact.email}
                           </a>
                           {event.organizerContact.phone && (
-                            <a 
+                            <a
                               href={`tel:${event.organizerContact.phone}`}
                               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                             >
@@ -645,7 +384,7 @@ const EventDetailsPage = () => {
                             </a>
                           )}
                           {event.organizerContact.website && (
-                            <a 
+                            <a
                               href={event.organizerContact.website}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -662,10 +401,9 @@ const EventDetailsPage = () => {
                 </Card>
               </TabsContent>
 
-              {/* Route Tab */}
               {event.routeMapUrl && (
                 <TabsContent value="route" className="mt-6">
-                  <RouteMap 
+                  <RouteMap
                     mapUrl={event.routeMapUrl}
                     elevationProfileUrl={event.routeElevationProfile}
                     gpxUrl={event.routeGpxUrl}
@@ -678,7 +416,6 @@ const EventDetailsPage = () => {
                 </TabsContent>
               )}
 
-              {/* Gallery Tab */}
               {event.galleryAlbums && event.galleryAlbums.length > 0 && (
                 <TabsContent value="gallery" className="mt-6">
                   <GalleryAlbumsList albums={event.galleryAlbums} />
@@ -691,7 +428,7 @@ const EventDetailsPage = () => {
                     const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
                     const isFull = spotsLeft !== null && spotsLeft <= 0;
                     const { price: currentPrice, tierName } = getCurrentPrice(distance);
-                    
+
                     return (
                       <Card key={distance.id}>
                         <CardContent className="pt-6">
@@ -704,7 +441,6 @@ const EventDetailsPage = () => {
                                 </div>
                               </div>
 
-                              {/* Age categories */}
                               {distance.ageCategories && distance.ageCategories.length > 0 ? (
                                 <div>
                                   <p className="text-sm font-medium mb-1">Kategorie wiekowe:</p>
@@ -722,7 +458,6 @@ const EventDetailsPage = () => {
                                 </div>
                               )}
 
-                              {/* Price tiers */}
                               {distance.priceTiers && distance.priceTiers.length > 0 && (
                                 <div>
                                   <p className="text-sm font-medium mb-1">Progi cenowe:</p>
@@ -746,7 +481,6 @@ const EventDetailsPage = () => {
                                 </div>
                               )}
 
-                              {/* VIP prices */}
                               {distance.vipPrices && distance.vipPrices.length > 0 && (
                                 <div>
                                   <p className="text-sm font-medium mb-1">Ceny specjalne:</p>
@@ -768,7 +502,7 @@ const EventDetailsPage = () => {
                               <div className="text-2xl font-bold">{currentPrice} zł</div>
                               <Badge variant="secondary" className="text-xs">{tierName}</Badge>
                               <div className="text-sm text-muted-foreground mt-1">
-                                {distance.registeredCount.toLocaleString()} 
+                                {distance.registeredCount.toLocaleString()}
                                 {distance.limit && ` / ${distance.limit.toLocaleString()}`} zapisanych
                               </div>
                               {spotsLeft !== null && spotsLeft <= 100 && spotsLeft > 0 && (
@@ -782,27 +516,22 @@ const EventDetailsPage = () => {
                             </div>
                           </div>
 
-                          {/* Route artifacts */}
                           {hasRouteArtifacts(distance) && (
                             <div className="mt-4 pt-4 border-t">
                               <div className="flex flex-wrap items-center gap-3">
                                 {distance.routeMapUrl && (
-                                  <div className="flex items-center gap-2">
-                                    <img
-                                      src={distance.routeMapUrl}
-                                      alt={`Mapa ${distance.name}`}
-                                      className="h-12 w-20 object-cover rounded border"
-                                    />
-                                  </div>
+                                  <img
+                                    src={distance.routeMapUrl}
+                                    alt={`Mapa ${distance.name}`}
+                                    className="h-12 w-20 object-cover rounded border"
+                                  />
                                 )}
                                 {distance.routeElevationProfile && (
-                                  <div className="flex items-center gap-2">
-                                    <img
-                                      src={distance.routeElevationProfile}
-                                      alt={`Profil ${distance.name}`}
-                                      className="h-12 w-20 object-cover rounded border"
-                                    />
-                                  </div>
+                                  <img
+                                    src={distance.routeElevationProfile}
+                                    alt={`Profil ${distance.name}`}
+                                    className="h-12 w-20 object-cover rounded border"
+                                  />
                                 )}
                                 {distance.routeGpxUrl && (
                                   <Button variant="outline" size="sm" asChild>
@@ -828,33 +557,33 @@ const EventDetailsPage = () => {
                   <CardContent className="pt-6">
                     {eventRegistrations.length > 0 ? (
                       <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Nr</TableHead>
-                            <TableHead>Uczestnik</TableHead>
-                            <TableHead>Dystans</TableHead>
-                            <TableHead>Kategoria</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {eventRegistrations.filter(r => r.status === 'confirmed').map((reg) => (
-                            <TableRow key={reg.id}>
-                              <TableCell className="font-mono">{reg.bibNumber || '-'}</TableCell>
-                              <TableCell>
-                                <Link 
-                                  to={`/athlete/${reg.userId}`}
-                                  className="font-medium hover:text-primary hover:underline transition-colors"
-                                >
-                                  {reg.userName}
-                                </Link>
-                              </TableCell>
-                              <TableCell>{reg.distanceName}</TableCell>
-                              <TableCell>{reg.category}</TableCell>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nr</TableHead>
+                              <TableHead>Uczestnik</TableHead>
+                              <TableHead>Dystans</TableHead>
+                              <TableHead>Kategoria</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {eventRegistrations.filter(r => r.status === 'confirmed').map((reg) => (
+                              <TableRow key={reg.id}>
+                                <TableCell className="font-mono">{reg.bibNumber || '-'}</TableCell>
+                                <TableCell>
+                                  <Link
+                                    to={`/athlete/${reg.userId}`}
+                                    className="font-medium hover:text-primary hover:underline transition-colors"
+                                  >
+                                    {reg.userName}
+                                  </Link>
+                                </TableCell>
+                                <TableCell>{reg.distanceName}</TableCell>
+                                <TableCell>{reg.category}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </div>
                     ) : (
                       <p className="text-muted-foreground text-center py-8">
@@ -881,7 +610,6 @@ const EventDetailsPage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Registration Card */}
             <Card className="sticky top-20 border-primary/20 shadow-md overflow-hidden">
               <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
               <CardHeader className="pb-3">
@@ -935,7 +663,6 @@ const EventDetailsPage = () => {
                   </Button>
                 </div>
 
-                {/* Edit button for admin/moderator/organizer */}
                 {(user?.role === 'admin' || user?.role === 'moderator' || (user?.role === 'organizer' && event.organizerId === user?.id)) && (
                   <div className="pt-4 border-t">
                     <Button variant="secondary" className="w-full" asChild>
@@ -949,7 +676,6 @@ const EventDetailsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Organizer Contact Card */}
             {event.organizerContact && (
               <Card>
                 <CardHeader>
@@ -958,7 +684,7 @@ const EventDetailsPage = () => {
                 <CardContent className="space-y-3">
                   <p className="text-sm font-medium">{event.organizerName}</p>
                   <div className="space-y-2">
-                    <a 
+                    <a
                       href={`mailto:${event.organizerContact.email}`}
                       className="flex items-center gap-2 text-sm text-primary hover:underline"
                     >
@@ -966,7 +692,7 @@ const EventDetailsPage = () => {
                       Napisz do organizatora
                     </a>
                     {event.organizerContact.phone && (
-                      <a 
+                      <a
                         href={`tel:${event.organizerContact.phone}`}
                         className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       >
