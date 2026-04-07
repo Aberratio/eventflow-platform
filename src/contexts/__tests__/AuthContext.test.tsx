@@ -27,7 +27,7 @@ describe('AuthContext', () => {
   it('loginWithCredentials validates password', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     let ok: boolean;
-    act(() => { ok = result.current.loginWithCredentials('jan@zmierzymyczas.pl', 'wrong'); });
+    act(() => { ok = result.current.loginWithCredentials('wrong@test.com', 'wrong'); });
     expect(ok!).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
   });
