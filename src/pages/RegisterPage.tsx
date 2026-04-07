@@ -28,6 +28,8 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+const EXISTING_EMAILS = ['jan@example.com', 'anna@example.com'];
+
 const RegisterPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -51,7 +53,7 @@ const RegisterPage = () => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (data.email === 'jan@example.com' || data.email === 'anna@example.com') {
+    if (EXISTING_EMAILS.includes(data.email)) {
       toast({ title: 'Błąd rejestracji', description: 'Użytkownik o tym adresie email już istnieje.', variant: 'destructive' });
       setIsLoading(false);
       return;
@@ -71,7 +73,6 @@ const RegisterPage = () => {
       <div className="bg-gradient-to-b from-primary/10 via-background to-background">
         <div className="container py-12 md:py-20">
           <div className="max-w-lg mx-auto">
-            {/* Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
                 <UserPlus className="h-8 w-8 text-primary" />

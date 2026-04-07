@@ -39,28 +39,25 @@ export const useRegistrationEmail = () => {
     paymentConfig,
   }: SendRegistrationEmailParams): Promise<void> => {
     const isBankTransfer = paymentConfig?.type === 'organizer_bank';
-    
-    // Build email content
-    const emailData = {
+
+    // Build email payload (ready for real API integration)
+    const _emailData = {
       to: user?.email || 'participant@example.com',
-      subject: isBankTransfer 
+      subject: isBankTransfer
         ? `Rejestracja wstępna: ${eventName} - oczekuje na płatność`
         : `Potwierdzenie rejestracji: ${eventName}`,
-      
-      // Email body sections
       header: {
         title: isBankTransfer ? 'Rejestracja wstępna zakończona!' : 'Rejestracja zakończona!',
         eventName,
         eventDate,
         eventCity,
       },
-
       registrationDetails: {
         distanceName: registrationData.distanceName,
         category: registrationData.category,
         basePrice: formatPrice(registrationData.price),
-        discountAmount: registrationData.discountAmount && registrationData.discountAmount > 0 
-          ? formatPrice(registrationData.discountAmount) 
+        discountAmount: registrationData.discountAmount && registrationData.discountAmount > 0
+          ? formatPrice(registrationData.discountAmount)
           : null,
         discountCode: registrationData.discountCode || null,
         insurance: registrationData.insurancePrice && registrationData.insurancePrice > 0 ? {
@@ -74,8 +71,6 @@ export const useRegistrationEmail = () => {
         })) || [],
         totalAmount: formatPrice(registrationData.totalAmount),
       },
-
-      // Bank transfer details (only for bank transfer payments)
       bankTransfer: isBankTransfer && paymentConfig ? {
         accountNumber: paymentConfig.bankAccountNumber || '',
         accountHolder: paymentConfig.bankAccountHolder || '',
@@ -92,39 +87,14 @@ export const useRegistrationEmail = () => {
           'Status płatności możesz sprawdzić w panelu uczestnika',
         ],
       } : null,
-
       footer: {
         eventUrl: `${window.location.origin}/events/${eventSlug}`,
         registrationsUrl: `${window.location.origin}/participant`,
       },
     };
 
-    // Mock email sending - log to console
-    console.group('📧 Email rejestracyjny (MOCK)');
-    console.log('Do:', emailData.to);
-    console.log('Temat:', emailData.subject);
-    console.log('---');
-    console.log('Nagłówek:', emailData.header);
-    console.log('Szczegóły rejestracji:', emailData.registrationDetails);
-    
-    if (emailData.bankTransfer) {
-      console.log('---');
-      console.log('🏦 Dane do przelewu bankowego:');
-      console.log('  Numer konta:', emailData.bankTransfer.accountNumber);
-      console.log('  Odbiorca:', emailData.bankTransfer.accountHolder);
-      console.log('  Tytuł:', emailData.bankTransfer.transferTitle);
-      console.log('  Kwota:', emailData.bankTransfer.amount);
-      console.log('  Instrukcje:', emailData.bankTransfer.instructions);
-    }
-    
-    console.log('---');
-    console.log('Linki:', emailData.footer);
-    console.groupEnd();
-
-    // Simulate async operation
+    // Simulate async email sending (replace with real API call)
     await new Promise(resolve => setTimeout(resolve, 100));
-
-    console.log('✅ Email rejestracyjny został "wysłany" (mock)');
   };
 
   return { sendRegistrationEmail };

@@ -10,8 +10,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Timer, Lock, Mail, Eye, EyeOff, Copy, Check, Shield, User, Briefcase, UserCheck } from 'lucide-react';
-import { UserRole } from '@/types';
+import { Timer, Lock, Mail, Eye, EyeOff, User, Briefcase, UserCheck, Shield } from 'lucide-react';
+import { MockCredentialCard, type MockCredential } from '@/components/auth/MockCredentialCard';
 
 const loginSchema = z.object({
   email: z.string().email('Nieprawidłowy adres email'),
@@ -20,16 +20,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-interface MockCredential {
-  role: UserRole;
-  label: string;
-  email: string;
-  password: string;
-  icon: React.ElementType;
-  color: string;
-}
-
-const mockCredentials: MockCredential[] = [
+const MOCK_CREDENTIALS: MockCredential[] = [
   { role: 'participant', label: 'Uczestnik', email: 'jan@example.com', password: 'demo1234', icon: User, color: 'bg-accent/10 text-accent-foreground border-accent/30' },
   { role: 'organizer', label: 'Organizator', email: 'marek@timing.pl', password: 'demo1234', icon: Briefcase, color: 'bg-primary/10 text-primary border-primary/30' },
   { role: 'moderator', label: 'Moderator', email: 'monika@zmierzymyczas.pl', password: 'demo1234', icon: UserCheck, color: 'bg-warning/10 text-warning-foreground border-warning/30' },
@@ -87,7 +78,6 @@ const LoginPage = () => {
 
   return (
     <Layout>
-      {/* Hero gradient */}
       <div className="bg-gradient-to-b from-primary/10 via-background to-background">
         <div className="container py-12 md:py-20">
           <div className="max-w-5xl mx-auto">
@@ -187,54 +177,15 @@ const LoginPage = () => {
                 </div>
 
                 <div className="grid gap-3">
-                  {mockCredentials.map((cred) => {
-                    const Icon = cred.icon;
-                    return (
-                      <Card
-                        key={cred.role}
-                        className={`border ${cred.color} cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5`}
-                        onClick={() => handleFillCredentials(cred)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="shrink-0">
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm">{cred.label}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono truncate">
-                                  {cred.email}
-                                </code>
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.stopPropagation(); handleCopy(cred.email, `${cred.role}-email`); }}
-                                  className="shrink-0 text-muted-foreground hover:text-foreground"
-                                >
-                                  {copiedField === `${cred.role}-email` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
-                                </button>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono">
-                                  demo1234
-                                </code>
-                                <button
-                                  type="button"
-                                  onClick={(e) => { e.stopPropagation(); handleCopy('demo1234', `${cred.role}-pass`); }}
-                                  className="shrink-0 text-muted-foreground hover:text-foreground"
-                                >
-                                  {copiedField === `${cred.role}-pass` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
-                                </button>
-                              </div>
-                            </div>
-                            <Button size="sm" variant="ghost" className="shrink-0 text-xs">
-                              Użyj
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                  {MOCK_CREDENTIALS.map((cred) => (
+                    <MockCredentialCard
+                      key={cred.role}
+                      credential={cred}
+                      copiedField={copiedField}
+                      onFill={handleFillCredentials}
+                      onCopy={handleCopy}
+                    />
+                  ))}
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center">
