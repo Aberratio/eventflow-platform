@@ -47,7 +47,7 @@ export const EmailSendLogsTable: React.FC<EmailSendLogsTableProps> = ({ logs }) 
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-md border border-border/50 overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>

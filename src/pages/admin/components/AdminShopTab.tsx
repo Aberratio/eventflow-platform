@@ -136,7 +136,7 @@ export const AdminShopTab = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border overflow-x-auto">
+              <div className="rounded-md border border-border/50 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -207,7 +207,7 @@ export const AdminShopTab = () => {
           <Card>
             <CardHeader><CardTitle>Kategorie produktów</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-md border overflow-x-auto">
+              <div className="rounded-md border border-border/50 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -238,7 +238,7 @@ export const AdminShopTab = () => {
                 </Table>
               </div>
 
-              <div className="border rounded-lg p-4 space-y-3">
+              <div className="border border-border/50 rounded-lg p-4 space-y-3">
                 <p className="text-sm font-medium">Dodaj nową kategorię</p>
                 <div className="flex gap-2">
                   <div className="flex-1">

@@ -89,12 +89,12 @@
   /* ── Surface utilities ───────────────────────────────── */
   .surface-card {
     background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 
   .surface-elevated {
     background: hsl(var(--surface-elevated));
-    border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--border) / 0.5);
   }
 
   /* ── Row hover for tables/lists ──────────────────────── */

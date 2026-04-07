@@ -188,7 +188,7 @@ export const UsersOrganizersTab = () => {
                 </div>
 
                 {searchEmail.length >= 2 && !matchedUser && (
-                  <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                  <div className="border border-border/50 rounded-md max-h-[200px] overflow-y-auto">
                     {emailMatches.length === 0 ? (
                       <p className="text-sm text-muted-foreground p-3 text-center">Nie znaleziono użytkowników</p>
                     ) : (
@@ -210,7 +210,7 @@ export const UsersOrganizersTab = () => {
                 )}
 
                 {matchedUser && (
-                  <div className="border rounded-md p-4 bg-accent/30 space-y-3">
+                  <div className="border border-border/50 rounded-md p-4 bg-accent/30 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{matchedUser.name}</p>
@@ -259,7 +259,7 @@ export const UsersOrganizersTab = () => {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
+      <div className="border border-border/50 rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>

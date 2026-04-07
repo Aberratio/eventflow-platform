@@ -17,8 +17,8 @@
     /* === SURFACE LAYERS === */
     --surface-elevated:     0 0% 13%;
     --surface-overlay:      0 0% 5%;
-    --border-subtle:        0 0% 14%;
-    --border-active:        0 0% 22%;
+    --border-subtle:        0 0% 12%;
+    --border-active:        0 0% 20%;
 
     /* === TEXT HIERARCHY === */
     --text-primary:         0 0% 95%;
@@ -128,7 +128,7 @@
     --info-subtle:          210 40% 50%;
 
     /* === BORDERS & INPUTS === */
-    --border:               0 0% 16%;
+    --border:               0 0% 13%;
     --input:                0 0% 16%;
     --ring:                 0 72% 45%;
 

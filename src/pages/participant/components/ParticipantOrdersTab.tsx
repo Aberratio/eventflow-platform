@@ -59,7 +59,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
           orders.map(order => {
             const isExpanded = expandedOrders.includes(order.id);
             return (
-              <div key={order.id} className="border rounded-lg overflow-hidden">
+              <div key={order.id} className="border border-border/50 rounded-lg overflow-hidden">
                 {/* Order header */}
                 <div 
                   className="p-4 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"

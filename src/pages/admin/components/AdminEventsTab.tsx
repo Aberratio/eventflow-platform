@@ -91,7 +91,7 @@ export const AdminEventsTab = () => {
         </Select>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
+      <div className="border border-border/50 rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
