@@ -10,7 +10,7 @@ const NotFound = () => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    // 404 tracking — will be replaced by analytics integration
     
     // Sekwencja animacji
     const runnerTimer = setTimeout(() => setShowRunner(true), 300);
