@@ -381,19 +381,7 @@ export const mockInfoPages: InfoPage[] = [
   },
 ];
 
-export const seriesTypeLabels: Record<SeriesType, string> = {
-  virtual: 'Wirtualna',
-  local: 'Ustawka lokalna',
-  championship: 'Mistrzostwa',
-  cup: 'Cykl / Grand Prix',
-};
-
-export const disciplineLabels: Record<string, string> = {
-  running: 'Bieganie',
-  cycling: 'Kolarstwo',
-  triathlon: 'Triathlon',
-  multisport: 'Multisport',
-};
+export { seriesTypeLabels, disciplineLabels } from '@/api/mock/labels';
 
 export const mockSeries: EventSeries[] = [
   {
@@ -3408,66 +3396,9 @@ export const mockCertificates: Certificate[] = [
   },
 ];
 
-// Re-export getCurrentPrice from helpers (canonical source)
-export { getCurrentPrice } from '@/api/mock/helpers';
+export { getCurrentPrice, validateDiscountCode } from '@/api/mock/helpers';
 
-// Helper to validate discount code
-export const validateDiscountCode = (
-  code: string, 
-  event: Event, 
-  distanceId?: string
-): { valid: boolean; discount?: { type: 'percent' | 'fixed'; value: number }; message: string } => {
-  if (!event.discountCodes) {
-    return { valid: false, message: 'Kod rabatowy nie istnieje' };
-  }
-  
-  const discountCode = event.discountCodes.find(dc => dc.code.toUpperCase() === code.toUpperCase());
-  
-  if (!discountCode) {
-    return { valid: false, message: 'Nieprawidłowy kod rabatowy' };
-  }
-  
-  if (!discountCode.active) {
-    return { valid: false, message: 'Kod rabatowy jest nieaktywny' };
-  }
-  
-  const now = new Date();
-  if (discountCode.validFrom && new Date(discountCode.validFrom) > now) {
-    return { valid: false, message: 'Kod rabatowy jeszcze nie jest aktywny' };
-  }
-  
-  if (discountCode.validTo && new Date(discountCode.validTo) < now) {
-    return { valid: false, message: 'Kod rabatowy wygasł' };
-  }
-  
-  if (discountCode.maxUses && discountCode.usedCount >= discountCode.maxUses) {
-    return { valid: false, message: 'Kod rabatowy został wykorzystany maksymalną liczbę razy' };
-  }
-  
-  if (distanceId && discountCode.distanceIds && discountCode.distanceIds.length > 0) {
-    if (!discountCode.distanceIds.includes(distanceId)) {
-      return { valid: false, message: 'Kod rabatowy nie dotyczy wybranego dystansu' };
-    }
-  }
-  
-  return { 
-    valid: true, 
-    discount: { type: discountCode.discountType, value: discountCode.discountValue },
-    message: discountCode.discountType === 'percent' 
-      ? `Zniżka ${discountCode.discountValue}%`
-      : `Zniżka ${discountCode.discountValue} zł`
-  };
-};
-
-// Shop data
-export const shopCategoryLabels: Record<ShopCategory, string> = {
-  apparel: 'Odzież',
-  footwear: 'Obuwie',
-  accessories: 'Akcesoria',
-  nutrition: 'Odżywki',
-  electronics: 'Elektronika',
-  services: 'Usługi',
-};
+export { shopCategoryLabels } from '@/api/mock/labels';
 
 export const mockShopProducts: ShopProduct[] = [
   {
