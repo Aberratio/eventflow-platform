@@ -25,11 +25,9 @@ const EventManage = () => {
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 
-  // Role-based access check
   const canManage = user?.role === 'admin' || user?.role === 'moderator' || 
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
-  // Back navigation
 
   if (!event || !canManage) {
     return (
