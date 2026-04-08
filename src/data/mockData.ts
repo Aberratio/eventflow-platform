@@ -2450,35 +2450,7 @@ export const getExistingTeamsForEvent = (eventId: string): Array<{
     .sort((a, b) => b.memberCount - a.memberCount);
 };
 
-// ============================================
-// Team name validation utility
-// ============================================
-export const validateTeamName = (name: string): { valid: boolean; error?: string } => {
-  const trimmed = name.trim();
-  
-  if (trimmed.length < 3) {
-    return { valid: false, error: 'Nazwa musi mieć minimum 3 znaki' };
-  }
-  
-  if (trimmed.length > 50) {
-    return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
-  }
-  
-  // Only letters, numbers, spaces, dashes, apostrophes, dots
-  const validPattern = /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s\-'\.]+$/;
-  if (!validPattern.test(trimmed)) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
-  }
-  
-  // Check for banned words (mock list)
-  const bannedWords = ['dupa', 'chuj', 'kurwa', 'pierdol'];
-  const lowerName = trimmed.toLowerCase();
-  if (bannedWords.some(word => lowerName.includes(word))) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone słowa' };
-  }
-  
-  return { valid: true };
-};
+export { validateTeamName } from '@/api/mock/helpers';
 
 export const mockRegistrations: Registration[] = [
   { id: 'r1', eventId: 'e1', eventName: 'Maraton Warszawski 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd1', distanceName: 'Maraton', category: 'M30-39', registeredAt: '2025-01-15T10:30:00Z', status: 'confirmed', bibNumber: '1542', pricePaid: 150 },
