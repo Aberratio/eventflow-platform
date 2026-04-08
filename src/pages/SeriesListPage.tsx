@@ -1,17 +1,15 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockSeries, mockEvents, seriesTypeLabels } from '@/data/mockData';
-import { Filter, Calendar, Globe, MapPin, Trophy, Target, Layers, ChevronRight } from 'lucide-react';
+import { Filter, Calendar, Globe, MapPin, Trophy, Target, Layers } from 'lucide-react';
 import { SeriesType } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, SeriesListRow } from '@/components/lists';
-
-const statusLabels: Record<string, string> = {
-  active: 'Aktywna',
-  completed: 'Zakończona',
-  upcoming: 'Nadchodząca',
-};
+import { getSeries, getEvents } from '@/api';
+import { seriesTypeLabels } from '@/api/mock/labels';
+import { QUERY_KEYS, SERIES_STATUS_LABELS } from '@/constants';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusGroupConfig: Record<string, { accentColor: string }> = {
   'Aktywna': { accentColor: 'bg-success' },
@@ -23,11 +21,24 @@ const SeriesListPage = () => {
   const [selectedType, setSelectedType] = useState<SeriesType | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
+  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+    queryKey: QUERY_KEYS.series,
+    queryFn: () => getSeries(),
+  });
+
+  const { data: eventsData } = useQuery({
+    queryKey: QUERY_KEYS.events,
+    queryFn: () => getEvents(),
+  });
+
+  const allSeries = seriesData?.data ?? [];
+  const allEvents = eventsData?.data ?? [];
+
   const filteredSeries = useMemo(() => {
-    return mockSeries
+    return allSeries
       .filter(s => selectedType === 'all' || s.type === selectedType)
       .filter(s => selectedStatus === 'all' || s.status === selectedStatus);
-  }, [selectedType, selectedStatus]);
+  }, [allSeries, selectedType, selectedStatus]);
 
   const groupedSeries = useMemo(() => {
     const groups: Record<string, typeof filteredSeries> = {};
@@ -35,24 +46,18 @@ const SeriesListPage = () => {
     order.forEach(status => {
       const items = filteredSeries.filter(s => s.status === status);
       if (items.length > 0) {
-        groups[statusLabels[status]] = items;
+        groups[SERIES_STATUS_LABELS[status]] = items;
       }
     });
     return groups;
   }, [filteredSeries]);
 
   const hasFilters = selectedType !== 'all' || selectedStatus !== 'all';
-
-  const clearFilters = () => {
-    setSelectedType('all');
-    setSelectedStatus('all');
-  };
-
-  const activeCount = mockSeries.filter(s => s.status === 'active').length;
+  const clearFilters = () => { setSelectedType('all'); setSelectedStatus('all'); };
+  const activeCount = allSeries.filter(s => s.status === 'active').length;
 
   return (
     <Layout>
-      {/* Hero header */}
       <div className="relative overflow-hidden border-b border-border/50">
         <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-background to-primary/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--warning)/0.06),transparent_60%)]" />
@@ -68,8 +73,6 @@ const SeriesListPage = () => {
               </p>
             </div>
           </div>
-
-          {/* Quick stats */}
           <div className="flex items-center gap-4 mt-5 text-sm">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card/60 border border-border/50">
               <Target className="h-4 w-4 text-success" />
@@ -77,14 +80,13 @@ const SeriesListPage = () => {
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card/60 border border-border/50">
               <Calendar className="h-4 w-4 text-warning" />
-              <span className="text-muted-foreground">{mockSeries.length} łącznie</span>
+              <span className="text-muted-foreground">{allSeries.length} łącznie</span>
             </div>
           </div>
         </div>
       </div>
 
       <div className="container py-8">
-        {/* Filters */}
         <div className="bg-card/50 border border-border/50 rounded-xl p-4 mb-6 backdrop-blur-sm">
           <div className="flex flex-col md:flex-row gap-3">
             <Select value={selectedType} onValueChange={(v) => setSelectedType(v as SeriesType | 'all')}>
@@ -94,26 +96,10 @@ const SeriesListPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie typy</SelectItem>
-                <SelectItem value="virtual">
-                  <span className="flex items-center gap-2">
-                    <Globe className="h-4 w-4" /> Wirtualne
-                  </span>
-                </SelectItem>
-                <SelectItem value="local">
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" /> Ustawki lokalne
-                  </span>
-                </SelectItem>
-                <SelectItem value="cup">
-                  <span className="flex items-center gap-2">
-                    <Target className="h-4 w-4" /> Cykle / Grand Prix
-                  </span>
-                </SelectItem>
-                <SelectItem value="championship">
-                  <span className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4" /> Mistrzostwa
-                  </span>
-                </SelectItem>
+                <SelectItem value="virtual"><span className="flex items-center gap-2"><Globe className="h-4 w-4" /> Wirtualne</span></SelectItem>
+                <SelectItem value="local"><span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Ustawki lokalne</span></SelectItem>
+                <SelectItem value="cup"><span className="flex items-center gap-2"><Target className="h-4 w-4" /> Cykle / Grand Prix</span></SelectItem>
+                <SelectItem value="championship"><span className="flex items-center gap-2"><Trophy className="h-4 w-4" /> Mistrzostwa</span></SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -135,49 +121,44 @@ const SeriesListPage = () => {
           </div>
         </div>
 
-        {/* Results count */}
         <div className="mb-4 text-sm text-muted-foreground">
           Znaleziono <span className="font-medium text-foreground">{filteredSeries.length}</span> serii
         </div>
 
-        {/* Series List */}
-        <ListContainer
-          isEmpty={filteredSeries.length === 0}
-          emptyState={
-            <ListEmptyState
-              icon={<Calendar className="h-12 w-12" />}
-              title="Nie znaleziono serii"
-              description="Spróbuj zmienić kryteria wyszukiwania"
-              action={
-                <Button variant="outline" onClick={clearFilters}>
-                  Wyczyść filtry
-                </Button>
-              }
-            />
-          }
-        >
-          {Object.entries(groupedSeries).map(([statusLabel, seriesList]) => (
-            <ListGroup key={statusLabel} title={statusLabel}>
-              {seriesList.map(series => {
-                const eventsCount = series.eventIds.length;
-                const seriesEvents = mockEvents.filter(e => series.eventIds.includes(e.id));
-                const totalParticipants = seriesEvents.reduce(
-                  (sum, e) => sum + e.distances.reduce((s, d) => s + d.registeredCount, 0),
-                  0
-                );
-
-                return (
-                  <SeriesListRow
-                    key={series.id}
-                    series={series}
-                    eventsCount={eventsCount}
-                    totalParticipants={totalParticipants}
-                  />
-                );
-              })}
-            </ListGroup>
-          ))}
-        </ListContainer>
+        {seriesLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <ListContainer
+            isEmpty={filteredSeries.length === 0}
+            emptyState={
+              <ListEmptyState
+                icon={<Calendar className="h-12 w-12" />}
+                title="Nie znaleziono serii"
+                description="Spróbuj zmienić kryteria wyszukiwania"
+                action={<Button variant="outline" onClick={clearFilters}>Wyczyść filtry</Button>}
+              />
+            }
+          >
+            {Object.entries(groupedSeries).map(([statusLabel, seriesList]) => (
+              <ListGroup key={statusLabel} title={statusLabel}>
+                {seriesList.map(series => {
+                  const eventsCount = series.eventIds.length;
+                  const seriesEvents = allEvents.filter(e => series.eventIds.includes(e.id));
+                  const totalParticipants = seriesEvents.reduce(
+                    (sum, e) => sum + e.distances.reduce((s, d) => s + d.registeredCount, 0), 0
+                  );
+                  return (
+                    <SeriesListRow key={series.id} series={series} eventsCount={eventsCount} totalParticipants={totalParticipants} />
+                  );
+                })}
+              </ListGroup>
+            ))}
+          </ListContainer>
+        )}
       </div>
     </Layout>
   );
