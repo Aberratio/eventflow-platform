@@ -10,7 +10,6 @@ const wrapper = ({ children }: { children: React.ReactNode }) =>
 const makeItem = (overrides: Partial<CartItem> = {}): CartItem => ({
   productId: 'p1',
   quantity: 1,
-  price: 50,
   ...overrides,
 });
 
