@@ -232,3 +232,5 @@ export const mockSecuritySettings: SecuritySettings = {
 
 // Virtual event mock data
 
+
+export { mockOnlineSessions } from './calendar.mock';
