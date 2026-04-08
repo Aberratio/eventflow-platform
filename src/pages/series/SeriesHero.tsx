@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Globe, Target, Trophy } from 'lucide-react';
-import type { Series } from '@/types';
+import type { EventSeries } from '@/types';
 import { seriesTypeLabels } from '@/api/mock/labels';
 
 const seriesTypeColors: Record<string, string> = {
@@ -18,7 +18,7 @@ const seriesTypeIcons: Record<string, React.ReactNode> = {
 };
 
 interface SeriesHeroProps {
-  series: Series;
+  series: EventSeries;
 }
 
 export const SeriesHero: React.FC<SeriesHeroProps> = ({ series }) => (
