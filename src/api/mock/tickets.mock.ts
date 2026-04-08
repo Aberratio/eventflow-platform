@@ -1,17 +1,19 @@
 import type { Ticket, Certificate } from '@/types';
-import { mockResults } from './results.mock';
 
 export const mockTickets: Ticket[] = [
   {
     id: 't1',
     eventId: 'e1',
     eventName: 'Maraton Warszawski 2026',
-    userId: 'u1',
-    ticketNumber: 'TICKET-2026-001',
-    type: 'standard',
-    status: 'valid',
-    purchasedAt: '2026-01-15T10:00:00Z',
-    qrCode: 'QR-TICKET-001',
+    eventDate: '2026-09-27',
+    distanceId: 'd1',
+    distanceName: '42,195 km',
+    location: 'Warszawa, Stadion Narodowy',
+    participantName: 'Jan Kowalski',
+    participantId: 'u1',
+    bibNumber: '1001',
+    category: 'M30',
+    registrationId: 'reg1',
   },
 ];
 
@@ -20,12 +22,10 @@ export const mockCertificates: Certificate[] = [
     id: 'cert1',
     eventId: 'e11',
     eventName: 'Bieg Niepodległości',
-    userId: 'u1',
-    resultId: 'r1',
+    date: '2025-11-11',
     distance: '10 km',
     time: '00:42:15',
     position: 1,
-    issuedAt: '2025-11-11T14:00:00Z',
     downloadUrl: '/certificates/cert1.pdf',
   },
 ];
