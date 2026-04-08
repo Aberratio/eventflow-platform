@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, VipPrice, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage, GlobalInsuranceSettings, OnlineSession, GoogleCalendarSettings, Challenge, ChallengeParticipation } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, VipPrice, InsuranceOption, EventSeries, ShopProduct, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage, GlobalInsuranceSettings, OnlineSession, GoogleCalendarSettings, Challenge, ChallengeParticipation } from '@/types';
 
 // ============== CMS INFO PAGES ==============
 export const mockInfoPages: InfoPage[] = [
