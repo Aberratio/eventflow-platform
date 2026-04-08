@@ -4,7 +4,7 @@ import { getCurrentPrice, validateDiscountCode, mockGroupDiscountCodes, getExist
 import { applyDiscount } from '@/api/mock/helpers';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import type { RegistrationData } from '../RegistrationForm';
+import type { RegistrationData } from '@/components/registration/RegistrationForm';
 
 const currentYear = new Date().getFullYear();
 
