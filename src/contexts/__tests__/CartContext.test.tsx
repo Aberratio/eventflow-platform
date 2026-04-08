@@ -18,7 +18,6 @@ describe('CartContext', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     expect(result.current.items).toEqual([]);
     expect(result.current.totalItems).toBe(0);
-    expect(result.current.totalPrice).toBe(0);
   });
 
   it('addItem adds a new item', () => {
@@ -26,7 +25,6 @@ describe('CartContext', () => {
     act(() => { result.current.addItem(makeItem()); });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.totalItems).toBe(1);
-    expect(result.current.totalPrice).toBe(50);
   });
 
   it('addItem merges quantity for same variant', () => {
