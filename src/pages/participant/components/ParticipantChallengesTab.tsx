@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Trophy, Target, ArrowRight, CheckCircle2, Clock, XCircle } from 'lucide-react';
-import { mockChallenges, mockChallengeParticipations } from '@/data/mockData';
+import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ParticipantChallengesTab = () => {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserRole } from '@/types';
-import { mockUsers } from '@/data/mockData';
+import { mockUsers } from '@/api/mock/users.mock';
+import { STORAGE_KEYS, MOCK_PASSWORD } from '@/constants';
 
 interface AuthContextType {
   user: User | null;
@@ -12,10 +13,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'zmierzymyczas_auth';
-
-// All mock accounts use this password
-const MOCK_PASSWORD = 'demo1234';
+const AUTH_STORAGE_KEY = STORAGE_KEYS.AUTH;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);

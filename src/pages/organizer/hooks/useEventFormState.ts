@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 import {
   SportDiscipline,
   BannerCropArea,

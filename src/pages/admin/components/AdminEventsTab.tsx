@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Search, Calendar, MapPin, Settings, Eye } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {

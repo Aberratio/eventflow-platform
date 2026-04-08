@@ -32,7 +32,9 @@ import {
   Globe,
   Tag,
 } from 'lucide-react';
-import { mockEvents, mockSeries, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
+import { mockSeries } from '@/api/mock/series.mock';
 import { SportDiscipline } from '@/types';
 import { distanceRangeOptions, EventFiltersState } from '@/hooks/useEventFilters';
 

@@ -6,7 +6,7 @@ import { Registration, Result, PersonalRecord, Message } from '@/types';
 import { Calendar, Trophy, Medal, Mail, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 
 interface ParticipantOverviewTabProps {
   upcomingRegistrations: Registration[];

@@ -48,7 +48,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { useToast } from '@/hooks/use-toast';
-import { mockSeries, mockEvents, mockResults, seriesTypeLabels, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels, seriesTypeLabels } from '@/api/mock/labels';
+import { mockResults } from '@/api/mock/results.mock';
+import { mockSeries } from '@/api/mock/series.mock';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { useMemo, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';

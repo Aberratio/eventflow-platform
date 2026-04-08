@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Trophy, Plus, CheckCircle2, Clock, XCircle, Target, Users, ExternalLink, Pencil, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
-import { mockChallenges, mockChallengeParticipations, mockSeries, mockEvents } from '@/data/mockData';
+import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
+import { mockEvents } from '@/api/mock/events.mock';
+import { mockSeries } from '@/api/mock/series.mock';
 import { Challenge, ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

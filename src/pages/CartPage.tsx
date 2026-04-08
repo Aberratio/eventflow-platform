@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
-import { mockDeliveryMethods, mockShopPaymentMethods } from '@/data/mockData';
+import { mockDeliveryMethods, mockShopPaymentMethods } from '@/api/mock/shop.mock';
 import { OrderDetails } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {

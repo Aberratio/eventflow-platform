@@ -15,7 +15,7 @@ import {
   Shield, Key, Laptop, Smartphone, Monitor, History,
   CheckCircle, XCircle, Trash2,
 } from 'lucide-react';
-import { mockSecuritySettings } from '@/data/mockData';
+import { mockSecuritySettings } from '@/api/mock/admin.mock';
 import { format, formatDistanceToNow } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';

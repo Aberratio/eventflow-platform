@@ -1,1 +1,2 @@
-export { mockTickets, mockCertificates } from '@/data/mockData';
+export { mockTickets } from './shop.mock';
+export { mockCertificates } from './results.mock';

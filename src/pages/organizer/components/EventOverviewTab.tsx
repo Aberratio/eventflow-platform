@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Event, Registration } from '@/types';
-import { disciplineLabels } from '@/data/mockData';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Users, Calendar, MapPin, TrendingUp, ExternalLink, AlertTriangle, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';

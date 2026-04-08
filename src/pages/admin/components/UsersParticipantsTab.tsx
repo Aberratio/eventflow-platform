@@ -20,7 +20,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
-import { mockUsers, mockRegistrations } from '@/data/mockData';
+import { mockRegistrations } from '@/api/mock/registrations.mock';
+import { mockUsers } from '@/api/mock/users.mock';
 import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Pencil, UserCog, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';

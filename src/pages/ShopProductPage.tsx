@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield, Package, Truck, RotateCcw } from 'lucide-react';
-import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
+import { shopCategoryLabels } from '@/api/mock/labels';
+import { mockShopProducts } from '@/api/mock/shop.mock';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 

@@ -27,7 +27,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { mockShopOrders, mockUsers } from '@/data/mockData';
+import { mockShopOrders } from '@/api/mock/shop.mock';
+import { mockUsers } from '@/api/mock/users.mock';
 import { ShopOrder } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

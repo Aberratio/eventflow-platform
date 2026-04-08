@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, ExternalLink } from 'lucide-react';

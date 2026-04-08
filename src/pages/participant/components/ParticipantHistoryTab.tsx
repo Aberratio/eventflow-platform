@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Result, Certificate } from '@/types';
 import { Trophy } from 'lucide-react';
-import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 import { toast } from 'sonner';
 import { ListContainer, ListGroup, ListEmptyState, ResultListRow } from '@/components/lists';
 

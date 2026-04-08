@@ -23,7 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { mockEvents, disciplineLabels, mockGoogleCalendarSettings } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { mockGoogleCalendarSettings } from '@/api/mock/calendar.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Event, GoogleCalendarSettings } from '@/types';
 import { addEventToGoogleCalendar } from '@/lib/googleCalendarUtils';
 import { 

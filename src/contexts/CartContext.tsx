@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { CartItem, ShopProduct, OrderDetails } from '@/types';
-import { mockShopProducts } from '@/data/mockData';
+import { mockShopProducts } from '@/api/mock/shop.mock';
 import { useToast } from '@/hooks/use-toast';
 
 interface CartContextType {

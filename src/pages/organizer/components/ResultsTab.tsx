@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Event, Result, Registration, TeamResult, EventResultDocument } from '@/types';
-import { mockResults, mockTeamResults, mockResultDocuments } from '@/data/mockData';
+import { mockResults, mockTeamResults, mockResultDocuments } from '@/api/mock/results.mock';
 import { Plus, Upload, Save, Trophy, Clock, AlertCircle, Download, FileText, Printer, Users, Trash2 } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import {

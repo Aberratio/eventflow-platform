@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { mockPartners } from '@/data/mockData';
+import { mockPartners } from '@/api/mock/partners.mock';
 import { Partner } from '@/types';
 import { Plus, Pencil, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';

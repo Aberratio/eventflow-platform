@@ -1,27 +1,23 @@
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Search, SlidersHorizontal, X, ShoppingBag, Package, Sparkles } from 'lucide-react';
-import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
 import { ShopCategory } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getProducts } from '@/api';
+import { shopCategoryLabels } from '@/api/mock/labels';
+import { QUERY_KEYS } from '@/constants';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'newest';
 
@@ -40,14 +36,20 @@ const ShopPage = () => {
   const [sort, setSort] = useState<SortOption>('popular');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const { data: productsData, isLoading } = useQuery({
+    queryKey: QUERY_KEYS.products,
+    queryFn: () => getProducts(),
+  });
+
+  const allProducts = productsData?.data ?? [];
+
   const brands = useMemo(() => {
-    const uniqueBrands = [...new Set(mockShopProducts.map(p => p.brand))];
+    const uniqueBrands = [...new Set(allProducts.map(p => p.brand))];
     return uniqueBrands.sort();
-  }, []);
+  }, [allProducts]);
 
   const filteredProducts = useMemo(() => {
-    let products = [...mockShopProducts];
-
+    let products = [...allProducts];
     if (search) {
       const searchLower = search.toLowerCase();
       products = products.filter(p => 
@@ -56,55 +58,29 @@ const ShopPage = () => {
         p.description.toLowerCase().includes(searchLower)
       );
     }
-
-    if (category !== 'all') {
-      products = products.filter(p => p.category === category);
-    }
-
-    if (brand !== 'all') {
-      products = products.filter(p => p.brand === brand);
-    }
+    if (category !== 'all') products = products.filter(p => p.category === category);
+    if (brand !== 'all') products = products.filter(p => p.brand === brand);
 
     switch (sort) {
-      case 'price-asc':
-        products.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        products.sort((a, b) => b.price - a.price);
-        break;
-      case 'popular':
-        products.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
-        break;
-      case 'newest':
-        products.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-        break;
+      case 'price-asc': products.sort((a, b) => a.price - b.price); break;
+      case 'price-desc': products.sort((a, b) => b.price - a.price); break;
+      case 'popular': products.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0)); break;
+      case 'newest': products.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)); break;
     }
-
     return products;
-  }, [search, category, brand, sort]);
+  }, [allProducts, search, category, brand, sort]);
 
-  const activeFiltersCount = [
-    category !== 'all',
-    brand !== 'all',
-  ].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setCategory('all');
-    setBrand('all');
-    setSearch('');
-  };
-
-  const totalProducts = mockShopProducts.length;
-  const discountedCount = mockShopProducts.filter(p => p.originalPrice && p.originalPrice > p.price).length;
+  const activeFiltersCount = [category !== 'all', brand !== 'all'].filter(Boolean).length;
+  const clearFilters = () => { setCategory('all'); setBrand('all'); setSearch(''); };
+  const totalProducts = allProducts.length;
+  const discountedCount = allProducts.filter(p => p.originalPrice && p.originalPrice > p.price).length;
 
   const FiltersContent = () => (
     <div className="space-y-4">
       <div>
         <label className="text-sm font-medium mb-2 block">Kategoria</label>
         <Select value={category} onValueChange={(v) => setCategory(v as ShopCategory | 'all')}>
-          <SelectTrigger>
-            <SelectValue placeholder="Wszystkie kategorie" />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Wszystkie kategorie" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie kategorie</SelectItem>
             {Object.entries(shopCategoryLabels).map(([key, label]) => (
@@ -113,28 +89,20 @@ const ShopPage = () => {
           </SelectContent>
         </Select>
       </div>
-
       <div>
         <label className="text-sm font-medium mb-2 block">Marka</label>
         <Select value={brand} onValueChange={setBrand}>
-          <SelectTrigger>
-            <SelectValue placeholder="Wszystkie marki" />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Wszystkie marki" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie marki</SelectItem>
-            {brands.map((b) => (
-              <SelectItem key={b} value={b}>{b}</SelectItem>
-            ))}
+            {brands.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
           </SelectContent>
         </Select>
       </div>
-
       <div>
         <label className="text-sm font-medium mb-2 block">Sortuj</label>
         <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             {Object.entries(sortLabels).map(([key, label]) => (
               <SelectItem key={key} value={key}>{label}</SelectItem>
@@ -142,11 +110,9 @@ const ShopPage = () => {
           </SelectContent>
         </Select>
       </div>
-
       {activeFiltersCount > 0 && (
         <Button variant="outline" onClick={clearFilters} className="w-full">
-          <X className="h-4 w-4 mr-2" />
-          Wyczyść filtry
+          <X className="h-4 w-4 mr-2" />Wyczyść filtry
         </Button>
       )}
     </div>
@@ -154,7 +120,6 @@ const ShopPage = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-warning/5 border-b border-border/50">
         <div className="container py-10 md:py-14">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -192,39 +157,23 @@ const ShopPage = () => {
       </div>
 
       <div className="container py-8">
-        {/* Search and Filters */}
         <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Szukaj produktów..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-background"
-              />
+              <Input placeholder="Szukaj produktów..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-background" />
             </div>
-
             {isMobile ? (
               <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
                 <DrawerTrigger asChild>
                   <Button variant="outline" className="gap-2">
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Filtry
-                    {activeFiltersCount > 0 && (
-                      <Badge variant="secondary" className="ml-1">
-                        {activeFiltersCount}
-                      </Badge>
-                    )}
+                    <SlidersHorizontal className="h-4 w-4" />Filtry
+                    {activeFiltersCount > 0 && (<Badge variant="secondary" className="ml-1">{activeFiltersCount}</Badge>)}
                   </Button>
                 </DrawerTrigger>
                 <DrawerContent>
-                  <DrawerHeader>
-                    <DrawerTitle>Filtry i sortowanie</DrawerTitle>
-                  </DrawerHeader>
-                  <div className="p-4">
-                    <FiltersContent />
-                  </div>
+                  <DrawerHeader><DrawerTitle>Filtry i sortowanie</DrawerTitle></DrawerHeader>
+                  <div className="p-4"><FiltersContent /></div>
                 </DrawerContent>
               </Drawer>
             ) : (
@@ -232,9 +181,7 @@ const ShopPage = () => {
                 <div className="flex flex-col">
                   <label className="text-xs font-medium text-muted-foreground mb-1">Kategoria</label>
                   <Select value={category} onValueChange={(v) => setCategory(v as ShopCategory | 'all')}>
-                    <SelectTrigger className="w-[180px] bg-background">
-                      <SelectValue placeholder="Wszystkie kategorie" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-[180px] bg-background"><SelectValue placeholder="Wszystkie kategorie" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie kategorie</SelectItem>
                       {Object.entries(shopCategoryLabels).map(([key, label]) => (
@@ -243,28 +190,20 @@ const ShopPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="flex flex-col">
                   <label className="text-xs font-medium text-muted-foreground mb-1">Marka</label>
                   <Select value={brand} onValueChange={setBrand}>
-                    <SelectTrigger className="w-[160px] bg-background">
-                      <SelectValue placeholder="Wszystkie marki" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-[160px] bg-background"><SelectValue placeholder="Wszystkie marki" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie marki</SelectItem>
-                      {brands.map((b) => (
-                        <SelectItem key={b} value={b}>{b}</SelectItem>
-                      ))}
+                      {brands.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="flex flex-col">
                   <label className="text-xs font-medium text-muted-foreground mb-1">Sortuj</label>
                   <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-                    <SelectTrigger className="w-[170px] bg-background">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-[170px] bg-background"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(sortLabels).map(([key, label]) => (
                         <SelectItem key={key} value={key}>{label}</SelectItem>
@@ -272,11 +211,9 @@ const ShopPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
                 {activeFiltersCount > 0 && (
                   <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground hover:text-destructive gap-1 mb-0">
-                    <X className="h-4 w-4" />
-                    Wyczyść
+                    <X className="h-4 w-4" />Wyczyść
                   </Button>
                 )}
               </div>
@@ -284,36 +221,34 @@ const ShopPage = () => {
           </div>
         </div>
 
-        {/* Active filters badges */}
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
             {category !== 'all' && (
               <Badge variant="secondary" className="gap-1 px-3 py-1">
                 {shopCategoryLabels[category]}
-                <button onClick={() => setCategory('all')} className="ml-1 hover:text-destructive">
-                  <X className="h-3 w-3" />
-                </button>
+                <button onClick={() => setCategory('all')} className="ml-1 hover:text-destructive"><X className="h-3 w-3" /></button>
               </Badge>
             )}
             {brand !== 'all' && (
               <Badge variant="secondary" className="gap-1 px-3 py-1">
                 {brand}
-                <button onClick={() => setBrand('all')} className="ml-1 hover:text-destructive">
-                  <X className="h-3 w-3" />
-                </button>
+                <button onClick={() => setBrand('all')} className="ml-1 hover:text-destructive"><X className="h-3 w-3" /></button>
               </Badge>
             )}
           </div>
         )}
 
-        {/* Results count */}
         <p className="text-sm text-muted-foreground mb-6">
-          Znaleziono {filteredProducts.length} {filteredProducts.length === 1 ? 'produkt' : 
-            filteredProducts.length < 5 ? 'produkty' : 'produktów'}
+          Znaleziono {filteredProducts.length} {filteredProducts.length === 1 ? 'produkt' : filteredProducts.length < 5 ? 'produkty' : 'produktów'}
         </p>
 
-        {/* Products grid */}
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -323,9 +258,7 @@ const ShopPage = () => {
           <div className="text-center py-16 bg-muted/30 rounded-2xl border border-border/50">
             <ShoppingBag className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">Nie znaleziono produktów</p>
-            <Button variant="outline" onClick={clearFilters}>
-              Wyczyść filtry
-            </Button>
+            <Button variant="outline" onClick={clearFilters}>Wyczyść filtry</Button>
           </div>
         )}
       </div>

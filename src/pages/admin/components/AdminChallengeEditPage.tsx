@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Plus, Trash2, Download, Trophy } from 'lucide-react';
-import { mockChallenges, mockSeries, mockEvents } from '@/data/mockData';
+import { mockChallenges } from '@/api/mock/challenges.mock';
+import { mockEvents } from '@/api/mock/events.mock';
+import { mockSeries } from '@/api/mock/series.mock';
 import { ChallengeEvent, ChallengeReward } from '@/types';
 import { toast } from 'sonner';
 
