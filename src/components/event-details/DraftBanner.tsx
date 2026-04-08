@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Eye, Pencil, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Event, User } from '@/types';
+import { getEditUrl } from './index';
 
 interface DraftBannerProps {
   event: Event;
@@ -9,12 +10,6 @@ interface DraftBannerProps {
   onApprove?: () => void;
   onReject?: () => void;
 }
-
-export const getEditUrl = (event: Event, user: User | null): string => {
-  if (user?.role === 'admin') return `/admin/events/${event.id}`;
-  if (user?.role === 'moderator') return `/moderator/events/${event.id}`;
-  return `/organizer/events/${event.id}`;
-};
 
 export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerProps) => {
   const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';

@@ -1,0 +1,140 @@
+import { useState, useMemo } from 'react';
+import { Event, Registration, PaymentDetails } from '@/types';
+import { useToast } from '@/hooks/use-toast';
+import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+
+export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
+  const { toast } = useToast();
+  const [localRegistrations, setLocalRegistrations] = useState<Registration[]>(initialRegistrations);
+
+  const handleStatusChange = (registration: Registration, newStatus: 'confirmed' | 'cancelled') => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === registration.id ? { ...r, status: newStatus } : r)
+    );
+    toast({
+      title: 'Status zaktualizowany',
+      description: `Zmieniono status ${registration.userName} na ${newStatus === 'confirmed' ? 'potwierdzony' : 'anulowany'}.`,
+    });
+  };
+
+  const handleRemoveParticipant = (registration: Registration) => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === registration.id
+        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+        : r
+      )
+    );
+    toast({
+      title: 'Uczestnik usunięty',
+      description: `${registration.userName} został usunięty z listy uczestników.`,
+    });
+  };
+
+  const handleRestoreParticipant = (registration: Registration) => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === registration.id
+        ? { ...r, status: 'pending' as const, removedAt: undefined }
+        : r
+      )
+    );
+    toast({
+      title: 'Uczestnik przywrócony',
+      description: `${registration.userName} został przywrócony na listę uczestników.`,
+    });
+  };
+
+  const handleBulkDelete = (selectedIds: Set<string>) => {
+    const count = selectedIds.size;
+    setLocalRegistrations(prev =>
+      prev.map(r => selectedIds.has(r.id)
+        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+        : r
+      )
+    );
+    toast({
+      title: 'Uczestnicy usunięci',
+      description: `Usunięto ${count} ${count === 1 ? 'uczestnika' : 'uczestników'} z listy.`,
+    });
+  };
+
+  const handleDeleteUnpaid = () => {
+    const unpaidIds = localRegistrations.filter(r => r.status === 'pending').map(r => r.id);
+    setLocalRegistrations(prev =>
+      prev.map(r => unpaidIds.includes(r.id)
+        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+        : r
+      )
+    );
+    toast({
+      title: 'Nieopłaceni usunięci',
+      description: `Usunięto ${unpaidIds.length} nieopłaconych uczestników.`,
+    });
+  };
+
+  const handleAssignBib = (participantId: string, bibNumber: string, participantName: string) => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === participantId ? { ...r, bibNumber } : r)
+    );
+    toast({
+      title: 'Numer startowy przypisany',
+      description: `Przypisano numer ${bibNumber} dla ${participantName}.`,
+    });
+  };
+
+  const handlePaymentUpdate = (registrationId: string, updatedDetails: PaymentDetails) => {
+    setLocalRegistrations(prev =>
+      prev.map(r => r.id === registrationId ? { ...r, paymentDetails: updatedDetails } : r)
+    );
+  };
+
+  const handleExportCSV = (filteredRegistrations: Registration[]) => {
+    const data = filteredRegistrations.map(reg => ({
+      'Numer startowy': reg.bibNumber || '-',
+      'Imię i nazwisko': reg.userName,
+      'Email': reg.userEmail,
+      'Dystans': reg.distanceName,
+      'Kategoria': reg.category,
+      'Status': reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : reg.status === 'cancelled' ? 'Anulowany' : 'Usunięty',
+      'Drużyna': reg.teamName || '-',
+      'Data zapisu': new Date(reg.registeredAt).toLocaleDateString('pl-PL'),
+    }));
+    exportToCSV(data, `lista-startowa-${event.slug}`);
+    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+  };
+
+  const handleExportPDF = (filteredRegistrations: Registration[]) => {
+    const columns = ['Numer', 'Imię i nazwisko', 'Dystans', 'Kategoria', 'Status'];
+    const rows = filteredRegistrations.map(reg => [
+      reg.bibNumber || '-',
+      reg.userName,
+      reg.distanceName,
+      reg.category,
+      reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : 'Anulowany',
+    ]);
+    generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
+  };
+
+  const unpaidCount = useMemo(() => {
+    return localRegistrations.filter(r => r.status === 'pending').length;
+  }, [localRegistrations]);
+
+  const activeCount = localRegistrations.filter(r => r.status !== 'removed').length;
+  const removedCount = localRegistrations.filter(r => r.status === 'removed').length;
+
+  return {
+    localRegistrations,
+    setLocalRegistrations,
+    handleStatusChange,
+    handleRemoveParticipant,
+    handleRestoreParticipant,
+    handleBulkDelete,
+    handleDeleteUnpaid,
+    handleAssignBib,
+    handlePaymentUpdate,
+    handleExportCSV,
+    handleExportPDF,
+    unpaidCount,
+    activeCount,
+    removedCount,
+  };
+};
