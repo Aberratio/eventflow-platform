@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
 import { getCurrentPrice, getExistingTeamsForEvent, validateDiscountCode, validateTeamName } from '@/api/mock/helpers';
 import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
+import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
 import { applyDiscount } from '@/api/mock/helpers';
 import { useAuth } from '@/contexts/AuthContext';
