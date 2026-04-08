@@ -2429,9 +2429,6 @@ export const mockGlobalInsuranceSettings: GlobalInsuranceSettings = {
   maxAge: 70,
 };
 
-// ============================================
-// Helper function to get existing teams for an event
-// ============================================
 export const getExistingTeamsForEvent = (eventId: string): Array<{
   name: string;
   memberCount: number;
