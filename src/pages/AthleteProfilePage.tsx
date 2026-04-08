@@ -13,7 +13,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from "lucide-react";
-import { mockResults, mockEvents, disciplineLabels } from "@/data/mockData";
+import { mockResults } from '@/api/mock/results.mock';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 
 const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
