@@ -1,4 +1,4 @@
-import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, VipPrice, InsuranceOption, EventSeries, SeriesType, ShopProduct, ShopCategory, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage, GlobalInsuranceSettings, OnlineSession, GoogleCalendarSettings, Challenge, ChallengeParticipation } from '@/types';
+import { Event, User, Registration, Result, Certificate, Message, PersonalRecord, Partner, PaymentMethod, EventMerchandise, DiscountCode, PriceTier, VipPrice, InsuranceOption, EventSeries, ShopProduct, DeliveryMethod, ShopPaymentMethod, Ticket, ShopOrder, AdminActivityLog, SecuritySettings, VirtualResultSubmission, TeamResult, EventResultDocument, PaymentDetails, InfoPage, GlobalInsuranceSettings, OnlineSession, GoogleCalendarSettings, Challenge, ChallengeParticipation } from '@/types';
 
 // ============== CMS INFO PAGES ==============
 export const mockInfoPages: InfoPage[] = [
@@ -381,19 +381,7 @@ export const mockInfoPages: InfoPage[] = [
   },
 ];
 
-export const seriesTypeLabels: Record<SeriesType, string> = {
-  virtual: 'Wirtualna',
-  local: 'Ustawka lokalna',
-  championship: 'Mistrzostwa',
-  cup: 'Cykl / Grand Prix',
-};
-
-export const disciplineLabels: Record<string, string> = {
-  running: 'Bieganie',
-  cycling: 'Kolarstwo',
-  triathlon: 'Triathlon',
-  multisport: 'Multisport',
-};
+export { seriesTypeLabels, disciplineLabels } from '@/api/mock/labels';
 
 export const mockSeries: EventSeries[] = [
   {
@@ -2441,9 +2429,6 @@ export const mockGlobalInsuranceSettings: GlobalInsuranceSettings = {
   maxAge: 70,
 };
 
-// ============================================
-// Helper function to get existing teams for an event
-// ============================================
 export const getExistingTeamsForEvent = (eventId: string): Array<{
   name: string;
   memberCount: number;
@@ -2462,35 +2447,7 @@ export const getExistingTeamsForEvent = (eventId: string): Array<{
     .sort((a, b) => b.memberCount - a.memberCount);
 };
 
-// ============================================
-// Team name validation utility
-// ============================================
-export const validateTeamName = (name: string): { valid: boolean; error?: string } => {
-  const trimmed = name.trim();
-  
-  if (trimmed.length < 3) {
-    return { valid: false, error: 'Nazwa musi mieć minimum 3 znaki' };
-  }
-  
-  if (trimmed.length > 50) {
-    return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
-  }
-  
-  // Only letters, numbers, spaces, dashes, apostrophes, dots
-  const validPattern = /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s\-'\.]+$/;
-  if (!validPattern.test(trimmed)) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
-  }
-  
-  // Check for banned words (mock list)
-  const bannedWords = ['dupa', 'chuj', 'kurwa', 'pierdol'];
-  const lowerName = trimmed.toLowerCase();
-  if (bannedWords.some(word => lowerName.includes(word))) {
-    return { valid: false, error: 'Nazwa zawiera niedozwolone słowa' };
-  }
-  
-  return { valid: true };
-};
+export { validateTeamName } from '@/api/mock/helpers';
 
 export const mockRegistrations: Registration[] = [
   { id: 'r1', eventId: 'e1', eventName: 'Maraton Warszawski 2025', userId: 'p1', userName: 'Jan Kowalski', userEmail: 'jan@example.com', distanceId: 'd1', distanceName: 'Maraton', category: 'M30-39', registeredAt: '2025-01-15T10:30:00Z', status: 'confirmed', bibNumber: '1542', pricePaid: 150 },
@@ -3408,66 +3365,9 @@ export const mockCertificates: Certificate[] = [
   },
 ];
 
-// Re-export getCurrentPrice from helpers (canonical source)
-export { getCurrentPrice } from '@/api/mock/helpers';
+export { getCurrentPrice, validateDiscountCode } from '@/api/mock/helpers';
 
-// Helper to validate discount code
-export const validateDiscountCode = (
-  code: string, 
-  event: Event, 
-  distanceId?: string
-): { valid: boolean; discount?: { type: 'percent' | 'fixed'; value: number }; message: string } => {
-  if (!event.discountCodes) {
-    return { valid: false, message: 'Kod rabatowy nie istnieje' };
-  }
-  
-  const discountCode = event.discountCodes.find(dc => dc.code.toUpperCase() === code.toUpperCase());
-  
-  if (!discountCode) {
-    return { valid: false, message: 'Nieprawidłowy kod rabatowy' };
-  }
-  
-  if (!discountCode.active) {
-    return { valid: false, message: 'Kod rabatowy jest nieaktywny' };
-  }
-  
-  const now = new Date();
-  if (discountCode.validFrom && new Date(discountCode.validFrom) > now) {
-    return { valid: false, message: 'Kod rabatowy jeszcze nie jest aktywny' };
-  }
-  
-  if (discountCode.validTo && new Date(discountCode.validTo) < now) {
-    return { valid: false, message: 'Kod rabatowy wygasł' };
-  }
-  
-  if (discountCode.maxUses && discountCode.usedCount >= discountCode.maxUses) {
-    return { valid: false, message: 'Kod rabatowy został wykorzystany maksymalną liczbę razy' };
-  }
-  
-  if (distanceId && discountCode.distanceIds && discountCode.distanceIds.length > 0) {
-    if (!discountCode.distanceIds.includes(distanceId)) {
-      return { valid: false, message: 'Kod rabatowy nie dotyczy wybranego dystansu' };
-    }
-  }
-  
-  return { 
-    valid: true, 
-    discount: { type: discountCode.discountType, value: discountCode.discountValue },
-    message: discountCode.discountType === 'percent' 
-      ? `Zniżka ${discountCode.discountValue}%`
-      : `Zniżka ${discountCode.discountValue} zł`
-  };
-};
-
-// Shop data
-export const shopCategoryLabels: Record<ShopCategory, string> = {
-  apparel: 'Odzież',
-  footwear: 'Obuwie',
-  accessories: 'Akcesoria',
-  nutrition: 'Odżywki',
-  electronics: 'Elektronika',
-  services: 'Usługi',
-};
+export { shopCategoryLabels } from '@/api/mock/labels';
 
 export const mockShopProducts: ShopProduct[] = [
   {
