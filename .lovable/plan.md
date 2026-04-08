@@ -1,5 +1,6 @@
 
 
+
 ## Plan naprawczy — postęp
 
 ### ✅ Priorytet 1: Migracja na warstwę API (ZREALIZOWANE)
@@ -16,6 +17,7 @@
 - **UsersOrganizersTab** (426→210 linii) → `AddOrganizerDialog`
 - **PriceTiersEditor** (594→280 linii) → `TierEditor`, `VipPricesSection`
 - **DiscountCodesEditor** (485→165 linii) → `AddDiscountCodeDialog`, `EditDiscountCodeDialog`
+- **EventFiltersSidebar** (437→90 linii) → `FilterSection`, `CheckboxItem`, `FiltersContent`
 
 ### ✅ Priorytet 3: Pokrycie testami (ZREALIZOWANE)
 - **100 testów** łącznie (15 plików testowych)
@@ -31,9 +33,9 @@
 - Usunięto `src/data/mockData.ts`
 - Usunięto duplikację `src/components/ui/use-toast.ts`
 - Utworzono `src/constants/index.ts`
+- Barrel exports: `src/components/filters/index.ts`
 
-### 🔲 Pozostałe do realizacji (niski priorytet)
-- Dekompozycja `EventFiltersSidebar` (437 linii), `MerchandiseEditor` (353 linii)
+### ✅ Plan naprawczy — UKOŃCZONY
+Wszystkie priorytety 1-4 zrealizowane. Pozostałe opcjonalne usprawnienia:
 - ESLint rules (`no-console`, `no-unused-imports`)
 - Accessibility audit (aria-label, kontrast)
-- Barrel exports ujednolicenie
