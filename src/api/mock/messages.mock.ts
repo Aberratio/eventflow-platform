@@ -1,1 +1,1 @@
-export { mockMessages } from '@/data/mockData';
+export { mockMessages } from './results.mock';
