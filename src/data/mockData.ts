@@ -14,7 +14,8 @@ export { mockSeries } from '@/api/mock/series.mock';
 export { seriesTypeLabels, disciplineLabels } from '@/api/mock/labels';
 
 // Users
-export { mockUsers, defaultPaymentMethods } from '@/api/mock/users.mock';
+export { mockUsers } from '@/api/mock/users.mock';
+export { defaultPaymentMethods } from '@/api/mock/labels';
 
 // Events
 export { mockMerchandise, mockEvents } from '@/api/mock/events.mock';
