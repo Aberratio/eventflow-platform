@@ -6,7 +6,7 @@ import { Message } from '@/types';
 import { Mail, MailOpen, Calendar, ChevronDown, ChevronUp, Inbox } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 
 interface ParticipantMessagesTabProps {
   messages: Message[];

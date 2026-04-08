@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Radio, Calendar, MapPin, ExternalLink, Trophy } from 'lucide-react';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

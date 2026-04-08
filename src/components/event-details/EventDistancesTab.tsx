@@ -5,7 +5,7 @@ import { Event, Distance } from '@/types';
 import { Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { getCurrentPrice } from '@/data/mockData';
+import { getCurrentPrice } from '@/api/mock/helpers';
 import { applyDiscount } from '@/api/mock/helpers';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 

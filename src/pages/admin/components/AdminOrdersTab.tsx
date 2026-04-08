@@ -16,7 +16,8 @@ import {
 import {
   Search, Pencil, ShoppingCart, Package, Clock, Download, ArrowUpDown, ArrowUp, ArrowDown,
 } from 'lucide-react';
-import { mockShopOrders, mockUsers } from '@/data/mockData';
+import { mockShopOrders } from '@/api/mock/shop.mock';
+import { mockUsers } from '@/api/mock/users.mock';
 import { ShopOrder } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

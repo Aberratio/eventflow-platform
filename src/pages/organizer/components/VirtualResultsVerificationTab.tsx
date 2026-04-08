@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Event, VirtualResultSubmission } from '@/types';
-import { mockVirtualResultSubmissions } from '@/data/mockData';
+import { mockVirtualResultSubmissions } from '@/api/mock/virtual-results.mock';
 import { Check, X, ExternalLink, Clock, User, Calendar, Filter, CheckCheck, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

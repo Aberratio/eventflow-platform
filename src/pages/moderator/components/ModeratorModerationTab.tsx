@@ -11,7 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

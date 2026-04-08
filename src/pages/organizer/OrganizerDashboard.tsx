@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { mockEvents } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays, UserCog, ChevronRight } from 'lucide-react';

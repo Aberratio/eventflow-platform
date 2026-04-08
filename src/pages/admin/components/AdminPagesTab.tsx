@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, MoreVertical, Eye, Pencil, Trash2, Globe, EyeOff, ArrowUp, ArrowDown, Mail, Gift, Shield, Users, HelpCircle, FileText, Scale, CreditCard } from 'lucide-react';
-import { mockInfoPages } from '@/data/mockData';
+import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 

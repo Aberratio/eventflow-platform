@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockInfoPages } from '@/data/mockData';
+import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage } from '@/types';
 
 export interface InfoPageResponse {

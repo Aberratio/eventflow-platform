@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EditorHint } from '@/components/admin/EditorHint';
 import { SectionEditor } from './SectionEditor';
-import { mockInfoPages } from '@/data/mockData';
+import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage, InfoPageSection } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { 

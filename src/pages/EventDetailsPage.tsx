@@ -3,7 +3,9 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockEvents, mockRegistrations, mockResults } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { mockRegistrations } from '@/api/mock/registrations.mock';
+import { mockResults } from '@/api/mock/results.mock';
 import {
   Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route,
 } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Timer, Facebook, Instagram, Youtube, Twitter, Cookie, Mail, Phone, ChevronRight } from 'lucide-react';
-import { mockInfoPages } from '@/data/mockData';
+import { mockInfoPages } from '@/api/mock/cms.mock';
 
 export const Footer = () => {
   const footerPages = mockInfoPages

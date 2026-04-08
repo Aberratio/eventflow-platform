@@ -18,7 +18,8 @@ import {
 import {
   ArrowLeft, Eye, Save, Plus, X, Palette, Star, ImagePlus,
 } from 'lucide-react';
-import { mockShopProducts, shopCategoryLabels } from '@/data/mockData';
+import { shopCategoryLabels } from '@/api/mock/labels';
+import { mockShopProducts } from '@/api/mock/shop.mock';
 import { ShopProduct, ShopCategory } from '@/types';
 import { toast } from 'sonner';
 

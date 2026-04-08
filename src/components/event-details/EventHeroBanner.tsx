@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { disciplineLabels } from '@/data/mockData';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { ArrowLeft, Globe } from 'lucide-react';
 

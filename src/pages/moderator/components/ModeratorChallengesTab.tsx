@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Trophy, CheckCircle2, Clock, XCircle, ExternalLink, Users, ChevronDown, ChevronRight } from 'lucide-react';
-import { mockChallenges, mockChallengeParticipations } from '@/data/mockData';
+import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

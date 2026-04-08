@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockEvents, disciplineLabels } from '@/data/mockData';
+import { mockEvents } from '@/api/mock/events.mock';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { Star, Search, GripVertical, Calendar, MapPin, Save } from 'lucide-react';
 import { toast } from 'sonner';

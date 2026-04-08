@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, Calendar, Target, Gift, ChevronRight, Users, Flame } from 'lucide-react';
-import { mockChallenges, mockChallengeParticipations } from '@/data/mockData';
+import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
 
 const statusLabels: Record<string, string> = {

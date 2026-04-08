@@ -1,5 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockEvents, mockUsers, mockRegistrations, mockSalesStats, mockShopOrders, mockOnlineSessions } from '@/data/mockData';
+import { mockSalesStats } from '@/api/mock/admin.mock';
+import { mockOnlineSessions } from '@/api/mock/calendar.mock';
+import { mockEvents } from '@/api/mock/events.mock';
+import { mockRegistrations } from '@/api/mock/registrations.mock';
+import { mockShopOrders } from '@/api/mock/shop.mock';
+import { mockUsers } from '@/api/mock/users.mock';
 import { Calendar, Users, Shield, Settings, TrendingUp, CheckCircle, DollarSign, Package, Clock, ShoppingCart, UserCheck } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';

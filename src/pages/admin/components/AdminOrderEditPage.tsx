@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Trash2, Plus, Package, FileText, MessageSquare, Truck, CreditCard, Clock } from 'lucide-react';
-import { mockShopOrders, mockShopProducts, mockUsers } from '@/data/mockData';
+import { mockShopOrders, mockShopProducts } from '@/api/mock/shop.mock';
+import { mockUsers } from '@/api/mock/users.mock';
 import { ShopOrder, OrderHistoryEntry } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderHistoryTimeline } from '@/components/admin/OrderHistoryTimeline';

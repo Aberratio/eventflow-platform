@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SportDiscipline, PaymentConfigType } from '@/types';
-import { disciplineLabels } from '@/data/mockData';
+import { disciplineLabels } from '@/api/mock/labels';
 import { Image, Crop, Globe, CreditCard, Building2, FileText, Lock, Copy, RefreshCw, Code, Settings2, Monitor } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';

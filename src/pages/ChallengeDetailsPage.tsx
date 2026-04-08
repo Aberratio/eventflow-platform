@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trophy, ArrowLeft, Target, Gift, Calendar, CheckCircle2, Clock, XCircle, Upload, ExternalLink, Medal, MapPin, Users, Flame } from 'lucide-react';
-import { mockChallenges, mockChallengeParticipations } from '@/data/mockData';
+import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
