@@ -53,7 +53,7 @@ export const useRegistrationForm = (event: Event) => {
     }
   }, [isProfileComplete, user]);
 
-  const existingTeams = useMemo(() => getExistingTeamsForEvent(event.id), [event.id]);
+  const existingTeams = useMemo(() => getExistingTeamsForEvent(mockRegistrations, event.id), [event.id]);
 
   const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
   const formCfg = event.registrationFormConfig;
