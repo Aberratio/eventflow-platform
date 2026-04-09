@@ -31,8 +31,8 @@ import {
   Zap,
   Calendar,
 } from 'lucide-react';
-import type { EmailTemplate } from '@/types/email';
-import { EMAIL_TRIGGER_LABELS } from '@/types/email';
+import type { EmailTemplate } from '@/types/email'; // eslint-disable-line no-duplicate-imports
+import { EMAIL_TRIGGER_LABELS } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
 interface EmailTemplateCardProps {
   template: EmailTemplate;
