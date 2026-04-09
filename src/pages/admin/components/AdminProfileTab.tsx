@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { SecuritySection } from './security/SecuritySection';
 import { ActivityLogsSection } from './security/ActivityLogsSection';
+import { SystemLogsPanel } from './security/SystemLogsPanel';
 
 const AdminProfileTab = () => {
   const { user } = useAuth();
