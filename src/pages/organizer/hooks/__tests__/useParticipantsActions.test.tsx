@@ -172,10 +172,11 @@ describe('useParticipantsActions', () => {
     });
 
     const paymentDetails = {
-      method: 'bank_transfer' as const,
-      status: 'paid' as const,
-      amount: 100,
-      paidAt: '2026-01-15T10:00:00Z',
+      startFeePaid: true,
+      startFeeAmount: 100,
+      startFeePaidAt: '2026-01-15T10:00:00Z',
+      insurancePaid: false,
+      merchandisePayments: [],
     };
 
     act(() => {
