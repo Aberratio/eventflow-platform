@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AnimatedStopwatch } from '@/components/errors';
+import { ErrorPageShell } from '@/components/ui/error-page-shell';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -24,8 +25,7 @@ const ServiceUnavailable = () => {
   }, [countdown]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-info/5 p-4">
-      <div className="mx-auto max-w-md space-y-8 text-center">
+    <ErrorPageShell tint="info">
         {/* Znak STOP z animacją */}
         <div className="relative">
           <div className="animate-pulse text-6xl">🛑</div>
@@ -106,8 +106,7 @@ const ServiceUnavailable = () => {
         <p className="pt-4 text-xs italic text-muted-foreground/50">
           "Nawet serwery potrzebują przerwy na wodę... Wrócimy szybciej niż Usain Bolt!" 🏆
         </p>
-      </div>
-    </div>
+    </ErrorPageShell>
   );
 };
 

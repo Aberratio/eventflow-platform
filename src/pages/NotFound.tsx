@@ -2,6 +2,7 @@ import { useLocation, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AnimatedStopwatch, RunnerAnimation } from '@/components/errors';
+import { ErrorPageShell } from '@/components/ui/error-page-shell';
 import { cn } from '@/lib/utils';
 
 const NotFound = () => {
@@ -23,8 +24,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-muted p-4">
-      <div className="mx-auto max-w-md space-y-8 text-center">
+    <ErrorPageShell tint="muted">
         {/* Czerwona flaga z animacją */}
         <div className="relative">
           <div className="animate-bounce text-6xl">🚩</div>
@@ -109,8 +109,7 @@ const NotFound = () => {
         <p className="pt-4 text-xs italic text-muted-foreground/50">
           "Nawet Usain Bolt czasem źle skręci..." 🏃‍♂️
         </p>
-      </div>
-    </div>
+    </ErrorPageShell>
   );
 };
 

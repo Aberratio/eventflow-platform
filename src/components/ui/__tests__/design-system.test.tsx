@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { PageHero, PageHeroTitle } from '../page-hero';
 import { SectionHeading } from '../section-heading';
 import { StatPill } from '../stat-pill';
@@ -8,6 +9,8 @@ import { GradientDivider } from '../gradient-divider';
 import { Eyebrow } from '../eyebrow';
 import { InfoBanner } from '../info-banner';
 import { PageSection } from '../page-section';
+import { ErrorPageShell } from '../error-page-shell';
+import { EmptyState } from '../empty-state';
 
 describe('Design System Components', () => {
   describe('PageHero', () => {
@@ -132,6 +135,61 @@ describe('Design System Components', () => {
     it('applies compact padding when compact', () => {
       const { container } = render(<PageSection compact>Test</PageSection>);
       expect(container.firstChild).toHaveClass('py-6');
-    });
+});
+
+describe('ErrorPageShell', () => {
+  it('renders children centered', () => {
+    render(<ErrorPageShell>Error content</ErrorPageShell>);
+    expect(screen.getByText('Error content')).toBeInTheDocument();
+  });
+
+  it('applies tint class', () => {
+    const { container } = render(<ErrorPageShell tint="destructive">Test</ErrorPageShell>);
+    expect(container.firstChild).toHaveClass('to-destructive/5');
+  });
+
+  it('defaults to muted tint', () => {
+    const { container } = render(<ErrorPageShell>Test</ErrorPageShell>);
+    expect(container.firstChild).toHaveClass('to-muted');
+  });
+});
+
+describe('EmptyState', () => {
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <BrowserRouter>{children}</BrowserRouter>
+  );
+
+  it('renders icon, title and subtitle', () => {
+    render(
+      <EmptyState
+        icon={<span data-testid="icon">📦</span>}
+        title="No items"
+        subtitle="Nothing here"
+      />,
+      { wrapper },
+    );
+    expect(screen.getByTestId('icon')).toBeInTheDocument();
+    expect(screen.getByText('No items')).toBeInTheDocument();
+    expect(screen.getByText('Nothing here')).toBeInTheDocument();
+  });
+
+  it('renders action button when provided', () => {
+    render(
+      <EmptyState
+        icon={<span>📦</span>}
+        title="Empty"
+        actionLabel="Go to shop"
+        actionHref="/shop"
+      />,
+      { wrapper },
+    );
+    expect(screen.getByText('Go to shop')).toBeInTheDocument();
+  });
+
+  it('does not render action when not provided', () => {
+    render(<EmptyState icon={<span>📦</span>} title="Empty" />, { wrapper });
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+});
   });
 });

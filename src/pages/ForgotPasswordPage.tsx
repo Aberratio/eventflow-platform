@@ -10,7 +10,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Layout } from '@/components/layout/Layout';
+import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -53,30 +53,23 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <Layout>
-      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
-        <div className="container py-12 md:py-24">
-          <div className="mx-auto max-w-md">
-            {/* Header */}
-            <div className="mb-8 text-center">
-              <div
-                className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}
-              >
-                {isSuccess ? (
-                  <CheckCircle className="h-8 w-8 text-success" />
-                ) : (
-                  <KeyRound className="h-8 w-8 text-primary" />
-                )}
-              </div>
-              <h1 className="mb-2 text-3xl font-bold md:text-4xl">
-                {isSuccess ? 'Sprawdź skrzynkę' : 'Resetuj hasło'}
-              </h1>
-              <p className="text-muted-foreground">
-                {isSuccess
-                  ? 'Wysłaliśmy link do resetowania hasła. Sprawdź też folder spam.'
-                  : 'Podaj email powiązany z kontem, a wyślemy link do zresetowania hasła.'}
-              </p>
-            </div>
+    <AuthPageShell
+      icon={
+        isSuccess ? (
+          <CheckCircle className="h-8 w-8 text-success" />
+        ) : (
+          <KeyRound className="h-8 w-8 text-primary" />
+        )
+      }
+      title={isSuccess ? 'Sprawdź skrzynkę' : 'Resetuj hasło'}
+      subtitle={
+        isSuccess
+          ? 'Wysłaliśmy link do resetowania hasła. Sprawdź też folder spam.'
+          : 'Podaj email powiązany z kontem, a wyślemy link do zresetowania hasła.'
+      }
+      maxWidth="max-w-md"
+      accent={isSuccess ? 'success' : 'primary'}
+    >
 
             <Card className="border-border/50 shadow-lg">
               <CardContent className="pt-6">
@@ -142,11 +135,8 @@ const ForgotPasswordPage = () => {
                   </Link>
                 </CardFooter>
               )}
-            </Card>
-          </div>
-        </div>
-      </div>
-    </Layout>
+          </Card>
+    </AuthPageShell>
   );
 };
 

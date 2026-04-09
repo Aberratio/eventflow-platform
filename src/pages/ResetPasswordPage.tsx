@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Layout } from '@/components/layout/Layout';
+import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -54,55 +54,42 @@ const ResetPasswordPage = () => {
 
   if (!token && !isSuccess) {
     return (
-      <Layout>
-        <div className="bg-gradient-to-b from-destructive/5 via-background to-background">
-          <div className="container py-12 md:py-24">
-            <div className="mx-auto max-w-md text-center">
-              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-                <AlertTriangle className="h-8 w-8 text-destructive" />
-              </div>
-              <h1 className="mb-2 text-3xl font-bold">Nieprawidłowy link</h1>
-              <p className="mb-6 text-muted-foreground">
-                Link do resetowania hasła jest nieprawidłowy lub wygasł.
-              </p>
-              <Card className="border-border/50 shadow-lg">
-                <CardContent className="pt-6">
-                  <Button asChild className="w-full" size="lg">
-                    <Link to="/forgot-password">Wyślij nowy link</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </Layout>
+      <AuthPageShell
+        icon={<AlertTriangle className="h-8 w-8 text-destructive" />}
+        title="Nieprawidłowy link"
+        subtitle="Link do resetowania hasła jest nieprawidłowy lub wygasł."
+        maxWidth="max-w-md"
+        accent="destructive"
+      >
+        <Card className="border-border/50 shadow-lg">
+          <CardContent className="pt-6">
+            <Button asChild className="w-full" size="lg">
+              <Link to="/forgot-password">Wyślij nowy link</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </AuthPageShell>
     );
   }
 
   return (
-    <Layout>
-      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
-        <div className="container py-12 md:py-24">
-          <div className="mx-auto max-w-md">
-            <div className="mb-8 text-center">
-              <div
-                className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}
-              >
-                {isSuccess ? (
-                  <CheckCircle className="h-8 w-8 text-success" />
-                ) : (
-                  <KeyRound className="h-8 w-8 text-primary" />
-                )}
-              </div>
-              <h1 className="mb-2 text-3xl font-bold md:text-4xl">
-                {isSuccess ? 'Hasło zmienione!' : 'Ustaw nowe hasło'}
-              </h1>
-              <p className="text-muted-foreground">
-                {isSuccess
-                  ? 'Możesz się teraz zalogować nowym hasłem.'
-                  : 'Wprowadź nowe hasło dla swojego konta.'}
-              </p>
-            </div>
+    <AuthPageShell
+      icon={
+        isSuccess ? (
+          <CheckCircle className="h-8 w-8 text-success" />
+        ) : (
+          <KeyRound className="h-8 w-8 text-primary" />
+        )
+      }
+      title={isSuccess ? 'Hasło zmienione!' : 'Ustaw nowe hasło'}
+      subtitle={
+        isSuccess
+          ? 'Możesz się teraz zalogować nowym hasłem.'
+          : 'Wprowadź nowe hasło dla swojego konta.'
+      }
+      maxWidth="max-w-md"
+      accent={isSuccess ? 'success' : 'primary'}
+    >
 
             <Card className="border-border/50 shadow-lg">
               <CardContent className="pt-6">
@@ -181,11 +168,8 @@ const ResetPasswordPage = () => {
                   </Form>
                 )}
               </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </Layout>
+          </Card>
+    </AuthPageShell>
   );
 };
 

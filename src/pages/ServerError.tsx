@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AnimatedStopwatch, GlitchText, SparkEffect } from '@/components/errors';
+import { ErrorPageShell } from '@/components/ui/error-page-shell';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -13,8 +14,7 @@ const ServerError = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-destructive/5 p-4">
-      <div className="mx-auto max-w-md space-y-8 text-center">
+    <ErrorPageShell tint="destructive">
         {/* Zepsuty stoper z iskrami */}
         <div className="relative">
           <AnimatedStopwatch status="error" className="relative z-10" />
@@ -90,8 +90,7 @@ const ServerError = () => {
         <p className="pt-4 text-xs italic text-muted-foreground/50">
           "Nawet najlepszy stoper czasem potrzebuje resetu..." ⏱️
         </p>
-      </div>
-    </div>
+    </ErrorPageShell>
   );
 };
 
