@@ -1,3 +1,4 @@
+import { applyDiscount } from '@/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +14,6 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Trash2, ChevronDown, Star } from 'lucide-react';
 import { VipPrice, PriceTierDiscountType } from '@/types';
-import { applyDiscount } from '@/api/mock/helpers';
 
 interface VipPricesSectionProps {
   distanceVipPrices: VipPrice[];

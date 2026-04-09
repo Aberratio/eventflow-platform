@@ -1,3 +1,4 @@
+import { getCurrentPrice, applyDiscount } from '@/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,6 @@ import { Event, Distance } from '@/types';
 import { Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { getCurrentPrice, applyDiscount } from '@/api/mock/helpers';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 
 interface EventDistancesTabProps {

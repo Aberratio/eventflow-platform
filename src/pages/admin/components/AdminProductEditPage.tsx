@@ -1,3 +1,4 @@
+import { shopCategoryLabels, mockShopProducts } from '@/api';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -16,8 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Eye, Save, Plus, X, Palette, Star, ImagePlus } from 'lucide-react';
-import { shopCategoryLabels } from '@/api/mock/labels';
-import { mockShopProducts } from '@/api/mock/shop.mock';
 import { ShopProduct, ShopCategory } from '@/types';
 import { toast } from 'sonner';
 

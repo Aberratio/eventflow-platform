@@ -1,7 +1,7 @@
+import { seriesTypeLabels } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Globe, Target, Trophy } from 'lucide-react';
 import type { EventSeries } from '@/types';
-import { seriesTypeLabels } from '@/api/mock/labels';
 
 const seriesTypeColors: Record<string, string> = {
   virtual: 'bg-info/10 text-info border-info/20',

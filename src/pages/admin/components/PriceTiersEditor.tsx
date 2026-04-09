@@ -1,3 +1,4 @@
+import { applyDiscount } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, DollarSign, Calendar, Users, AlertCircle } from 'lucide-react';
 import { Distance, PriceTier, PriceTierMode, ParticipantCountType, VipPrice } from '@/types';
-import { applyDiscount } from '@/api/mock/helpers';
 import { TierEditor } from './TierEditor';
 import { VipPricesSection } from './VipPricesSection';
 

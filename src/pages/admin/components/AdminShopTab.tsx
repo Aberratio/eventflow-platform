@@ -1,3 +1,4 @@
+import { shopCategoryLabels, mockShopProducts } from '@/api';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,8 +43,6 @@ import {
   Infinity as InfinityIcon,
   Tags,
 } from 'lucide-react';
-import { shopCategoryLabels } from '@/api/mock/labels';
-import { mockShopProducts } from '@/api/mock/shop.mock';
 import { ShopProduct, ShopCategory } from '@/types';
 import { toast } from 'sonner';
 

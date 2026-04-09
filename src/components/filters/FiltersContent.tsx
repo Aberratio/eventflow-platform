@@ -1,3 +1,4 @@
+import { disciplineLabels, mockSeries } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,8 +14,6 @@ import {
   Globe,
   Tag,
 } from 'lucide-react';
-import { disciplineLabels } from '@/api/mock/labels';
-import { mockSeries } from '@/api/mock/series.mock';
 import { SportDiscipline } from '@/types';
 import { distanceRangeOptions, EventFiltersState } from '@/hooks/useEventFilters';
 import { FilterSection } from './FilterSection';

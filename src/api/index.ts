@@ -224,3 +224,45 @@ export {
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';
+
+// ─── Mock data re-exports ───────────────────────────────
+// These provide synchronous access to mock data for components
+// that haven't been migrated to async TanStack Query hooks yet.
+// When connecting a real backend, remove these and use async API functions above.
+
+export { mockEvents, mockMerchandise } from './mock/events.mock';
+export { mockUsers } from './mock/users.mock';
+export { mockRegistrations } from './mock/registrations.mock';
+export {
+  mockResults,
+  mockPersonalRecords,
+  mockTeamResults,
+  mockResultDocuments,
+  mockMessages,
+  mockCertificates,
+} from './mock/results.mock';
+export { mockSeries } from './mock/series.mock';
+export {
+  mockShopProducts,
+  mockDeliveryMethods,
+  mockShopPaymentMethods,
+  mockShopOrders,
+  mockTickets,
+  mockGroupDiscountCodes,
+} from './mock/shop.mock';
+export { mockChallenges, mockChallengeParticipations } from './mock/challenges.mock';
+export { mockPartners } from './mock/partners.mock';
+export { mockGlobalInsuranceSettings } from './mock/insurance.mock';
+export {
+  mockAdminActivityLogs,
+  mockSecuritySettings,
+  mockOnlineSessions,
+  mockSalesStats,
+} from './mock/admin.mock';
+export { mockInfoPages } from './mock/cms.mock';
+export { mockGoogleCalendarSettings } from './mock/calendar.mock';
+export {
+  mockVirtualResultSubmissions,
+  mockVirtualEvents,
+} from './mock/virtual-results.mock';
+export { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';

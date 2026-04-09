@@ -1,3 +1,4 @@
+import { mockResults, mockTeamResults, mockResultDocuments } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Event, Result, Registration, TeamResult, EventResultDocument } from '@/types';
-import { mockResults, mockTeamResults, mockResultDocuments } from '@/api/mock/results.mock';
 import { Plus, FileText, Save, Trophy, Users } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { AddResultDialog } from '@/components/organizer/AddResultDialog';

@@ -1,3 +1,4 @@
+import { mockInfoPages } from '@/api';
 import { Link } from 'react-router-dom';
 import {
   Timer,
@@ -10,7 +11,6 @@ import {
   Phone,
   ChevronRight,
 } from 'lucide-react';
-import { mockInfoPages } from '@/api/mock/cms.mock';
 
 export const Footer = () => {
   const footerPages = mockInfoPages

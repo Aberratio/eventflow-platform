@@ -1,3 +1,4 @@
+import { mockEvents } from '@/api';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,6 @@ import { Registration, Result, PersonalRecord, Message } from '@/types';
 import { Calendar, Trophy, Medal, Mail, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { mockEvents } from '@/api/mock/events.mock';
 
 interface ParticipantOverviewTabProps {
   upcomingRegistrations: Registration[];

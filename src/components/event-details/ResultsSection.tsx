@@ -1,3 +1,4 @@
+import { mockResultDocuments, mockTeamResults } from '@/api';
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockResultDocuments, mockTeamResults } from '@/api/mock/results.mock';
 import { Trophy, Medal, Users } from 'lucide-react';
 import { ResultsFilters } from '@/components/results/ResultsFilters';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';

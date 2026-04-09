@@ -1,3 +1,4 @@
+import { mockEvents } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Message } from '@/types';
 import { Mail, MailOpen, Calendar, ChevronDown, ChevronUp, Inbox } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { mockEvents } from '@/api/mock/events.mock';
 
 interface ParticipantMessagesTabProps {
   messages: Message[];

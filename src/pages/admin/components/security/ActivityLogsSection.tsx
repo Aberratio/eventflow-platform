@@ -1,3 +1,4 @@
+import { mockAdminActivityLogs } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,6 @@ import {
 import { AdminActionType } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { mockAdminActivityLogs } from '@/api/mock/admin.mock';
 
 const ACTION_ICONS: Record<AdminActionType, React.ReactNode> = {
   login: <LogIn className="h-4 w-4 text-success" />,

@@ -1,3 +1,4 @@
+import { mockEvents, disciplineLabels } from '@/api';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -18,8 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 import { Search, Calendar, MapPin, Settings, Eye } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {

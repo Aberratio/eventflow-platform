@@ -1,10 +1,9 @@
+import { mockEvents, mockRegistrations } from '@/api';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { EventOverviewTab } from './components/EventOverviewTab';
 import { ParticipantsTab } from './components/ParticipantsTab';
 import { ResultsTab } from './components/ResultsTab';

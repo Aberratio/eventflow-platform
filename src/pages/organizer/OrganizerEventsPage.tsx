@@ -1,3 +1,4 @@
+import { mockEvents, mockRegistrations } from '@/api';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -5,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Plus, Calendar, MapPin, Users, Settings } from 'lucide-react';
 import { format } from 'date-fns';

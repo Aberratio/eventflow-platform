@@ -1,3 +1,4 @@
+import { mockEvents, mockResults, mockSeries } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, ArrowLeft } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { useToast } from '@/hooks/use-toast';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockResults } from '@/api/mock/results.mock';
-import { mockSeries } from '@/api/mock/series.mock';
 import { useMemo, useState } from 'react';
 import { SeriesHero } from './series/SeriesHero';
 import { SeriesStandingsTable, type SeriesStanding } from './series/SeriesStandingsTable';

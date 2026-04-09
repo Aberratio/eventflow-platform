@@ -1,10 +1,9 @@
+import { mockEvents, mockVirtualResultSubmissions } from '@/api';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Ticket } from 'lucide-react';
 import { Registration, Event } from '@/types';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockVirtualResultSubmissions } from '@/api/mock/virtual-results.mock';
 import { ListContainer, ListEmptyState, RegistrationListRow } from '@/components/lists';
 import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog';
 

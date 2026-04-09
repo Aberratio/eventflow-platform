@@ -1,3 +1,4 @@
+import { mockChallengeParticipations, mockChallenges } from '@/api';
 import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +7,6 @@ import { Progress } from '@/components/ui/progress';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import { StatPill } from '@/components/ui/stat-pill';
 import { Trophy, Calendar, Target, Gift, ChevronRight, Users, Flame } from 'lucide-react';
-import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
 
 const statusLabels: Record<string, string> = {

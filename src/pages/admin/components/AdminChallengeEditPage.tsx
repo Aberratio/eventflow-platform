@@ -1,3 +1,4 @@
+import { mockChallenges, mockEvents, mockSeries } from '@/api';
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -14,9 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Plus, Trash2, Download, Trophy } from 'lucide-react';
-import { mockChallenges } from '@/api/mock/challenges.mock';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockSeries } from '@/api/mock/series.mock';
 import { ChallengeEvent, ChallengeReward } from '@/types';
 import { toast } from 'sonner';
 

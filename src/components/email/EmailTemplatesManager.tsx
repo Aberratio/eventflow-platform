@@ -1,3 +1,12 @@
+import {
+  getEmailTemplates,
+  getEmailSendLogs,
+  createEmailTemplate,
+  updateEmailTemplate,
+  deleteEmailTemplate,
+  toggleEmailTemplate,
+  sendEmailNow,
+} from '@/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,15 +27,6 @@ import type {
   CreateEmailTemplatePayload,
   EmailTemplateScope,
 } from '@/types/email';
-import {
-  getEmailTemplates,
-  getEmailSendLogs,
-  createEmailTemplate,
-  updateEmailTemplate,
-  deleteEmailTemplate,
-  toggleEmailTemplate,
-  sendEmailNow,
-} from '@/api/email-templates.api';
 import { EmailTemplateCard } from './EmailTemplateCard';
 import { EmailTemplateEditor } from './EmailTemplateEditor';
 import { EmailSendLogsTable } from './EmailSendLogsTable';

@@ -1,3 +1,4 @@
+import { mockShopOrders, mockUsers } from '@/api';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,8 +37,6 @@ import {
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
-import { mockShopOrders } from '@/api/mock/shop.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import { ShopOrder } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

@@ -1,9 +1,9 @@
+import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Event, Registration } from '@/types';
-import { disciplineLabels } from '@/api/mock/labels';
 import {
   Users,
   Calendar,

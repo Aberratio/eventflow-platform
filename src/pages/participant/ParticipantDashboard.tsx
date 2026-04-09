@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
 import {
+  mockRegistrations,
   mockCertificates,
   mockMessages,
   mockPersonalRecords,
   mockResults,
-} from '@/api/mock/results.mock';
-import { mockShopOrders, mockTickets } from '@/api/mock/shop.mock';
+  mockShopOrders,
+  mockTickets,
+} from '@/api';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Layout } from '@/components/layout/Layout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import {

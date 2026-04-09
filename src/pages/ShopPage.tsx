@@ -1,3 +1,4 @@
+import { getProducts, shopCategoryLabels } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -22,8 +23,6 @@ import {
 import { Search, SlidersHorizontal, X, ShoppingBag, Package, Sparkles } from 'lucide-react';
 import { ShopCategory } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getProducts } from '@/api';
-import { shopCategoryLabels } from '@/api/mock/labels';
 import { QUERY_KEYS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';

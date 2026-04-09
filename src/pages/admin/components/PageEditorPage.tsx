@@ -1,3 +1,4 @@
+import { mockInfoPages } from '@/api';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/select';
 import { EditorHint } from '@/components/admin/EditorHint';
 import { SectionEditor } from './SectionEditor';
-import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage, InfoPageSection } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import {

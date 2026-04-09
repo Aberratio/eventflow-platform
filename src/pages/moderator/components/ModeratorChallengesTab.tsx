@@ -1,3 +1,4 @@
+import { mockChallengeParticipations, mockChallenges } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,6 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

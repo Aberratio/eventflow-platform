@@ -1,3 +1,4 @@
+import { mockEvents, disciplineLabels } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,8 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { Star, Search, GripVertical, Calendar, MapPin, Save } from 'lucide-react';
 import { toast } from 'sonner';
