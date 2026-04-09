@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { EmailTriggerType, EmailTemplateScope } from '@/types/email';
-import { EMAIL_TRIGGER_LABELS, EVENT_TRIGGER_TYPES, SYSTEM_TRIGGER_TYPES } from '@/types/email';
+import { EMAIL_TRIGGER_LABELS, EVENT_TRIGGER_TYPES, SYSTEM_TRIGGER_TYPES } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
 function getTriggerOptions(
   scope: EmailTemplateScope,

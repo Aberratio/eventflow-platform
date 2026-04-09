@@ -31,9 +31,9 @@ import {
   Zap,
   Calendar,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import type { EmailTemplate } from '@/types/email';
 import { EMAIL_TRIGGER_LABELS } from '@/types/email';
-import { useState } from 'react';
 
 interface EmailTemplateCardProps {
   template: EmailTemplate;

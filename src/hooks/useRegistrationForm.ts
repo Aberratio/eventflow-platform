@@ -5,11 +5,10 @@ import {
   getExistingTeamsForEvent,
   validateDiscountCode,
   validateTeamName,
+  applyDiscount,
 } from '@/api/mock/helpers';
 import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
-import { applyDiscount } from '@/api/mock/helpers';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';

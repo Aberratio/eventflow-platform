@@ -38,10 +38,9 @@ import {
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
-import { getCurrentPrice } from '@/api/mock/helpers';
+import { getCurrentPrice, applyDiscount } from '@/api/mock/helpers';
 import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
-import { applyDiscount } from '@/api/mock/helpers';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';

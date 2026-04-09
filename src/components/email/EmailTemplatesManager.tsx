@@ -12,8 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Mail, Loader2, AlertCircle, Send } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EmailTemplate, CreateEmailTemplatePayload, EmailTemplateScope } from '@/types/email';
-import type { EmailSendLog } from '@/types/email';
+import type { EmailTemplate, EmailSendLog, CreateEmailTemplatePayload, EmailTemplateScope } from '@/types/email';
 import {
   getEmailTemplates,
   getEmailSendLogs,

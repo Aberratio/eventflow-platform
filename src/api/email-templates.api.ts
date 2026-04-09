@@ -18,8 +18,7 @@ import type {
   EmailTemplateVariable,
   EmailTemplateScope,
 } from '@/types/email';
-import { SYSTEM_TRIGGER_TYPES } from '@/types/email';
-import { EMAIL_VARIABLES } from '@/types/email';
+import { SYSTEM_TRIGGER_TYPES, EMAIL_VARIABLES } from '@/types/email';
 import { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';
 
 // Mutable in-memory stores for mock CRUD
