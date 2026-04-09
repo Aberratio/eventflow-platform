@@ -1,40 +1,81 @@
 
-# Design System — Refaktoryzacja
 
-## Problem
-Dziesiątki komponentów i stron zawierają zduplikowane klasy Tailwind opisujące te same wzorce wizualne — nagłówki stron (hero), divider, accent bar, stat pill, page section. Prowadzi to do niespójności i trudności w utrzymaniu.
+## Plan: Globalny system logowania akcji
 
-## Plan
+### Cel
+Stworzenie centralnego loggera, który rejestruje wszystkie ważne akcje w aplikacji (auth, CRUD, moderacja, zamówienia itp.) z dokładnymi timestampami, ID użytkowników i opisami po polsku. Docelowo logi będą wysyłane do API — teraz etap wysyłki zostanie zamockowany, ale reszta architektury będzie produkcyjna.
 
-### 1. Nowe komponenty generyczne (`src/components/ui/`)
+### Architektura
 
-| Komponent | Zastępuje powtórzenie | Lokalizacje |
-|---|---|---|
-| `PageHero` | `border-b bg-gradient-to-br from-primary/10 via-background to-warning/5` + icon + h1 + description + opcjonalne stat pills | ShopPage, ChallengesListPage, SeriesListPage, CartPage, ParticipantDashboard, EventHeroBanner |
-| `SectionHeading` | `mb-X flex items-center gap-3` + accent bar + title + optional badge | FeaturedEventsSection, RecentResultsSection, all admin tabs |
-| `StatPill` | `flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5` + icon + text | ChallengesListPage, SeriesListPage, ShopPage, HomeHero |
-| `GradientDivider` | `h-1 bg-gradient-to-r from-primary via-warning to-primary` | EventSidebar, ParticipantOverviewTab |
-| `AccentBar` | `h-px w-10 bg-primary` / `h-1 w-12 rounded-full bg-warning` | HomeHero, CtaSection |
-| `InfoBanner` | `flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground` | SendMessageDialog, BibNumberAssignment, OrderSuccessPage |
-| `Eyebrow` | `inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary` | HeroSection, various hero areas |
-| `PageSection` | `py-8 md:py-12` / `py-10 md:py-16` z opcjonalnym bg | StatsSection, CtaSection, HomeHero |
+```text
+┌─────────────────────────────────────────────┐
+│  Komponenty / Konteksty / Hooki             │
+│  → wywołują: appLogger.log(...)             │
+└─────────────┬───────────────────────────────┘
+              │
+     ┌────────▼────────┐
+     │  AppLogger       │  singleton, buforuje logi
+     │  src/lib/logger  │  w pamięci + console.info
+     └────────┬────────┘
+              │ flush() co N sekund / na unload
+     ┌────────▼────────┐
+     │  LogTransport    │  interfejs: send(logs)
+     │  MockTransport   │  console.table + in-memory
+     │  (ApiTransport)  │  ← przyszłość: POST /logs
+     └─────────────────┘
+```
 
-### 2. Aktualizacja `tokens.css` — nowe tokeny gradientowe
+### Nowe pliki
 
-Dodanie zmiennych CSS:
-- `--gradient-page-hero` — gradient tła hero sekcji
-- `--gradient-accent-bar` — gradient divider/accent bar
-- `--page-hero-py` — padding-y dla hero sekcji
+**1. `src/lib/logger/types.ts`** — typy logów
+- `LogLevel`: `'info' | 'warn' | 'error' | 'audit'`
+- `LogCategory`: `'auth' | 'event' | 'registration' | 'result' | 'shop' | 'user' | 'moderation' | 'cms' | 'challenge' | 'email' | 'settings' | 'navigation' | 'system'`
+- `LogEntry`: `{ id, timestamp (ISO), level, category, action (string), description (PL), userId?, userRole?, targetType?, targetId?, metadata? (Record<string,unknown>), sessionId }`
+- `LogTransport`: interfejs `{ send(entries: LogEntry[]): Promise<void> }`
 
-### 3. Aktualizacja komponentów korzystających z nowych wzorców
+**2. `src/lib/logger/transports.ts`** — transporty
+- `MockTransport`: loguje do `console.groupCollapsed` + przechowuje w tablicy in-memory (dostępne przez `getStoredLogs()`)
+- Przygotowany slot na `ApiTransport` (komentarz + szablon)
 
-Każda strona/komponent korzystający z powtarzalnego wzorca zostanie zrefaktoryzowana do użycia nowego komponentu generycznego.
+**3. `src/lib/logger/logger.ts`** — klasa `AppLogger`
+- Singleton (`appLogger`)
+- Bufor logów (flush co 10s lub 50 wpisów)
+- `log(level, category, action, description, meta?)` — główna metoda
+- Skrócone metody: `auth()`, `event()`, `shop()`, `user()`, `moderation()`, `cms()`, `system()`
+- Automatycznie pobiera `userId` i `userRole` z przekazanego kontekstu (setter `setCurrentUser`)
+- Generuje `sessionId` (uuid) na starcie
+- Nasłuchuje `beforeunload` → flush
 
-### 4. Testy
+**4. `src/lib/logger/index.ts`** — barrel export
 
-Dodanie unit testów dla nowych komponentów design systemu.
+**5. `src/hooks/useLogger.ts`** — hook React
+- Pobiera user z `useAuthSafe()` i automatycznie ustawia `setCurrentUser` na loggerze
+- Zwraca metody loggera z wstrzykniętym kontekstem użytkownika
 
-### Co NIE wchodzi w zakres
-- Spacing w unikalnych layoutach (np. formularze) — te są kontekstowe
-- Kolory semantyczne w shadcn/ui — te już korzystają z tokenów
-- Font size w Typography — każdy use case jest celowy
+### Integracja w istniejących plikach (~15 plików)
+
+| Plik | Logowane akcje |
+|------|---------------|
+| `AuthContext.tsx` | `login`, `loginWithCredentials`, `logout`, sesja przywrócona z localStorage |
+| `CartContext.tsx` | dodanie/usunięcie z koszyka, zmiana ilości |
+| `LoginPage.tsx` | próba logowania (sukces/błąd) |
+| `RegisterPage.tsx` | rejestracja konta |
+| `EventSettingsTab.tsx` | zmiana statusu, usunięcie, prywatność |
+| `AdminSettingsTab.tsx` | zapis ustawień ubezpieczeń, kalendarz |
+| `AdminEventsTab.tsx` / `ModerationEventCard.tsx` | zatwierdzenie/odrzucenie wydarzenia |
+| `UsersParticipantsTab.tsx` / `UsersOrganizersTab.tsx` | edycja/blokowanie użytkowników |
+| `AdminOrdersTab.tsx` / `AdminOrderEditPage.tsx` | zmiana statusu zamówienia |
+| `PageEditorPage.tsx` | tworzenie/edycja strony CMS |
+| `PasswordChangeDialog.tsx` | zmiana hasła |
+| `EventForm.tsx` (organizer) | tworzenie/edycja wydarzenia |
+| `RegistrationForm.tsx` | rejestracja na wydarzenie |
+| `ParticipantOrdersTab.tsx` | złożenie zamówienia |
+
+### Szczegóły techniczne
+
+- Logger NIE jest Reactowym kontekstem — to czysty TypeScript singleton, importowalny wszędzie (także poza komponentami)
+- `useLogger()` to cienki hook synchronizujący `currentUser` z loggera
+- Każdy log ma automatyczny `sessionId` (generowany raz per sesja przeglądarki)
+- `MockTransport` formatuje logi czytelnie w konsoli: `[AUDIT:auth] 2026-04-09T12:00:00Z | Użytkownik jan@example.com zalogował się (rola: participant)`
+- Opisy akcji po polsku, np. "Zalogowano użytkownika", "Dodano produkt do koszyka", "Zatwierdzono wydarzenie «Bieg Nocny»"
+
