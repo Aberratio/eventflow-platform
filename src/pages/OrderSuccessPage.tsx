@@ -12,6 +12,9 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHero } from '@/components/ui/page-hero';
+import { InfoBanner } from '@/components/ui/info-banner';
 import { useCart } from '@/contexts/CartContext';
 
 const OrderSuccessPage = () => {
@@ -21,16 +24,13 @@ const OrderSuccessPage = () => {
     return (
       <Layout>
         <div className="container py-12">
-          <div className="mx-auto max-w-md space-y-6 text-center">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-warning/10">
-              <ShoppingBag className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold">Brak danych zamówienia</h1>
-            <p className="text-muted-foreground">Nie znaleźliśmy zamówienia do wyświetlenia.</p>
-            <Button asChild size="lg">
-              <Link to="/shop">Przejdź do sklepu</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={<ShoppingBag className="h-12 w-12 text-muted-foreground" />}
+            title="Brak danych zamówienia"
+            subtitle="Nie znaleźliśmy zamówienia do wyświetlenia."
+            actionLabel="Przejdź do sklepu"
+            actionHref="/shop"
+          />
         </div>
       </Layout>
     );
@@ -39,32 +39,36 @@ const OrderSuccessPage = () => {
   return (
     <Layout>
       {/* Success Hero */}
-      <div className="border-b bg-gradient-to-br from-success/10 via-primary/5 to-warning/5">
-        <div className="container py-10">
-          <div className="mx-auto max-w-2xl text-center">
-            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/15 ring-4 ring-success/10">
-              <CheckCircle className="h-12 w-12 text-success" />
-            </div>
-            <div className="mb-2 flex items-center justify-center gap-2">
-              <PartyPopper className="h-5 w-5 text-warning" />
-              <h1 className="text-2xl font-bold">Zamówienie złożone!</h1>
-              <PartyPopper className="h-5 w-5 text-warning" />
-            </div>
-            <p className="text-muted-foreground">
-              Numer zamówienia:{' '}
-              <Badge variant="secondary" className="ml-1 px-3 py-1 font-mono text-sm">
-                {lastOrder.orderNumber}
-              </Badge>
-            </p>
+      <PageHero
+        borderless={false}
+        className="border-b"
+        style={{
+          background: 'linear-gradient(to bottom right, hsl(var(--success) / 0.1), hsl(var(--primary) / 0.05), hsl(var(--warning) / 0.05))',
+        }}
+      >
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-success/15 ring-4 ring-success/10">
+            <CheckCircle className="h-12 w-12 text-success" />
           </div>
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <PartyPopper className="h-5 w-5 text-warning" />
+            <h1 className="text-2xl font-bold">Zamówienie złożone!</h1>
+            <PartyPopper className="h-5 w-5 text-warning" />
+          </div>
+          <p className="text-muted-foreground">
+            Numer zamówienia:{' '}
+            <Badge variant="secondary" className="ml-1 px-3 py-1 font-mono text-sm">
+              {lastOrder.orderNumber}
+            </Badge>
+          </p>
         </div>
-      </div>
+      </PageHero>
 
       <div className="container py-8">
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Order Details Card */}
           <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <div className="border-b bg-gradient-to-r from-primary/10 to-warning/5 px-6 py-4">
+            <div className="border-b px-6 py-4" style={{ background: 'var(--gradient-page-hero)' }}>
               <h2 className="font-bold">Szczegóły zamówienia</h2>
             </div>
 
@@ -161,15 +165,16 @@ const OrderSuccessPage = () => {
           </div>
 
           {/* Email Confirmation Notice */}
-          <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 p-5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Mail className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Na podany adres email wysłaliśmy potwierdzenie zamówienia ze szczegółami i linkiem do
-              śledzenia.
-            </p>
-          </div>
+          <InfoBanner
+            icon={
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
+              </div>
+            }
+          >
+            Na podany adres email wysłaliśmy potwierdzenie zamówienia ze szczegółami i linkiem do
+            śledzenia.
+          </InfoBanner>
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3 sm:flex-row">
