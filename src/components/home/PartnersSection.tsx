@@ -11,7 +11,7 @@ export const PartnersSection = ({ partners }: PartnersSectionProps) => {
   if (featuredPartners.length === 0) return null;
 
   return (
-    <section className="animate-fade-in py-12 md:py-16">
+    <section className="py-12 md:py-16">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold md:text-3xl">Nasi partnerzy</h2>
