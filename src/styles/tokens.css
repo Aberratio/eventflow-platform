@@ -57,6 +57,35 @@
   /* === SPACING EXTRAS === */
   --section-gap: 5rem;
 
+  /* === PAGE HERO === */
+  --page-hero-py: 2.5rem;
+  --page-hero-py-md: 3.5rem;
+
+  /* === GRADIENT PRESETS === */
+  --gradient-page-hero: linear-gradient(
+    to bottom right,
+    hsl(var(--primary) / 0.1),
+    hsl(var(--background)),
+    hsl(var(--warning) / 0.05)
+  );
+  --gradient-page-hero-alt: linear-gradient(
+    to bottom right,
+    hsl(var(--warning) / 0.05),
+    hsl(var(--background)),
+    hsl(var(--primary) / 0.05)
+  );
+  --gradient-accent-bar: linear-gradient(
+    to right,
+    hsl(var(--primary)),
+    hsl(var(--warning)),
+    hsl(var(--primary))
+  );
+  --gradient-radial-glow: radial-gradient(
+    ellipse at top right,
+    hsl(var(--primary) / 0.08),
+    transparent 60%
+  );
+
   /* === Z-INDEX === */
   --z-header: 50;
   --z-modal: 100;
