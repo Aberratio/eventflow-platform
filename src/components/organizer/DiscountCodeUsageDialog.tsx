@@ -1,5 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { DiscountCode } from '@/types';
 import { format } from 'date-fns';
@@ -12,7 +19,11 @@ interface DiscountCodeUsageDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export const DiscountCodeUsageDialog = ({ code, open, onOpenChange }: DiscountCodeUsageDialogProps) => {
+export const DiscountCodeUsageDialog = ({
+  code,
+  open,
+  onOpenChange,
+}: DiscountCodeUsageDialogProps) => {
   if (!code) return null;
 
   const usages = code.usedBy || [];
@@ -31,8 +42,8 @@ export const DiscountCodeUsageDialog = ({ code, open, onOpenChange }: DiscountCo
         </DialogHeader>
 
         {usages.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Users className="h-10 w-10 mx-auto mb-3 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <Users className="mx-auto mb-3 h-10 w-10 opacity-50" />
             <p>Nikt jeszcze nie skorzystał z tego kodu</p>
           </div>
         ) : (
@@ -46,7 +57,7 @@ export const DiscountCodeUsageDialog = ({ code, open, onOpenChange }: DiscountCo
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usages.map(usage => (
+                {usages.map((usage) => (
                   <TableRow key={usage.registrationId}>
                     <TableCell className="font-medium">{usage.userName}</TableCell>
                     <TableCell>

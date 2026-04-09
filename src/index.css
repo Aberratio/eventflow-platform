@@ -3,9 +3,9 @@
    Import design systemu PRZED dyrektywami Tailwind
    ============================================================ */
 
-@import "./styles/tokens.css";
-@import "./styles/typography.css";
-@import "./styles/base.css";
+@import './styles/tokens.css';
+@import './styles/typography.css';
+@import './styles/base.css';
 
 @tailwind base;
 @tailwind components;

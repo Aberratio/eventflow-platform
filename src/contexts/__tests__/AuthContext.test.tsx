@@ -27,7 +27,9 @@ describe('AuthContext', () => {
   it('loginWithCredentials validates password', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     let ok: boolean;
-    act(() => { ok = result.current.loginWithCredentials('wrong@test.com', 'wrong'); });
+    act(() => {
+      ok = result.current.loginWithCredentials('wrong@test.com', 'wrong');
+    });
     expect(ok!).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
   });
@@ -35,7 +37,9 @@ describe('AuthContext', () => {
   it('loginWithCredentials succeeds with correct credentials', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     let ok: boolean;
-    act(() => { ok = result.current.loginWithCredentials('jan@example.com', 'demo1234'); });
+    act(() => {
+      ok = result.current.loginWithCredentials('jan@example.com', 'demo1234');
+    });
     expect(ok!).toBe(true);
     expect(result.current.isAuthenticated).toBe(true);
   });

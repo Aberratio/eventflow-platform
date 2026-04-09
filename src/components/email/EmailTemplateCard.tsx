@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -32,8 +32,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import type { EmailTemplate } from '@/types/email';
-import { EMAIL_TRIGGER_LABELS } from '@/types/email';
-import { useState } from 'react';
+import { EMAIL_TRIGGER_LABELS } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
 interface EmailTemplateCardProps {
   template: EmailTemplate;
@@ -85,18 +84,22 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-sm truncate">{template.name}</h3>
+              <div className="mb-1 flex items-center gap-2">
+                <h3 className="truncate text-sm font-semibold">{template.name}</h3>
                 {template.eventId ? (
-                  <Badge variant="outline" className="text-xs shrink-0">Wydarzenie</Badge>
+                  <Badge variant="outline" className="shrink-0 text-xs">
+                    Wydarzenie
+                  </Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-xs shrink-0">Globalny</Badge>
+                  <Badge variant="secondary" className="shrink-0 text-xs">
+                    Globalny
+                  </Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground truncate">{template.subject}</p>
+              <p className="truncate text-xs text-muted-foreground">{template.subject}</p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 items-center gap-2">
               {!readonly && (
                 <Switch
                   checked={template.active}
@@ -113,11 +116,11 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => onEdit(template)}>
-                      <Pencil className="h-4 w-4 mr-2" /> Edytuj
+                      <Pencil className="mr-2 h-4 w-4" /> Edytuj
                     </DropdownMenuItem>
                     {template.triggerType === 'manual' && (
                       <DropdownMenuItem onClick={() => onSendNow(template)}>
-                        <Send className="h-4 w-4 mr-2" /> Wyślij teraz
+                        <Send className="mr-2 h-4 w-4" /> Wyślij teraz
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
@@ -125,7 +128,7 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
                       className="text-destructive focus:text-destructive"
                       onClick={() => setShowDeleteDialog(true)}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" /> Usuń
+                      <Trash2 className="mr-2 h-4 w-4" /> Usuń
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -165,10 +168,8 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
             {/* Recipient filter summary */}
             {template.recipientFilter.paymentStatus &&
               template.recipientFilter.paymentStatus !== 'all' && (
-                <Badge variant="outline" className="text-xs py-0">
-                  {template.recipientFilter.paymentStatus === 'paid'
-                    ? 'Opłaceni'
-                    : 'Nieopłaceni'}
+                <Badge variant="outline" className="py-0 text-xs">
+                  {template.recipientFilter.paymentStatus === 'paid' ? 'Opłaceni' : 'Nieopłaceni'}
                 </Badge>
               )}
           </div>
@@ -181,7 +182,7 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
               className="mt-3 w-full"
               onClick={() => onSendNow(template)}
             >
-              <Send className="h-3.5 w-3.5 mr-2" />
+              <Send className="mr-2 h-3.5 w-3.5" />
               Wyślij teraz
             </Button>
           )}
@@ -193,8 +194,8 @@ export const EmailTemplateCard: React.FC<EmailTemplateCardProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Usuń szablon emaila</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć szablon <strong>„{template.name}"</strong>?
-              Tej operacji nie można cofnąć.
+              Czy na pewno chcesz usunąć szablon <strong>„{template.name}"</strong>? Tej operacji
+              nie można cofnąć.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

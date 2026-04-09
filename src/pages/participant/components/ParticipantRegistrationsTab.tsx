@@ -18,21 +18,28 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const [selectedDistanceId, setSelectedDistanceId] = useState<string | undefined>(undefined);
 
   const registrationsWithEvents = registrations
-    .map(reg => {
-      const event = mockEvents.find(e => e.id === reg.eventId);
+    .map((reg) => {
+      const event = mockEvents.find((e) => e.id === reg.eventId);
       // Find virtual submission for this registration
-      const virtualSubmission = event?.isVirtual 
+      const virtualSubmission = event?.isVirtual
         ? mockVirtualResultSubmissions.find(
-            sub => sub.eventId === reg.eventId && sub.userId === reg.userId && sub.distanceId === reg.distanceId
+            (sub) =>
+              sub.eventId === reg.eventId &&
+              sub.userId === reg.userId &&
+              sub.distanceId === reg.distanceId,
           )
         : undefined;
       return { registration: reg, event, virtualSubmission };
     })
-    .filter((item): item is { 
-      registration: Registration; 
-      event: NonNullable<typeof item.event>;
-      virtualSubmission: typeof item.virtualSubmission;
-    } => item.event !== undefined)
+    .filter(
+      (
+        item,
+      ): item is {
+        registration: Registration;
+        event: NonNullable<typeof item.event>;
+        virtualSubmission: typeof item.virtualSubmission;
+      } => item.event !== undefined,
+    )
     .sort((a, b) => new Date(a.event.date).getTime() - new Date(b.event.date).getTime());
 
   const handleOpenSubmissionDialog = (event: Event, distanceId: string) => {

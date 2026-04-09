@@ -22,48 +22,76 @@ describe('CartContext', () => {
 
   it('addItem adds a new item', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem()); });
+    act(() => {
+      result.current.addItem(makeItem());
+    });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.totalItems).toBe(1);
   });
 
   it('addItem merges quantity for same variant', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem({ quantity: 2 })); });
-    act(() => { result.current.addItem(makeItem({ quantity: 3 })); });
+    act(() => {
+      result.current.addItem(makeItem({ quantity: 2 }));
+    });
+    act(() => {
+      result.current.addItem(makeItem({ quantity: 3 }));
+    });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].quantity).toBe(5);
   });
 
   it('removeItem removes by productId', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem()); });
-    act(() => { result.current.removeItem('p1'); });
+    act(() => {
+      result.current.addItem(makeItem());
+    });
+    act(() => {
+      result.current.removeItem('p1');
+    });
     expect(result.current.items).toHaveLength(0);
   });
 
   it('updateQuantity updates and removes if 0', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem()); });
-    act(() => { result.current.updateQuantity('p1', 5); });
+    act(() => {
+      result.current.addItem(makeItem());
+    });
+    act(() => {
+      result.current.updateQuantity('p1', 5);
+    });
     expect(result.current.items[0].quantity).toBe(5);
-    act(() => { result.current.updateQuantity('p1', 0); });
+    act(() => {
+      result.current.updateQuantity('p1', 0);
+    });
     expect(result.current.items).toHaveLength(0);
   });
 
   it('clearCart empties the cart', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem()); });
-    act(() => { result.current.addItem(makeItem({ productId: 'p2' })); });
-    act(() => { result.current.clearCart(); });
+    act(() => {
+      result.current.addItem(makeItem());
+    });
+    act(() => {
+      result.current.addItem(makeItem({ productId: 'p2' }));
+    });
+    act(() => {
+      result.current.clearCart();
+    });
     expect(result.current.items).toHaveLength(0);
   });
 
   it('removeItemByVariant targets specific variant', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
-    act(() => { result.current.addItem(makeItem({ size: 'M', color: 'red' })); });
-    act(() => { result.current.addItem(makeItem({ size: 'L', color: 'blue' })); });
-    act(() => { result.current.removeItemByVariant('p1', 'M', 'red'); });
+    act(() => {
+      result.current.addItem(makeItem({ size: 'M', color: 'red' }));
+    });
+    act(() => {
+      result.current.addItem(makeItem({ size: 'L', color: 'blue' }));
+    });
+    act(() => {
+      result.current.removeItemByVariant('p1', 'M', 'red');
+    });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].size).toBe('L');
   });

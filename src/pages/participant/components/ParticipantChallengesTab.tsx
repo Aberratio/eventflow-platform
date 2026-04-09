@@ -9,14 +9,14 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const ParticipantChallengesTab = () => {
   const { user } = useAuth();
-  const myParticipations = mockChallengeParticipations.filter(p => p.userId === user?.id);
+  const myParticipations = mockChallengeParticipations.filter((p) => p.userId === user?.id);
 
   if (myParticipations.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Trophy className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Brak aktywnych wyzwań</h3>
-        <p className="text-muted-foreground mb-4">Dołącz do wyzwania i zacznij zbierać biegi!</p>
+      <div className="py-12 text-center">
+        <Trophy className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+        <h3 className="mb-2 text-lg font-semibold">Brak aktywnych wyzwań</h3>
+        <p className="mb-4 text-muted-foreground">Dołącz do wyzwania i zacznij zbierać biegi!</p>
         <Button asChild>
           <Link to="/challenges">Przeglądaj wyzwania</Link>
         </Button>
@@ -33,24 +33,27 @@ const ParticipantChallengesTab = () => {
         </Button>
       </div>
 
-      {myParticipations.map(participation => {
-        const challenge = mockChallenges.find(c => c.id === participation.challengeId);
+      {myParticipations.map((participation) => {
+        const challenge = mockChallenges.find((c) => c.id === participation.challengeId);
         if (!challenge) return null;
 
         const progressPercent = (participation.completedCount / challenge.rule.minCompleted) * 100;
-        const pendingCount = participation.entries.filter(e => e.status === 'pending').length;
-        const rejectedCount = participation.entries.filter(e => e.status === 'rejected').length;
+        const pendingCount = participation.entries.filter((e) => e.status === 'pending').length;
+        const rejectedCount = participation.entries.filter((e) => e.status === 'rejected').length;
 
         return (
           <Card key={participation.id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Trophy className="h-5 w-5 text-primary" />
                   {challenge.name}
                 </CardTitle>
                 {participation.isCompleted ? (
-                  <Badge variant="default"><CheckCircle2 className="h-3 w-3 mr-1" />Ukończone</Badge>
+                  <Badge variant="default">
+                    <CheckCircle2 className="mr-1 h-3 w-3" />
+                    Ukończone
+                  </Badge>
                 ) : (
                   <Badge variant="outline">W trakcie</Badge>
                 )}
@@ -58,9 +61,11 @@ const ParticipantChallengesTab = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="flex justify-between text-sm mb-1">
+                <div className="mb-1 flex justify-between text-sm">
                   <span className="text-muted-foreground">Postęp</span>
-                  <span className="font-medium">{participation.completedCount}/{challenge.rule.minCompleted}</span>
+                  <span className="font-medium">
+                    {participation.completedCount}/{challenge.rule.minCompleted}
+                  </span>
                 </div>
                 <Progress value={Math.min(progressPercent, 100)} className="h-2" />
               </div>
@@ -80,19 +85,21 @@ const ParticipantChallengesTab = () => {
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-muted-foreground">
-                  <Target className="h-3 w-3" /> {challenge.events.length - participation.entries.length} do zgłoszenia
+                  <Target className="h-3 w-3" />{' '}
+                  {challenge.events.length - participation.entries.length} do zgłoszenia
                 </span>
               </div>
 
               {participation.assignedNumber && (
                 <p className="text-sm text-muted-foreground">
-                  Nr Korony: <span className="font-bold text-foreground">#{participation.assignedNumber}</span>
+                  Nr Korony:{' '}
+                  <span className="font-bold text-foreground">#{participation.assignedNumber}</span>
                 </p>
               )}
 
               <Button variant="ghost" size="sm" asChild className="w-full">
                 <Link to={`/challenges/${challenge.slug}`}>
-                  Szczegóły <ArrowRight className="h-4 w-4 ml-1" />
+                  Szczegóły <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
             </CardContent>

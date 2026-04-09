@@ -4,25 +4,56 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
 import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { mockUsers } from '@/api/mock/users.mock';
-import { Search, MoreHorizontal, Ban, RefreshCw, Trash2, Pencil, UserCog, CheckCircle } from 'lucide-react';
+import {
+  Search,
+  MoreHorizontal,
+  Ban,
+  RefreshCw,
+  Trash2,
+  Pencil,
+  UserCog,
+  CheckCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
 
@@ -73,9 +104,9 @@ export const UsersParticipantsTab = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Szukaj po imieniu lub emailu..."
             value={search}
@@ -95,7 +126,7 @@ export const UsersParticipantsTab = () => {
         </Select>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -114,11 +145,17 @@ export const UsersParticipantsTab = () => {
                 <TableCell>{getUserRegistrations(user.id)}</TableCell>
                 <TableCell>
                   {isBlocked(user.id) ? (
-                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                    <Badge
+                      variant="outline"
+                      className="border-destructive/20 bg-destructive/10 text-destructive"
+                    >
                       Zablokowany
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                    <Badge
+                      variant="outline"
+                      className="border-primary/20 bg-primary/10 text-primary"
+                    >
                       Aktywny
                     </Badge>
                   )}
@@ -132,26 +169,26 @@ export const UsersParticipantsTab = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openAction(user, 'profile')}>
-                        <Pencil className="h-4 w-4 mr-2" />
+                        <Pencil className="mr-2 h-4 w-4" />
                         Podgląd / Edycja
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'role')}>
-                        <UserCog className="h-4 w-4 mr-2" />
+                        <UserCog className="mr-2 h-4 w-4" />
                         Zmień rolę
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'reset')}>
-                        <RefreshCw className="h-4 w-4 mr-2" />
+                        <RefreshCw className="mr-2 h-4 w-4" />
                         Resetuj hasło
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openAction(user, 'block')}>
                         {isBlocked(user.id) ? (
                           <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            <CheckCircle className="mr-2 h-4 w-4" />
                             Odblokuj
                           </>
                         ) : (
                           <>
-                            <Ban className="h-4 w-4 mr-2" />
+                            <Ban className="mr-2 h-4 w-4" />
                             Zablokuj
                           </>
                         )}
@@ -160,7 +197,7 @@ export const UsersParticipantsTab = () => {
                         className="text-destructive"
                         onClick={() => openAction(user, 'delete')}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <Trash2 className="mr-2 h-4 w-4" />
                         Usuń
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -200,12 +237,15 @@ export const UsersParticipantsTab = () => {
           {selectedUser && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Zmiana roli dla: <span className="font-medium text-foreground">{selectedUser.name}</span>
+                Zmiana roli dla:{' '}
+                <span className="font-medium text-foreground">{selectedUser.name}</span>
               </p>
               <div className="space-y-2">
                 <Label>Nowa rola</Label>
                 <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as UserRole)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="participant">Uczestnik</SelectItem>
                     <SelectItem value="organizer">Organizator</SelectItem>
@@ -215,11 +255,17 @@ export const UsersParticipantsTab = () => {
                 </Select>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>Anuluj</Button>
-                <Button onClick={() => {
-                  toast.success(`Rola użytkownika ${selectedUser.name} zmieniona na ${selectedRole}`);
-                  setRoleDialogOpen(false);
-                }}>
+                <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>
+                  Anuluj
+                </Button>
+                <Button
+                  onClick={() => {
+                    toast.success(
+                      `Rola użytkownika ${selectedUser.name} zmieniona na ${selectedRole}`,
+                    );
+                    setRoleDialogOpen(false);
+                  }}
+                >
                   Zapisz
                 </Button>
               </DialogFooter>
@@ -234,14 +280,17 @@ export const UsersParticipantsTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Resetowanie hasła</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz wysłać link do resetowania hasła do użytkownika {selectedUser?.name}?
+              Czy na pewno chcesz wysłać link do resetowania hasła do użytkownika{' '}
+              {selectedUser?.name}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              toast.success(`Link do resetowania hasła wysłany do ${selectedUser?.name}`);
-            }}>
+            <AlertDialogAction
+              onClick={() => {
+                toast.success(`Link do resetowania hasła wysłany do ${selectedUser?.name}`);
+              }}
+            >
               Wyślij link
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -253,7 +302,9 @@ export const UsersParticipantsTab = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {selectedUser && isBlocked(selectedUser.id) ? 'Odblokowanie użytkownika' : 'Blokowanie użytkownika'}
+              {selectedUser && isBlocked(selectedUser.id)
+                ? 'Odblokowanie użytkownika'
+                : 'Blokowanie użytkownika'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {selectedUser && isBlocked(selectedUser.id)
@@ -263,17 +314,24 @@ export const UsersParticipantsTab = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              if (selectedUser) {
-                const blocked = isBlocked(selectedUser.id);
-                setBlockedUsers((prev) => {
-                  const next = new Set(prev);
-                  if (blocked) next.delete(selectedUser.id); else next.add(selectedUser.id);
-                  return next;
-                });
-                toast.success(blocked ? `Użytkownik ${selectedUser.name} został odblokowany` : `Użytkownik ${selectedUser.name} został zablokowany`);
-              }
-            }}>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedUser) {
+                  const blocked = isBlocked(selectedUser.id);
+                  setBlockedUsers((prev) => {
+                    const next = new Set(prev);
+                    if (blocked) next.delete(selectedUser.id);
+                    else next.add(selectedUser.id);
+                    return next;
+                  });
+                  toast.success(
+                    blocked
+                      ? `Użytkownik ${selectedUser.name} został odblokowany`
+                      : `Użytkownik ${selectedUser.name} został zablokowany`,
+                  );
+                }
+              }}
+            >
               {selectedUser && isBlocked(selectedUser.id) ? 'Odblokuj' : 'Zablokuj'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -286,14 +344,17 @@ export const UsersParticipantsTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Usuwanie użytkownika</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć użytkownika {selectedUser?.name}? Ta operacja jest nieodwracalna.
+              Czy na pewno chcesz usunąć użytkownika {selectedUser?.name}? Ta operacja jest
+              nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => { toast.success(`Użytkownik ${selectedUser?.name} został usunięty`); }}
+              onClick={() => {
+                toast.success(`Użytkownik ${selectedUser?.name} został usunięty`);
+              }}
             >
               Usuń
             </AlertDialogAction>

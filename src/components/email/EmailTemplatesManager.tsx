@@ -10,16 +10,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Plus,
-  Mail,
-  Loader2,
-  AlertCircle,
-  Send,
-} from 'lucide-react';
+import { Plus, Mail, Loader2, AlertCircle, Send } from 'lucide-react';
 import { toast } from 'sonner';
-import type { EmailTemplate, CreateEmailTemplatePayload, EmailTemplateScope } from '@/types/email';
-import type { EmailSendLog } from '@/types/email';
+import type {
+  EmailTemplate,
+  EmailSendLog,
+  CreateEmailTemplatePayload,
+  EmailTemplateScope,
+} from '@/types/email';
 import {
   getEmailTemplates,
   getEmailSendLogs,
@@ -60,7 +58,10 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | undefined>(undefined);
-  const [sendDialog, setSendDialog] = useState<SendConfirmDialogState>({ open: false, template: null });
+  const [sendDialog, setSendDialog] = useState<SendConfirmDialogState>({
+    open: false,
+    template: null,
+  });
   const [sending, setSending] = useState(false);
 
   // ── Load data ──
@@ -137,7 +138,7 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
     const res = await toggleEmailTemplate(id, active);
     if (res.success) {
       toast.success(active ? 'Szablon aktywowany' : 'Szablon dezaktywowany');
-      setTemplates(prev => prev.map(t => (t.id === id ? { ...t, active } : t)));
+      setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, active } : t)));
     } else {
       toast.error('Błąd podczas zmiany statusu');
     }
@@ -222,15 +223,11 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
           {/* ── Templates list ── */}
           <TabsContent value="templates" className="mt-4">
             {templates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground border rounded-md border-dashed">
-                <Mail className="h-12 w-12 mb-3 opacity-30" />
+              <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-16 text-muted-foreground">
+                <Mail className="mb-3 h-12 w-12 opacity-30" />
                 <p className="text-sm font-medium">Brak szablonów emaili</p>
                 {!readonly && (
-                  <Button
-                    variant="link"
-                    className="mt-2 text-primary"
-                    onClick={handleOpenCreate}
-                  >
+                  <Button variant="link" className="mt-2 text-primary" onClick={handleOpenCreate}>
                     Utwórz pierwszy szablon
                   </Button>
                 )}
@@ -284,10 +281,10 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
           <DialogHeader>
             <DialogTitle>Wyślij email do uczestników</DialogTitle>
             <DialogDescription>
-              Szablon <strong>„{sendDialog.template?.name}"</strong> zostanie wysłany teraz
-              do wszystkich uczestników spełniających kryteria filtrów.
+              Szablon <strong>„{sendDialog.template?.name}"</strong> zostanie wysłany teraz do
+              wszystkich uczestników spełniających kryteria filtrów.
               {sendDialog.template?.recipientFilter?.paymentStatus === 'unpaid' && (
-                <span className="block mt-1 text-muted-foreground">
+                <span className="mt-1 block text-muted-foreground">
                   Dotyczy: tylko nieopłaceni uczestnicy.
                 </span>
               )}
@@ -303,9 +300,13 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
             </Button>
             <Button onClick={confirmSend} disabled={sending} className="gap-2">
               {sending ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Wysyłanie...</>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Wysyłanie...
+                </>
               ) : (
-                <><Send className="h-4 w-4" /> Wyślij teraz</>
+                <>
+                  <Send className="h-4 w-4" /> Wyślij teraz
+                </>
               )}
             </Button>
           </DialogFooter>

@@ -24,17 +24,20 @@ const participantSteps: OnboardingStep[] = [
   {
     icon: <Calendar className="h-8 w-8 text-primary" />,
     title: 'Zapisz się na zawody',
-    description: 'Przeglądaj wydarzenia sportowe i zapisuj się na biegi, wyścigi rowerowe czy triathlony jednym kliknięciem.',
+    description:
+      'Przeglądaj wydarzenia sportowe i zapisuj się na biegi, wyścigi rowerowe czy triathlony jednym kliknięciem.',
   },
   {
     icon: <Trophy className="h-8 w-8 text-muted-foreground" />,
     title: 'Śledź swoje wyniki',
-    description: 'Wszystkie Twoje wyniki i rekordy życiowe w jednym miejscu. Porównuj się z innymi zawodnikami.',
+    description:
+      'Wszystkie Twoje wyniki i rekordy życiowe w jednym miejscu. Porównuj się z innymi zawodnikami.',
   },
   {
     icon: <ShoppingBag className="h-8 w-8 text-muted-foreground" />,
     title: 'Kupuj sprzęt sportowy',
-    description: 'Sprawdzony sprzęt i gadżety w naszym sklepie. Specjalne oferty dla uczestników wydarzeń.',
+    description:
+      'Sprawdzony sprzęt i gadżety w naszym sklepie. Specjalne oferty dla uczestników wydarzeń.',
   },
 ];
 
@@ -42,17 +45,20 @@ const organizerSteps: OnboardingStep[] = [
   {
     icon: <Calendar className="h-8 w-8 text-primary" />,
     title: 'Twórz wydarzenia',
-    description: 'Łatwo stwórz i opublikuj swoje wydarzenie sportowe. Dodaj dystanse, kategorie i ceny.',
+    description:
+      'Łatwo stwórz i opublikuj swoje wydarzenie sportowe. Dodaj dystanse, kategorie i ceny.',
   },
   {
     icon: <Users className="h-8 w-8 text-muted-foreground" />,
     title: 'Zarządzaj uczestnikami',
-    description: 'Pełna kontrola nad listą startową, statusami płatności i komunikacją z zawodnikami.',
+    description:
+      'Pełna kontrola nad listą startową, statusami płatności i komunikacją z zawodnikami.',
   },
   {
     icon: <Trophy className="h-8 w-8 text-muted-foreground" />,
     title: 'Publikuj wyniki',
-    description: 'Wprowadzaj wyniki ręcznie lub importuj z pliku. Uczestnicy zobaczą je natychmiast.',
+    description:
+      'Wprowadzaj wyniki ręcznie lub importuj z pliku. Uczestnicy zobaczą je natychmiast.',
   },
 ];
 
@@ -68,10 +74,10 @@ export const OnboardingDialog = () => {
 
   useEffect(() => {
     if (!user) return;
-    
+
     const storageKey = `zmierzymyczas_onboarding_${user.id}`;
     const hasSeenOnboarding = localStorage.getItem(storageKey);
-    
+
     // Show dialog for new users or users who haven't completed onboarding
     if (!hasSeenOnboarding && user.isNewUser) {
       const timer = setTimeout(() => setOpen(true), 500);
@@ -108,7 +114,7 @@ export const OnboardingDialog = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <span className="text-sm font-medium text-primary">
               Krok {currentStep + 1} z {steps.length}
@@ -118,23 +124,21 @@ export const OnboardingDialog = () => {
             Witaj w ZmierzymyCzas, {user.name.split(' ')[0]}!
           </DialogTitle>
           <DialogDescription>
-            {user.role === 'organizer' 
+            {user.role === 'organizer'
               ? 'Oto co możesz zrobić jako organizator wydarzeń:'
               : 'Oto co możesz zrobić na platformie:'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-6">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="p-4 rounded-full bg-muted">
-              {steps[currentStep].icon}
-            </div>
+          <div className="flex flex-col items-center space-y-4 text-center">
+            <div className="rounded-full bg-muted p-4">{steps[currentStep].icon}</div>
             <h3 className="text-lg font-semibold">{steps[currentStep].title}</h3>
             <p className="text-muted-foreground">{steps[currentStep].description}</p>
           </div>
 
           {/* Progress dots */}
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="mt-6 flex justify-center gap-2">
             {steps.map((_, index) => (
               <div
                 key={index}
@@ -157,14 +161,14 @@ export const OnboardingDialog = () => {
               'Rozpocznij'
             )}
           </Button>
-          
+
           <div className="flex items-center justify-center gap-2">
             <Checkbox
               id="dont-show"
               checked={dontShowAgain}
               onCheckedChange={(checked) => setDontShowAgain(checked === true)}
             />
-            <Label htmlFor="dont-show" className="text-sm text-muted-foreground cursor-pointer">
+            <Label htmlFor="dont-show" className="cursor-pointer text-sm text-muted-foreground">
               Nie pokazuj ponownie
             </Label>
           </div>

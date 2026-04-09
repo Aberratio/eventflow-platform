@@ -1,7 +1,12 @@
 import { simulateDelay } from './client';
 import type { ApiResponse } from './types';
 import { mockChallenges, mockChallengeParticipations } from './mock/challenges.mock';
-import type { Challenge, ChallengeParticipation, ChallengeEntry, ChallengeEntryStatus } from '@/types';
+import type {
+  Challenge,
+  ChallengeParticipation,
+  ChallengeEntry,
+  ChallengeEntryStatus,
+} from '@/types';
 
 export async function getChallenges(): Promise<ApiResponse<Challenge[]>> {
   await simulateDelay();
@@ -31,7 +36,9 @@ export async function getChallengeParticipations(
   return { data: result, success: true };
 }
 
-export async function joinChallenge(challengeId: string): Promise<ApiResponse<ChallengeParticipation>> {
+export async function joinChallenge(
+  challengeId: string,
+): Promise<ApiResponse<ChallengeParticipation>> {
   await simulateDelay();
   const participation: ChallengeParticipation = {
     id: `cp-${Date.now()}`,
@@ -47,7 +54,9 @@ export async function joinChallenge(challengeId: string): Promise<ApiResponse<Ch
   return { data: participation, success: true };
 }
 
-export async function submitChallengeEntry(data: Partial<ChallengeEntry>): Promise<ApiResponse<ChallengeEntry>> {
+export async function submitChallengeEntry(
+  data: Partial<ChallengeEntry>,
+): Promise<ApiResponse<ChallengeEntry>> {
   await simulateDelay();
   const entry: ChallengeEntry = {
     id: `ce-${Date.now()}`,

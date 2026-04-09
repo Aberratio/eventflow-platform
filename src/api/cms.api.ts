@@ -34,10 +34,14 @@ export async function createInfoPage(data: Partial<InfoPage>): Promise<ApiRespon
   return { data: page, success: true };
 }
 
-export async function updateInfoPage(id: string, data: Partial<InfoPage>): Promise<ApiResponse<InfoPage>> {
+export async function updateInfoPage(
+  id: string,
+  data: Partial<InfoPage>,
+): Promise<ApiResponse<InfoPage>> {
   await simulateDelay();
   const page = mockInfoPages.find((p) => p.id === id);
-  if (!page) return { data: null as unknown as InfoPage, success: false, message: 'Page not found' };
+  if (!page)
+    return { data: null as unknown as InfoPage, success: false, message: 'Page not found' };
   return { data: { ...page, ...data, updatedAt: new Date().toISOString() }, success: true };
 }
 

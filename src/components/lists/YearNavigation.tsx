@@ -7,9 +7,13 @@ interface YearNavigationProps {
   onYearChange: (year: number) => void;
 }
 
-export const YearNavigation = ({ selectedYear, availableYears, onYearChange }: YearNavigationProps) => {
+export const YearNavigation = ({
+  selectedYear,
+  availableYears,
+  onYearChange,
+}: YearNavigationProps) => {
   return (
-    <div className="flex items-center justify-center gap-4 mb-6 bg-card/50 border border-warning/10 rounded-lg py-3">
+    <div className="mb-6 flex items-center justify-center gap-4 rounded-lg border border-warning/10 bg-card/50 py-3">
       <Button
         variant="outline"
         size="icon"
@@ -18,7 +22,7 @@ export const YearNavigation = ({ selectedYear, availableYears, onYearChange }: Y
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      <span className="text-xl font-bold min-w-[80px] text-center">{selectedYear}</span>
+      <span className="min-w-[80px] text-center text-xl font-bold">{selectedYear}</span>
       <Button
         variant="outline"
         size="icon"

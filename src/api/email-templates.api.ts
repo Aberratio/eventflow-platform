@@ -16,10 +16,9 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
   EmailTemplateVariable,
-  EmailTemplateScope,
 } from '@/types/email';
-import { SYSTEM_TRIGGER_TYPES } from '@/types/email';
-import { EMAIL_VARIABLES } from '@/types/email';
+// eslint-disable-next-line no-duplicate-imports
+import { SYSTEM_TRIGGER_TYPES, EMAIL_VARIABLES } from '@/types/email';
 import { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';
 
 // Mutable in-memory stores for mock CRUD
@@ -37,7 +36,7 @@ let nextId = 100;
  * Passing an eventId returns templates for that event + global ones.
  */
 export async function getEmailTemplates(
-  eventId?: string | null
+  eventId?: string | null,
 ): Promise<PaginatedResponse<EmailTemplate>> {
   await simulateDelay();
 
@@ -45,10 +44,14 @@ export async function getEmailTemplates(
 
   if (eventId === null) {
     // Only system/global templates (no eventId, system trigger)
-    filtered = templates.filter(t => t.eventId === undefined && (SYSTEM_TRIGGER_TYPES as readonly string[]).includes(t.triggerType));
+    filtered = templates.filter(
+      (t) =>
+        t.eventId === undefined &&
+        (SYSTEM_TRIGGER_TYPES as readonly string[]).includes(t.triggerType),
+    );
   } else if (eventId) {
     // Only this specific event's templates
-    filtered = templates.filter(t => t.eventId === eventId);
+    filtered = templates.filter((t) => t.eventId === eventId);
   } else {
     // All templates
     filtered = [...templates];
@@ -64,11 +67,9 @@ export async function getEmailTemplates(
 }
 
 /** GET /api/email-templates/:id */
-export async function getEmailTemplateById(
-  id: string
-): Promise<ApiResponse<EmailTemplate | null>> {
+export async function getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>> {
   await simulateDelay();
-  const template = templates.find(t => t.id === id) ?? null;
+  const template = templates.find((t) => t.id === id) ?? null;
   return {
     data: template,
     success: template !== null,
@@ -77,13 +78,9 @@ export async function getEmailTemplateById(
 }
 
 /** GET /api/email-send-logs */
-export async function getEmailSendLogs(
-  eventId?: string
-): Promise<ApiResponse<EmailSendLog[]>> {
+export async function getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>> {
   await simulateDelay();
-  const filtered = eventId
-    ? logs.filter(l => l.eventId === eventId)
-    : [...logs];
+  const filtered = eventId ? logs.filter((l) => l.eventId === eventId) : [...logs];
   return { data: filtered, success: true };
 }
 
@@ -91,7 +88,7 @@ export async function getEmailSendLogs(
 
 /** POST /api/email-templates */
 export async function createEmailTemplate(
-  payload: CreateEmailTemplatePayload
+  payload: CreateEmailTemplatePayload,
 ): Promise<ApiResponse<EmailTemplate>> {
   await simulateDelay();
 
@@ -109,17 +106,17 @@ export async function createEmailTemplate(
 /** PUT /api/email-templates/:id */
 export async function updateEmailTemplate(
   id: string,
-  data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>
+  data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>,
 ): Promise<ApiResponse<EmailTemplate>> {
   await simulateDelay();
 
-  const index = templates.findIndex(t => t.id === id);
+  const index = templates.findIndex((t) => t.id === id);
   if (index === -1) {
     return { data: templates[0], success: false, message: 'Szablon nie został znaleziony' };
   }
 
   const updated: EmailTemplate = { ...templates[index], ...data };
-  templates = templates.map(t => (t.id === id ? updated : t));
+  templates = templates.map((t) => (t.id === id ? updated : t));
 
   return { data: updated, success: true, message: 'Szablon został zaktualizowany' };
 }
@@ -128,19 +125,19 @@ export async function updateEmailTemplate(
 export async function deleteEmailTemplate(id: string): Promise<ApiResponse<void>> {
   await simulateDelay();
 
-  const exists = templates.some(t => t.id === id);
+  const exists = templates.some((t) => t.id === id);
   if (!exists) {
     return { data: undefined, success: false, message: 'Szablon nie został znaleziony' };
   }
 
-  templates = templates.filter(t => t.id !== id);
+  templates = templates.filter((t) => t.id !== id);
   return { data: undefined, success: true, message: 'Szablon został usunięty' };
 }
 
 /** PATCH /api/email-templates/:id/toggle */
 export async function toggleEmailTemplate(
   id: string,
-  active: boolean
+  active: boolean,
 ): Promise<ApiResponse<EmailTemplate>> {
   return updateEmailTemplate(id, { active });
 }
@@ -152,11 +149,11 @@ export async function toggleEmailTemplate(
  */
 export async function sendEmailNow(
   templateId: string,
-  recipientIds?: string[]
+  recipientIds?: string[],
 ): Promise<ApiResponse<SendEmailResult>> {
   await simulateDelay();
 
-  const template = templates.find(t => t.id === templateId);
+  const template = templates.find((t) => t.id === templateId);
   if (!template) {
     return {
       data: { sent: 0, failed: 0, scheduled: 0 },
@@ -171,10 +168,10 @@ export async function sendEmailNow(
   const sent = targetCount - failed;
 
   // Update sent count on template
-  templates = templates.map(t =>
+  templates = templates.map((t) =>
     t.id === templateId
       ? { ...t, sentCount: t.sentCount + sent, lastSentAt: new Date().toISOString() }
-      : t
+      : t,
   );
 
   // Add log entries
@@ -204,7 +201,7 @@ export async function sendEmailNow(
  * Returns subject and body with template variables replaced by sample data.
  */
 export async function previewEmailTemplate(
-  request: EmailPreviewRequest
+  request: EmailPreviewRequest,
 ): Promise<ApiResponse<EmailPreviewResult>> {
   await simulateDelay();
 

@@ -19,50 +19,56 @@ interface ResultListRowProps {
 
 const getMedalIcon = (position: number) => {
   if (position <= 3) {
-    return <Medal className={`h-4 w-4 ${position === 1 ? 'text-warning' : position === 2 ? 'text-muted-foreground' : 'text-warning/70'}`} />;
+    return (
+      <Medal
+        className={`h-4 w-4 ${position === 1 ? 'text-warning' : position === 2 ? 'text-muted-foreground' : 'text-warning/70'}`}
+      />
+    );
   }
   return null;
 };
 
-export const ResultListRow = ({ 
-  result, 
-  event, 
+export const ResultListRow = ({
+  result,
+  event,
   showEvent = true,
   showDownload = false,
   onDownloadCertificate,
   isHighlighted = false,
 }: ResultListRowProps) => {
   const medal = getMedalIcon(result.categoryPosition);
-  
-  const title = showEvent ? result.eventName : result.userName;
-  
-  const subtitle = showEvent && event 
-    ? `${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${result.distanceName}`
-    : result.distanceName;
 
-  const badge = result.status === 'finished' ? (
-    medal ? (
-      <span className="flex items-center gap-1">
-        {medal}
-        <span className="text-xs font-medium">{result.categoryPosition}.</span>
-      </span>
-    ) : null
-  ) : (
-    <Badge variant="destructive" className="text-xs">
-      {result.status === 'dnf' ? 'DNF' : 'DSQ'}
-    </Badge>
-  );
+  const title = showEvent ? result.eventName : result.userName;
+
+  const subtitle =
+    showEvent && event
+      ? `${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${result.distanceName}`
+      : result.distanceName;
+
+  const badge =
+    result.status === 'finished' ? (
+      medal ? (
+        <span className="flex items-center gap-1">
+          {medal}
+          <span className="text-xs font-medium">{result.categoryPosition}.</span>
+        </span>
+      ) : null
+    ) : (
+      <Badge variant="destructive" className="text-xs">
+        {result.status === 'dnf' ? 'DNF' : 'DSQ'}
+      </Badge>
+    );
 
   const meta = (
     <div className="flex items-center gap-3">
-      <span className="flex items-center gap-1 font-mono font-bold text-sm sm:text-base">
+      <span className="flex items-center gap-1 font-mono text-sm font-bold sm:text-base">
         <Clock className="h-4 w-4 text-primary" />
         {result.time}
       </span>
       <span className="text-sm text-muted-foreground">
         OPEN: <strong>{result.position}</strong>
       </span>
-      <span className="text-sm text-muted-foreground hidden sm:inline">
+      <span className="hidden text-sm text-muted-foreground sm:inline">
         {result.category}: <strong>{result.categoryPosition}</strong>
       </span>
     </div>

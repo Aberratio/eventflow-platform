@@ -1,9 +1,16 @@
 import { simulateDelay } from './client';
 import type { ApiResponse, ActivityLogFilters } from './types';
-import { mockAdminActivityLogs, mockSecuritySettings, mockOnlineSessions, mockSalesStats } from './mock/admin.mock';
+import {
+  mockAdminActivityLogs,
+  mockSecuritySettings,
+  mockOnlineSessions,
+  mockSalesStats,
+} from './mock/admin.mock';
 import type { AdminActivityLog, SecuritySettings, OnlineSession } from '@/types';
 
-export async function getActivityLogs(filters?: ActivityLogFilters): Promise<ApiResponse<AdminActivityLog[]>> {
+export async function getActivityLogs(
+  filters?: ActivityLogFilters,
+): Promise<ApiResponse<AdminActivityLog[]>> {
   await simulateDelay();
   let logs = [...mockAdminActivityLogs];
 
@@ -20,7 +27,9 @@ export async function getSecuritySettings(): Promise<ApiResponse<SecuritySetting
   return { data: { ...mockSecuritySettings }, success: true };
 }
 
-export async function updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>> {
+export async function updateSecuritySettings(
+  data: Partial<SecuritySettings>,
+): Promise<ApiResponse<SecuritySettings>> {
   await simulateDelay();
   return { data: { ...mockSecuritySettings, ...data }, success: true };
 }

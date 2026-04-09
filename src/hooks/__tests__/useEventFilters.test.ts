@@ -17,7 +17,9 @@ describe('useEventFilters', () => {
 
   it('updateFilter updates a single filter key', () => {
     const { result } = renderHook(() => useEventFilters());
-    act(() => { result.current.updateFilter('search', 'maraton'); });
+    act(() => {
+      result.current.updateFilter('search', 'maraton');
+    });
     expect(result.current.filters.search).toBe('maraton');
     expect(result.current.activeFiltersCount).toBe(1);
     expect(result.current.hasActiveFilters).toBe(true);
@@ -25,10 +27,14 @@ describe('useEventFilters', () => {
 
   it('toggleArrayFilter adds and removes values', () => {
     const { result } = renderHook(() => useEventFilters());
-    act(() => { result.current.toggleArrayFilter('disciplines', 'running'); });
+    act(() => {
+      result.current.toggleArrayFilter('disciplines', 'running');
+    });
     expect(result.current.filters.disciplines).toContain('running');
 
-    act(() => { result.current.toggleArrayFilter('disciplines', 'running'); });
+    act(() => {
+      result.current.toggleArrayFilter('disciplines', 'running');
+    });
     expect(result.current.filters.disciplines).not.toContain('running');
   });
 
@@ -39,7 +45,9 @@ describe('useEventFilters', () => {
       result.current.updateFilter('selectedYear', 2025);
       result.current.toggleArrayFilter('cities', 'Warszawa');
     });
-    act(() => { result.current.clearFilters(); });
+    act(() => {
+      result.current.clearFilters();
+    });
     expect(result.current.filters.search).toBe('');
     expect(result.current.filters.cities).toEqual([]);
     expect(result.current.filters.selectedYear).toBe(2025);
@@ -56,7 +64,10 @@ describe('useEventFilters', () => {
   });
 
   it('restores filters from localStorage', () => {
-    localStorage.setItem('events-page-filters', JSON.stringify({ search: 'saved', disciplines: ['cycling'] }));
+    localStorage.setItem(
+      'events-page-filters',
+      JSON.stringify({ search: 'saved', disciplines: ['cycling'] }),
+    );
     const { result } = renderHook(() => useEventFilters());
     expect(result.current.filters.search).toBe('saved');
     expect(result.current.filters.disciplines).toContain('cycling');

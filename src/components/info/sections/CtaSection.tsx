@@ -8,19 +8,22 @@ interface CtaSectionProps {
 
 export const CtaSection = ({ section }: CtaSectionProps) => {
   return (
-    <section className="py-16 md:py-24 bg-primary text-primary-foreground border-t-2 border-t-warning/30">
+    <section className="border-t-2 border-t-warning/30 bg-primary py-16 text-primary-foreground md:py-24">
       <div className="container">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-block h-1 w-12 bg-warning rounded-full mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{section.title}</h2>
-          {section.content && (
-            <p className="text-lg opacity-90 mb-8">{section.content}</p>
-          )}
-          <div className="flex flex-wrap gap-4 justify-center">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-6 inline-block h-1 w-12 rounded-full bg-warning" />
+          <h2 className="mb-4 text-3xl font-bold md:text-4xl">{section.title}</h2>
+          {section.content && <p className="mb-8 text-lg opacity-90">{section.content}</p>}
+          <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" variant="secondary">
               <Link to="/info/kontakt">Skontaktuj się</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            >
               <Link to="/wydarzenia">Zobacz wydarzenia</Link>
             </Button>
           </div>

@@ -10,50 +10,53 @@ interface BankPaymentSummaryProps {
 
 export const BankPaymentSummary = ({ event, registrations }: BankPaymentSummaryProps) => {
   // Calculate payment statistics
-  const stats = registrations.reduce((acc, reg) => {
-    if (reg.status === 'removed') return acc;
+  const stats = registrations.reduce(
+    (acc, reg) => {
+      if (reg.status === 'removed') return acc;
 
-    const details = reg.paymentDetails;
-    
-    // Start fee
-    const startFee = details?.startFeeAmount || reg.pricePaid || 0;
-    acc.totalStartFees += startFee;
-    if (details?.startFeePaid) {
-      acc.paidStartFees += startFee;
-      acc.paidStartFeesCount++;
-    } else {
-      acc.unpaidStartFeesCount++;
-    }
+      const details = reg.paymentDetails;
 
-    // Insurance
-    if (details?.insuranceAmount) {
-      acc.totalInsurance += details.insuranceAmount;
-      if (details.insurancePaid) {
-        acc.paidInsurance += details.insuranceAmount;
+      // Start fee
+      const startFee = details?.startFeeAmount || reg.pricePaid || 0;
+      acc.totalStartFees += startFee;
+      if (details?.startFeePaid) {
+        acc.paidStartFees += startFee;
+        acc.paidStartFeesCount++;
+      } else {
+        acc.unpaidStartFeesCount++;
       }
-    }
 
-    // Merchandise
-    if (details?.merchandisePayments) {
-      details.merchandisePayments.forEach(mp => {
-        acc.totalMerchandise += mp.amount;
-        if (mp.paid) {
-          acc.paidMerchandise += mp.amount;
+      // Insurance
+      if (details?.insuranceAmount) {
+        acc.totalInsurance += details.insuranceAmount;
+        if (details.insurancePaid) {
+          acc.paidInsurance += details.insuranceAmount;
         }
-      });
-    }
+      }
 
-    return acc;
-  }, {
-    totalStartFees: 0,
-    paidStartFees: 0,
-    paidStartFeesCount: 0,
-    unpaidStartFeesCount: 0,
-    totalInsurance: 0,
-    paidInsurance: 0,
-    totalMerchandise: 0,
-    paidMerchandise: 0,
-  });
+      // Merchandise
+      if (details?.merchandisePayments) {
+        details.merchandisePayments.forEach((mp) => {
+          acc.totalMerchandise += mp.amount;
+          if (mp.paid) {
+            acc.paidMerchandise += mp.amount;
+          }
+        });
+      }
+
+      return acc;
+    },
+    {
+      totalStartFees: 0,
+      paidStartFees: 0,
+      paidStartFeesCount: 0,
+      unpaidStartFeesCount: 0,
+      totalInsurance: 0,
+      paidInsurance: 0,
+      totalMerchandise: 0,
+      paidMerchandise: 0,
+    },
+  );
 
   const totalCollected = stats.paidStartFees + stats.paidInsurance + stats.paidMerchandise;
   const totalExpected = stats.totalStartFees + stats.totalInsurance + stats.totalMerchandise;
@@ -62,15 +65,15 @@ export const BankPaymentSummary = ({ event, registrations }: BankPaymentSummaryP
   return (
     <Card className="border-warning/30 bg-warning/5">
       <CardContent className="pt-4">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           {/* Info */}
-          <div className="flex items-start gap-3 flex-1">
-            <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+          <div className="flex flex-1 items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div>
               <div className="font-medium text-warning-foreground">
                 Płatności przelewem bankowym
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="mt-1 text-sm text-muted-foreground">
                 Konto: <span className="font-mono">{event.paymentConfig?.bankAccountNumber}</span>
               </div>
               <div className="text-sm text-muted-foreground">
@@ -93,12 +96,18 @@ export const BankPaymentSummary = ({ event, registrations }: BankPaymentSummaryP
 
           {/* Totals */}
           <div className="flex flex-wrap gap-3">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 px-3 py-1.5">
-              <CreditCard className="h-3 w-3 mr-1" />
+            <Badge
+              variant="outline"
+              className="border-primary/30 bg-primary/10 px-3 py-1.5 text-primary"
+            >
+              <CreditCard className="mr-1 h-3 w-3" />
               Zebrano: {totalCollected.toLocaleString('pl-PL')} zł
             </Badge>
             {totalRemaining > 0 && (
-              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 px-3 py-1.5">
+              <Badge
+                variant="outline"
+                className="border-warning/30 bg-warning/10 px-3 py-1.5 text-warning"
+              >
                 Pozostało: {totalRemaining.toLocaleString('pl-PL')} zł
               </Badge>
             )}

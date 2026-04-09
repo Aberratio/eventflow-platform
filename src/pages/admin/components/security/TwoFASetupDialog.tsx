@@ -22,7 +22,11 @@ interface TwoFASetupDialogProps {
   onSetupComplete: (method: TwoFAMethod) => void;
 }
 
-export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFASetupDialogProps) => {
+export const TwoFASetupDialog = ({
+  open,
+  onOpenChange,
+  onSetupComplete,
+}: TwoFASetupDialogProps) => {
   const [method, setMethod] = useState<TwoFAMethod>('app');
   const [step, setStep] = useState(1);
   const [verificationCode, setVerificationCode] = useState('');
@@ -39,7 +43,11 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
 
   const handleVerify = () => {
     if (verificationCode.length !== 6) {
-      toast({ title: 'Błąd', description: 'Wprowadź 6-cyfrowy kod weryfikacyjny.', variant: 'destructive' });
+      toast({
+        title: 'Błąd',
+        description: 'Wprowadź 6-cyfrowy kod weryfikacyjny.',
+        variant: 'destructive',
+      });
       return;
     }
     onSetupComplete(method);
@@ -51,14 +59,26 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
   };
 
   const methodOptions = [
-    { id: 'app' as const, icon: QrCode, label: 'Aplikacja', description: 'Google Authenticator, Authy lub podobna' },
-    { id: 'sms' as const, icon: Smartphone, label: 'SMS', description: 'Kody wysyłane na numer telefonu' },
+    {
+      id: 'app' as const,
+      icon: QrCode,
+      label: 'Aplikacja',
+      description: 'Google Authenticator, Authy lub podobna',
+    },
+    {
+      id: 'sms' as const,
+      icon: Smartphone,
+      label: 'SMS',
+      description: 'Kody wysyłane na numer telefonu',
+    },
   ];
 
   const renderOTPInput = () => (
     <InputOTP maxLength={6} value={verificationCode} onChange={setVerificationCode}>
       <InputOTPGroup>
-        {[0, 1, 2, 3, 4, 5].map(i => <InputOTPSlot key={i} index={i} />)}
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <InputOTPSlot key={i} index={i} />
+        ))}
       </InputOTPGroup>
     </InputOTP>
   );
@@ -82,7 +102,7 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
             {methodOptions.map(({ id, icon: Icon, label, description }) => (
               <div
                 key={id}
-                className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors ${
+                className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${
                   method === id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
                 }`}
                 onClick={() => setMethod(id)}
@@ -100,16 +120,18 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
         {step === 2 && method === 'app' && (
           <div className="space-y-4 py-4">
             <div className="flex justify-center">
-              <div className="w-48 h-48 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed">
+              <div className="flex h-48 w-48 items-center justify-center rounded-lg border-2 border-dashed bg-muted">
                 <div className="text-center">
-                  <QrCode className="h-16 w-16 mx-auto text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground mt-2">Mock QR Code</p>
+                  <QrCode className="mx-auto h-16 w-16 text-muted-foreground" />
+                  <p className="mt-2 text-xs text-muted-foreground">Mock QR Code</p>
                 </div>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-1">Lub wprowadź ręcznie:</p>
-              <code className="bg-muted px-3 py-1.5 rounded text-sm font-mono">ABCD-EFGH-IJKL-MNOP</code>
+              <p className="mb-1 text-sm text-muted-foreground">Lub wprowadź ręcznie:</p>
+              <code className="rounded bg-muted px-3 py-1.5 font-mono text-sm">
+                ABCD-EFGH-IJKL-MNOP
+              </code>
             </div>
             <div className="space-y-2">
               <Label>Kod weryfikacyjny z aplikacji</Label>
@@ -133,7 +155,12 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => toast({ title: 'Kod wysłany', description: 'Kod weryfikacyjny został wysłany na podany numer.' })}
+              onClick={() =>
+                toast({
+                  title: 'Kod wysłany',
+                  description: 'Kod weryfikacyjny został wysłany na podany numer.',
+                })
+              }
               disabled={!phoneNumber}
             >
               Wyślij kod SMS
@@ -148,13 +175,19 @@ export const TwoFASetupDialog = ({ open, onOpenChange, onSetupComplete }: TwoFAS
         <DialogFooter>
           {step === 1 ? (
             <>
-              <Button variant="outline" onClick={() => handleClose(false)}>Anuluj</Button>
+              <Button variant="outline" onClick={() => handleClose(false)}>
+                Anuluj
+              </Button>
               <Button onClick={() => setStep(2)}>Dalej</Button>
             </>
           ) : (
             <>
-              <Button variant="outline" onClick={() => setStep(1)}>Wstecz</Button>
-              <Button onClick={handleVerify} disabled={verificationCode.length !== 6}>Weryfikuj i włącz</Button>
+              <Button variant="outline" onClick={() => setStep(1)}>
+                Wstecz
+              </Button>
+              <Button onClick={handleVerify} disabled={verificationCode.length !== 6}>
+                Weryfikuj i włącz
+              </Button>
             </>
           )}
         </DialogFooter>

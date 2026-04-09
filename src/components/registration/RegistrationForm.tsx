@@ -8,19 +8,39 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  ArrowLeft, ArrowRight, Check, Tag, ShoppingBag, AlertCircle,
-  Plus, Minus, Ticket, User, Shield, Users, Building2, Copy,
-  AlertTriangle, CheckCircle2, UserCog, Star
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Tag,
+  ShoppingBag,
+  AlertCircle,
+  Plus,
+  Minus,
+  Ticket,
+  User,
+  Shield,
+  Users,
+  Building2,
+  Copy,
+  AlertTriangle,
+  CheckCircle2,
+  UserCog,
+  Star,
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
-import { getCurrentPrice } from '@/api/mock/helpers';
+import { getCurrentPrice, applyDiscount } from '@/api/mock/helpers';
 import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
-import { applyDiscount } from '@/api/mock/helpers';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
@@ -52,16 +72,29 @@ export interface RegistrationData {
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 63 }, (_, i) => currentYear - 18 - i);
 const months = [
-  { value: '01', label: 'Styczeń' }, { value: '02', label: 'Luty' }, { value: '03', label: 'Marzec' },
-  { value: '04', label: 'Kwiecień' }, { value: '05', label: 'Maj' }, { value: '06', label: 'Czerwiec' },
-  { value: '07', label: 'Lipiec' }, { value: '08', label: 'Sierpień' }, { value: '09', label: 'Wrzesień' },
-  { value: '10', label: 'Październik' }, { value: '11', label: 'Listopad' }, { value: '12', label: 'Grudzień' },
+  { value: '01', label: 'Styczeń' },
+  { value: '02', label: 'Luty' },
+  { value: '03', label: 'Marzec' },
+  { value: '04', label: 'Kwiecień' },
+  { value: '05', label: 'Maj' },
+  { value: '06', label: 'Czerwiec' },
+  { value: '07', label: 'Lipiec' },
+  { value: '08', label: 'Sierpień' },
+  { value: '09', label: 'Wrzesień' },
+  { value: '10', label: 'Październik' },
+  { value: '11', label: 'Listopad' },
+  { value: '12', label: 'Grudzień' },
 ];
 const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
 
 const stepIcons: Record<string, typeof Ticket> = {
-  Dystans: Ticket, Dane: User, Drużyna: Users, Ubezpieczenie: Shield,
-  Gadżety: ShoppingBag, Rabat: Tag, Podsumowanie: Check,
+  Dystans: Ticket,
+  Dane: User,
+  Drużyna: Users,
+  Ubezpieczenie: Shield,
+  Gadżety: ShoppingBag,
+  Rabat: Tag,
+  Podsumowanie: Check,
 };
 
 export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFormProps) => {
@@ -73,38 +106,52 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl">
       {/* Progress bar */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <span className="text-sm font-medium">
-            Krok {form.activeSteps.findIndex(s => s.id === form.step) + 1} z {form.activeSteps.length}
+            Krok {form.activeSteps.findIndex((s) => s.id === form.step) + 1} z{' '}
+            {form.activeSteps.length}
           </span>
           <span className="text-sm text-muted-foreground">
-            {form.activeSteps.find(s => s.id === form.step)?.name}
+            {form.activeSteps.find((s) => s.id === form.step)?.name}
           </span>
         </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
-          <div className="h-full bg-primary transition-all duration-300" style={{ width: `${((form.activeSteps.findIndex(s => s.id === form.step) + 1) / form.activeSteps.length) * 100}%` }} />
+        <div className="h-2 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{
+              width: `${((form.activeSteps.findIndex((s) => s.id === form.step) + 1) / form.activeSteps.length) * 100}%`,
+            }}
+          />
         </div>
       </div>
 
       {/* Step indicators */}
-      <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
+      <div className="mb-8 flex items-center justify-between overflow-x-auto pb-2">
         {form.activeSteps.map((s, index) => {
           const isActive = s.id === form.step;
-          const isCompleted = form.activeSteps.findIndex(as => as.id === form.step) > index;
+          const isCompleted = form.activeSteps.findIndex((as) => as.id === form.step) > index;
           const Icon = stepIcons[s.name] || Ticket;
           return (
             <div key={s.id} className="flex items-center">
-              <div className="flex flex-col items-center min-w-[60px]">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${isActive ? 'bg-primary text-primary-foreground' : ''} ${isCompleted ? 'bg-primary/20 text-primary' : ''} ${!isActive && !isCompleted ? 'bg-muted text-muted-foreground' : ''}`}>
+              <div className="flex min-w-[60px] flex-col items-center">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${isActive ? 'bg-primary text-primary-foreground' : ''} ${isCompleted ? 'bg-primary/20 text-primary' : ''} ${!isActive && !isCompleted ? 'bg-muted text-muted-foreground' : ''}`}
+                >
                   {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                 </div>
-                <span className={`mt-2 text-xs text-center ${isActive ? 'font-semibold text-primary' : 'text-muted-foreground'}`}>{s.name}</span>
+                <span
+                  className={`mt-2 text-center text-xs ${isActive ? 'font-semibold text-primary' : 'text-muted-foreground'}`}
+                >
+                  {s.name}
+                </span>
               </div>
               {index < form.activeSteps.length - 1 && (
-                <div className={`hidden sm:block w-8 md:w-12 h-0.5 mx-1 ${isCompleted ? 'bg-primary' : 'bg-muted'}`} />
+                <div
+                  className={`mx-1 hidden h-0.5 w-8 sm:block md:w-12 ${isCompleted ? 'bg-primary' : 'bg-muted'}`}
+                />
               )}
             </div>
           );
@@ -121,34 +168,44 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
       {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep event={event} form={form} />}
 
       {/* Step 3: Insurance */}
-      {form.step === 3 && form.isStepInActiveSteps(3) && form.hasInsurance && <InsuranceStep form={form} />}
+      {form.step === 3 && form.isStepInActiveSteps(3) && form.hasInsurance && (
+        <InsuranceStep form={form} />
+      )}
 
       {/* Step 4: Merchandise */}
-      {form.step === 4 && form.isStepInActiveSteps(4) && form.hasMerchandise && <MerchandiseStep event={event} form={form} />}
+      {form.step === 4 && form.isStepInActiveSteps(4) && form.hasMerchandise && (
+        <MerchandiseStep event={event} form={form} />
+      )}
 
       {/* Step 5: Discount */}
       {form.step === 5 && form.isStepInActiveSteps(5) && <DiscountStep event={event} form={form} />}
 
       {/* Step 6: Summary */}
-      {form.step === 6 && form.isStepInActiveSteps(6) && form.selectedDistance && <SummaryStep event={event} form={form} />}
+      {form.step === 6 && form.isStepInActiveSteps(6) && form.selectedDistance && (
+        <SummaryStep event={event} form={form} />
+      )}
 
       {/* Navigation */}
-      <div className="flex justify-between mt-6">
+      <div className="mt-6 flex justify-between">
         {form.isFirstStep ? (
-          <Button variant="ghost" onClick={onCancel}>Anuluj</Button>
+          <Button variant="ghost" onClick={onCancel}>
+            Anuluj
+          </Button>
         ) : (
           <Button variant="outline" onClick={form.handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Wstecz
+            <ArrowLeft className="mr-2 h-4 w-4" /> Wstecz
           </Button>
         )}
         {form.isLastStep ? (
           <Button onClick={handleSubmit} disabled={!form.agreedToTerms} size="lg">
-            {event.paymentConfig?.type === 'organizer_bank' ? 'Zapisz się' : `Płacę ${form.totalAmount} zł`}
-            <ArrowRight className="h-4 w-4 ml-2" />
+            {event.paymentConfig?.type === 'organizer_bank'
+              ? 'Zapisz się'
+              : `Płacę ${form.totalAmount} zł`}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button onClick={form.handleNext} disabled={!form.canProceed()}>
-            Dalej <ArrowRight className="h-4 w-4 ml-2" />
+            Dalej <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}
       </div>
@@ -169,40 +226,64 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
     <CardContent>
       <RadioGroup value={form.selectedDistanceId} onValueChange={form.setSelectedDistanceId}>
         <div className="space-y-4">
-          {event.distances.map(distance => {
+          {event.distances.map((distance) => {
             const { price, tierName } = getCurrentPrice(distance);
             const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
             const isFull = spotsLeft !== null && spotsLeft <= 0;
             const mode = distance.priceTierMode || 'date';
             return (
-              <label key={distance.id} className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${form.selectedDistanceId === distance.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'} ${isFull ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <label
+                key={distance.id}
+                className={`flex cursor-pointer items-start gap-4 rounded-lg border-2 p-4 transition-all ${form.selectedDistanceId === distance.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'} ${isFull ? 'cursor-not-allowed opacity-50' : ''}`}
+              >
                 <RadioGroupItem value={distance.id} disabled={isFull} className="mt-1" />
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold">{distance.name}</h4>
-                      <p className="text-sm text-muted-foreground">{distance.length} {distance.unit}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {distance.length} {distance.unit}
+                      </p>
                     </div>
                     <div className="text-right">
                       <div className="text-xl font-bold text-primary">{price} zł</div>
-                      <Badge variant="secondary" className="text-xs">{tierName}</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {tierName}
+                      </Badge>
                     </div>
                   </div>
                   {distance.priceTiers && distance.priceTiers.length > 0 && (
                     <div className="mt-3 space-y-1">
-                      {distance.priceTiers.map(tier => {
+                      {distance.priceTiers.map((tier) => {
                         const isCurrentTier = tier.name === tierName;
-                        const tierPrice = applyDiscount(distance.price, tier.discountType, tier.discountValue);
-                        const isPast = mode === 'date' && tier.endDate ? new Date(tier.endDate) < new Date() : false;
-                        const isOverLimit = mode === 'participants' && tier.participantLimit != null && distance.registeredCount >= tier.participantLimit;
+                        const tierPrice = applyDiscount(
+                          distance.price,
+                          tier.discountType,
+                          tier.discountValue,
+                        );
+                        const isPast =
+                          mode === 'date' && tier.endDate
+                            ? new Date(tier.endDate) < new Date()
+                            : false;
+                        const isOverLimit =
+                          mode === 'participants' &&
+                          tier.participantLimit != null &&
+                          distance.registeredCount >= tier.participantLimit;
                         const dimmed = isPast || isOverLimit;
                         return (
-                          <div key={tier.id} className={`text-xs flex justify-between ${isCurrentTier ? 'text-primary font-medium' : dimmed ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}>
+                          <div
+                            key={tier.id}
+                            className={`flex justify-between text-xs ${isCurrentTier ? 'font-medium text-primary' : dimmed ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}
+                          >
                             <span>{tier.name}</span>
                             <span>
                               {tierPrice} zł
-                              {mode === 'date' && tier.endDate && ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
-                              {mode === 'participants' && tier.participantLimit != null && ` (do ${tier.participantLimit} os.)`}
+                              {mode === 'date' &&
+                                tier.endDate &&
+                                ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
+                              {mode === 'participants' &&
+                                tier.participantLimit != null &&
+                                ` (do ${tier.participantLimit} os.)`}
                             </span>
                           </div>
                         );
@@ -210,10 +291,21 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                    {isFull ? <Badge variant="destructive">Brak miejsc</Badge> : spotsLeft !== null && spotsLeft <= 50 ? <Badge variant="destructive" className="animate-pulse">Ostatnie {spotsLeft} miejsc!</Badge> : <span>{distance.registeredCount} zapisanych{distance.limit && ` / ${distance.limit}`}</span>}
+                    {isFull ? (
+                      <Badge variant="destructive">Brak miejsc</Badge>
+                    ) : spotsLeft !== null && spotsLeft <= 50 ? (
+                      <Badge variant="destructive" className="animate-pulse">
+                        Ostatnie {spotsLeft} miejsc!
+                      </Badge>
+                    ) : (
+                      <span>
+                        {distance.registeredCount} zapisanych
+                        {distance.limit && ` / ${distance.limit}`}
+                      </span>
+                    )}
                   </div>
                   {hasRouteArtifacts(distance) && (
-                    <div className="mt-2" onClick={e => e.preventDefault()}>
+                    <div className="mt-2" onClick={(e) => e.preventDefault()}>
                       <DistanceRouteDialog distance={distance} />
                     </div>
                   )}
@@ -225,46 +317,71 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
       </RadioGroup>
 
       {/* VIP Price Selection */}
-      {form.selectedDistance && (() => {
-        const { price: tierPrice } = getCurrentPrice(form.selectedDistance);
-        const vipOptions = form.selectedDistance.vipPrices || [];
-        if (vipOptions.length === 0) return null;
-        return (
-          <div className="mt-4 p-4 border rounded-lg space-y-3">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-yellow-500" />
-              <Label className="text-sm font-medium">Ceny specjalne (VIP)</Label>
-            </div>
-            <p className="text-xs text-muted-foreground">Jeśli kwalifikujesz się do ceny specjalnej, wybierz odpowiednią opcję poniżej.</p>
-            <RadioGroup value={form.selectedVipId} onValueChange={(v) => { form.setSelectedVipId(v); form.setVipCustomFieldValue(''); }}>
-              <div className="space-y-2">
-                <label className="flex items-center gap-3 p-2 rounded-md border cursor-pointer hover:bg-muted/50">
-                  <RadioGroupItem value="" />
-                  <span className="text-sm">Cena standardowa — {tierPrice} zł</span>
-                </label>
-                {vipOptions.map(vip => {
-                  const vipFinalPrice = applyDiscount(form.selectedDistance!.price, vip.discountType, vip.discountValue);
-                  return (
-                    <div key={vip.id}>
-                      <label className="flex items-center gap-3 p-2 rounded-md border cursor-pointer hover:bg-muted/50">
-                        <RadioGroupItem value={vip.id} />
-                        <span className="text-sm flex-1">{vip.name}</span>
-                        <span className="text-sm font-semibold text-primary">{vipFinalPrice} zł</span>
-                      </label>
-                      {form.selectedVipId === vip.id && vip.customFieldLabel && (
-                        <div className="ml-7 mt-2 space-y-1">
-                          <Label className="text-xs">{vip.customFieldLabel} {vip.customFieldRequired && <span className="text-destructive">*</span>}</Label>
-                          <Input value={form.vipCustomFieldValue} onChange={(e) => form.setVipCustomFieldValue(e.target.value)} placeholder={vip.customFieldLabel} className="h-8 text-sm" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+      {form.selectedDistance &&
+        (() => {
+          const { price: tierPrice } = getCurrentPrice(form.selectedDistance);
+          const vipOptions = form.selectedDistance.vipPrices || [];
+          if (vipOptions.length === 0) return null;
+          return (
+            <div className="mt-4 space-y-3 rounded-lg border p-4">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <Label className="text-sm font-medium">Ceny specjalne (VIP)</Label>
               </div>
-            </RadioGroup>
-          </div>
-        );
-      })()}
+              <p className="text-xs text-muted-foreground">
+                Jeśli kwalifikujesz się do ceny specjalnej, wybierz odpowiednią opcję poniżej.
+              </p>
+              <RadioGroup
+                value={form.selectedVipId}
+                onValueChange={(v) => {
+                  form.setSelectedVipId(v);
+                  form.setVipCustomFieldValue('');
+                }}
+              >
+                <div className="space-y-2">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
+                    <RadioGroupItem value="" />
+                    <span className="text-sm">Cena standardowa — {tierPrice} zł</span>
+                  </label>
+                  {vipOptions.map((vip) => {
+                    const vipFinalPrice = applyDiscount(
+                      form.selectedDistance!.price,
+                      vip.discountType,
+                      vip.discountValue,
+                    );
+                    return (
+                      <div key={vip.id}>
+                        <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
+                          <RadioGroupItem value={vip.id} />
+                          <span className="flex-1 text-sm">{vip.name}</span>
+                          <span className="text-sm font-semibold text-primary">
+                            {vipFinalPrice} zł
+                          </span>
+                        </label>
+                        {form.selectedVipId === vip.id && vip.customFieldLabel && (
+                          <div className="ml-7 mt-2 space-y-1">
+                            <Label className="text-xs">
+                              {vip.customFieldLabel}{' '}
+                              {vip.customFieldRequired && (
+                                <span className="text-destructive">*</span>
+                              )}
+                            </Label>
+                            <Input
+                              value={form.vipCustomFieldValue}
+                              onChange={(e) => form.setVipCustomFieldValue(e.target.value)}
+                              placeholder={vip.customFieldLabel}
+                              className="h-8 text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </RadioGroup>
+            </div>
+          );
+        })()}
     </CardContent>
   </Card>
 );
@@ -283,16 +400,27 @@ const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => 
             <CheckCircle2 className="h-4 w-4 text-success" />
             <AlertTitle className="text-success">Dane pobrane z profilu</AlertTitle>
             <AlertDescription className="text-success/80">
-              Rok urodzenia: <strong>{form.user?.birthYear}</strong> ({currentYear - (form.user?.birthYear || 0)} lat) • Płeć: <strong>{form.user?.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</strong>
+              Rok urodzenia: <strong>{form.user?.birthYear}</strong> (
+              {currentYear - (form.user?.birthYear || 0)} lat) • Płeć:{' '}
+              <strong>{form.user?.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</strong>
             </AlertDescription>
           </Alert>
         ) : (
           <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
             <UserCog className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800 dark:text-amber-200">Uzupełnij swój profil</AlertTitle>
-            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-amber-700 dark:text-amber-300">
-              <span>Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.</span>
-              <Button variant="outline" size="sm" asChild className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900">
+            <AlertTitle className="text-amber-800 dark:text-amber-200">
+              Uzupełnij swój profil
+            </AlertTitle>
+            <AlertDescription className="flex flex-col gap-2 text-amber-700 dark:text-amber-300 sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+              >
                 <Link to="/participant?tab=profile">Przejdź do profilu</Link>
               </Button>
             </AlertDescription>
@@ -305,26 +433,54 @@ const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => 
             <div>
               <Label className="text-xs text-muted-foreground">Dzień</Label>
               <Select value={form.birthDay} onValueChange={form.setBirthDay}>
-                <SelectTrigger><SelectValue placeholder="Dzień" /></SelectTrigger>
-                <SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                <SelectTrigger>
+                  <SelectValue placeholder="Dzień" />
+                </SelectTrigger>
+                <SelectContent>
+                  {days.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Miesiąc</Label>
               <Select value={form.birthMonth} onValueChange={form.setBirthMonth}>
-                <SelectTrigger><SelectValue placeholder="Miesiąc" /></SelectTrigger>
-                <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                <SelectTrigger>
+                  <SelectValue placeholder="Miesiąc" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Rok</Label>
               <Select value={form.birthYear} onValueChange={form.setBirthYear}>
-                <SelectTrigger><SelectValue placeholder="Rok" /></SelectTrigger>
-                <SelectContent>{years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                <SelectTrigger>
+                  <SelectValue placeholder="Rok" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
           </div>
-          {form.age && <p className="text-sm text-muted-foreground">Twój wiek: <span className="font-medium text-foreground">{form.age} lat</span></p>}
+          {form.age && (
+            <p className="text-sm text-muted-foreground">
+              Twój wiek: <span className="font-medium text-foreground">{form.age} lat</span>
+            </p>
+          )}
         </div>
 
         <Separator />
@@ -335,64 +491,103 @@ const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => 
             (() => {
               const userGender = form.user?.gender;
               const userBirthYear = form.birthYear ? parseInt(form.birthYear) : null;
-              const matchedCategory = userGender && userBirthYear
-                ? selectedDistance.ageCategories!.find(cat => cat.gender === userGender && userBirthYear >= cat.birthYearFrom && userBirthYear <= cat.birthYearTo)
-                : null;
+              const matchedCategory =
+                userGender && userBirthYear
+                  ? selectedDistance.ageCategories!.find(
+                      (cat) =>
+                        cat.gender === userGender &&
+                        userBirthYear >= cat.birthYearFrom &&
+                        userBirthYear <= cat.birthYearTo,
+                    )
+                  : null;
               if (matchedCategory && form.selectedCategory !== matchedCategory.name) {
                 setTimeout(() => form.setSelectedCategory(matchedCategory.name), 0);
               }
               return (
                 <>
                   {matchedCategory ? (
-                    <div className="p-3 rounded-lg border-2 border-primary bg-primary/5">
-                      <p className="text-sm text-muted-foreground mb-1">Automatycznie przypisana kategoria:</p>
-                      <p className="font-semibold text-lg">{matchedCategory.name}</p>
-                      <p className="text-xs text-muted-foreground">Płeć: {matchedCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki: {matchedCategory.birthYearFrom}–{matchedCategory.birthYearTo}</p>
+                    <div className="rounded-lg border-2 border-primary bg-primary/5 p-3">
+                      <p className="mb-1 text-sm text-muted-foreground">
+                        Automatycznie przypisana kategoria:
+                      </p>
+                      <p className="text-lg font-semibold">{matchedCategory.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Płeć: {matchedCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki:{' '}
+                        {matchedCategory.birthYearFrom}–{matchedCategory.birthYearTo}
+                      </p>
                     </div>
                   ) : !userGender || !userBirthYear ? (
                     <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
                       <UserCog className="h-4 w-4 text-amber-600" />
-                      <AlertTitle className="text-amber-800 dark:text-amber-200">Uzupełnij profil</AlertTitle>
-                      <AlertDescription className="text-amber-700 dark:text-amber-300">Aby automatycznie przypisać kategorię wiekową, uzupełnij datę urodzenia i płeć w swoim profilu.</AlertDescription>
+                      <AlertTitle className="text-amber-800 dark:text-amber-200">
+                        Uzupełnij profil
+                      </AlertTitle>
+                      <AlertDescription className="text-amber-700 dark:text-amber-300">
+                        Aby automatycznie przypisać kategorię wiekową, uzupełnij datę urodzenia i
+                        płeć w swoim profilu.
+                      </AlertDescription>
                     </Alert>
                   ) : (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>Brak pasującej kategorii</AlertTitle>
-                      <AlertDescription>Nie znaleziono pasującej kategorii wiekowej dla Twoich danych (rok: {userBirthYear}, płeć: {userGender === 'K' ? 'Kobieta' : 'Mężczyzna'}).</AlertDescription>
+                      <AlertDescription>
+                        Nie znaleziono pasującej kategorii wiekowej dla Twoich danych (rok:{' '}
+                        {userBirthYear}, płeć: {userGender === 'K' ? 'Kobieta' : 'Mężczyzna'}).
+                      </AlertDescription>
                     </Alert>
                   )}
-                  {selectedDistance.specialCategories && selectedDistance.specialCategories.length > 0 && (
-                    <div className="mt-4 space-y-3">
-                      <Separator />
-                      <Label className="text-base font-medium">Kategorie specjalne (opcjonalne)</Label>
-                      <div className="space-y-2">
-                        {selectedDistance.specialCategories.map(cat => (
-                          <label key={cat.id} className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50">
-                            <Checkbox
-                              checked={form.selectedCategory.includes(cat.name)}
-                              onCheckedChange={(checked) => {
-                                if (checked) form.setSelectedCategory(prev => prev ? `${prev}, ${cat.name}` : cat.name);
-                                else form.setSelectedCategory(prev => prev.replace(`, ${cat.name}`, '').replace(cat.name, '').replace(/^, |, $/g, ''));
-                              }}
-                            />
-                            <div>
-                              <span className="font-medium">{cat.name}</span>
-                              {cat.description && <p className="text-xs text-muted-foreground">{cat.description}</p>}
-                            </div>
-                          </label>
-                        ))}
+                  {selectedDistance.specialCategories &&
+                    selectedDistance.specialCategories.length > 0 && (
+                      <div className="mt-4 space-y-3">
+                        <Separator />
+                        <Label className="text-base font-medium">
+                          Kategorie specjalne (opcjonalne)
+                        </Label>
+                        <div className="space-y-2">
+                          {selectedDistance.specialCategories.map((cat) => (
+                            <label
+                              key={cat.id}
+                              className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                            >
+                              <Checkbox
+                                checked={form.selectedCategory.includes(cat.name)}
+                                onCheckedChange={(checked) => {
+                                  if (checked)
+                                    form.setSelectedCategory((prev) =>
+                                      prev ? `${prev}, ${cat.name}` : cat.name,
+                                    );
+                                  else
+                                    form.setSelectedCategory((prev) =>
+                                      prev
+                                        .replace(`, ${cat.name}`, '')
+                                        .replace(cat.name, '')
+                                        .replace(/^, |, $/g, ''),
+                                    );
+                                }}
+                              />
+                              <div>
+                                <span className="font-medium">{cat.name}</span>
+                                {cat.description && (
+                                  <p className="text-xs text-muted-foreground">{cat.description}</p>
+                                )}
+                              </div>
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </>
               );
             })()
           ) : (
             <RadioGroup value={form.selectedCategory} onValueChange={form.setSelectedCategory}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {selectedDistance.categories.map(category => (
-                  <label key={category} className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${form.selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {selectedDistance.categories.map((category) => (
+                  <label
+                    key={category}
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${form.selectedCategory === category ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                  >
                     <RadioGroupItem value={category} />
                     <span className="font-medium">{category}</span>
                   </label>
@@ -409,56 +604,107 @@ const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => 
 const TeamStep = ({ event, form }: { event: Event; form: FormHook }) => (
   <Card>
     <CardHeader>
-      <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Zapis drużynowy (opcjonalne)</CardTitle>
-      <CardDescription>Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych</CardDescription>
+      <CardTitle className="flex items-center gap-2">
+        <Users className="h-5 w-5" /> Zapis drużynowy (opcjonalne)
+      </CardTitle>
+      <CardDescription>
+        Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych
+      </CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
-      <div className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${form.wantsTeam ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onClick={() => form.setWantsTeam(!form.wantsTeam)}>
+      <div
+        className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsTeam ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+        onClick={() => form.setWantsTeam(!form.wantsTeam)}
+      >
         <div className="flex items-start gap-3">
-          <Checkbox id="team" checked={form.wantsTeam} onCheckedChange={(checked) => form.setWantsTeam(checked === true)} />
+          <Checkbox
+            id="team"
+            checked={form.wantsTeam}
+            onCheckedChange={(checked) => form.setWantsTeam(checked === true)}
+          />
           <div className="flex-1">
-            <label htmlFor="team" className="font-medium cursor-pointer">Chcę zapisać się jako część drużyny</label>
-            <p className="text-sm text-muted-foreground mt-1">Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.</p>
+            <label htmlFor="team" className="cursor-pointer font-medium">
+              Chcę zapisać się jako część drużyny
+            </label>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.
+            </p>
           </div>
         </div>
       </div>
 
       {form.wantsTeam && (
-        <div className="space-y-4 pl-2 border-l-2 border-primary/30 ml-2">
-          <RadioGroup value={form.teamMode} onValueChange={(v) => form.setTeamMode(v as 'create' | 'join')}>
+        <div className="ml-2 space-y-4 border-l-2 border-primary/30 pl-2">
+          <RadioGroup
+            value={form.teamMode}
+            onValueChange={(v) => form.setTeamMode(v as 'create' | 'join')}
+          >
             <div className="space-y-3">
-              <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${form.teamMode === 'create' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+              <label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${form.teamMode === 'create' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+              >
                 <RadioGroupItem value="create" />
                 <span className="font-medium">Utwórz nową drużynę</span>
               </label>
               {form.teamMode === 'create' && (
                 <div className="ml-7 space-y-2">
                   <Label htmlFor="newTeamName">Nazwa drużyny / klubu</Label>
-                  <Input id="newTeamName" placeholder="np. KB Górskie Wilki" value={form.teamName} onChange={(e) => form.setTeamName(e.target.value)} className={form.teamNameError ? 'border-destructive' : ''} />
-                  {form.teamNameError && <p className="text-sm text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" />{form.teamNameError}</p>}
-                  <p className="text-xs text-muted-foreground">3-50 znaków. Użyj tej samej nazwy co pozostali członkowie drużyny.</p>
+                  <Input
+                    id="newTeamName"
+                    placeholder="np. KB Górskie Wilki"
+                    value={form.teamName}
+                    onChange={(e) => form.setTeamName(e.target.value)}
+                    className={form.teamNameError ? 'border-destructive' : ''}
+                  />
+                  {form.teamNameError && (
+                    <p className="flex items-center gap-1 text-sm text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      {form.teamNameError}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    3-50 znaków. Użyj tej samej nazwy co pozostali członkowie drużyny.
+                  </p>
                 </div>
               )}
             </div>
             <div className="space-y-3">
-              <label className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${form.teamMode === 'join' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'} ${form.existingTeams.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${form.teamMode === 'join' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'} ${form.existingTeams.length === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
+              >
                 <RadioGroupItem value="join" disabled={form.existingTeams.length === 0} />
                 <div>
                   <span className="font-medium">Dołącz do istniejącej drużyny</span>
-                  {form.existingTeams.length === 0 && <p className="text-xs text-muted-foreground">Brak drużyn zapisanych na te zawody</p>}
+                  {form.existingTeams.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Brak drużyn zapisanych na te zawody
+                    </p>
+                  )}
                 </div>
               </label>
               {form.teamMode === 'join' && form.existingTeams.length > 0 && (
                 <div className="ml-7 space-y-2">
                   <Label>Wybierz drużynę</Label>
-                  <Select value={form.selectedExistingTeam} onValueChange={form.setSelectedExistingTeam}>
-                    <SelectTrigger><SelectValue placeholder="Wybierz drużynę..." /></SelectTrigger>
+                  <Select
+                    value={form.selectedExistingTeam}
+                    onValueChange={form.setSelectedExistingTeam}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz drużynę..." />
+                    </SelectTrigger>
                     <SelectContent>
-                      {form.existingTeams.map(team => (
+                      {form.existingTeams.map((team) => (
                         <SelectItem key={team.name} value={team.name}>
                           <div className="flex items-center gap-2">
                             <span>{team.name}</span>
-                            <Badge variant="secondary" className="text-xs">{team.memberCount} {team.memberCount === 1 ? 'osoba' : team.memberCount < 5 ? 'osoby' : 'osób'}</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {team.memberCount}{' '}
+                              {team.memberCount === 1
+                                ? 'osoba'
+                                : team.memberCount < 5
+                                  ? 'osoby'
+                                  : 'osób'}
+                            </Badge>
                           </div>
                         </SelectItem>
                       ))}
@@ -471,19 +717,28 @@ const TeamStep = ({ event, form }: { event: Event; form: FormHook }) => (
         </div>
       )}
 
-      <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-        <h4 className="font-semibold flex items-center gap-2"><Tag className="h-4 w-4" /> Zniżki grupowe</h4>
-        <p className="text-sm text-muted-foreground">Zniżki są naliczane automatycznie po zapisaniu minimalnej liczby osób z tej samej drużyny:</p>
-        <ul className="text-sm space-y-2">
-          {mockGroupDiscountCodes.map(discount => (
+      <div className="space-y-3 rounded-lg bg-muted/50 p-4">
+        <h4 className="flex items-center gap-2 font-semibold">
+          <Tag className="h-4 w-4" /> Zniżki grupowe
+        </h4>
+        <p className="text-sm text-muted-foreground">
+          Zniżki są naliczane automatycznie po zapisaniu minimalnej liczby osób z tej samej drużyny:
+        </p>
+        <ul className="space-y-2 text-sm">
+          {mockGroupDiscountCodes.map((discount) => (
             <li key={discount.id} className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono">{discount.minParticipants}+ osób</Badge>
-              <span className="text-primary font-medium">-{discount.discountValue}%</span>
+              <Badge variant="secondary" className="font-mono">
+                {discount.minParticipants}+ osób
+              </Badge>
+              <span className="font-medium text-primary">-{discount.discountValue}%</span>
               <span className="text-muted-foreground">rabatu</span>
             </li>
           ))}
         </ul>
-        <p className="text-xs text-muted-foreground mt-2">💡 Zniżka zostanie przypisana do wszystkich członków drużyny po osiągnięciu minimalnej liczby zapisanych.</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          💡 Zniżka zostanie przypisana do wszystkich członków drużyny po osiągnięciu minimalnej
+          liczby zapisanych.
+        </p>
       </div>
     </CardContent>
   </Card>
@@ -492,27 +747,52 @@ const TeamStep = ({ event, form }: { event: Event; form: FormHook }) => (
 const InsuranceStep = ({ form }: { form: FormHook }) => (
   <Card>
     <CardHeader>
-      <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> Ubezpieczenie NNW (opcjonalne)</CardTitle>
+      <CardTitle className="flex items-center gap-2">
+        <Shield className="h-5 w-5" /> Ubezpieczenie NNW (opcjonalne)
+      </CardTitle>
       <CardDescription>Zabezpiecz się na wypadek kontuzji podczas zawodów</CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
-      <div className="bg-muted/50 rounded-lg p-4">
+      <div className="rounded-lg bg-muted/50 p-4">
         <RichTextDisplay html={mockGlobalInsuranceSettings.infoHtml} />
       </div>
-      <div className={`border-2 rounded-lg p-4 transition-all cursor-pointer ${form.wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`} onClick={() => form.setWantsInsurance(!form.wantsInsurance)}>
+      <div
+        className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+        onClick={() => form.setWantsInsurance(!form.wantsInsurance)}
+      >
         <div className="flex items-start gap-3">
-          <Checkbox id="insurance" checked={form.wantsInsurance} onCheckedChange={(checked) => form.setWantsInsurance(checked === true)} />
+          <Checkbox
+            id="insurance"
+            checked={form.wantsInsurance}
+            onCheckedChange={(checked) => form.setWantsInsurance(checked === true)}
+          />
           <div className="flex-1">
-            <label htmlFor="insurance" className="font-medium cursor-pointer">Chcę wykupić ubezpieczenie NNW</label>
+            <label htmlFor="insurance" className="cursor-pointer font-medium">
+              Chcę wykupić ubezpieczenie NNW
+            </label>
             {form.age && (
               <div className="mt-2 text-sm">
                 {form.age > mockGlobalInsuranceSettings.maxAge ? (
-                  <span className="text-destructive">Ubezpieczenie niedostępne dla osób powyżej {mockGlobalInsuranceSettings.maxAge} lat</span>
+                  <span className="text-destructive">
+                    Ubezpieczenie niedostępne dla osób powyżej {mockGlobalInsuranceSettings.maxAge}{' '}
+                    lat
+                  </span>
                 ) : (
                   <>
-                    <span className="text-muted-foreground">Składka dla Twojego wieku ({form.age} lat): </span>
-                    <span className="font-bold text-primary">{Math.round(mockGlobalInsuranceSettings.baseFee + Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier)} zł</span>
-                    <p className="text-xs text-muted-foreground mt-1">(składka bazowa {mockGlobalInsuranceSettings.baseFee} zł + dodatek wiekowy {Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier} zł)</p>
+                    <span className="text-muted-foreground">
+                      Składka dla Twojego wieku ({form.age} lat):{' '}
+                    </span>
+                    <span className="font-bold text-primary">
+                      {Math.round(
+                        mockGlobalInsuranceSettings.baseFee +
+                          Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier,
+                      )}{' '}
+                      zł
+                    </span>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      (składka bazowa {mockGlobalInsuranceSettings.baseFee} zł + dodatek wiekowy{' '}
+                      {Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier} zł)
+                    </p>
                   </>
                 )}
               </div>
@@ -527,18 +807,31 @@ const InsuranceStep = ({ form }: { form: FormHook }) => (
 const MerchandiseStep = ({ event, form }: { event: Event; form: FormHook }) => (
   <Card>
     <CardHeader>
-      <CardTitle className="flex items-center gap-2"><ShoppingBag className="h-5 w-5" /> Dodatkowe produkty (opcjonalne)</CardTitle>
+      <CardTitle className="flex items-center gap-2">
+        <ShoppingBag className="h-5 w-5" /> Dodatkowe produkty (opcjonalne)
+      </CardTitle>
       <CardDescription>Zamów oficjalne gadżety razem z pakietem startowym</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      {event.merchandise?.map(item => {
-        const orderKey = Array.from(form.merchandiseOrders.keys()).find(k => k.startsWith(item.id));
+      {event.merchandise?.map((item) => {
+        const orderKey = Array.from(form.merchandiseOrders.keys()).find((k) =>
+          k.startsWith(item.id),
+        );
         const existingOrder = orderKey ? form.merchandiseOrders.get(orderKey) : undefined;
-        return <MerchandiseItem key={item.id} item={item} order={existingOrder} onUpdate={(qty, size, color, colorHex) => form.updateMerchandise(item, qty, size, color, colorHex)} />;
+        return (
+          <MerchandiseItem
+            key={item.id}
+            item={item}
+            order={existingOrder}
+            onUpdate={(qty, size, color, colorHex) =>
+              form.updateMerchandise(item, qty, size, color, colorHex)
+            }
+          />
+        );
       })}
       {form.merchandiseTotal > 0 && (
-        <div className="bg-muted/50 rounded-lg p-4 mt-4">
-          <div className="flex justify-between items-center font-semibold">
+        <div className="mt-4 rounded-lg bg-muted/50 p-4">
+          <div className="flex items-center justify-between font-semibold">
             <span>Suma produktów:</span>
             <span className="text-primary">{form.merchandiseTotal} zł</span>
           </div>
@@ -551,30 +844,54 @@ const MerchandiseStep = ({ event, form }: { event: Event; form: FormHook }) => (
 const DiscountStep = ({ event, form }: { event: Event; form: FormHook }) => (
   <Card>
     <CardHeader>
-      <CardTitle className="flex items-center gap-2"><Tag className="h-5 w-5" /> Kod rabatowy (opcjonalne)</CardTitle>
+      <CardTitle className="flex items-center gap-2">
+        <Tag className="h-5 w-5" /> Kod rabatowy (opcjonalne)
+      </CardTitle>
       <CardDescription>Jeśli posiadasz kod rabatowy, wpisz go tutaj</CardDescription>
     </CardHeader>
     <CardContent>
       {form.appliedDiscount ? (
-        <div className="bg-success/10 border border-success/30 rounded-lg p-4">
+        <div className="rounded-lg border border-success/30 bg-success/10 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-success">
               <Check className="h-5 w-5" />
-              <span className="font-medium">Kod <span className="font-bold">{form.discountCode.toUpperCase()}</span> zastosowany!</span>
+              <span className="font-medium">
+                Kod <span className="font-bold">{form.discountCode.toUpperCase()}</span>{' '}
+                zastosowany!
+              </span>
             </div>
-            <Button variant="ghost" size="sm" onClick={form.handleRemoveDiscount}>Usuń</Button>
+            <Button variant="ghost" size="sm" onClick={form.handleRemoveDiscount}>
+              Usuń
+            </Button>
           </div>
-          <p className="text-sm text-success mt-1">Oszczędzasz {form.discountAmount} zł</p>
+          <p className="mt-1 text-sm text-success">Oszczędzasz {form.discountAmount} zł</p>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="flex gap-2">
-            <Input value={form.discountCode} onChange={(e) => { form.setDiscountCode(e.target.value.toUpperCase()); form.setDiscountError(''); }} placeholder="Wpisz kod rabatowy" className="uppercase" />
-            <Button onClick={form.handleApplyDiscount} variant="secondary">Zastosuj</Button>
+            <Input
+              value={form.discountCode}
+              onChange={(e) => {
+                form.setDiscountCode(e.target.value.toUpperCase());
+                form.setDiscountError('');
+              }}
+              placeholder="Wpisz kod rabatowy"
+              className="uppercase"
+            />
+            <Button onClick={form.handleApplyDiscount} variant="secondary">
+              Zastosuj
+            </Button>
           </div>
-          {form.discountError && <div className="flex items-center gap-2 text-destructive text-sm"><AlertCircle className="h-4 w-4" />{form.discountError}</div>}
-          {event.discountCodes && event.discountCodes.filter(dc => dc.active).length > 0 && (
-            <p className="text-sm text-muted-foreground">💡 Dostępne są kody rabatowe dla tego wydarzenia</p>
+          {form.discountError && (
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              {form.discountError}
+            </div>
+          )}
+          {event.discountCodes && event.discountCodes.filter((dc) => dc.active).length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              💡 Dostępne są kody rabatowe dla tego wydarzenia
+            </p>
           )}
         </div>
       )}
@@ -587,39 +904,119 @@ const SummaryStep = ({ event, form }: { event: Event; form: FormHook }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Check className="h-5 w-5" /> Podsumowanie zamówienia</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Check className="h-5 w-5" /> Podsumowanie zamówienia
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-semibold text-lg">{event.name}</h4>
-          <p className="text-muted-foreground">{format(new Date(event.date), 'd MMMM yyyy', { locale: pl })} • {event.city}</p>
+        <div className="rounded-lg bg-muted/50 p-4">
+          <h4 className="text-lg font-semibold">{event.name}</h4>
+          <p className="text-muted-foreground">
+            {format(new Date(event.date), 'd MMMM yyyy', { locale: pl })} • {event.city}
+          </p>
         </div>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <div><span className="font-medium">{selectedDistance.name}</span><span className="text-muted-foreground ml-2">({selectedDistance.length} {selectedDistance.unit})</span></div>
+            <div>
+              <span className="font-medium">{selectedDistance.name}</span>
+              <span className="ml-2 text-muted-foreground">
+                ({selectedDistance.length} {selectedDistance.unit})
+              </span>
+            </div>
             <span>{form.distancePrice} zł</span>
           </div>
-          <div className="flex justify-between text-muted-foreground"><span>Kategoria: {form.selectedCategory}</span></div>
+          <div className="flex justify-between text-muted-foreground">
+            <span>Kategoria: {form.selectedCategory}</span>
+          </div>
           {form.getFinalTeamName() && (
             <div className="flex justify-between text-muted-foreground">
-              <span className="flex items-center gap-2"><Users className="h-4 w-4" /> Drużyna: {form.getFinalTeamName()}</span>
+              <span className="flex items-center gap-2">
+                <Users className="h-4 w-4" /> Drużyna: {form.getFinalTeamName()}
+              </span>
             </div>
           )}
-          {form.insurancePrice > 0 && (<><Separator /><div className="flex justify-between"><span className="flex items-center gap-2"><Shield className="h-4 w-4" /> Ubezpieczenie NNW</span><span>{form.insurancePrice} zł</span></div></>)}
-          {form.merchandiseOrders.size > 0 && (<><Separator /><div className="space-y-2"><span className="font-medium text-sm">Produkty dodatkowe:</span>{Array.from(form.merchandiseOrders.values()).map((order, i) => (<div key={i} className="flex justify-between text-sm"><span>{order.merchandiseName}{order.size && ` (${order.size})`}{order.color && `, ${order.color}`}{order.quantity > 1 && ` x${order.quantity}`}</span><span>{order.price} zł</span></div>))}</div></>)}
-          {form.discountAmount > 0 && (<><Separator /><div className="flex justify-between text-success"><span>Rabat ({form.discountCode})</span><span>-{form.discountAmount} zł</span></div></>)}
+          {form.insurancePrice > 0 && (
+            <>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" /> Ubezpieczenie NNW
+                </span>
+                <span>{form.insurancePrice} zł</span>
+              </div>
+            </>
+          )}
+          {form.merchandiseOrders.size > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <span className="text-sm font-medium">Produkty dodatkowe:</span>
+                {Array.from(form.merchandiseOrders.values()).map((order, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span>
+                      {order.merchandiseName}
+                      {order.size && ` (${order.size})`}
+                      {order.color && `, ${order.color}`}
+                      {order.quantity > 1 && ` x${order.quantity}`}
+                    </span>
+                    <span>{order.price} zł</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {form.discountAmount > 0 && (
+            <>
+              <Separator />
+              <div className="flex justify-between text-success">
+                <span>Rabat ({form.discountCode})</span>
+                <span>-{form.discountAmount} zł</span>
+              </div>
+            </>
+          )}
           <Separator />
-          <div className="flex justify-between text-xl font-bold"><span>Do zapłaty</span><span className="text-primary">{form.totalAmount} zł</span></div>
+          <div className="flex justify-between text-xl font-bold">
+            <span>Do zapłaty</span>
+            <span className="text-primary">{form.totalAmount} zł</span>
+          </div>
         </div>
-        {event.paymentConfig?.type === 'organizer_bank' && <BankTransferDetails event={event} user={form.user} selectedDistance={selectedDistance} totalAmount={form.totalAmount} />}
+        {event.paymentConfig?.type === 'organizer_bank' && (
+          <BankTransferDetails
+            event={event}
+            user={form.user}
+            selectedDistance={selectedDistance}
+            totalAmount={form.totalAmount}
+          />
+        )}
         <div className="flex items-start gap-3 pt-4">
-          <Checkbox id="terms" checked={form.agreedToTerms} onCheckedChange={(checked) => form.setAgreedToTerms(checked === true)} />
-          <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">Akceptuję <a href="#" className="text-primary underline">regulamin zawodów</a> oraz <a href="#" className="text-primary underline">politykę prywatności</a>. Oświadczam, że będę startować na własną odpowiedzialność.</label>
+          <Checkbox
+            id="terms"
+            checked={form.agreedToTerms}
+            onCheckedChange={(checked) => form.setAgreedToTerms(checked === true)}
+          />
+          <label htmlFor="terms" className="cursor-pointer text-sm text-muted-foreground">
+            Akceptuję{' '}
+            <a href="#" className="text-primary underline">
+              regulamin zawodów
+            </a>{' '}
+            oraz{' '}
+            <a href="#" className="text-primary underline">
+              politykę prywatności
+            </a>
+            . Oświadczam, że będę startować na własną odpowiedzialność.
+          </label>
         </div>
         {event.requireFinalAcceptance && event.finalAcceptanceHtml && (
-          <div className="flex items-start gap-3 pt-2 border-t mt-4">
-            <Checkbox id="finalAcceptance" checked={form.agreedToFinalAcceptance} onCheckedChange={(checked) => form.setAgreedToFinalAcceptance(checked === true)} className="mt-1" />
-            <label htmlFor="finalAcceptance" className="text-sm cursor-pointer"><RichTextDisplay html={event.finalAcceptanceHtml} className="text-sm" /></label>
+          <div className="mt-4 flex items-start gap-3 border-t pt-2">
+            <Checkbox
+              id="finalAcceptance"
+              checked={form.agreedToFinalAcceptance}
+              onCheckedChange={(checked) => form.setAgreedToFinalAcceptance(checked === true)}
+              className="mt-1"
+            />
+            <label htmlFor="finalAcceptance" className="cursor-pointer text-sm">
+              <RichTextDisplay html={event.finalAcceptanceHtml} className="text-sm" />
+            </label>
           </div>
         )}
       </CardContent>
@@ -636,7 +1033,12 @@ interface BankTransferDetailsProps {
   totalAmount: number;
 }
 
-const BankTransferDetails = ({ event, user, selectedDistance, totalAmount }: BankTransferDetailsProps) => {
+const BankTransferDetails = ({
+  event,
+  user,
+  selectedDistance,
+  totalAmount,
+}: BankTransferDetailsProps) => {
   const generateTransferTitle = () => {
     if (!event.paymentConfig?.transferTitle) return `${event.name} - ${user?.name || 'Uczestnik'}`;
     return event.paymentConfig.transferTitle
@@ -645,19 +1047,84 @@ const BankTransferDetails = ({ event, user, selectedDistance, totalAmount }: Ban
       .replace('{distanceName}', selectedDistance?.name || '');
   };
   const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => { toast({ title: 'Skopiowano', description: `${label} został skopiowany do schowka` }); });
+    navigator.clipboard.writeText(text).then(() => {
+      toast({ title: 'Skopiowano', description: `${label} został skopiowany do schowka` });
+    });
   };
   if (!event.paymentConfig) return null;
   return (
-    <div className="mt-6 p-4 bg-warning/10 border border-warning/30 rounded-lg space-y-4">
-      <div className="flex items-center gap-2 text-warning"><Building2 className="h-5 w-5" /><h4 className="font-semibold">Dane do przelewu bankowego</h4></div>
-      <div className="space-y-3 text-sm">
-        <div className="flex justify-between items-center"><div className="min-w-0 flex-1"><p className="text-muted-foreground text-xs">Numer konta</p><p className="font-mono font-medium truncate">{event.paymentConfig.bankAccountNumber}</p></div><Button variant="ghost" size="sm" onClick={() => copyToClipboard(event.paymentConfig!.bankAccountNumber || '', 'Numer konta')}><Copy className="h-4 w-4" /></Button></div>
-        <div className="flex justify-between items-center"><div className="min-w-0 flex-1"><p className="text-muted-foreground text-xs">Odbiorca</p><p className="font-medium truncate">{event.paymentConfig.bankAccountHolder}</p></div><Button variant="ghost" size="sm" onClick={() => copyToClipboard(event.paymentConfig!.bankAccountHolder || '', 'Odbiorca')}><Copy className="h-4 w-4" /></Button></div>
-        <div className="flex justify-between items-center"><div className="min-w-0 flex-1"><p className="text-muted-foreground text-xs">Tytuł przelewu</p><p className="font-medium truncate">{generateTransferTitle()}</p></div><Button variant="ghost" size="sm" onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}><Copy className="h-4 w-4" /></Button></div>
-        <div className="flex justify-between items-center"><div className="min-w-0 flex-1"><p className="text-muted-foreground text-xs">Kwota</p><p className="font-bold text-lg">{totalAmount.toFixed(2)} PLN</p></div><Button variant="ghost" size="sm" onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}><Copy className="h-4 w-4" /></Button></div>
+    <div className="mt-6 space-y-4 rounded-lg border border-warning/30 bg-warning/10 p-4">
+      <div className="flex items-center gap-2 text-warning">
+        <Building2 className="h-5 w-5" />
+        <h4 className="font-semibold">Dane do przelewu bankowego</h4>
       </div>
-      <div className="flex items-start gap-2 text-xs text-warning pt-2 border-t border-warning/30"><AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" /><p>Płatność przelewem bankowym wymaga ręcznego potwierdzenia przez organizatora. Twój zapis zostanie potwierdzony po zaksięgowaniu wpłaty.</p></div>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Numer konta</p>
+            <p className="truncate font-mono font-medium">
+              {event.paymentConfig.bankAccountNumber}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              copyToClipboard(event.paymentConfig!.bankAccountNumber || '', 'Numer konta')
+            }
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Odbiorca</p>
+            <p className="truncate font-medium">{event.paymentConfig.bankAccountHolder}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              copyToClipboard(event.paymentConfig!.bankAccountHolder || '', 'Odbiorca')
+            }
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Tytuł przelewu</p>
+            <p className="truncate font-medium">{generateTransferTitle()}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs text-muted-foreground">Kwota</p>
+            <p className="text-lg font-bold">{totalAmount.toFixed(2)} PLN</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="flex items-start gap-2 border-t border-warning/30 pt-2 text-xs text-warning">
+        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+        <p>
+          Płatność przelewem bankowym wymaga ręcznego potwierdzenia przez organizatora. Twój zapis
+          zostanie potwierdzony po zaksięgowaniu wpłaty.
+        </p>
+      </div>
     </div>
   );
 };
@@ -669,29 +1136,58 @@ interface MerchandiseItemProps {
 }
 
 const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
-  const [selectedSize, setSelectedSize] = useState(order?.size || (item.sizes.length > 0 ? item.sizes[0] : undefined));
-  const [selectedColor, setSelectedColor] = useState(order?.color || (item.colors.length > 0 ? item.colors[0].name : undefined));
+  const [selectedSize, setSelectedSize] = useState(
+    order?.size || (item.sizes.length > 0 ? item.sizes[0] : undefined),
+  );
+  const [selectedColor, setSelectedColor] = useState(
+    order?.color || (item.colors.length > 0 ? item.colors[0].name : undefined),
+  );
   const [quantity, setQuantity] = useState(order?.quantity || 0);
-  const selectedColorHex = item.colors.find(c => c.name === selectedColor)?.hex;
-  const handleQuantityChange = (newQty: number) => { setQuantity(Math.max(0, newQty)); onUpdate(Math.max(0, newQty), selectedSize, selectedColor, selectedColorHex); };
-  const handleSizeChange = (size: string) => { setSelectedSize(size); if (quantity > 0) onUpdate(quantity, size, selectedColor, selectedColorHex); };
-  const handleColorChange = (color: string) => { setSelectedColor(color); const hex = item.colors.find(c => c.name === color)?.hex; if (quantity > 0) onUpdate(quantity, selectedSize, color, hex); };
+  const selectedColorHex = item.colors.find((c) => c.name === selectedColor)?.hex;
+  const handleQuantityChange = (newQty: number) => {
+    setQuantity(Math.max(0, newQty));
+    onUpdate(Math.max(0, newQty), selectedSize, selectedColor, selectedColorHex);
+  };
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    if (quantity > 0) onUpdate(quantity, size, selectedColor, selectedColorHex);
+  };
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    const hex = item.colors.find((c) => c.name === color)?.hex;
+    if (quantity > 0) onUpdate(quantity, selectedSize, color, hex);
+  };
 
   return (
-    <div className={`border rounded-lg p-4 transition-colors ${quantity > 0 ? 'border-primary bg-primary/5' : 'border-border'}`}>
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div
+      className={`rounded-lg border p-4 transition-colors ${quantity > 0 ? 'border-primary bg-primary/5' : 'border-border'}`}
+    >
+      <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex-1 space-y-3">
-          <div className="flex justify-between items-start">
-            <div><h4 className="font-semibold">{item.name}</h4>{item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}</div>
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.description && (
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              )}
+            </div>
             <span className="font-bold text-primary">{item.price} zł</span>
           </div>
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="flex flex-wrap items-end gap-4">
             {item.sizes.length > 0 && (
               <div className="space-y-1">
                 <Label className="text-xs">Rozmiar</Label>
                 <Select value={selectedSize} onValueChange={handleSizeChange}>
-                  <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
-                  <SelectContent>{item.sizes.map(size => <SelectItem key={size} value={size}>{size}</SelectItem>)}</SelectContent>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {item.sizes.map((size) => (
+                      <SelectItem key={size} value={size}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             )}
@@ -699,16 +1195,38 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
               <div className="space-y-1">
                 <Label className="text-xs">Kolor</Label>
                 <div className="flex gap-2">
-                  {item.colors.map(color => (
-                    <button key={color.id} type="button" onClick={() => handleColorChange(color.name)} className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`} style={{ backgroundColor: color.hex }} title={color.name} />
+                  {item.colors.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => handleColorChange(color.name)}
+                      className={`h-8 w-8 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                    />
                   ))}
                 </div>
               </div>
             )}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(quantity - 1)} disabled={quantity === 0}><Minus className="h-4 w-4" /></Button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleQuantityChange(quantity - 1)}
+                disabled={quantity === 0}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
               <span className="w-8 text-center font-semibold">{quantity}</span>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(quantity + 1)}><Plus className="h-4 w-4" /></Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => handleQuantityChange(quantity + 1)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>

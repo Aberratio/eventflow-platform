@@ -16,7 +16,16 @@ import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { CheckCircle, XCircle, Calendar, MapPin, Clock, AlertCircle, Eye, FileText } from 'lucide-react';
+import {
+  CheckCircle,
+  XCircle,
+  Calendar,
+  MapPin,
+  Clock,
+  AlertCircle,
+  Eye,
+  FileText,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ModeratorModerationTab = () => {
@@ -25,12 +34,12 @@ export const ModeratorModerationTab = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const pendingEvents = events.filter(e => e.status === 'awaiting_approval');
+  const pendingEvents = events.filter((e) => e.status === 'awaiting_approval');
 
   const handleApprove = (event: Event) => {
-    setEvents(prev => prev.map(e => 
-      e.id === event.id ? { ...e, status: 'published' as const } : e
-    ));
+    setEvents((prev) =>
+      prev.map((e) => (e.id === event.id ? { ...e, status: 'published' as const } : e)),
+    );
     toast.success(`Wydarzenie "${event.name}" zostało zatwierdzone`);
   };
 
@@ -40,11 +49,11 @@ export const ModeratorModerationTab = () => {
       return;
     }
 
-    setEvents(prev => prev.map(e => 
-      e.id === selectedEvent.id 
-        ? { ...e, status: 'rejected' as const, rejectionReason } 
-        : e
-    ));
+    setEvents((prev) =>
+      prev.map((e) =>
+        e.id === selectedEvent.id ? { ...e, status: 'rejected' as const, rejectionReason } : e,
+      ),
+    );
     toast.success(`Wydarzenie "${selectedEvent.name}" zostało odrzucone`);
     setRejectDialogOpen(false);
     setSelectedEvent(null);
@@ -61,7 +70,7 @@ export const ModeratorModerationTab = () => {
       <Card>
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
-            <CheckCircle className="h-12 w-12 mx-auto mb-4 text-primary/50" />
+            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary/50" />
             <p className="text-lg font-medium">Brak wydarzeń do moderacji</p>
             <p className="text-sm">Wszystkie wydarzenia zostały przejrzane</p>
           </div>
@@ -87,8 +96,8 @@ export const ModeratorModerationTab = () => {
                   <CardTitle className="text-lg">{event.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">{event.organizerName}</p>
                 </div>
-                <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
-                  <Clock className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning">
+                  <Clock className="mr-1 h-3 w-3" />
                   Oczekuje
                 </Badge>
               </div>
@@ -107,29 +116,26 @@ export const ModeratorModerationTab = () => {
                   <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
                 </div>
 
-                <p className="text-sm line-clamp-2">{event.description}</p>
+                <p className="line-clamp-2 text-sm">{event.description}</p>
 
                 <div className="text-sm">
-                  <strong>Dystanse:</strong>{' '}
-                  {event.distances.map(d => d.name).join(', ')}
+                  <strong>Dystanse:</strong> {event.distances.map((d) => d.name).join(', ')}
                 </div>
 
                 {event.submittedAt && (
                   <p className="text-xs text-muted-foreground">
-                    Zgłoszono: {format(new Date(event.submittedAt), 'd MMM yyyy, HH:mm', { locale: pl })}
+                    Zgłoszono:{' '}
+                    {format(new Date(event.submittedAt), 'd MMM yyyy, HH:mm', { locale: pl })}
                   </p>
                 )}
 
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button 
-                    onClick={() => handleApprove(event)} 
-                    className="gap-2"
-                  >
+                  <Button onClick={() => handleApprove(event)} className="gap-2">
                     <CheckCircle className="h-4 w-4" />
                     Zatwierdź
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => openRejectDialog(event)}
                     className="gap-2 text-destructive hover:text-destructive"
                   >
@@ -164,8 +170,8 @@ export const ModeratorModerationTab = () => {
               Odrzuć wydarzenie
             </DialogTitle>
             <DialogDescription>
-              Podaj powód odrzucenia wydarzenia "{selectedEvent?.name}". 
-              Organizator otrzyma tę informację i będzie mógł poprawić zgłoszenie.
+              Podaj powód odrzucenia wydarzenia "{selectedEvent?.name}". Organizator otrzyma tę
+              informację i będzie mógł poprawić zgłoszenie.
             </DialogDescription>
           </DialogHeader>
           <div>
@@ -180,11 +186,7 @@ export const ModeratorModerationTab = () => {
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleReject}
-              disabled={!rejectionReason.trim()}
-            >
+            <Button variant="destructive" onClick={handleReject} disabled={!rejectionReason.trim()}>
               Odrzuć wydarzenie
             </Button>
           </DialogFooter>

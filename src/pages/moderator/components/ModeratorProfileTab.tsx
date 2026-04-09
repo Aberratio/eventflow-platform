@@ -19,11 +19,12 @@ export const ModeratorProfileTab = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="max-w-2xl space-y-6">
       <Alert className="border-muted bg-muted/50">
         <Lock className="h-4 w-4" />
         <AlertDescription>
-          Możesz edytować tylko podstawowe dane profilu. Ustawienia bezpieczeństwa są zarządzane przez administratora.
+          Możesz edytować tylko podstawowe dane profilu. Ustawienia bezpieczeństwa są zarządzane
+          przez administratora.
         </AlertDescription>
       </Alert>
 
@@ -38,7 +39,7 @@ export const ModeratorProfileTab = () => {
           <div className="space-y-2">
             <Label htmlFor="name">Imię i nazwisko</Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="name"
                 value={name}
@@ -51,7 +52,7 @@ export const ModeratorProfileTab = () => {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
@@ -65,7 +66,7 @@ export const ModeratorProfileTab = () => {
           <div className="space-y-2">
             <Label htmlFor="phone">Telefon</Label>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="phone"
                 value={phone}
@@ -92,8 +93,8 @@ export const ModeratorProfileTab = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Nie masz dostępu do ustawień bezpieczeństwa. W razie potrzeby zmiany hasła lub włączenia 2FA, 
-            skontaktuj się z administratorem systemu.
+            Nie masz dostępu do ustawień bezpieczeństwa. W razie potrzeby zmiany hasła lub włączenia
+            2FA, skontaktuj się z administratorem systemu.
           </p>
         </CardContent>
       </Card>

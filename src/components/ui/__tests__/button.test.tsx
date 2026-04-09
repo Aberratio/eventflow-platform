@@ -12,7 +12,15 @@ describe('Button', () => {
   it('handles click events', async () => {
     const user = userEvent.setup();
     let clicked = false;
-    render(<Button onClick={() => { clicked = true; }}>Go</Button>);
+    render(
+      <Button
+        onClick={() => {
+          clicked = true;
+        }}
+      >
+        Go
+      </Button>,
+    );
     await user.click(screen.getByRole('button'));
     expect(clicked).toBe(true);
   });

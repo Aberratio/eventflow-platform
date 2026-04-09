@@ -11,7 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Distance, ResultClassificationType, EventResultDocument } from '@/types';
 import { Upload, FileText } from 'lucide-react';
@@ -97,15 +103,13 @@ export const UploadResultDocumentDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Dodaj dokument PDF</DialogTitle>
-          <DialogDescription>
-            Prześlij oficjalny dokument z wynikami (PDF)
-          </DialogDescription>
+          <DialogDescription>Prześlij oficjalny dokument z wynikami (PDF)</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* File upload area */}
           <div
-            className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors"
+            className="cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors hover:border-primary/50 hover:bg-muted/50"
             onClick={handleFileSelect}
           >
             {fileName ? (
@@ -115,10 +119,8 @@ export const UploadResultDocumentDialog = ({
               </div>
             ) : (
               <>
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  Kliknij aby wybrać plik PDF
-                </p>
+                <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Kliknij aby wybrać plik PDF</p>
               </>
             )}
           </div>
@@ -184,7 +186,7 @@ export const UploadResultDocumentDialog = ({
             Anuluj
           </Button>
           <Button onClick={handleSubmit}>
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="mr-2 h-4 w-4" />
             Dodaj dokument
           </Button>
         </DialogFooter>

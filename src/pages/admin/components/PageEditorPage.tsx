@@ -7,17 +7,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { EditorHint } from '@/components/admin/EditorHint';
 import { SectionEditor } from './SectionEditor';
 import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage, InfoPageSection } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ArrowLeft, Save, Eye, Plus, Trash2, ArrowUp, ArrowDown, 
-  GripVertical, FileText, Type, LayoutGrid, HelpCircle, 
-  BarChart3, Users, CreditCard, Megaphone,
-  Mail, Gift, Shield, Scale, Package
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  Plus,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  GripVertical,
+  FileText,
+  Type,
+  LayoutGrid,
+  HelpCircle,
+  BarChart3,
+  Users,
+  CreditCard,
+  Megaphone,
+  Mail,
+  Gift,
+  Shield,
+  Scale,
+  Package,
 } from 'lucide-react';
 
 const iconOptions = [
@@ -79,7 +102,7 @@ export const PageEditorPage = () => {
 
   useEffect(() => {
     if (!isNewPage && pageId) {
-      const page = mockInfoPages.find(p => p.id === pageId);
+      const page = mockInfoPages.find((p) => p.id === pageId);
       if (page) {
         setFormData(page);
       } else {
@@ -90,7 +113,7 @@ export const PageEditorPage = () => {
   }, [pageId, isNewPage, navigate, toast]);
 
   const updateField = <K extends keyof InfoPage>(field: K, value: InfoPage[K]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const generateSlug = (title: string) => {
@@ -130,19 +153,19 @@ export const PageEditorPage = () => {
   const updateSection = (sectionId: string, updates: Partial<InfoPageSection>) => {
     updateField(
       'content',
-      formData.content.map(s => (s.id === sectionId ? { ...s, ...updates } : s))
+      formData.content.map((s) => (s.id === sectionId ? { ...s, ...updates } : s)),
     );
   };
 
   const deleteSection = (sectionId: string) => {
     updateField(
       'content',
-      formData.content.filter(s => s.id !== sectionId)
+      formData.content.filter((s) => s.id !== sectionId),
     );
   };
 
   const moveSection = (sectionId: string, direction: 'up' | 'down') => {
-    const index = formData.content.findIndex(s => s.id === sectionId);
+    const index = formData.content.findIndex((s) => s.id === sectionId);
     if (
       (direction === 'up' && index === 0) ||
       (direction === 'down' && index === formData.content.length - 1)
@@ -179,14 +202,14 @@ export const PageEditorPage = () => {
 
   return (
     <Layout>
-      <div className="container py-6 max-w-4xl">
+      <div className="container max-w-4xl py-6">
         {/* Back navigation */}
         <Button
           variant="ghost"
-          className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+          className="-ml-2 mb-4 text-muted-foreground hover:text-foreground"
           onClick={() => navigate(-1)}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Wróć do listy stron
         </Button>
 
@@ -196,8 +219,9 @@ export const PageEditorPage = () => {
             {isNewPage ? 'Nowa strona' : `Edytuj: ${formData.title}`}
           </h1>
           {!isNewPage && formData.updatedAt && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Ostatnia edycja: {new Date(formData.updatedAt).toLocaleDateString('pl-PL', {
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ostatnia edycja:{' '}
+              {new Date(formData.updatedAt).toLocaleDateString('pl-PL', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric',
@@ -215,7 +239,8 @@ export const PageEditorPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <EditorHint variant="info">
-              Te dane określają jak strona będzie widoczna w nawigacji i w wynikach wyszukiwania (Google, Bing).
+              Te dane określają jak strona będzie widoczna w nawigacji i w wynikach wyszukiwania
+              (Google, Bing).
             </EditorHint>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -224,7 +249,7 @@ export const PageEditorPage = () => {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={e => handleTitleChange(e.target.value)}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   placeholder="np. O nas, Kontakt, Regulamin"
                 />
               </div>
@@ -233,7 +258,7 @@ export const PageEditorPage = () => {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={e => updateField('slug', generateSlug(e.target.value))}
+                  onChange={(e) => updateField('slug', generateSlug(e.target.value))}
                   placeholder="np. o-nas"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -245,12 +270,12 @@ export const PageEditorPage = () => {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Ikona</Label>
-                <Select value={formData.icon} onValueChange={v => updateField('icon', v)}>
+                <Select value={formData.icon} onValueChange={(v) => updateField('icon', v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {iconOptions.map(opt => (
+                    {iconOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         <div className="flex items-center gap-2">
                           <opt.icon className="h-4 w-4" />
@@ -266,7 +291,7 @@ export const PageEditorPage = () => {
                 <Input
                   id="description"
                   value={formData.description}
-                  onChange={e => updateField('description', e.target.value)}
+                  onChange={(e) => updateField('description', e.target.value)}
                   placeholder="Opis widoczny w wynikach wyszukiwania"
                   maxLength={160}
                 />
@@ -277,7 +302,8 @@ export const PageEditorPage = () => {
             </div>
 
             <EditorHint variant="tip">
-              Opis SEO pojawi się w wynikach wyszukiwania Google. Staraj się zmieścić w 160 znakach i zawrzeć najważniejsze informacje o stronie.
+              Opis SEO pojawi się w wynikach wyszukiwania Google. Staraj się zmieścić w 160 znakach
+              i zawrzeć najważniejsze informacje o stronie.
             </EditorHint>
           </CardContent>
         </Card>
@@ -289,7 +315,8 @@ export const PageEditorPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <EditorHint variant="info">
-              Określ gdzie strona będzie widoczna. Niepublikowane strony są dostępne tylko dla administratorów w trybie podglądu.
+              Określ gdzie strona będzie widoczna. Niepublikowane strony są dostępne tylko dla
+              administratorów w trybie podglądu.
             </EditorHint>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -297,13 +324,13 @@ export const PageEditorPage = () => {
                 <Checkbox
                   id="published"
                   checked={formData.published}
-                  onCheckedChange={checked => updateField('published', !!checked)}
+                  onCheckedChange={(checked) => updateField('published', !!checked)}
                 />
                 <div>
                   <Label htmlFor="published" className="cursor-pointer font-medium">
                     Opublikowana
                   </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Strona jest widoczna publicznie
                   </p>
                 </div>
@@ -312,13 +339,13 @@ export const PageEditorPage = () => {
                 <Checkbox
                   id="showInFooter"
                   checked={formData.showInFooter}
-                  onCheckedChange={checked => updateField('showInFooter', !!checked)}
+                  onCheckedChange={(checked) => updateField('showInFooter', !!checked)}
                 />
                 <div>
                   <Label htmlFor="showInFooter" className="cursor-pointer font-medium">
                     Pokazuj w stopce
                   </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Link w dolnej części strony
                   </p>
                 </div>
@@ -327,15 +354,13 @@ export const PageEditorPage = () => {
                 <Checkbox
                   id="showInHeader"
                   checked={formData.showInHeader}
-                  onCheckedChange={checked => updateField('showInHeader', !!checked)}
+                  onCheckedChange={(checked) => updateField('showInHeader', !!checked)}
                 />
                 <div>
                   <Label htmlFor="showInHeader" className="cursor-pointer font-medium">
                     Pokazuj w nagłówku
                   </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Link w górnym menu
-                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Link w górnym menu</p>
                 </div>
               </div>
             </div>
@@ -349,27 +374,28 @@ export const PageEditorPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <EditorHint variant="info">
-              Sekcje to bloki treści, z których składa się strona. Możesz je dowolnie dodawać, usuwać i zmieniać kolejność. Każdy typ sekcji wyświetla treść w inny sposób.
+              Sekcje to bloki treści, z których składa się strona. Możesz je dowolnie dodawać,
+              usuwać i zmieniać kolejność. Każdy typ sekcji wyświetla treść w inny sposób.
             </EditorHint>
 
             {formData.content.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+              <div className="rounded-lg border-2 border-dashed py-8 text-center text-muted-foreground">
                 <p className="mb-2">Strona nie ma jeszcze żadnych sekcji</p>
                 <p className="text-sm">Kliknij "Dodaj sekcję" poniżej, aby zacząć</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {formData.content.map((section, index) => {
-                  const sectionType = sectionTypes.find(t => t.type === section.type);
+                  const sectionType = sectionTypes.find((t) => t.type === section.type);
                   const SectionIcon = sectionType?.icon || FileText;
 
                   return (
                     <Card key={section.id} className="border-2">
-                      <CardHeader className="py-3 px-4 bg-muted/30">
+                      <CardHeader className="bg-muted/30 px-4 py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <GripVertical className="h-5 w-5 text-muted-foreground" />
-                            <div className="p-1.5 rounded bg-primary/10 text-primary">
+                            <div className="rounded bg-primary/10 p-1.5 text-primary">
                               <SectionIcon className="h-4 w-4" />
                             </div>
                             <div>
@@ -377,7 +403,7 @@ export const PageEditorPage = () => {
                                 {index + 1}. {sectionType?.label || section.type}
                               </span>
                               {section.title && (
-                                <span className="text-muted-foreground ml-2">
+                                <span className="ml-2 text-muted-foreground">
                                   – {section.title}
                                 </span>
                               )}
@@ -419,7 +445,7 @@ export const PageEditorPage = () => {
                         </EditorHint>
                         <SectionEditor
                           section={section}
-                          onUpdate={updates => updateSection(section.id, updates)}
+                          onUpdate={(updates) => updateSection(section.id, updates)}
                         />
                       </CardContent>
                     </Card>
@@ -432,26 +458,26 @@ export const PageEditorPage = () => {
             {showAddSection ? (
               <Card className="border-2 border-dashed border-primary/50 bg-primary/5">
                 <CardContent className="py-6">
-                  <p className="text-sm font-medium text-center mb-4">
+                  <p className="mb-4 text-center text-sm font-medium">
                     Wybierz typ sekcji do dodania:
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {sectionTypes.map(st => (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    {sectionTypes.map((st) => (
                       <Button
                         key={st.type}
                         variant="outline"
-                        className="h-auto flex-col py-4 gap-2 hover:border-primary hover:bg-primary/5"
+                        className="h-auto flex-col gap-2 py-4 hover:border-primary hover:bg-primary/5"
                         onClick={() => addSection(st.type)}
                       >
                         <st.icon className="h-5 w-5" />
                         <span className="font-medium">{st.label}</span>
-                        <span className="text-xs text-muted-foreground text-center">
+                        <span className="text-center text-xs text-muted-foreground">
                           {st.description}
                         </span>
                       </Button>
                     ))}
                   </div>
-                  <div className="flex justify-center mt-4">
+                  <div className="mt-4 flex justify-center">
                     <Button variant="ghost" onClick={() => setShowAddSection(false)}>
                       Anuluj
                     </Button>
@@ -464,7 +490,7 @@ export const PageEditorPage = () => {
                 className="w-full border-dashed"
                 onClick={() => setShowAddSection(true)}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Dodaj sekcję
               </Button>
             )}
@@ -472,16 +498,16 @@ export const PageEditorPage = () => {
         </Card>
 
         {/* Action buttons - sticky footer */}
-        <div className="sticky bottom-4 flex justify-end gap-3 p-4 bg-background/95 backdrop-blur border rounded-lg shadow-lg">
+        <div className="sticky bottom-4 flex justify-end gap-3 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur">
           <Button variant="outline" onClick={() => navigate('/admin?tab=pages')}>
             Anuluj
           </Button>
           <Button variant="outline" onClick={handlePreview} disabled={!formData.slug}>
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="mr-2 h-4 w-4" />
             Podgląd
           </Button>
           <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="mr-2 h-4 w-4" />
             Zapisz {isNewPage ? 'stronę' : 'zmiany'}
           </Button>
         </div>

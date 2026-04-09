@@ -2,14 +2,28 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Layout } from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Timer, Lock, Mail, Eye, EyeOff, User, Briefcase, UserCheck, Shield } from 'lucide-react';
 import { MockCredentialCard, type MockCredential } from '@/components/auth/MockCredentialCard';
 
@@ -21,10 +35,38 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const MOCK_CREDENTIALS: MockCredential[] = [
-  { role: 'participant', label: 'Uczestnik', email: 'jan@example.com', password: 'demo1234', icon: User, color: 'bg-accent/10 text-accent-foreground border-accent/30' },
-  { role: 'organizer', label: 'Organizator', email: 'marek@timing.pl', password: 'demo1234', icon: Briefcase, color: 'bg-primary/10 text-primary border-primary/30' },
-  { role: 'moderator', label: 'Moderator', email: 'monika@zmierzymyczas.pl', password: 'demo1234', icon: UserCheck, color: 'bg-warning/10 text-warning-foreground border-warning/30' },
-  { role: 'admin', label: 'Super Admin', email: 'admin@zmierzymyczas.pl', password: 'demo1234', icon: Shield, color: 'bg-destructive/10 text-destructive border-destructive/30' },
+  {
+    role: 'participant',
+    label: 'Uczestnik',
+    email: 'jan@example.com',
+    password: 'demo1234',
+    icon: User,
+    color: 'bg-accent/10 text-accent-foreground border-accent/30',
+  },
+  {
+    role: 'organizer',
+    label: 'Organizator',
+    email: 'marek@timing.pl',
+    password: 'demo1234',
+    icon: Briefcase,
+    color: 'bg-primary/10 text-primary border-primary/30',
+  },
+  {
+    role: 'moderator',
+    label: 'Moderator',
+    email: 'monika@zmierzymyczas.pl',
+    password: 'demo1234',
+    icon: UserCheck,
+    color: 'bg-warning/10 text-warning-foreground border-warning/30',
+  },
+  {
+    role: 'admin',
+    label: 'Super Admin',
+    email: 'admin@zmierzymyczas.pl',
+    password: 'demo1234',
+    icon: Shield,
+    color: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
 ];
 
 const LoginPage = () => {
@@ -54,13 +96,17 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     const success = loginWithCredentials(data.email, data.password);
     if (success) {
       toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
     } else {
-      toast({ title: 'Błąd logowania', description: 'Nieprawidłowy email lub hasło.', variant: 'destructive' });
+      toast({
+        title: 'Błąd logowania',
+        description: 'Nieprawidłowy email lub hasło.',
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
@@ -80,21 +126,21 @@ const LoginPage = () => {
     <Layout>
       <div className="bg-gradient-to-b from-primary/10 via-background to-background">
         <div className="container py-12 md:py-20">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-5xl">
             {/* Header */}
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+            <div className="mb-10 text-center">
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                 <Timer className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">Zaloguj się</h1>
-              <p className="text-muted-foreground text-lg">Wejdź na platformę ZmierzymyCzas</p>
+              <h1 className="mb-2 text-3xl font-bold md:text-4xl">Zaloguj się</h1>
+              <p className="text-lg text-muted-foreground">Wejdź na platformę ZmierzymyCzas</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8 items-start">
+            <div className="grid items-start gap-8 lg:grid-cols-2">
               {/* Login form */}
-              <Card className="shadow-lg border-border/50">
+              <Card className="border-border/50 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
                     <Lock className="h-5 w-5 text-primary" />
                     Dane logowania
                   </CardTitle>
@@ -111,8 +157,13 @@ const LoginPage = () => {
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input type="email" placeholder="twoj@email.com" className="pl-10" {...field} />
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                  type="email"
+                                  placeholder="twoj@email.com"
+                                  className="pl-10"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -126,13 +177,16 @@ const LoginPage = () => {
                           <FormItem>
                             <div className="flex items-center justify-between">
                               <FormLabel>Hasło</FormLabel>
-                              <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                              <Link
+                                to="/forgot-password"
+                                className="text-xs text-primary hover:underline"
+                              >
                                 Zapomniałeś hasła?
                               </Link>
                             </div>
                             <FormControl>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                   type={showPassword ? 'text' : 'password'}
                                   placeholder="••••••••"
@@ -144,7 +198,11 @@ const LoginPage = () => {
                                   onClick={() => setShowPassword(!showPassword)}
                                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 >
-                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
                                 </button>
                               </div>
                             </FormControl>
@@ -161,7 +219,7 @@ const LoginPage = () => {
                 <CardFooter className="flex flex-col gap-3 border-t pt-6">
                   <p className="text-sm text-muted-foreground">
                     Nie masz konta?{' '}
-                    <Link to="/register" className="text-primary font-medium hover:underline">
+                    <Link to="/register" className="font-medium text-primary hover:underline">
                       Zarejestruj się
                     </Link>
                   </p>
@@ -170,9 +228,11 @@ const LoginPage = () => {
 
               {/* Mock credentials panel */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="mb-2 flex items-center gap-2">
                   <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Konta testowe (demo)</span>
+                  <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Konta testowe (demo)
+                  </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
 
@@ -188,7 +248,7 @@ const LoginPage = () => {
                   ))}
                 </div>
 
-                <p className="text-xs text-muted-foreground text-center">
+                <p className="text-center text-xs text-muted-foreground">
                   💡 Kliknij kartę, aby automatycznie wypełnić formularz danymi testowymi.
                 </p>
               </div>

@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { EmailTriggerType, EmailTemplateScope } from '@/types/email';
-import { EMAIL_TRIGGER_LABELS, EVENT_TRIGGER_TYPES, SYSTEM_TRIGGER_TYPES } from '@/types/email';
+import { EMAIL_TRIGGER_LABELS, EVENT_TRIGGER_TYPES, SYSTEM_TRIGGER_TYPES } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
-function getTriggerOptions(scope: EmailTemplateScope): Array<{ value: EmailTriggerType; label: string }> {
+function getTriggerOptions(
+  scope: EmailTemplateScope,
+): Array<{ value: EmailTriggerType; label: string }> {
   const triggers = scope === 'system' ? SYSTEM_TRIGGER_TYPES : EVENT_TRIGGER_TYPES;
-  return triggers.map(value => ({ value, label: EMAIL_TRIGGER_LABELS[value] }));
+  return triggers.map((value) => ({ value, label: EMAIL_TRIGGER_LABELS[value] }));
 }
 
 interface EmailTriggerSectionProps {
@@ -37,28 +39,20 @@ export const EmailTriggerSection: React.FC<EmailTriggerSectionProps> = ({
         name="triggerType"
         control={control}
         render={({ field }) => (
-          <RadioGroup
-            value={field.value}
-            onValueChange={field.onChange}
-            className="space-y-2"
-          >
+          <RadioGroup value={field.value} onValueChange={field.onChange} className="space-y-2">
             {triggerOptions.map(({ value, label }) => (
               <div key={value} className="flex items-center gap-3">
                 <RadioGroupItem value={value} id={`trigger-${value}`} />
-                <Label
-                  htmlFor={`trigger-${value}`}
-                  className="font-normal cursor-pointer flex-1"
-                >
+                <Label htmlFor={`trigger-${value}`} className="flex-1 cursor-pointer font-normal">
                   {label}
                 </Label>
                 {field.value === value &&
-                  (value === 'days_before_event' ||
-                    value === 'days_after_registration') && (
+                  (value === 'days_before_event' || value === 'days_after_registration') && (
                     <Input
                       type="number"
                       min={1}
                       max={365}
-                      className="w-20 h-7 text-sm"
+                      className="h-7 w-20 text-sm"
                       placeholder="dni"
                       {...register('triggerDaysOffset', { valueAsNumber: true })}
                     />
@@ -70,7 +64,7 @@ export const EmailTriggerSection: React.FC<EmailTriggerSectionProps> = ({
       />
 
       {triggerType === 'manual' && (
-        <div className="ml-6 space-y-3 p-3 rounded-md border bg-muted/20">
+        <div className="ml-6 space-y-3 rounded-md border bg-muted/20 p-3">
           <div className="flex items-center gap-3">
             <Controller
               name="scheduleEnabled"
@@ -83,7 +77,7 @@ export const EmailTriggerSection: React.FC<EmailTriggerSectionProps> = ({
                 />
               )}
             />
-            <Label htmlFor="schedule-switch" className="font-normal cursor-pointer">
+            <Label htmlFor="schedule-switch" className="cursor-pointer font-normal">
               Zaplanuj wysyłkę na określoną datę
             </Label>
           </div>

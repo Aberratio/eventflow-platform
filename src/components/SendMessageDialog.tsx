@@ -12,7 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Registration, Distance } from '@/types';
 import { Mail, Users, Filter, Send } from 'lucide-react';
@@ -42,7 +48,7 @@ export const SendMessageDialog = ({
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
 
-  const activeRegistrations = registrations.filter(r => r.status !== 'removed');
+  const activeRegistrations = registrations.filter((r) => r.status !== 'removed');
 
   const getRecipientCount = () => {
     switch (recipientMode) {
@@ -51,7 +57,7 @@ export const SendMessageDialog = ({
       case 'all':
         return activeRegistrations.length;
       case 'filtered':
-        return activeRegistrations.filter(r => {
+        return activeRegistrations.filter((r) => {
           const matchesDistance = filterDistance === 'all' || r.distanceId === filterDistance;
           const matchesStatus = filterStatus === 'all' || r.status === filterStatus;
           return matchesDistance && matchesStatus;
@@ -82,10 +88,10 @@ export const SendMessageDialog = ({
     }
 
     setSending(true);
-    
+
     // Simulate sending
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     toast({
       title: 'Wiadomość wysłana',
       description: `Wiadomość została wysłana do ${recipientCount} ${recipientCount === 1 ? 'uczestnika' : recipientCount < 5 ? 'uczestników' : 'uczestników'}.`,
@@ -114,9 +120,7 @@ export const SendMessageDialog = ({
             <Mail className="h-5 w-5" />
             Wyślij wiadomość
           </DialogTitle>
-          <DialogDescription>
-            Wyślij wiadomość email do uczestników zawodów.
-          </DialogDescription>
+          <DialogDescription>Wyślij wiadomość email do uczestników zawodów.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
@@ -129,8 +133,10 @@ export const SendMessageDialog = ({
               className="space-y-2"
             >
               <label
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  recipientMode === 'selected' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                  recipientMode === 'selected'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
                 } ${selectedIds.size === 0 ? 'opacity-50' : ''}`}
               >
                 <RadioGroupItem value="selected" disabled={selectedIds.size === 0} />
@@ -139,8 +145,10 @@ export const SendMessageDialog = ({
               </label>
 
               <label
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  recipientMode === 'all' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                  recipientMode === 'all'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
                 }`}
               >
                 <RadioGroupItem value="all" />
@@ -149,8 +157,10 @@ export const SendMessageDialog = ({
               </label>
 
               <label
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  recipientMode === 'filtered' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
+                  recipientMode === 'filtered'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
                 }`}
               >
                 <RadioGroupItem value="filtered" />
@@ -161,7 +171,7 @@ export const SendMessageDialog = ({
 
             {/* Filters */}
             {recipientMode === 'filtered' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pl-3 sm:pl-6">
+              <div className="mt-3 grid grid-cols-1 gap-3 pl-3 sm:grid-cols-2 sm:pl-6">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Dystans</Label>
                   <Select value={filterDistance} onValueChange={setFilterDistance}>
@@ -170,8 +180,10 @@ export const SendMessageDialog = ({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie dystanse</SelectItem>
-                      {distances.map(d => (
-                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      {distances.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -191,7 +203,8 @@ export const SendMessageDialog = ({
                   </Select>
                 </div>
                 <div className="col-span-2 text-sm text-muted-foreground">
-                  Pasujących odbiorców: <span className="font-medium text-foreground">{getRecipientCount()}</span>
+                  Pasujących odbiorców:{' '}
+                  <span className="font-medium text-foreground">{getRecipientCount()}</span>
                 </div>
               </div>
             )}
@@ -221,7 +234,7 @@ export const SendMessageDialog = ({
           </div>
 
           {/* Info */}
-          <div className="text-sm text-muted-foreground flex items-center gap-2 bg-muted/50 rounded-lg p-3">
+          <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />
             Wiadomość zostanie wysłana na adresy email odbiorców.
           </div>
@@ -236,7 +249,7 @@ export const SendMessageDialog = ({
               <>Wysyłanie...</>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="mr-2 h-4 w-4" />
                 Wyślij wiadomość
               </>
             )}

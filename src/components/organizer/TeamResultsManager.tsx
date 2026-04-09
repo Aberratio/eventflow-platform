@@ -106,7 +106,7 @@ export const TeamResultsManager = ({
 
   const toggleMember = (userId: string) => {
     setSelectedMembers((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
   };
 
@@ -122,82 +122,82 @@ export const TeamResultsManager = ({
             Klasyfikacja drużynowa
           </CardTitle>
           <Button onClick={() => setAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Dodaj drużynę
           </Button>
         </CardHeader>
         <CardContent>
           {teamResults.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <div className="py-12 text-center text-muted-foreground">
+              <Users className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Brak drużyn w klasyfikacji.</p>
               <Button className="mt-4" onClick={() => setAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Dodaj pierwszą drużynę
               </Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">Poz.</TableHead>
-                  <TableHead>Drużyna</TableHead>
-                  <TableHead>Członkowie</TableHead>
-                  <TableHead>Łączny czas</TableHead>
-                  <TableHead className="w-20"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {teamResults
-                  .sort((a, b) => a.totalTimeInSeconds - b.totalTimeInSeconds)
-                  .map((team, index) => (
-                    <TableRow key={team.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {index < 3 && (
-                            <Trophy
-                              className={`h-4 w-4 ${
-                                index === 0
-                                  ? 'text-yellow-500'
-                                  : index === 1
-                                  ? 'text-gray-400'
-                                  : 'text-amber-600'
-                              }`}
-                            />
-                          )}
-                          <span className="font-medium">{index + 1}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{team.teamName}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {team.members.map((m) => (
-                            <Badge key={m.userId} variant="outline" className="text-xs">
-                              {m.userName}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 font-mono">
-                          <Clock className="h-4 w-4 text-primary" />
-                          {team.totalTime}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onDeleteTeamResult(team.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-16">Poz.</TableHead>
+                    <TableHead>Drużyna</TableHead>
+                    <TableHead>Członkowie</TableHead>
+                    <TableHead>Łączny czas</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamResults
+                    .sort((a, b) => a.totalTimeInSeconds - b.totalTimeInSeconds)
+                    .map((team, index) => (
+                      <TableRow key={team.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {index < 3 && (
+                              <Trophy
+                                className={`h-4 w-4 ${
+                                  index === 0
+                                    ? 'text-yellow-500'
+                                    : index === 1
+                                      ? 'text-gray-400'
+                                      : 'text-amber-600'
+                                }`}
+                              />
+                            )}
+                            <span className="font-medium">{index + 1}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{team.teamName}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {team.members.map((m) => (
+                              <Badge key={m.userId} variant="outline" className="text-xs">
+                                {m.userName}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 font-mono">
+                            <Clock className="h-4 w-4 text-primary" />
+                            {team.totalTime}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDeleteTeamResult(team.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
@@ -224,12 +224,10 @@ export const TeamResultsManager = ({
             </div>
 
             <div className="space-y-2">
-              <Label>
-                Członkowie drużyny ({selectedMembers.length} wybranych)
-              </Label>
-              <div className="border border-border/50 rounded-lg max-h-[200px] overflow-y-auto">
+              <Label>Członkowie drużyny ({selectedMembers.length} wybranych)</Label>
+              <div className="max-h-[200px] overflow-y-auto rounded-lg border border-border/50">
                 {availableMembers.length === 0 ? (
-                  <p className="p-4 text-center text-muted-foreground text-sm">
+                  <p className="p-4 text-center text-sm text-muted-foreground">
                     Brak dostępnych uczestników z wynikami
                   </p>
                 ) : (
@@ -238,14 +236,14 @@ export const TeamResultsManager = ({
                       <button
                         key={result.userId}
                         type="button"
-                        className={`w-full flex items-center justify-between p-3 text-left hover:bg-muted transition-colors ${
+                        className={`flex w-full items-center justify-between p-3 text-left transition-colors hover:bg-muted ${
                           selectedMembers.includes(result.userId) ? 'bg-primary/10' : ''
                         }`}
                         onClick={() => toggleMember(result.userId)}
                       >
                         <div>
                           <span className="font-medium">{result.userName}</span>
-                          <span className="ml-2 text-muted-foreground text-sm">
+                          <span className="ml-2 text-sm text-muted-foreground">
                             ({result.bibNumber})
                           </span>
                         </div>
@@ -258,8 +256,8 @@ export const TeamResultsManager = ({
             </div>
 
             {selectedMembers.length > 0 && (
-              <div className="p-3 rounded-lg bg-muted">
-                <p className="text-sm font-medium mb-1">Szacowany łączny czas:</p>
+              <div className="rounded-lg bg-muted p-3">
+                <p className="mb-1 text-sm font-medium">Szacowany łączny czas:</p>
                 <p className="font-mono text-lg">
                   {(() => {
                     const total = selectedMembers.reduce((sum, userId) => {

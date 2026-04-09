@@ -1,10 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
-import { getCurrentPrice, getExistingTeamsForEvent, validateDiscountCode, validateTeamName } from '@/api/mock/helpers';
+import {
+  getCurrentPrice,
+  getExistingTeamsForEvent,
+  validateDiscountCode,
+  validateTeamName,
+  applyDiscount,
+} from '@/api/mock/helpers';
 import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
-import { applyDiscount } from '@/api/mock/helpers';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
@@ -20,9 +24,14 @@ export const useRegistrationForm = (event: Event) => {
   const [birthMonth, setBirthMonth] = useState<string>('');
   const [birthDay, setBirthDay] = useState<string>('');
   const [wantsInsurance, setWantsInsurance] = useState(false);
-  const [merchandiseOrders, setMerchandiseOrders] = useState<Map<string, MerchandiseOrder>>(new Map());
+  const [merchandiseOrders, setMerchandiseOrders] = useState<Map<string, MerchandiseOrder>>(
+    new Map(),
+  );
   const [discountCode, setDiscountCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<{ type: 'percent' | 'fixed'; value: number } | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    type: 'percent' | 'fixed';
+    value: number;
+  } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToFinalAcceptance, setAgreedToFinalAcceptance] = useState(false);
@@ -53,11 +62,18 @@ export const useRegistrationForm = (event: Event) => {
     }
   }, [isProfileComplete, user]);
 
-  const existingTeams = useMemo(() => getExistingTeamsForEvent(mockRegistrations, event.id), [event.id]);
+  const existingTeams = useMemo(
+    () => getExistingTeamsForEvent(mockRegistrations, event.id),
+    [event.id],
+  );
 
-  const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
+  const selectedDistance = event.distances.find((d) => d.id === selectedDistanceId);
   const formCfg = event.registrationFormConfig;
-  const hasMerchandise = (formCfg?.collectMerchandise ?? true) && event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0;
+  const hasMerchandise =
+    (formCfg?.collectMerchandise ?? true) &&
+    event.enableMerchandiseInRegistration &&
+    event.merchandise &&
+    event.merchandise.length > 0;
   const hasInsurance = (formCfg?.collectInsurance ?? true) && event.insuranceOption?.enabled;
   const hasTeamOption = formCfg?.collectTeam ?? true;
 
@@ -86,25 +102,29 @@ export const useRegistrationForm = (event: Event) => {
 
   const activeVip = useMemo(() => {
     if (!selectedDistance || !selectedVipId) return null;
-    return selectedDistance.vipPrices?.find(v => v.id === selectedVipId) || null;
+    return selectedDistance.vipPrices?.find((v) => v.id === selectedVipId) || null;
   }, [selectedDistance, selectedVipId]);
 
   const distancePrice = useMemo(() => {
     if (!selectedDistance) return 0;
     const { price } = getCurrentPrice(selectedDistance);
-    if (activeVip) return applyDiscount(selectedDistance.price, activeVip.discountType, activeVip.discountValue);
+    if (activeVip)
+      return applyDiscount(selectedDistance.price, activeVip.discountType, activeVip.discountValue);
     return price;
   }, [selectedDistance, activeVip]);
 
   const merchandiseTotal = useMemo(() => {
     let total = 0;
-    merchandiseOrders.forEach(order => { total += order.price; });
+    merchandiseOrders.forEach((order) => {
+      total += order.price;
+    });
     return total;
   }, [merchandiseOrders]);
 
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
-    if (appliedDiscount.type === 'percent') return Math.round(distancePrice * (appliedDiscount.value / 100));
+    if (appliedDiscount.type === 'percent')
+      return Math.round(distancePrice * (appliedDiscount.value / 100));
     return Math.min(appliedDiscount.value, distancePrice);
   }, [appliedDiscount, distancePrice]);
 
@@ -113,7 +133,7 @@ export const useRegistrationForm = (event: Event) => {
   useEffect(() => {
     if (wantsTeam && teamMode === 'create' && teamName) {
       const result = validateTeamName(teamName);
-      setTeamNameError(result.valid ? '' : (result.error || ''));
+      setTeamNameError(result.valid ? '' : result.error || '');
     } else {
       setTeamNameError('');
     }
@@ -121,68 +141,101 @@ export const useRegistrationForm = (event: Event) => {
 
   const getFinalTeamName = (): string | undefined => {
     if (!wantsTeam) return undefined;
-    return teamMode === 'create' ? (teamName.trim() || undefined) : (selectedExistingTeam || undefined);
+    return teamMode === 'create' ? teamName.trim() || undefined : selectedExistingTeam || undefined;
   };
 
   const handleApplyDiscount = () => {
-    if (!discountCode.trim()) { setDiscountError('Wpisz kod rabatowy'); return; }
+    if (!discountCode.trim()) {
+      setDiscountError('Wpisz kod rabatowy');
+      return;
+    }
     const result = validateDiscountCode(discountCode, event, selectedDistanceId);
-    if (result.valid && result.discount) { setAppliedDiscount(result.discount); setDiscountError(''); }
-    else { setDiscountError(result.message); setAppliedDiscount(null); }
+    if (result.valid && result.discount) {
+      setAppliedDiscount(result.discount);
+      setDiscountError('');
+    } else {
+      setDiscountError(result.message);
+      setAppliedDiscount(null);
+    }
   };
 
-  const handleRemoveDiscount = () => { setAppliedDiscount(null); setDiscountCode(''); setDiscountError(''); };
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode('');
+    setDiscountError('');
+  };
 
-  const updateMerchandise = (item: EventMerchandise, quantity: number, size?: string, color?: string, colorHex?: string) => {
+  const updateMerchandise = (
+    item: EventMerchandise,
+    quantity: number,
+    size?: string,
+    color?: string,
+    colorHex?: string,
+  ) => {
     const key = `${item.id}-${size || 'none'}-${color || 'none'}`;
     if (quantity <= 0) {
       const newOrders = new Map(merchandiseOrders);
       newOrders.delete(key);
       setMerchandiseOrders(newOrders);
     } else {
-      setMerchandiseOrders(new Map(merchandiseOrders).set(key, {
-        merchandiseId: item.id, merchandiseName: item.name, size, color, colorHex, quantity, price: item.price * quantity,
-      }));
+      setMerchandiseOrders(
+        new Map(merchandiseOrders).set(key, {
+          merchandiseId: item.id,
+          merchandiseName: item.name,
+          size,
+          color,
+          colorHex,
+          quantity,
+          price: item.price * quantity,
+        }),
+      );
     }
   };
 
   const getNextStep = () => {
-    const idx = activeSteps.findIndex(s => s.id === step);
+    const idx = activeSteps.findIndex((s) => s.id === step);
     return idx < activeSteps.length - 1 ? activeSteps[idx + 1].id : step;
   };
   const getPrevStep = () => {
-    const idx = activeSteps.findIndex(s => s.id === step);
+    const idx = activeSteps.findIndex((s) => s.id === step);
     return idx > 0 ? activeSteps[idx - 1].id : step;
   };
-  const isStepInActiveSteps = (stepId: number) => activeSteps.some(s => s.id === stepId);
+  const isStepInActiveSteps = (stepId: number) => activeSteps.some((s) => s.id === stepId);
 
   const canProceed = () => {
     switch (step) {
       case 1: {
         if (!selectedDistanceId) return false;
         if (activeVip?.customFieldRequired && !vipCustomFieldValue.trim()) return false;
-        const dist = event.distances.find(d => d.id === selectedDistanceId);
+        const dist = event.distances.find((d) => d.id === selectedDistanceId);
         if (dist?.limit != null && dist.registeredCount >= dist.limit) return false;
         return true;
       }
-      case 2: return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
+      case 2:
+        return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
       case 25:
         if (!wantsTeam) return true;
         if (teamMode === 'create') return teamName.trim().length >= 3 && !teamNameError;
         return !!selectedExistingTeam;
-      case 3: return true;
-      case 4: return true;
-      case 5: return true;
+      case 3:
+        return true;
+      case 4:
+        return true;
+      case 5:
+        return true;
       case 6: {
         const termsOk = agreedToTerms;
         const finalAcceptanceOk = !event.requireFinalAcceptance || agreedToFinalAcceptance;
         return termsOk && finalAcceptanceOk;
       }
-      default: return false;
+      default:
+        return false;
     }
   };
 
-  const handleNext = () => { if (canProceed()) setStep(getNextStep()); };
+  const handleNext = () => {
+    if (canProceed()) setStep(getNextStep());
+  };
   const handleBack = () => setStep(getPrevStep());
 
   const buildSubmitData = (): RegistrationData | null => {
@@ -208,24 +261,68 @@ export const useRegistrationForm = (event: Event) => {
   const isFirstStep = step === activeSteps[0].id;
 
   return {
-    user, step, activeSteps,
-    selectedDistanceId, setSelectedDistanceId,
-    selectedCategory, setSelectedCategory,
-    birthYear, setBirthYear, birthMonth, setBirthMonth, birthDay, setBirthDay,
-    wantsInsurance, setWantsInsurance,
-    merchandiseOrders, updateMerchandise,
-    discountCode, setDiscountCode, appliedDiscount, discountError, setDiscountError,
-    handleApplyDiscount, handleRemoveDiscount,
-    agreedToTerms, setAgreedToTerms,
-    agreedToFinalAcceptance, setAgreedToFinalAcceptance,
-    wantsTeam, setWantsTeam, teamMode, setTeamMode, teamName, setTeamName,
-    selectedExistingTeam, setSelectedExistingTeam, teamNameError, existingTeams,
-    selectedVipId, setSelectedVipId, vipCustomFieldValue, setVipCustomFieldValue,
-    isProfileComplete, selectedDistance, formCfg,
-    hasMerchandise, hasInsurance, hasTeamOption,
-    age, insurancePrice, activeVip, distancePrice,
-    merchandiseTotal, discountAmount, totalAmount,
-    isStepInActiveSteps, canProceed, handleNext, handleBack,
-    getFinalTeamName, buildSubmitData, isLastStep, isFirstStep,
+    user,
+    step,
+    activeSteps,
+    selectedDistanceId,
+    setSelectedDistanceId,
+    selectedCategory,
+    setSelectedCategory,
+    birthYear,
+    setBirthYear,
+    birthMonth,
+    setBirthMonth,
+    birthDay,
+    setBirthDay,
+    wantsInsurance,
+    setWantsInsurance,
+    merchandiseOrders,
+    updateMerchandise,
+    discountCode,
+    setDiscountCode,
+    appliedDiscount,
+    discountError,
+    setDiscountError,
+    handleApplyDiscount,
+    handleRemoveDiscount,
+    agreedToTerms,
+    setAgreedToTerms,
+    agreedToFinalAcceptance,
+    setAgreedToFinalAcceptance,
+    wantsTeam,
+    setWantsTeam,
+    teamMode,
+    setTeamMode,
+    teamName,
+    setTeamName,
+    selectedExistingTeam,
+    setSelectedExistingTeam,
+    teamNameError,
+    existingTeams,
+    selectedVipId,
+    setSelectedVipId,
+    vipCustomFieldValue,
+    setVipCustomFieldValue,
+    isProfileComplete,
+    selectedDistance,
+    formCfg,
+    hasMerchandise,
+    hasInsurance,
+    hasTeamOption,
+    age,
+    insurancePrice,
+    activeVip,
+    distancePrice,
+    merchandiseTotal,
+    discountAmount,
+    totalAmount,
+    isStepInActiveSteps,
+    canProceed,
+    handleNext,
+    handleBack,
+    getFinalTeamName,
+    buildSubmitData,
+    isLastStep,
+    isFirstStep,
   };
 };

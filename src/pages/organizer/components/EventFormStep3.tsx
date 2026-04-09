@@ -19,7 +19,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm text-muted-foreground">Nazwa</p>
               <p className="font-medium">{form.name}</p>
@@ -40,19 +40,23 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               <>
                 <div>
                   <p className="text-sm text-muted-foreground">Okno startowe</p>
-                  <p className="font-medium">{form.startDate} - {form.endDate}</p>
+                  <p className="font-medium">
+                    {form.startDate} - {form.endDate}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Typ wydarzenia</p>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                    <Globe className="h-3 w-3 mr-1" /> Wirtualny
+                  <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+                    <Globe className="mr-1 h-3 w-3" /> Wirtualny
                   </Badge>
                 </div>
               </>
             ) : (
               <div>
                 <p className="text-sm text-muted-foreground">Lokalizacja</p>
-                <p className="font-medium">{form.location}, {form.city}</p>
+                <p className="font-medium">
+                  {form.location}, {form.city}
+                </p>
               </div>
             )}
             <div>
@@ -61,11 +65,15 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Metoda płatności</p>
-              <p className="font-medium flex items-center gap-2">
+              <p className="flex items-center gap-2 font-medium">
                 {form.paymentConfigType === 'admin_gateway' ? (
-                  <><CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza (automatyczna)</>
+                  <>
+                    <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza (automatyczna)
+                  </>
                 ) : (
-                  <><Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)</>
+                  <>
+                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
+                  </>
                 )}
               </p>
             </div>
@@ -79,20 +87,23 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
           )}
 
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Kategorie ({form.allCategories.length})</p>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Kategorie ({form.allCategories.length})
+            </p>
             <div className="flex flex-wrap gap-2">
-              {form.allCategories.map(cat => (
+              {form.allCategories.map((cat) => (
                 <Badge key={cat.id} variant={cat.type === 'special' ? 'outline' : 'secondary'}>
-                  {cat.name}{cat.type === 'special' ? ' ★' : ''}
+                  {cat.name}
+                  {cat.type === 'special' ? ' ★' : ''}
                 </Badge>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Dystanse ({form.distances.length})</p>
+            <p className="mb-2 text-sm text-muted-foreground">Dystanse ({form.distances.length})</p>
             <div className="flex flex-wrap gap-2">
-              {form.distances.map(dist => (
+              {form.distances.map((dist) => (
                 <Badge key={dist.id} variant="secondary">
                   {dist.name} - {dist.length} {dist.unit} ({dist.price} PLN)
                 </Badge>
@@ -102,8 +113,8 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
 
           <div className="flex flex-wrap gap-2">
             {form.isVirtual && (
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                <Globe className="h-3 w-3 mr-1" /> Wirtualny
+              <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">
+                <Globe className="mr-1 h-3 w-3" /> Wirtualny
               </Badge>
             )}
             {form.featured && <Badge variant="default">⭐ Wyróżnione wydarzenie</Badge>}
@@ -116,11 +127,19 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
           <CardTitle>Status publikacji</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant={form.status === 'draft' ? 'default' : 'outline'} onClick={() => form.setStatus('draft')} className="flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant={form.status === 'draft' ? 'default' : 'outline'}
+              onClick={() => form.setStatus('draft')}
+              className="flex-1"
+            >
               Zapisz jako szkic
             </Button>
-            <Button variant={form.status === 'awaiting_approval' ? 'default' : 'outline'} onClick={() => form.setStatus('awaiting_approval')} className="flex-1">
+            <Button
+              variant={form.status === 'awaiting_approval' ? 'default' : 'outline'}
+              onClick={() => form.setStatus('awaiting_approval')}
+              className="flex-1"
+            >
               Zgłoś do akceptacji
             </Button>
           </div>
@@ -129,8 +148,9 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               ? 'Wydarzenie będzie widoczne tylko dla Ciebie. Możesz je zgłosić do akceptacji później.'
               : 'Wydarzenie zostanie przesłane do administratora w celu weryfikacji i zatwierdzenia.'}
           </p>
-          <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-            <strong>Uwaga:</strong> Wszystkie nowe wydarzenia wymagają zatwierdzenia przez administratora przed publikacją.
+          <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+            <strong>Uwaga:</strong> Wszystkie nowe wydarzenia wymagają zatwierdzenia przez
+            administratora przed publikacją.
           </div>
         </CardContent>
       </Card>

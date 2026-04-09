@@ -24,14 +24,11 @@ const statusVariants: Record<string, 'default' | 'secondary' | 'outline'> = {
   upcoming: 'outline',
 };
 
-export const SeriesListRow = ({ 
-  series, 
-  eventsCount, 
-  totalParticipants 
-}: SeriesListRowProps) => {
-  const dateRange = series.startDate && series.endDate 
-    ? `${format(new Date(series.startDate), 'MMM yyyy', { locale: pl })} - ${format(new Date(series.endDate), 'MMM yyyy', { locale: pl })}`
-    : null;
+export const SeriesListRow = ({ series, eventsCount, totalParticipants }: SeriesListRowProps) => {
+  const dateRange =
+    series.startDate && series.endDate
+      ? `${format(new Date(series.startDate), 'MMM yyyy', { locale: pl })} - ${format(new Date(series.endDate), 'MMM yyyy', { locale: pl })}`
+      : null;
 
   const subtitle = [dateRange, `${eventsCount} wydarzeń`].filter(Boolean).join(' • ');
 
@@ -41,12 +38,13 @@ export const SeriesListRow = ({
     </Badge>
   );
 
-  const meta = totalParticipants > 0 ? (
-    <span className="flex items-center gap-1 text-sm text-muted-foreground">
-      <Users className="h-3.5 w-3.5" />
-      {totalParticipants.toLocaleString()}
-    </span>
-  ) : null;
+  const meta =
+    totalParticipants > 0 ? (
+      <span className="flex items-center gap-1 text-sm text-muted-foreground">
+        <Users className="h-3.5 w-3.5" />
+        {totalParticipants.toLocaleString()}
+      </span>
+    ) : null;
 
   return (
     <ListRow

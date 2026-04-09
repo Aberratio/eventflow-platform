@@ -26,7 +26,18 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Event } from '@/types';
-import { Edit, Trash2, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Lock, Copy, RefreshCw } from 'lucide-react';
+import {
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Lock,
+  Copy,
+  RefreshCw,
+} from 'lucide-react';
 
 interface EventSettingsTabProps {
   event: Event;
@@ -56,9 +67,9 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     const statusLabels = {
       draft: 'Szkic',
       published: 'Opublikowane',
-      cancelled: 'Anulowane'
+      cancelled: 'Anulowane',
     };
-    
+
     toast({
       title: 'Status zmieniony',
       description: `Wydarzenie jest teraz: ${statusLabels[newStatus]}`,
@@ -70,7 +81,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     toast({
       title: 'Wydarzenie usunięte',
       description: 'Wydarzenie zostało trwale usunięte.',
-      variant: 'destructive'
+      variant: 'destructive',
     });
     setDeleteDialogOpen(false);
     navigate('/organizer');
@@ -97,9 +108,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       <Card>
         <CardHeader>
           <CardTitle>Edycja wydarzenia</CardTitle>
-          <CardDescription>
-            Zmień szczegóły wydarzenia, dystanse i kategorie
-          </CardDescription>
+          <CardDescription>Zmień szczegóły wydarzenia, dystanse i kategorie</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={handleEdit}>
@@ -112,54 +121,46 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       <Card>
         <CardHeader>
           <CardTitle>Status wydarzenia</CardTitle>
-          <CardDescription>
-            Aktualny status: {getStatusBadge(event.status)}
-          </CardDescription>
+          <CardDescription>Aktualny status: {getStatusBadge(event.status)}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid sm:grid-cols-3 gap-4">
-            <Card 
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card
               className={`cursor-pointer transition-colors hover:border-primary ${
                 event.status === 'draft' ? 'border-primary bg-primary/5' : ''
               }`}
               onClick={() => handleStatusChange('draft')}
             >
               <CardContent className="pt-6 text-center">
-                <EyeOff className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <EyeOff className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                 <h4 className="font-medium">Szkic</h4>
-                <p className="text-sm text-muted-foreground">
-                  Widoczne tylko dla Ciebie
-                </p>
+                <p className="text-sm text-muted-foreground">Widoczne tylko dla Ciebie</p>
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className={`cursor-pointer transition-colors hover:border-primary ${
                 event.status === 'published' ? 'border-primary bg-primary/5' : ''
               }`}
               onClick={() => handleStatusChange('published')}
             >
               <CardContent className="pt-6 text-center">
-                <Eye className="h-8 w-8 mx-auto mb-2 text-success" />
+                <Eye className="mx-auto mb-2 h-8 w-8 text-success" />
                 <h4 className="font-medium">Opublikowane</h4>
-                <p className="text-sm text-muted-foreground">
-                  Widoczne dla wszystkich
-                </p>
+                <p className="text-sm text-muted-foreground">Widoczne dla wszystkich</p>
               </CardContent>
             </Card>
 
-            <Card 
+            <Card
               className={`cursor-pointer transition-colors hover:border-destructive ${
                 event.status === 'cancelled' ? 'border-destructive bg-destructive/5' : ''
               }`}
               onClick={() => handleStatusChange('cancelled')}
             >
               <CardContent className="pt-6 text-center">
-                <XCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+                <XCircle className="mx-auto mb-2 h-8 w-8 text-destructive" />
                 <h4 className="font-medium">Anulowane</h4>
-                <p className="text-sm text-muted-foreground">
-                  Wydarzenie odwołane
-                </p>
+                <p className="text-sm text-muted-foreground">Wydarzenie odwołane</p>
               </CardContent>
             </Card>
           </div>
@@ -176,7 +177,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => {
                 toast({
@@ -199,7 +200,8 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             Prywatność
           </CardTitle>
           <CardDescription>
-            Prywatne wydarzenie nie jest widoczne publicznie — uczestnicy mogą dołączyć tylko przez specjalny link.
+            Prywatne wydarzenie nie jest widoczne publicznie — uczestnicy mogą dołączyć tylko przez
+            specjalny link.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -217,15 +219,15 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
                 }
                 toast({
                   title: checked ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
-                  description: checked 
-                    ? 'Wydarzenie nie będzie widoczne publicznie.' 
+                  description: checked
+                    ? 'Wydarzenie nie będzie widoczne publicznie.'
                     : 'Wydarzenie będzie widoczne dla wszystkich.',
                 });
               }}
             />
           </div>
           {isPrivate && (
-            <div className="space-y-3 pt-2 border-t">
+            <div className="space-y-3 border-t pt-2">
               <div className="space-y-2">
                 <Label>Kod dostępu</Label>
                 <div className="flex gap-2">
@@ -236,7 +238,10 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
                     onClick={() => {
                       const newCode = generateAccessCode();
                       setAccessCode(newCode);
-                      toast({ title: 'Nowy kod', description: 'Wygenerowano nowy kod dostępu. Stary kod przestaje działać.' });
+                      toast({
+                        title: 'Nowy kod',
+                        description: 'Wygenerowano nowy kod dostępu. Stary kod przestaje działać.',
+                      });
                     }}
                     title="Wygeneruj nowy kod"
                   >
@@ -247,9 +252,9 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
               <div className="space-y-2">
                 <Label>Link do wydarzenia</Label>
                 <div className="flex gap-2">
-                  <Input 
-                    value={`${window.location.origin}/events/${event.slug}?access=${accessCode}`} 
-                    readOnly 
+                  <Input
+                    value={`${window.location.origin}/events/${event.slug}?access=${accessCode}`}
+                    readOnly
                     className="text-xs"
                   />
                   <Button
@@ -274,19 +279,14 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       {/* Danger zone */}
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-destructive flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
             Strefa niebezpieczna
           </CardTitle>
-          <CardDescription>
-            Te akcje są nieodwracalne. Zachowaj ostrożność.
-          </CardDescription>
+          <CardDescription>Te akcje są nieodwracalne. Zachowaj ostrożność.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            variant="destructive" 
-            onClick={() => setDeleteDialogOpen(true)}
-          >
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" /> Usuń wydarzenie
           </Button>
         </CardContent>
@@ -299,15 +299,19 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             <DialogTitle>Zmień status wydarzenia</DialogTitle>
             <DialogDescription>
               Czy na pewno chcesz zmienić status wydarzenia na{' '}
-              {newStatus === 'draft' ? 'Szkic' : 
-               newStatus === 'published' ? 'Opublikowane' : 'Anulowane'}?
+              {newStatus === 'draft'
+                ? 'Szkic'
+                : newStatus === 'published'
+                  ? 'Opublikowane'
+                  : 'Anulowane'}
+              ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button 
+            <Button
               variant={newStatus === 'cancelled' ? 'destructive' : 'default'}
               onClick={confirmStatusChange}
             >
@@ -323,8 +327,8 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Czy na pewno chcesz usunąć to wydarzenie?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ta akcja jest nieodwracalna. Wszystkie dane wydarzenia, zapisy uczestników 
-              i wyniki zostaną trwale usunięte.
+              Ta akcja jest nieodwracalna. Wszystkie dane wydarzenia, zapisy uczestników i wyniki
+              zostaną trwale usunięte.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

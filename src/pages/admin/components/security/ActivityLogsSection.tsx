@@ -3,11 +3,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Activity, Search, Filter,
-  LogIn, LogOut, UserCog, UserX, CheckCircle, XCircle,
-  Package, ShoppingBag, Settings, Key,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Activity,
+  Search,
+  Filter,
+  LogIn,
+  LogOut,
+  UserCog,
+  UserX,
+  CheckCircle,
+  XCircle,
+  Package,
+  ShoppingBag,
+  Settings,
+  Key,
 } from 'lucide-react';
 import { AdminActionType } from '@/types';
 import { format } from 'date-fns';
@@ -45,9 +61,10 @@ export const ActivityLogsSection = () => {
   const [logSearch, setLogSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(5);
 
-  const filteredLogs = mockAdminActivityLogs.filter(log => {
+  const filteredLogs = mockAdminActivityLogs.filter((log) => {
     const matchesFilter = logFilter === 'all' || log.action === logFilter;
-    const matchesSearch = logSearch === '' ||
+    const matchesSearch =
+      logSearch === '' ||
       log.description.toLowerCase().includes(logSearch.toLowerCase()) ||
       log.targetName?.toLowerCase().includes(logSearch.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -56,16 +73,16 @@ export const ActivityLogsSection = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-lg">
           <Activity className="h-5 w-5 text-primary" />
           Logi aktywności
         </CardTitle>
         <CardDescription>Historia Twoich działań w systemie</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Szukaj w logach..."
               value={logSearch}
@@ -73,15 +90,20 @@ export const ActivityLogsSection = () => {
               className="pl-9"
             />
           </div>
-          <Select value={logFilter} onValueChange={(v) => setLogFilter(v as AdminActionType | 'all')}>
+          <Select
+            value={logFilter}
+            onValueChange={(v) => setLogFilter(v as AdminActionType | 'all')}
+          >
             <SelectTrigger className="w-full sm:w-48">
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filtruj" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Wszystkie akcje</SelectItem>
               {Object.entries(ACTION_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -91,18 +113,22 @@ export const ActivityLogsSection = () => {
           {filteredLogs.slice(0, visibleCount).map((log) => (
             <div
               key={log.id}
-              className="flex items-start gap-3 p-3 rounded-lg border bg-muted/20 hover:bg-muted/40 transition-colors"
+              className="flex items-start gap-3 rounded-lg border bg-muted/20 p-3 transition-colors hover:bg-muted/40"
             >
               <div className="mt-0.5">{ACTION_ICONS[log.action]}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm">{log.description}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium">{log.description}</span>
                   {log.targetName && (
-                    <Badge variant="secondary" className="text-xs">{log.targetName}</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      {log.targetName}
+                    </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                  <span>{format(new Date(log.timestamp), 'dd.MM.yyyy, HH:mm', { locale: pl })}</span>
+                <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span>
+                    {format(new Date(log.timestamp), 'dd.MM.yyyy, HH:mm', { locale: pl })}
+                  </span>
                   {log.ipAddress && <span>IP: {log.ipAddress}</span>}
                 </div>
               </div>
@@ -110,7 +136,7 @@ export const ActivityLogsSection = () => {
           ))}
 
           {filteredLogs.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">
+            <p className="py-8 text-center text-muted-foreground">
               Nie znaleziono logów spełniających kryteria.
             </p>
           )}
@@ -118,8 +144,8 @@ export const ActivityLogsSection = () => {
           {visibleCount < filteredLogs.length && (
             <Button
               variant="outline"
-              className="w-full mt-4"
-              onClick={() => setVisibleCount(prev => prev + 5)}
+              className="mt-4 w-full"
+              onClick={() => setVisibleCount((prev) => prev + 5)}
             >
               Załaduj więcej ({filteredLogs.length - visibleCount} pozostało)
             </Button>

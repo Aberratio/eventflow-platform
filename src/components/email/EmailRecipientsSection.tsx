@@ -26,7 +26,7 @@ export const EmailRecipientsSection: React.FC<EmailRecipientsSectionProps> = ({ 
       <h3 className="text-sm font-semibold text-foreground">Odbiorcy</h3>
 
       <div className="space-y-3">
-        <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">
           Status rejestracji
         </Label>
         <div className="flex flex-wrap gap-4">
@@ -47,10 +47,7 @@ export const EmailRecipientsSection: React.FC<EmailRecipientsSectionProps> = ({ 
                       field.onChange(next);
                     }}
                   />
-                  <Label
-                    htmlFor={`status-${value}`}
-                    className="font-normal cursor-pointer"
-                  >
+                  <Label htmlFor={`status-${value}`} className="cursor-pointer font-normal">
                     {label}
                   </Label>
                 </div>
@@ -61,7 +58,7 @@ export const EmailRecipientsSection: React.FC<EmailRecipientsSectionProps> = ({ 
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground uppercase tracking-wide">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">
           Status płatności
         </Label>
         <Controller

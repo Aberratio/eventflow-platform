@@ -11,12 +11,32 @@ import { AdminPagesTab } from './components/AdminPagesTab';
 import { AdminSettingsTab } from './components/AdminSettingsTab';
 import { AdminChallengesTab } from './components/AdminChallengesTab';
 import { AdminFeaturedEventsTab } from './components/AdminFeaturedEventsTab';
-import { LayoutDashboard, Users, Building2, Calendar, Handshake, ShoppingBag, ShieldCheck, FileText, Settings, Trophy, Mail, Star, ClipboardList } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  Calendar,
+  Handshake,
+  ShoppingBag,
+  ShieldCheck,
+  FileText,
+  Settings,
+  Trophy,
+  Mail,
+  Star,
+  ClipboardList,
+} from 'lucide-react';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { AdminOrdersTab } from './components/AdminOrdersTab';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface NavItem {
   id: string;
@@ -32,9 +52,7 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     label: 'Panel',
-    items: [
-      { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
-    ],
+    items: [{ id: 'overview', label: 'Pulpit', icon: LayoutDashboard }],
   },
   {
     label: 'Moderacja',
@@ -64,36 +82,48 @@ const navGroups: NavGroup[] = [
   },
   {
     label: 'Konfiguracja',
-    items: [
-      { id: 'settings', label: 'Ustawienia', icon: Settings },
-    ],
+    items: [{ id: 'settings', label: 'Ustawienia', icon: Settings }],
   },
 ];
 
-const allItems = navGroups.flatMap(g => g.items);
+const allItems = navGroups.flatMap((g) => g.items);
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const isMobile = useIsMobile();
 
-  const activeItem = allItems.find(i => i.id === activeSection);
+  const activeItem = allItems.find((i) => i.id === activeSection);
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'overview': return <AdminOverviewTab />;
-      case 'moderation': return <AdminModerationTab />;
-      case 'participants': return <UsersParticipantsTab />;
-      case 'organizers': return <UsersOrganizersTab />;
-      case 'events': return <AdminEventsTab />;
-      case 'featured': return <AdminFeaturedEventsTab />;
-      case 'shop': return <AdminShopTab />;
-      case 'orders': return <AdminOrdersTab />;
-      case 'challenges': return <AdminChallengesTab />;
-      case 'partners': return <AdminPartnersTab />;
-      case 'pages': return <AdminPagesTab />;
-      case 'emails': return <EmailTemplatesManager scope="system" />;
-      case 'settings': return <AdminSettingsTab />;
-      default: return <AdminOverviewTab />;
+      case 'overview':
+        return <AdminOverviewTab />;
+      case 'moderation':
+        return <AdminModerationTab />;
+      case 'participants':
+        return <UsersParticipantsTab />;
+      case 'organizers':
+        return <UsersOrganizersTab />;
+      case 'events':
+        return <AdminEventsTab />;
+      case 'featured':
+        return <AdminFeaturedEventsTab />;
+      case 'shop':
+        return <AdminShopTab />;
+      case 'orders':
+        return <AdminOrdersTab />;
+      case 'challenges':
+        return <AdminChallengesTab />;
+      case 'partners':
+        return <AdminPartnersTab />;
+      case 'pages':
+        return <AdminPagesTab />;
+      case 'emails':
+        return <EmailTemplatesManager scope="system" />;
+      case 'settings':
+        return <AdminSettingsTab />;
+      default:
+        return <AdminOverviewTab />;
     }
   };
 
@@ -101,7 +131,7 @@ const AdminDashboard = () => {
     <Layout>
       <div className="container py-8">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Panel Administratora</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Panel Administratora</h1>
           <p className="text-muted-foreground">Pełna kontrola nad platformą</p>
         </div>
 
@@ -119,12 +149,12 @@ const AdminDashboard = () => {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {navGroups.map(group => (
+                {navGroups.map((group) => (
                   <div key={group.label}>
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {group.label}
                     </div>
-                    {group.items.map(item => (
+                    {group.items.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         <span className="flex items-center gap-2">
                           <item.icon className="h-4 w-4" />
@@ -141,22 +171,22 @@ const AdminDashboard = () => {
         ) : (
           <div className="flex gap-6">
             {/* Sidebar */}
-            <nav className="w-56 shrink-0 space-y-4 bg-[hsl(var(--surface-overlay))] rounded-lg p-3 border border-border">
-              {navGroups.map(group => (
+            <nav className="w-56 shrink-0 space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-overlay))] p-3">
+              {navGroups.map((group) => (
                 <div key={group.label}>
-                  <div className="px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {group.label}
                   </div>
                   <div className="mt-1 space-y-0.5">
-                    {group.items.map(item => (
+                    {group.items.map((item) => (
                       <button
                         key={item.id}
                         onClick={() => setActiveSection(item.id)}
                         className={cn(
-                          'flex items-center gap-2.5 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                          'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                           activeSection === item.id
-                            ? 'text-foreground border-l-[3px] border-l-primary bg-accent/50 pl-[9px]'
-                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                            ? 'border-l-[3px] border-l-primary bg-accent/50 pl-[9px] text-foreground'
+                            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                         )}
                       >
                         <item.icon className="h-4 w-4" />
@@ -169,9 +199,7 @@ const AdminDashboard = () => {
             </nav>
 
             {/* Content */}
-            <div className="flex-1 min-w-0">
-              {renderContent()}
-            </div>
+            <div className="min-w-0 flex-1">{renderContent()}</div>
           </div>
         )}
       </div>

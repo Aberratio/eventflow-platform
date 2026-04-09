@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = (role: UserRole) => {
-    const mockUser = mockUsers.find(u => u.role === role);
+    const mockUser = mockUsers.find((u) => u.role === role);
     if (mockUser) {
       setUser(mockUser);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mockUser));
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loginWithCredentials = (email: string, password: string): boolean => {
     if (password !== MOCK_PASSWORD) return false;
-    const foundUser = mockUsers.find(u => u.email === email);
+    const foundUser = mockUsers.find((u) => u.email === email);
     if (!foundUser) return false;
     setUser(foundUser);
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(foundUser));
@@ -53,7 +53,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, loginWithCredentials, logout }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, login, loginWithCredentials, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

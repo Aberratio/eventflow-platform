@@ -19,23 +19,24 @@ export const mockGlobalInsuranceSettings: GlobalInsuranceSettings = {
   maxAge: 70,
 };
 
-export const getExistingTeamsForEvent = (eventId: string): Array<{
+export const getExistingTeamsForEvent = (
+  eventId: string,
+): Array<{
   name: string;
   memberCount: number;
 }> => {
   const teamsMap = new Map<string, number>();
-  
+
   mockRegistrations
-    .filter(r => r.eventId === eventId && r.teamName && r.status !== 'cancelled')
-    .forEach(r => {
+    .filter((r) => r.eventId === eventId && r.teamName && r.status !== 'cancelled')
+    .forEach((r) => {
       const count = teamsMap.get(r.teamName!) || 0;
       teamsMap.set(r.teamName!, count + 1);
     });
-  
+
   return Array.from(teamsMap.entries())
     .map(([name, memberCount]) => ({ name, memberCount }))
     .sort((a, b) => b.memberCount - a.memberCount);
 };
 
 export { validateTeamName } from '@/api/mock/helpers';
-

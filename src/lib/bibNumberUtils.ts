@@ -6,15 +6,12 @@ import { Registration } from '@/types';
  * @param maxToShow - Maximum ranges to show before adding "i więcej"
  * @returns Formatted string like "1-5, 7-10, 12 i więcej"
  */
-export const getAvailableNumbersString = (
-  registrations: Registration[],
-  maxToShow = 3
-): string => {
+export const getAvailableNumbersString = (registrations: Registration[], maxToShow = 3): string => {
   // Collect all used numbers
   const usedNumbers = registrations
-    .filter(r => r.bibNumber)
-    .map(r => parseInt(r.bibNumber!, 10))
-    .filter(n => !isNaN(n) && n > 0)
+    .filter((r) => r.bibNumber)
+    .map((r) => parseInt(r.bibNumber!, 10))
+    .filter((n) => !isNaN(n) && n > 0)
     .sort((a, b) => a - b);
 
   if (usedNumbers.length === 0) {
@@ -66,12 +63,10 @@ export const getAvailableNumbersString = (
   };
 
   const displayRanges = ranges.slice(0, maxToShow);
-  const formatted = displayRanges.map((r, i) => 
-    formatRange(r, i === displayRanges.length - 1)
-  );
+  const formatted = displayRanges.map((r, i) => formatRange(r, i === displayRanges.length - 1));
 
   if (ranges.length > maxToShow) {
-    return formatted.slice(0, -1).join(', ') + ' i więcej';
+    return `${formatted.slice(0, -1).join(', ')} i więcej`;
   }
 
   return formatted.join(', ');
@@ -83,15 +78,12 @@ export const getAvailableNumbersString = (
  * @param startFrom - Minimum number to start from
  * @returns Next available number
  */
-export const getNextAvailableNumber = (
-  registrations: Registration[],
-  startFrom = 1
-): number => {
+export const getNextAvailableNumber = (registrations: Registration[], startFrom = 1): number => {
   const usedNumbers = new Set(
     registrations
-      .filter(r => r.bibNumber)
-      .map(r => parseInt(r.bibNumber!, 10))
-      .filter(n => !isNaN(n))
+      .filter((r) => r.bibNumber)
+      .map((r) => parseInt(r.bibNumber!, 10))
+      .filter((n) => !isNaN(n)),
   );
 
   let current = startFrom;
@@ -111,12 +103,12 @@ export const getNextAvailableNumber = (
 export const isBibNumberTaken = (
   registrations: Registration[],
   bibNumber: string,
-  excludeRegistrationId?: string
+  excludeRegistrationId?: string,
 ): boolean => {
   const num = parseInt(bibNumber, 10);
   if (isNaN(num)) return false;
 
-  return registrations.some(r => {
+  return registrations.some((r) => {
     if (r.id === excludeRegistrationId) return false;
     if (!r.bibNumber) return false;
     return parseInt(r.bibNumber, 10) === num;

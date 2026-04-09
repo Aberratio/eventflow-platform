@@ -1,9 +1,9 @@
-import { useParams, Link } from "react-router-dom";
-import { useMemo } from "react";
-import { Layout } from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useParams, Link } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Layout } from '@/components/layout/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -11,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from "lucide-react";
+} from '@/components/ui/table';
+import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from 'lucide-react';
 import { mockResults } from '@/api/mock/results.mock';
 import { mockEvents } from '@/api/mock/events.mock';
 import { disciplineLabels } from '@/api/mock/labels';
@@ -30,13 +30,13 @@ const AthleteProfilePage = () => {
       });
   }, [userId]);
 
-  const athleteName = athleteResults[0]?.userName || "Nieznany zawodnik";
+  const athleteName = athleteResults[0]?.userName || 'Nieznany zawodnik';
 
   const personalRecords = useMemo(() => {
-    const prMap = new Map<string, typeof athleteResults[0]>();
-    
+    const prMap = new Map<string, (typeof athleteResults)[0]>();
+
     athleteResults
-      .filter((r) => r.status === "finished")
+      .filter((r) => r.status === 'finished')
       .forEach((result) => {
         const existing = prMap.get(result.distanceName);
         if (!existing || result.timeInSeconds < existing.timeInSeconds) {
@@ -52,10 +52,10 @@ const AthleteProfilePage = () => {
   }, [athleteResults]);
 
   const stats = useMemo(() => {
-    const finishedRaces = athleteResults.filter((r) => r.status === "finished").length;
+    const finishedRaces = athleteResults.filter((r) => r.status === 'finished').length;
     const totalRaces = athleteResults.length;
-    const podiums = athleteResults.filter((r) => r.position <= 3 && r.status === "finished").length;
-    
+    const podiums = athleteResults.filter((r) => r.position <= 3 && r.status === 'finished').length;
+
     return { finishedRaces, totalRaces, podiums };
   }, [athleteResults]);
 
@@ -65,11 +65,15 @@ const AthleteProfilePage = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "finished":
-        return <Badge variant="default" className="bg-success">Ukończył</Badge>;
-      case "dnf":
+      case 'finished':
+        return (
+          <Badge variant="default" className="bg-success">
+            Ukończył
+          </Badge>
+        );
+      case 'dnf':
         return <Badge variant="secondary">DNF</Badge>;
-      case "dsq":
+      case 'dsq':
         return <Badge variant="destructive">DSQ</Badge>;
       default:
         return null;
@@ -87,9 +91,9 @@ const AthleteProfilePage = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-12">
-          <Card className="max-w-md mx-auto text-center">
+          <Card className="mx-auto max-w-md text-center">
             <CardContent className="pt-6">
-              <p className="text-muted-foreground mb-4">
+              <p className="mb-4 text-muted-foreground">
                 Brak dostępnych wyników dla tego zawodnika.
               </p>
               <Button asChild>
@@ -117,7 +121,7 @@ const AthleteProfilePage = () => {
             </Link>
           </Button>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">{athleteName}</h1>
               <p className="text-muted-foreground">Profil zawodnika</p>
@@ -172,7 +176,7 @@ const AthleteProfilePage = () => {
                         <TableRow key={pr.id}>
                           <TableCell className="font-medium">{pr.distanceName}</TableCell>
                           <TableCell className="font-mono">{pr.time}</TableCell>
-                          <TableCell className="hidden sm:table-cell text-muted-foreground">
+                          <TableCell className="hidden text-muted-foreground sm:table-cell">
                             {event?.name}
                           </TableCell>
                         </TableRow>
@@ -181,9 +185,7 @@ const AthleteProfilePage = () => {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  Brak ukończonych zawodów
-                </p>
+                <p className="py-4 text-center text-muted-foreground">Brak ukończonych zawodów</p>
               )}
             </CardContent>
           </Card>
@@ -205,21 +207,21 @@ const AthleteProfilePage = () => {
                   return (
                     <div
                       key={result.id}
-                      className="flex flex-col gap-2 p-3 rounded-lg border bg-card"
+                      className="flex flex-col gap-2 rounded-lg border bg-card p-3"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <Link
                             to={`/events/${event.slug}`}
-                            className="font-medium hover:text-primary hover:underline transition-colors line-clamp-1"
+                            className="line-clamp-1 font-medium transition-colors hover:text-primary hover:underline"
                           >
                             {event.name}
                           </Link>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                             <MapPin className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{event.city}</span>
                             <span>•</span>
-                            <span>{new Date(event.date).toLocaleDateString("pl-PL")}</span>
+                            <span>{new Date(event.date).toLocaleDateString('pl-PL')}</span>
                           </div>
                         </div>
                         {getStatusBadge(result.status)}
@@ -230,8 +232,8 @@ const AthleteProfilePage = () => {
                           <Badge variant="outline">{result.distanceName}</Badge>
                           <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
                         </div>
-                        
-                        {result.status === "finished" && (
+
+                        {result.status === 'finished' && (
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-medium">{result.time}</span>
                             <div className="flex items-center gap-1">

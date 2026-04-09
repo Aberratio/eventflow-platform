@@ -43,18 +43,18 @@ export const BibNumberAssignment = ({
   const [sortingOption, setSortingOption] = useState<SortingOption>('date_paid');
   const [startNumber, setStartNumber] = useState('1');
   const [selectedDistances, setSelectedDistances] = useState<Set<string>>(
-    new Set(event.distances.map(d => d.id))
+    new Set(event.distances.map((d) => d.id)),
   );
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // Calculate stats per distance
   const distanceStats = useMemo(() => {
-    return event.distances.map(distance => {
+    return event.distances.map((distance) => {
       const distanceRegs = registrations.filter(
-        r => r.distanceId === distance.id && r.status !== 'removed' && r.status !== 'cancelled'
+        (r) => r.distanceId === distance.id && r.status !== 'removed' && r.status !== 'cancelled',
       );
-      const withoutNumber = distanceRegs.filter(r => !r.bibNumber).length;
-      const withNumber = distanceRegs.filter(r => r.bibNumber).length;
+      const withoutNumber = distanceRegs.filter((r) => !r.bibNumber).length;
+      const withNumber = distanceRegs.filter((r) => r.bibNumber).length;
       return {
         ...distance,
         withoutNumber,
@@ -69,7 +69,7 @@ export const BibNumberAssignment = ({
     const paidOnly = sortingOption === 'date_paid' || sortingOption === 'name_paid';
     const sortByName = sortingOption === 'name_paid' || sortingOption === 'name_all';
 
-    let eligible = registrations.filter(r => {
+    const eligible = registrations.filter((r) => {
       // Must not have bib number
       if (r.bibNumber) return false;
       // Must not be removed or cancelled
@@ -85,8 +85,8 @@ export const BibNumberAssignment = ({
     if (sortByName) {
       eligible.sort((a, b) => a.userName.localeCompare(b.userName, 'pl'));
     } else {
-      eligible.sort((a, b) => 
-        new Date(a.registeredAt).getTime() - new Date(b.registeredAt).getTime()
+      eligible.sort(
+        (a, b) => new Date(a.registeredAt).getTime() - new Date(b.registeredAt).getTime(),
       );
     }
 
@@ -129,23 +129,23 @@ export const BibNumberAssignment = ({
     // Collect all used bib numbers
     const usedNumbers = new Set(
       registrations
-        .filter(r => r.bibNumber)
-        .map(r => parseInt(r.bibNumber!, 10))
-        .filter(n => !isNaN(n))
+        .filter((r) => r.bibNumber)
+        .map((r) => parseInt(r.bibNumber!, 10))
+        .filter((n) => !isNaN(n)),
     );
 
     let currentNumber = start;
     const updatedRegistrations = [...registrations];
     let assignedCount = 0;
 
-    eligible.forEach(participant => {
+    eligible.forEach((participant) => {
       // Skip used numbers
       while (usedNumbers.has(currentNumber)) {
         currentNumber++;
       }
-      
+
       // Find and update registration
-      const index = updatedRegistrations.findIndex(r => r.id === participant.id);
+      const index = updatedRegistrations.findIndex((r) => r.id === participant.id);
       if (index !== -1) {
         updatedRegistrations[index] = {
           ...updatedRegistrations[index],
@@ -158,7 +158,7 @@ export const BibNumberAssignment = ({
     });
 
     onRegistrationsChange(updatedRegistrations);
-    
+
     toast({
       title: 'Numery przydzielone',
       description: `Przydzielono numery ${assignedCount} ${assignedCount === 1 ? 'uczestnikowi' : 'uczestnikom'}.`,
@@ -166,7 +166,7 @@ export const BibNumberAssignment = ({
   };
 
   const handleRemoveAllBibNumbers = () => {
-    const updatedRegistrations = registrations.map(r => {
+    const updatedRegistrations = registrations.map((r) => {
       if (selectedDistances.has(r.distanceId) && r.bibNumber) {
         return { ...r, bibNumber: undefined };
       }
@@ -174,7 +174,7 @@ export const BibNumberAssignment = ({
     });
 
     const removedCount = registrations.filter(
-      r => selectedDistances.has(r.distanceId) && r.bibNumber
+      (r) => selectedDistances.has(r.distanceId) && r.bibNumber,
     ).length;
 
     onRegistrationsChange(updatedRegistrations);
@@ -187,11 +187,11 @@ export const BibNumberAssignment = ({
   };
 
   const totalWithoutNumber = distanceStats
-    .filter(d => selectedDistances.has(d.id))
+    .filter((d) => selectedDistances.has(d.id))
     .reduce((sum, d) => sum + d.withoutNumber, 0);
 
   const totalWithNumber = distanceStats
-    .filter(d => selectedDistances.has(d.id))
+    .filter((d) => selectedDistances.has(d.id))
     .reduce((sum, d) => sum + d.withNumber, 0);
 
   return (
@@ -204,10 +204,13 @@ export const BibNumberAssignment = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Settings row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Sortowanie</Label>
-            <Select value={sortingOption} onValueChange={(v) => setSortingOption(v as SortingOption)}>
+            <Select
+              value={sortingOption}
+              onValueChange={(v) => setSortingOption(v as SortingOption)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -237,7 +240,7 @@ export const BibNumberAssignment = ({
         <div className="space-y-3">
           <Label>Uwzględnij dystanse</Label>
           <div className="space-y-2">
-            {distanceStats.map(distance => (
+            {distanceStats.map((distance) => (
               <div key={distance.id} className="flex items-center gap-3">
                 <Checkbox
                   id={`distance-${distance.id}`}
@@ -246,16 +249,14 @@ export const BibNumberAssignment = ({
                 />
                 <Label
                   htmlFor={`distance-${distance.id}`}
-                  className="flex items-center gap-2 cursor-pointer flex-1"
+                  className="flex flex-1 cursor-pointer items-center gap-2"
                 >
                   <span>{distance.name}</span>
                   <Badge variant="outline" className="ml-auto">
                     {distance.withoutNumber} bez numeru
                   </Badge>
                   {distance.withNumber > 0 && (
-                    <Badge variant="secondary">
-                      {distance.withNumber} z numerem
-                    </Badge>
+                    <Badge variant="secondary">{distance.withNumber} z numerem</Badge>
                   )}
                 </Label>
               </div>
@@ -265,22 +266,23 @@ export const BibNumberAssignment = ({
 
         {/* Summary */}
         {eligibleCount > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+          <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
-              Do przydzielenia: <strong>{eligibleCount}</strong> {eligibleCount === 1 ? 'uczestnik' : 'uczestników'}
+              Do przydzielenia: <strong>{eligibleCount}</strong>{' '}
+              {eligibleCount === 1 ? 'uczestnik' : 'uczestników'}
             </span>
           </div>
         )}
 
         {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             onClick={handleAssignBibNumbers}
             disabled={eligibleCount === 0 || selectedDistances.size === 0}
             className="flex-1"
           >
-            <Hash className="h-4 w-4 mr-2" />
+            <Hash className="mr-2 h-4 w-4" />
             Nadaj numery startowe! ({eligibleCount})
           </Button>
           <Button
@@ -289,7 +291,7 @@ export const BibNumberAssignment = ({
             disabled={totalWithNumber === 0 || selectedDistances.size === 0}
             className="flex-1"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="mr-2 h-4 w-4" />
             Usuń wszystkie numery ({totalWithNumber})
           </Button>
         </div>
@@ -300,15 +302,14 @@ export const BibNumberAssignment = ({
             <AlertDialogHeader>
               <AlertDialogTitle>Usuń numery startowe?</AlertDialogTitle>
               <AlertDialogDescription>
-                Czy na pewno chcesz usunąć numery startowe {totalWithNumber} {totalWithNumber === 1 ? 'uczestnikowi' : 'uczestnikom'} 
-                z wybranych dystansów? Ta operacja może wymagać ponownego przydzielenia numerów.
+                Czy na pewno chcesz usunąć numery startowe {totalWithNumber}{' '}
+                {totalWithNumber === 1 ? 'uczestnikowi' : 'uczestnikom'}z wybranych dystansów? Ta
+                operacja może wymagać ponownego przydzielenia numerów.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Anuluj</AlertDialogCancel>
-              <AlertDialogAction onClick={handleRemoveAllBibNumbers}>
-                Usuń numery
-              </AlertDialogAction>
+              <AlertDialogAction onClick={handleRemoveAllBibNumbers}>Usuń numery</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

@@ -16,10 +16,8 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
   const [expandedOrders, setExpandedOrders] = useState<string[]>([]);
 
   const toggleOrder = (orderId: string) => {
-    setExpandedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
+    setExpandedOrders((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId],
     );
   };
 
@@ -32,7 +30,9 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
       case 'shipped':
         return <Badge className="bg-warning/10 text-warning hover:bg-warning/20">Wysłane</Badge>;
       case 'delivered':
-        return <Badge className="bg-success/10 text-success hover:bg-success/20">Dostarczone</Badge>;
+        return (
+          <Badge className="bg-success/10 text-success hover:bg-success/20">Dostarczone</Badge>
+        );
       case 'cancelled':
         return <Badge variant="destructive">Anulowane</Badge>;
       default:
@@ -50,22 +50,22 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         {orders.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <ShoppingBag className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <ShoppingBag className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p>Brak zamówień.</p>
             <p className="text-sm">Twoje zamówienia ze sklepu pojawią się tutaj.</p>
           </div>
         ) : (
-          orders.map(order => {
+          orders.map((order) => {
             const isExpanded = expandedOrders.includes(order.id);
             return (
-              <div key={order.id} className="border border-border/50 rounded-lg overflow-hidden">
+              <div key={order.id} className="overflow-hidden rounded-lg border border-border/50">
                 {/* Order header */}
-                <div 
-                  className="p-4 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                <div
+                  className="cursor-pointer bg-muted/30 p-4 transition-colors hover:bg-muted/50"
                   onClick={() => toggleOrder(order.id)}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-medium">{order.orderNumber}</span>
@@ -88,7 +88,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
 
                 {/* Order details */}
                 {isExpanded && (
-                  <div className="p-4 space-y-4">
+                  <div className="space-y-4 p-4">
                     {/* Items */}
                     <div className="space-y-2">
                       {order.items.map((item, idx) => (
@@ -96,11 +96,11 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                           <div>
                             <span>{item.productName}</span>
                             {(item.size || item.color) && (
-                              <span className="text-muted-foreground ml-1">
+                              <span className="ml-1 text-muted-foreground">
                                 ({[item.size, item.color].filter(Boolean).join(', ')})
                               </span>
                             )}
-                            <span className="text-muted-foreground ml-1">x{item.quantity}</span>
+                            <span className="ml-1 text-muted-foreground">x{item.quantity}</span>
                           </div>
                           <span>{(item.price * item.quantity).toFixed(2)} zł</span>
                         </div>
@@ -116,8 +116,14 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                         <span>{order.productTotal.toFixed(2)} zł</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Dostawa ({order.deliveryMethod.name})</span>
-                        <span>{order.deliveryPrice > 0 ? `${order.deliveryPrice.toFixed(2)} zł` : 'Gratis'}</span>
+                        <span className="text-muted-foreground">
+                          Dostawa ({order.deliveryMethod.name})
+                        </span>
+                        <span>
+                          {order.deliveryPrice > 0
+                            ? `${order.deliveryPrice.toFixed(2)} zł`
+                            : 'Gratis'}
+                        </span>
                       </div>
                       {order.paymentSurcharge > 0 && (
                         <div className="flex justify-between">
@@ -125,7 +131,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                           <span>{order.paymentSurcharge.toFixed(2)} zł</span>
                         </div>
                       )}
-                      <div className="flex justify-between font-semibold pt-2">
+                      <div className="flex justify-between pt-2 font-semibold">
                         <span>Razem</span>
                         <span>{order.totalPrice.toFixed(2)} zł</span>
                       </div>
@@ -134,7 +140,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                     <Separator />
 
                     {/* Delivery info */}
-                    <div className="text-sm space-y-1">
+                    <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Metoda dostawy</span>
                         <span>{order.deliveryMethod.name}</span>

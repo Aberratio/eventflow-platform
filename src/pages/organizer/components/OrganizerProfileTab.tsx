@@ -31,12 +31,14 @@ const OrganizerProfileTab = () => {
               <Input
                 id="companyName"
                 value={organizerData.companyName}
-                onChange={(e) => setOrganizerData({ ...organizerData, companyName: e.target.value })}
+                onChange={(e) =>
+                  setOrganizerData({ ...organizerData, companyName: e.target.value })
+                }
                 placeholder="np. Sportowe Wydarzenia Sp. z o.o."
               />
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="nip">NIP (opcjonalne)</Label>
                 <Input
@@ -64,12 +66,14 @@ const OrganizerProfileTab = () => {
               <Textarea
                 id="description"
                 value={organizerData.description}
-                onChange={(e) => setOrganizerData({ ...organizerData, description: e.target.value })}
+                onChange={(e) =>
+                  setOrganizerData({ ...organizerData, description: e.target.value })
+                }
                 placeholder="Krótki opis Twojej działalności organizatorskiej..."
                 rows={4}
                 maxLength={500}
               />
-              <p className="text-xs text-muted-foreground text-right">
+              <p className="text-right text-xs text-muted-foreground">
                 {organizerData.description.length}/500 znaków
               </p>
             </div>

@@ -11,10 +11,17 @@ const mockEvent: Event = {
   city: 'Warszawa',
   location: 'Park Łazienkowski',
   discipline: 'running',
-  distances: [{
-    id: 'd1', name: 'Maraton', length: 42.195, unit: 'km', price: 150,
-    categories: ['Open'], registeredCount: 0,
-  }],
+  distances: [
+    {
+      id: 'd1',
+      name: 'Maraton',
+      length: 42.195,
+      unit: 'km',
+      price: 150,
+      categories: ['Open'],
+      registeredCount: 0,
+    },
+  ],
   organizerId: 'o1',
   organizerName: 'Org',
   description: 'Opis',

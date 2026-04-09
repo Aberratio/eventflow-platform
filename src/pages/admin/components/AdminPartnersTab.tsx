@@ -21,7 +21,7 @@ export const AdminPartnersTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Partnerzy</h3>
           <p className="text-sm text-muted-foreground">
@@ -29,17 +29,17 @@ export const AdminPartnersTab = () => {
           </p>
         </div>
         <Button onClick={() => navigate('/admin/partners/new')}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Dodaj partnera
         </Button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {partners.map((partner) => (
           <Card key={partner.id}>
             <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="w-full h-20 flex items-center justify-center bg-muted rounded-lg">
+              <div className="flex flex-col items-center space-y-4 text-center">
+                <div className="flex h-20 w-full items-center justify-center rounded-lg bg-muted">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
@@ -53,7 +53,7 @@ export const AdminPartnersTab = () => {
                       href={partner.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-muted-foreground hover:text-primary flex items-center justify-center gap-1"
+                      className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-primary"
                     >
                       <ExternalLink className="h-3 w-3" />
                       Strona www
@@ -62,7 +62,10 @@ export const AdminPartnersTab = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {partner.featured ? (
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                    <Badge
+                      variant="outline"
+                      className="border-primary/20 bg-primary/10 text-primary"
+                    >
                       Wyróżniony
                     </Badge>
                   ) : (
@@ -70,8 +73,12 @@ export const AdminPartnersTab = () => {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/admin/partners/${partner.id}/edit`)}>
-                    <Pencil className="h-4 w-4 mr-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/admin/partners/${partner.id}/edit`)}
+                  >
+                    <Pencil className="mr-1 h-4 w-4" />
                     Edytuj
                   </Button>
                   <Button

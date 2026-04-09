@@ -15,17 +15,17 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
   const itemTotal = product.price * item.quantity;
 
   return (
-    <div className="flex gap-4 p-4 bg-card rounded-xl border shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex gap-4 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
       {/* Product Image */}
       <Link to={`/shop/${product.slug}`} className="shrink-0">
         <div className="relative overflow-hidden rounded-lg">
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-20 h-20 sm:w-24 sm:h-24 object-cover transition-transform hover:scale-105"
+            className="h-20 w-20 object-cover transition-transform hover:scale-105 sm:h-24 sm:w-24"
           />
           {product.isService && (
-            <Badge className="absolute top-1 left-1 text-[10px] px-1.5 py-0 bg-primary/90">
+            <Badge className="absolute left-1 top-1 bg-primary/90 px-1.5 py-0 text-[10px]">
               Cyfrowa
             </Badge>
           )}
@@ -33,14 +33,14 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
       </Link>
 
       {/* Product Details */}
-      <div className="flex-1 min-w-0">
-        <Link 
-          to={`/shop/${product.slug}`} 
-          className="font-medium text-foreground hover:text-primary transition-colors line-clamp-2"
+      <div className="min-w-0 flex-1">
+        <Link
+          to={`/shop/${product.slug}`}
+          className="line-clamp-2 font-medium text-foreground transition-colors hover:text-primary"
         >
           {product.name}
         </Link>
-        
+
         {(item.size || item.color) && (
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {item.size && (
@@ -63,7 +63,7 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
 
       {/* Quantity & Actions */}
       <div className="flex flex-col items-end justify-between gap-2">
-        <div className="flex items-center gap-1.5 bg-muted/50 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 p-1">
           <Button
             variant="ghost"
             size="icon"
@@ -73,7 +73,7 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
-          <span className="w-8 text-center font-semibold text-sm">{item.quantity}</span>
+          <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -84,15 +84,15 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
           </Button>
         </div>
 
-        <div className="text-right font-bold text-base">{itemTotal.toFixed(2)} zł</div>
+        <div className="text-right text-base font-bold">{itemTotal.toFixed(2)} zł</div>
 
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-muted-foreground hover:text-destructive h-7 px-2"
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
           onClick={onRemove}
         >
-          <Trash2 className="h-3.5 w-3.5 mr-1" />
+          <Trash2 className="mr-1 h-3.5 w-3.5" />
           Usuń
         </Button>
       </div>

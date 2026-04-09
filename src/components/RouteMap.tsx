@@ -37,10 +37,10 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
             <img
               src={mapUrl}
               alt="Mapa trasy"
-              className="w-full h-auto max-h-[400px] object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className="h-auto max-h-[400px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-              <div className="bg-background/90 rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
+              <div className="rounded-full bg-background/90 p-3 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                 <Maximize2 className="h-6 w-6 text-foreground" />
               </div>
             </div>
@@ -50,7 +50,9 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Długość:</span>
-                <span className="font-semibold">{distanceInfo.length} {distanceInfo.unit}</span>
+                <span className="font-semibold">
+                  {distanceInfo.length} {distanceInfo.unit}
+                </span>
               </div>
               {distanceInfo.elevation && (
                 <div className="flex items-center gap-2">
@@ -80,10 +82,10 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
               <img
                 src={elevationProfileUrl}
                 alt="Profil wysokościowy"
-                className="w-full h-auto max-h-[200px] object-contain"
+                className="h-auto max-h-[200px] w-full object-contain"
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                <div className="bg-background/90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
+                <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                   <Maximize2 className="h-5 w-5 text-foreground" />
                 </div>
               </div>
@@ -96,7 +98,7 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
       {gpxUrl && (
         <Button variant="outline" className="w-full" asChild>
           <a href={gpxUrl} download>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Pobierz plik GPX
           </a>
         </Button>
@@ -104,12 +106,12 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
 
       {/* Map dialog */}
       <Dialog open={isMapOpen} onOpenChange={setIsMapOpen}>
-        <DialogContent className="max-w-5xl w-full p-0 bg-background border">
+        <DialogContent className="w-full max-w-5xl border bg-background p-0">
           <div className="relative">
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 z-50"
+              className="absolute right-2 top-2 z-50"
               onClick={() => setIsMapOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -117,7 +119,7 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
             <img
               src={mapUrl}
               alt="Mapa trasy - pełny rozmiar"
-              className="w-full h-auto max-h-[85vh] object-contain p-4"
+              className="h-auto max-h-[85vh] w-full object-contain p-4"
             />
           </div>
         </DialogContent>
@@ -126,12 +128,12 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
       {/* Elevation dialog */}
       {elevationProfileUrl && (
         <Dialog open={isElevationOpen} onOpenChange={setIsElevationOpen}>
-          <DialogContent className="max-w-4xl w-full p-0 bg-background border">
+          <DialogContent className="w-full max-w-4xl border bg-background p-0">
             <div className="relative">
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 z-50"
+                className="absolute right-2 top-2 z-50"
                 onClick={() => setIsElevationOpen(false)}
               >
                 <X className="h-5 w-5" />
@@ -139,7 +141,7 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
               <img
                 src={elevationProfileUrl}
                 alt="Profil wysokościowy - pełny rozmiar"
-                className="w-full h-auto max-h-[60vh] object-contain p-4"
+                className="h-auto max-h-[60vh] w-full object-contain p-4"
               />
             </div>
           </DialogContent>

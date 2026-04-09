@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EMAIL_VARIABLES, EVENT_EMAIL_VARIABLES, SYSTEM_EMAIL_VARIABLES } from '@/types/email';
-import type { EmailVariableMeta, EmailTemplateScope } from '@/types/email';
+import type { EmailVariableMeta, EmailTemplateScope } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
 interface VariableChipsListProps {
   /** Ref to the input/textarea where variable will be inserted at cursor position */
@@ -42,25 +42,25 @@ export const VariableChipsList: React.FC<VariableChipsListProps> = ({
   scope,
   className,
 }) => {
-  const baseVariables = scope === 'system'
-    ? SYSTEM_EMAIL_VARIABLES
-    : scope === 'event'
-      ? EVENT_EMAIL_VARIABLES
-      : EMAIL_VARIABLES;
+  const baseVariables =
+    scope === 'system'
+      ? SYSTEM_EMAIL_VARIABLES
+      : scope === 'event'
+        ? EVENT_EMAIL_VARIABLES
+        : EMAIL_VARIABLES;
 
   const variables = filterGroup
-    ? baseVariables.filter(v => v.group === filterGroup)
+    ? baseVariables.filter((v) => v.group === filterGroup)
     : baseVariables;
 
-  const allGroups = scope === 'system'
-    ? (['uzytkownik', 'platforma'] as const)
-    : scope === 'event'
-      ? (['uczestnik', 'wydarzenie', 'platnosc'] as const)
-      : (['uczestnik', 'wydarzenie', 'platnosc', 'uzytkownik', 'platforma'] as const);
+  const allGroups =
+    scope === 'system'
+      ? (['uzytkownik', 'platforma'] as const)
+      : scope === 'event'
+        ? (['uczestnik', 'wydarzenie', 'platnosc'] as const)
+        : (['uczestnik', 'wydarzenie', 'platnosc', 'uzytkownik', 'platforma'] as const);
 
-  const groups = filterGroup
-    ? [filterGroup]
-    : allGroups;
+  const groups = filterGroup ? [filterGroup] : allGroups;
 
   const insertVariable = (variable: string) => {
     const el = targetRef.current;
@@ -85,22 +85,22 @@ export const VariableChipsList: React.FC<VariableChipsListProps> = ({
 
   return (
     <div className={className}>
-      {groups.map(group => {
-        const groupVars = variables.filter(v => v.group === group);
+      {groups.map((group) => {
+        const groupVars = variables.filter((v) => v.group === group);
         if (groupVars.length === 0) return null;
         return (
           <div key={group} className="mb-2 last:mb-0">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
               {GROUP_LABELS[group]}
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {groupVars.map(meta => (
+              {groupVars.map((meta) => (
                 <button
                   key={meta.variable}
                   type="button"
                   title={meta.description}
                   onClick={() => insertVariable(meta.variable)}
-                  className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-mono transition-colors cursor-pointer ${GROUP_COLORS[group]}`}
+                  className={`inline-flex cursor-pointer items-center rounded border px-2 py-0.5 font-mono text-xs transition-colors ${GROUP_COLORS[group]}`}
                 >
                   {meta.variable}
                 </button>

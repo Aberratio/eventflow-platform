@@ -24,19 +24,20 @@ export const AdminFeaturedEventsTab = () => {
   const [events, setEvents] = useState<Event[]>(mockEvents);
   const [search, setSearch] = useState('');
 
-  const publishedEvents = events.filter(e => !e.isPrivate && (e.status === 'published' || e.status === 'completed'));
-  const featuredEvents = events.filter(e => e.featured);
+  const publishedEvents = events.filter(
+    (e) => !e.isPrivate && (e.status === 'published' || e.status === 'completed'),
+  );
+  const featuredEvents = events.filter((e) => e.featured);
 
-  const filteredEvents = publishedEvents.filter(e =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.city.toLowerCase().includes(search.toLowerCase()) ||
-    e.organizerName.toLowerCase().includes(search.toLowerCase())
+  const filteredEvents = publishedEvents.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.city.toLowerCase().includes(search.toLowerCase()) ||
+      e.organizerName.toLowerCase().includes(search.toLowerCase()),
   );
 
   const toggleFeatured = (eventId: string) => {
-    setEvents(prev => prev.map(e =>
-      e.id === eventId ? { ...e, featured: !e.featured } : e
-    ));
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, featured: !e.featured } : e)));
   };
 
   const handleSave = () => {
@@ -65,20 +66,20 @@ export const AdminFeaturedEventsTab = () => {
         </CardHeader>
         <CardContent>
           {featuredEvents.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               Brak polecanych wydarzeń. Wybierz wydarzenia z listy poniżej.
             </p>
           ) : (
             <div className="space-y-2">
-              {featuredEvents.map(event => (
+              {featuredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-warning/5 border-warning/20"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-warning/20 bg-warning/5 p-3"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex min-w-0 items-center gap-3">
+                    <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
-                      <span className="font-medium text-sm truncate block">{event.name}</span>
+                      <span className="block truncate text-sm font-medium">{event.name}</span>
                       <span className="text-xs text-muted-foreground">
                         {format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • {event.city}
                       </span>
@@ -88,7 +89,7 @@ export const AdminFeaturedEventsTab = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleFeatured(event.id)}
-                    className="text-destructive hover:text-destructive shrink-0"
+                    className="shrink-0 text-destructive hover:text-destructive"
                   >
                     Usuń
                   </Button>
@@ -109,7 +110,7 @@ export const AdminFeaturedEventsTab = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Szukaj po nazwie, mieście lub organizatorze..."
               value={search}
@@ -118,7 +119,7 @@ export const AdminFeaturedEventsTab = () => {
             />
           </div>
 
-          <div className="border border-border/50 rounded-lg overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border border-border/50">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -131,7 +132,7 @@ export const AdminFeaturedEventsTab = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map(event => (
+                {filteredEvents.map((event) => (
                   <TableRow key={event.id} className={event.featured ? 'bg-warning/5' : ''}>
                     <TableCell>
                       <Switch
@@ -141,7 +142,9 @@ export const AdminFeaturedEventsTab = () => {
                     </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
-                        {event.featured && <Star className="h-3.5 w-3.5 text-warning fill-warning" />}
+                        {event.featured && (
+                          <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                        )}
                         {event.name}
                       </div>
                     </TableCell>
@@ -152,7 +155,9 @@ export const AdminFeaturedEventsTab = () => {
                       {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{event.city}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{event.organizerName}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {event.organizerName}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

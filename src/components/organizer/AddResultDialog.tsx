@@ -10,7 +10,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Registration } from '@/types';
 
@@ -92,7 +98,7 @@ export const AddResultDialog = ({
 
   // Filter registrations for autocomplete suggestions
   const matchingRegistrations = registrations.filter(
-    (r) => r.bibNumber?.includes(bibNumber) && r.status === 'confirmed'
+    (r) => r.bibNumber?.includes(bibNumber) && r.status === 'confirmed',
   );
 
   return (
@@ -100,9 +106,7 @@ export const AddResultDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Dodaj wynik</DialogTitle>
-          <DialogDescription>
-            Wprowadź dane uczestnika i jego wynik
-          </DialogDescription>
+          <DialogDescription>Wprowadź dane uczestnika i jego wynik</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -115,12 +119,12 @@ export const AddResultDialog = ({
               onChange={(e) => setBibNumber(e.target.value)}
             />
             {bibNumber && matchingRegistrations.length > 0 && matchingRegistrations.length <= 5 && (
-              <div className="text-xs text-muted-foreground space-y-1 mt-1">
+              <div className="mt-1 space-y-1 text-xs text-muted-foreground">
                 {matchingRegistrations.map((r) => (
                   <button
                     key={r.id}
                     type="button"
-                    className="block w-full text-left px-2 py-1 rounded hover:bg-muted transition-colors"
+                    className="block w-full rounded px-2 py-1 text-left transition-colors hover:bg-muted"
                     onClick={() => setBibNumber(r.bibNumber || '')}
                   >
                     <span className="font-mono font-medium">{r.bibNumber}</span>
@@ -135,10 +139,7 @@ export const AddResultDialog = ({
           {/* Status */}
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(v: 'finished' | 'dnf' | 'dsq') => setStatus(v)}
-            >
+            <Select value={status} onValueChange={(v: 'finished' | 'dnf' | 'dsq') => setStatus(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -160,9 +161,7 @@ export const AddResultDialog = ({
                 onChange={(e) => setTime(e.target.value)}
                 className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">
-                Format: godziny:minuty:sekundy
-              </p>
+              <p className="text-xs text-muted-foreground">Format: godziny:minuty:sekundy</p>
             </div>
           )}
         </div>

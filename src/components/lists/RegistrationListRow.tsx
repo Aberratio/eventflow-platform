@@ -15,15 +15,15 @@ interface RegistrationListRowProps {
   onSubmitResult?: () => void;
 }
 
-export const RegistrationListRow = ({ 
-  registration, 
-  event, 
+export const RegistrationListRow = ({
+  registration,
+  event,
   virtualSubmission,
-  onSubmitResult 
+  onSubmitResult,
 }: RegistrationListRowProps) => {
   const now = new Date();
   const isVirtual = event.isVirtual;
-  
+
   // Virtual event window status
   const startDate = event.startDate ? new Date(event.startDate) : null;
   const endDate = event.endDate ? new Date(event.endDate) : null;
@@ -32,21 +32,22 @@ export const RegistrationListRow = ({
   const windowEnded = endDate && isAfter(now, endDate);
 
   // Format subtitle based on virtual or regular event
-  const subtitle = isVirtual && event.startDate && event.endDate
-    ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMMM yyyy', { locale: pl })} • ${event.city}`
-    : `${format(new Date(event.date), 'd MMMM yyyy', { locale: pl })} • ${event.city}`;
+  const subtitle =
+    isVirtual && event.startDate && event.endDate
+      ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMMM yyyy', { locale: pl })} • ${event.city}`
+      : `${format(new Date(event.date), 'd MMMM yyyy', { locale: pl })} • ${event.city}`;
 
   // Build badges
   const badges = (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-wrap items-center gap-2">
       {isVirtual && (
         <Badge variant="secondary" className="text-xs">
-          <Globe className="h-3 w-3 mr-1" />
+          <Globe className="mr-1 h-3 w-3" />
           Wirtualny
         </Badge>
       )}
-      <Badge 
-        variant={registration.status === 'confirmed' ? 'default' : 'secondary'} 
+      <Badge
+        variant={registration.status === 'confirmed' ? 'default' : 'secondary'}
         className="text-xs"
       >
         {registration.status === 'confirmed' ? 'Potwierdzony' : 'Oczekuje'}
@@ -61,7 +62,7 @@ export const RegistrationListRow = ({
     // Window hasn't started yet
     if (windowNotStarted && startDate) {
       return (
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           Okno startowe od {format(startDate, 'd MMM', { locale: pl })}
         </span>
@@ -71,7 +72,7 @@ export const RegistrationListRow = ({
     // Window is active
     if (windowActive && endDate) {
       return (
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           Okno otwarte do {format(endDate, 'd MMM', { locale: pl })}
         </span>
@@ -83,9 +84,9 @@ export const RegistrationListRow = ({
       if (!virtualSubmission) {
         // No submission yet - show button
         return (
-          <Button 
-            size="sm" 
-            variant="default" 
+          <Button
+            size="sm"
+            variant="default"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -93,7 +94,7 @@ export const RegistrationListRow = ({
             }}
             className="h-7 text-xs"
           >
-            <Send className="h-3 w-3 mr-1" />
+            <Send className="mr-1 h-3 w-3" />
             Wprowadź wynik
           </Button>
         );
@@ -103,15 +104,15 @@ export const RegistrationListRow = ({
       switch (virtualSubmission.status) {
         case 'pending':
           return (
-            <Badge variant="outline" className="text-xs border-warning text-warning">
-              <Clock className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="border-warning text-xs text-warning">
+              <Clock className="mr-1 h-3 w-3" />
               Oczekuje: {virtualSubmission.submittedTime}
             </Badge>
           );
         case 'approved':
           return (
-            <Badge variant="outline" className="text-xs border-primary text-primary">
-              <CheckCircle className="h-3 w-3 mr-1" />
+            <Badge variant="outline" className="border-primary text-xs text-primary">
+              <CheckCircle className="mr-1 h-3 w-3" />
               Zatwierdzony: {virtualSubmission.submittedTime}
             </Badge>
           );
@@ -122,12 +123,12 @@ export const RegistrationListRow = ({
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-2">
                     <Badge variant="destructive" className="text-xs">
-                      <XCircle className="h-3 w-3 mr-1" />
+                      <XCircle className="mr-1 h-3 w-3" />
                       Odrzucony
                     </Badge>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -154,8 +155,10 @@ export const RegistrationListRow = ({
   };
 
   const meta = (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
-      <Badge variant="outline" className="text-xs">{registration.distanceName}</Badge>
+    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <Badge variant="outline" className="text-xs">
+        {registration.distanceName}
+      </Badge>
       {registration.bibNumber && (
         <span className="flex items-center gap-1">
           <Ticket className="h-3.5 w-3.5" />

@@ -26,9 +26,9 @@ const OrganizerEventsPage = () => {
   const { user } = useAuth();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  const myEvents = mockEvents.filter(e => e.organizerId === user?.id);
+  const myEvents = mockEvents.filter((e) => e.organizerId === user?.id);
 
-  const filteredEvents = myEvents.filter(e => {
+  const filteredEvents = myEvents.filter((e) => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'completed') return e.status === 'completed';
     if (statusFilter === 'draft') return ['draft', 'awaiting_approval'].includes(e.status);
@@ -53,7 +53,9 @@ const OrganizerEventsPage = () => {
   };
 
   const getParticipantCount = (eventId: string) => {
-    return mockRegistrations.filter(r => r.eventId === eventId && r.status !== 'cancelled' && r.status !== 'removed').length;
+    return mockRegistrations.filter(
+      (r) => r.eventId === eventId && r.status !== 'cancelled' && r.status !== 'removed',
+    ).length;
   };
 
   return (
@@ -63,17 +65,23 @@ const OrganizerEventsPage = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Moje wydarzenia</h1>
           <Button onClick={() => navigate('/organizer/events/new')}>
             <Plus className="mr-2 h-4 w-4" /> Nowe wydarzenie
           </Button>
         </div>
 
-        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="mb-6">
+        <Tabs
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+          className="mb-6"
+        >
           <TabsList>
             {Object.entries(statusLabels).map(([key, label]) => (
-              <TabsTrigger key={key} value={key}>{label}</TabsTrigger>
+              <TabsTrigger key={key} value={key}>
+                {label}
+              </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
@@ -81,9 +89,9 @@ const OrganizerEventsPage = () => {
         {filteredEvents.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p className="font-medium">Brak wydarzeń</p>
-              <p className="text-sm mt-1">
+              <p className="mt-1 text-sm">
                 {statusFilter === 'all'
                   ? 'Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze!'
                   : `Brak wydarzeń w kategorii "${statusLabels[statusFilter]}"`}
@@ -92,17 +100,17 @@ const OrganizerEventsPage = () => {
           </Card>
         ) : (
           <div className="space-y-3">
-            {filteredEvents.map(event => {
+            {filteredEvents.map((event) => {
               const participantCount = getParticipantCount(event.id);
               return (
-                <Card key={event.id} className="hover:shadow-md transition-shadow">
+                <Card key={event.id} className="transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-4 py-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-base truncate">{event.name}</h3>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="truncate text-base font-semibold">{event.name}</h3>
                         {getStatusBadge(event.status)}
                       </div>
-                      <div className="flex items-center gap-4 mt-1.5 text-sm text-muted-foreground flex-wrap">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5" />
                           {event.city}

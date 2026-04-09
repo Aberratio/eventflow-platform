@@ -5,11 +5,12 @@ import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
-  const [localRegistrations, setLocalRegistrations] = useState<Registration[]>(initialRegistrations);
+  const [localRegistrations, setLocalRegistrations] =
+    useState<Registration[]>(initialRegistrations);
 
   const handleStatusChange = (registration: Registration, newStatus: 'confirmed' | 'cancelled') => {
-    setLocalRegistrations(prev =>
-      prev.map(r => r.id === registration.id ? { ...r, status: newStatus } : r)
+    setLocalRegistrations((prev) =>
+      prev.map((r) => (r.id === registration.id ? { ...r, status: newStatus } : r)),
     );
     toast({
       title: 'Status zaktualizowany',
@@ -18,11 +19,12 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   const handleRemoveParticipant = (registration: Registration) => {
-    setLocalRegistrations(prev =>
-      prev.map(r => r.id === registration.id
-        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-        : r
-      )
+    setLocalRegistrations((prev) =>
+      prev.map((r) =>
+        r.id === registration.id
+          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+          : r,
+      ),
     );
     toast({
       title: 'Uczestnik usunięty',
@@ -31,11 +33,10 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   const handleRestoreParticipant = (registration: Registration) => {
-    setLocalRegistrations(prev =>
-      prev.map(r => r.id === registration.id
-        ? { ...r, status: 'pending' as const, removedAt: undefined }
-        : r
-      )
+    setLocalRegistrations((prev) =>
+      prev.map((r) =>
+        r.id === registration.id ? { ...r, status: 'pending' as const, removedAt: undefined } : r,
+      ),
     );
     toast({
       title: 'Uczestnik przywrócony',
@@ -45,11 +46,12 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
 
   const handleBulkDelete = (selectedIds: Set<string>) => {
     const count = selectedIds.size;
-    setLocalRegistrations(prev =>
-      prev.map(r => selectedIds.has(r.id)
-        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-        : r
-      )
+    setLocalRegistrations((prev) =>
+      prev.map((r) =>
+        selectedIds.has(r.id)
+          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+          : r,
+      ),
     );
     toast({
       title: 'Uczestnicy usunięci',
@@ -58,12 +60,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   const handleDeleteUnpaid = () => {
-    const unpaidIds = localRegistrations.filter(r => r.status === 'pending').map(r => r.id);
-    setLocalRegistrations(prev =>
-      prev.map(r => unpaidIds.includes(r.id)
-        ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-        : r
-      )
+    const unpaidIds = localRegistrations.filter((r) => r.status === 'pending').map((r) => r.id);
+    setLocalRegistrations((prev) =>
+      prev.map((r) =>
+        unpaidIds.includes(r.id)
+          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
+          : r,
+      ),
     );
     toast({
       title: 'Nieopłaceni usunięci',
@@ -72,8 +75,8 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   const handleAssignBib = (participantId: string, bibNumber: string, participantName: string) => {
-    setLocalRegistrations(prev =>
-      prev.map(r => r.id === participantId ? { ...r, bibNumber } : r)
+    setLocalRegistrations((prev) =>
+      prev.map((r) => (r.id === participantId ? { ...r, bibNumber } : r)),
     );
     toast({
       title: 'Numer startowy przypisany',
@@ -82,20 +85,27 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   const handlePaymentUpdate = (registrationId: string, updatedDetails: PaymentDetails) => {
-    setLocalRegistrations(prev =>
-      prev.map(r => r.id === registrationId ? { ...r, paymentDetails: updatedDetails } : r)
+    setLocalRegistrations((prev) =>
+      prev.map((r) => (r.id === registrationId ? { ...r, paymentDetails: updatedDetails } : r)),
     );
   };
 
   const handleExportCSV = (filteredRegistrations: Registration[]) => {
-    const data = filteredRegistrations.map(reg => ({
+    const data = filteredRegistrations.map((reg) => ({
       'Numer startowy': reg.bibNumber || '-',
       'Imię i nazwisko': reg.userName,
-      'Email': reg.userEmail,
-      'Dystans': reg.distanceName,
-      'Kategoria': reg.category,
-      'Status': reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : reg.status === 'cancelled' ? 'Anulowany' : 'Usunięty',
-      'Drużyna': reg.teamName || '-',
+      Email: reg.userEmail,
+      Dystans: reg.distanceName,
+      Kategoria: reg.category,
+      Status:
+        reg.status === 'confirmed'
+          ? 'Potwierdzony'
+          : reg.status === 'pending'
+            ? 'Oczekujący'
+            : reg.status === 'cancelled'
+              ? 'Anulowany'
+              : 'Usunięty',
+      Drużyna: reg.teamName || '-',
       'Data zapisu': new Date(reg.registeredAt).toLocaleDateString('pl-PL'),
     }));
     exportToCSV(data, `lista-startowa-${event.slug}`);
@@ -104,22 +114,26 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
 
   const handleExportPDF = (filteredRegistrations: Registration[]) => {
     const columns = ['Numer', 'Imię i nazwisko', 'Dystans', 'Kategoria', 'Status'];
-    const rows = filteredRegistrations.map(reg => [
+    const rows = filteredRegistrations.map((reg) => [
       reg.bibNumber || '-',
       reg.userName,
       reg.distanceName,
       reg.category,
-      reg.status === 'confirmed' ? 'Potwierdzony' : reg.status === 'pending' ? 'Oczekujący' : 'Anulowany',
+      reg.status === 'confirmed'
+        ? 'Potwierdzony'
+        : reg.status === 'pending'
+          ? 'Oczekujący'
+          : 'Anulowany',
     ]);
     generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
   };
 
   const unpaidCount = useMemo(() => {
-    return localRegistrations.filter(r => r.status === 'pending').length;
+    return localRegistrations.filter((r) => r.status === 'pending').length;
   }, [localRegistrations]);
 
-  const activeCount = localRegistrations.filter(r => r.status !== 'removed').length;
-  const removedCount = localRegistrations.filter(r => r.status === 'removed').length;
+  const activeCount = localRegistrations.filter((r) => r.status !== 'removed').length;
+  const removedCount = localRegistrations.filter((r) => r.status === 'removed').length;
 
   return {
     localRegistrations,

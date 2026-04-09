@@ -3,9 +3,41 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, MoreVertical, Eye, Pencil, Trash2, Globe, EyeOff, ArrowUp, ArrowDown, Mail, Gift, Shield, Users, HelpCircle, FileText, Scale, CreditCard } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Plus,
+  MoreVertical,
+  Eye,
+  Pencil,
+  Trash2,
+  Globe,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+  Mail,
+  Gift,
+  Shield,
+  Users,
+  HelpCircle,
+  FileText,
+  Scale,
+  CreditCard,
+} from 'lucide-react';
 import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -38,14 +70,14 @@ export const AdminPagesTab = () => {
   };
 
   const handleDeletePage = (id: string) => {
-    setPages(pages.filter(p => p.id !== id));
+    setPages(pages.filter((p) => p.id !== id));
     setDeletePageId(null);
     toast({ title: 'Usunięto stronę', variant: 'destructive' });
   };
 
   const handleTogglePublish = (page: InfoPage) => {
-    const updated = pages.map(p =>
-      p.id === page.id ? { ...p, published: !p.published, updatedAt: new Date().toISOString() } : p
+    const updated = pages.map((p) =>
+      p.id === page.id ? { ...p, published: !p.published, updatedAt: new Date().toISOString() } : p,
     );
     setPages(updated);
     toast({
@@ -55,10 +87,10 @@ export const AdminPagesTab = () => {
   };
 
   const handleMoveUp = (page: InfoPage) => {
-    const index = sortedPages.findIndex(p => p.id === page.id);
+    const index = sortedPages.findIndex((p) => p.id === page.id);
     if (index <= 0) return;
     const prevPage = sortedPages[index - 1];
-    const updated = pages.map(p => {
+    const updated = pages.map((p) => {
       if (p.id === page.id) return { ...p, order: prevPage.order };
       if (p.id === prevPage.id) return { ...p, order: page.order };
       return p;
@@ -67,10 +99,10 @@ export const AdminPagesTab = () => {
   };
 
   const handleMoveDown = (page: InfoPage) => {
-    const index = sortedPages.findIndex(p => p.id === page.id);
+    const index = sortedPages.findIndex((p) => p.id === page.id);
     if (index >= sortedPages.length - 1) return;
     const nextPage = sortedPages[index + 1];
-    const updated = pages.map(p => {
+    const updated = pages.map((p) => {
       if (p.id === page.id) return { ...p, order: nextPage.order };
       if (p.id === nextPage.id) return { ...p, order: page.order };
       return p;
@@ -92,7 +124,7 @@ export const AdminPagesTab = () => {
             <CardDescription>Zarządzaj treścią stron publicznych platformy</CardDescription>
           </div>
           <Button onClick={handleCreatePage}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Dodaj stronę
           </Button>
         </CardHeader>
@@ -101,7 +133,7 @@ export const AdminPagesTab = () => {
             {sortedPages.map((page, index) => (
               <div
                 key={page.id}
-                className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Button
@@ -124,16 +156,16 @@ export const AdminPagesTab = () => {
                   </Button>
                 </div>
 
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
                   {getIcon(page.icon)}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{page.title}</span>
                     <span className="text-sm text-muted-foreground">/info/{page.slug}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">{page.description}</p>
+                  <p className="truncate text-sm text-muted-foreground">{page.description}</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -141,10 +173,14 @@ export const AdminPagesTab = () => {
                     {page.published ? 'Opublikowana' : 'Szkic'}
                   </Badge>
                   {page.showInFooter && (
-                    <Badge variant="outline" className="text-xs">Stopka</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Stopka
+                    </Badge>
                   )}
                   {page.showInHeader && (
-                    <Badge variant="outline" className="text-xs">Nagłówek</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Nagłówek
+                    </Badge>
                   )}
                 </div>
 
@@ -156,24 +192,24 @@ export const AdminPagesTab = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleEditPage(page)}>
-                      <Pencil className="h-4 w-4 mr-2" />
+                      <Pencil className="mr-2 h-4 w-4" />
                       Edytuj
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <a href={`/info/${page.slug}`} target="_blank" rel="noopener noreferrer">
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="mr-2 h-4 w-4" />
                         Podgląd
                       </a>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleTogglePublish(page)}>
                       {page.published ? (
                         <>
-                          <EyeOff className="h-4 w-4 mr-2" />
+                          <EyeOff className="mr-2 h-4 w-4" />
                           Ukryj
                         </>
                       ) : (
                         <>
-                          <Globe className="h-4 w-4 mr-2" />
+                          <Globe className="mr-2 h-4 w-4" />
                           Opublikuj
                         </>
                       )}
@@ -182,7 +218,7 @@ export const AdminPagesTab = () => {
                       className="text-destructive"
                       onClick={() => setDeletePageId(page.id)}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Usuń
                     </DropdownMenuItem>
                   </DropdownMenuContent>

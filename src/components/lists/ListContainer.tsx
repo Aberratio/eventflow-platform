@@ -11,28 +11,42 @@ interface ListGroupProps {
   highlighted?: boolean;
 }
 
-export const ListGroup = ({ title, count, children, className, sticky = true, highlighted = false }: ListGroupProps) => {
+export const ListGroup = ({
+  title,
+  count,
+  children,
+  className,
+  sticky = true,
+  highlighted = false,
+}: ListGroupProps) => {
   return (
     <div className={cn('', className)}>
       {title && (
-        <div className={cn(
-          'flex items-center justify-between px-3 sm:px-4 py-2',
-          'border-b border-border/50',
-          highlighted 
-            ? 'bg-primary/[0.08] border-l-2 border-l-primary'
-            : 'bg-foreground/[0.03] border-l-2 border-l-warning',
-          sticky && 'sticky top-0 z-10'
-        )}>
+        <div
+          className={cn(
+            'flex items-center justify-between px-3 py-2 sm:px-4',
+            'border-b border-border/50',
+            highlighted
+              ? 'border-l-2 border-l-primary bg-primary/[0.08]'
+              : 'border-l-2 border-l-warning bg-foreground/[0.03]',
+            sticky && 'sticky top-0 z-10',
+          )}
+        >
           <div className="flex items-center gap-2">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {title}
+            </h3>
             {highlighted && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary font-medium">
+              <Badge
+                variant="outline"
+                className="border-primary/30 px-1.5 py-0 text-[9px] font-medium text-primary"
+              >
                 Teraz
               </Badge>
             )}
           </div>
           {count !== undefined && (
-            <span className="text-xs text-muted-foreground font-medium">{count}</span>
+            <span className="text-xs font-medium text-muted-foreground">{count}</span>
           )}
         </div>
       )}
@@ -53,11 +67,7 @@ export const ListContainer = ({ children, className, emptyState, isEmpty }: List
     return <Card className={cn('overflow-hidden', className)}>{emptyState}</Card>;
   }
 
-  return (
-    <Card className={cn('overflow-hidden', className)}>
-      {children}
-    </Card>
-  );
+  return <Card className={cn('overflow-hidden', className)}>{children}</Card>;
 };
 
 interface ListEmptyStateProps {
@@ -69,10 +79,10 @@ interface ListEmptyStateProps {
 
 export const ListEmptyState = ({ icon, title, description, action }: ListEmptyStateProps) => {
   return (
-    <div className="py-12 px-4 text-center">
+    <div className="px-4 py-12 text-center">
       {icon && <div className="mb-4 flex justify-center opacity-50">{icon}</div>}
-      <h3 className="font-semibold mb-1">{title}</h3>
-      {description && <p className="text-sm text-muted-foreground mb-4">{description}</p>}
+      <h3 className="mb-1 font-semibold">{title}</h3>
+      {description && <p className="mb-4 text-sm text-muted-foreground">{description}</p>}
       {action}
     </div>
   );

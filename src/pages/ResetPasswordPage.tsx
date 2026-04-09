@@ -8,16 +8,25 @@ import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { KeyRound, CheckCircle, Lock, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Hasło musi mieć minimum 8 znaków'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Hasła muszą być identyczne',
-  path: ['confirmPassword'],
-});
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, 'Hasło musi mieć minimum 8 znaków'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Hasła muszą być identyczne',
+    path: ['confirmPassword'],
+  });
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -37,7 +46,7 @@ const ResetPasswordPage = () => {
 
   const onSubmit = async () => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSuccess(true);
     toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zmienione.' });
     setIsLoading(false);
@@ -48,13 +57,15 @@ const ResetPasswordPage = () => {
       <Layout>
         <div className="bg-gradient-to-b from-destructive/5 via-background to-background">
           <div className="container py-12 md:py-24">
-            <div className="max-w-md mx-auto text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-destructive/10 mb-4">
+            <div className="mx-auto max-w-md text-center">
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
                 <AlertTriangle className="h-8 w-8 text-destructive" />
               </div>
-              <h1 className="text-3xl font-bold mb-2">Nieprawidłowy link</h1>
-              <p className="text-muted-foreground mb-6">Link do resetowania hasła jest nieprawidłowy lub wygasł.</p>
-              <Card className="shadow-lg border-border/50">
+              <h1 className="mb-2 text-3xl font-bold">Nieprawidłowy link</h1>
+              <p className="mb-6 text-muted-foreground">
+                Link do resetowania hasła jest nieprawidłowy lub wygasł.
+              </p>
+              <Card className="border-border/50 shadow-lg">
                 <CardContent className="pt-6">
                   <Button asChild className="w-full" size="lg">
                     <Link to="/forgot-password">Wyślij nowy link</Link>
@@ -72,26 +83,36 @@ const ResetPasswordPage = () => {
     <Layout>
       <div className="bg-gradient-to-b from-primary/10 via-background to-background">
         <div className="container py-12 md:py-24">
-          <div className="max-w-md mx-auto">
-            <div className="text-center mb-8">
-              <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}>
-                {isSuccess ? <CheckCircle className="h-8 w-8 text-success" /> : <KeyRound className="h-8 w-8 text-primary" />}
+          <div className="mx-auto max-w-md">
+            <div className="mb-8 text-center">
+              <div
+                className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl ${isSuccess ? 'bg-success/10' : 'bg-primary/10'}`}
+              >
+                {isSuccess ? (
+                  <CheckCircle className="h-8 w-8 text-success" />
+                ) : (
+                  <KeyRound className="h-8 w-8 text-primary" />
+                )}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              <h1 className="mb-2 text-3xl font-bold md:text-4xl">
                 {isSuccess ? 'Hasło zmienione!' : 'Ustaw nowe hasło'}
               </h1>
               <p className="text-muted-foreground">
-                {isSuccess ? 'Możesz się teraz zalogować nowym hasłem.' : 'Wprowadź nowe hasło dla swojego konta.'}
+                {isSuccess
+                  ? 'Możesz się teraz zalogować nowym hasłem.'
+                  : 'Wprowadź nowe hasło dla swojego konta.'}
               </p>
             </div>
 
-            <Card className="shadow-lg border-border/50">
+            <Card className="border-border/50 shadow-lg">
               <CardContent className="pt-6">
                 {isSuccess ? (
                   <div className="space-y-4">
-                    <div className="rounded-lg bg-success/5 border border-success/20 p-4 text-center">
-                      <CheckCircle className="h-6 w-6 text-success mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">Hasło zostało pomyślnie zaktualizowane</p>
+                    <div className="rounded-lg border border-success/20 bg-success/5 p-4 text-center">
+                      <CheckCircle className="mx-auto mb-2 h-6 w-6 text-success" />
+                      <p className="text-sm text-muted-foreground">
+                        Hasło zostało pomyślnie zaktualizowane
+                      </p>
                     </div>
                     <Button asChild className="w-full" size="lg">
                       <Link to="/login">Przejdź do logowania</Link>
@@ -108,7 +129,7 @@ const ResetPasswordPage = () => {
                             <FormLabel>Nowe hasło</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                   type={showPassword ? 'text' : 'password'}
                                   placeholder="Min. 8 znaków"
@@ -120,7 +141,11 @@ const ResetPasswordPage = () => {
                                   onClick={() => setShowPassword(!showPassword)}
                                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 >
-                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
                                 </button>
                               </div>
                             </FormControl>
@@ -136,8 +161,13 @@ const ResetPasswordPage = () => {
                             <FormLabel>Potwierdź nowe hasło</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input type="password" placeholder="Powtórz hasło" className="pl-10" {...field} />
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                  type="password"
+                                  placeholder="Powtórz hasło"
+                                  className="pl-10"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />

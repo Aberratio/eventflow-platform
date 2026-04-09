@@ -138,10 +138,7 @@ export interface EmailTemplate {
 /**
  * Input shape when creating a new template (server assigns id, createdAt, sentCount).
  */
-export type CreateEmailTemplatePayload = Omit<
-  EmailTemplate,
-  'id' | 'createdAt' | 'sentCount'
->;
+export type CreateEmailTemplatePayload = Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>;
 
 /**
  * Individual log entry for one email sent to one recipient.
@@ -188,30 +185,125 @@ export type EmailTemplateScope = 'event' | 'system';
 
 export const EVENT_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
   // Participant group
-  { variable: '{{uczestnik.imie}}',           label: 'Imię i nazwisko',        description: 'Pełne imię i nazwisko uczestnika',     group: 'uczestnik' },
-  { variable: '{{uczestnik.email}}',          label: 'Email',                  description: 'Adres email uczestnika',               group: 'uczestnik' },
-  { variable: '{{uczestnik.numer_startowy}}', label: 'Numer startowy',          description: 'Przypisany numer startowy',            group: 'uczestnik' },
-  { variable: '{{uczestnik.dystans}}',        label: 'Dystans',                description: 'Nazwa wybranego dystansu',             group: 'uczestnik' },
-  { variable: '{{uczestnik.kategoria}}',      label: 'Kategoria',              description: 'Kategoria wiekowa uczestnika',         group: 'uczestnik' },
-  { variable: '{{uczestnik.status}}',         label: 'Status rejestracji',     description: 'Aktualny status zapisu',               group: 'uczestnik' },
-  { variable: '{{uczestnik.druzyna}}',        label: 'Drużyna',                description: 'Nazwa drużyny (jeśli dotyczy)',        group: 'uczestnik' },
+  {
+    variable: '{{uczestnik.imie}}',
+    label: 'Imię i nazwisko',
+    description: 'Pełne imię i nazwisko uczestnika',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.email}}',
+    label: 'Email',
+    description: 'Adres email uczestnika',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.numer_startowy}}',
+    label: 'Numer startowy',
+    description: 'Przypisany numer startowy',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.dystans}}',
+    label: 'Dystans',
+    description: 'Nazwa wybranego dystansu',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.kategoria}}',
+    label: 'Kategoria',
+    description: 'Kategoria wiekowa uczestnika',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.status}}',
+    label: 'Status rejestracji',
+    description: 'Aktualny status zapisu',
+    group: 'uczestnik',
+  },
+  {
+    variable: '{{uczestnik.druzyna}}',
+    label: 'Drużyna',
+    description: 'Nazwa drużyny (jeśli dotyczy)',
+    group: 'uczestnik',
+  },
   // Event group
-  { variable: '{{wydarzenie.nazwa}}',         label: 'Nazwa wydarzenia',       description: 'Pełna nazwa wydarzenia',              group: 'wydarzenie' },
-  { variable: '{{wydarzenie.data}}',          label: 'Data wydarzenia',        description: 'Data i godzina startu',               group: 'wydarzenie' },
-  { variable: '{{wydarzenie.miasto}}',        label: 'Miasto',                 description: 'Miasto, w którym odbywa się zawody',  group: 'wydarzenie' },
-  { variable: '{{wydarzenie.link}}',          label: 'Link do strony',         description: 'Pełny URL strony wydarzenia',         group: 'wydarzenie' },
-  { variable: '{{wydarzenie.termin_rejestracji}}', label: 'Termin rejestracji', description: 'Data zamknięcia rejestracji',       group: 'wydarzenie' },
+  {
+    variable: '{{wydarzenie.nazwa}}',
+    label: 'Nazwa wydarzenia',
+    description: 'Pełna nazwa wydarzenia',
+    group: 'wydarzenie',
+  },
+  {
+    variable: '{{wydarzenie.data}}',
+    label: 'Data wydarzenia',
+    description: 'Data i godzina startu',
+    group: 'wydarzenie',
+  },
+  {
+    variable: '{{wydarzenie.miasto}}',
+    label: 'Miasto',
+    description: 'Miasto, w którym odbywa się zawody',
+    group: 'wydarzenie',
+  },
+  {
+    variable: '{{wydarzenie.link}}',
+    label: 'Link do strony',
+    description: 'Pełny URL strony wydarzenia',
+    group: 'wydarzenie',
+  },
+  {
+    variable: '{{wydarzenie.termin_rejestracji}}',
+    label: 'Termin rejestracji',
+    description: 'Data zamknięcia rejestracji',
+    group: 'wydarzenie',
+  },
   // Payment group
-  { variable: '{{platnosc.kwota}}',           label: 'Kwota do zapłaty',       description: 'Cena wpisowego za wybrany dystans',   group: 'platnosc' },
-  { variable: '{{platnosc.nr_konta}}',        label: 'Numer konta',            description: 'Numer konta bankowego organizatora',  group: 'platnosc' },
-  { variable: '{{platnosc.tytul_przelewu}}',  label: 'Tytuł przelewu',         description: 'Wymagany tytuł przelewu bankowego',   group: 'platnosc' },
+  {
+    variable: '{{platnosc.kwota}}',
+    label: 'Kwota do zapłaty',
+    description: 'Cena wpisowego za wybrany dystans',
+    group: 'platnosc',
+  },
+  {
+    variable: '{{platnosc.nr_konta}}',
+    label: 'Numer konta',
+    description: 'Numer konta bankowego organizatora',
+    group: 'platnosc',
+  },
+  {
+    variable: '{{platnosc.tytul_przelewu}}',
+    label: 'Tytuł przelewu',
+    description: 'Wymagany tytuł przelewu bankowego',
+    group: 'platnosc',
+  },
 ] as const;
 
 export const SYSTEM_EMAIL_VARIABLES: readonly EmailVariableMeta[] = [
-  { variable: '{{uzytkownik.imie}}',  label: 'Imię użytkownika',  description: 'Imię i nazwisko użytkownika',    group: 'uzytkownik' },
-  { variable: '{{uzytkownik.email}}', label: 'Email użytkownika', description: 'Adres email użytkownika',        group: 'uzytkownik' },
-  { variable: '{{platforma.nazwa}}',  label: 'Nazwa platformy',  description: 'Nazwa platformy (ZmierzymyCzas)',    group: 'platforma' },
-  { variable: '{{platforma.link}}',   label: 'Link do platformy', description: 'Link do strony głównej platformy', group: 'platforma' },
+  {
+    variable: '{{uzytkownik.imie}}',
+    label: 'Imię użytkownika',
+    description: 'Imię i nazwisko użytkownika',
+    group: 'uzytkownik',
+  },
+  {
+    variable: '{{uzytkownik.email}}',
+    label: 'Email użytkownika',
+    description: 'Adres email użytkownika',
+    group: 'uzytkownik',
+  },
+  {
+    variable: '{{platforma.nazwa}}',
+    label: 'Nazwa platformy',
+    description: 'Nazwa platformy (ZmierzymyCzas)',
+    group: 'platforma',
+  },
+  {
+    variable: '{{platforma.link}}',
+    label: 'Link do platformy',
+    description: 'Link do strony głównej platformy',
+    group: 'platforma',
+  },
 ] as const;
 
 /** All variables — kept for backward compatibility */

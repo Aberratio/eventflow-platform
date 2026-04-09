@@ -1,82 +1,77 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface RunnerAnimationProps {
   className?: string;
-  variant?: "running" | "stopped" | "confused";
+  variant?: 'running' | 'stopped' | 'confused';
 }
 
-export const RunnerAnimation = ({ className, variant = "running" }: RunnerAnimationProps) => {
+export const RunnerAnimation = ({ className, variant = 'running' }: RunnerAnimationProps) => {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       {/* Biegacz SVG */}
       <svg
         viewBox="0 0 100 100"
-        className={cn(
-          "w-24 h-24 md:w-32 md:h-32",
-          variant === "running" && "animate-runner"
-        )}
+        className={cn('h-24 w-24 md:h-32 md:w-32', variant === 'running' && 'animate-runner')}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Głowa */}
-        <circle 
-          cx="50" 
-          cy="20" 
-          r="10" 
-          className="fill-primary"
-        />
-        
+        <circle cx="50" cy="20" r="10" className="fill-primary" />
+
         {/* Ciało */}
-        <line 
-          x1="50" 
-          y1="30" 
-          x2="50" 
-          y2="55" 
-          className="stroke-primary" 
-          strokeWidth="4" 
+        <line
+          x1="50"
+          y1="30"
+          x2="50"
+          y2="55"
+          className="stroke-primary"
+          strokeWidth="4"
           strokeLinecap="round"
         />
-        
+
         {/* Ręce */}
-        <g className={variant === "running" ? "animate-runner-legs" : ""}>
-          <line 
-            x1="50" 
-            y1="35" 
-            x2="35" 
-            y2="50" 
-            className="stroke-primary" 
-            strokeWidth="3" 
+        <g className={variant === 'running' ? 'animate-runner-legs' : ''}>
+          <line
+            x1="50"
+            y1="35"
+            x2="35"
+            y2="50"
+            className="stroke-primary"
+            strokeWidth="3"
             strokeLinecap="round"
           />
-          <line 
-            x1="50" 
-            y1="35" 
-            x2="65" 
-            y2="45" 
-            className="stroke-primary" 
-            strokeWidth="3" 
+          <line
+            x1="50"
+            y1="35"
+            x2="65"
+            y2="45"
+            className="stroke-primary"
+            strokeWidth="3"
             strokeLinecap="round"
           />
         </g>
-        
+
         {/* Nogi */}
-        <g className={variant === "running" ? "animate-runner-legs" : ""} style={{ transformOrigin: "50px 55px" }}>
-          <line 
-            x1="50" 
-            y1="55" 
-            x2="35" 
-            y2="80" 
-            className="stroke-primary" 
-            strokeWidth="3" 
+        <g
+          className={variant === 'running' ? 'animate-runner-legs' : ''}
+          style={{ transformOrigin: '50px 55px' }}
+        >
+          <line
+            x1="50"
+            y1="55"
+            x2="35"
+            y2="80"
+            className="stroke-primary"
+            strokeWidth="3"
             strokeLinecap="round"
           />
-          <line 
-            x1="50" 
-            y1="55" 
-            x2="65" 
-            y2="75" 
-            className="stroke-primary" 
-            strokeWidth="3" 
+          <line
+            x1="50"
+            y1="55"
+            x2="65"
+            y2="75"
+            className="stroke-primary"
+            strokeWidth="3"
             strokeLinecap="round"
           />
         </g>
@@ -87,24 +82,18 @@ export const RunnerAnimation = ({ className, variant = "running" }: RunnerAnimat
       </svg>
 
       {/* Chmurka kurzu */}
-      {variant === "running" && (
-        <div className="absolute -right-4 bottom-4 text-2xl opacity-60 animate-pulse">
-          💨
-        </div>
+      {variant === 'running' && (
+        <div className="absolute -right-4 bottom-4 animate-pulse text-2xl opacity-60">💨</div>
       )}
 
       {/* Znak zapytania dla zdezorientowanego */}
-      {variant === "confused" && (
-        <div className="absolute -top-2 -right-2 text-2xl animate-bounce">
-          ❓
-        </div>
+      {variant === 'confused' && (
+        <div className="absolute -right-2 -top-2 animate-bounce text-2xl">❓</div>
       )}
 
       {/* Znak stop dla zatrzymanego */}
-      {variant === "stopped" && (
-        <div className="absolute -top-2 -right-2 text-2xl animate-pulse">
-          🛑
-        </div>
+      {variant === 'stopped' && (
+        <div className="absolute -right-2 -top-2 animate-pulse text-2xl">🛑</div>
       )}
     </div>
   );

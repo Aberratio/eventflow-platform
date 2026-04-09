@@ -12,14 +12,11 @@ export const PricingSection = ({ section }: PricingSectionProps) => {
     <section className="py-12 md:py-16">
       <div className="container">
         {section.title && (
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">{section.title}</h2>
+          <h2 className="mb-8 text-center text-2xl font-bold md:text-3xl">{section.title}</h2>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
           {section.items?.map((item, index) => (
-            <Card
-              key={item.id}
-              className={index === 1 ? 'border-primary shadow-lg scale-105' : ''}
-            >
+            <Card key={item.id} className={index === 1 ? 'scale-105 border-primary shadow-lg' : ''}>
               <CardHeader>
                 <CardTitle className="text-center">{item.title}</CardTitle>
                 {item.price !== undefined && (
@@ -30,7 +27,7 @@ export const PricingSection = ({ section }: PricingSectionProps) => {
                 )}
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-center mb-4">{item.description}</p>
+                <p className="mb-4 text-center text-muted-foreground">{item.description}</p>
                 {item.features && item.features.length > 0 && (
                   <ul className="space-y-2">
                     {item.features.map((feature, i) => (

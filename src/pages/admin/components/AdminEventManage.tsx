@@ -37,16 +37,18 @@ export const AdminEventManage = () => {
   const eventRegistrations = mockRegistrations.filter((r) => r.eventId === id);
 
   const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
-    event?.merchandise || mockMerchandise
+    event?.merchandise || mockMerchandise,
   );
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(
-    event?.paymentMethods || defaultPaymentMethods
+    event?.paymentMethods || defaultPaymentMethods,
   );
   const [liveResultsUrl, setLiveResultsUrl] = useState(event?.liveResultsUrl || '');
   const [selectedOrganizer, setSelectedOrganizer] = useState(event?.organizerId || '');
   const [distances, setDistances] = useState<Distance[]>(event?.distances || []);
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
-  const [enableMerchandise, setEnableMerchandise] = useState(event?.enableMerchandiseInRegistration || false);
+  const [enableMerchandise, setEnableMerchandise] = useState(
+    event?.enableMerchandiseInRegistration || false,
+  );
 
   if (!event) {
     return (
@@ -72,7 +74,7 @@ export const AdminEventManage = () => {
       <div className="container py-8">
         <div className="mb-6">
           <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Powrót do panelu
           </Button>
           <h1 className="text-3xl font-bold">{event.name}</h1>
@@ -114,15 +116,15 @@ export const AdminEventManage = () => {
                   </p>
                 </div>
                 <Button onClick={handleSaveAdvanced}>
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="mr-2 h-4 w-4" />
                   Zapisz zmiany
                 </Button>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-6">
+              <div className="grid gap-6 lg:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-lg">
                       <Users className="h-5 w-5" />
                       Przypisany organizator
                     </CardTitle>
@@ -130,10 +132,7 @@ export const AdminEventManage = () => {
                   <CardContent>
                     <div className="space-y-2">
                       <Label htmlFor="organizer">Organizator</Label>
-                      <Select
-                        value={selectedOrganizer}
-                        onValueChange={setSelectedOrganizer}
-                      >
+                      <Select value={selectedOrganizer} onValueChange={setSelectedOrganizer}>
                         <SelectTrigger>
                           <SelectValue placeholder="Wybierz organizatora" />
                         </SelectTrigger>
@@ -151,7 +150,7 @@ export const AdminEventManage = () => {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-lg">
                       <Radio className="h-5 w-5" />
                       Wyniki na żywo
                     </CardTitle>
@@ -173,10 +172,7 @@ export const AdminEventManage = () => {
                 </Card>
               </div>
 
-              <PriceTiersEditor
-                distances={distances}
-                onChange={setDistances}
-              />
+              <PriceTiersEditor distances={distances} onChange={setDistances} />
 
               <DiscountCodesEditor
                 discountCodes={discountCodes}
@@ -186,7 +182,7 @@ export const AdminEventManage = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <ShoppingBag className="h-5 w-5" />
                     Gadżety przy rejestracji
                   </CardTitle>
@@ -199,23 +195,14 @@ export const AdminEventManage = () => {
                         Uczestnicy będą mogli zamówić gadżety razem z pakietem startowym
                       </p>
                     </div>
-                    <Switch
-                      checked={enableMerchandise}
-                      onCheckedChange={setEnableMerchandise}
-                    />
+                    <Switch checked={enableMerchandise} onCheckedChange={setEnableMerchandise} />
                   </div>
                 </CardContent>
               </Card>
 
-              <PaymentMethodsEditor
-                paymentMethods={paymentMethods}
-                onChange={setPaymentMethods}
-              />
+              <PaymentMethodsEditor paymentMethods={paymentMethods} onChange={setPaymentMethods} />
 
-              <MerchandiseEditor
-                merchandise={merchandise}
-                onChange={setMerchandise}
-              />
+              <MerchandiseEditor merchandise={merchandise} onChange={setMerchandise} />
             </div>
           </TabsContent>
         </Tabs>
