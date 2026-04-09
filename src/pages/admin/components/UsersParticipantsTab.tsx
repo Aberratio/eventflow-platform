@@ -55,6 +55,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
+import { appLogger } from '@/lib/logger';
 
 export const UsersParticipantsTab = () => {
   const [search, setSearch] = useState('');
@@ -259,6 +260,10 @@ export const UsersParticipantsTab = () => {
                 </Button>
                 <Button
                   onClick={() => {
+                    appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${selectedRole}`, {
+                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                      metadata: { oldRole: selectedUser.role, newRole: selectedRole },
+                    });
                     toast.success(
                       `Rola użytkownika ${selectedUser.name} zmieniona na ${selectedRole}`,
                     );

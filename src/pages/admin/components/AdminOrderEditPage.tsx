@@ -41,6 +41,7 @@ import { OrderHistoryTimeline } from '@/components/admin/OrderHistoryTimeline';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { appLogger } from '@/lib/logger';
 
 const statusLabels: Record<ShopOrder['status'], string> = {
   pending: 'Oczekujące',
@@ -219,6 +220,10 @@ export const AdminOrderEditPage = () => {
       setHistory((prev) => [...prev, ...newEntries]);
     }
 
+    appLogger.log('audit', 'shop', 'order_edit', `Zaktualizowano zamówienie ${originalOrder.orderNumber}`, {
+      targetType: 'order', targetId: originalOrder.id, targetName: originalOrder.orderNumber,
+      metadata: { changesCount: newEntries.length, newStatus: status },
+    });
     toast.success('Zamówienie zostało zaktualizowane');
     navigate(-1);
   };

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { appLogger } from '@/lib/logger';
 
 interface PasswordChangeDialogProps {
   open: boolean;
@@ -83,6 +84,7 @@ export const PasswordChangeDialog = ({
       });
       return;
     }
+    appLogger.auth('password_change', 'Zmieniono hasło użytkownika');
     onPasswordChanged();
     onOpenChange(false);
     setForm({ current: '', new: '', confirm: '' });

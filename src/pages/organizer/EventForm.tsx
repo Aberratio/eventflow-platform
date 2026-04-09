@@ -2,6 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { useEventFormState } from './hooks/useEventFormState';
+import { appLogger } from '@/lib/logger';
 import { EventFormStep1 } from './components/EventFormStep1';
 import { EventFormStep2 } from './components/EventFormStep2';
 import { EventFormStep3 } from './components/EventFormStep3';
@@ -54,7 +55,14 @@ const EventForm = () => {
               Dalej <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={form.handleSubmit}>
+            <Button onClick={() => {
+              appLogger.event(form.isEditing ? 'event_update' : 'event_create',
+                form.isEditing ? `Zaktualizowano wydarzenie «${form.name}»` : `Utworzono wydarzenie «${form.name}»`, {
+                  targetType: 'event', targetName: form.name,
+                  metadata: { discipline: form.discipline },
+                });
+              form.handleSubmit();
+            }}>
               <Save className="mr-2 h-4 w-4" />
               {form.isEditing ? 'Zapisz zmiany' : 'Utwórz wydarzenie'}
             </Button>

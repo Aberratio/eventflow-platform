@@ -49,6 +49,7 @@ import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { useRegistrationForm } from '@/hooks/useRegistrationForm';
+import { appLogger } from '@/lib/logger';
 
 interface RegistrationFormProps {
   event: Event;
@@ -105,7 +106,13 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
   const handleSubmit = () => {
     const data = form.buildSubmitData();
-    if (data) onComplete(data);
+    if (data) {
+      appLogger.registration('registration_submit', `Rejestracja na wydarzenie «${event.name}» — dystans: ${data.distanceName}`, {
+        targetType: 'event', targetId: event.id, targetName: event.name,
+        metadata: { distanceId: data.distanceId, distanceName: data.distanceName, totalAmount: data.totalAmount },
+      });
+      onComplete(data);
+    }
   };
 
   return (

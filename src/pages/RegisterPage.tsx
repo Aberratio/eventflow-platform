@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { appLogger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -70,6 +71,7 @@ const RegisterPage = () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     if (EXISTING_EMAILS.includes(data.email)) {
+      appLogger.auth('register_failed', `Nieudana rejestracja — email już istnieje: ${data.email}`, { metadata: { email: data.email } });
       toast({
         title: 'Błąd rejestracji',
         description: 'Użytkownik o tym adresie email już istnieje.',
@@ -79,6 +81,9 @@ const RegisterPage = () => {
       return;
     }
 
+    appLogger.auth('register', `Zarejestrowano nowe konto: ${data.firstName} ${data.lastName} (${data.role})`, {
+      metadata: { email: data.email, role: data.role, name: `${data.firstName} ${data.lastName}` },
+    });
     toast({
       title: 'Konto zostało utworzone!',
       description: 'Na podany adres email wysłaliśmy link aktywacyjny.',

@@ -19,6 +19,7 @@ import { EditorHint } from '@/components/admin/EditorHint';
 import { SectionEditor } from './SectionEditor';
 import { InfoPage, InfoPageSection } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { appLogger } from '@/lib/logger';
 import {
   ArrowLeft,
   Save,
@@ -188,7 +189,11 @@ export const PageEditorPage = () => {
       return;
     }
 
-    // Mock save - in real app would save to DB
+    appLogger.cms(isNewPage ? 'page_create' : 'page_update',
+      isNewPage ? `Utworzono stronę «${formData.title}»` : `Zaktualizowano stronę «${formData.title}»`, {
+        targetType: 'page', targetId: formData.id, targetName: formData.title,
+        metadata: { slug: formData.slug, sectionsCount: formData.content.length, published: formData.published },
+      });
     toast({
       title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
       description: `Strona "${formData.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,
