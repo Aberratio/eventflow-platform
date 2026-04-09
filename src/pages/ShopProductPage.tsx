@@ -4,6 +4,8 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { PageHero } from '@/components/ui/page-hero';
+import { PageSection } from '@/components/ui/page-section';
 import {
   ArrowLeft,
   Minus,
@@ -64,20 +66,17 @@ const ShopProductPage = () => {
 
   return (
     <Layout>
-      {/* Breadcrumb with warm background */}
-      <div className="border-b border-border/50 bg-gradient-to-r from-primary/5 via-background to-warning/5">
-        <div className="container py-4">
-          <Link
-            to="/shop"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Powrót do sklepu
-          </Link>
-        </div>
-      </div>
+      <PageHero className="py-4">
+        <Link
+          to="/shop"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Powrót do sklepu
+        </Link>
+      </PageHero>
 
-      <div className="container py-8 md:py-12">
+      <PageSection compact>
         <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
           {/* Product Image & Gallery */}
           <div className="space-y-3">
@@ -323,7 +322,7 @@ const ShopProductPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </PageSection>
     </Layout>
   );
 };

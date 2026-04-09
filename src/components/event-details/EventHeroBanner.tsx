@@ -4,6 +4,7 @@ import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { ArrowLeft, Globe } from 'lucide-react';
+import { PageHero } from '@/components/ui/page-hero';
 
 interface EventHeroBannerProps {
   event: Event;
@@ -85,16 +86,14 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
   }
 
   return (
-    <div className="border-b bg-gradient-to-br from-primary/10 via-background to-warning/5">
-      <div className="container py-5 sm:py-6">
-        <Button variant="ghost" size="sm" className="mb-3 sm:mb-4" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Wróć
-        </Button>
-        {badges}
-        <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{event.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Organizator: {event.organizerName}</p>
-      </div>
-    </div>
+    <PageHero>
+      <Button variant="ghost" size="sm" className="mb-3 sm:mb-4" onClick={onBack}>
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Wróć
+      </Button>
+      {badges}
+      <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{event.name}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Organizator: {event.organizerName}</p>
+    </PageHero>
   );
 };

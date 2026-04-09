@@ -1,6 +1,8 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useInfoPage } from '@/hooks/useInfoPage';
+import { PageHero } from '@/components/ui/page-hero';
+import { PageSection } from '@/components/ui/page-section';
 import { HeroSection } from './sections/HeroSection';
 import { TextSection } from './sections/TextSection';
 import { CardsSection } from './sections/CardsSection';
@@ -56,16 +58,14 @@ export const DynamicInfoPage = () => {
     return (
       <Layout>
         <div className="min-h-screen">
-          <section className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16">
-            <div className="container">
-              <div className="mx-auto max-w-3xl space-y-3 text-center">
-                <Skeleton className="mx-auto h-6 w-24 rounded-full" />
-                <Skeleton className="mx-auto h-9 w-3/4" />
-                <Skeleton className="mx-auto h-5 w-1/2" />
-              </div>
+          <PageHero borderless className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16">
+            <div className="mx-auto max-w-3xl space-y-3 text-center">
+              <Skeleton className="mx-auto h-6 w-24 rounded-full" />
+              <Skeleton className="mx-auto h-9 w-3/4" />
+              <Skeleton className="mx-auto h-5 w-1/2" />
             </div>
-          </section>
-          <div className="container py-8 md:py-12">
+          </PageHero>
+          <PageSection compact>
             <div className="mx-auto max-w-3xl space-y-5">
               <Skeleton className="h-7 w-1/3" />
               <Skeleton className="h-4 w-full" />
@@ -75,7 +75,7 @@ export const DynamicInfoPage = () => {
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </div>
-          </div>
+          </PageSection>
         </div>
       </Layout>
     );
