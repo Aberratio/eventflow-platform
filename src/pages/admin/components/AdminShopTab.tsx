@@ -230,7 +230,7 @@ export const AdminShopTab = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           {product.isService ? (
-                            <Infinity className="mx-auto h-4 w-4 text-muted-foreground" />
+                            <InfinityIcon className="mx-auto h-4 w-4 text-muted-foreground" />
                           ) : (
                             <span>{product.stockCount ?? '-'}</span>
                           )}
