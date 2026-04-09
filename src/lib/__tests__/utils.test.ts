@@ -7,7 +7,8 @@ describe('cn – class name utility', () => {
   });
 
   it('handles conditional classes', () => {
-    expect(cn('base', false && 'hidden', 'end')).toBe('base end');
+    const condition = false;
+    expect(cn('base', condition && 'hidden', 'end')).toBe('base end');
   });
 
   it('resolves tailwind conflicts (last wins)', () => {
