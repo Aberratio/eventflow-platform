@@ -16,6 +16,8 @@ import {
 import { addDays, format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Layout } from '@/components/layout/Layout';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -106,16 +108,13 @@ const CartPage = () => {
     return (
       <Layout>
         <div className="container py-12">
-          <div className="mx-auto max-w-md space-y-6 text-center">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-warning/10">
-              <ShoppingBag className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold">Twój koszyk jest pusty</h1>
-            <p className="text-muted-foreground">Dodaj produkty, aby kontynuować zakupy</p>
-            <Button asChild size="lg">
-              <Link to="/shop">Przejdź do sklepu</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={<ShoppingBag className="h-12 w-12 text-muted-foreground" />}
+            title="Twój koszyk jest pusty"
+            subtitle="Dodaj produkty, aby kontynuować zakupy"
+            actionLabel="Przejdź do sklepu"
+            actionHref="/shop"
+          />
         </div>
       </Layout>
     );
@@ -123,39 +122,29 @@ const CartPage = () => {
 
   return (
     <Layout>
-      {/* Hero Header */}
-      <div className="border-b bg-gradient-to-br from-primary/10 via-background to-warning/5">
-        <div className="container py-6">
-          <div className="mb-4 flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild className="hover:bg-primary/10">
-              <Link to="/shop">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Kontynuuj zakupy
-              </Link>
-            </Button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="flex items-center gap-3 text-2xl font-bold">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <ShoppingBag className="h-5 w-5 text-primary" />
-                </div>
-                Koszyk
-              </h1>
-              <p className="mt-1 text-muted-foreground">
-                {totalItems}{' '}
-                {totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'} w koszyku
-              </p>
-            </div>
-            <Badge
-              variant="secondary"
-              className="border-0 bg-primary/10 px-4 py-2 text-base text-primary"
-            >
-              {totalPrice.toFixed(2)} zł
-            </Badge>
-          </div>
+      <PageHero>
+        <div className="mb-4 flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild className="hover:bg-primary/10">
+            <Link to="/shop">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Kontynuuj zakupy
+            </Link>
+          </Button>
         </div>
-      </div>
+        <div className="flex items-center justify-between">
+          <PageHeroTitle
+            icon={<ShoppingBag className="h-5 w-5" />}
+            title="Koszyk"
+            subtitle={`${totalItems} ${totalItems === 1 ? 'produkt' : totalItems < 5 ? 'produkty' : 'produktów'} w koszyku`}
+          />
+          <Badge
+            variant="secondary"
+            className="border-0 bg-primary/10 px-4 py-2 text-base text-primary"
+          >
+            {totalPrice.toFixed(2)} zł
+          </Badge>
+        </div>
+      </PageHero>
 
       <div className="container py-8">
         <div className="grid gap-8 lg:grid-cols-3">
