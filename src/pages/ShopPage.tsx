@@ -175,17 +175,16 @@ const ShopPage = () => {
             </div>
             {discountedCount > 0 && (
               <div className="rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-center backdrop-blur-sm">
-                  <div className="mb-0.5 flex items-center gap-2 text-destructive">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-2xl font-bold">{discountedCount}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">W promocji</p>
+                <div className="mb-0.5 flex items-center gap-2 text-destructive">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-2xl font-bold">{discountedCount}</span>
                 </div>
-              )}
-            </div>
+                <p className="text-xs text-muted-foreground">W promocji</p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </PageHero>
 
       <div className="container py-8">
         <div className="mb-6 rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm">
