@@ -124,75 +124,64 @@ const App = () => (
               <OnboardingDialog />
               <CookieConsent />
               <div className="pb-16 md:pb-0">
-                <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     {/* Polish routes */}
-                    <Route path="/wydarzenia" element={<EventsPage />} />
-                    <Route path="/wyniki/live" element={<LiveResultsPage />} />
-                    <Route path="/info/:slug" element={<DynamicInfoPage />} />
-                    <Route path="/logowanie" element={<LoginPage />} />
-                    <Route path="/rejestracja" element={<RegisterPage />} />
-                    <Route path="/sklep" element={<ShopPage />} />
+                    <Route path="/wydarzenia" element={<Lazy fallback={<EventsPageSkeleton />}><EventsPage /></Lazy>} />
+                    <Route path="/wyniki/live" element={<Lazy fallback={<EventsPageSkeleton />}><LiveResultsPage /></Lazy>} />
+                    <Route path="/info/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><DynamicInfoPage /></Lazy>} />
+                    <Route path="/logowanie" element={<Lazy fallback={<AuthPageSkeleton />}><LoginPage /></Lazy>} />
+                    <Route path="/rejestracja" element={<Lazy fallback={<AuthPageSkeleton />}><RegisterPage /></Lazy>} />
+                    <Route path="/sklep" element={<Lazy fallback={<ShopPageSkeleton />}><ShopPage /></Lazy>} />
                     {/* English routes */}
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    <Route path="/events/:slug" element={<EventDetailsPage />} />
-                    <Route path="/events/:slug/register" element={<EventRegistrationPage />} />
-                    <Route path="/events/:slug/embed" element={<EventRegistrationEmbed />} />
-                    <Route
-                      path="/events/:slug/register/success"
-                      element={<RegistrationSuccessPage />}
-                    />
-                    <Route path="/series" element={<SeriesListPage />} />
-                    <Route path="/series/:slug" element={<SeriesDetailsPage />} />
-                    <Route path="/shop" element={<ShopPage />} />
-                    <Route path="/shop/:slug" element={<ShopProductPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/order-success" element={<OrderSuccessPage />} />
-                    <Route path="/athlete/:userId" element={<AthleteProfilePage />} />
-                    <Route path="/notifications" element={<NotificationsPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/challenges" element={<ChallengesListPage />} />
-                    <Route path="/challenges/:slug" element={<ChallengeDetailsPage />} />
-                    <Route path="/participant" element={<ParticipantDashboard />} />
-                    <Route path="/participant/*" element={<ParticipantDashboard />} />
-                    <Route path="/organizer" element={<OrganizerDashboard />} />
-                    <Route path="/organizer/events" element={<OrganizerEventsPage />} />
-                    <Route path="/organizer/events/new" element={<EventForm />} />
-                    <Route path="/organizer/events/:id" element={<EventManage />} />
-                    <Route path="/organizer/events/:id/edit" element={<EventForm />} />
-                    <Route path="/moderator" element={<ModeratorDashboard />} />
-                    <Route path="/moderator/events/:id" element={<EventManage />} />
-                    <Route path="/moderator/*" element={<ModeratorDashboard />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/events/:id" element={<AdminEventManage />} />
-                    <Route path="/admin/shop/products/new" element={<AdminProductEditPage />} />
-                    <Route
-                      path="/admin/shop/products/:id/edit"
-                      element={<AdminProductEditPage />}
-                    />
-                    <Route path="/admin/pages/new" element={<PageEditorPage />} />
-                    <Route path="/admin/pages/:pageId/edit" element={<PageEditorPage />} />
-                    <Route path="/admin/orders/:id/edit" element={<AdminOrderEditPage />} />
-                    <Route path="/admin/challenges/new" element={<AdminChallengeEditPage />} />
-                    <Route
-                      path="/admin/challenges/:id/edit"
-                      element={<AdminChallengeEditPage />}
-                    />
-                    <Route path="/admin/partners/new" element={<AdminPartnerEditPage />} />
-                    <Route path="/admin/partners/:id/edit" element={<AdminPartnerEditPage />} />
-                    <Route path="/admin/*" element={<AdminDashboard />} />
+                    <Route path="/login" element={<Lazy fallback={<AuthPageSkeleton />}><LoginPage /></Lazy>} />
+                    <Route path="/register" element={<Lazy fallback={<AuthPageSkeleton />}><RegisterPage /></Lazy>} />
+                    <Route path="/forgot-password" element={<Lazy fallback={<AuthPageSkeleton />}><ForgotPasswordPage /></Lazy>} />
+                    <Route path="/reset-password" element={<Lazy fallback={<AuthPageSkeleton />}><ResetPasswordPage /></Lazy>} />
+                    <Route path="/events" element={<Lazy fallback={<EventsPageSkeleton />}><EventsPage /></Lazy>} />
+                    <Route path="/events/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><EventDetailsPage /></Lazy>} />
+                    <Route path="/events/:slug/register" element={<Lazy fallback={<FormPageSkeleton />}><EventRegistrationPage /></Lazy>} />
+                    <Route path="/events/:slug/embed" element={<Lazy fallback={<FormPageSkeleton />}><EventRegistrationEmbed /></Lazy>} />
+                    <Route path="/events/:slug/register/success" element={<Lazy fallback={<EventDetailsSkeleton />}><RegistrationSuccessPage /></Lazy>} />
+                    <Route path="/series" element={<Lazy fallback={<ListPageSkeleton />}><SeriesListPage /></Lazy>} />
+                    <Route path="/series/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><SeriesDetailsPage /></Lazy>} />
+                    <Route path="/shop" element={<Lazy fallback={<ShopPageSkeleton />}><ShopPage /></Lazy>} />
+                    <Route path="/shop/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><ShopProductPage /></Lazy>} />
+                    <Route path="/cart" element={<Lazy fallback={<ShopPageSkeleton />}><CartPage /></Lazy>} />
+                    <Route path="/order-success" element={<Lazy fallback={<FormPageSkeleton />}><OrderSuccessPage /></Lazy>} />
+                    <Route path="/athlete/:userId" element={<Lazy fallback={<ProfilePageSkeleton />}><AthleteProfilePage /></Lazy>} />
+                    <Route path="/notifications" element={<Lazy fallback={<DashboardSkeleton />}><NotificationsPage /></Lazy>} />
+                    <Route path="/profile" element={<Lazy fallback={<ProfilePageSkeleton />}><ProfilePage /></Lazy>} />
+                    <Route path="/challenges" element={<Lazy fallback={<ListPageSkeleton />}><ChallengesListPage /></Lazy>} />
+                    <Route path="/challenges/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><ChallengeDetailsPage /></Lazy>} />
+                    <Route path="/participant" element={<Lazy fallback={<DashboardSkeleton />}><ParticipantDashboard /></Lazy>} />
+                    <Route path="/participant/*" element={<Lazy fallback={<DashboardSkeleton />}><ParticipantDashboard /></Lazy>} />
+                    <Route path="/organizer" element={<Lazy fallback={<DashboardSkeleton />}><OrganizerDashboard /></Lazy>} />
+                    <Route path="/organizer/events" element={<Lazy fallback={<EventsPageSkeleton />}><OrganizerEventsPage /></Lazy>} />
+                    <Route path="/organizer/events/new" element={<Lazy fallback={<FormPageSkeleton />}><EventForm /></Lazy>} />
+                    <Route path="/organizer/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><EventManage /></Lazy>} />
+                    <Route path="/organizer/events/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><EventForm /></Lazy>} />
+                    <Route path="/moderator" element={<Lazy fallback={<DashboardSkeleton />}><ModeratorDashboard /></Lazy>} />
+                    <Route path="/moderator/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><EventManage /></Lazy>} />
+                    <Route path="/moderator/*" element={<Lazy fallback={<DashboardSkeleton />}><ModeratorDashboard /></Lazy>} />
+                    <Route path="/admin" element={<Lazy fallback={<AdminDashboardSkeleton />}><AdminDashboard /></Lazy>} />
+                    <Route path="/admin/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><AdminEventManage /></Lazy>} />
+                    <Route path="/admin/shop/products/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminProductEditPage /></Lazy>} />
+                    <Route path="/admin/shop/products/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminProductEditPage /></Lazy>} />
+                    <Route path="/admin/pages/new" element={<Lazy fallback={<FormPageSkeleton />}><PageEditorPage /></Lazy>} />
+                    <Route path="/admin/pages/:pageId/edit" element={<Lazy fallback={<FormPageSkeleton />}><PageEditorPage /></Lazy>} />
+                    <Route path="/admin/orders/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminOrderEditPage /></Lazy>} />
+                    <Route path="/admin/challenges/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminChallengeEditPage /></Lazy>} />
+                    <Route path="/admin/challenges/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminChallengeEditPage /></Lazy>} />
+                    <Route path="/admin/partners/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminPartnerEditPage /></Lazy>} />
+                    <Route path="/admin/partners/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminPartnerEditPage /></Lazy>} />
+                    <Route path="/admin/*" element={<Lazy fallback={<AdminDashboardSkeleton />}><AdminDashboard /></Lazy>} />
                     <Route path="/404" element={<NotFound />} />
-                    <Route path="/500" element={<ServerError />} />
-                    <Route path="/503" element={<ServiceUnavailable />} />
-                    <Route path="/403" element={<Forbidden />} />
+                    <Route path="/500" element={<Lazy fallback={<EventsPageSkeleton />}><ServerError /></Lazy>} />
+                    <Route path="/503" element={<Lazy fallback={<EventsPageSkeleton />}><ServiceUnavailable /></Lazy>} />
+                    <Route path="/403" element={<Lazy fallback={<EventsPageSkeleton />}><Forbidden /></Lazy>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </Suspense>
               </div>
               <BottomNav />
             </BrowserRouter>
