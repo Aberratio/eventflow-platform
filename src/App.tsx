@@ -11,8 +11,18 @@ import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { CookieConsent } from '@/components/CookieConsent';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollToTop } from './components/ScrollToTop';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/errors';
+import {
+  EventsPageSkeleton,
+  ShopPageSkeleton,
+  EventDetailsSkeleton,
+  DashboardSkeleton,
+  AdminDashboardSkeleton,
+  AuthPageSkeleton,
+  ListPageSkeleton,
+  ProfilePageSkeleton,
+  FormPageSkeleton,
+} from '@/components/skeletons';
 
 // ─── Eagerly loaded (critical path) ───────────────────────
 import Index from './pages/Index';
@@ -83,17 +93,9 @@ const DynamicInfoPage = lazy(() =>
   import('./components/info/DynamicInfoPage').then((m) => ({ default: m.DynamicInfoPage })),
 );
 
-// ─── Route loading fallback ──────────────────────────────
-const PageLoader = () => (
-  <div className="container flex min-h-[60vh] flex-col items-center justify-center gap-4 py-12">
-    <Skeleton className="h-8 w-48" />
-    <Skeleton className="h-4 w-72" />
-    <div className="mt-6 grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <Skeleton className="h-48 rounded-xl" />
-      <Skeleton className="h-48 rounded-xl" />
-      <Skeleton className="hidden h-48 rounded-xl lg:block" />
-    </div>
-  </div>
+// ─── Typed Suspense wrapper ──────────────────────────────
+const Lazy = ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => (
+  <Suspense fallback={fallback}>{children}</Suspense>
 );
 
 // ─── QueryClient with optimised defaults ─────────────────
