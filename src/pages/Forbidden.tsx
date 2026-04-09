@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ErrorPageShell } from '@/components/ui/error-page-shell';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -12,8 +13,7 @@ const Forbidden = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background via-background to-warning/5 p-4">
-      <div className="mx-auto max-w-md space-y-8 text-center">
+    <ErrorPageShell tint="warning">
         {/* Barierka VIP z animacją */}
         <div className="relative">
           <div className="flex items-center justify-center gap-2">
@@ -125,8 +125,7 @@ const Forbidden = () => {
         <p className="pt-4 text-xs italic text-muted-foreground/50">
           "Ta strona jest tylko dla zwycięzców... ale Ty też możesz nim zostać!" 🏅
         </p>
-      </div>
-    </div>
+    </ErrorPageShell>
   );
 };
 
