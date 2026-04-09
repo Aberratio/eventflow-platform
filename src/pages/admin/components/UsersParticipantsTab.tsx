@@ -361,6 +361,11 @@ export const UsersParticipantsTab = () => {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
+                if (selectedUser) {
+                  appLogger.user('user_delete', `Usunięto użytkownika ${selectedUser.name}`, {
+                    targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                  });
+                }
                 toast.success(`Użytkownik ${selectedUser?.name} został usunięty`);
               }}
             >
