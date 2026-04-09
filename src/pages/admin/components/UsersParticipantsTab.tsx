@@ -328,6 +328,10 @@ export const UsersParticipantsTab = () => {
                     else next.add(selectedUser.id);
                     return next;
                   });
+                  appLogger.user(blocked ? 'user_unblock' : 'user_block',
+                    blocked ? `Odblokowano użytkownika ${selectedUser.name}` : `Zablokowano użytkownika ${selectedUser.name}`, {
+                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                    });
                   toast.success(
                     blocked
                       ? `Użytkownik ${selectedUser.name} został odblokowany`
