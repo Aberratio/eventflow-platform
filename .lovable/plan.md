@@ -1,41 +1,40 @@
 
+# Design System — Refaktoryzacja
 
+## Problem
+Dziesiątki komponentów i stron zawierają zduplikowane klasy Tailwind opisujące te same wzorce wizualne — nagłówki stron (hero), divider, accent bar, stat pill, page section. Prowadzi to do niespójności i trudności w utrzymaniu.
 
-## Plan naprawczy — postęp
+## Plan
 
-### ✅ Priorytet 1: Migracja na warstwę API (ZREALIZOWANE)
-- Przeniesiono wszystkie pliki z `@/data/mockData` na bezpośrednie importy z `src/api/mock/`
-- `src/data/mockData.ts` **usunięty**
-- Strony publiczne zmigrowane na TanStack Query + `useQuery` ze skeletonami
-- AuthContext i CartContext zmigrowane
+### 1. Nowe komponenty generyczne (`src/components/ui/`)
 
-### ✅ Priorytet 2: Dekompozycja dużych komponentów (ZREALIZOWANE)
-- **EmailTemplateEditor** (575→220 linii) → `EmailPreviewPane`, `EmailTriggerSection`, `EmailRecipientsSection`
-- **SeriesDetailsPage** (511→165 linii) → `SeriesHero`, `SeriesStandingsTable`, `SeriesEventsList`
-- **AdminModerationTab** (482→200 linii) → `ModerationEventCard`
-- **ResultsTab** (479→155 linii) → `IndividualResultsCard`, `ResultDocumentsCard`
-- **UsersOrganizersTab** (426→210 linii) → `AddOrganizerDialog`
-- **PriceTiersEditor** (594→280 linii) → `TierEditor`, `VipPricesSection`
-- **DiscountCodesEditor** (485→165 linii) → `AddDiscountCodeDialog`, `EditDiscountCodeDialog`
-- **EventFiltersSidebar** (437→90 linii) → `FilterSection`, `CheckboxItem`, `FiltersContent`
+| Komponent | Zastępuje powtórzenie | Lokalizacje |
+|---|---|---|
+| `PageHero` | `border-b bg-gradient-to-br from-primary/10 via-background to-warning/5` + icon + h1 + description + opcjonalne stat pills | ShopPage, ChallengesListPage, SeriesListPage, CartPage, ParticipantDashboard, EventHeroBanner |
+| `SectionHeading` | `mb-X flex items-center gap-3` + accent bar + title + optional badge | FeaturedEventsSection, RecentResultsSection, all admin tabs |
+| `StatPill` | `flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5` + icon + text | ChallengesListPage, SeriesListPage, ShopPage, HomeHero |
+| `GradientDivider` | `h-1 bg-gradient-to-r from-primary via-warning to-primary` | EventSidebar, ParticipantOverviewTab |
+| `AccentBar` | `h-px w-10 bg-primary` / `h-1 w-12 rounded-full bg-warning` | HomeHero, CtaSection |
+| `InfoBanner` | `flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground` | SendMessageDialog, BibNumberAssignment, OrderSuccessPage |
+| `Eyebrow` | `inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary` | HeroSection, various hero areas |
+| `PageSection` | `py-8 md:py-12` / `py-10 md:py-16` z opcjonalnym bg | StatsSection, CtaSection, HomeHero |
 
-### ✅ Priorytet 3: Pokrycie testami (ZREALIZOWANE)
-- **100 testów** łącznie (15 plików testowych)
-- `useEventFilters` — 6 testów
-- `useRegistrationForm` — 10 testów
-- `CartContext` — 7 testów
-- `AuthContext` — 6 testów
-- `helpers.ts` — 22 testów
-- `constants` — 5 testów
-- Komponenty UI — 19 testów
+### 2. Aktualizacja `tokens.css` — nowe tokeny gradientowe
 
-### ✅ Priorytet 4: Porządki strukturalne (ZREALIZOWANE)
-- Usunięto `src/data/mockData.ts`
-- Usunięto duplikację `src/components/ui/use-toast.ts`
-- Utworzono `src/constants/index.ts`
-- Barrel exports: `src/components/filters/index.ts`
+Dodanie zmiennych CSS:
+- `--gradient-page-hero` — gradient tła hero sekcji
+- `--gradient-accent-bar` — gradient divider/accent bar
+- `--page-hero-py` — padding-y dla hero sekcji
 
-### ✅ Plan naprawczy — UKOŃCZONY
-Wszystkie priorytety 1-4 zrealizowane. Pozostałe opcjonalne usprawnienia:
-- ESLint rules (`no-console`, `no-unused-imports`)
-- Accessibility audit (aria-label, kontrast)
+### 3. Aktualizacja komponentów korzystających z nowych wzorców
+
+Każda strona/komponent korzystający z powtarzalnego wzorca zostanie zrefaktoryzowana do użycia nowego komponentu generycznego.
+
+### 4. Testy
+
+Dodanie unit testów dla nowych komponentów design systemu.
+
+### Co NIE wchodzi w zakres
+- Spacing w unikalnych layoutach (np. formularze) — te są kontekstowe
+- Kolory semantyczne w shadcn/ui — te już korzystają z tokenów
+- Font size w Typography — każdy use case jest celowy
