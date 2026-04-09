@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Layout } from '@/components/layout/Layout';
+import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -92,17 +92,11 @@ const RegisterPage = () => {
   const selectedRole = form.watch('role');
 
   return (
-    <Layout>
-      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
-        <div className="container py-12 md:py-20">
-          <div className="mx-auto max-w-lg">
-            <div className="mb-8 text-center">
-              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                <UserPlus className="h-8 w-8 text-primary" />
-              </div>
-              <h1 className="mb-2 text-3xl font-bold md:text-4xl">Utwórz konto</h1>
-              <p className="text-muted-foreground">Dołącz do platformy ZmierzymyCzas</p>
-            </div>
+    <AuthPageShell
+      icon={<UserPlus className="h-8 w-8 text-primary" />}
+      title="Utwórz konto"
+      subtitle="Dołącz do platformy ZmierzymyCzas"
+    >
 
             <Card className="border-border/50 shadow-lg">
               <CardHeader>
@@ -293,11 +287,8 @@ const RegisterPage = () => {
                   </Link>
                 </p>
               </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </Layout>
+          </Card>
+    </AuthPageShell>
   );
 };
 

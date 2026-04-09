@@ -11,7 +11,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Layout } from '@/components/layout/Layout';
+import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -123,18 +123,12 @@ const LoginPage = () => {
   };
 
   return (
-    <Layout>
-      <div className="bg-gradient-to-b from-primary/10 via-background to-background">
-        <div className="container py-12 md:py-20">
-          <div className="mx-auto max-w-5xl">
-            {/* Header */}
-            <div className="mb-10 text-center">
-              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                <Timer className="h-8 w-8 text-primary" />
-              </div>
-              <h1 className="mb-2 text-3xl font-bold md:text-4xl">Zaloguj się</h1>
-              <p className="text-lg text-muted-foreground">Wejdź na platformę ZmierzymyCzas</p>
-            </div>
+    <AuthPageShell
+      icon={<Timer className="h-8 w-8 text-primary" />}
+      title="Zaloguj się"
+      subtitle="Wejdź na platformę ZmierzymyCzas"
+      maxWidth="max-w-5xl"
+    >
 
             <div className="grid items-start gap-8 lg:grid-cols-2">
               {/* Login form */}
@@ -254,9 +248,7 @@ const LoginPage = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </Layout>
+    </AuthPageShell>
   );
 };
 
