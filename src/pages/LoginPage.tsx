@@ -247,7 +247,6 @@ const LoginPage = () => {
                 </p>
               </div>
             </div>
-          </div>
     </AuthPageShell>
   );
 };
