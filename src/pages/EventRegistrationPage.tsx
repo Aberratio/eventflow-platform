@@ -20,6 +20,16 @@ const EventRegistrationPage = () => {
 
   const event = mockEvents.find((e) => e.slug === slug);
 
+  const isPast = event ? new Date(event.date) < new Date() : false;
+  const deadlinePassed = event ? new Date(event.registrationDeadline) < new Date() : false;
+  const isClosedByOrganizer = event?.registrationStatus === 'closed';
+  const allDistancesFull = event
+    ? event.distances.length > 0 &&
+      event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit)
+    : false;
+  const isRegistrationOpen =
+    !!event && !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+
   useEffect(() => {
     if (!isAuthenticated) {
       toast({
@@ -29,6 +39,17 @@ const EventRegistrationPage = () => {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (event && !isRegistrationOpen) {
+      toast({
+        title: 'Zapisy zamknięte',
+        description: 'Zapisy na te zawody są zamknięte.',
+        variant: 'destructive',
+      });
+      navigate(`/events/${slug}`);
+    }
+  }, [event, isRegistrationOpen, navigate, slug]);
 
   if (!event) {
     return (
@@ -42,26 +63,6 @@ const EventRegistrationPage = () => {
       </Layout>
     );
   }
-
-  const isPast = new Date(event.date) < new Date();
-  const deadlinePassed = new Date(event.registrationDeadline) < new Date();
-  const isClosedByOrganizer = event.registrationStatus === 'closed';
-  const allDistancesFull =
-    event.distances.length > 0 &&
-    event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit);
-  const isRegistrationOpen =
-    !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
-
-  useEffect(() => {
-    if (!isRegistrationOpen) {
-      toast({
-        title: 'Zapisy zamknięte',
-        description: 'Zapisy na te zawody są zamknięte.',
-        variant: 'destructive',
-      });
-      navigate(`/events/${slug}`);
-    }
-  }, [isRegistrationOpen, navigate, slug]);
 
   if (!isRegistrationOpen) {
     return null;
