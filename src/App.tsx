@@ -109,6 +109,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <CartProvider>
@@ -198,6 +199,7 @@ const App = () => (
       </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
