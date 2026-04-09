@@ -44,7 +44,12 @@ export async function reviewVirtualResult(
 ): Promise<ApiResponse<VirtualResultSubmission>> {
   await simulateDelay();
   const sub = mockVirtualResultSubmissions.find((s) => s.id === id);
-  if (!sub) return { data: null as unknown as VirtualResultSubmission, success: false, message: 'Submission not found' };
+  if (!sub)
+    return {
+      data: null as unknown as VirtualResultSubmission,
+      success: false,
+      message: 'Submission not found',
+    };
   return {
     data: { ...sub, status, rejectionReason: reason, reviewedAt: new Date().toISOString() },
     success: true,

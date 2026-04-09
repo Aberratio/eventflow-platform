@@ -64,49 +64,39 @@ export const ResultDocumentsList = ({ documents, showHeader = true }: ResultDocu
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between gap-4 p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
             >
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
                   {getTypeIcon(doc.type)}
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-medium text-sm truncate">{doc.name}</h4>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <h4 className="truncate text-sm font-medium">{doc.name}</h4>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="text-xs">
                       {getTypeLabel(doc.type)}
                     </Badge>
                     {doc.distanceName && (
-                      <span className="text-xs text-muted-foreground">
-                        {doc.distanceName}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{doc.distanceName}</span>
                     )}
                     <span className="text-xs text-muted-foreground">
                       • {format(new Date(doc.uploadedAt), 'd MMM yyyy', { locale: pl })}
                     </span>
                   </div>
                   {doc.description && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
                       {doc.description}
                     </p>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDownload(doc)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
+              <div className="flex shrink-0 items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => handleDownload(doc)}>
+                  <Eye className="mr-1 h-4 w-4" />
                   <span className="hidden sm:inline">Podgląd</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDownload(doc)}
-                >
-                  <Download className="h-4 w-4 mr-1" />
+                <Button variant="outline" size="sm" onClick={() => handleDownload(doc)}>
+                  <Download className="mr-1 h-4 w-4" />
                   <span className="hidden sm:inline">PDF</span>
                 </Button>
               </div>

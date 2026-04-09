@@ -4,29 +4,33 @@ import { Trophy, Calendar, ChevronRight } from 'lucide-react';
 
 export const HomeHero = () => {
   return (
-    <section className="relative overflow-hidden py-16 md:py-24 bg-[hsl(0_0%_5%)]">
+    <section className="relative overflow-hidden bg-[hsl(0_0%_5%)] py-16 md:py-24">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-background" />
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container relative z-10 mx-auto px-4">
         <div className="max-w-2xl">
           {/* Eyebrow */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="mb-6 flex items-center gap-3">
             <div className="h-px w-10 bg-primary" />
-            <span className="text-primary text-xs font-semibold uppercase tracking-[0.2em]">Platforma sportowa</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Platforma sportowa
+            </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.08] text-foreground">
-            Twoje sportowe<br />
-            wydarzenia<br />
-            w jednym miejscu
+          <h1 className="mb-6 text-4xl font-bold leading-[1.08] tracking-tight text-foreground md:text-5xl lg:text-6xl">
+            Twoje sportowe
+            <br />
+            wydarzenia
+            <br />w jednym miejscu
           </h1>
 
-          <p className="text-base md:text-lg mb-8 max-w-lg leading-relaxed text-muted-foreground">
-            Odkrywaj zawody biegowe, rowerowe i triathlonowe. Rejestruj się, śledź wyniki na żywo i zdobywaj nowe rekordy.
+          <p className="mb-8 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
+            Odkrywaj zawody biegowe, rowerowe i triathlonowe. Rejestruj się, śledź wyniki na żywo i
+            zdobywaj nowe rekordy.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="gap-2">
               <Link to="/events">
                 <Calendar className="h-4 w-4" />
@@ -43,17 +47,19 @@ export const HomeHero = () => {
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-6 mt-10 pt-8 border-t border-border">
+          <div className="mt-10 flex items-center gap-6 border-t border-border pt-8">
             {[
               { value: '2.4k+', label: 'Wydarzeń' },
               { value: '180k+', label: 'Uczestników' },
               { value: '12+', label: 'Lat na rynku' },
             ].map((stat, i) => (
               <div key={i} className="flex items-center gap-6">
-                {i > 0 && <div className="w-px h-8 bg-border" />}
+                {i > 0 && <div className="h-8 w-px bg-border" />}
                 <div>
-                  <div className="text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-[10px] uppercase tracking-widest font-medium mt-0.5 text-muted-foreground">{stat.label}</div>
+                  <div className="text-xl font-bold text-foreground md:text-2xl">{stat.value}</div>
+                  <div className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             ))}

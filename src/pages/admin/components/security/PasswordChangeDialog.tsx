@@ -56,9 +56,17 @@ function getStrengthColor(strength: number, index: number): string {
   return 'bg-success';
 }
 
-export const PasswordChangeDialog = ({ open, onOpenChange, onPasswordChanged }: PasswordChangeDialogProps) => {
+export const PasswordChangeDialog = ({
+  open,
+  onOpenChange,
+  onPasswordChanged,
+}: PasswordChangeDialogProps) => {
   const [form, setForm] = useState({ current: '', new: '', confirm: '' });
-  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
   const { strength, checks } = calculatePasswordStrength(form.new);
 
@@ -68,20 +76,23 @@ export const PasswordChangeDialog = ({ open, onOpenChange, onPasswordChanged }: 
       return;
     }
     if (strength < 4) {
-      toast({ title: 'Słabe hasło', description: 'Hasło nie spełnia wymagań bezpieczeństwa.', variant: 'destructive' });
+      toast({
+        title: 'Słabe hasło',
+        description: 'Hasło nie spełnia wymagań bezpieczeństwa.',
+        variant: 'destructive',
+      });
       return;
     }
     onPasswordChanged();
     onOpenChange(false);
     setForm({ current: '', new: '', confirm: '' });
-    toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zaktualizowane.' });
+    toast({
+      title: 'Hasło zmienione',
+      description: 'Twoje hasło zostało pomyślnie zaktualizowane.',
+    });
   };
 
-  const renderPasswordField = (
-    id: string,
-    label: string,
-    field: 'current' | 'new' | 'confirm',
-  ) => (
+  const renderPasswordField = (id: string, label: string, field: 'current' | 'new' | 'confirm') => (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
       <div className="relative">
@@ -89,14 +100,14 @@ export const PasswordChangeDialog = ({ open, onOpenChange, onPasswordChanged }: 
           id={id}
           type={showPasswords[field] ? 'text' : 'password'}
           value={form[field]}
-          onChange={(e) => setForm(prev => ({ ...prev, [field]: e.target.value }))}
+          onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
         />
         <Button
           type="button"
           variant="ghost"
           size="icon"
           className="absolute right-0 top-0 h-full px-3"
-          onClick={() => setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }))}
+          onClick={() => setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }))}
         >
           {showPasswords[field] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>
@@ -127,11 +138,16 @@ export const PasswordChangeDialog = ({ open, onOpenChange, onPasswordChanged }: 
             <div className="space-y-2">
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className={`h-1.5 flex-1 rounded-full ${getStrengthColor(strength, i)}`} />
+                  <div
+                    key={i}
+                    className={`h-1.5 flex-1 rounded-full ${getStrengthColor(strength, i)}`}
+                  />
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">Siła hasła: {getStrengthLabel(strength)}</p>
-              <ul className="text-xs space-y-1">
+              <p className="text-xs text-muted-foreground">
+                Siła hasła: {getStrengthLabel(strength)}
+              </p>
+              <ul className="space-y-1 text-xs">
                 {strengthChecks.map(({ key, label }) => (
                   <li key={key} className={checks[key] ? 'text-success' : 'text-muted-foreground'}>
                     {checks[key] ? '✓' : '○'} {label}
@@ -147,7 +163,9 @@ export const PasswordChangeDialog = ({ open, onOpenChange, onPasswordChanged }: 
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Anuluj</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Anuluj
+          </Button>
           <Button onClick={handleSubmit} disabled={!form.current || !form.new || !form.confirm}>
             Zmień hasło
           </Button>

@@ -37,32 +37,27 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
       <CardContent className="p-0">
         <div className="flex flex-col sm:flex-row">
           {/* QR Code Section */}
-          <div className="bg-muted p-6 flex items-center justify-center sm:w-48 sm:flex-shrink-0">
-            <div className="bg-background p-3 rounded-lg">
-              <QRCodeSVG
-                value={qrData}
-                size={120}
-                level="H"
-                includeMargin={false}
-              />
+          <div className="flex items-center justify-center bg-muted p-6 sm:w-48 sm:flex-shrink-0">
+            <div className="rounded-lg bg-background p-3">
+              <QRCodeSVG value={qrData} size={120} level="H" includeMargin={false} />
             </div>
           </div>
 
           {/* Ticket Details */}
-          <div className="flex-1 p-6 space-y-4">
+          <div className="flex-1 space-y-4 p-6">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-semibold">{ticket.eventName}</h3>
-                <p className="text-primary font-medium">{ticket.distanceName}</p>
+                <p className="font-medium text-primary">{ticket.distanceName}</p>
               </div>
-              <Badge variant="outline" className="font-mono text-lg px-3 py-1">
+              <Badge variant="outline" className="px-3 py-1 font-mono text-lg">
                 #{ticket.bibNumber}
               </Badge>
             </div>
 
             <Separator />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>{format(new Date(ticket.eventDate), 'd MMMM yyyy', { locale: pl })}</span>

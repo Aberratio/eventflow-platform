@@ -12,12 +12,40 @@ export const mockVirtualEvents: Partial<Event>[] = [
     endDate: '2026-01-15',
     location: 'Wydarzenie wirtualne',
     city: 'Cały świat',
-    description: 'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na świecie i zgłoś swój wynik.',
+    description:
+      'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na świecie i zgłoś swój wynik.',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     distances: [
-      { id: 'vd-5k', name: '5 km', length: 5, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 234, price: 30 },
-      { id: 'vd-10k', name: '10 km', length: 10, unit: 'km', categories: ['Open'], limit: 1000, registeredCount: 187, price: 40 },
-      { id: 'vd-21k', name: 'Półmaraton', length: 21.097, unit: 'km', categories: ['Open'], limit: 500, registeredCount: 89, price: 60 },
+      {
+        id: 'vd-5k',
+        name: '5 km',
+        length: 5,
+        unit: 'km',
+        categories: ['Open'],
+        limit: 1000,
+        registeredCount: 234,
+        price: 30,
+      },
+      {
+        id: 'vd-10k',
+        name: '10 km',
+        length: 10,
+        unit: 'km',
+        categories: ['Open'],
+        limit: 1000,
+        registeredCount: 187,
+        price: 40,
+      },
+      {
+        id: 'vd-21k',
+        name: 'Półmaraton',
+        length: 21.097,
+        unit: 'km',
+        categories: ['Open'],
+        limit: 500,
+        registeredCount: 89,
+        price: 60,
+      },
     ],
     organizerId: 'o3',
     organizerName: 'RunPoland',
@@ -256,4 +284,3 @@ export const mockVirtualResultSubmissions: VirtualResultSubmission[] = [
 ];
 
 // Team results for group classifications
-

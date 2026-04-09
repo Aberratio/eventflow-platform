@@ -7,16 +7,21 @@ export const exportToCSV = (data: Record<string, unknown>[], filename: string) =
   const headers = Object.keys(data[0]);
   const csvContent = [
     headers.join(';'),
-    ...data.map(row => 
-      headers.map(header => {
-        const value = row[header];
-        // Handle values with commas, quotes, or newlines
-        if (typeof value === 'string' && (value.includes(';') || value.includes('"') || value.includes('\n'))) {
-          return `"${value.replace(/"/g, '""')}"`;
-        }
-        return value ?? '';
-      }).join(';')
-    )
+    ...data.map((row) =>
+      headers
+        .map((header) => {
+          const value = row[header];
+          // Handle values with commas, quotes, or newlines
+          if (
+            typeof value === 'string' &&
+            (value.includes(';') || value.includes('"') || value.includes('\n'))
+          ) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value ?? '';
+        })
+        .join(';'),
+    ),
   ].join('\n');
 
   // Add BOM for proper Polish characters in Excel
@@ -35,26 +40,26 @@ export const prepareParticipantsExport = (registrations: Registration[]) => {
     'Lp.': index + 1,
     'Numer startowy': reg.bibNumber || '-',
     'Imię i nazwisko': reg.userName,
-    'Email': reg.userEmail,
-    'Dystans': reg.distanceName,
-    'Kategoria': reg.category,
-    'Drużyna': reg.teamName || '-',
-    'Status': getStatusLabel(reg.status),
+    Email: reg.userEmail,
+    Dystans: reg.distanceName,
+    Kategoria: reg.category,
+    Drużyna: reg.teamName || '-',
+    Status: getStatusLabel(reg.status),
     'Data zapisu': new Date(reg.registeredAt).toLocaleDateString('pl-PL'),
-    'Kwota': reg.pricePaid ? `${reg.pricePaid} PLN` : '-',
+    Kwota: reg.pricePaid ? `${reg.pricePaid} PLN` : '-',
   }));
 };
 
 // Prepare results data for export
 export const prepareResultsExport = (results: Result[]) => {
-  return results.map(result => ({
-    'Pozycja': result.position,
+  return results.map((result) => ({
+    Pozycja: result.position,
     'Numer startowy': result.bibNumber,
     'Imię i nazwisko': result.userName,
-    'Czas': result.time,
-    'Kategoria': result.category,
+    Czas: result.time,
+    Kategoria: result.category,
     'Pozycja w kategorii': result.categoryPosition,
-    'Status': getResultStatusLabel(result.status),
+    Status: getResultStatusLabel(result.status),
   }));
 };
 
@@ -148,12 +153,12 @@ export const printToPDF = (title: string, content: HTMLElement | string) => {
       <div class="header">
         <div>
           <h1>${title}</h1>
-          <h2>Wygenerowano: ${new Date().toLocaleDateString('pl-PL', { 
-            year: 'numeric', 
-            month: 'long', 
+          <h2>Wygenerowano: ${new Date().toLocaleDateString('pl-PL', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
           })}</h2>
         </div>
       </div>
@@ -167,7 +172,7 @@ export const printToPDF = (title: string, content: HTMLElement | string) => {
 
   printWindow.document.close();
   printWindow.focus();
-  
+
   // Wait for content to load then print
   setTimeout(() => {
     printWindow.print();
@@ -179,40 +184,52 @@ export const generateHTMLTable = (data: Record<string, unknown>[]): string => {
   if (data.length === 0) return '<p>Brak danych</p>';
 
   const headers = Object.keys(data[0]);
-  
+
   return `
     <table>
       <thead>
         <tr>
-          ${headers.map(h => `<th>${h}</th>`).join('')}
+          ${headers.map((h) => `<th>${h}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
-        ${data.map(row => `
+        ${data
+          .map(
+            (row) => `
           <tr>
-            ${headers.map(h => `<td>${row[h] ?? '-'}</td>`).join('')}
+            ${headers.map((h) => `<td>${row[h] ?? '-'}</td>`).join('')}
           </tr>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </tbody>
     </table>
   `;
 };
 
 // Generate printable HTML with columns and rows (opens print dialog)
-export const generatePrintableHTML = (title: string, columns: string[], rows: (string | number)[][]) => {
+export const generatePrintableHTML = (
+  title: string,
+  columns: string[],
+  rows: (string | number)[][],
+) => {
   const tableHtml = `
     <table>
       <thead>
         <tr>
-          ${columns.map(col => `<th>${col}</th>`).join('')}
+          ${columns.map((col) => `<th>${col}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
-        ${rows.map(row => `
+        ${rows
+          .map(
+            (row) => `
           <tr>
-            ${row.map(cell => `<td>${cell ?? '-'}</td>`).join('')}
+            ${row.map((cell) => `<td>${cell ?? '-'}</td>`).join('')}
           </tr>
-        `).join('')}
+        `,
+          )
+          .join('')}
       </tbody>
     </table>
   `;
@@ -231,30 +248,39 @@ const escapeXml = (value: unknown): string => {
 };
 
 const objectToXml = (obj: Record<string, unknown>, indent = '  '): string => {
-  return Object.entries(obj).map(([key, value]) => {
-    const tag = key.replace(/[^a-zA-Z0-9_]/g, '_');
-    if (Array.isArray(value)) {
-      const items = value.map(item => {
-        if (typeof item === 'object' && item !== null) {
-          return `${indent}  <item>\n${objectToXml(item as Record<string, unknown>, indent + '    ')}\n${indent}  </item>`;
-        }
-        return `${indent}  <item>${escapeXml(item)}</item>`;
-      }).join('\n');
-      return `${indent}<${tag}>\n${items}\n${indent}</${tag}>`;
-    }
-    if (typeof value === 'object' && value !== null) {
-      return `${indent}<${tag}>\n${objectToXml(value as Record<string, unknown>, indent + '  ')}\n${indent}</${tag}>`;
-    }
-    return `${indent}<${tag}>${escapeXml(value)}</${tag}>`;
-  }).join('\n');
+  return Object.entries(obj)
+    .map(([key, value]) => {
+      const tag = key.replace(/[^a-zA-Z0-9_]/g, '_');
+      if (Array.isArray(value)) {
+        const items = value
+          .map((item) => {
+            if (typeof item === 'object' && item !== null) {
+              return `${indent}  <item>\n${objectToXml(item as Record<string, unknown>, indent + '    ')}\n${indent}  </item>`;
+            }
+            return `${indent}  <item>${escapeXml(item)}</item>`;
+          })
+          .join('\n');
+        return `${indent}<${tag}>\n${items}\n${indent}</${tag}>`;
+      }
+      if (typeof value === 'object' && value !== null) {
+        return `${indent}<${tag}>\n${objectToXml(value as Record<string, unknown>, indent + '  ')}\n${indent}</${tag}>`;
+      }
+      return `${indent}<${tag}>${escapeXml(value)}</${tag}>`;
+    })
+    .join('\n');
 };
 
-export const exportToXML = (data: Record<string, unknown>[], rootName: string, itemName: string, filename: string) => {
+export const exportToXML = (
+  data: Record<string, unknown>[],
+  rootName: string,
+  itemName: string,
+  filename: string,
+) => {
   if (data.length === 0) return;
 
-  const xmlItems = data.map(item =>
-    `  <${itemName}>\n${objectToXml(item, '    ')}\n  </${itemName}>`
-  ).join('\n');
+  const xmlItems = data
+    .map((item) => `  <${itemName}>\n${objectToXml(item, '    ')}\n  </${itemName}>`)
+    .join('\n');
 
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n<${rootName}>\n${xmlItems}\n</${rootName}>`;
 

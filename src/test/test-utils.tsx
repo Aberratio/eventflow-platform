@@ -15,9 +15,7 @@ const AllProviders = ({ children }: { children: React.ReactNode }) => (
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+          <TooltipProvider>{children}</TooltipProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

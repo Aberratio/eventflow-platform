@@ -12,20 +12,18 @@ import { pl } from 'date-fns/locale';
 const LiveResultsPage = () => {
   // Get events that are currently live (have liveResultsUrl and isLive flag or today's date)
   const today = new Date().toISOString().split('T')[0];
-  
-  const liveEvents = mockEvents.filter(e => 
-    e.isLive || (e.liveResultsUrl && e.date === today)
-  );
+
+  const liveEvents = mockEvents.filter((e) => e.isLive || (e.liveResultsUrl && e.date === today));
 
   return (
     <Layout>
       <div className="container py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="mb-2 flex items-center gap-3">
             <div className="relative">
               <Radio className="h-8 w-8 text-destructive" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full animate-pulse" />
+              <span className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-destructive" />
             </div>
             <h1 className="text-3xl font-bold">Wyniki na żywo</h1>
           </div>
@@ -36,21 +34,21 @@ const LiveResultsPage = () => {
 
         {liveEvents.length > 0 ? (
           <div className="space-y-4">
-            {liveEvents.map(event => (
+            {liveEvents.map((event) => (
               <Card key={event.id} className="overflow-hidden border-destructive/20">
                 <CardContent className="p-0">
                   <div className="flex flex-col md:flex-row">
                     {/* Live indicator */}
-                    <div className="bg-destructive/10 p-4 md:p-6 flex items-center justify-center md:w-24">
+                    <div className="flex items-center justify-center bg-destructive/10 p-4 md:w-24 md:p-6">
                       <div className="flex items-center gap-2 md:flex-col md:gap-1">
-                        <span className="h-3 w-3 bg-destructive rounded-full animate-pulse" />
-                        <span className="text-destructive font-bold text-sm">LIVE</span>
+                        <span className="h-3 w-3 animate-pulse rounded-full bg-destructive" />
+                        <span className="text-sm font-bold text-destructive">LIVE</span>
                       </div>
                     </div>
-                    
+
                     {/* Event details */}
                     <div className="flex-1 p-4 md:p-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <DisciplineIcon discipline={event.discipline} size="lg" />
@@ -67,28 +65,30 @@ const LiveResultsPage = () => {
                             </span>
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            {event.distances.map(d => (
+                            {event.distances.map((d) => (
                               <Badge key={d.id} variant="secondary" className="text-xs">
                                 {d.name}
                               </Badge>
                             ))}
                           </div>
                         </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-2">
+
+                        <div className="flex flex-col gap-2 sm:flex-row">
                           {event.liveResultsUrl && (
                             <Button asChild>
-                              <a href={event.liveResultsUrl} target="_blank" rel="noopener noreferrer">
-                                <Radio className="h-4 w-4 mr-2" />
+                              <a
+                                href={event.liveResultsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Radio className="mr-2 h-4 w-4" />
                                 Zobacz LIVE
-                                <ExternalLink className="h-3 w-3 ml-2" />
+                                <ExternalLink className="ml-2 h-3 w-3" />
                               </a>
                             </Button>
                           )}
                           <Button variant="outline" asChild>
-                            <Link to={`/events/${event.slug}`}>
-                              Szczegóły
-                            </Link>
+                            <Link to={`/events/${event.slug}`}>Szczegóły</Link>
                           </Button>
                         </div>
                       </div>
@@ -101,22 +101,22 @@ const LiveResultsPage = () => {
         ) : (
           <Card className="border-dashed">
             <CardContent className="py-16 text-center">
-              <Radio className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Brak aktywnych transmisji</h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Obecnie nie odbywają się żadne zawody z transmisją wyników na żywo. 
-                Sprawdź kalendarz nadchodzących wydarzeń lub przejrzyj archiwalne wyniki.
+              <Radio className="mx-auto mb-4 h-16 w-16 text-muted-foreground/50" />
+              <h2 className="mb-2 text-xl font-semibold">Brak aktywnych transmisji</h2>
+              <p className="mx-auto mb-6 max-w-md text-muted-foreground">
+                Obecnie nie odbywają się żadne zawody z transmisją wyników na żywo. Sprawdź
+                kalendarz nadchodzących wydarzeń lub przejrzyj archiwalne wyniki.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild variant="default">
                   <Link to="/wydarzenia">
-                    <Calendar className="h-4 w-4 mr-2" />
+                    <Calendar className="mr-2 h-4 w-4" />
                     Kalendarz wydarzeń
                   </Link>
                 </Button>
                 <Button asChild variant="outline">
                   <Link to="/wyniki">
-                    <Trophy className="h-4 w-4 mr-2" />
+                    <Trophy className="mr-2 h-4 w-4" />
                     Archiwum wyników
                   </Link>
                 </Button>

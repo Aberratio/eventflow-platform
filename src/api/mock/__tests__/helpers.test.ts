@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { applyDiscount, getCurrentPrice, validateDiscountCode, validateTeamName, getExistingTeamsForEvent } from '@/api/mock/helpers';
+import {
+  applyDiscount,
+  getCurrentPrice,
+  validateDiscountCode,
+  validateTeamName,
+  getExistingTeamsForEvent,
+} from '@/api/mock/helpers';
 import type { Distance, Event, Registration } from '@/types';
 
 describe('applyDiscount', () => {
@@ -69,9 +75,10 @@ describe('getCurrentPrice', () => {
 });
 
 describe('validateDiscountCode', () => {
-  const makeEvent = (codes: any[]): Event => ({
-    discountCodes: codes,
-  } as unknown as Event);
+  const makeEvent = (codes: any[]): Event =>
+    ({
+      discountCodes: codes,
+    }) as unknown as Event;
 
   it('returns invalid when no discount codes exist', () => {
     const event = {} as Event;
@@ -94,33 +101,48 @@ describe('validateDiscountCode', () => {
   });
 
   it('returns valid for active code with percent discount', () => {
-    const event = makeEvent([{ code: 'SAVE20', active: true, discountType: 'percent', discountValue: 20 }]);
+    const event = makeEvent([
+      { code: 'SAVE20', active: true, discountType: 'percent', discountValue: 20 },
+    ]);
     const result = validateDiscountCode('SAVE20', event);
     expect(result.valid).toBe(true);
     expect(result.discount).toEqual({ type: 'percent', value: 20 });
   });
 
   it('is case insensitive', () => {
-    const event = makeEvent([{ code: 'SAVE20', active: true, discountType: 'percent', discountValue: 20 }]);
+    const event = makeEvent([
+      { code: 'SAVE20', active: true, discountType: 'percent', discountValue: 20 },
+    ]);
     const result = validateDiscountCode('save20', event);
     expect(result.valid).toBe(true);
   });
 
   it('rejects expired code', () => {
-    const event = makeEvent([{
-      code: 'OLD', active: true, discountType: 'fixed', discountValue: 10,
-      validTo: new Date(Date.now() - 86400000).toISOString(),
-    }]);
+    const event = makeEvent([
+      {
+        code: 'OLD',
+        active: true,
+        discountType: 'fixed',
+        discountValue: 10,
+        validTo: new Date(Date.now() - 86400000).toISOString(),
+      },
+    ]);
     const result = validateDiscountCode('OLD', event);
     expect(result.valid).toBe(false);
     expect(result.message).toBe('Kod rabatowy wygasł');
   });
 
   it('rejects code exceeding max uses', () => {
-    const event = makeEvent([{
-      code: 'USED', active: true, discountType: 'fixed', discountValue: 10,
-      maxUses: 5, usedCount: 5,
-    }]);
+    const event = makeEvent([
+      {
+        code: 'USED',
+        active: true,
+        discountType: 'fixed',
+        discountValue: 10,
+        maxUses: 5,
+        usedCount: 5,
+      },
+    ]);
     const result = validateDiscountCode('USED', event);
     expect(result.valid).toBe(false);
   });
@@ -166,7 +188,7 @@ describe('getExistingTeamsForEvent', () => {
 
   it('excludes cancelled registrations', () => {
     const teams = getExistingTeamsForEvent(registrations, 'e1');
-    expect(teams.find(t => t.name === 'Cancelled')).toBeUndefined();
+    expect(teams.find((t) => t.name === 'Cancelled')).toBeUndefined();
   });
 
   it('returns empty for unknown event', () => {

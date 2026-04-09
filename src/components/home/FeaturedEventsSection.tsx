@@ -13,29 +13,36 @@ interface FeaturedEventsSectionProps {
 
 export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) => {
   const featuredEvents = events
-    .filter(e => !e.isPrivate && e.featured && e.status === 'published')
+    .filter((e) => !e.isPrivate && e.featured && e.status === 'published')
     .slice(0, 4);
 
   if (featuredEvents.length === 0) return null;
 
   return (
-    <section className="relative py-10 md:py-14 animate-fade-in">
+    <section className="animate-fade-in relative py-10 md:py-14">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-1 bg-warning rounded-full shrink-0 shadow-[0_0_8px_hsl(var(--warning)/0.3)]" />
+            <div className="h-8 w-1 shrink-0 rounded-full bg-warning shadow-[0_0_8px_hsl(var(--warning)/0.3)]" />
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-bold leading-tight">Polecane wydarzenia</h2>
-                <Badge variant="outline" className="text-warning border-warning/30 text-[10px]">
-                  <Star className="h-2.5 w-2.5 mr-0.5 fill-warning" />
+                <h2 className="text-xl font-bold leading-tight md:text-2xl">Polecane wydarzenia</h2>
+                <Badge variant="outline" className="border-warning/30 text-[10px] text-warning">
+                  <Star className="mr-0.5 h-2.5 w-2.5 fill-warning" />
                   Sponsorowane
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Wyróżnione zawody w tym sezonie</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Wyróżnione zawody w tym sezonie
+              </p>
             </div>
           </div>
-          <Button asChild variant="ghost" size="sm" className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden gap-1.5 text-muted-foreground hover:text-foreground sm:flex"
+          >
             <Link to="/events">
               Wszystkie
               <ArrowRight className="h-3.5 w-3.5" />
@@ -43,21 +50,21 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {featuredEvents.map(event => (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {featuredEvents.map((event) => (
             <Link
               key={event.id}
               to={`/events/${event.slug}`}
-              className="group flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:border-warning/30 hover:bg-accent/50 transition-all duration-200"
+              className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-warning/30 hover:bg-accent/50"
             >
-              <div className="p-2 rounded-lg bg-muted shrink-0 group-hover:bg-warning/10 transition-colors">
+              <div className="shrink-0 rounded-lg bg-muted p-2 transition-colors group-hover:bg-warning/10">
                 <DisciplineIcon discipline={event.discipline} size="md" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-sm leading-tight group-hover:text-foreground transition-colors line-clamp-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-2 text-sm font-medium leading-tight transition-colors group-hover:text-foreground">
                   {event.name}
                 </h3>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-1.5">
+                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
@@ -67,9 +74,9 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
                     {event.city}
                   </span>
                 </div>
-                <div className="flex gap-1.5 mt-2">
-                  {event.distances.slice(0, 3).map(d => (
-                    <Badge key={d.id} variant="secondary" className="text-[10px] px-1.5 py-0">
+                <div className="mt-2 flex gap-1.5">
+                  {event.distances.slice(0, 3).map((d) => (
+                    <Badge key={d.id} variant="secondary" className="px-1.5 py-0 text-[10px]">
                       {d.name}
                     </Badge>
                   ))}

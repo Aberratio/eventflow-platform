@@ -1,22 +1,40 @@
 import { simulateDelay } from './client';
 import type { ApiResponse, PaginatedResponse, ShopProductFilters, OrderFilters } from './types';
-import { mockShopProducts, mockDeliveryMethods, mockShopPaymentMethods, mockShopOrders } from './mock/shop.mock';
+import {
+  mockShopProducts,
+  mockDeliveryMethods,
+  mockShopPaymentMethods,
+  mockShopOrders,
+} from './mock/shop.mock';
 import type { ShopProduct, DeliveryMethod, ShopPaymentMethod, ShopOrder } from '@/types';
 
-export async function getProducts(filters?: ShopProductFilters): Promise<PaginatedResponse<ShopProduct>> {
+export async function getProducts(
+  filters?: ShopProductFilters,
+): Promise<PaginatedResponse<ShopProduct>> {
   await simulateDelay();
   let filtered = [...mockShopProducts];
 
   if (filters?.category) filtered = filtered.filter((p) => p.category === filters.category);
-  if (filters?.inStock !== undefined) filtered = filtered.filter((p) => p.inStock === filters.inStock);
-  if (filters?.minPrice !== undefined) filtered = filtered.filter((p) => p.price >= filters.minPrice!);
-  if (filters?.maxPrice !== undefined) filtered = filtered.filter((p) => p.price <= filters.maxPrice!);
+  if (filters?.inStock !== undefined)
+    filtered = filtered.filter((p) => p.inStock === filters.inStock);
+  if (filters?.minPrice !== undefined)
+    filtered = filtered.filter((p) => p.price >= filters.minPrice!);
+  if (filters?.maxPrice !== undefined)
+    filtered = filtered.filter((p) => p.price <= filters.maxPrice!);
   if (filters?.search) {
     const q = filters.search.toLowerCase();
-    filtered = filtered.filter((p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+    filtered = filtered.filter(
+      (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q),
+    );
   }
 
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
+  return {
+    data: filtered,
+    total: filtered.length,
+    page: 1,
+    pageSize: filtered.length,
+    totalPages: 1,
+  };
 }
 
 export async function getProductBySlug(slug: string): Promise<ApiResponse<ShopProduct | null>> {
@@ -80,6 +98,10 @@ export async function updateOrderStatus(
 ): Promise<ApiResponse<ShopOrder>> {
   await simulateDelay();
   const order = mockShopOrders.find((o) => o.id === id);
-  if (!order) return { data: null as unknown as ShopOrder, success: false, message: 'Order not found' };
-  return { data: { ...order, status, trackingNumber: trackingNumber ?? order.trackingNumber }, success: true };
+  if (!order)
+    return { data: null as unknown as ShopOrder, success: false, message: 'Order not found' };
+  return {
+    data: { ...order, status, trackingNumber: trackingNumber ?? order.trackingNumber },
+    success: true,
+  };
 }

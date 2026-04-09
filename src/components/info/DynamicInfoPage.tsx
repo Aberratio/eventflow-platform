@@ -45,11 +45,7 @@ const SectionRenderer = ({ section, index }: { section: InfoPageSection; index: 
     return content;
   }
 
-  return (
-    <div className={isEven ? '' : 'bg-muted/20'}>
-      {content}
-    </div>
-  );
+  return <div className={isEven ? '' : 'bg-muted/20'}>{content}</div>;
 };
 
 export const DynamicInfoPage = () => {
@@ -62,20 +58,20 @@ export const DynamicInfoPage = () => {
         <div className="min-h-screen">
           <section className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16">
             <div className="container">
-              <div className="max-w-3xl mx-auto text-center space-y-3">
-                <Skeleton className="h-6 w-24 mx-auto rounded-full" />
-                <Skeleton className="h-9 w-3/4 mx-auto" />
-                <Skeleton className="h-5 w-1/2 mx-auto" />
+              <div className="mx-auto max-w-3xl space-y-3 text-center">
+                <Skeleton className="mx-auto h-6 w-24 rounded-full" />
+                <Skeleton className="mx-auto h-9 w-3/4" />
+                <Skeleton className="mx-auto h-5 w-1/2" />
               </div>
             </div>
           </section>
           <div className="container py-8 md:py-12">
-            <div className="max-w-3xl mx-auto space-y-5">
+            <div className="mx-auto max-w-3xl space-y-5">
               <Skeleton className="h-7 w-1/3" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-7 w-1/4 mt-6" />
+              <Skeleton className="mt-6 h-7 w-1/4" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </div>

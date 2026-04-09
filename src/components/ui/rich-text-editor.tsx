@@ -2,30 +2,24 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import { 
-  Bold, 
-  Italic, 
-  Underline as UnderlineIcon, 
-  Strikethrough, 
-  Link as LinkIcon, 
-  List, 
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Link as LinkIcon,
+  List,
   ListOrdered,
   Heading2,
   Heading3,
   RemoveFormatting,
-  Link2Off
+  Link2Off,
 } from 'lucide-react';
 import { Button } from './button';
 import { Separator } from './separator';
 import { cn } from '@/lib/utils';
 import { useState, useCallback, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './dialog';
 import { Input } from './input';
 import { Label } from './label';
 
@@ -53,21 +47,18 @@ const ToolbarButton = ({ icon: Icon, active, onClick, title, disabled }: Toolbar
     onClick={onClick}
     title={title}
     disabled={disabled}
-    className={cn(
-      'h-8 w-8 p-0',
-      active && 'bg-muted text-foreground'
-    )}
+    className={cn('h-8 w-8 p-0', active && 'bg-muted text-foreground')}
   >
     <Icon className="h-4 w-4" />
   </Button>
 );
 
-export const RichTextEditor = ({ 
-  value, 
-  onChange, 
-  placeholder = 'Rozpocznij pisanie...', 
+export const RichTextEditor = ({
+  value,
+  onChange,
+  placeholder = 'Rozpocznij pisanie...',
   className,
-  minHeight = '120px'
+  minHeight = '120px',
 }: RichTextEditorProps) => {
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -90,7 +81,7 @@ export const RichTextEditor = ({
       attributes: {
         class: cn(
           'prose prose-sm dark:prose-invert max-w-none focus:outline-none',
-          'min-h-[120px] p-3'
+          'min-h-[120px] p-3',
         ),
         style: `min-height: ${minHeight}`,
       },
@@ -109,7 +100,7 @@ export const RichTextEditor = ({
 
   const handleAddLink = useCallback(() => {
     if (!editor) return;
-    
+
     const previousUrl = editor.getAttributes('link').href;
     setLinkUrl(previousUrl || '');
     setShowLinkDialog(true);
@@ -117,7 +108,7 @@ export const RichTextEditor = ({
 
   const confirmLink = useCallback(() => {
     if (!editor) return;
-    
+
     if (linkUrl === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
     } else {
@@ -125,7 +116,7 @@ export const RichTextEditor = ({
       const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
       editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
     }
-    
+
     setShowLinkDialog(false);
     setLinkUrl('');
   }, [editor, linkUrl]);
@@ -140,7 +131,7 @@ export const RichTextEditor = ({
   return (
     <div className={cn('rounded-md border bg-background', className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 p-2 border-b bg-muted/30">
+      <div className="flex flex-wrap items-center gap-0.5 border-b bg-muted/30 p-2">
         <ToolbarButton
           icon={Bold}
           active={editor.isActive('bold')}
@@ -165,9 +156,9 @@ export const RichTextEditor = ({
           onClick={() => editor.chain().focus().toggleStrike().run()}
           title="Przekreślenie"
         />
-        
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <ToolbarButton
           icon={LinkIcon}
           active={editor.isActive('link')}
@@ -175,15 +166,11 @@ export const RichTextEditor = ({
           title="Dodaj link"
         />
         {editor.isActive('link') && (
-          <ToolbarButton
-            icon={Link2Off}
-            onClick={removeLink}
-            title="Usuń link"
-          />
+          <ToolbarButton icon={Link2Off} onClick={removeLink} title="Usuń link" />
         )}
-        
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <ToolbarButton
           icon={List}
           active={editor.isActive('bulletList')}
@@ -196,9 +183,9 @@ export const RichTextEditor = ({
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           title="Lista numerowana"
         />
-        
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <ToolbarButton
           icon={Heading2}
           active={editor.isActive('heading', { level: 2 })}
@@ -211,9 +198,9 @@ export const RichTextEditor = ({
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           title="Nagłówek 3"
         />
-        
-        <Separator orientation="vertical" className="h-6 mx-1" />
-        
+
+        <Separator orientation="vertical" className="mx-1 h-6" />
+
         <ToolbarButton
           icon={RemoveFormatting}
           onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
@@ -254,9 +241,7 @@ export const RichTextEditor = ({
             <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
               Anuluj
             </Button>
-            <Button onClick={confirmLink}>
-              Zapisz
-            </Button>
+            <Button onClick={confirmLink}>Zapisz</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

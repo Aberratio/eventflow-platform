@@ -3,7 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Trash2, Tag, Copy, Eye, Pencil } from 'lucide-react';
 import { DiscountCode, Distance } from '@/types';
 import { DiscountCodeUsageDialog } from '@/components/organizer/DiscountCodeUsageDialog';
@@ -19,18 +26,24 @@ interface DiscountCodesEditorProps {
   onChange: (codes: DiscountCode[]) => void;
 }
 
-export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: DiscountCodesEditorProps) => {
+export const DiscountCodesEditor = ({
+  discountCodes,
+  distances,
+  onChange,
+}: DiscountCodesEditorProps) => {
   const [usageDialogOpen, setUsageDialogOpen] = useState(false);
   const [selectedCodeForUsage, setSelectedCodeForUsage] = useState<DiscountCode | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editingCode, setEditingCode] = useState<Partial<DiscountCode> & { id: string } | null>(null);
+  const [editingCode, setEditingCode] = useState<(Partial<DiscountCode> & { id: string }) | null>(
+    null,
+  );
 
   const handleToggleActive = (codeId: string) => {
-    onChange(discountCodes.map(dc => dc.id === codeId ? { ...dc, active: !dc.active } : dc));
+    onChange(discountCodes.map((dc) => (dc.id === codeId ? { ...dc, active: !dc.active } : dc)));
   };
 
   const handleDeleteCode = (codeId: string) => {
-    onChange(discountCodes.filter(dc => dc.id !== codeId));
+    onChange(discountCodes.filter((dc) => dc.id !== codeId));
     toast.success('Kod rabatowy usunięty');
   };
 
@@ -46,7 +59,7 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
 
   const handleSaveEdit = () => {
     if (!editingCode) return;
-    const updated = discountCodes.map(dc =>
+    const updated = discountCodes.map((dc) =>
       dc.id === editingCode.id
         ? {
             ...dc,
@@ -57,7 +70,7 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
             maxUses: editingCode.maxUses || undefined,
             distanceIds: editingCode.distanceIds,
           }
-        : dc
+        : dc,
     );
     onChange(updated);
     setEditDialogOpen(false);
@@ -82,8 +95,8 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
       </CardHeader>
       <CardContent>
         {discountCodes.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Tag className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <Tag className="mx-auto mb-4 h-12 w-12 opacity-50" />
             <p>Brak kodów rabatowych</p>
             <p className="text-sm">Dodaj pierwszy kod rabatowy dla tego wydarzenia</p>
           </div>
@@ -101,7 +114,7 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {discountCodes.map(code => {
+                {discountCodes.map((code) => {
                   const isExpired = code.validTo && new Date(code.validTo) < new Date();
                   const isExhausted = code.maxUses && code.usedCount >= code.maxUses;
 
@@ -110,20 +123,29 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <code className="font-mono font-bold">{code.code}</code>
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopyCode(code.code)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleCopyCode(code.code)}
+                          >
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {code.discountType === 'percent' ? `${code.discountValue}%` : `${code.discountValue} zł`}
+                          {code.discountType === 'percent'
+                            ? `${code.discountValue}%`
+                            : `${code.discountValue} zł`}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {code.validFrom && format(new Date(code.validFrom), 'd MMM', { locale: pl })}
+                        {code.validFrom &&
+                          format(new Date(code.validFrom), 'd MMM', { locale: pl })}
                         {code.validFrom && code.validTo && ' - '}
-                        {code.validTo && format(new Date(code.validTo), 'd MMM yyyy', { locale: pl })}
+                        {code.validTo &&
+                          format(new Date(code.validTo), 'd MMM yyyy', { locale: pl })}
                         {!code.validFrom && !code.validTo && 'Bez limitu'}
                       </TableCell>
                       <TableCell>
@@ -143,14 +165,38 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedCodeForUsage(code); setUsageDialogOpen(true); }} title="Pokaż użycia">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setSelectedCodeForUsage(code);
+                              setUsageDialogOpen(true);
+                            }}
+                            title="Pokaż użycia"
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleStartEdit(code)} title="Edytuj kod">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleStartEdit(code)}
+                            title="Edytuj kod"
+                          >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Switch checked={code.active} onCheckedChange={() => handleToggleActive(code.id)} disabled={!!isExpired || !!isExhausted} />
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCode(code.id)} className="text-destructive hover:text-destructive">
+                          <Switch
+                            checked={code.active}
+                            onCheckedChange={() => handleToggleActive(code.id)}
+                            disabled={!!isExpired || !!isExhausted}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteCode(code.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -164,7 +210,11 @@ export const DiscountCodesEditor = ({ discountCodes, distances, onChange }: Disc
         )}
       </CardContent>
 
-      <DiscountCodeUsageDialog code={selectedCodeForUsage} open={usageDialogOpen} onOpenChange={setUsageDialogOpen} />
+      <DiscountCodeUsageDialog
+        code={selectedCodeForUsage}
+        open={usageDialogOpen}
+        onOpenChange={setUsageDialogOpen}
+      />
 
       <EditDiscountCodeDialog
         open={editDialogOpen}

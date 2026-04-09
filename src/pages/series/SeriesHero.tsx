@@ -23,7 +23,7 @@ interface SeriesHeroProps {
 
 export const SeriesHero: React.FC<SeriesHeroProps> = ({ series }) => (
   <div className="mb-8">
-    <div className="flex items-center gap-3 mb-4">
+    <div className="mb-4 flex items-center gap-3">
       <Badge
         variant="outline"
         className={`${seriesTypeColors[series.type]} flex items-center gap-1`}
@@ -32,13 +32,17 @@ export const SeriesHero: React.FC<SeriesHeroProps> = ({ series }) => (
         {seriesTypeLabels[series.type]}
       </Badge>
       <Badge variant={series.status === 'active' ? 'default' : 'secondary'}>
-        {series.status === 'active' ? 'Aktywna' : series.status === 'completed' ? 'Zakończona' : 'Nadchodząca'}
+        {series.status === 'active'
+          ? 'Aktywna'
+          : series.status === 'completed'
+            ? 'Zakończona'
+            : 'Nadchodząca'}
       </Badge>
     </div>
 
-    <h1 className="text-3xl md:text-4xl font-bold mb-4">{series.name}</h1>
+    <h1 className="mb-4 text-3xl font-bold md:text-4xl">{series.name}</h1>
 
-    <div className="flex flex-wrap gap-4 text-muted-foreground mb-4">
+    <div className="mb-4 flex flex-wrap gap-4 text-muted-foreground">
       <span className="flex items-center gap-1">
         <Users className="h-4 w-4" />
         {series.organizerName}
@@ -52,6 +56,6 @@ export const SeriesHero: React.FC<SeriesHeroProps> = ({ series }) => (
       )}
     </div>
 
-    <p className="text-lg text-muted-foreground max-w-3xl">{series.description}</p>
+    <p className="max-w-3xl text-lg text-muted-foreground">{series.description}</p>
   </div>
 );

@@ -54,13 +54,13 @@ export const ContactAdminForm = ({ trigger }: ContactAdminFormProps) => {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     // Mock submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     toast({
       title: 'Wiadomość wysłana',
       description: 'Dziękujemy za kontakt. Odpowiemy najszybciej jak to możliwe.',
     });
-    
+
     form.reset();
     setOpen(false);
     setIsSubmitting(false);
@@ -71,7 +71,7 @@ export const ContactAdminForm = ({ trigger }: ContactAdminFormProps) => {
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-            <MessageSquare className="h-4 w-4 mr-2" />
+            <MessageSquare className="mr-2 h-4 w-4" />
             Kontakt z administracją
           </Button>
         )}
@@ -131,10 +131,10 @@ export const ContactAdminForm = ({ trigger }: ContactAdminFormProps) => {
                 <FormItem>
                   <FormLabel>Wiadomość</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Treść wiadomości..." 
+                    <Textarea
+                      placeholder="Treść wiadomości..."
                       className="min-h-[100px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

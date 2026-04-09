@@ -9,13 +9,20 @@ const features = [
   {
     icon: Timer,
     title: 'Pomiar czasu',
-    description: 'Profesjonalny chipowy pomiar czasu z dokładnością do 0.01 sekundy. Obsługujemy wydarzenia od 100 do 50,000 uczestników.',
-    items: ['Chipy pasywne i aktywne', 'Maty pomiarowe', 'Wyniki w czasie rzeczywistym', 'Certyfikaty online'],
+    description:
+      'Profesjonalny chipowy pomiar czasu z dokładnością do 0.01 sekundy. Obsługujemy wydarzenia od 100 do 50,000 uczestników.',
+    items: [
+      'Chipy pasywne i aktywne',
+      'Maty pomiarowe',
+      'Wyniki w czasie rzeczywistym',
+      'Certyfikaty online',
+    ],
   },
   {
     icon: Users,
     title: 'System rejestracji',
-    description: 'Intuicyjny system zapisów online z płatnościami. Pełna automatyzacja procesu rejestracji.',
+    description:
+      'Intuicyjny system zapisów online z płatnościami. Pełna automatyzacja procesu rejestracji.',
     items: ['Formularze zapisów', 'Płatności online', 'Kody rabatowe', 'Limity uczestników'],
   },
   {
@@ -27,7 +34,8 @@ const features = [
   {
     icon: BarChart3,
     title: 'Analityka i raporty',
-    description: 'Szczegółowe raporty i statystyki dla organizatorów. Dane demograficzne uczestników.',
+    description:
+      'Szczegółowe raporty i statystyki dla organizatorów. Dane demograficzne uczestników.',
     items: ['Dashboard organizatora', 'Eksport danych', 'Statystyki zapisów', 'Historia wydarzeń'],
   },
 ];
@@ -46,14 +54,26 @@ const packages = [
     description: 'Dla średnich imprez sportowych',
     participants: 'do 1000 uczestników',
     popular: true,
-    features: ['Wszystko z Starter', 'Pomiar czasu chipowy', 'Wyniki live', 'Wsparcie telefoniczne', 'Dyplomy PDF'],
+    features: [
+      'Wszystko z Starter',
+      'Pomiar czasu chipowy',
+      'Wyniki live',
+      'Wsparcie telefoniczne',
+      'Dyplomy PDF',
+    ],
   },
   {
     name: 'Enterprise',
     price: 'Indywidualnie',
     description: 'Dla dużych wydarzeń masowych',
     participants: '1000+ uczestników',
-    features: ['Wszystko z Professional', 'Dedykowany opiekun', 'Integracje API', 'SLA 99.9%', 'Własna domena'],
+    features: [
+      'Wszystko z Professional',
+      'Dedykowany opiekun',
+      'Integracje API',
+      'SLA 99.9%',
+      'Własna domena',
+    ],
   },
 ];
 
@@ -62,32 +82,32 @@ const OfferPage = () => {
     <Layout>
       <div className="container py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Oferta dla organizatorów</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Kompleksowa obsługa wydarzeń sportowych - od rejestracji po publikację wyników. 
+        <div className="mb-12 text-center">
+          <h1 className="mb-4 text-3xl font-bold md:text-4xl">Oferta dla organizatorów</h1>
+          <p className="mx-auto max-w-2xl text-muted-foreground">
+            Kompleksowa obsługa wydarzeń sportowych - od rejestracji po publikację wyników.
             Profesjonalne narzędzia dla organizatorów każdej wielkości imprez.
           </p>
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+        <div className="mb-16 grid grid-cols-1 gap-6 md:grid-cols-2">
           {features.map((feature) => (
             <Card key={feature.title} className="h-full">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
+                  <div className="rounded-lg bg-primary/10 p-2">
                     <feature.icon className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-sm mb-4">{feature.description}</p>
+                <p className="mb-4 text-sm text-muted-foreground">{feature.description}</p>
                 <ul className="space-y-2">
                   {feature.items.map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-primary shrink-0" />
+                      <Check className="h-4 w-4 shrink-0 text-primary" />
                       {item}
                     </li>
                   ))}
@@ -99,10 +119,13 @@ const OfferPage = () => {
 
         {/* Pricing */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8">Pakiety cenowe</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="mb-8 text-center text-2xl font-bold">Pakiety cenowe</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {packages.map((pkg) => (
-              <Card key={pkg.name} className={`relative ${pkg.popular ? 'border-primary shadow-lg' : ''}`}>
+              <Card
+                key={pkg.name}
+                className={`relative ${pkg.popular ? 'border-primary shadow-lg' : ''}`}
+              >
                 {pkg.popular && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                     Najpopularniejszy
@@ -112,24 +135,30 @@ const OfferPage = () => {
                   <CardTitle>{pkg.name}</CardTitle>
                   <div className="mt-4">
                     <span className="text-3xl font-bold">{pkg.price}</span>
-                    {pkg.price !== 'Indywidualnie' && <span className="text-muted-foreground"> zł</span>}
+                    {pkg.price !== 'Indywidualnie' && (
+                      <span className="text-muted-foreground"> zł</span>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">{pkg.description}</p>
-                  <Badge variant="secondary" className="mt-2">{pkg.participants}</Badge>
+                  <Badge variant="secondary" className="mt-2">
+                    {pkg.participants}
+                  </Badge>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
                     {pkg.features.map((feature) => (
                       <li key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <Check className="h-4 w-4 shrink-0 text-primary" />
                         {feature}
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full mt-6" variant={pkg.popular ? 'default' : 'outline'} asChild>
-                    <Link to="/info/kontakt">
-                      Skontaktuj się
-                    </Link>
+                  <Button
+                    className="mt-6 w-full"
+                    variant={pkg.popular ? 'default' : 'outline'}
+                    asChild
+                  >
+                    <Link to="/info/kontakt">Skontaktuj się</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -140,15 +169,15 @@ const OfferPage = () => {
         {/* CTA */}
         <Card className="bg-muted/50">
           <CardContent className="py-8 text-center">
-            <Headphones className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Potrzebujesz indywidualnej wyceny?</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            <Headphones className="mx-auto mb-4 h-12 w-12 text-primary" />
+            <h3 className="mb-2 text-xl font-semibold">Potrzebujesz indywidualnej wyceny?</h3>
+            <p className="mx-auto mb-6 max-w-md text-muted-foreground">
               Skontaktuj się z nami, a przygotujemy ofertę dopasowaną do Twojego wydarzenia.
             </p>
             <Button asChild>
               <Link to="/info/kontakt">
                 Napisz do nas
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </CardContent>

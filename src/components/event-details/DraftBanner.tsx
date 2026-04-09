@@ -25,7 +25,7 @@ export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerPro
 
   return (
     <div className="bg-warning text-warning-foreground">
-      <div className="container py-2 flex items-center justify-between gap-4 flex-wrap">
+      <div className="container flex flex-wrap items-center justify-between gap-4 py-2">
         <div className="flex items-center gap-2 text-sm font-medium">
           <Eye className="h-4 w-4 shrink-0" />
           <span>{message}</span>
@@ -37,22 +37,37 @@ export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerPro
           {isAdminOrMod && event.status === 'awaiting_approval' && (
             <>
               {onApprove && (
-                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onApprove}>
-                  <ShieldCheck className="h-3 w-3 mr-1" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
+                  onClick={onApprove}
+                >
+                  <ShieldCheck className="mr-1 h-3 w-3" />
                   Zatwierdź
                 </Button>
               )}
               {onReject && (
-                <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" onClick={onReject}>
-                  <AlertTriangle className="h-3 w-3 mr-1" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
+                  onClick={onReject}
+                >
+                  <AlertTriangle className="mr-1 h-3 w-3" />
                   Odrzuć
                 </Button>
               )}
             </>
           )}
-          <Button size="sm" variant="outline" className="h-7 text-xs bg-background/20 border-warning-foreground/30 hover:bg-background/40" asChild>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
+            asChild
+          >
             <Link to={getEditUrl(event, user)}>
-              <Pencil className="h-3 w-3 mr-1" />
+              <Pencil className="mr-1 h-3 w-3" />
               Edytuj
             </Link>
           </Button>

@@ -142,7 +142,8 @@ export const validateTeamName = (name: string): { valid: boolean; error?: string
   if (trimmed.length > 50) return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
 
   const validPattern = /^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ0-9\s\-'.]+$/;
-  if (!validPattern.test(trimmed)) return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
+  if (!validPattern.test(trimmed))
+    return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
 
   const bannedWords = ['dupa', 'chuj', 'kurwa', 'pierdol'];
   const lowerName = trimmed.toLowerCase();

@@ -4,7 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Event, Registration } from '@/types';
 import { disciplineLabels } from '@/api/mock/labels';
-import { Users, Calendar, MapPin, TrendingUp, ExternalLink, AlertTriangle, Send } from 'lucide-react';
+import {
+  Users,
+  Calendar,
+  MapPin,
+  TrendingUp,
+  ExternalLink,
+  AlertTriangle,
+  Send,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,17 +23,19 @@ interface EventOverviewTabProps {
 
 export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
   const { toast } = useToast();
-  const confirmedRegistrations = registrations.filter(r => r.status === 'confirmed');
-  const pendingRegistrations = registrations.filter(r => r.status === 'pending');
+  const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
+  const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
-    const distance = event.distances.find(d => d.id === reg.distanceId);
+    const distance = event.distances.find((d) => d.id === reg.distanceId);
     return acc + (distance?.price || 0);
   }, 0);
 
-  const registrationsByDistance = event.distances.map(d => ({
+  const registrationsByDistance = event.distances.map((d) => ({
     distance: d,
-    count: registrations.filter(r => r.distanceId === d.id).length,
-    percentage: d.limit ? Math.round((registrations.filter(r => r.distanceId === d.id).length / d.limit) * 100) : 0
+    count: registrations.filter((r) => r.distanceId === d.id).length,
+    percentage: d.limit
+      ? Math.round((registrations.filter((r) => r.distanceId === d.id).length / d.limit) * 100)
+      : 0,
   }));
 
   const handleResubmit = () => {
@@ -45,7 +55,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
           <AlertDescription className="mt-2">
             <p className="mb-3">{event.rejectionReason}</p>
             <Button size="sm" onClick={handleResubmit}>
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="mr-2 h-4 w-4" />
               Popraw i zgłoś ponownie
             </Button>
           </AlertDescription>
@@ -58,9 +68,10 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
           <Calendar className="h-4 w-4" />
           <AlertTitle>Oczekuje na akceptację</AlertTitle>
           <AlertDescription>
-            Twoje wydarzenie zostało przesłane do weryfikacji. Otrzymasz powiadomienie po rozpatrzeniu.
+            Twoje wydarzenie zostało przesłane do weryfikacji. Otrzymasz powiadomienie po
+            rozpatrzeniu.
             {event.submittedAt && (
-              <span className="block text-xs mt-1 text-muted-foreground">
+              <span className="mt-1 block text-xs text-muted-foreground">
                 Zgłoszono: {new Date(event.submittedAt).toLocaleDateString('pl-PL')}
               </span>
             )}
@@ -69,11 +80,11 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
       )}
 
       {/* Quick stats */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
+              <div className="rounded-full bg-primary/10 p-3">
                 <Users className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -87,7 +98,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-warning/10">
+              <div className="rounded-full bg-warning/10 p-3">
                 <Users className="h-6 w-6 text-warning" />
               </div>
               <div>
@@ -101,7 +112,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-success/10">
+              <div className="rounded-full bg-success/10 p-3">
                 <TrendingUp className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -115,7 +126,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
+              <div className="rounded-full bg-primary/10 p-3">
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -128,7 +139,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
       </div>
 
       {/* Event details */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Informacje o wydarzeniu</CardTitle>
@@ -137,9 +148,13 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
             <div className="flex items-center gap-2">
               <Badge>{disciplineLabels[event.discipline]}</Badge>
               <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
-                {event.status === 'published' ? 'Opublikowane' : 
-                 event.status === 'draft' ? 'Szkic' : 
-                 event.status === 'completed' ? 'Zakończone' : 'Anulowane'}
+                {event.status === 'published'
+                  ? 'Opublikowane'
+                  : event.status === 'draft'
+                    ? 'Szkic'
+                    : event.status === 'completed'
+                      ? 'Zakończone'
+                      : 'Anulowane'}
               </Badge>
               {event.featured && <Badge variant="outline">⭐ Wyróżnione</Badge>}
             </div>
@@ -147,7 +162,9 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>{event.location}, {event.city}</span>
+                <span>
+                  {event.location}, {event.city}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
@@ -179,14 +196,16 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
                       {count} / {distance.limit || '∞'}
                     </span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div
                       className="h-full bg-primary transition-all"
                       style={{ width: `${Math.min(percentage, 100)}%` }}
                     />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{distance.length} {distance.unit}</span>
+                    <span>
+                      {distance.length} {distance.unit}
+                    </span>
                     <span>{distance.price} PLN</span>
                   </div>
                 </div>

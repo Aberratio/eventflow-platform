@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Result, Certificate } from '@/types';
 import { Trophy } from 'lucide-react';
 import { mockEvents } from '@/api/mock/events.mock';
@@ -19,36 +25,49 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
   const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
 
   // Enrich results with event data
-  const enrichedResults = results.map(result => {
-    const event = mockEvents.find(e => e.id === result.eventId);
-    const certificate = certificates.find(c => c.eventId === result.eventId);
+  const enrichedResults = results.map((result) => {
+    const event = mockEvents.find((e) => e.id === result.eventId);
+    const certificate = certificates.find((c) => c.eventId === result.eventId);
     return { ...result, event, certificate };
   });
 
   // Get unique years and disciplines for filters
-  const years = [...new Set(enrichedResults.map(r => r.event?.date ? new Date(r.event.date).getFullYear() : null).filter(Boolean))] as number[];
-  const disciplines = [...new Set(enrichedResults.map(r => r.event?.discipline).filter(Boolean))] as string[];
+  const years = [
+    ...new Set(
+      enrichedResults
+        .map((r) => (r.event?.date ? new Date(r.event.date).getFullYear() : null))
+        .filter(Boolean),
+    ),
+  ] as number[];
+  const disciplines = [
+    ...new Set(enrichedResults.map((r) => r.event?.discipline).filter(Boolean)),
+  ] as string[];
 
   // Filter results
-  const filteredResults = enrichedResults.filter(result => {
-    if (!result.event) return false;
-    
-    const resultYear = new Date(result.event.date).getFullYear();
-    if (yearFilter !== 'all' && resultYear !== parseInt(yearFilter)) return false;
-    if (disciplineFilter !== 'all' && result.event.discipline !== disciplineFilter) return false;
-    
-    return true;
-  }).sort((a, b) => new Date(b.event!.date).getTime() - new Date(a.event!.date).getTime());
+  const filteredResults = enrichedResults
+    .filter((result) => {
+      if (!result.event) return false;
+
+      const resultYear = new Date(result.event.date).getFullYear();
+      if (yearFilter !== 'all' && resultYear !== parseInt(yearFilter)) return false;
+      if (disciplineFilter !== 'all' && result.event.discipline !== disciplineFilter) return false;
+
+      return true;
+    })
+    .sort((a, b) => new Date(b.event!.date).getTime() - new Date(a.event!.date).getTime());
 
   // Group by year
-  const groupedResults = filteredResults.reduce((groups, result) => {
-    const year = new Date(result.event!.date).getFullYear().toString();
-    if (!groups[year]) {
-      groups[year] = [];
-    }
-    groups[year].push(result);
-    return groups;
-  }, {} as Record<string, typeof filteredResults>);
+  const groupedResults = filteredResults.reduce(
+    (groups, result) => {
+      const year = new Date(result.event!.date).getFullYear().toString();
+      if (!groups[year]) {
+        groups[year] = [];
+      }
+      groups[year].push(result);
+      return groups;
+    },
+    {} as Record<string, typeof filteredResults>,
+  );
 
   const handleDownloadCertificate = (certificateId: string) => {
     toast.success('Pobieranie dyplomu...');
@@ -77,16 +96,20 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <Select value={yearFilter} onValueChange={setYearFilter}>
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Rok" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie lata</SelectItem>
-            {years.sort((a, b) => b - a).map(year => (
-              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-            ))}
+            {years
+              .sort((a, b) => b - a)
+              .map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 
@@ -96,8 +119,10 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie dyscypliny</SelectItem>
-            {disciplines.map(disc => (
-              <SelectItem key={disc} value={disc}>{disciplineLabels[disc] || disc}</SelectItem>
+            {disciplines.map((disc) => (
+              <SelectItem key={disc} value={disc}>
+                {disciplineLabels[disc] || disc}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -107,24 +132,25 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
       <ListContainer
         isEmpty={filteredResults.length === 0}
         emptyState={
-          <ListEmptyState
-            title="Brak wyników"
-            description="Brak wyników dla wybranych filtrów"
-          />
+          <ListEmptyState title="Brak wyników" description="Brak wyników dla wybranych filtrów" />
         }
       >
         {Object.entries(groupedResults)
           .sort(([a], [b]) => parseInt(b) - parseInt(a))
           .map(([year, yearResults]) => (
             <ListGroup key={year} title={year}>
-              {yearResults.map(result => (
+              {yearResults.map((result) => (
                 <ResultListRow
                   key={result.id}
                   result={result}
                   event={result.event}
                   showEvent
                   showDownload={!!result.certificate}
-                  onDownloadCertificate={result.certificate ? () => handleDownloadCertificate(result.certificate!.id) : undefined}
+                  onDownloadCertificate={
+                    result.certificate
+                      ? () => handleDownloadCertificate(result.certificate!.id)
+                      : undefined
+                  }
                 />
               ))}
             </ListGroup>

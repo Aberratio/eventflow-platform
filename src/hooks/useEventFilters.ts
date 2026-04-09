@@ -59,25 +59,28 @@ export const useEventFilters = () => {
     return () => clearTimeout(timeout);
   }, [filters]);
 
-  const updateFilter = useCallback(<K extends keyof EventFiltersState>(
-    key: K,
-    value: EventFiltersState[K]
-  ) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const updateFilter = useCallback(
+    <K extends keyof EventFiltersState>(key: K, value: EventFiltersState[K]) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
-  const toggleArrayFilter = useCallback(<K extends keyof EventFiltersState>(
-    key: K,
-    value: EventFiltersState[K] extends (infer T)[] ? T : never
-  ) => {
-    setFilters(prev => {
-      const currentArray = prev[key] as unknown[];
-      const newArray = currentArray.includes(value)
-        ? currentArray.filter(v => v !== value)
-        : [...currentArray, value];
-      return { ...prev, [key]: newArray };
-    });
-  }, []);
+  const toggleArrayFilter = useCallback(
+    <K extends keyof EventFiltersState>(
+      key: K,
+      value: EventFiltersState[K] extends (infer T)[] ? T : never,
+    ) => {
+      setFilters((prev) => {
+        const currentArray = prev[key] as unknown[];
+        const newArray = currentArray.includes(value)
+          ? currentArray.filter((v) => v !== value)
+          : [...currentArray, value];
+        return { ...prev, [key]: newArray };
+      });
+    },
+    [],
+  );
 
   const clearFilters = useCallback(() => {
     const clearedFilters = { ...defaultFilters, selectedYear: filters.selectedYear };

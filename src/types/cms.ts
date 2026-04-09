@@ -1,4 +1,12 @@
-export type InfoPageSectionType = 'hero' | 'text' | 'cards' | 'faq' | 'cta' | 'stats' | 'team' | 'pricing';
+export type InfoPageSectionType =
+  | 'hero'
+  | 'text'
+  | 'cards'
+  | 'faq'
+  | 'cta'
+  | 'stats'
+  | 'team'
+  | 'pricing';
 
 export interface InfoPageSectionItem {
   id: string;

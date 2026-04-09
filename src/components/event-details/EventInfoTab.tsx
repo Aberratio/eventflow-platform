@@ -10,36 +10,38 @@ interface EventInfoTabProps {
 
 export const EventInfoTab = ({ event }: EventInfoTabProps) => (
   <Card>
-    <CardContent className="pt-6 space-y-6">
+    <CardContent className="space-y-6 pt-6">
       <div>
-        <h3 className="font-semibold mb-4">O wydarzeniu</h3>
+        <h3 className="mb-4 font-semibold">O wydarzeniu</h3>
         <p className="text-muted-foreground">{event.description}</p>
       </div>
 
       {event.organizersHtml && (
         <div>
-          <h4 className="font-semibold mb-3">Organizatorzy</h4>
+          <h4 className="mb-3 font-semibold">Organizatorzy</h4>
           <RichTextDisplay html={event.organizersHtml} />
         </div>
       )}
 
       {event.rulesHtml && (
         <div>
-          <h4 className="font-semibold mb-3">Regulamin</h4>
+          <h4 className="mb-3 font-semibold">Regulamin</h4>
           <RichTextDisplay html={event.rulesHtml} />
         </div>
       )}
 
       {!event.organizersHtml && (
         <div>
-          <h4 className="font-semibold mb-2">Lokalizacja</h4>
-          <p className="text-muted-foreground">{event.location}, {event.city}</p>
+          <h4 className="mb-2 font-semibold">Lokalizacja</h4>
+          <p className="text-muted-foreground">
+            {event.location}, {event.city}
+          </p>
         </div>
       )}
 
       {event.insuranceOption?.enabled && (
         <div>
-          <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <h4 className="mb-2 flex items-center gap-2 font-semibold">
             <Shield className="h-4 w-4 text-primary" />
             Ubezpieczenie NNW
           </h4>
@@ -49,40 +51,56 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
         </div>
       )}
 
-      {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
-        <div>
-          <h4 className="font-semibold mb-3 flex items-center gap-2">
-            <ShoppingBag className="h-4 w-4 text-primary" />
-            Gadżety dostępne przy rejestracji
-          </h4>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {event.merchandise.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                <span className="text-sm">{item.name}</span>
-                <Badge variant="secondary">{item.price} zł</Badge>
-              </div>
-            ))}
+      {event.enableMerchandiseInRegistration &&
+        event.merchandise &&
+        event.merchandise.length > 0 && (
+          <div>
+            <h4 className="mb-3 flex items-center gap-2 font-semibold">
+              <ShoppingBag className="h-4 w-4 text-primary" />
+              Gadżety dostępne przy rejestracji
+            </h4>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {event.merchandise.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between rounded-lg bg-muted/50 p-2"
+                >
+                  <span className="text-sm">{item.name}</span>
+                  <Badge variant="secondary">{item.price} zł</Badge>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       <div>
-        <h4 className="font-semibold mb-3">Organizator</h4>
-        {!event.organizersHtml && <p className="font-medium mb-3">{event.organizerName}</p>}
+        <h4 className="mb-3 font-semibold">Organizator</h4>
+        {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
         {event.organizerContact && (
           <div className="space-y-2">
-            <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href={`mailto:${event.organizerContact.email}`}
+              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
               <Mail className="h-4 w-4" />
               {event.organizerContact.email}
             </a>
             {event.organizerContact.phone && (
-              <a href={`tel:${event.organizerContact.phone}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href={`tel:${event.organizerContact.phone}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
                 <Phone className="h-4 w-4" />
                 {event.organizerContact.phone}
               </a>
             )}
             {event.organizerContact.website && (
-              <a href={event.organizerContact.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href={event.organizerContact.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
                 <Globe className="h-4 w-4" />
                 {event.organizerContact.website.replace('https://', '')}
               </a>

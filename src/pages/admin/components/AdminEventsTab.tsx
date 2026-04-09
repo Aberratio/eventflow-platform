@@ -55,9 +55,9 @@ export const AdminEventsTab = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Szukaj po nazwie, mieście lub organizatorze..."
             value={search}
@@ -92,7 +92,7 @@ export const AdminEventsTab = () => {
         </Select>
       </div>
 
-      <div className="border border-border/50 rounded-lg overflow-x-auto">
+      <div className="overflow-x-auto rounded-lg border border-border/50">
         <Table>
           <TableHeader>
             <TableRow>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface Spark {
   id: number;
@@ -11,15 +11,15 @@ interface Spark {
 
 interface SparkEffectProps {
   className?: string;
-  intensity?: "low" | "medium" | "high";
+  intensity?: 'low' | 'medium' | 'high';
 }
 
-const sparkEmojis = ["⚡", "✨", "💥", "🔥", "⭐"];
+const sparkEmojis = ['⚡', '✨', '💥', '🔥', '⭐'];
 
-export const SparkEffect = ({ className, intensity = "medium" }: SparkEffectProps) => {
+export const SparkEffect = ({ className, intensity = 'medium' }: SparkEffectProps) => {
   const [sparks, setSparks] = useState<Spark[]>([]);
 
-  const sparkCount = intensity === "low" ? 3 : intensity === "medium" ? 5 : 8;
+  const sparkCount = intensity === 'low' ? 3 : intensity === 'medium' ? 5 : 8;
 
   useEffect(() => {
     const generateSparks = () => {
@@ -30,7 +30,7 @@ export const SparkEffect = ({ className, intensity = "medium" }: SparkEffectProp
           x: Math.random() * 80 + 10, // 10-90%
           y: Math.random() * 40 + 30, // 30-70%
           emoji: sparkEmojis[Math.floor(Math.random() * sparkEmojis.length)],
-          delay: Math.random() * 0.5
+          delay: Math.random() * 0.5,
         });
       }
       setSparks(newSparks);
@@ -38,20 +38,20 @@ export const SparkEffect = ({ className, intensity = "medium" }: SparkEffectProp
 
     generateSparks();
     const interval = setInterval(generateSparks, 800);
-    
+
     return () => clearInterval(interval);
   }, [sparkCount]);
 
   return (
-    <div className={cn("absolute inset-0 pointer-events-none overflow-hidden", className)}>
+    <div className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}>
       {sparks.map((spark) => (
         <span
           key={spark.id}
-          className="absolute text-lg animate-spark"
+          className="absolute animate-spark text-lg"
           style={{
             left: `${spark.x}%`,
             top: `${spark.y}%`,
-            animationDelay: `${spark.delay}s`
+            animationDelay: `${spark.delay}s`,
           }}
         >
           {spark.emoji}

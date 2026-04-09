@@ -11,23 +11,23 @@ const EventForm = () => {
 
   return (
     <Layout>
-      <div className="container py-8 max-w-4xl">
+      <div className="container max-w-4xl py-8">
         <Button variant="ghost" onClick={() => form.navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="mb-2 text-3xl font-bold">
           {form.isEditing ? 'Edytuj wydarzenie' : 'Nowe wydarzenie'}
         </h1>
-        <p className="text-muted-foreground mb-8">
+        <p className="mb-8 text-muted-foreground">
           {form.step === 1 && 'Krok 1 z 3: Podstawowe informacje'}
           {form.step === 2 && 'Krok 2 z 3: Kategorie i dystanse'}
           {form.step === 3 && 'Krok 3 z 3: Podsumowanie i publikacja'}
         </p>
 
         {/* Progress bar */}
-        <div className="flex gap-2 mb-8">
-          {[1, 2, 3].map(s => (
+        <div className="mb-8 flex gap-2">
+          {[1, 2, 3].map((s) => (
             <div
               key={s}
               className={`h-2 flex-1 rounded-full transition-colors ${s <= form.step ? 'bg-primary' : 'bg-muted'}`}
@@ -40,7 +40,7 @@ const EventForm = () => {
         {form.step === 3 && <EventFormStep3 form={form} />}
 
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-8">
+        <div className="mt-8 flex justify-between">
           {form.step > 1 ? (
             <Button variant="outline" onClick={form.prevStep}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Wstecz

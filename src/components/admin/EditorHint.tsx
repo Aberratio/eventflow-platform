@@ -33,13 +33,15 @@ export const EditorHint = ({ variant, children, className }: EditorHintProps) =>
   const Icon = config.icon;
 
   return (
-    <div className={cn(
-      'flex gap-3 p-3 rounded-lg border text-sm',
-      config.bg,
-      config.border,
-      className
-    )}>
-      <Icon className={cn('h-5 w-5 shrink-0 mt-0.5', config.iconColor)} />
+    <div
+      className={cn(
+        'flex gap-3 rounded-lg border p-3 text-sm',
+        config.bg,
+        config.border,
+        className,
+      )}
+    >
+      <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', config.iconColor)} />
       <div className="text-muted-foreground">{children}</div>
     </div>
   );

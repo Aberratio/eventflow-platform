@@ -6,9 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockEvents } from '@/api/mock/events.mock';
 import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { mockResults } from '@/api/mock/results.mock';
-import {
-  Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route,
-} from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,9 +15,14 @@ import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
 import { RouteMap } from '@/components/RouteMap';
 import {
-  DraftBanner, PrivateBanner, ResultsSection,
-  EventHeroBanner, EventSidebar, EventInfoTab,
-  EventDistancesTab, EventStartListTab,
+  DraftBanner,
+  PrivateBanner,
+  ResultsSection,
+  EventHeroBanner,
+  EventSidebar,
+  EventInfoTab,
+  EventDistancesTab,
+  EventStartListTab,
 } from '@/components/event-details';
 
 const EventDetailsPage = () => {
@@ -29,10 +32,12 @@ const EventDetailsPage = () => {
   const { user, isAuthenticated } = useAuth();
 
   const defaultTab = searchParams.get('tab') || 'info';
-  const event = mockEvents.find(e => e.slug === slug);
+  const event = mockEvents.find((e) => e.slug === slug);
 
   const isUnpublished = event && ['draft', 'awaiting_approval', 'rejected'].includes(event.status);
-  const canViewDraft = user?.role === 'admin' || user?.role === 'moderator' ||
+  const canViewDraft =
+    user?.role === 'admin' ||
+    user?.role === 'moderator' ||
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
   const accessCodeFromUrl = searchParams.get('access');
@@ -42,7 +47,11 @@ const EventDetailsPage = () => {
     if (!isPrivateEvent || !event) return !isPrivateEvent;
     if (user?.role === 'admin' || user?.role === 'moderator') return true;
     if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
-    if (isAuthenticated && mockRegistrations.some(r => r.eventId === event.id && r.userId === user?.id)) return true;
+    if (
+      isAuthenticated &&
+      mockRegistrations.some((r) => r.eventId === event.id && r.userId === user?.id)
+    )
+      return true;
     if (accessCodeFromUrl && accessCodeFromUrl === event.accessCode) {
       sessionStorage.setItem(`private-event-${event.id}`, accessCodeFromUrl);
       return true;
@@ -55,8 +64,10 @@ const EventDetailsPage = () => {
     return (
       <Layout>
         <div className="container py-12 text-center">
-          <h1 className="text-2xl font-bold mb-4">Wydarzenie nie zostało znalezione</h1>
-          <Button asChild><Link to="/events">Wróć do listy wydarzeń</Link></Button>
+          <h1 className="mb-4 text-2xl font-bold">Wydarzenie nie zostało znalezione</h1>
+          <Button asChild>
+            <Link to="/events">Wróć do listy wydarzeń</Link>
+          </Button>
         </div>
       </Layout>
     );
@@ -65,30 +76,37 @@ const EventDetailsPage = () => {
   const isPast = new Date(event.date) < new Date();
   const deadlinePassed = new Date(event.registrationDeadline) < new Date();
   const isClosedByOrganizer = event.registrationStatus === 'closed';
-  const allDistancesFull = event.distances.length > 0 && event.distances.every(d => d.limit != null && d.registeredCount >= d.limit);
-  const isRegistrationOpen = !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+  const allDistancesFull =
+    event.distances.length > 0 &&
+    event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit);
+  const isRegistrationOpen =
+    !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
 
   const getClosedReason = (): string | null => {
     if (isPast) return 'Zawody już się odbyły';
-    if (deadlinePassed) return `Termin zapisów minął (${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })})`;
+    if (deadlinePassed)
+      return `Termin zapisów minął (${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })})`;
     if (isClosedByOrganizer) return 'Zapisy zamknięte przez organizatora';
     if (allDistancesFull) return 'Wszystkie miejsca zajęte';
     return null;
   };
 
-  const eventResults = mockResults.filter(r => r.eventId === event.id);
-  const eventRegistrations = mockRegistrations.filter(r => r.eventId === event.id);
+  const eventResults = mockResults.filter((r) => r.eventId === event.id);
+  const eventRegistrations = mockRegistrations.filter((r) => r.eventId === event.id);
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
 
   const userRegistration = isAuthenticated
-    ? mockRegistrations.find(r => r.eventId === event.id && r.userId === user?.id) ?? null
+    ? (mockRegistrations.find((r) => r.eventId === event.id && r.userId === user?.id) ?? null)
     : null;
 
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
   const handleRegister = () => {
     if (!isAuthenticated) {
-      toast({ title: 'Wymagane logowanie', description: 'Zaloguj się, aby zapisać się na zawody.' });
+      toast({
+        title: 'Wymagane logowanie',
+        description: 'Zaloguj się, aby zapisać się na zawody.',
+      });
       navigate('/login');
       return;
     }
@@ -97,7 +115,10 @@ const EventDetailsPage = () => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({ title: 'Link skopiowany', description: 'Link do wydarzenia został skopiowany do schowka.' });
+    toast({
+      title: 'Link skopiowany',
+      description: 'Link do wydarzenia został skopiowany do schowka.',
+    });
   };
 
   return (
@@ -108,13 +129,13 @@ const EventDetailsPage = () => {
       <EventHeroBanner event={event} isPast={isPast} onBack={() => navigate(-1)} />
 
       <div className="container py-5 sm:py-8">
-        <div className="grid lg:grid-cols-3 gap-5 sm:gap-8">
+        <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-5 sm:space-y-8">
+          <div className="space-y-5 sm:space-y-8 lg:col-span-2">
             {/* Stats Strip */}
             <Card className="border-border/50 shadow-sm">
               <CardContent className="pt-5 sm:pt-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
                   <StatItem
                     icon={<Calendar className="h-5 w-5 text-warning" />}
                     label={event.isVirtual ? 'Okno startowe' : 'Data'}
@@ -125,7 +146,13 @@ const EventDetailsPage = () => {
                     }
                   />
                   <StatItem
-                    icon={event.isVirtual ? <Globe className="h-5 w-5 text-warning" /> : <MapPin className="h-5 w-5 text-warning" />}
+                    icon={
+                      event.isVirtual ? (
+                        <Globe className="h-5 w-5 text-warning" />
+                      ) : (
+                        <MapPin className="h-5 w-5 text-warning" />
+                      )
+                    }
                     label={event.isVirtual ? 'Zasięg' : 'Miejsce'}
                     value={event.isVirtual ? 'Cały świat' : event.city}
                   />
@@ -137,18 +164,21 @@ const EventDetailsPage = () => {
                   <StatItem
                     icon={<Clock className="h-5 w-5 text-warning" />}
                     label="Zapisy do"
-                    value={format(new Date(event.registrationDeadline), 'd MMM yyyy', { locale: pl })}
+                    value={format(new Date(event.registrationDeadline), 'd MMM yyyy', {
+                      locale: pl,
+                    })}
                   />
                 </div>
 
                 {event.isVirtual && (
-                  <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
                     <div className="flex items-start gap-3">
-                      <Globe className="h-5 w-5 text-primary mt-0.5" />
+                      <Globe className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
-                        <p className="font-medium text-sm">Wydarzenie wirtualne</p>
+                        <p className="text-sm font-medium">Wydarzenie wirtualne</p>
                         <p className="text-sm text-muted-foreground">
-                          Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a następnie wprowadź swój wynik w panelu uczestnika.
+                          Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a następnie
+                          wprowadź swój wynik w panelu uczestnika.
                         </p>
                       </div>
                     </div>
@@ -159,19 +189,26 @@ const EventDetailsPage = () => {
 
             {/* Tabs */}
             <Tabs defaultValue={defaultTab}>
-              <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-muted/50 p-1">
+              <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-muted/50 p-1">
                 <TabsTrigger value="info">Informacje</TabsTrigger>
                 {event.routeMapUrl && (
-                  <TabsTrigger value="route"><Route className="h-4 w-4 mr-1" />Trasa</TabsTrigger>
+                  <TabsTrigger value="route">
+                    <Route className="mr-1 h-4 w-4" />
+                    Trasa
+                  </TabsTrigger>
                 )}
                 {event.galleryAlbums && event.galleryAlbums.length > 0 && (
-                  <TabsTrigger value="gallery"><Images className="h-4 w-4 mr-1" />Galeria</TabsTrigger>
+                  <TabsTrigger value="gallery">
+                    <Images className="mr-1 h-4 w-4" />
+                    Galeria
+                  </TabsTrigger>
                 )}
                 <TabsTrigger value="distances">Dystanse</TabsTrigger>
                 <TabsTrigger value="startlist">Lista startowa</TabsTrigger>
                 {showLiveResultsTab && (
                   <TabsTrigger value="live" className="text-destructive">
-                    <Radio className="h-4 w-4 mr-1" />Na żywo
+                    <Radio className="mr-1 h-4 w-4" />
+                    Na żywo
                   </TabsTrigger>
                 )}
                 {isPast && <TabsTrigger value="results">Wyniki</TabsTrigger>}
@@ -187,11 +224,15 @@ const EventDetailsPage = () => {
                     mapUrl={event.routeMapUrl}
                     elevationProfileUrl={event.routeElevationProfile}
                     gpxUrl={event.routeGpxUrl}
-                    distanceInfo={event.distances.length > 0 ? {
-                      length: event.distances[0].length,
-                      unit: event.distances[0].unit,
-                      elevation: '+4500m',
-                    } : undefined}
+                    distanceInfo={
+                      event.distances.length > 0
+                        ? {
+                            length: event.distances[0].length,
+                            unit: event.distances[0].unit,
+                            elevation: '+4500m',
+                          }
+                        : undefined
+                    }
                   />
                 </TabsContent>
               )}
@@ -241,9 +282,17 @@ const EventDetailsPage = () => {
 };
 
 /** Small stat widget used in the event stats strip */
-const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+const StatItem = ({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) => (
   <div className="flex items-center gap-2.5 sm:gap-3">
-    <div className="p-2 rounded-lg bg-warning/10">{icon}</div>
+    <div className="rounded-lg bg-warning/10 p-2">{icon}</div>
     <div>
       <div className="text-sm text-muted-foreground">{label}</div>
       <div className="font-medium">{value}</div>

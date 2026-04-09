@@ -2,7 +2,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { InfoPageSection, InfoPageSectionItem } from '@/types';
 
@@ -12,9 +18,30 @@ interface SectionEditorProps {
 }
 
 const iconOptions = [
-  'Mail', 'Phone', 'MapPin', 'Clock', 'Calendar', 'CheckCircle', 'Star', 'Heart',
-  'Users', 'Trophy', 'Target', 'Zap', 'Shield', 'Award', 'Rocket', 'Gift',
-  'CreditCard', 'Package', 'Truck', 'Globe', 'Building', 'Home', 'Info', 'HelpCircle',
+  'Mail',
+  'Phone',
+  'MapPin',
+  'Clock',
+  'Calendar',
+  'CheckCircle',
+  'Star',
+  'Heart',
+  'Users',
+  'Trophy',
+  'Target',
+  'Zap',
+  'Shield',
+  'Award',
+  'Rocket',
+  'Gift',
+  'CreditCard',
+  'Package',
+  'Truck',
+  'Globe',
+  'Building',
+  'Home',
+  'Info',
+  'HelpCircle',
 ];
 
 export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
@@ -29,15 +56,15 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
 
   const updateItem = (itemId: string, updates: Partial<InfoPageSectionItem>) => {
     onUpdate({
-      items: (section.items || []).map(item =>
-        item.id === itemId ? { ...item, ...updates } : item
+      items: (section.items || []).map((item) =>
+        item.id === itemId ? { ...item, ...updates } : item,
       ),
     });
   };
 
   const deleteItem = (itemId: string) => {
     onUpdate({
-      items: (section.items || []).filter(item => item.id !== itemId),
+      items: (section.items || []).filter((item) => item.id !== itemId),
     });
   };
 
@@ -190,27 +217,25 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
         <div className="flex items-center justify-between">
           <Label>Elementy ({section.items?.length || 0})</Label>
           <Button variant="outline" size="sm" onClick={addItem}>
-            <Plus className="h-4 w-4 mr-1" />
+            <Plus className="mr-1 h-4 w-4" />
             Dodaj element
           </Button>
         </div>
 
         {(section.items || []).length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4 border-2 border-dashed rounded-lg">
+          <p className="rounded-lg border-2 border-dashed py-4 text-center text-sm text-muted-foreground">
             Brak elementów. Kliknij "Dodaj element", aby dodać pierwszy.
           </p>
         )}
 
         {(section.items || []).map((item, index) => (
-          <div key={item.id} className="p-4 border rounded-lg space-y-3 bg-muted/20">
+          <div key={item.id} className="space-y-3 rounded-lg border bg-muted/20 p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Element {index + 1}
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">Element {index + 1}</span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => deleteItem(item.id)}
               >
                 <Trash2 className="h-4 w-4" />
@@ -248,8 +273,10 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
                       <SelectValue placeholder="Wybierz ikonę" />
                     </SelectTrigger>
                     <SelectContent>
-                      {iconOptions.map(icon => (
-                        <SelectItem key={icon} value={icon}>{icon}</SelectItem>
+                      {iconOptions.map((icon) => (
+                        <SelectItem key={icon} value={icon}>
+                          {icon}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -284,7 +311,9 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
                   <Input
                     type="number"
                     value={item.price || ''}
-                    onChange={(e) => updateItem(item.id, { price: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      updateItem(item.id, { price: parseFloat(e.target.value) || 0 })
+                    }
                     placeholder="np. 299"
                   />
                   <p className="text-xs text-muted-foreground">Wpisz 0 dla darmowego pakietu</p>
@@ -296,7 +325,9 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
                   <Label className="text-xs">Funkcje (każda w nowej linii)</Label>
                   <Textarea
                     value={item.features?.join('\n') || ''}
-                    onChange={(e) => updateItem(item.id, { features: e.target.value.split('\n').filter(Boolean) })}
+                    onChange={(e) =>
+                      updateItem(item.id, { features: e.target.value.split('\n').filter(Boolean) })
+                    }
                     placeholder="Funkcja 1&#10;Funkcja 2&#10;Funkcja 3"
                     rows={4}
                   />

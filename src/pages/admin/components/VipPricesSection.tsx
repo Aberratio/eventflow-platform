@@ -3,7 +3,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Trash2, ChevronDown, Star } from 'lucide-react';
 import { VipPrice, PriceTierDiscountType } from '@/types';
@@ -27,12 +33,18 @@ export const VipPricesSection = ({
   return (
     <Collapsible>
       <CollapsibleTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full justify-between text-muted-foreground hover:text-foreground">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-between text-muted-foreground hover:text-foreground"
+        >
           <span className="flex items-center gap-2">
             <Star className="h-4 w-4" />
             Ceny specjalne (VIP) — dla całej kategorii
             {distanceVipPrices.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{distanceVipPrices.length}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {distanceVipPrices.length}
+              </Badge>
             )}
           </span>
           <ChevronDown className="h-4 w-4" />
@@ -40,29 +52,35 @@ export const VipPricesSection = ({
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 pt-2">
         <p className="text-xs text-muted-foreground">
-          Ceny VIP obowiązują niezależnie od aktywnego progu cenowego. Rabat VIP jest naliczany od ceny bazowej dystansu ({basePrice} zł).
+          Ceny VIP obowiązują niezależnie od aktywnego progu cenowego. Rabat VIP jest naliczany od
+          ceny bazowej dystansu ({basePrice} zł).
         </p>
         {distanceVipPrices.map((vip) => {
           const vipFinalPrice = applyDiscount(basePrice, vip.discountType, vip.discountValue);
 
           return (
-            <div key={vip.id} className="p-3 border rounded-lg bg-muted/30 space-y-3">
+            <div key={vip.id} className="space-y-3 rounded-lg border bg-muted/30 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium flex items-center gap-1.5">
+                <span className="flex items-center gap-1.5 text-sm font-medium">
                   <Star className="h-3.5 w-3.5 text-yellow-500" />
                   {vip.name || 'Nowa cena VIP'}
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 px-2 py-1 rounded bg-yellow-100 dark:bg-yellow-900/30 text-xs font-semibold">
+                  <div className="flex items-center gap-1 rounded bg-yellow-100 px-2 py-1 text-xs font-semibold dark:bg-yellow-900/30">
                     {vipFinalPrice} zł
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onRemoveVip(vip.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive"
+                    onClick={() => onRemoveVip(vip.id)}
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-3 gap-3">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <div className="space-y-1">
                   <Label className="text-xs">Nazwa ceny VIP</Label>
                   <Input
@@ -76,7 +94,9 @@ export const VipPricesSection = ({
                   <Label className="text-xs">Typ rabatu</Label>
                   <Select
                     value={vip.discountType}
-                    onValueChange={(v: PriceTierDiscountType) => onUpdateVip(vip.id, { discountType: v })}
+                    onValueChange={(v: PriceTierDiscountType) =>
+                      onUpdateVip(vip.id, { discountType: v })
+                    }
                   >
                     <SelectTrigger className="h-8 text-sm">
                       <SelectValue />
@@ -94,7 +114,9 @@ export const VipPricesSection = ({
                   <Input
                     type="number"
                     value={vip.discountValue}
-                    onChange={(e) => onUpdateVip(vip.id, { discountValue: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      onUpdateVip(vip.id, { discountValue: parseFloat(e.target.value) || 0 })
+                    }
                     className="h-8 text-sm"
                   />
                 </div>
@@ -108,17 +130,20 @@ export const VipPricesSection = ({
                     if (checked) {
                       onUpdateVip(vip.id, { customFieldLabel: '', customFieldRequired: false });
                     } else {
-                      onUpdateVip(vip.id, { customFieldLabel: undefined, customFieldRequired: undefined });
+                      onUpdateVip(vip.id, {
+                        customFieldLabel: undefined,
+                        customFieldRequired: undefined,
+                      });
                     }
                   }}
                 />
-                <Label htmlFor={`vip-field-${vip.id}`} className="text-xs cursor-pointer">
+                <Label htmlFor={`vip-field-${vip.id}`} className="cursor-pointer text-xs">
                   Dodaj pole dodatkowe (np. numer licencji)
                 </Label>
               </div>
 
               {vip.customFieldLabel !== undefined && (
-                <div className="grid sm:grid-cols-2 gap-3 ml-7">
+                <div className="ml-7 grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label className="text-xs">Nazwa pola</Label>
                     <Input
@@ -132,9 +157,11 @@ export const VipPricesSection = ({
                     <Checkbox
                       id={`vip-req-${vip.id}`}
                       checked={!!vip.customFieldRequired}
-                      onCheckedChange={(checked) => onUpdateVip(vip.id, { customFieldRequired: !!checked })}
+                      onCheckedChange={(checked) =>
+                        onUpdateVip(vip.id, { customFieldRequired: !!checked })
+                      }
                     />
-                    <Label htmlFor={`vip-req-${vip.id}`} className="text-xs cursor-pointer">
+                    <Label htmlFor={`vip-req-${vip.id}`} className="cursor-pointer text-xs">
                       Pole wymagane
                     </Label>
                   </div>
@@ -145,7 +172,7 @@ export const VipPricesSection = ({
         })}
 
         <Button variant="outline" size="sm" onClick={onAddVip} className="w-full">
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
           Dodaj cenę VIP
         </Button>
       </CollapsibleContent>

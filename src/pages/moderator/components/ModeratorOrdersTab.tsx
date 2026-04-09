@@ -73,17 +73,18 @@ export const ModeratorOrdersTab = () => {
   const [orderTrackingNumber, setOrderTrackingNumber] = useState('');
 
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      const user = mockUsers.find(u => u.id === order.userId);
-      const matchesSearch = order.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
-                           user?.name.toLowerCase().includes(orderSearch.toLowerCase());
+    return orders.filter((order) => {
+      const user = mockUsers.find((u) => u.id === order.userId);
+      const matchesSearch =
+        order.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
+        user?.name.toLowerCase().includes(orderSearch.toLowerCase());
       const matchesStatus = orderStatus === 'all' || order.status === orderStatus;
       return matchesSearch && matchesStatus;
     });
   }, [orders, orderSearch, orderStatus]);
 
   const getCustomerName = (userId: string) => {
-    return mockUsers.find(u => u.id === userId)?.name || 'Nieznany klient';
+    return mockUsers.find((u) => u.id === userId)?.name || 'Nieznany klient';
   };
 
   const handleViewOrder = (order: ShopOrder) => {
@@ -96,26 +97,33 @@ export const ModeratorOrdersTab = () => {
   const handleSaveOrder = () => {
     if (!viewingOrder) return;
 
-    setOrders(orders.map(o => 
-      o.id === viewingOrder.id 
-        ? { 
-            ...o, 
-            status: orderNewStatus, 
-            trackingNumber: orderNewStatus === 'shipped' ? orderTrackingNumber : o.trackingNumber 
-          }
-        : o
-    ));
+    setOrders(
+      orders.map((o) =>
+        o.id === viewingOrder.id
+          ? {
+              ...o,
+              status: orderNewStatus,
+              trackingNumber: orderNewStatus === 'shipped' ? orderTrackingNumber : o.trackingNumber,
+            }
+          : o,
+      ),
+    );
     toast.success('Status zamówienia został zaktualizowany');
     setIsOrderDialogOpen(false);
   };
 
   const getStatusIcon = (status: ShopOrder['status']) => {
     switch (status) {
-      case 'pending': return <ShoppingCart className="h-4 w-4" />;
-      case 'paid': return <CheckCircle className="h-4 w-4" />;
-      case 'shipped': return <Truck className="h-4 w-4" />;
-      case 'delivered': return <Package className="h-4 w-4" />;
-      default: return null;
+      case 'pending':
+        return <ShoppingCart className="h-4 w-4" />;
+      case 'paid':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'shipped':
+        return <Truck className="h-4 w-4" />;
+      case 'delivered':
+        return <Package className="h-4 w-4" />;
+      default:
+        return null;
     }
   };
 
@@ -124,20 +132,21 @@ export const ModeratorOrdersTab = () => {
       <Alert className="border-muted bg-muted/50">
         <Lock className="h-4 w-4" />
         <AlertDescription>
-          Możesz tylko aktualizować statusy zamówień. Nie widzisz szczegółów finansowych ani nie możesz anulować zamówień.
+          Możesz tylko aktualizować statusy zamówień. Nie widzisz szczegółów finansowych ani nie
+          możesz anulować zamówień.
         </AlertDescription>
       </Alert>
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row">
             <CardTitle className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
               Zamówienia ({filteredOrders.length})
             </CardTitle>
             <div className="flex gap-2">
               <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Szukaj..."
                   value={orderSearch}
@@ -145,14 +154,19 @@ export const ModeratorOrdersTab = () => {
                   className="pl-10"
                 />
               </div>
-              <Select value={orderStatus} onValueChange={(v) => setOrderStatus(v as ShopOrder['status'] | 'all')}>
+              <Select
+                value={orderStatus}
+                onValueChange={(v) => setOrderStatus(v as ShopOrder['status'] | 'all')}
+              >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Wszystkie</SelectItem>
                   {Object.entries(orderStatusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -160,7 +174,7 @@ export const ModeratorOrdersTab = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-border/50 overflow-x-auto">
+          <div className="overflow-x-auto rounded-md border border-border/50">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -175,9 +189,7 @@ export const ModeratorOrdersTab = () => {
               <TableBody>
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm">
-                      {order.orderNumber}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">{order.orderNumber}</TableCell>
                     <TableCell>
                       <p className="font-medium">{getCustomerName(order.userId)}</p>
                     </TableCell>
@@ -194,11 +206,7 @@ export const ModeratorOrdersTab = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => handleViewOrder(order)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => handleViewOrder(order)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -208,9 +216,7 @@ export const ModeratorOrdersTab = () => {
             </Table>
           </div>
           {filteredOrders.length === 0 && (
-            <p className="text-center py-8 text-muted-foreground">
-              Nie znaleziono zamówień
-            </p>
+            <p className="py-8 text-center text-muted-foreground">Nie znaleziono zamówień</p>
           )}
         </CardContent>
       </Card>
@@ -221,19 +227,26 @@ export const ModeratorOrdersTab = () => {
           <DialogHeader>
             <DialogTitle>Zamówienie {viewingOrder?.orderNumber}</DialogTitle>
           </DialogHeader>
-          
+
           {viewingOrder && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <p><strong>Klient:</strong> {getCustomerName(viewingOrder.userId)}</p>
-                <p><strong>Data:</strong> {format(new Date(viewingOrder.createdAt), 'd MMMM yyyy, HH:mm', { locale: pl })}</p>
-                <p><strong>Produkty:</strong> {viewingOrder.items.length}</p>
+                <p>
+                  <strong>Klient:</strong> {getCustomerName(viewingOrder.userId)}
+                </p>
+                <p>
+                  <strong>Data:</strong>{' '}
+                  {format(new Date(viewingOrder.createdAt), 'd MMMM yyyy, HH:mm', { locale: pl })}
+                </p>
+                <p>
+                  <strong>Produkty:</strong> {viewingOrder.items.length}
+                </p>
               </div>
 
               <div className="border-t pt-4">
                 <Label>Zmień status</Label>
-                <Select 
-                  value={orderNewStatus} 
+                <Select
+                  value={orderNewStatus}
                   onValueChange={(v) => setOrderNewStatus(v as ShopOrder['status'])}
                   disabled={allowedStatusTransitions[viewingOrder.status].length === 0}
                 >
@@ -244,7 +257,7 @@ export const ModeratorOrdersTab = () => {
                     <SelectItem value={viewingOrder.status}>
                       {orderStatusLabels[viewingOrder.status]} (obecny)
                     </SelectItem>
-                    {allowedStatusTransitions[viewingOrder.status].map(status => (
+                    {allowedStatusTransitions[viewingOrder.status].map((status) => (
                       <SelectItem key={status} value={status}>
                         {orderStatusLabels[status]}
                       </SelectItem>
@@ -265,7 +278,7 @@ export const ModeratorOrdersTab = () => {
                 )}
 
                 {allowedStatusTransitions[viewingOrder.status].length === 0 && (
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     To zamówienie nie może być już zmienione.
                   </p>
                 )}
@@ -277,7 +290,7 @@ export const ModeratorOrdersTab = () => {
             <Button variant="outline" onClick={() => setIsOrderDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button 
+            <Button
               onClick={handleSaveOrder}
               disabled={!viewingOrder || orderNewStatus === viewingOrder.status}
             >

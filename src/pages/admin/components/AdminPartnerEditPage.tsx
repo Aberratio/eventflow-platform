@@ -18,7 +18,12 @@ interface FormErrors {
 
 const isValidUrl = (url: string) => {
   if (!url) return true;
-  try { new URL(url); return true; } catch { return false; }
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const AdminPartnerEditPage = () => {
@@ -26,7 +31,7 @@ export const AdminPartnerEditPage = () => {
   const navigate = useNavigate();
   const isEditing = !!id;
 
-  const partner = isEditing ? mockPartners.find(p => p.id === id) : null;
+  const partner = isEditing ? mockPartners.find((p) => p.id === id) : null;
 
   const [formData, setFormData] = useState({
     name: partner?.name || '',
@@ -41,21 +46,26 @@ export const AdminPartnerEditPage = () => {
     if (!formData.name.trim()) newErrors.name = 'Nazwa partnera jest wymagana';
     if (!formData.logoUrl.trim()) newErrors.logoUrl = 'URL logotypu jest wymagany';
     else if (!isValidUrl(formData.logoUrl)) newErrors.logoUrl = 'Podaj poprawny adres URL';
-    if (formData.websiteUrl && !isValidUrl(formData.websiteUrl)) newErrors.websiteUrl = 'Podaj poprawny adres URL';
+    if (formData.websiteUrl && !isValidUrl(formData.websiteUrl))
+      newErrors.websiteUrl = 'Podaj poprawny adres URL';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = () => {
     if (!validate()) return;
-    toast.success(isEditing ? `Partner ${formData.name} został zaktualizowany` : `Partner ${formData.name} został dodany`);
+    toast.success(
+      isEditing
+        ? `Partner ${formData.name} został zaktualizowany`
+        : `Partner ${formData.name} został dodany`,
+    );
     navigate(-1);
   };
 
   const updateField = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -65,7 +75,7 @@ export const AdminPartnerEditPage = () => {
         <div className="container py-8">
           <p className="text-muted-foreground">Partner nie został znaleziony.</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Powrót
+            <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
           </Button>
         </div>
       </Layout>
@@ -74,14 +84,14 @@ export const AdminPartnerEditPage = () => {
 
   return (
     <Layout>
-      <div className="container py-8 max-w-2xl">
+      <div className="container max-w-2xl py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Handshake className="h-6 w-6 text-primary" />
               {isEditing ? `Edytuj: ${partner?.name}` : 'Nowy partner'}
             </h1>
@@ -90,28 +100,40 @@ export const AdminPartnerEditPage = () => {
         </div>
 
         <Card>
-          <CardContent className="pt-6 space-y-6">
+          <CardContent className="space-y-6 pt-6">
             <div className="space-y-2">
               <Label htmlFor="name">Nazwa partnera *</Label>
-              <Input id="name" value={formData.name} onChange={e => updateField('name', e.target.value)} placeholder="Nazwa firmy" />
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => updateField('name', e.target.value)}
+                placeholder="Nazwa firmy"
+              />
               {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="logoUrl">URL logotypu *</Label>
-              <Input id="logoUrl" value={formData.logoUrl} onChange={e => updateField('logoUrl', e.target.value)} placeholder="https://example.com/logo.png" />
+              <Input
+                id="logoUrl"
+                value={formData.logoUrl}
+                onChange={(e) => updateField('logoUrl', e.target.value)}
+                placeholder="https://example.com/logo.png"
+              />
               {errors.logoUrl && <p className="text-sm text-destructive">{errors.logoUrl}</p>}
             </div>
 
             {formData.logoUrl && isValidUrl(formData.logoUrl) && (
               <div className="space-y-2">
                 <Label>Podgląd logotypu</Label>
-                <div className="w-full h-24 flex items-center justify-center bg-muted rounded-lg border">
+                <div className="flex h-24 w-full items-center justify-center rounded-lg border bg-muted">
                   <img
                     src={formData.logoUrl}
                     alt="Podgląd logotypu"
                     className="max-h-20 max-w-full object-contain"
-                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 </div>
               </div>
@@ -119,13 +141,22 @@ export const AdminPartnerEditPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="websiteUrl">Strona internetowa (opcjonalna)</Label>
-              <Input id="websiteUrl" value={formData.websiteUrl} onChange={e => updateField('websiteUrl', e.target.value)} placeholder="https://example.com" />
+              <Input
+                id="websiteUrl"
+                value={formData.websiteUrl}
+                onChange={(e) => updateField('websiteUrl', e.target.value)}
+                placeholder="https://example.com"
+              />
               {errors.websiteUrl && <p className="text-sm text-destructive">{errors.websiteUrl}</p>}
             </div>
 
             <div className="flex items-center justify-between">
               <Label htmlFor="featured">Wyświetlaj na stronie głównej</Label>
-              <Switch id="featured" checked={formData.featured} onCheckedChange={checked => updateField('featured', checked)} />
+              <Switch
+                id="featured"
+                checked={formData.featured}
+                onCheckedChange={(checked) => updateField('featured', checked)}
+              />
             </div>
           </CardContent>
         </Card>

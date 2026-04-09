@@ -1,13 +1,19 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ZoomIn, Move } from 'lucide-react';
 
 export interface CropArea {
-  x: number;      // % from left
-  y: number;      // % from top
-  width: number;  // % width
+  x: number; // % from left
+  y: number; // % from top
+  width: number; // % width
   height: number; // % height
 }
 
@@ -50,22 +56,25 @@ export const ImageCropper = ({
     setDragStart({ x: e.clientX, y: e.clientY });
   }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    
-    const container = containerRef.current;
-    const rect = container.getBoundingClientRect();
-    
-    const deltaX = ((e.clientX - dragStart.x) / rect.width) * 100;
-    const deltaY = ((e.clientY - dragStart.y) / rect.height) * 100;
-    
-    setPosition(prev => ({
-      x: Math.max(0, Math.min(100, prev.x - deltaX)),
-      y: Math.max(0, Math.min(100, prev.y - deltaY)),
-    }));
-    
-    setDragStart({ x: e.clientX, y: e.clientY });
-  }, [isDragging, dragStart]);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging || !containerRef.current) return;
+
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+
+      const deltaX = ((e.clientX - dragStart.x) / rect.width) * 100;
+      const deltaY = ((e.clientY - dragStart.y) / rect.height) * 100;
+
+      setPosition((prev) => ({
+        x: Math.max(0, Math.min(100, prev.x - deltaX)),
+        y: Math.max(0, Math.min(100, prev.y - deltaY)),
+      }));
+
+      setDragStart({ x: e.clientX, y: e.clientY });
+    },
+    [isDragging, dragStart],
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -76,10 +85,10 @@ export const ImageCropper = ({
     const zoomFactor = zoom[0] / 100;
     const visibleWidth = 100 / zoomFactor;
     const visibleHeight = 100 / zoomFactor;
-    
+
     const x = Math.max(0, position.x - visibleWidth / 2);
     const y = Math.max(0, position.y - visibleHeight / 2);
-    
+
     onCrop({
       x: Math.min(x, 100 - visibleWidth),
       y: Math.min(y, 100 - visibleHeight),
@@ -97,12 +106,12 @@ export const ImageCropper = ({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           {/* Crop area */}
-          <div 
+          <div
             ref={containerRef}
-            className="relative overflow-hidden rounded-lg bg-muted cursor-move select-none"
+            className="relative cursor-move select-none overflow-hidden rounded-lg bg-muted"
             style={{ aspectRatio }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -119,7 +128,7 @@ export const ImageCropper = ({
               const rect = containerRef.current.getBoundingClientRect();
               const deltaX = ((touch.clientX - dragStart.x) / rect.width) * 100;
               const deltaY = ((touch.clientY - dragStart.y) / rect.height) * 100;
-              setPosition(prev => ({
+              setPosition((prev) => ({
                 x: Math.max(0, Math.min(100, prev.x - deltaX)),
                 y: Math.max(0, Math.min(100, prev.y - deltaY)),
               }));
@@ -129,7 +138,7 @@ export const ImageCropper = ({
           >
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
               </div>
             )}
             <img
@@ -147,10 +156,10 @@ export const ImageCropper = ({
               onLoad={() => setImageLoaded(true)}
               draggable={false}
             />
-            
+
             {/* Overlay hint */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-background/60 backdrop-blur-sm rounded-lg px-3 py-2 text-sm text-muted-foreground flex items-center gap-2 opacity-60">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="flex items-center gap-2 rounded-lg bg-background/60 px-3 py-2 text-sm text-muted-foreground opacity-60 backdrop-blur-sm">
                 <Move className="h-4 w-4" />
                 Przeciągnij, aby przesunąć
               </div>
@@ -168,9 +177,7 @@ export const ImageCropper = ({
               step={5}
               className="flex-1"
             />
-            <span className="text-sm text-muted-foreground w-12 text-right">
-              {zoom[0]}%
-            </span>
+            <span className="w-12 text-right text-sm text-muted-foreground">{zoom[0]}%</span>
           </div>
         </div>
 
@@ -178,9 +185,7 @@ export const ImageCropper = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Anuluj
           </Button>
-          <Button onClick={handleSave}>
-            Zapisz przycięcie
-          </Button>
+          <Button onClick={handleSave}>Zapisz przycięcie</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

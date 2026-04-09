@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { QUERY_KEYS, STORAGE_KEYS, MOCK_PASSWORD, ROLE_LABELS, EVENT_STATUS_LABELS } from '@/constants';
+import {
+  QUERY_KEYS,
+  STORAGE_KEYS,
+  MOCK_PASSWORD,
+  ROLE_LABELS,
+  EVENT_STATUS_LABELS,
+} from '@/constants';
 
 describe('constants', () => {
   it('has correct storage keys', () => {

@@ -1,5 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Registration } from '@/types';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +15,7 @@ interface EventStartListTabProps {
 }
 
 export const EventStartListTab = ({ registrations }: EventStartListTabProps) => {
-  const confirmedRegistrations = registrations.filter(r => r.status === 'confirmed');
+  const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
 
   return (
     <Card>
@@ -31,7 +38,7 @@ export const EventStartListTab = ({ registrations }: EventStartListTabProps) => 
                     <TableCell>
                       <Link
                         to={`/athlete/${reg.userId}`}
-                        className="font-medium hover:text-primary hover:underline transition-colors"
+                        className="font-medium transition-colors hover:text-primary hover:underline"
                       >
                         {reg.userName}
                       </Link>
@@ -44,7 +51,7 @@ export const EventStartListTab = ({ registrations }: EventStartListTabProps) => 
             </Table>
           </div>
         ) : (
-          <p className="text-muted-foreground text-center py-8">
+          <p className="py-8 text-center text-muted-foreground">
             Lista startowa będzie dostępna wkrótce.
           </p>
         )}

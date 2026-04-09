@@ -1,6 +1,11 @@
 import { simulateDelay } from './client';
 import type { ApiResponse, PaginatedResponse, ResultFilters } from './types';
-import { mockResults, mockPersonalRecords, mockTeamResults, mockResultDocuments } from './mock/results.mock';
+import {
+  mockResults,
+  mockPersonalRecords,
+  mockTeamResults,
+  mockResultDocuments,
+} from './mock/results.mock';
 import type { Result, PersonalRecord, TeamResult, EventResultDocument } from '@/types';
 
 export async function getResults(filters?: ResultFilters): Promise<PaginatedResponse<Result>> {
@@ -13,13 +18,24 @@ export async function getResults(filters?: ResultFilters): Promise<PaginatedResp
   if (filters?.gender) filtered = filtered.filter((r) => r.gender === filters.gender);
   if (filters?.search) {
     const q = filters.search.toLowerCase();
-    filtered = filtered.filter((r) => r.userName.toLowerCase().includes(q) || r.bibNumber.includes(q));
+    filtered = filtered.filter(
+      (r) => r.userName.toLowerCase().includes(q) || r.bibNumber.includes(q),
+    );
   }
 
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
+  return {
+    data: filtered,
+    total: filtered.length,
+    page: 1,
+    pageSize: filtered.length,
+    totalPages: 1,
+  };
 }
 
-export async function getResultsByEvent(eventId: string, distanceId?: string): Promise<ApiResponse<Result[]>> {
+export async function getResultsByEvent(
+  eventId: string,
+  distanceId?: string,
+): Promise<ApiResponse<Result[]>> {
   await simulateDelay();
   let results = mockResults.filter((r) => r.eventId === eventId);
   if (distanceId) results = results.filter((r) => r.distanceId === distanceId);
@@ -53,10 +69,14 @@ export async function createResult(data: Partial<Result>): Promise<ApiResponse<R
   return { data: result, success: true };
 }
 
-export async function updateResult(id: string, data: Partial<Result>): Promise<ApiResponse<Result>> {
+export async function updateResult(
+  id: string,
+  data: Partial<Result>,
+): Promise<ApiResponse<Result>> {
   await simulateDelay();
   const result = mockResults.find((r) => r.id === id);
-  if (!result) return { data: null as unknown as Result, success: false, message: 'Result not found' };
+  if (!result)
+    return { data: null as unknown as Result, success: false, message: 'Result not found' };
   return { data: { ...result, ...data }, success: true };
 }
 
@@ -77,7 +97,9 @@ export async function getTeamResults(eventId: string): Promise<ApiResponse<TeamR
   return { data: mockTeamResults.filter((t) => t.eventId === eventId), success: true };
 }
 
-export async function getResultDocuments(eventId: string): Promise<ApiResponse<EventResultDocument[]>> {
+export async function getResultDocuments(
+  eventId: string,
+): Promise<ApiResponse<EventResultDocument[]>> {
   await simulateDelay();
   return { data: mockResultDocuments.filter((d) => d.eventId === eventId), success: true };
 }

@@ -1,5 +1,15 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { CheckCircle, Calendar, MapPin, Building2, Copy, AlertTriangle, Mail, CreditCard, User } from 'lucide-react';
+import {
+  CheckCircle,
+  Calendar,
+  MapPin,
+  Building2,
+  Copy,
+  AlertTriangle,
+  Mail,
+  CreditCard,
+  User,
+} from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -29,7 +39,7 @@ const RegistrationSuccessPage = () => {
   const { user } = useAuth();
   const { sendRegistrationEmail } = useRegistrationEmail();
   const emailSentRef = useRef(false);
-  
+
   const state = location.state as RegistrationSuccessState | null;
 
   // Send confirmation email on mount (only once)
@@ -60,7 +70,7 @@ const RegistrationSuccessPage = () => {
     if (!state?.paymentConfig?.transferTitle) {
       return `${state?.eventName || 'Wydarzenie'} - ${user?.name || 'Uczestnik'}`;
     }
-    
+
     return state.paymentConfig.transferTitle
       .replace('{eventName}', state.eventName)
       .replace('{participantName}', user?.name || 'Uczestnik')
@@ -72,8 +82,8 @@ const RegistrationSuccessPage = () => {
     return (
       <Layout>
         <div className="container py-12">
-          <div className="max-w-md mx-auto text-center space-y-6">
-            <div className="w-20 h-20 mx-auto rounded-full bg-muted flex items-center justify-center">
+          <div className="mx-auto max-w-md space-y-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-muted">
               <User className="h-10 w-10 text-muted-foreground" />
             </div>
             <h1 className="text-2xl font-bold">Brak danych rejestracji</h1>
@@ -95,19 +105,20 @@ const RegistrationSuccessPage = () => {
   return (
     <Layout>
       <div className="container py-12">
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto max-w-2xl">
           {/* Success Header */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">
+            <h1 className="mb-2 text-2xl font-bold">
               {isBankTransfer ? 'Rejestracja wstępna zakończona!' : 'Rejestracja zakończona!'}
             </h1>
             <p className="text-muted-foreground">
-              Zapisałeś się na wydarzenie <span className="font-semibold text-foreground">{eventName}</span>
+              Zapisałeś się na wydarzenie{' '}
+              <span className="font-semibold text-foreground">{eventName}</span>
             </p>
-            <div className="flex items-center justify-center gap-4 mt-3 text-sm text-muted-foreground">
+            <div className="mt-3 flex items-center justify-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 {format(new Date(eventDate), 'd MMMM yyyy', { locale: pl })}
@@ -126,10 +137,10 @@ const RegistrationSuccessPage = () => {
 
           {/* Order Details Card */}
           <Card className="mb-6">
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="space-y-6 pt-6">
               {/* Registration details */}
               <div>
-                <h2 className="font-semibold mb-4">
+                <h2 className="mb-4 font-semibold">
                   {isBankTransfer ? 'Szczegóły zamówienia' : 'Szczegóły rejestracji'}
                 </h2>
                 <div className="space-y-3 text-sm">
@@ -137,28 +148,29 @@ const RegistrationSuccessPage = () => {
                     <span>Opłata startowa ({registrationData.distanceName})</span>
                     <span className="font-medium">{registrationData.price} zł</span>
                   </div>
-                  
+
                   {registrationData.discountAmount && registrationData.discountAmount > 0 && (
                     <div className="flex justify-between text-primary">
                       <span>Rabat ({registrationData.discountCode})</span>
                       <span className="font-medium">-{registrationData.discountAmount} zł</span>
                     </div>
                   )}
-                  
+
                   {registrationData.insurancePrice && registrationData.insurancePrice > 0 && (
                     <div className="flex justify-between">
                       <span>Ubezpieczenie NNW</span>
                       <span className="font-medium">{registrationData.insurancePrice} zł</span>
                     </div>
                   )}
-                  
+
                   {registrationData.merchandiseOrders.map((order, index) => (
                     <div key={index} className="flex justify-between">
                       <span>
                         {order.merchandiseName}
                         {(order.size || order.color) && (
                           <span className="text-muted-foreground">
-                            {' '}({[order.size, order.color].filter(Boolean).join(', ')})
+                            {' '}
+                            ({[order.size, order.color].filter(Boolean).join(', ')})
                           </span>
                         )}
                         {order.quantity > 1 && ` x${order.quantity}`}
@@ -170,13 +182,13 @@ const RegistrationSuccessPage = () => {
 
                 <Separator className="my-4" />
 
-                <div className="flex justify-between font-semibold text-lg">
+                <div className="flex justify-between text-lg font-semibold">
                   <span>{isBankTransfer ? 'Do zapłaty' : 'Razem zapłacono'}</span>
                   <span>{registrationData.totalAmount} zł</span>
                 </div>
-                
+
                 {!isBankTransfer && (
-                  <div className="flex items-center gap-2 text-sm text-primary mt-2">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-primary">
                     <CreditCard className="h-4 w-4" />
                     <span>Płatność zrealizowana automatycznie</span>
                   </div>
@@ -187,82 +199,90 @@ const RegistrationSuccessPage = () => {
 
           {/* Bank Transfer Details (only for bank transfer) */}
           {isBankTransfer && paymentConfig && (
-            <Card className="mb-6 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
-              <CardContent className="pt-6 space-y-4">
+            <Card className="mb-6 border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+              <CardContent className="space-y-4 pt-6">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                   <Building2 className="h-5 w-5" />
                   <h2 className="font-semibold">Dane do przelewu bankowego</h2>
                 </div>
-                
+
                 <div className="space-y-3 text-sm">
                   {/* Account number */}
-                  <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-muted-foreground text-xs">Numer konta</p>
+                      <p className="text-xs text-muted-foreground">Numer konta</p>
                       <p className="font-mono font-medium">{paymentConfig.bankAccountNumber}</p>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => copyToClipboard(paymentConfig.bankAccountNumber || '', 'Numer konta')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard(paymentConfig.bankAccountNumber || '', 'Numer konta')
+                      }
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   {/* Account holder */}
-                  <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-muted-foreground text-xs">Odbiorca</p>
+                      <p className="text-xs text-muted-foreground">Odbiorca</p>
                       <p className="font-medium">{paymentConfig.bankAccountHolder}</p>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => copyToClipboard(paymentConfig.bankAccountHolder || '', 'Odbiorca')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard(paymentConfig.bankAccountHolder || '', 'Odbiorca')
+                      }
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   {/* Transfer title */}
-                  <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-muted-foreground text-xs">Tytuł przelewu</p>
+                      <p className="text-xs text-muted-foreground">Tytuł przelewu</p>
                       <p className="font-medium">{generateTransferTitle()}</p>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   {/* Amount */}
-                  <div className="flex justify-between items-center gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-muted-foreground text-xs">Kwota</p>
-                      <p className="font-bold text-lg">{registrationData.totalAmount.toFixed(2)} PLN</p>
+                      <p className="text-xs text-muted-foreground">Kwota</p>
+                      <p className="text-lg font-bold">
+                        {registrationData.totalAmount.toFixed(2)} PLN
+                      </p>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => copyToClipboard(`${registrationData.totalAmount.toFixed(2)}`, 'Kwota')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        copyToClipboard(`${registrationData.totalAmount.toFixed(2)}`, 'Kwota')
+                      }
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-                
+
                 {/* Important info */}
-                <div className="pt-4 border-t border-amber-200 dark:border-amber-800">
+                <div className="border-t border-amber-200 pt-4 dark:border-amber-800">
                   <div className="flex items-start gap-2 text-amber-700 dark:text-amber-300">
-                    <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0" />
                     <div>
-                      <h4 className="font-semibold text-sm mb-2">Ważne informacje</h4>
-                      <ul className="text-xs space-y-1 list-disc list-inside">
+                      <h4 className="mb-2 text-sm font-semibold">Ważne informacje</h4>
+                      <ul className="list-inside list-disc space-y-1 text-xs">
                         <li>Wpłać dokładną kwotę na podane konto</li>
                         <li>Użyj podanego tytułu przelewu</li>
                         <li>Twoja rejestracja zostanie potwierdzona po zaksięgowaniu wpłaty</li>
@@ -289,7 +309,7 @@ const RegistrationSuccessPage = () => {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild className="flex-1">
               <Link to={`/events/${slug}`}>Zobacz wydarzenie</Link>
             </Button>

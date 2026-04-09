@@ -1,5 +1,11 @@
 import { simulateDelay } from './client';
-import type { ApiResponse, LoginCredentials, RegisterPayload, ResetPasswordPayload, ChangePasswordPayload } from './types';
+import type {
+  ApiResponse,
+  LoginCredentials,
+  RegisterPayload,
+  ResetPasswordPayload,
+  ChangePasswordPayload,
+} from './types';
 import { mockUsers } from './mock/users.mock';
 import type { User, UserRole } from '@/types';
 
@@ -40,7 +46,11 @@ export async function register(data: RegisterPayload): Promise<ApiResponse<User>
 
 export async function resetPassword(_payload: ResetPasswordPayload): Promise<ApiResponse<void>> {
   await simulateDelay();
-  return { data: undefined as unknown as void, success: true, message: 'Password reset email sent' };
+  return {
+    data: undefined as unknown as void,
+    success: true,
+    message: 'Password reset email sent',
+  };
 }
 
 export async function changePassword(_payload: ChangePasswordPayload): Promise<ApiResponse<void>> {

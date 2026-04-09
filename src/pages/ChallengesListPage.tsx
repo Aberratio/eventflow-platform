@@ -13,7 +13,10 @@ const statusLabels: Record<string, string> = {
   upcoming: 'Nadchodzące',
 };
 
-const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'outline'; className: string }> = {
+const statusConfig: Record<
+  string,
+  { variant: 'default' | 'secondary' | 'outline'; className: string }
+> = {
   active: { variant: 'default', className: 'bg-success/20 text-success border-success/30' },
   completed: { variant: 'secondary', className: 'bg-muted text-muted-foreground' },
   upcoming: { variant: 'outline', className: 'border-info/40 text-info' },
@@ -22,8 +25,8 @@ const statusConfig: Record<string, { variant: 'default' | 'secondary' | 'outline
 const ChallengesListPage = () => {
   const { user } = useAuth();
 
-  const activeChallenges = mockChallenges.filter(c => c.status === 'active');
-  const otherChallenges = mockChallenges.filter(c => c.status !== 'active');
+  const activeChallenges = mockChallenges.filter((c) => c.status === 'active');
+  const otherChallenges = mockChallenges.filter((c) => c.status !== 'active');
 
   return (
     <Layout>
@@ -32,25 +35,25 @@ const ChallengesListPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-warning/5" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]" />
         <div className="container relative py-10 sm:py-14">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-primary/15 border border-primary/20">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-xl border border-primary/20 bg-primary/15 p-2.5">
               <Trophy className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Wyzwania</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h1 className="text-2xl font-bold sm:text-3xl">Wyzwania</h1>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 Ukończ wymagane biegi i zdobądź nagrody!
               </p>
             </div>
           </div>
 
           {/* Quick stats */}
-          <div className="flex items-center gap-4 mt-5 text-sm">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card/60 border border-border/50">
+          <div className="mt-5 flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
               <Flame className="h-4 w-4 text-primary" />
               <span className="text-muted-foreground">{activeChallenges.length} aktywnych</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card/60 border border-border/50">
+            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
               <Target className="h-4 w-4 text-warning" />
               <span className="text-muted-foreground">{mockChallenges.length} łącznie</span>
             </div>
@@ -62,12 +65,14 @@ const ChallengesListPage = () => {
         {/* Active challenges */}
         {activeChallenges.length > 0 && (
           <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-5 w-1 bg-success rounded-full" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Aktywne wyzwania</h2>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-5 w-1 rounded-full bg-success" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Aktywne wyzwania
+              </h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {activeChallenges.map(challenge => (
+              {activeChallenges.map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} user={user} featured />
               ))}
             </div>
@@ -77,12 +82,14 @@ const ChallengesListPage = () => {
         {/* Other challenges */}
         {otherChallenges.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-5 w-1 bg-warning rounded-full" />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Pozostałe</h2>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-5 w-1 rounded-full bg-warning" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Pozostałe
+              </h2>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {otherChallenges.map(challenge => (
+              {otherChallenges.map((challenge) => (
                 <ChallengeCard key={challenge.id} challenge={challenge} user={user} />
               ))}
             </div>
@@ -94,14 +101,16 @@ const ChallengesListPage = () => {
 };
 
 interface ChallengeCardProps {
-  challenge: typeof mockChallenges[0];
+  challenge: (typeof mockChallenges)[0];
   user: ReturnType<typeof useAuth>['user'];
   featured?: boolean;
 }
 
 const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
   const userParticipation = user
-    ? mockChallengeParticipations.find(p => p.challengeId === challenge.id && p.userId === user.id)
+    ? mockChallengeParticipations.find(
+        (p) => p.challengeId === challenge.id && p.userId === user.id,
+      )
     : null;
 
   const progressPercent = userParticipation
@@ -112,19 +121,23 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
 
   return (
     <Link to={`/challenges/${challenge.slug}`}>
-      <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-border/80 ${featured ? 'border-success/20' : ''}`}>
+      <Card
+        className={`group overflow-hidden transition-all duration-300 hover:border-border/80 hover:shadow-lg ${featured ? 'border-success/20' : ''}`}
+      >
         {/* Image with overlay */}
         {challenge.imageUrl && (
-          <div className="relative h-40 sm:h-48 overflow-hidden">
+          <div className="relative h-40 overflow-hidden sm:h-48">
             <img
               src={challenge.imageUrl}
               alt={challenge.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
             <div className="absolute bottom-3 left-4 right-4">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-semibold text-base sm:text-lg text-foreground line-clamp-1">{challenge.name}</h3>
+                <h3 className="line-clamp-1 text-base font-semibold text-foreground sm:text-lg">
+                  {challenge.name}
+                </h3>
                 <Badge variant={status.variant} className={`shrink-0 text-xs ${status.className}`}>
                   {statusLabels[challenge.status]}
                 </Badge>
@@ -134,9 +147,9 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
         )}
 
         {!challenge.imageUrl && (
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-4 pb-2 pt-4">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-base sm:text-lg">{challenge.name}</h3>
+              <h3 className="text-base font-semibold sm:text-lg">{challenge.name}</h3>
               <Badge variant={status.variant} className={`shrink-0 text-xs ${status.className}`}>
                 {statusLabels[challenge.status]}
               </Badge>
@@ -144,24 +157,22 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
           </div>
         )}
 
-        <CardContent className="pt-3 pb-4 space-y-3">
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {challenge.description}
-          </p>
+        <CardContent className="space-y-3 pb-4 pt-3">
+          <p className="line-clamp-2 text-sm text-muted-foreground">{challenge.description}</p>
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
               <Target className="h-3.5 w-3.5 text-primary" />
               {challenge.rule.minCompleted}/{challenge.events.length} biegów
             </span>
             {challenge.startDate && challenge.endDate && (
-              <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5 text-info" />
                 {challenge.startDate} – {challenge.endDate}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-muted/50 text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground">
               <Gift className="h-3.5 w-3.5 text-warning" />
               {challenge.rewards.length} {challenge.rewards.length === 1 ? 'nagroda' : 'nagrody'}
             </span>
@@ -169,9 +180,9 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
 
           {/* Progress bar */}
           {userParticipation && (
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
+            <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
                   <Users className="h-3.5 w-3.5" />
                   Twój postęp
                 </span>
@@ -181,8 +192,11 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
               </div>
               <Progress value={Math.min(progressPercent, 100)} className="h-2" />
               {userParticipation.isCompleted && (
-                <Badge variant="default" className="bg-success/20 text-success border-success/30 mt-1">
-                  <Trophy className="h-3 w-3 mr-1" />
+                <Badge
+                  variant="default"
+                  className="mt-1 border-success/30 bg-success/20 text-success"
+                >
+                  <Trophy className="mr-1 h-3 w-3" />
                   Ukończone!
                 </Badge>
               )}
@@ -191,7 +205,7 @@ const ChallengeCard = ({ challenge, user, featured }: ChallengeCardProps) => {
 
           {/* Chevron hint */}
           <div className="flex justify-end pt-1">
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 transition-colors group-hover:text-primary" />
           </div>
         </CardContent>
       </Card>

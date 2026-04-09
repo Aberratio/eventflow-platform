@@ -12,18 +12,28 @@ export async function getEvents(filters?: EventFilters): Promise<PaginatedRespon
   if (!filters?.includePrivate) filtered = filtered.filter((e) => !e.isPrivate);
 
   if (filters?.discipline) filtered = filtered.filter((e) => e.discipline === filters.discipline);
-  if (filters?.city) filtered = filtered.filter((e) => e.city.toLowerCase().includes(filters.city!.toLowerCase()));
+  if (filters?.city)
+    filtered = filtered.filter((e) => e.city.toLowerCase().includes(filters.city!.toLowerCase()));
   if (filters?.status) filtered = filtered.filter((e) => e.status === filters.status);
   if (filters?.seriesId) filtered = filtered.filter((e) => e.seriesId === filters.seriesId);
-  if (filters?.registrationStatus) filtered = filtered.filter((e) => e.registrationStatus === filters.registrationStatus);
+  if (filters?.registrationStatus)
+    filtered = filtered.filter((e) => e.registrationStatus === filters.registrationStatus);
   if (filters?.dateFrom) filtered = filtered.filter((e) => e.date >= filters.dateFrom!);
   if (filters?.dateTo) filtered = filtered.filter((e) => e.date <= filters.dateTo!);
   if (filters?.search) {
     const q = filters.search.toLowerCase();
-    filtered = filtered.filter((e) => e.name.toLowerCase().includes(q) || e.city.toLowerCase().includes(q));
+    filtered = filtered.filter(
+      (e) => e.name.toLowerCase().includes(q) || e.city.toLowerCase().includes(q),
+    );
   }
 
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
+  return {
+    data: filtered,
+    total: filtered.length,
+    page: 1,
+    pageSize: filtered.length,
+    totalPages: 1,
+  };
 }
 
 // GET /api/events/:slug
@@ -77,7 +87,11 @@ export async function updateEvent(id: string, data: Partial<Event>): Promise<Api
 export async function deleteEvent(id: string): Promise<ApiResponse<void>> {
   await simulateDelay();
   const exists = mockEvents.some((e) => e.id === id);
-  return { data: undefined as unknown as void, success: exists, message: exists ? undefined : 'Event not found' };
+  return {
+    data: undefined as unknown as void,
+    success: exists,
+    message: exists ? undefined : 'Event not found',
+  };
 }
 
 // PUT /api/events/:id/status

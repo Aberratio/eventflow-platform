@@ -1,7 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, MapPin, User, CheckCircle, XCircle, Eye, Clock, AlertTriangle, FileText } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  User,
+  CheckCircle,
+  XCircle,
+  Eye,
+  Clock,
+  AlertTriangle,
+  FileText,
+} from 'lucide-react';
 import { disciplineLabels } from '@/api/mock/labels';
 import type { Event } from '@/types';
 
@@ -22,39 +32,56 @@ export const ModerationEventCard: React.FC<ModerationEventCardProps> = ({
 }) => (
   <Card className="overflow-hidden">
     <div className="flex flex-col md:flex-row">
-      <div className="w-full md:w-48 h-32 md:h-auto">
-        <img src={event.imageUrl} alt={event.name} className="w-full h-full object-cover" />
+      <div className="h-32 w-full md:h-auto md:w-48">
+        <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover" />
       </div>
       <CardContent className="flex-1 p-4">
         <div className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-semibold text-lg">{event.name}</h3>
+              <h3 className="text-lg font-semibold">{event.name}</h3>
               <Badge variant="outline" className="mt-1">
                 {disciplineLabels[event.discipline]}
               </Badge>
             </div>
             {showRejection && event.rejectionReason && (
-              <Badge variant="destructive" className="shrink-0">Odrzucone</Badge>
+              <Badge variant="destructive" className="shrink-0">
+                Odrzucone
+              </Badge>
             )}
             {!showRejection && (
-              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 shrink-0">
-                <Clock className="h-3 w-3 mr-1" />
+              <Badge
+                variant="outline"
+                className="shrink-0 border-warning/20 bg-warning/10 text-warning"
+              >
+                <Clock className="mr-1 h-3 w-3" />
                 Oczekuje
               </Badge>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><User className="h-4 w-4" /><span>{event.organizerName}</span></div>
-            <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>{event.date}</span></div>
-            <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>{event.city}</span></div>
-            <div className="flex items-center gap-2"><FileText className="h-4 w-4" /><span>{event.distances.length} dystans(ów)</span></div>
+          <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              <span>{event.organizerName}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>{event.date}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span>{event.city}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span>{event.distances.length} dystans(ów)</span>
+            </div>
           </div>
 
           {showRejection && event.rejectionReason && (
-            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm">
-              <div className="flex items-center gap-2 font-medium text-destructive mb-1">
+            <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm">
+              <div className="mb-1 flex items-center gap-2 font-medium text-destructive">
                 <AlertTriangle className="h-4 w-4" />
                 Powód odrzucenia:
               </div>
@@ -64,21 +91,25 @@ export const ModerationEventCard: React.FC<ModerationEventCardProps> = ({
 
           <div className="flex flex-wrap gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={() => onViewDetails(event)}>
-              <Eye className="h-4 w-4 mr-2" /> Szczegóły
+              <Eye className="mr-2 h-4 w-4" /> Szczegóły
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href={`/events/${event.slug}`}><Eye className="h-4 w-4 mr-2" /> Podgląd</a>
+              <a href={`/events/${event.slug}`}>
+                <Eye className="mr-2 h-4 w-4" /> Podgląd
+              </a>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href={`/admin/events/${event.id}`}><FileText className="h-4 w-4 mr-2" /> Zarządzaj</a>
+              <a href={`/admin/events/${event.id}`}>
+                <FileText className="mr-2 h-4 w-4" /> Zarządzaj
+              </a>
             </Button>
             {!showRejection && (
               <>
                 <Button size="sm" onClick={() => onApprove(event)}>
-                  <CheckCircle className="h-4 w-4 mr-2" /> Zatwierdź
+                  <CheckCircle className="mr-2 h-4 w-4" /> Zatwierdź
                 </Button>
                 <Button variant="destructive" size="sm" onClick={() => onReject(event)}>
-                  <XCircle className="h-4 w-4 mr-2" /> Odrzuć
+                  <XCircle className="mr-2 h-4 w-4" /> Odrzuć
                 </Button>
               </>
             )}

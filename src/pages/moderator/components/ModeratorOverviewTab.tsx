@@ -5,17 +5,18 @@ import { mockUsers } from '@/api/mock/users.mock';
 import { Calendar, Users, Building2, TrendingUp, Clock, ShieldCheck } from 'lucide-react';
 
 export const ModeratorOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter(e => e.status === 'awaiting_approval').length;
-  const publishedEvents = mockEvents.filter(e => e.status === 'published').length;
-  const participantCount = mockUsers.filter(u => u.role === 'participant').length;
-  const organizerCount = mockUsers.filter(u => u.role === 'organizer').length;
-  
+  const pendingModerationCount = mockEvents.filter((e) => e.status === 'awaiting_approval').length;
+  const publishedEvents = mockEvents.filter((e) => e.status === 'published').length;
+  const participantCount = mockUsers.filter((u) => u.role === 'participant').length;
+  const organizerCount = mockUsers.filter((u) => u.role === 'organizer').length;
+
   const stats = [
     {
       label: 'Do moderacji',
       value: pendingModerationCount,
       icon: Clock,
-      color: pendingModerationCount > 0 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary',
+      color:
+        pendingModerationCount > 0 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary',
     },
     {
       label: 'Opublikowanych wydarzeń',
@@ -43,7 +44,7 @@ export const ModeratorOverviewTab = () => {
     },
     {
       label: 'Moderatorów',
-      value: mockUsers.filter(u => u.role === 'moderator').length,
+      value: mockUsers.filter((u) => u.role === 'moderator').length,
       icon: ShieldCheck,
       color: 'bg-accent/10 text-accent-foreground',
     },
@@ -52,12 +53,12 @@ export const ModeratorOverviewTab = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-full ${stat.color}`}>
+                <div className={`rounded-full p-3 ${stat.color}`}>
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div>
@@ -74,12 +75,12 @@ export const ModeratorOverviewTab = () => {
       <Card className="border-warning/50 bg-warning/5">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-full bg-warning/10">
+            <div className="rounded-full bg-warning/10 p-3">
               <ShieldCheck className="h-6 w-6 text-warning" />
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Twój zakres dostępu</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
+              <h3 className="mb-2 font-semibold">Twój zakres dostępu</h3>
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>✓ Zatwierdzanie i odrzucanie wydarzeń</li>
                 <li>✓ Przeglądanie list użytkowników i organizatorów</li>
                 <li>✓ Aktualizowanie statusów zamówień</li>
@@ -94,18 +95,21 @@ export const ModeratorOverviewTab = () => {
       </Card>
 
       {/* Recent Activity */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardContent className="pt-6">
-            <h3 className="font-semibold mb-4">Ostatnie rejestracje</h3>
+            <h3 className="mb-4 font-semibold">Ostatnie rejestracje</h3>
             <div className="space-y-3">
               {mockRegistrations.slice(0, 5).map((reg) => (
-                <div key={reg.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={reg.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div>
                     <div className="font-medium">{reg.userName}</div>
                     <div className="text-sm text-muted-foreground">{reg.eventName}</div>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-muted rounded">{reg.distanceName}</span>
+                  <span className="rounded bg-muted px-2 py-1 text-xs">{reg.distanceName}</span>
                 </div>
               ))}
             </div>
@@ -114,18 +118,21 @@ export const ModeratorOverviewTab = () => {
 
         <Card>
           <CardContent className="pt-6">
-            <h3 className="font-semibold mb-4">Nadchodzące wydarzenia</h3>
+            <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {mockEvents
                 .filter((e) => e.status === 'published')
                 .slice(0, 5)
                 .map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <div className="font-medium">{event.name}</div>
                       <div className="text-sm text-muted-foreground">{event.date}</div>
                     </div>
-                    <span className="text-xs px-2 py-1 bg-muted rounded">{event.city}</span>
+                    <span className="rounded bg-muted px-2 py-1 text-xs">{event.city}</span>
                   </div>
                 ))}
             </div>

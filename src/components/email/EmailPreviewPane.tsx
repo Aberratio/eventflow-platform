@@ -16,22 +16,23 @@ export const EmailPreviewPane: React.FC<EmailPreviewPaneProps> = ({ loading, pre
           </div>
         ) : preview ? (
           <div className="space-y-4">
-            <div className="rounded-md border bg-muted/30 p-4 space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+            <div className="space-y-1 rounded-md border bg-muted/30 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Temat
               </p>
               <p className="font-medium">{preview.subject}</p>
             </div>
             <div className="rounded-md border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-3">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Treść (przykładowe dane)
               </p>
-              <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">
+              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
                 {preview.body}
               </pre>
             </div>
-            <p className="text-xs text-muted-foreground text-center">
-              Powyższy podgląd używa przykładowych danych. Rzeczywista treść będzie różna dla każdego odbiorcy.
+            <p className="text-center text-xs text-muted-foreground">
+              Powyższy podgląd używa przykładowych danych. Rzeczywista treść będzie różna dla
+              każdego odbiorcy.
             </p>
           </div>
         ) : null}

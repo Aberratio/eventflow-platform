@@ -68,9 +68,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
   const handleEditItem = () => {
     if (!editingItem) return;
     onChange(
-      merchandise.map((item) =>
-        item.id === editingItem.id ? { ...item, ...formData } : item
-      )
+      merchandise.map((item) => (item.id === editingItem.id ? { ...item, ...formData } : item)),
     );
     toast.success(`Produkt "${formData.name}" został zaktualizowany`);
     resetForm();
@@ -165,7 +163,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                 checked={formData.sizes.includes(size)}
                 onCheckedChange={() => toggleSize(size)}
               />
-              <Label htmlFor={`size-${size}`} className="text-sm cursor-pointer">
+              <Label htmlFor={`size-${size}`} className="cursor-pointer text-sm">
                 {size}
               </Label>
             </div>
@@ -175,11 +173,11 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
 
       <div className="space-y-2">
         <Label>Dostępne kolory</Label>
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="mb-2 flex flex-wrap gap-2">
           {formData.colors.map((color) => (
             <Badge key={color.id} variant="outline" className="flex items-center gap-2">
               <span
-                className="w-3 h-3 rounded-full border"
+                className="h-3 w-3 rounded-full border"
                 style={{ backgroundColor: color.hex }}
               />
               {color.name}
@@ -204,7 +202,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
             type="color"
             value={newColorHex}
             onChange={(e) => setNewColorHex(e.target.value)}
-            className="w-14 p-1 h-10"
+            className="h-10 w-14 p-1"
           />
           <Button type="button" variant="outline" size="sm" onClick={addColor}>
             Dodaj
@@ -240,7 +238,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Dodaj produkt
             </Button>
           </DialogTrigger>
@@ -249,7 +247,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
               <DialogTitle>Dodaj nowy produkt</DialogTitle>
             </DialogHeader>
             <ProductForm />
-            <Button onClick={handleAddItem} className="w-full mt-4">
+            <Button onClick={handleAddItem} className="mt-4 w-full">
               Dodaj produkt
             </Button>
           </DialogContent>
@@ -257,24 +255,21 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
       </CardHeader>
       <CardContent>
         {merchandise.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             Brak produktów. Kliknij "Dodaj produkt", aby dodać pierwszy.
           </p>
         ) : (
           <div className="space-y-4">
             {merchandise.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-4 p-4 border rounded-lg"
-              >
+              <div key={item.id} className="flex items-start gap-4 rounded-lg border p-4">
                 {item.imageUrl && (
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
+                    className="h-16 w-16 rounded object-cover"
                   />
                 )}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between">
                     <div>
                       <h4 className="font-medium">{item.name}</h4>
@@ -291,7 +286,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {item.sizes.map((size) => (
                       <Badge key={size} variant="secondary" className="text-xs">
                         {size}
@@ -300,7 +295,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                     {item.colors.map((color) => (
                       <Badge key={color.id} variant="outline" className="text-xs">
                         <span
-                          className="w-2 h-2 rounded-full mr-1"
+                          className="mr-1 h-2 w-2 rounded-full"
                           style={{ backgroundColor: color.hex }}
                         />
                         {color.name}
@@ -316,11 +311,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                     }}
                   >
                     <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(item)}
-                      >
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
@@ -329,7 +320,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                         <DialogTitle>Edytuj produkt</DialogTitle>
                       </DialogHeader>
                       <ProductForm />
-                      <Button onClick={handleEditItem} className="w-full mt-4">
+                      <Button onClick={handleEditItem} className="mt-4 w-full">
                         Zapisz zmiany
                       </Button>
                     </DialogContent>

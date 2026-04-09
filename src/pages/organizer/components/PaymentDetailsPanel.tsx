@@ -17,11 +17,11 @@ interface PaymentDetailsPanelProps {
   onClose: () => void;
 }
 
-export const PaymentDetailsPanel = ({ 
-  registration, 
-  event, 
+export const PaymentDetailsPanel = ({
+  registration,
+  event,
   onPaymentUpdate,
-  onClose 
+  onClose,
 }: PaymentDetailsPanelProps) => {
   const { toast } = useToast();
   const [details, setDetails] = useState<PaymentDetails>(
@@ -30,18 +30,19 @@ export const PaymentDetailsPanel = ({
       startFeeAmount: registration.pricePaid || 0,
       insurancePaid: false,
       insuranceAmount: registration.insurancePaid,
-      merchandisePayments: registration.merchandiseOrders?.map(mo => ({
-        merchandiseId: mo.merchandiseId,
-        merchandiseName: mo.merchandiseName,
-        paid: false,
-        amount: mo.price,
-      })) || [],
-    }
+      merchandisePayments:
+        registration.merchandiseOrders?.map((mo) => ({
+          merchandiseId: mo.merchandiseId,
+          merchandiseName: mo.merchandiseName,
+          paid: false,
+          amount: mo.price,
+        })) || [],
+    },
   );
 
   const toggleStartFee = () => {
     const newPaid = !details.startFeePaid;
-    setDetails(prev => ({
+    setDetails((prev) => ({
       ...prev,
       startFeePaid: newPaid,
       startFeePaidAt: newPaid ? new Date().toISOString() : undefined,
@@ -50,7 +51,7 @@ export const PaymentDetailsPanel = ({
 
   const toggleInsurance = () => {
     const newPaid = !details.insurancePaid;
-    setDetails(prev => ({
+    setDetails((prev) => ({
       ...prev,
       insurancePaid: newPaid,
       insurancePaidAt: newPaid ? new Date().toISOString() : undefined,
@@ -58,12 +59,12 @@ export const PaymentDetailsPanel = ({
   };
 
   const toggleMerchandise = (merchandiseId: string) => {
-    setDetails(prev => ({
+    setDetails((prev) => ({
       ...prev,
-      merchandisePayments: prev.merchandisePayments.map(mp => 
+      merchandisePayments: prev.merchandisePayments.map((mp) =>
         mp.merchandiseId === merchandiseId
           ? { ...mp, paid: !mp.paid, paidAt: !mp.paid ? new Date().toISOString() : undefined }
-          : mp
+          : mp,
       ),
     }));
   };
@@ -75,8 +76,8 @@ export const PaymentDetailsPanel = ({
       startFeePaid: true,
       startFeePaidAt: details.startFeePaidAt || now,
       insurancePaid: details.insuranceAmount ? true : details.insurancePaid,
-      insurancePaidAt: details.insuranceAmount ? (details.insurancePaidAt || now) : undefined,
-      merchandisePayments: details.merchandisePayments.map(mp => ({
+      insurancePaidAt: details.insuranceAmount ? details.insurancePaidAt || now : undefined,
+      merchandisePayments: details.merchandisePayments.map((mp) => ({
         ...mp,
         paid: true,
         paidAt: mp.paidAt || now,
@@ -101,14 +102,16 @@ export const PaymentDetailsPanel = ({
   };
 
   // Calculate totals
-  const totalAmount = details.startFeeAmount + 
-    (details.insuranceAmount || 0) + 
+  const totalAmount =
+    details.startFeeAmount +
+    (details.insuranceAmount || 0) +
     details.merchandisePayments.reduce((sum, mp) => sum + mp.amount, 0);
-  
-  const paidAmount = (details.startFeePaid ? details.startFeeAmount : 0) +
+
+  const paidAmount =
+    (details.startFeePaid ? details.startFeeAmount : 0) +
     (details.insurancePaid && details.insuranceAmount ? details.insuranceAmount : 0) +
-    details.merchandisePayments.filter(mp => mp.paid).reduce((sum, mp) => sum + mp.amount, 0);
-  
+    details.merchandisePayments.filter((mp) => mp.paid).reduce((sum, mp) => sum + mp.amount, 0);
+
   const unpaidAmount = totalAmount - paidAmount;
   const isFullyPaid = unpaidAmount === 0;
 
@@ -116,7 +119,7 @@ export const PaymentDetailsPanel = ({
     <Card className="border-primary/30">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <CreditCard className="h-5 w-5 text-primary" />
             Szczegóły płatności - {registration.userName}
           </CardTitle>
@@ -125,21 +128,20 @@ export const PaymentDetailsPanel = ({
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          {registration.distanceName} • Zapis: {format(new Date(registration.registeredAt), 'd MMM yyyy', { locale: pl })}
+          {registration.distanceName} • Zapis:{' '}
+          {format(new Date(registration.registeredAt), 'd MMM yyyy', { locale: pl })}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Bank account info */}
         {event.paymentConfig?.type === 'organizer_bank' && (
-          <div className="bg-muted/50 rounded-lg p-3 text-sm">
-            <div className="font-medium mb-1 flex items-center gap-1">
+          <div className="rounded-lg bg-muted/50 p-3 text-sm">
+            <div className="mb-1 flex items-center gap-1 font-medium">
               <AlertCircle className="h-4 w-4 text-warning" />
               Dane do przelewu:
             </div>
-            <div className="font-mono text-xs">
-              {event.paymentConfig.bankAccountNumber}
-            </div>
-            <div className="text-muted-foreground text-xs">
+            <div className="font-mono text-xs">{event.paymentConfig.bankAccountNumber}</div>
+            <div className="text-xs text-muted-foreground">
               {event.paymentConfig.bankAccountHolder}
             </div>
           </div>
@@ -148,16 +150,13 @@ export const PaymentDetailsPanel = ({
         {/* Payment items */}
         <div className="space-y-3">
           {/* Start fee */}
-          <div className="flex items-center justify-between py-2 border-b">
+          <div className="flex items-center justify-between border-b py-2">
             <div className="flex items-center gap-3">
-              <Checkbox 
-                checked={details.startFeePaid}
-                onCheckedChange={toggleStartFee}
-              />
+              <Checkbox checked={details.startFeePaid} onCheckedChange={toggleStartFee} />
               <div>
                 <div className="font-medium">Opłata startowa ({registration.distanceName})</div>
                 {details.startFeePaidAt && (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {format(new Date(details.startFeePaidAt), 'd MMM yyyy, HH:mm', { locale: pl })}
                   </div>
@@ -168,7 +167,7 @@ export const PaymentDetailsPanel = ({
               <span className="font-medium">{details.startFeeAmount} zł</span>
               {details.startFeePaid ? (
                 <Badge className="bg-primary/10 text-primary">
-                  <Check className="h-3 w-3 mr-1" />
+                  <Check className="mr-1 h-3 w-3" />
                   Opłacone
                 </Badge>
               ) : (
@@ -181,18 +180,17 @@ export const PaymentDetailsPanel = ({
 
           {/* Insurance */}
           {details.insuranceAmount && details.insuranceAmount > 0 && (
-            <div className="flex items-center justify-between py-2 border-b">
+            <div className="flex items-center justify-between border-b py-2">
               <div className="flex items-center gap-3">
-                <Checkbox 
-                  checked={details.insurancePaid}
-                  onCheckedChange={toggleInsurance}
-                />
+                <Checkbox checked={details.insurancePaid} onCheckedChange={toggleInsurance} />
                 <div>
                   <div className="font-medium">Ubezpieczenie NNW</div>
                   {details.insurancePaidAt && (
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
-                      {format(new Date(details.insurancePaidAt), 'd MMM yyyy, HH:mm', { locale: pl })}
+                      {format(new Date(details.insurancePaidAt), 'd MMM yyyy, HH:mm', {
+                        locale: pl,
+                      })}
                     </div>
                   )}
                 </div>
@@ -201,7 +199,7 @@ export const PaymentDetailsPanel = ({
                 <span className="font-medium">{details.insuranceAmount} zł</span>
                 {details.insurancePaid ? (
                   <Badge className="bg-primary/10 text-primary">
-                    <Check className="h-3 w-3 mr-1" />
+                    <Check className="mr-1 h-3 w-3" />
                     Opłacone
                   </Badge>
                 ) : (
@@ -214,17 +212,17 @@ export const PaymentDetailsPanel = ({
           )}
 
           {/* Merchandise */}
-          {details.merchandisePayments.map(mp => (
-            <div key={mp.merchandiseId} className="flex items-center justify-between py-2 border-b">
+          {details.merchandisePayments.map((mp) => (
+            <div key={mp.merchandiseId} className="flex items-center justify-between border-b py-2">
               <div className="flex items-center gap-3">
-                <Checkbox 
+                <Checkbox
                   checked={mp.paid}
                   onCheckedChange={() => toggleMerchandise(mp.merchandiseId)}
                 />
                 <div>
                   <div className="font-medium">{mp.merchandiseName}</div>
                   {mp.paidAt && (
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(mp.paidAt), 'd MMM yyyy, HH:mm', { locale: pl })}
                     </div>
@@ -235,7 +233,7 @@ export const PaymentDetailsPanel = ({
                 <span className="font-medium">{mp.amount} zł</span>
                 {mp.paid ? (
                   <Badge className="bg-primary/10 text-primary">
-                    <Check className="h-3 w-3 mr-1" />
+                    <Check className="mr-1 h-3 w-3" />
                     Opłacone
                   </Badge>
                 ) : (
@@ -273,11 +271,11 @@ export const PaymentDetailsPanel = ({
           {!isFullyPaid && (
             <>
               <Button variant="outline" size="sm" onClick={markAllPaid}>
-                <Check className="h-4 w-4 mr-1" />
+                <Check className="mr-1 h-4 w-4" />
                 Oznacz wszystko jako opłacone
               </Button>
               <Button variant="outline" size="sm" onClick={handleSendReminder}>
-                <Mail className="h-4 w-4 mr-1" />
+                <Mail className="mr-1 h-4 w-4" />
                 Wyślij przypomnienie
               </Button>
             </>
@@ -288,9 +286,7 @@ export const PaymentDetailsPanel = ({
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button onClick={handleSave}>
-            Zapisz zmiany
-          </Button>
+          <Button onClick={handleSave}>Zapisz zmiany</Button>
         </div>
       </CardContent>
     </Card>

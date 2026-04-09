@@ -17,12 +17,12 @@ interface SeriesTypeIconProps {
 
 export const SeriesTypeIcon = ({ type, className, size = 'md' }: SeriesTypeIconProps) => {
   const Icon = iconMap[type] || Target;
-  
+
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
     lg: 'h-8 w-8',
   };
-  
+
   return <Icon className={cn(sizeClasses[size], 'text-primary', className)} />;
 };

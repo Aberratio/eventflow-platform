@@ -2,7 +2,10 @@ import { GalleryAlbum, GalleryPlatform } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Facebook, Instagram, ExternalLink, Image } from 'lucide-react';
 
-const platformConfig: Record<GalleryPlatform, { icon: React.ElementType; label: string; className: string }> = {
+const platformConfig: Record<
+  GalleryPlatform,
+  { icon: React.ElementType; label: string; className: string }
+> = {
   google_photos: { icon: Camera, label: 'Google Photos', className: 'text-destructive' },
   flickr: { icon: Camera, label: 'Flickr', className: 'text-pink-500' },
   facebook: { icon: Facebook, label: 'Facebook', className: 'text-blue-600' },
@@ -33,20 +36,20 @@ export const GalleryAlbumsList = ({ albums }: GalleryAlbumsListProps) => {
           {albums.map((album) => {
             const config = platformConfig[album.platform];
             const Icon = config.icon;
-            
+
             return (
               <a
                 key={album.id}
                 href={album.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors group"
+                className="group flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
               >
-                <div className={`p-2 rounded-lg bg-muted ${config.className}`}>
+                <div className={`rounded-lg bg-muted p-2 ${config.className}`}>
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium text-foreground transition-colors group-hover:text-primary">
                     {album.name}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -59,7 +62,7 @@ export const GalleryAlbumsList = ({ albums }: GalleryAlbumsListProps) => {
                     )}
                   </div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
+                <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
               </a>
             );
           })}

@@ -14,7 +14,13 @@ export async function getSeries(filters?: SeriesFilters): Promise<PaginatedRespo
     filtered = filtered.filter((s) => s.name.toLowerCase().includes(q));
   }
 
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
+  return {
+    data: filtered,
+    total: filtered.length,
+    page: 1,
+    pageSize: filtered.length,
+    totalPages: 1,
+  };
 }
 
 export async function getSeriesById(id: string): Promise<ApiResponse<EventSeries | null>> {

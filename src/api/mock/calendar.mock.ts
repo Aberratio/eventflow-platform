@@ -36,5 +36,3 @@ export const mockGoogleCalendarSettings: GoogleCalendarSettings = {
   connected: false,
   calendarId: 'primary',
 };
-
-

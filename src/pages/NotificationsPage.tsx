@@ -4,24 +4,24 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
-import { 
-  Bell, 
-  Check, 
-  CheckCheck, 
-  Trash2, 
-  Mail, 
-  Calendar, 
-  ShoppingBag, 
-  AlertCircle, 
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  Mail,
+  Calendar,
+  ShoppingBag,
+  AlertCircle,
   Info,
-  Filter
+  Filter,
 } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { NotificationType } from '@/types';
@@ -45,19 +45,13 @@ const typeLabels: Record<NotificationType, string> = {
 };
 
 const NotificationsPage = () => {
-  const { 
-    notifications, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification,
-    clearAll 
-  } = useNotifications();
-  
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAll } =
+    useNotifications();
+
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const filteredNotifications = notifications.filter(n => {
+  const filteredNotifications = notifications.filter((n) => {
     if (typeFilter !== 'all' && n.type !== typeFilter) return false;
     if (statusFilter === 'unread' && n.read) return false;
     if (statusFilter === 'read' && !n.read) return false;
@@ -66,12 +60,12 @@ const NotificationsPage = () => {
 
   return (
     <Layout>
-      <div className="container py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container max-w-4xl py-8">
+        <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Powiadomienia</h1>
             <p className="text-muted-foreground">
-              {unreadCount > 0 
+              {unreadCount > 0
                 ? `Masz ${unreadCount} nieprzeczytanych powiadomień`
                 : 'Wszystkie powiadomienia przeczytane'}
             </p>
@@ -79,7 +73,7 @@ const NotificationsPage = () => {
           <div className="flex gap-2">
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                <CheckCheck className="h-4 w-4 mr-2" />
+                <CheckCheck className="mr-2 h-4 w-4" />
                 Oznacz wszystkie
               </Button>
             )}
@@ -101,7 +95,9 @@ const NotificationsPage = () => {
                 <SelectContent>
                   <SelectItem value="all">Wszystkie typy</SelectItem>
                   {Object.entries(typeLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -129,12 +125,12 @@ const NotificationsPage = () => {
           </CardHeader>
           <CardContent className="pt-6">
             {filteredNotifications.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="py-12 text-center text-muted-foreground">
+                <Bell className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p className="mb-2">Brak powiadomień spełniających kryteria</p>
                 {(typeFilter !== 'all' || statusFilter !== 'all') && (
-                  <Button 
-                    variant="link" 
+                  <Button
+                    variant="link"
                     onClick={() => {
                       setTypeFilter('all');
                       setStatusFilter('all');
@@ -149,46 +145,49 @@ const NotificationsPage = () => {
                 {filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                      !notification.read 
-                        ? 'bg-muted/50 border-primary/20' 
-                        : 'hover:bg-muted/30'
+                    className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
+                      !notification.read ? 'border-primary/20 bg-muted/50' : 'hover:bg-muted/30'
                     }`}
                   >
-                    <div className="mt-1 flex-shrink-0">
-                      {notificationIcons[notification.type]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="mt-1 flex-shrink-0">{notificationIcons[notification.type]}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <Link
                           to={notification.actionUrl || '#'}
                           onClick={() => markAsRead(notification.id)}
-                          className={`font-medium hover:text-primary transition-colors ${
+                          className={`font-medium transition-colors hover:text-primary ${
                             !notification.read ? 'text-foreground' : 'text-muted-foreground'
                           }`}
                         >
                           {notification.title}
                         </Link>
                         {!notification.read && (
-                          <Badge variant="default" className="text-xs">Nowe</Badge>
+                          <Badge variant="default" className="text-xs">
+                            Nowe
+                          </Badge>
                         )}
                         <Badge variant="outline" className="text-xs">
                           {typeLabels[notification.type]}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {notification.message}
-                      </p>
+                      <p className="mb-2 text-sm text-muted-foreground">{notification.message}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>
-                          {format(new Date(notification.createdAt), 'dd.MM.yyyy, HH:mm', { locale: pl })}
+                          {format(new Date(notification.createdAt), 'dd.MM.yyyy, HH:mm', {
+                            locale: pl,
+                          })}
                         </span>
                         <span>
-                          ({formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: pl })})
+                          (
+                          {formatDistanceToNow(new Date(notification.createdAt), {
+                            addSuffix: true,
+                            locale: pl,
+                          })}
+                          )
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex flex-shrink-0 items-center gap-1">
                       {!notification.read && (
                         <Button
                           variant="ghost"

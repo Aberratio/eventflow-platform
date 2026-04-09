@@ -6,28 +6,28 @@ interface PartnersSectionProps {
 }
 
 export const PartnersSection = ({ partners }: PartnersSectionProps) => {
-  const featuredPartners = partners.filter(p => p.featured);
+  const featuredPartners = partners.filter((p) => p.featured);
 
   if (featuredPartners.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 animate-fade-in">
+    <section className="animate-fade-in py-12 md:py-16">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">Nasi partnerzy</h2>
-          <p className="text-muted-foreground mt-1">Współpracujemy z najlepszymi</p>
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold md:text-3xl">Nasi partnerzy</h2>
+          <p className="mt-1 text-muted-foreground">Współpracujemy z najlepszymi</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {featuredPartners.map(partner => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+          {featuredPartners.map((partner) => (
             <a
               key={partner.id}
               href={partner.websiteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block group"
+              className="group block"
             >
-              <Card className="transition-all duration-200 hover:border-[hsl(var(--border-active))] h-full">
-                <CardContent className="p-4 flex items-center justify-center h-24">
+              <Card className="h-full transition-all duration-200 hover:border-[hsl(var(--border-active))]">
+                <CardContent className="flex h-24 items-center justify-center p-4">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}

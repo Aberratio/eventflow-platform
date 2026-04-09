@@ -1,6 +1,12 @@
 import type { MerchandiseColor } from './event';
 
-export type ShopCategory = 'apparel' | 'footwear' | 'accessories' | 'nutrition' | 'electronics' | 'services';
+export type ShopCategory =
+  | 'apparel'
+  | 'footwear'
+  | 'accessories'
+  | 'nutrition'
+  | 'electronics'
+  | 'services';
 
 export interface DeliveryMethod {
   id: string;
@@ -85,7 +91,14 @@ export interface ShopOrderInvoice {
   postalCode: string;
 }
 
-export type OrderHistoryAction = 'status_change' | 'items_edited' | 'price_adjustment' | 'tracking_updated' | 'notes_updated' | 'cancel_reason' | 'created';
+export type OrderHistoryAction =
+  | 'status_change'
+  | 'items_edited'
+  | 'price_adjustment'
+  | 'tracking_updated'
+  | 'notes_updated'
+  | 'cancel_reason'
+  | 'created';
 
 export interface OrderHistoryEntry {
   id: string;

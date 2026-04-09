@@ -68,13 +68,19 @@ export const CookieConsent = () => {
   if (!visible) return null;
 
   const saveConsent = (prefs: Omit<CookiePreferences, 'timestamp'>) => {
-    const data: CookiePreferences = { ...prefs, necessary: true, timestamp: new Date().toISOString() };
+    const data: CookiePreferences = {
+      ...prefs,
+      necessary: true,
+      timestamp: new Date().toISOString(),
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     setVisible(false);
   };
 
-  const acceptAll = () => saveConsent({ necessary: true, analytics: true, marketing: true, functional: true });
-  const rejectOptional = () => saveConsent({ necessary: true, analytics: false, marketing: false, functional: false });
+  const acceptAll = () =>
+    saveConsent({ necessary: true, analytics: true, marketing: true, functional: true });
+  const rejectOptional = () =>
+    saveConsent({ necessary: true, analytics: false, marketing: false, functional: false });
   const saveCustom = () => saveConsent({ necessary: true, analytics, marketing, functional });
 
   const switchValues: Record<string, { value: boolean; set: (v: boolean) => void }> = {
@@ -87,15 +93,19 @@ export const CookieConsent = () => {
     <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 md:p-6">
       <div className="mx-auto max-w-3xl rounded-lg border bg-card text-card-foreground shadow-lg">
         <div className="p-4 md:p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <Cookie className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <div className="mb-4 flex items-start gap-3">
+            <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <p className="text-sm text-muted-foreground">
-              Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. 
-              Możesz dostosować swoje preferencje lub zaakceptować wszystkie. 
-              Więcej informacji znajdziesz w naszej{' '}
-              <a href="/info/polityka-prywatnosci" className="underline text-primary hover:text-primary/80 transition-colors">
+              Używamy plików cookies, aby zapewnić najlepsze doświadczenia na naszej stronie. Możesz
+              dostosować swoje preferencje lub zaakceptować wszystkie. Więcej informacji znajdziesz
+              w naszej{' '}
+              <a
+                href="/info/polityka-prywatnosci"
+                className="text-primary underline transition-colors hover:text-primary/80"
+              >
                 polityce prywatności
-              </a>.
+              </a>
+              .
             </p>
           </div>
 
@@ -108,7 +118,7 @@ export const CookieConsent = () => {
                     <p className="text-xs text-muted-foreground">{cat.description}</p>
                   </div>
                   <Switch
-                    checked={cat.locked ? true : switchValues[cat.id]?.value ?? false}
+                    checked={cat.locked ? true : (switchValues[cat.id]?.value ?? false)}
                     onCheckedChange={cat.locked ? undefined : switchValues[cat.id]?.set}
                     disabled={cat.locked}
                   />
@@ -117,14 +127,18 @@ export const CookieConsent = () => {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowDetails(!showDetails)}
               className="justify-start"
             >
-              {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showDetails ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
               {showDetails ? 'Ukryj opcje' : 'Dostosuj'}
             </Button>
             <div className="flex-1" />

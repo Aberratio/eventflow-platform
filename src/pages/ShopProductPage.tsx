@@ -4,7 +4,19 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Minus, Plus, ShoppingCart, Check, Zap, Clock, Shield, Package, Truck, RotateCcw } from 'lucide-react';
+import {
+  ArrowLeft,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Check,
+  Zap,
+  Clock,
+  Shield,
+  Package,
+  Truck,
+  RotateCcw,
+} from 'lucide-react';
 import { shopCategoryLabels } from '@/api/mock/labels';
 import { mockShopProducts } from '@/api/mock/shop.mock';
 import { useCart } from '@/contexts/CartContext';
@@ -13,15 +25,11 @@ import { cn } from '@/lib/utils';
 const ShopProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addItem } = useCart();
-  
-  const product = mockShopProducts.find(p => p.slug === slug);
 
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    product?.sizes?.[0]
-  );
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
-    product?.colors?.[0]?.id
-  );
+  const product = mockShopProducts.find((p) => p.slug === slug);
+
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(product?.sizes?.[0]);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(product?.colors?.[0]?.id);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(product?.imageUrl || '');
 
@@ -29,7 +37,7 @@ const ShopProductPage = () => {
     return (
       <Layout>
         <div className="container py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Produkt nie znaleziony</h1>
+          <h1 className="mb-4 text-2xl font-bold">Produkt nie znaleziony</h1>
           <Button asChild>
             <Link to="/shop">Wróć do sklepu</Link>
           </Button>
@@ -39,11 +47,11 @@ const ShopProductPage = () => {
   }
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
-  const discountPercent = hasDiscount 
-    ? Math.round((1 - product.price / product.originalPrice!) * 100) 
+  const discountPercent = hasDiscount
+    ? Math.round((1 - product.price / product.originalPrice!) * 100)
     : 0;
 
-  const selectedColorData = product.colors?.find(c => c.id === selectedColor);
+  const selectedColorData = product.colors?.find((c) => c.id === selectedColor);
 
   const handleAddToCart = () => {
     addItem({
@@ -57,11 +65,11 @@ const ShopProductPage = () => {
   return (
     <Layout>
       {/* Breadcrumb with warm background */}
-      <div className="bg-gradient-to-r from-primary/5 via-background to-warning/5 border-b border-border/50">
+      <div className="border-b border-border/50 bg-gradient-to-r from-primary/5 via-background to-warning/5">
         <div className="container py-4">
-          <Link 
-            to="/shop" 
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors gap-2"
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
             Powrót do sklepu
@@ -70,22 +78,22 @@ const ShopProductPage = () => {
       </div>
 
       <div className="container py-8 md:py-12">
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-14">
+        <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
           {/* Product Image & Gallery */}
           <div className="space-y-3">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-muted/30 relative border border-border/50">
+            <div className="relative aspect-square overflow-hidden rounded-2xl border border-border/50 bg-muted/30">
               <img
                 src={selectedImage || product.imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover"
               />
               {hasDiscount && (
-                <Badge className="absolute top-4 right-4 bg-destructive text-destructive-foreground text-lg px-3 py-1.5 font-bold">
+                <Badge className="absolute right-4 top-4 bg-destructive px-3 py-1.5 text-lg font-bold text-destructive-foreground">
                   -{discountPercent}%
                 </Badge>
               )}
               {product.isService && (
-                <Badge variant="default" className="absolute top-4 left-4 gap-1">
+                <Badge variant="default" className="absolute left-4 top-4 gap-1">
                   <Zap className="h-3 w-3" />
                   Usługa cyfrowa
                 </Badge>
@@ -98,13 +106,17 @@ const ShopProductPage = () => {
                     key={idx}
                     onClick={() => setSelectedImage(img)}
                     className={cn(
-                      'w-18 h-18 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all',
+                      'w-18 h-18 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all',
                       (selectedImage || product.imageUrl) === img
                         ? 'border-primary ring-2 ring-primary/30'
-                        : 'border-border hover:border-muted-foreground'
+                        : 'border-border hover:border-muted-foreground',
                     )}
                   >
-                    <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`${product.name} ${idx + 1}`}
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -113,20 +125,24 @@ const ShopProductPage = () => {
 
           {/* Product Details */}
           <div>
-            <div className="mb-3 flex gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-xs">{shopCategoryLabels[product.category]}</Badge>
+            <div className="mb-3 flex flex-wrap gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {shopCategoryLabels[product.category]}
+              </Badge>
               {product.featured && (
-                <Badge className="bg-warning/20 text-warning-foreground border border-warning/30 text-xs">
+                <Badge className="border border-warning/30 bg-warning/20 text-xs text-warning-foreground">
                   Wyróżniony
                 </Badge>
               )}
             </div>
-            
-            <p className="text-sm text-muted-foreground mb-1 uppercase tracking-wider">{product.brand}</p>
-            <h1 className="text-2xl md:text-3xl font-bold mb-5">{product.name}</h1>
+
+            <p className="mb-1 text-sm uppercase tracking-wider text-muted-foreground">
+              {product.brand}
+            </p>
+            <h1 className="mb-5 text-2xl font-bold md:text-3xl">{product.name}</h1>
 
             {/* Price Card */}
-            <div className="bg-gradient-to-r from-primary/5 to-warning/5 rounded-xl p-5 border border-primary/10 mb-6">
+            <div className="mb-6 rounded-xl border border-primary/10 bg-gradient-to-r from-primary/5 to-warning/5 p-5">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-bold text-foreground">{product.price} zł</span>
                 {hasDiscount && (
@@ -134,19 +150,19 @@ const ShopProductPage = () => {
                     <span className="text-xl text-muted-foreground line-through">
                       {product.originalPrice} zł
                     </span>
-                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20">
-                      Oszczędzasz {(product.originalPrice! - product.price)} zł
+                    <Badge className="border border-destructive/20 bg-destructive/10 text-destructive">
+                      Oszczędzasz {product.originalPrice! - product.price} zł
                     </Badge>
                   </>
                 )}
               </div>
               {product.inStock ? (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                  <span className="text-sm text-success font-medium">Dostępny</span>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-success" />
+                  <span className="text-sm font-medium text-success">Dostępny</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 mt-2">
+                <div className="mt-2 flex items-center gap-1.5">
                   <div className="h-2 w-2 rounded-full bg-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Niedostępny</span>
                 </div>
@@ -156,7 +172,7 @@ const ShopProductPage = () => {
             {/* Size Selection */}
             {!product.isService && product.sizes && product.sizes.length > 0 && (
               <div className="mb-6">
-                <label className="text-sm font-medium mb-3 block">Rozmiar</label>
+                <label className="mb-3 block text-sm font-medium">Rozmiar</label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <Button
@@ -176,7 +192,7 @@ const ShopProductPage = () => {
             {/* Color Selection */}
             {!product.isService && product.colors && product.colors.length > 0 && (
               <div className="mb-6">
-                <label className="text-sm font-medium mb-3 block">
+                <label className="mb-3 block text-sm font-medium">
                   Kolor: <span className="text-muted-foreground">{selectedColorData?.name}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -185,21 +201,23 @@ const ShopProductPage = () => {
                       key={color.id}
                       onClick={() => setSelectedColor(color.id)}
                       className={cn(
-                        'w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center',
-                        selectedColor === color.id 
-                          ? 'border-primary ring-2 ring-primary ring-offset-2' 
-                          : 'border-border hover:border-muted-foreground'
+                        'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all',
+                        selectedColor === color.id
+                          ? 'border-primary ring-2 ring-primary ring-offset-2'
+                          : 'border-border hover:border-muted-foreground',
                       )}
                       style={{ backgroundColor: color.hex }}
                       title={color.name}
                     >
                       {selectedColor === color.id && (
-                        <Check className={cn(
-                          'h-5 w-5',
-                          color.hex === '#FFFFFF' || color.hex === '#ffffff' 
-                            ? 'text-foreground' 
-                            : 'text-white'
-                        )} />
+                        <Check
+                          className={cn(
+                            'h-5 w-5',
+                            color.hex === '#FFFFFF' || color.hex === '#ffffff'
+                              ? 'text-foreground'
+                              : 'text-white',
+                          )}
+                        />
                       )}
                     </button>
                   ))}
@@ -209,16 +227,17 @@ const ShopProductPage = () => {
 
             {/* Service Details */}
             {product.isService && product.serviceDetails && (
-              <div className="mb-6 p-5 bg-primary/5 rounded-xl border border-primary/15">
-                <h3 className="font-medium mb-2 flex items-center gap-2">
+              <div className="mb-6 rounded-xl border border-primary/15 bg-primary/5 p-5">
+                <h3 className="mb-2 flex items-center gap-2 font-medium">
                   <Shield className="h-4 w-4 text-primary" />
                   Informacje o usłudze
                 </h3>
                 <p className="text-sm text-muted-foreground">{product.serviceDetails}</p>
                 {product.validityDays && (
-                  <p className="text-sm mt-3 flex items-center gap-2 text-muted-foreground">
+                  <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    Ważność: <span className="font-medium text-foreground">{product.validityDays} dni</span>
+                    Ważność:{' '}
+                    <span className="font-medium text-foreground">{product.validityDays} dni</span>
                   </p>
                 )}
               </div>
@@ -227,7 +246,7 @@ const ShopProductPage = () => {
             {/* Quantity */}
             {!product.isService && (
               <div className="mb-6">
-                <label className="text-sm font-medium mb-3 block">Ilość</label>
+                <label className="mb-3 block text-sm font-medium">Ilość</label>
                 <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
@@ -237,7 +256,7 @@ const ShopProductPage = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center font-bold text-lg">{quantity}</span>
+                  <span className="w-12 text-center text-lg font-bold">{quantity}</span>
                   <Button
                     variant="outline"
                     size="icon"
@@ -256,47 +275,51 @@ const ShopProductPage = () => {
             )}
 
             {/* Add to Cart */}
-            <Button 
-              size="lg" 
-              className="w-full gap-2 h-12 text-base" 
+            <Button
+              size="lg"
+              className="h-12 w-full gap-2 text-base"
               onClick={handleAddToCart}
               disabled={!product.inStock}
             >
               <ShoppingCart className="h-5 w-5" />
-              {product.inStock 
-                ? (product.isService ? 'Kup teraz' : 'Dodaj do koszyka')
+              {product.inStock
+                ? product.isService
+                  ? 'Kup teraz'
+                  : 'Dodaj do koszyka'
                 : 'Produkt niedostępny'}
             </Button>
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-3 mt-6">
-              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
-                <Truck className="h-4 w-4 text-primary mb-1.5" />
-                <span className="text-[10px] text-muted-foreground leading-tight">
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              <div className="flex flex-col items-center rounded-xl bg-muted/30 p-3 text-center">
+                <Truck className="mb-1.5 h-4 w-4 text-primary" />
+                <span className="text-[10px] leading-tight text-muted-foreground">
                   {product.isService ? 'Aktywacja 24h' : 'Wysyłka 24h'}
                 </span>
               </div>
-              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
-                <Shield className="h-4 w-4 text-primary mb-1.5" />
-                <span className="text-[10px] text-muted-foreground leading-tight">Bezpieczna płatność</span>
+              <div className="flex flex-col items-center rounded-xl bg-muted/30 p-3 text-center">
+                <Shield className="mb-1.5 h-4 w-4 text-primary" />
+                <span className="text-[10px] leading-tight text-muted-foreground">
+                  Bezpieczna płatność
+                </span>
               </div>
-              <div className="flex flex-col items-center text-center p-3 bg-muted/30 rounded-xl">
-                <RotateCcw className="h-4 w-4 text-primary mb-1.5" />
-                <span className="text-[10px] text-muted-foreground leading-tight">14 dni na zwrot</span>
+              <div className="flex flex-col items-center rounded-xl bg-muted/30 p-3 text-center">
+                <RotateCcw className="mb-1.5 h-4 w-4 text-primary" />
+                <span className="text-[10px] leading-tight text-muted-foreground">
+                  14 dni na zwrot
+                </span>
               </div>
             </div>
 
             <Separator className="my-6" />
 
             {/* Description */}
-            <div className="bg-muted/20 rounded-xl p-5 border border-border/50">
-              <h2 className="font-semibold mb-3 flex items-center gap-2">
+            <div className="rounded-xl border border-border/50 bg-muted/20 p-5">
+              <h2 className="mb-3 flex items-center gap-2 font-semibold">
                 <Package className="h-4 w-4 text-primary" />
                 Opis produktu
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {product.description}
-              </p>
+              <p className="leading-relaxed text-muted-foreground">{product.description}</p>
             </div>
           </div>
         </div>

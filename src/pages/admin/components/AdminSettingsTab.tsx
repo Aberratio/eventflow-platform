@@ -13,15 +13,19 @@ import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import type { GlobalInsuranceSettings, GoogleCalendarSettings } from '@/types';
 
 export const AdminSettingsTab = () => {
-  const [insuranceSettings, setInsuranceSettings] = useState<GlobalInsuranceSettings>(mockGlobalInsuranceSettings);
-  const [calendarSettings, setCalendarSettings] = useState<GoogleCalendarSettings>(mockGoogleCalendarSettings);
+  const [insuranceSettings, setInsuranceSettings] = useState<GlobalInsuranceSettings>(
+    mockGlobalInsuranceSettings,
+  );
+  const [calendarSettings, setCalendarSettings] = useState<GoogleCalendarSettings>(
+    mockGoogleCalendarSettings,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const handleSaveInsurance = async () => {
     setIsSaving(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
     setIsSaving(false);
     toast({
       title: 'Zapisano',
@@ -32,8 +36,12 @@ export const AdminSettingsTab = () => {
   const handleConnectCalendar = async () => {
     setIsConnecting(true);
     // Simulate connection - in real app, this would trigger OAuth flow
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setCalendarSettings(prev => ({ ...prev, connected: true, lastSyncAt: new Date().toISOString() }));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    setCalendarSettings((prev) => ({
+      ...prev,
+      connected: true,
+      lastSyncAt: new Date().toISOString(),
+    }));
     setIsConnecting(false);
     toast({
       title: 'Połączono',
@@ -42,7 +50,7 @@ export const AdminSettingsTab = () => {
   };
 
   const handleDisconnectCalendar = () => {
-    setCalendarSettings(prev => ({ ...prev, connected: false, lastSyncAt: undefined }));
+    setCalendarSettings((prev) => ({ ...prev, connected: false, lastSyncAt: undefined }));
     toast({
       title: 'Rozłączono',
       description: 'Google Calendar został odłączony',
@@ -81,11 +89,12 @@ export const AdminSettingsTab = () => {
           <div className="space-y-2">
             <Label className="text-base font-medium">Tekst informacyjny dla uczestników</Label>
             <p className="text-sm text-muted-foreground">
-              Ten tekst będzie wyświetlany w formularzu rejestracji przy opcji wykupienia ubezpieczenia.
+              Ten tekst będzie wyświetlany w formularzu rejestracji przy opcji wykupienia
+              ubezpieczenia.
             </p>
             <RichTextEditor
               value={insuranceSettings.infoHtml}
-              onChange={(html) => setInsuranceSettings(prev => ({ ...prev, infoHtml: html }))}
+              onChange={(html) => setInsuranceSettings((prev) => ({ ...prev, infoHtml: html }))}
               placeholder="Opisz szczegóły ubezpieczenia NNW..."
             />
           </div>
@@ -99,10 +108,13 @@ export const AdminSettingsTab = () => {
               <Label className="text-base font-medium">Kalkulator składek</Label>
             </div>
             <p className="text-sm text-muted-foreground">
-              Wzór: <span className="font-mono bg-muted px-2 py-1 rounded">składka = opłata_bazowa + max(0, wiek - 18) × mnożnik_wiekowy</span>
+              Wzór:{' '}
+              <span className="rounded bg-muted px-2 py-1 font-mono">
+                składka = opłata_bazowa + max(0, wiek - 18) × mnożnik_wiekowy
+              </span>
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="baseFee">Opłata bazowa (zł)</Label>
                 <Input
@@ -111,10 +123,12 @@ export const AdminSettingsTab = () => {
                   min={0}
                   step={1}
                   value={insuranceSettings.baseFee}
-                  onChange={(e) => setInsuranceSettings(prev => ({ 
-                    ...prev, 
-                    baseFee: parseFloat(e.target.value) || 0 
-                  }))}
+                  onChange={(e) =>
+                    setInsuranceSettings((prev) => ({
+                      ...prev,
+                      baseFee: parseFloat(e.target.value) || 0,
+                    }))
+                  }
                 />
                 <p className="text-xs text-muted-foreground">Minimalna składka dla osób 18 lat</p>
               </div>
@@ -127,10 +141,12 @@ export const AdminSettingsTab = () => {
                   min={0}
                   step={0.1}
                   value={insuranceSettings.ageMultiplier}
-                  onChange={(e) => setInsuranceSettings(prev => ({ 
-                    ...prev, 
-                    ageMultiplier: parseFloat(e.target.value) || 0 
-                  }))}
+                  onChange={(e) =>
+                    setInsuranceSettings((prev) => ({
+                      ...prev,
+                      ageMultiplier: parseFloat(e.target.value) || 0,
+                    }))
+                  }
                 />
                 <p className="text-xs text-muted-foreground">Dodatek za każdy rok powyżej 18</p>
               </div>
@@ -144,12 +160,16 @@ export const AdminSettingsTab = () => {
                   max={100}
                   step={1}
                   value={insuranceSettings.maxAge}
-                  onChange={(e) => setInsuranceSettings(prev => ({ 
-                    ...prev, 
-                    maxAge: parseInt(e.target.value) || 70 
-                  }))}
+                  onChange={(e) =>
+                    setInsuranceSettings((prev) => ({
+                      ...prev,
+                      maxAge: parseInt(e.target.value) || 70,
+                    }))
+                  }
                 />
-                <p className="text-xs text-muted-foreground">Osoby starsze nie mogą wykupić ubezpieczenia</p>
+                <p className="text-xs text-muted-foreground">
+                  Osoby starsze nie mogą wykupić ubezpieczenia
+                </p>
               </div>
             </div>
           </div>
@@ -159,19 +179,21 @@ export const AdminSettingsTab = () => {
           {/* Example Prices Preview */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Przykładowe składki</Label>
-            <div className="bg-muted/50 rounded-lg p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+            <div className="rounded-lg bg-muted/50 p-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-7">
                 {exampleAges.map((age) => {
                   const price = calculateExamplePrice(age);
                   const isOver = age > insuranceSettings.maxAge;
-                  
+
                   return (
-                    <div 
-                      key={age} 
-                      className={`text-center p-2 rounded ${isOver ? 'bg-destructive/10 text-muted-foreground' : 'bg-background'}`}
+                    <div
+                      key={age}
+                      className={`rounded p-2 text-center ${isOver ? 'bg-destructive/10 text-muted-foreground' : 'bg-background'}`}
                     >
                       <div className="text-sm text-muted-foreground">{age} lat</div>
-                      <div className={`font-bold ${isOver ? 'text-destructive line-through' : 'text-primary'}`}>
+                      <div
+                        className={`font-bold ${isOver ? 'text-destructive line-through' : 'text-primary'}`}
+                      >
                         {isOver ? 'N/D' : `${price} zł`}
                       </div>
                     </div>
@@ -183,7 +205,7 @@ export const AdminSettingsTab = () => {
 
           <div className="flex justify-end pt-4">
             <Button onClick={handleSaveInsurance} disabled={isSaving}>
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="mr-2 h-4 w-4" />
               {isSaving ? 'Zapisywanie...' : 'Zapisz ustawienia ubezpieczeń'}
             </Button>
           </div>
@@ -203,24 +225,27 @@ export const AdminSettingsTab = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Connection Status */}
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="flex items-center gap-3">
               {calendarSettings.connected ? (
-                <div className="p-2 rounded-full bg-primary/10">
+                <div className="rounded-full bg-primary/10 p-2">
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                 </div>
               ) : (
-                <div className="p-2 rounded-full bg-muted">
+                <div className="rounded-full bg-muted p-2">
                   <AlertCircle className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
               <div>
                 <p className="font-medium">
-                  {calendarSettings.connected ? 'Połączono z Google Calendar' : 'Nie połączono z Google Calendar'}
+                  {calendarSettings.connected
+                    ? 'Połączono z Google Calendar'
+                    : 'Nie połączono z Google Calendar'}
                 </p>
                 {calendarSettings.connected && calendarSettings.lastSyncAt && (
                   <p className="text-sm text-muted-foreground">
-                    Ostatnia synchronizacja: {new Date(calendarSettings.lastSyncAt).toLocaleString('pl-PL')}
+                    Ostatnia synchronizacja:{' '}
+                    {new Date(calendarSettings.lastSyncAt).toLocaleString('pl-PL')}
                   </p>
                 )}
               </div>
@@ -231,7 +256,7 @@ export const AdminSettingsTab = () => {
               </Button>
             ) : (
               <Button onClick={handleConnectCalendar} disabled={isConnecting}>
-                <Calendar className="h-4 w-4 mr-2" />
+                <Calendar className="mr-2 h-4 w-4" />
                 {isConnecting ? 'Łączenie...' : 'Połącz Google Calendar'}
               </Button>
             )}
@@ -247,7 +272,9 @@ export const AdminSettingsTab = () => {
             </div>
             <Switch
               checked={calendarSettings.enabled}
-              onCheckedChange={(checked) => setCalendarSettings(prev => ({ ...prev, enabled: checked }))}
+              onCheckedChange={(checked) =>
+                setCalendarSettings((prev) => ({ ...prev, enabled: checked }))
+              }
               disabled={!calendarSettings.connected}
             />
           </div>
@@ -255,9 +282,12 @@ export const AdminSettingsTab = () => {
           <Separator />
 
           {/* Info about what gets synced */}
-          <div className="p-4 bg-muted/50 rounded-lg space-y-2">
-            <p className="text-sm font-medium">Po połączeniu, każde zatwierdzone wydarzenie zostanie automatycznie dodane do kalendarza z:</p>
-            <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+          <div className="space-y-2 rounded-lg bg-muted/50 p-4">
+            <p className="text-sm font-medium">
+              Po połączeniu, każde zatwierdzone wydarzenie zostanie automatycznie dodane do
+              kalendarza z:
+            </p>
+            <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">
               <li>Tytuł: Nazwa wydarzenia</li>
               <li>Data: Data wydarzenia</li>
               <li>Lokalizacja: Miejsce i miasto</li>

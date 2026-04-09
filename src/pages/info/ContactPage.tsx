@@ -30,13 +30,11 @@ const ContactPage = () => {
       <div className="container py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Kontakt</h1>
-          <p className="text-muted-foreground">
-            Masz pytania? Skontaktuj się z nami!
-          </p>
+          <h1 className="mb-2 text-3xl font-bold">Kontakt</h1>
+          <p className="text-muted-foreground">Masz pytania? Skontaktuj się z nami!</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Contact form */}
           <div className="lg:col-span-2">
             <Card>
@@ -45,7 +43,7 @@ const ContactPage = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name">Imię i nazwisko</Label>
                       <Input
@@ -90,7 +88,7 @@ const ContactPage = () => {
                     />
                   </div>
                   <Button type="submit" className="w-full sm:w-auto">
-                    <Send className="h-4 w-4 mr-2" />
+                    <Send className="mr-2 h-4 w-4" />
                     Wyślij wiadomość
                   </Button>
                 </form>
@@ -104,25 +102,31 @@ const ContactPage = () => {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <Mail className="h-5 w-5 text-primary mt-0.5" />
+                    <Mail className="mt-0.5 h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium">Email</p>
-                      <a href="mailto:kontakt@zmierzymyczas.pl" className="text-sm text-muted-foreground hover:text-primary">
+                      <a
+                        href="mailto:kontakt@zmierzymyczas.pl"
+                        className="text-sm text-muted-foreground hover:text-primary"
+                      >
                         kontakt@zmierzymyczas.pl
                       </a>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Phone className="h-5 w-5 text-primary mt-0.5" />
+                    <Phone className="mt-0.5 h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium">Telefon</p>
-                      <a href="tel:+48123456789" className="text-sm text-muted-foreground hover:text-primary">
+                      <a
+                        href="tel:+48123456789"
+                        className="text-sm text-muted-foreground hover:text-primary"
+                      >
                         +48 123 456 789
                       </a>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                    <MapPin className="mt-0.5 h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium">Adres</p>
                       <p className="text-sm text-muted-foreground">
@@ -132,11 +136,12 @@ const ContactPage = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Clock className="h-5 w-5 text-primary mt-0.5" />
+                    <Clock className="mt-0.5 h-5 w-5 text-primary" />
                     <div>
                       <p className="font-medium">Godziny pracy</p>
                       <p className="text-sm text-muted-foreground">
-                        Pon-Pt: 9:00 - 17:00<br />
+                        Pon-Pt: 9:00 - 17:00
+                        <br />
                         Sob-Nd: nieczynne
                       </p>
                     </div>
@@ -147,8 +152,8 @@ const ContactPage = () => {
 
             <Card>
               <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Szybka pomoc</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="mb-2 font-semibold">Szybka pomoc</h3>
+                <p className="mb-4 text-sm text-muted-foreground">
                   Odpowiadamy na większość zapytań w ciągu 24 godzin roboczych.
                 </p>
                 <div className="text-xs text-muted-foreground">

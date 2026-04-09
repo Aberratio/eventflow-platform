@@ -32,7 +32,7 @@ const ProfilePage = () => {
     <Layout>
       <div className="container py-8">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Mój profil</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Mój profil</h1>
           <p className="text-muted-foreground">Zarządzaj swoimi danymi</p>
         </div>
         {renderProfile()}

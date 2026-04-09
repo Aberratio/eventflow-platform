@@ -26,23 +26,20 @@ const defaultMethods: PaymentMethod[] = [
   { id: 'pm5', name: 'Płatność na miejscu (gotówka)', enabled: false },
 ];
 
-export const PaymentMethodsEditor = ({
-  paymentMethods,
-  onChange,
-}: PaymentMethodsEditorProps) => {
+export const PaymentMethodsEditor = ({ paymentMethods, onChange }: PaymentMethodsEditorProps) => {
   // Use default methods if none provided
   const methods = paymentMethods.length > 0 ? paymentMethods : defaultMethods;
 
   const toggleMethod = (methodId: string) => {
     const updatedMethods = methods.map((method) =>
-      method.id === methodId ? { ...method, enabled: !method.enabled } : method
+      method.id === methodId ? { ...method, enabled: !method.enabled } : method,
     );
     onChange(updatedMethods);
-    
+
     const method = methods.find((m) => m.id === methodId);
     if (method) {
       toast.success(
-        `Metoda "${method.name}" została ${!method.enabled ? 'włączona' : 'wyłączona'}`
+        `Metoda "${method.name}" została ${!method.enabled ? 'włączona' : 'wyłączona'}`,
       );
     }
   };
@@ -59,13 +56,13 @@ export const PaymentMethodsEditor = ({
             return (
               <div
                 key={method.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
+                className="flex items-center justify-between rounded-lg border p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-muted">
+                  <div className="rounded-full bg-muted p-2">
                     <Icon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <Label htmlFor={method.id} className="font-medium cursor-pointer">
+                  <Label htmlFor={method.id} className="cursor-pointer font-medium">
                     {method.name}
                   </Label>
                 </div>
@@ -78,7 +75,7 @@ export const PaymentMethodsEditor = ({
             );
           })}
         </div>
-        <p className="text-sm text-muted-foreground mt-4">
+        <p className="mt-4 text-sm text-muted-foreground">
           Wybierz metody płatności dostępne dla uczestników podczas rejestracji.
         </p>
       </CardContent>

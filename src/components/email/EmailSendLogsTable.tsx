@@ -40,14 +40,14 @@ export const EmailSendLogsTable: React.FC<EmailSendLogsTableProps> = ({ logs }) 
   if (logs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <Mail className="h-12 w-12 mb-3 opacity-30" />
+        <Mail className="mb-3 h-12 w-12 opacity-30" />
         <p className="text-sm">Brak historii wysyłek</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border border-border/50 overflow-x-auto">
+    <div className="overflow-x-auto rounded-md border border-border/50">
       <Table>
         <TableHeader>
           <TableRow>
@@ -66,20 +66,20 @@ export const EmailSendLogsTable: React.FC<EmailSendLogsTableProps> = ({ logs }) 
               <TableRow key={log.id}>
                 <TableCell>
                   <div>
-                    <p className="font-medium text-sm">{log.recipientName}</p>
+                    <p className="text-sm font-medium">{log.recipientName}</p>
                     <p className="text-xs text-muted-foreground">{log.recipientEmail}</p>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
                     <p className="text-sm font-medium">{log.templateName}</p>
-                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">{log.subject}</p>
+                    <p className="max-w-[200px] truncate text-xs text-muted-foreground">
+                      {log.subject}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <span className="text-sm text-muted-foreground">
-                    {log.eventName ?? '—'}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{log.eventName ?? '—'}</span>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <div>
@@ -97,7 +97,7 @@ export const EmailSendLogsTable: React.FC<EmailSendLogsTableProps> = ({ logs }) 
                       })}
                     </p>
                     {log.scheduledFor && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         Zapl.: {new Date(log.scheduledFor).toLocaleDateString('pl-PL')}
                       </p>
                     )}

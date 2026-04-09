@@ -14,9 +14,9 @@ interface EventCardProps {
 }
 
 export const EventCard = ({ event, userRegistrations = [], userResults = [] }: EventCardProps) => {
-  const userRegistration = userRegistrations.find(r => r.eventId === event.id);
-  const userResult = userResults.find(r => r.eventId === event.id);
-  
+  const userRegistration = userRegistrations.find((r) => r.eventId === event.id);
+  const userResult = userResults.find((r) => r.eventId === event.id);
+
   const totalParticipants = event.distances.reduce((sum, d) => sum + d.registeredCount, 0);
 
   const getUserStatus = () => {
@@ -28,26 +28,32 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [] }: E
   const userStatus = getUserStatus();
 
   return (
-    <Link to={`/events/${event.slug}`} className="block group">
+    <Link to={`/events/${event.slug}`} className="group block">
       <Card className="h-full transition-all duration-200 hover:border-[hsl(var(--border-active))]">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="p-1.5 rounded bg-muted shrink-0">
-              <DisciplineIcon discipline={event.discipline} size="md" className="text-muted-foreground" />
+            <div className="shrink-0 rounded bg-muted p-1.5">
+              <DisciplineIcon
+                discipline={event.discipline}
+                size="md"
+                className="text-muted-foreground"
+              />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-medium text-sm line-clamp-2 leading-tight group-hover:text-foreground transition-colors">{event.name}</h3>
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 flex items-start justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="line-clamp-2 text-sm font-medium leading-tight transition-colors group-hover:text-foreground">
+                    {event.name}
+                  </h3>
                   {event.isVirtual && (
                     <Badge variant="outline" className="text-xs">
-                      <Globe className="h-3 w-3 mr-1" />
+                      <Globe className="mr-1 h-3 w-3" />
                       Wirtualny
                     </Badge>
                   )}
                 </div>
                 {userStatus && (
-                  <Badge 
+                  <Badge
                     variant={userStatus === 'registered' ? 'default' : 'secondary'}
                     className="shrink-0 text-xs"
                   >
@@ -58,10 +64,9 @@ export const EventCard = ({ event, userRegistrations = [], userResults = [] }: E
               <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="h-3 w-3" />
-                  {event.isVirtual && event.startDate && event.endDate 
+                  {event.isVirtual && event.startDate && event.endDate
                     ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM yyyy', { locale: pl })}`
-                    : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })
-                  }
+                    : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}
                 </span>
                 <span className="flex items-center gap-1.5">
                   {event.isVirtual ? (

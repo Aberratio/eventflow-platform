@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Bell, Check, CheckCheck, Trash2, Mail, Calendar, ShoppingBag, AlertCircle, Info } from 'lucide-react';
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  Mail,
+  Calendar,
+  ShoppingBag,
+  AlertCircle,
+  Info,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -34,14 +44,14 @@ export const NotificationCenter = () => {
         <Button variant="ghost" size="icon" className="relative" aria-label="Powiadomienia">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium animate-pulse">
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 animate-pulse items-center justify-center rounded-full bg-destructive text-xs font-medium text-destructive-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 md:w-96">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
+        <div className="flex items-center justify-between border-b px-4 py-3">
           <h3 className="font-semibold">Powiadomienia</h3>
           {unreadCount > 0 && (
             <Button
@@ -51,9 +61,9 @@ export const NotificationCenter = () => {
                 e.preventDefault();
                 markAllAsRead();
               }}
-              className="text-xs h-auto py-1"
+              className="h-auto py-1 text-xs"
             >
-              <CheckCheck className="h-3 w-3 mr-1" />
+              <CheckCheck className="mr-1 h-3 w-3" />
               Oznacz wszystkie
             </Button>
           )}
@@ -61,7 +71,7 @@ export const NotificationCenter = () => {
 
         {recentNotifications.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
-            <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <Bell className="mx-auto mb-2 h-8 w-8 opacity-50" />
             <p className="text-sm">Brak powiadomień</p>
           </div>
         ) : (
@@ -70,7 +80,7 @@ export const NotificationCenter = () => {
               <DropdownMenuItem
                 key={notification.id}
                 asChild
-                className={`flex items-start gap-3 p-3 cursor-pointer ${
+                className={`flex cursor-pointer items-start gap-3 p-3 ${
                   !notification.read ? 'bg-muted/50' : ''
                 }`}
               >
@@ -79,19 +89,21 @@ export const NotificationCenter = () => {
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="mt-0.5">{notificationIcons[notification.type]}</div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium truncate ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      <span
+                        className={`truncate text-sm font-medium ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}
+                      >
                         {notification.title}
                       </span>
                       {!notification.read && (
-                        <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         addSuffix: true,
                         locale: pl,
@@ -106,7 +118,10 @@ export const NotificationCenter = () => {
 
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className="justify-center">
-          <Link to="/notifications" className="text-primary text-sm font-medium w-full text-center py-2">
+          <Link
+            to="/notifications"
+            className="w-full py-2 text-center text-sm font-medium text-primary"
+          >
             Zobacz wszystkie powiadomienia
           </Link>
         </DropdownMenuItem>

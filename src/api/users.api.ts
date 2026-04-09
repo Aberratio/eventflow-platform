@@ -11,10 +11,18 @@ export async function getUsers(filters?: UserFilters): Promise<PaginatedResponse
   if (filters?.status) filtered = filtered.filter((u) => (u.status ?? 'active') === filters.status);
   if (filters?.search) {
     const q = filters.search.toLowerCase();
-    filtered = filtered.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    filtered = filtered.filter(
+      (u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
+    );
   }
 
-  return { data: filtered, total: filtered.length, page: 1, pageSize: filtered.length, totalPages: 1 };
+  return {
+    data: filtered,
+    total: filtered.length,
+    page: 1,
+    pageSize: filtered.length,
+    totalPages: 1,
+  };
 }
 
 export async function getUserById(id: string): Promise<ApiResponse<User | null>> {
@@ -31,7 +39,13 @@ export async function getUserByEmail(email: string): Promise<ApiResponse<User | 
 
 export async function createUser(data: Partial<User>): Promise<ApiResponse<User>> {
   await simulateDelay();
-  const newUser: User = { id: `u-${Date.now()}`, name: '', email: '', role: 'participant', ...data } as User;
+  const newUser: User = {
+    id: `u-${Date.now()}`,
+    name: '',
+    email: '',
+    role: 'participant',
+    ...data,
+  } as User;
   return { data: newUser, success: true };
 }
 
@@ -51,7 +65,10 @@ export async function updateUserRole(id: string, role: UserRole): Promise<ApiRes
   return updateUser(id, { role });
 }
 
-export async function updateUserStatus(id: string, status: 'active' | 'blocked'): Promise<ApiResponse<User>> {
+export async function updateUserStatus(
+  id: string,
+  status: 'active' | 'blocked',
+): Promise<ApiResponse<User>> {
   return updateUser(id, { status });
 }
 

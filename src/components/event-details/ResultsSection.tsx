@@ -2,7 +2,14 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { mockResultDocuments, mockTeamResults } from '@/api/mock/results.mock';
 import { Trophy, Medal, Users } from 'lucide-react';
 import { ResultsFilters } from '@/components/results/ResultsFilters';
@@ -27,22 +34,25 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
   const [selectedGender, setSelectedGender] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const eventDocuments = mockResultDocuments.filter(d => d.eventId === event.id);
-  const eventTeamResults = mockTeamResults.filter(t => t.eventId === event.id);
+  const eventDocuments = mockResultDocuments.filter((d) => d.eventId === event.id);
+  const eventTeamResults = mockTeamResults.filter((t) => t.eventId === event.id);
 
   const categories = useMemo(() => {
-    const cats = new Set(eventResults.map(r => r.category));
+    const cats = new Set(eventResults.map((r) => r.category));
     return Array.from(cats).sort();
   }, [eventResults]);
 
   const filteredResults = useMemo(() => {
-    return eventResults.filter(r => {
-      if (selectedDistance !== 'all' && r.distanceId !== selectedDistance) return false;
-      if (selectedCategory !== 'all' && r.category !== selectedCategory) return false;
-      if (selectedGender !== 'all' && r.gender !== selectedGender) return false;
-      if (searchQuery && !r.userName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      return true;
-    }).sort((a, b) => a.position - b.position);
+    return eventResults
+      .filter((r) => {
+        if (selectedDistance !== 'all' && r.distanceId !== selectedDistance) return false;
+        if (selectedCategory !== 'all' && r.category !== selectedCategory) return false;
+        if (selectedGender !== 'all' && r.gender !== selectedGender) return false;
+        if (searchQuery && !r.userName.toLowerCase().includes(searchQuery.toLowerCase()))
+          return false;
+        return true;
+      })
+      .sort((a, b) => a.position - b.position);
   }, [eventResults, selectedDistance, selectedCategory, selectedGender, searchQuery]);
 
   return (
@@ -65,7 +75,9 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
             Wyniki oficjalne
-            <Badge variant="secondary" className="ml-2">{filteredResults.length}</Badge>
+            <Badge variant="secondary" className="ml-2">
+              {filteredResults.length}
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -93,7 +105,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
                       <TableCell>
                         <Link
                           to={`/athlete/${result.userId}`}
-                          className="font-medium hover:text-primary hover:underline transition-colors"
+                          className="font-medium transition-colors hover:text-primary hover:underline"
                         >
                           {result.userName}
                         </Link>
@@ -109,8 +121,10 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
               </Table>
             </div>
           ) : (
-            <p className="text-muted-foreground text-center py-8">
-              {eventResults.length === 0 ? 'Wyniki będą dostępne wkrótce.' : 'Brak wyników spełniających kryteria.'}
+            <p className="py-8 text-center text-muted-foreground">
+              {eventResults.length === 0
+                ? 'Wyniki będą dostępne wkrótce.'
+                : 'Brak wyników spełniających kryteria.'}
             </p>
           )}
         </CardContent>
@@ -136,27 +150,29 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {eventTeamResults.sort((a, b) => a.position - b.position).map((team) => (
-                    <TableRow key={team.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {getMedalIcon(team.position)}
-                          <span className="font-bold">{team.position}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{team.teamName}</TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                        <div className="flex flex-wrap gap-1">
-                          {team.members.map((m) => (
-                            <Badge key={m.userId} variant="outline" className="text-xs">
-                              {m.userName}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono">{team.totalTime}</TableCell>
-                    </TableRow>
-                  ))}
+                  {eventTeamResults
+                    .sort((a, b) => a.position - b.position)
+                    .map((team) => (
+                      <TableRow key={team.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {getMedalIcon(team.position)}
+                            <span className="font-bold">{team.position}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{team.teamName}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <div className="flex flex-wrap gap-1">
+                            {team.members.map((m) => (
+                              <Badge key={m.userId} variant="outline" className="text-xs">
+                                {m.userName}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono">{team.totalTime}</TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </div>
@@ -164,9 +180,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
         </Card>
       )}
 
-      {eventDocuments.length > 0 && (
-        <ResultDocumentsList documents={eventDocuments} />
-      )}
+      {eventDocuments.length > 0 && <ResultDocumentsList documents={eventDocuments} />}
     </>
   );
 };

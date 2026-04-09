@@ -20,12 +20,17 @@ interface MockCredentialCardProps {
   onCopy: (text: string, fieldId: string) => void;
 }
 
-export const MockCredentialCard = ({ credential, copiedField, onFill, onCopy }: MockCredentialCardProps) => {
+export const MockCredentialCard = ({
+  credential,
+  copiedField,
+  onFill,
+  onCopy,
+}: MockCredentialCardProps) => {
   const Icon = credential.icon;
 
   return (
     <Card
-      className={`border ${credential.color} cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5`}
+      className={`border ${credential.color} cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md`}
       onClick={() => onFill(credential)}
     >
       <CardContent className="p-4">
@@ -33,30 +38,44 @@ export const MockCredentialCard = ({ credential, copiedField, onFill, onCopy }: 
           <div className="shrink-0">
             <Icon className="h-5 w-5" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm">{credential.label}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono truncate">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">{credential.label}</p>
+            <div className="mt-1 flex items-center gap-2">
+              <code className="truncate rounded bg-background/80 px-2 py-0.5 font-mono text-xs">
                 {credential.email}
               </code>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onCopy(credential.email, `${credential.role}-email`); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopy(credential.email, `${credential.role}-email`);
+                }}
                 className="shrink-0 text-muted-foreground hover:text-foreground"
               >
-                {copiedField === `${credential.role}-email` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedField === `${credential.role}-email` ? (
+                  <Check className="h-3.5 w-3.5 text-success" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </button>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <code className="text-xs bg-background/80 px-2 py-0.5 rounded font-mono">
+            <div className="mt-1 flex items-center gap-2">
+              <code className="rounded bg-background/80 px-2 py-0.5 font-mono text-xs">
                 demo1234
               </code>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onCopy('demo1234', `${credential.role}-pass`); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopy('demo1234', `${credential.role}-pass`);
+                }}
                 className="shrink-0 text-muted-foreground hover:text-foreground"
               >
-                {copiedField === `${credential.role}-pass` ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedField === `${credential.role}-pass` ? (
+                  <Check className="h-3.5 w-3.5 text-success" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
               </button>
             </div>
           </div>

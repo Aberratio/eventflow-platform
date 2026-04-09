@@ -5,16 +5,36 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Search, Pencil, ShoppingCart, Package, Clock, Download, ArrowUpDown, ArrowUp, ArrowDown,
+  Search,
+  Pencil,
+  ShoppingCart,
+  Package,
+  Clock,
+  Download,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { mockShopOrders } from '@/api/mock/shop.mock';
 import { mockUsers } from '@/api/mock/users.mock';
@@ -54,23 +74,33 @@ export const AdminOrdersTab = () => {
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
-  const getCustomerName = (userId: string) => mockUsers.find(u => u.id === userId)?.name || 'Nieznany';
-  const getCustomerEmail = (userId: string) => mockUsers.find(u => u.id === userId)?.email || '';
+  const getCustomerName = (userId: string) =>
+    mockUsers.find((u) => u.id === userId)?.name || 'Nieznany';
+  const getCustomerEmail = (userId: string) => mockUsers.find((u) => u.id === userId)?.email || '';
 
   const toggleSort = (field: SortField) => {
-    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortField(field); setSortDir('desc'); }
+    if (sortField === field) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    else {
+      setSortField(field);
+      setSortDir('desc');
+    }
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
-    return sortDir === 'asc' ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />;
+    if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
+    return sortDir === 'asc' ? (
+      <ArrowUp className="ml-1 h-3 w-3" />
+    ) : (
+      <ArrowDown className="ml-1 h-3 w-3" />
+    );
   };
 
   const filteredOrders = useMemo(() => {
-    let result = orders.filter(order => {
+    let result = orders.filter((order) => {
       const name = getCustomerName(order.userId).toLowerCase();
-      const matchesSearch = order.orderNumber.toLowerCase().includes(search.toLowerCase()) || name.includes(search.toLowerCase());
+      const matchesSearch =
+        order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
+        name.includes(search.toLowerCase());
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const orderDate = order.createdAt.substring(0, 10);
       const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
@@ -90,20 +120,20 @@ export const AdminOrdersTab = () => {
   }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir]);
 
   const prepareOrdersExport = () => {
-    return filteredOrders.map(order => ({
+    return filteredOrders.map((order) => ({
       'Nr zamówienia': order.orderNumber,
-      'Klient': getCustomerName(order.userId),
-      'Email': getCustomerEmail(order.userId),
-      'Data': format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
-      'Produkty': order.items.map(i => `${i.quantity}x ${i.productName}`).join(', '),
-      'Kwota': `${order.totalPrice.toFixed(2)} PLN`,
-      'Status': orderStatusLabels[order.status],
+      Klient: getCustomerName(order.userId),
+      Email: getCustomerEmail(order.userId),
+      Data: format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
+      Produkty: order.items.map((i) => `${i.quantity}x ${i.productName}`).join(', '),
+      Kwota: `${order.totalPrice.toFixed(2)} PLN`,
+      Status: orderStatusLabels[order.status],
       'Nr przesyłki': order.trackingNumber || '-',
     }));
   };
 
   const prepareOrdersXmlExport = () => {
-    return filteredOrders.map(order => ({
+    return filteredOrders.map((order) => ({
       orderNumber: order.orderNumber,
       customer: getCustomerName(order.userId),
       email: getCustomerEmail(order.userId),
@@ -111,7 +141,7 @@ export const AdminOrdersTab = () => {
       totalPrice: order.totalPrice,
       status: order.status,
       trackingNumber: order.trackingNumber || '',
-      items: order.items.map(i => ({
+      items: order.items.map((i) => ({
         name: i.productName,
         quantity: i.quantity,
         price: i.price,
@@ -121,8 +151,8 @@ export const AdminOrdersTab = () => {
     }));
   };
 
-  const pendingCount = orders.filter(o => o.status === 'pending').length;
-  const paidCount = orders.filter(o => o.status === 'paid').length;
+  const pendingCount = orders.filter((o) => o.status === 'pending').length;
+  const paidCount = orders.filter((o) => o.status === 'paid').length;
 
   return (
     <div className="space-y-6">
@@ -139,10 +169,23 @@ export const AdminOrdersTab = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => exportToCSV(prepareOrdersExport(), `zamowienia-${format(new Date(), 'yyyy-MM-dd')}`)}>
+            <DropdownMenuItem
+              onClick={() =>
+                exportToCSV(prepareOrdersExport(), `zamowienia-${format(new Date(), 'yyyy-MM-dd')}`)
+              }
+            >
               Eksportuj CSV
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportToXML(prepareOrdersXmlExport(), 'orders', 'order', `zamowienia-${format(new Date(), 'yyyy-MM-dd')}`)}>
+            <DropdownMenuItem
+              onClick={() =>
+                exportToXML(
+                  prepareOrdersXmlExport(),
+                  'orders',
+                  'order',
+                  `zamowienia-${format(new Date(), 'yyyy-MM-dd')}`,
+                )
+              }
+            >
               Eksportuj XML
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -152,8 +195,10 @@ export const AdminOrdersTab = () => {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-accent/10"><ShoppingCart className="h-5 w-5 text-accent-foreground" /></div>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg bg-accent/10 p-2">
+              <ShoppingCart className="h-5 w-5 text-accent-foreground" />
+            </div>
             <div>
               <p className="text-2xl font-bold">{orders.length}</p>
               <p className="text-xs text-muted-foreground">Wszystkich</p>
@@ -161,8 +206,10 @@ export const AdminOrdersTab = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-warning/10"><Clock className="h-5 w-5 text-warning" /></div>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg bg-warning/10 p-2">
+              <Clock className="h-5 w-5 text-warning" />
+            </div>
             <div>
               <p className="text-2xl font-bold">{pendingCount}</p>
               <p className="text-xs text-muted-foreground">Oczekujących</p>
@@ -170,8 +217,10 @@ export const AdminOrdersTab = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Package className="h-5 w-5 text-primary" />
+            </div>
             <div>
               <p className="text-2xl font-bold">{paidCount}</p>
               <p className="text-xs text-muted-foreground">Opłaconych</p>
@@ -183,66 +232,115 @@ export const AdminOrdersTab = () => {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Szukaj (nr zamówienia, klient)..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Szukaj (nr zamówienia, klient)..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <Select value={statusFilter} onValueChange={v => setStatusFilter(v as ShopOrder['status'] | 'all')}>
-              <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <Select
+              value={statusFilter}
+              onValueChange={(v) => setStatusFilter(v as ShopOrder['status'] | 'all')}
+            >
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Wszystkie</SelectItem>
                 {Object.entries(orderStatusLabels).map(([key, label]) => (
-                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full sm:w-[150px]" placeholder="Od" />
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full sm:w-[150px]" placeholder="Do" />
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full sm:w-[150px]"
+              placeholder="Od"
+            />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full sm:w-[150px]"
+              placeholder="Do"
+            />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-border/50 overflow-x-auto">
+          <div className="overflow-x-auto rounded-md border border-border/50">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nr zamówienia</TableHead>
                   <TableHead>Klient</TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('createdAt')}>
-                    <span className="flex items-center">Data <SortIcon field="createdAt" /></span>
+                  <TableHead
+                    className="cursor-pointer select-none"
+                    onClick={() => toggleSort('createdAt')}
+                  >
+                    <span className="flex items-center">
+                      Data <SortIcon field="createdAt" />
+                    </span>
                   </TableHead>
                   <TableHead>Produkty</TableHead>
-                  <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort('totalPrice')}>
-                    <span className="flex items-center justify-end">Kwota <SortIcon field="totalPrice" /></span>
+                  <TableHead
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => toggleSort('totalPrice')}
+                  >
+                    <span className="flex items-center justify-end">
+                      Kwota <SortIcon field="totalPrice" />
+                    </span>
                   </TableHead>
-                  <TableHead className="text-center cursor-pointer select-none" onClick={() => toggleSort('status')}>
-                    <span className="flex items-center justify-center">Status <SortIcon field="status" /></span>
+                  <TableHead
+                    className="cursor-pointer select-none text-center"
+                    onClick={() => toggleSort('status')}
+                  >
+                    <span className="flex items-center justify-center">
+                      Status <SortIcon field="status" />
+                    </span>
                   </TableHead>
                   <TableHead className="w-16">Akcje</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredOrders.map(order => (
+                {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-sm">{order.orderNumber}</TableCell>
                     <TableCell>
                       <p className="font-medium">{getCustomerName(order.userId)}</p>
-                      <p className="text-sm text-muted-foreground">{getCustomerEmail(order.userId)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {getCustomerEmail(order.userId)}
+                      </p>
                     </TableCell>
-                    <TableCell>{format(new Date(order.createdAt), 'd MMM yyyy, HH:mm', { locale: pl })}</TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground line-clamp-1">
-                        {order.items.map(i => `${i.quantity}x ${i.productName}`).join(', ')}
+                      {format(new Date(order.createdAt), 'd MMM yyyy, HH:mm', { locale: pl })}
+                    </TableCell>
+                    <TableCell>
+                      <span className="line-clamp-1 text-sm text-muted-foreground">
+                        {order.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{order.totalPrice.toFixed(2)} zł</TableCell>
+                    <TableCell className="text-right font-medium">
+                      {order.totalPrice.toFixed(2)} zł
+                    </TableCell>
                     <TableCell className="text-center">
                       <Badge variant="outline" className={orderStatusColors[order.status]}>
                         {orderStatusLabels[order.status]}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/orders/${order.id}/edit`)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(`/admin/orders/${order.id}/edit`)}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -252,7 +350,7 @@ export const AdminOrdersTab = () => {
             </Table>
           </div>
           {filteredOrders.length === 0 && (
-            <p className="text-center py-8 text-muted-foreground">Nie znaleziono zamówień</p>
+            <p className="py-8 text-center text-muted-foreground">Nie znaleziono zamówień</p>
           )}
         </CardContent>
       </Card>

@@ -5,14 +5,37 @@ import { mockEvents } from '@/api/mock/events.mock';
 import { mockRegistrations } from '@/api/mock/registrations.mock';
 import { mockShopOrders } from '@/api/mock/shop.mock';
 import { mockUsers } from '@/api/mock/users.mock';
-import { Calendar, Users, Shield, Settings, TrendingUp, CheckCircle, DollarSign, Package, Clock, ShoppingCart, UserCheck } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  Shield,
+  Settings,
+  TrendingUp,
+  CheckCircle,
+  DollarSign,
+  Package,
+  Clock,
+  ShoppingCart,
+  UserCheck,
+} from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import { OnlineStaffCard } from './OnlineStaffCard';
 
 export const AdminOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter(e => e.status === 'awaiting_approval').length;
-  
+  const pendingModerationCount = mockEvents.filter((e) => e.status === 'awaiting_approval').length;
+
   const stats = [
     {
       label: 'Wydarzeń',
@@ -48,7 +71,8 @@ export const AdminOverviewTab = () => {
       label: 'Do moderacji',
       value: pendingModerationCount,
       icon: Clock,
-      color: pendingModerationCount > 0 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary',
+      color:
+        pendingModerationCount > 0 ? 'bg-warning/10 text-warning' : 'bg-primary/10 text-primary',
     },
   ];
 
@@ -88,8 +112,8 @@ export const AdminOverviewTab = () => {
   const totalRevenue = mockSalesStats.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0);
   const totalOrders = mockShopOrders.length;
 
-  const adminCount = mockOnlineSessions.filter(s => s.role === 'admin').length;
-  const moderatorCount = mockOnlineSessions.filter(s => s.role === 'moderator').length;
+  const adminCount = mockOnlineSessions.filter((s) => s.role === 'admin').length;
+  const moderatorCount = mockOnlineSessions.filter((s) => s.role === 'moderator').length;
 
   return (
     <div className="space-y-6">
@@ -102,24 +126,25 @@ export const AdminOverviewTab = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {mockOnlineSessions.map((session) => (
               <OnlineStaffCard key={session.userId} session={session} />
             ))}
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            Zalogowanych: {adminCount} {adminCount === 1 ? 'admin' : 'adminów'}, {moderatorCount} {moderatorCount === 1 ? 'moderator' : 'moderatorów'}
+            Zalogowanych: {adminCount} {adminCount === 1 ? 'admin' : 'adminów'}, {moderatorCount}{' '}
+            {moderatorCount === 1 ? 'moderator' : 'moderatorów'}
           </div>
         </CardContent>
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-full ${stat.color}`}>
+                <div className={`rounded-full p-3 ${stat.color}`}>
                   <stat.icon className="h-6 w-6" />
                 </div>
                 <div>
@@ -148,36 +173,35 @@ export const AdminOverviewTab = () => {
         </CardHeader>
         <CardContent>
           <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
-            <BarChart data={mockSalesStats.monthlyRevenue} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <BarChart
+              data={mockSalesStats.monthlyRevenue}
+              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 axisLine={false}
                 tickLine={false}
                 className="text-muted-foreground"
               />
-              <YAxis 
+              <YAxis
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                 className="text-muted-foreground"
               />
-              <ChartTooltip 
+              <ChartTooltip
                 content={<ChartTooltipContent />}
                 formatter={(value: number) => [`${value.toLocaleString('pl-PL')} zł`, 'Przychód']}
               />
-              <Bar 
-                dataKey="revenue" 
-                fill="hsl(var(--primary))" 
-                radius={[4, 4, 0, 0]}
-              />
+              <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
 
       {/* Top Products & Orders by Status */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -189,14 +213,12 @@ export const AdminOverviewTab = () => {
             <div className="space-y-4">
               {mockSalesStats.topProducts.map((product, index) => (
                 <div key={product.id} className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                     {index + 1}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{product.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Sprzedano: {product.sold} szt.
-                    </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">Sprzedano: {product.sold} szt.</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">{product.revenue.toLocaleString('pl-PL')} zł</p>
@@ -237,10 +259,7 @@ export const AdminOverviewTab = () => {
             <div className="mt-4 grid grid-cols-2 gap-2">
               {mockSalesStats.ordersByStatus.map((item) => (
                 <div key={item.status} className="flex items-center gap-2 text-sm">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: item.fill }}
-                  />
+                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
                   <span className="text-muted-foreground">{item.status}:</span>
                   <span className="font-medium">{item.count}</span>
                 </div>
@@ -251,18 +270,21 @@ export const AdminOverviewTab = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardContent className="pt-6">
-            <h3 className="font-semibold mb-4">Ostatnie rejestracje</h3>
+            <h3 className="mb-4 font-semibold">Ostatnie rejestracje</h3>
             <div className="space-y-3">
               {mockRegistrations.slice(0, 5).map((reg) => (
-                <div key={reg.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={reg.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div>
                     <div className="font-medium">{reg.userName}</div>
                     <div className="text-sm text-muted-foreground">{reg.eventName}</div>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-muted rounded">{reg.distanceName}</span>
+                  <span className="rounded bg-muted px-2 py-1 text-xs">{reg.distanceName}</span>
                 </div>
               ))}
             </div>
@@ -271,18 +293,21 @@ export const AdminOverviewTab = () => {
 
         <Card>
           <CardContent className="pt-6">
-            <h3 className="font-semibold mb-4">Nadchodzące wydarzenia</h3>
+            <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {mockEvents
                 .filter((e) => e.status === 'published')
                 .slice(0, 5)
                 .map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <div className="font-medium">{event.name}</div>
                       <div className="text-sm text-muted-foreground">{event.date}</div>
                     </div>
-                    <span className="text-xs px-2 py-1 bg-muted rounded">{event.city}</span>
+                    <span className="rounded bg-muted px-2 py-1 text-xs">{event.city}</span>
                   </div>
                 ))}
             </div>

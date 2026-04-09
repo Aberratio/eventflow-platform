@@ -8,7 +8,7 @@ export const BottomNav = () => {
   const location = useLocation();
   const auth = useAuthSafe();
   const { totalItems } = useCartSafe();
-  
+
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const user = auth?.user ?? null;
 
@@ -52,7 +52,7 @@ export const BottomNav = () => {
       icon: isAuthenticated ? User : LogIn,
       label: isAuthenticated ? 'Panel' : 'Zaloguj',
       href: isAuthenticated ? getDashboardLink() : '/login',
-      active: isAuthenticated 
+      active: isAuthenticated
         ? location.pathname.startsWith('/participant') ||
           location.pathname.startsWith('/organizer') ||
           location.pathname.startsWith('/moderator') ||
@@ -62,28 +62,26 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around h-16">
+    <nav className="safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
+      <div className="flex h-16 items-center justify-around">
         {navItems.map((item) => (
           <Link
             key={item.href}
             to={item.href}
             className={cn(
-              'flex flex-col items-center justify-center flex-1 h-full relative transition-colors',
-              item.active
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              'relative flex h-full flex-1 flex-col items-center justify-center transition-colors',
+              item.active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
           >
             <div className="relative">
               <item.icon className="h-5 w-5" />
               {item.badge && (
-                <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
                   {item.badge > 9 ? '9+' : item.badge}
                 </span>
               )}
             </div>
-            <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+            <span className="mt-1 text-[10px] font-medium">{item.label}</span>
           </Link>
         ))}
       </div>

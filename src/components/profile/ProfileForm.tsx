@@ -103,7 +103,7 @@ export const ProfileForm = ({ user, onSave, children }: ProfileFormProps) => {
 
       {/* Save Button */}
       <Button type="submit" className="w-full sm:w-auto">
-        <Save className="h-4 w-4 mr-2" />
+        <Save className="mr-2 h-4 w-4" />
         Zapisz zmiany
       </Button>
     </form>

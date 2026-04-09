@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Distance } from '@/types';
@@ -25,7 +31,12 @@ const fileTypeIcons: Record<string, React.ReactNode> = {
 };
 
 export const hasRouteArtifacts = (distance: Distance): boolean => {
-  return !!(distance.routeMapUrl || distance.routeElevationProfile || distance.routeGpxUrl || (distance.routeFiles && distance.routeFiles.length > 0));
+  return !!(
+    distance.routeMapUrl ||
+    distance.routeElevationProfile ||
+    distance.routeGpxUrl ||
+    (distance.routeFiles && distance.routeFiles.length > 0)
+  );
 };
 
 export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogProps) => {
@@ -44,7 +55,7 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
             </Button>
           )}
         </DialogTrigger>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Map className="h-5 w-5 text-primary" />
@@ -54,13 +65,13 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
           <div className="space-y-4">
             {distance.routeMapUrl && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 text-sm font-medium">
                   <Map className="h-4 w-4 text-primary" /> Mapa trasy
                 </h4>
                 <img
                   src={distance.routeMapUrl}
                   alt={`Mapa trasy ${distance.name}`}
-                  className="w-full rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-full cursor-pointer rounded-lg border transition-opacity hover:opacity-90"
                   onClick={() => setPreviewImage(distance.routeMapUrl!)}
                 />
               </div>
@@ -68,13 +79,13 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
 
             {distance.routeElevationProfile && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center gap-2">
+                <h4 className="flex items-center gap-2 text-sm font-medium">
                   <Mountain className="h-4 w-4 text-primary" /> Profil przewyższeń
                 </h4>
                 <img
                   src={distance.routeElevationProfile}
                   alt={`Profil przewyższeń ${distance.name}`}
-                  className="w-full rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                  className="w-full cursor-pointer rounded-lg border transition-opacity hover:opacity-90"
                   onClick={() => setPreviewImage(distance.routeElevationProfile!)}
                 />
               </div>
@@ -95,18 +106,22 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">Dodatkowe pliki</h4>
                 <div className="space-y-2">
-                  {distance.routeFiles.map(file => (
-                    <div key={file.id} className="flex items-center gap-3 p-2 rounded-lg border">
+                  {distance.routeFiles.map((file) => (
+                    <div key={file.id} className="flex items-center gap-3 rounded-lg border p-2">
                       {fileTypeIcons[file.type] || <FileText className="h-4 w-4" />}
                       <span className="flex-1 text-sm">{file.name}</span>
-                      <Badge variant="outline" className="text-xs">{fileTypeLabels[file.type]}</Badge>
-                      {(file.type === 'image' || file.type === 'map' || file.type === 'elevation') ? (
+                      <Badge variant="outline" className="text-xs">
+                        {fileTypeLabels[file.type]}
+                      </Badge>
+                      {file.type === 'image' || file.type === 'map' || file.type === 'elevation' ? (
                         <Button variant="ghost" size="sm" onClick={() => setPreviewImage(file.url)}>
                           Podgląd
                         </Button>
                       ) : (
                         <Button variant="ghost" size="sm" asChild>
-                          <a href={file.url} download>Pobierz</a>
+                          <a href={file.url} download>
+                            Pobierz
+                          </a>
                         </Button>
                       )}
                     </div>
@@ -120,10 +135,8 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
 
       {/* Full-size image preview */}
       <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-4xl p-2 sm:p-4 mx-2 sm:mx-auto">
-          {previewImage && (
-            <img src={previewImage} alt="Podgląd" className="w-full rounded-lg" />
-          )}
+        <DialogContent className="mx-2 max-w-4xl p-2 sm:mx-auto sm:p-4">
+          {previewImage && <img src={previewImage} alt="Podgląd" className="w-full rounded-lg" />}
         </DialogContent>
       </Dialog>
     </>

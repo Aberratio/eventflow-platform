@@ -9,15 +9,16 @@ interface ParticipantTicketsTabProps {
 }
 
 const ParticipantTicketsTab = ({ tickets }: ParticipantTicketsTabProps) => {
-  const activeTickets = tickets.filter(t => new Date(t.eventDate) >= new Date());
-  const pastTickets = tickets.filter(t => new Date(t.eventDate) < new Date());
+  const activeTickets = tickets.filter((t) => new Date(t.eventDate) >= new Date());
+  const pastTickets = tickets.filter((t) => new Date(t.eventDate) < new Date());
 
   return (
     <div className="space-y-6">
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          Bilety są dostępne dla potwierdzonych zapisów. Pokaż kod QR podczas rejestracji na zawodach.
+          Bilety są dostępne dla potwierdzonych zapisów. Pokaż kod QR podczas rejestracji na
+          zawodach.
         </AlertDescription>
       </Alert>
 
@@ -31,15 +32,13 @@ const ParticipantTicketsTab = ({ tickets }: ParticipantTicketsTabProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           {activeTickets.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <TicketIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <div className="py-8 text-center text-muted-foreground">
+              <TicketIcon className="mx-auto mb-4 h-12 w-12 opacity-50" />
               <p>Brak biletów na nadchodzące wydarzenia.</p>
               <p className="text-sm">Zapisz się na zawody, aby otrzymać bilet.</p>
             </div>
           ) : (
-            activeTickets.map(ticket => (
-              <EventTicket key={ticket.id} ticket={ticket} />
-            ))
+            activeTickets.map((ticket) => <EventTicket key={ticket.id} ticket={ticket} />)
           )}
         </CardContent>
       </Card>
@@ -53,7 +52,7 @@ const ParticipantTicketsTab = ({ tickets }: ParticipantTicketsTabProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pastTickets.map(ticket => (
+            {pastTickets.map((ticket) => (
               <div key={ticket.id} className="opacity-60">
                 <EventTicket ticket={ticket} />
               </div>

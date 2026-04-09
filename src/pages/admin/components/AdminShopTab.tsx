@@ -6,19 +6,32 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
-import {
-  Search, Plus, Pencil, Trash2, Eye, Package, Box, Infinity, Tags,
-} from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, Eye, Package, Box, Infinity, Tags } from 'lucide-react';
 import { shopCategoryLabels } from '@/api/mock/labels';
 import { mockShopProducts } from '@/api/mock/shop.mock';
 import { ShopProduct, ShopCategory } from '@/types';
@@ -32,7 +45,9 @@ export const AdminShopTab = () => {
   const [products, setProducts] = useState<ShopProduct[]>(mockShopProducts);
   const [productSearch, setProductSearch] = useState('');
   const [productCategory, setProductCategory] = useState<ShopCategory | 'all'>('all');
-  const [productAvailability, setProductAvailability] = useState<'all' | 'inStock' | 'outOfStock'>('all');
+  const [productAvailability, setProductAvailability] = useState<'all' | 'inStock' | 'outOfStock'>(
+    'all',
+  );
   const [deletingProduct, setDeletingProduct] = useState<ShopProduct | null>(null);
 
   // Categories state
@@ -42,20 +57,22 @@ export const AdminShopTab = () => {
   const [deletingCategory, setDeletingCategory] = useState<string | null>(null);
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-                           product.brand.toLowerCase().includes(productSearch.toLowerCase());
+    return products.filter((product) => {
+      const matchesSearch =
+        product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+        product.brand.toLowerCase().includes(productSearch.toLowerCase());
       const matchesCategory = productCategory === 'all' || product.category === productCategory;
-      const matchesAvailability = productAvailability === 'all' ||
-                                  (productAvailability === 'inStock' && product.inStock) ||
-                                  (productAvailability === 'outOfStock' && !product.inStock);
+      const matchesAvailability =
+        productAvailability === 'all' ||
+        (productAvailability === 'inStock' && product.inStock) ||
+        (productAvailability === 'outOfStock' && !product.inStock);
       return matchesSearch && matchesCategory && matchesAvailability;
     });
   }, [products, productSearch, productCategory, productAvailability]);
 
   const handleDeleteProduct = () => {
     if (deletingProduct) {
-      setProducts(products.filter(p => p.id !== deletingProduct.id));
+      setProducts(products.filter((p) => p.id !== deletingProduct.id));
       toast.success('Produkt został usunięty');
       setDeletingProduct(null);
     }
@@ -75,7 +92,9 @@ export const AdminShopTab = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><Package className="h-5 w-5 text-primary" /></div>
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
               <div>
                 <p className="text-2xl font-bold">{products.length}</p>
                 <p className="text-xs text-muted-foreground">Produktów</p>
@@ -86,9 +105,11 @@ export const AdminShopTab = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-success/10"><Box className="h-5 w-5 text-success" /></div>
+              <div className="rounded-lg bg-success/10 p-2">
+                <Box className="h-5 w-5 text-success" />
+              </div>
               <div>
-                <p className="text-2xl font-bold">{products.filter(p => p.inStock).length}</p>
+                <p className="text-2xl font-bold">{products.filter((p) => p.inStock).length}</p>
                 <p className="text-xs text-muted-foreground">Dostępnych</p>
               </div>
             </div>
@@ -98,31 +119,56 @@ export const AdminShopTab = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="products" className="gap-2"><Package className="h-4 w-4" />Produkty</TabsTrigger>
-          <TabsTrigger value="categories" className="gap-2"><Tags className="h-4 w-4" />Kategorie</TabsTrigger>
+          <TabsTrigger value="products" className="gap-2">
+            <Package className="h-4 w-4" />
+            Produkty
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="gap-2">
+            <Tags className="h-4 w-4" />
+            Kategorie
+          </TabsTrigger>
         </TabsList>
 
         {/* Products Tab */}
         <TabsContent value="products" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex flex-col sm:flex-row gap-4 justify-between">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row">
                 <div className="flex flex-1 gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Szukaj produktów..." value={productSearch} onChange={e => setProductSearch(e.target.value)} className="pl-10" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Szukaj produktów..."
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
-                  <Select value={productCategory} onValueChange={v => setProductCategory(v as ShopCategory | 'all')}>
-                    <SelectTrigger className="w-[140px]"><SelectValue placeholder="Kategoria" /></SelectTrigger>
+                  <Select
+                    value={productCategory}
+                    onValueChange={(v) => setProductCategory(v as ShopCategory | 'all')}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Kategoria" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie</SelectItem>
                       {Object.entries(categories).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={productAvailability} onValueChange={v => setProductAvailability(v as 'all' | 'inStock' | 'outOfStock')}>
-                    <SelectTrigger className="w-[140px]"><SelectValue placeholder="Dostępność" /></SelectTrigger>
+                  <Select
+                    value={productAvailability}
+                    onValueChange={(v) =>
+                      setProductAvailability(v as 'all' | 'inStock' | 'outOfStock')
+                    }
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Dostępność" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie</SelectItem>
                       <SelectItem value="inStock">Dostępne</SelectItem>
@@ -137,7 +183,7 @@ export const AdminShopTab = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border border-border/50 overflow-x-auto">
+              <div className="overflow-x-auto rounded-md border border-border/50">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -151,42 +197,72 @@ export const AdminShopTab = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map(product => (
+                    {filteredProducts.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <img src={product.imageUrl} alt={product.name} className="h-12 w-12 rounded object-cover" />
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="h-12 w-12 rounded object-cover"
+                          />
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium line-clamp-1">{product.name}</p>
+                          <p className="line-clamp-1 font-medium">{product.name}</p>
                           <p className="text-sm text-muted-foreground">{product.brand}</p>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{categories[product.category] || product.category}</Badge>
-                          {product.isService && <Badge variant="secondary" className="ml-1">Usługa</Badge>}
+                          <Badge variant="outline">
+                            {categories[product.category] || product.category}
+                          </Badge>
+                          {product.isService && (
+                            <Badge variant="secondary" className="ml-1">
+                              Usługa
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {product.price} zł
                           {product.originalPrice && (
-                            <span className="text-sm text-muted-foreground line-through ml-2">{product.originalPrice} zł</span>
+                            <span className="ml-2 text-sm text-muted-foreground line-through">
+                              {product.originalPrice} zł
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="text-center">
-                          {product.isService ? <Infinity className="h-4 w-4 mx-auto text-muted-foreground" /> : <span>{product.stockCount ?? '-'}</span>}
+                          {product.isService ? (
+                            <Infinity className="mx-auto h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <span>{product.stockCount ?? '-'}</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-center">
-                          <Badge variant={product.inStock ? 'default' : 'secondary'}>{product.inStock ? 'Dostępny' : 'Niedostępny'}</Badge>
+                          <Badge variant={product.inStock ? 'default' : 'secondary'}>
+                            {product.inStock ? 'Dostępny' : 'Niedostępny'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
                             <Button variant="ghost" size="icon" asChild>
-                              <a href={`/shop/${product.slug}`} target="_blank" rel="noopener noreferrer">
+                              <a
+                                href={`/shop/${product.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 <Eye className="h-4 w-4" />
                               </a>
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/shop/products/${product.id}/edit`)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => navigate(`/admin/shop/products/${product.id}/edit`)}
+                            >
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeletingProduct(product)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeletingProduct(product)}
+                            >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
@@ -197,7 +273,7 @@ export const AdminShopTab = () => {
                 </Table>
               </div>
               {filteredProducts.length === 0 && (
-                <p className="text-center py-8 text-muted-foreground">Nie znaleziono produktów</p>
+                <p className="py-8 text-center text-muted-foreground">Nie znaleziono produktów</p>
               )}
             </CardContent>
           </Card>
@@ -206,9 +282,11 @@ export const AdminShopTab = () => {
         {/* Categories Tab */}
         <TabsContent value="categories" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Kategorie produktów</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Kategorie produktów</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-md border border-border/50 overflow-x-auto">
+              <div className="overflow-x-auto rounded-md border border-border/50">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -220,15 +298,24 @@ export const AdminShopTab = () => {
                   </TableHeader>
                   <TableBody>
                     {Object.entries(categories).map(([key, label]) => {
-                      const count = products.filter(p => p.category === key).length;
+                      const count = products.filter((p) => p.category === key).length;
                       return (
                         <TableRow key={key}>
                           <TableCell className="font-mono text-sm">{key}</TableCell>
                           <TableCell className="font-medium">{label}</TableCell>
                           <TableCell className="text-center">{count}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" disabled={count > 0} onClick={() => setDeletingCategory(key)}
-                              title={count > 0 ? 'Nie można usunąć kategorii z przypisanymi produktami' : 'Usuń kategorię'}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={count > 0}
+                              onClick={() => setDeletingCategory(key)}
+                              title={
+                                count > 0
+                                  ? 'Nie można usunąć kategorii z przypisanymi produktami'
+                                  : 'Usuń kategorię'
+                              }
+                            >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </TableCell>
@@ -239,29 +326,46 @@ export const AdminShopTab = () => {
                 </Table>
               </div>
 
-              <div className="border border-border/50 rounded-lg p-4 space-y-3">
+              <div className="space-y-3 rounded-lg border border-border/50 p-4">
                 <p className="text-sm font-medium">Dodaj nową kategorię</p>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <Label className="text-xs text-muted-foreground">Klucz (bez spacji, małe litery)</Label>
-                    <Input value={newCategoryKey} onChange={e => setNewCategoryKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))} placeholder="np. supplements" />
+                    <Label className="text-xs text-muted-foreground">
+                      Klucz (bez spacji, małe litery)
+                    </Label>
+                    <Input
+                      value={newCategoryKey}
+                      onChange={(e) =>
+                        setNewCategoryKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+                      }
+                      placeholder="np. supplements"
+                    />
                   </div>
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">Nazwa wyświetlana</Label>
-                    <Input value={newCategoryLabel} onChange={e => setNewCategoryLabel(e.target.value)} placeholder="np. Suplementy" />
+                    <Input
+                      value={newCategoryLabel}
+                      onChange={(e) => setNewCategoryLabel(e.target.value)}
+                      placeholder="np. Suplementy"
+                    />
                   </div>
                   <div className="flex items-end">
-                    <Button onClick={() => {
-                      if (newCategoryKey && newCategoryLabel && !categories[newCategoryKey]) {
-                        setCategories({ ...categories, [newCategoryKey]: newCategoryLabel });
-                        setNewCategoryKey('');
-                        setNewCategoryLabel('');
-                        toast.success(`Kategoria "${newCategoryLabel}" została dodana`);
-                      } else if (categories[newCategoryKey]) {
-                        toast.error('Kategoria o takim kluczu już istnieje');
-                      }
-                    }} disabled={!newCategoryKey || !newCategoryLabel} className="gap-2">
-                      <Plus className="h-4 w-4" />Dodaj
+                    <Button
+                      onClick={() => {
+                        if (newCategoryKey && newCategoryLabel && !categories[newCategoryKey]) {
+                          setCategories({ ...categories, [newCategoryKey]: newCategoryLabel });
+                          setNewCategoryKey('');
+                          setNewCategoryLabel('');
+                          toast.success(`Kategoria "${newCategoryLabel}" została dodana`);
+                        } else if (categories[newCategoryKey]) {
+                          toast.error('Kategoria o takim kluczu już istnieje');
+                        }
+                      }}
+                      disabled={!newCategoryKey || !newCategoryLabel}
+                      className="gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Dodaj
                     </Button>
                   </div>
                 </div>
@@ -277,20 +381,26 @@ export const AdminShopTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Usunąć kategorię?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć kategorię "{deletingCategory && categories[deletingCategory]}"? Ta operacja jest nieodwracalna.
+              Czy na pewno chcesz usunąć kategorię "
+              {deletingCategory && categories[deletingCategory]}"? Ta operacja jest nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              if (deletingCategory) {
-                const updated = { ...categories };
-                delete updated[deletingCategory];
-                setCategories(updated);
-                toast.success('Kategoria została usunięta');
-                setDeletingCategory(null);
-              }
-            }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Usuń</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingCategory) {
+                  const updated = { ...categories };
+                  delete updated[deletingCategory];
+                  setCategories(updated);
+                  toast.success('Kategoria została usunięta');
+                  setDeletingCategory(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Usuń
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -301,12 +411,18 @@ export const AdminShopTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Usunąć produkt?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć produkt "{deletingProduct?.name}"? Ta operacja jest nieodwracalna.
+              Czy na pewno chcesz usunąć produkt "{deletingProduct?.name}"? Ta operacja jest
+              nieodwracalna.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Usuń</AlertDialogAction>
+            <AlertDialogAction
+              onClick={handleDeleteProduct}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Usuń
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

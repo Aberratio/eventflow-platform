@@ -1,4 +1,10 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, X } from 'lucide-react';
@@ -29,7 +35,11 @@ export const ResultsFilters = ({
   onSearchChange,
   categories,
 }: ResultsFiltersProps) => {
-  const hasFilters = selectedDistance !== 'all' || selectedCategory !== 'all' || selectedGender !== 'all' || searchQuery;
+  const hasFilters =
+    selectedDistance !== 'all' ||
+    selectedCategory !== 'all' ||
+    selectedGender !== 'all' ||
+    searchQuery;
 
   const handleClearFilters = () => {
     onDistanceChange('all');
@@ -39,10 +49,10 @@ export const ResultsFilters = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 mb-6">
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row">
       {/* Search */}
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Szukaj po nazwisku..."
           value={searchQuery}

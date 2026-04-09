@@ -1,10 +1,22 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Event, Distance } from '@/types';
 import { Clock, Link as LinkIcon, FileText, Send } from 'lucide-react';
@@ -20,10 +32,10 @@ export const VirtualResultsSubmissionDialog = ({
   open,
   onOpenChange,
   event,
-  registeredDistanceId
+  registeredDistanceId,
 }: VirtualResultsSubmissionDialogProps) => {
   const { toast } = useToast();
-  
+
   const [selectedDistanceId, setSelectedDistanceId] = useState(registeredDistanceId || '');
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
@@ -32,13 +44,13 @@ export const VirtualResultsSubmissionDialog = ({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const selectedDistance = event.distances.find(d => d.id === selectedDistanceId);
+  const selectedDistance = event.distances.find((d) => d.id === selectedDistanceId);
 
   const validateTime = () => {
     const h = parseInt(hours) || 0;
     const m = parseInt(minutes) || 0;
     const s = parseInt(seconds) || 0;
-    
+
     if (h === 0 && m === 0 && s === 0) {
       return false;
     }
@@ -67,7 +79,7 @@ export const VirtualResultsSubmissionDialog = ({
       toast({
         title: 'Błąd',
         description: 'Wybierz dystans',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -76,7 +88,7 @@ export const VirtualResultsSubmissionDialog = ({
       toast({
         title: 'Błąd',
         description: 'Wprowadź poprawny czas (minuty i sekundy max 59)',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -84,7 +96,7 @@ export const VirtualResultsSubmissionDialog = ({
     setIsSubmitting(true);
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     toast({
       title: 'Wynik zgłoszony',
@@ -93,7 +105,7 @@ export const VirtualResultsSubmissionDialog = ({
 
     setIsSubmitting(false);
     onOpenChange(false);
-    
+
     // Reset form
     setHours('');
     setMinutes('');
@@ -110,9 +122,7 @@ export const VirtualResultsSubmissionDialog = ({
             <Clock className="h-5 w-5 text-primary" />
             Zgłoś wynik
           </DialogTitle>
-          <DialogDescription>
-            {event.name}
-          </DialogDescription>
+          <DialogDescription>{event.name}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
@@ -124,7 +134,7 @@ export const VirtualResultsSubmissionDialog = ({
                 <SelectValue placeholder="Wybierz dystans" />
               </SelectTrigger>
               <SelectContent>
-                {event.distances.map(distance => (
+                {event.distances.map((distance) => (
                   <SelectItem key={distance.id} value={distance.id}>
                     {distance.name} ({distance.length} {distance.unit})
                   </SelectItem>
@@ -144,10 +154,10 @@ export const VirtualResultsSubmissionDialog = ({
                   max="99"
                   placeholder="GG"
                   value={hours}
-                  onChange={e => setHours(e.target.value)}
+                  onChange={(e) => setHours(e.target.value)}
                   className="text-center"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-1">Godziny</p>
+                <p className="mt-1 text-center text-xs text-muted-foreground">Godziny</p>
               </div>
               <span className="text-xl font-bold">:</span>
               <div className="flex-1">
@@ -157,10 +167,10 @@ export const VirtualResultsSubmissionDialog = ({
                   max="59"
                   placeholder="MM"
                   value={minutes}
-                  onChange={e => setMinutes(e.target.value)}
+                  onChange={(e) => setMinutes(e.target.value)}
                   className="text-center"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-1">Minuty</p>
+                <p className="mt-1 text-center text-xs text-muted-foreground">Minuty</p>
               </div>
               <span className="text-xl font-bold">:</span>
               <div className="flex-1">
@@ -170,10 +180,10 @@ export const VirtualResultsSubmissionDialog = ({
                   max="59"
                   placeholder="SS"
                   value={seconds}
-                  onChange={e => setSeconds(e.target.value)}
+                  onChange={(e) => setSeconds(e.target.value)}
                   className="text-center"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-1">Sekundy</p>
+                <p className="mt-1 text-center text-xs text-muted-foreground">Sekundy</p>
               </div>
             </div>
           </div>
@@ -187,7 +197,7 @@ export const VirtualResultsSubmissionDialog = ({
             <Input
               placeholder="https://strava.com/activities/..."
               value={proofUrl}
-              onChange={e => setProofUrl(e.target.value)}
+              onChange={(e) => setProofUrl(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               Link do Strava, Garmin Connect, zdjęcia zegarka itp.
@@ -203,7 +213,7 @@ export const VirtualResultsSubmissionDialog = ({
             <Textarea
               placeholder="Np. Bieg w parku miejskim w Krakowie..."
               value={notes}
-              onChange={e => setNotes(e.target.value)}
+              onChange={(e) => setNotes(e.target.value)}
               rows={2}
             />
           </div>
@@ -214,7 +224,7 @@ export const VirtualResultsSubmissionDialog = ({
               Anuluj
             </Button>
             <Button onClick={handleSubmit} disabled={isSubmitting}>
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="mr-2 h-4 w-4" />
               {isSubmitting ? 'Wysyłanie...' : 'Zgłoś wynik'}
             </Button>
           </div>

@@ -17,7 +17,7 @@ export const useRegistrationEmail = () => {
   const generateTransferTitle = (
     template: string | undefined,
     eventName: string,
-    distanceName: string
+    distanceName: string,
   ): string => {
     const baseTemplate = template || '{eventName} - {participantName}';
     return baseTemplate
@@ -56,37 +56,45 @@ export const useRegistrationEmail = () => {
         distanceName: registrationData.distanceName,
         category: registrationData.category,
         basePrice: formatPrice(registrationData.price),
-        discountAmount: registrationData.discountAmount && registrationData.discountAmount > 0
-          ? formatPrice(registrationData.discountAmount)
-          : null,
+        discountAmount:
+          registrationData.discountAmount && registrationData.discountAmount > 0
+            ? formatPrice(registrationData.discountAmount)
+            : null,
         discountCode: registrationData.discountCode || null,
-        insurance: registrationData.insurancePrice && registrationData.insurancePrice > 0 ? {
-          name: 'Ubezpieczenie NNW',
-          price: formatPrice(registrationData.insurancePrice),
-        } : null,
-        merchandise: registrationData.merchandiseOrders?.map(item => ({
-          name: `${item.merchandiseName} (${[item.size, item.color].filter(Boolean).join(', ') || 'bez rozmiaru'})`,
-          quantity: item.quantity,
-          price: formatPrice(item.price),
-        })) || [],
+        insurance:
+          registrationData.insurancePrice && registrationData.insurancePrice > 0
+            ? {
+                name: 'Ubezpieczenie NNW',
+                price: formatPrice(registrationData.insurancePrice),
+              }
+            : null,
+        merchandise:
+          registrationData.merchandiseOrders?.map((item) => ({
+            name: `${item.merchandiseName} (${[item.size, item.color].filter(Boolean).join(', ') || 'bez rozmiaru'})`,
+            quantity: item.quantity,
+            price: formatPrice(item.price),
+          })) || [],
         totalAmount: formatPrice(registrationData.totalAmount),
       },
-      bankTransfer: isBankTransfer && paymentConfig ? {
-        accountNumber: paymentConfig.bankAccountNumber || '',
-        accountHolder: paymentConfig.bankAccountHolder || '',
-        transferTitle: generateTransferTitle(
-          paymentConfig.transferTitle,
-          eventName,
-          registrationData.distanceName || ''
-        ),
-        amount: formatPrice(registrationData.totalAmount),
-        instructions: [
-          'Wpłać dokładną kwotę na podane konto',
-          'Użyj podanego tytułu przelewu',
-          'Twoja rejestracja zostanie potwierdzona po zaksięgowaniu wpłaty',
-          'Status płatności możesz sprawdzić w panelu uczestnika',
-        ],
-      } : null,
+      bankTransfer:
+        isBankTransfer && paymentConfig
+          ? {
+              accountNumber: paymentConfig.bankAccountNumber || '',
+              accountHolder: paymentConfig.bankAccountHolder || '',
+              transferTitle: generateTransferTitle(
+                paymentConfig.transferTitle,
+                eventName,
+                registrationData.distanceName || '',
+              ),
+              amount: formatPrice(registrationData.totalAmount),
+              instructions: [
+                'Wpłać dokładną kwotę na podane konto',
+                'Użyj podanego tytułu przelewu',
+                'Twoja rejestracja zostanie potwierdzona po zaksięgowaniu wpłaty',
+                'Status płatności możesz sprawdzić w panelu uczestnika',
+              ],
+            }
+          : null,
       footer: {
         eventUrl: `${window.location.origin}/events/${eventSlug}`,
         registrationsUrl: `${window.location.origin}/participant`,
@@ -94,7 +102,7 @@ export const useRegistrationEmail = () => {
     };
 
     // Simulate async email sending (replace with real API call)
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   };
 
   return { sendRegistrationEmail };

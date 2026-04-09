@@ -55,13 +55,13 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row">
             <CardTitle className="flex items-center gap-2">
               <Icon className="h-5 w-5" />
               {title} ({filteredUsers.length})
             </CardTitle>
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Szukaj..."
                 value={search}
@@ -72,7 +72,7 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border border-border/50 rounded-lg overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border border-border/50">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -114,7 +114,10 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
                       </>
                     )}
                     <TableCell>
-                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                      <Badge
+                        variant="outline"
+                        className="border-primary/20 bg-primary/10 text-primary"
+                      >
                         Aktywny
                       </Badge>
                     </TableCell>
@@ -124,9 +127,7 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
             </Table>
           </div>
           {filteredUsers.length === 0 && (
-            <p className="text-center py-8 text-muted-foreground">
-              Nie znaleziono użytkowników
-            </p>
+            <p className="py-8 text-center text-muted-foreground">Nie znaleziono użytkowników</p>
           )}
         </CardContent>
       </Card>

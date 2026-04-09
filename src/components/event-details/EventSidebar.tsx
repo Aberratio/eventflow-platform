@@ -19,16 +19,22 @@ interface EventSidebarProps {
 }
 
 export const EventSidebar = ({
-  event, user, userRegistration,
-  isRegistrationOpen, closedReason,
-  onRegister, onShare,
+  event,
+  user,
+  userRegistration,
+  isRegistrationOpen,
+  closedReason,
+  onRegister,
+  onShare,
 }: EventSidebarProps) => {
-  const canEdit = user?.role === 'admin' || user?.role === 'moderator' ||
+  const canEdit =
+    user?.role === 'admin' ||
+    user?.role === 'moderator' ||
     (user?.role === 'organizer' && event.organizerId === user?.id);
 
   return (
     <div className="space-y-6">
-      <Card className="sticky top-20 border-primary/20 shadow-md overflow-hidden">
+      <Card className="sticky top-20 overflow-hidden border-primary/20 shadow-md">
         <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">
@@ -38,13 +44,19 @@ export const EventSidebar = ({
         <CardContent className="space-y-4">
           {userRegistration ? (
             <div className="space-y-3">
-              <div className="p-4 bg-gradient-to-br from-primary/5 to-warning/5 rounded-lg border border-primary/10">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Twój dystans</div>
-                <div className="font-semibold mt-0.5">{userRegistration.distanceName}</div>
+              <div className="rounded-lg border border-primary/10 bg-gradient-to-br from-primary/5 to-warning/5 p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Twój dystans
+                </div>
+                <div className="mt-0.5 font-semibold">{userRegistration.distanceName}</div>
                 {userRegistration.bibNumber && (
                   <>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide mt-3">Numer startowy</div>
-                    <div className="font-bold text-3xl text-primary mt-0.5">{userRegistration.bibNumber}</div>
+                    <div className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
+                      Numer startowy
+                    </div>
+                    <div className="mt-0.5 text-3xl font-bold text-primary">
+                      {userRegistration.bibNumber}
+                    </div>
                   </>
                 )}
               </div>
@@ -54,36 +66,45 @@ export const EventSidebar = ({
             </div>
           ) : (
             <>
-              <div className="p-3 rounded-lg bg-muted/50 text-center">
+              <div className="rounded-lg bg-muted/50 p-3 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Ceny od <span className="font-bold text-lg text-primary">{Math.min(...event.distances.map(d => d.price))} zł</span>
+                  Ceny od{' '}
+                  <span className="text-lg font-bold text-primary">
+                    {Math.min(...event.distances.map((d) => d.price))} zł
+                  </span>
                 </p>
               </div>
-              <Button onClick={onRegister} className="w-full" size="lg" disabled={!isRegistrationOpen}>
+              <Button
+                onClick={onRegister}
+                className="w-full"
+                size="lg"
+                disabled={!isRegistrationOpen}
+              >
                 Zapisz się teraz
               </Button>
               {isRegistrationOpen ? (
-                <p className="text-xs text-muted-foreground text-center">
-                  Zapisy do {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+                <p className="text-center text-xs text-muted-foreground">
+                  Zapisy do{' '}
+                  {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
                 </p>
               ) : (
-                <p className="text-sm text-destructive text-center font-medium">{closedReason}</p>
+                <p className="text-center text-sm font-medium text-destructive">{closedReason}</p>
               )}
             </>
           )}
 
-          <div className="pt-4 border-t space-y-2">
+          <div className="space-y-2 border-t pt-4">
             <Button variant="outline" className="w-full" onClick={onShare}>
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share2 className="mr-2 h-4 w-4" />
               Udostępnij
             </Button>
           </div>
 
           {canEdit && (
-            <div className="pt-4 border-t">
+            <div className="border-t pt-4">
               <Button variant="secondary" className="w-full" asChild>
                 <Link to={getEditUrl(event, user)}>
-                  <Pencil className="h-4 w-4 mr-2" />
+                  <Pencil className="mr-2 h-4 w-4" />
                   Edytuj wydarzenie
                 </Link>
               </Button>
@@ -100,12 +121,18 @@ export const EventSidebar = ({
           <CardContent className="space-y-3">
             <p className="text-sm font-medium">{event.organizerName}</p>
             <div className="space-y-2">
-              <a href={`mailto:${event.organizerContact.email}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+              <a
+                href={`mailto:${event.organizerContact.email}`}
+                className="flex items-center gap-2 text-sm text-primary hover:underline"
+              >
                 <Mail className="h-4 w-4" />
                 Napisz do organizatora
               </a>
               {event.organizerContact.phone && (
-                <a href={`tel:${event.organizerContact.phone}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href={`tel:${event.organizerContact.phone}`}
+                  className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
                   <Phone className="h-4 w-4" />
                   {event.organizerContact.phone}
                 </a>

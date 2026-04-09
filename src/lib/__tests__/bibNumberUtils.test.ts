@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getNextAvailableNumber, isBibNumberTaken, getAvailableNumbersString } from '../bibNumberUtils';
+import {
+  getNextAvailableNumber,
+  isBibNumberTaken,
+  getAvailableNumbersString,
+} from '../bibNumberUtils';
 import { Registration } from '@/types';
 
 const makeReg = (id: string, bib?: string): Registration => ({

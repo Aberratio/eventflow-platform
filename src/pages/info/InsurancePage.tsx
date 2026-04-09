@@ -2,7 +2,12 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Shield, Check, AlertCircle, FileText, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -18,23 +23,28 @@ const coverageItems = [
 const faqItems = [
   {
     question: 'Kto może wykupić ubezpieczenie?',
-    answer: 'Ubezpieczenie NNW Zawodnika jest dostępne dla wszystkich uczestników wydarzeń organizowanych za pośrednictwem platformy ZmierzymyCzas. Można je wykupić podczas rejestracji na zawody.',
+    answer:
+      'Ubezpieczenie NNW Zawodnika jest dostępne dla wszystkich uczestników wydarzeń organizowanych za pośrednictwem platformy ZmierzymyCzas. Można je wykupić podczas rejestracji na zawody.',
   },
   {
     question: 'Na jaki okres obowiązuje ubezpieczenie?',
-    answer: 'Ubezpieczenie obowiązuje od momentu startu zawodów do ich zakończenia oraz przez 2 godziny po przekroczeniu linii mety. Obejmuje również drogę na zawody i powrót z nich (do 24h przed i po wydarzeniu).',
+    answer:
+      'Ubezpieczenie obowiązuje od momentu startu zawodów do ich zakończenia oraz przez 2 godziny po przekroczeniu linii mety. Obejmuje również drogę na zawody i powrót z nich (do 24h przed i po wydarzeniu).',
   },
   {
     question: 'Co nie jest objęte ubezpieczeniem?',
-    answer: 'Ubezpieczenie nie obejmuje: urazów powstałych pod wpływem alkoholu lub środków odurzających, umyślnego działania, chorób przewlekłych, startów w zawodach ekstremalnych nieujętych w polisie.',
+    answer:
+      'Ubezpieczenie nie obejmuje: urazów powstałych pod wpływem alkoholu lub środków odurzających, umyślnego działania, chorób przewlekłych, startów w zawodach ekstremalnych nieujętych w polisie.',
   },
   {
     question: 'Jak zgłosić szkodę?',
-    answer: 'Szkodę należy zgłosić w ciągu 7 dni od zdarzenia poprzez formularz online lub telefonicznie pod numerem 800 123 456. Do zgłoszenia potrzebna jest dokumentacja medyczna oraz numer polisy.',
+    answer:
+      'Szkodę należy zgłosić w ciągu 7 dni od zdarzenia poprzez formularz online lub telefonicznie pod numerem 800 123 456. Do zgłoszenia potrzebna jest dokumentacja medyczna oraz numer polisy.',
   },
   {
     question: 'Czy mogę ubezpieczyć się na cały sezon?',
-    answer: 'Tak, oferujemy również ubezpieczenia sezonowe dla aktywnych sportowców. Skontaktuj się z nami, aby uzyskać indywidualną ofertę na ubezpieczenie roczne.',
+    answer:
+      'Tak, oferujemy również ubezpieczenia sezonowe dla aktywnych sportowców. Skontaktuj się z nami, aby uzyskać indywidualną ofertę na ubezpieczenie roczne.',
   },
 ];
 
@@ -44,8 +54,8 @@ const InsurancePage = () => {
       <div className="container py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-primary/10 rounded-full">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="rounded-full bg-primary/10 p-3">
               <Shield className="h-8 w-8 text-primary" />
             </div>
             <div>
@@ -55,9 +65,9 @@ const InsurancePage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-8 lg:col-span-2">
             {/* About */}
             <Card>
               <CardHeader>
@@ -65,13 +75,14 @@ const InsurancePage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Ubezpieczenie NNW Zawodnika to kompleksowa ochrona dla uczestników wydarzeń sportowych. 
-                  Polisa obejmuje następstwa nieszczęśliwych wypadków powstałych podczas udziału w zawodach, 
-                  treningów przed startem oraz drogi na i z wydarzenia.
+                  Ubezpieczenie NNW Zawodnika to kompleksowa ochrona dla uczestników wydarzeń
+                  sportowych. Polisa obejmuje następstwa nieszczęśliwych wypadków powstałych podczas
+                  udziału w zawodach, treningów przed startem oraz drogi na i z wydarzenia.
                 </p>
                 <p className="text-muted-foreground">
-                  Ubezpieczenie jest dobrowolne i można je wykupić podczas rejestracji na zawody. 
-                  Składka jest kalkulowana indywidualnie w zależności od wieku uczestnika i rodzaju dyscypliny.
+                  Ubezpieczenie jest dobrowolne i można je wykupić podczas rejestracji na zawody.
+                  Składka jest kalkulowana indywidualnie w zależności od wieku uczestnika i rodzaju
+                  dyscypliny.
                 </p>
               </CardContent>
             </Card>
@@ -82,10 +93,10 @@ const InsurancePage = () => {
                 <CardTitle>Zakres ochrony</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {coverageItems.map((item) => (
                     <div key={item} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 text-primary shrink-0" />
+                      <Check className="h-5 w-5 shrink-0 text-primary" />
                       <span className="text-sm">{item}</span>
                     </div>
                   ))}
@@ -117,19 +128,18 @@ const InsurancePage = () => {
           <div className="space-y-4">
             {/* Pricing */}
             <Card className="border-primary">
-              <CardHeader className="text-center pb-2">
-                <Badge className="w-fit mx-auto mb-2">Cena od</Badge>
+              <CardHeader className="pb-2 text-center">
+                <Badge className="mx-auto mb-2 w-fit">Cena od</Badge>
                 <div className="text-4xl font-bold">9 zł</div>
                 <p className="text-sm text-muted-foreground">za wydarzenie</p>
               </CardHeader>
               <CardContent className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Składka zależy od wieku i rodzaju dyscypliny. Dokładna cena zostanie obliczona podczas rejestracji.
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Składka zależy od wieku i rodzaju dyscypliny. Dokładna cena zostanie obliczona
+                  podczas rejestracji.
                 </p>
                 <Button className="w-full" asChild>
-                  <Link to="/wydarzenia">
-                    Znajdź zawody
-                  </Link>
+                  <Link to="/wydarzenia">Znajdź zawody</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -159,13 +169,16 @@ const InsurancePage = () => {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <AlertCircle className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <p className="font-medium text-sm">Zgłoszenie szkody</p>
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-sm font-medium">Zgłoszenie szkody</p>
+                    <p className="mb-2 text-sm text-muted-foreground">
                       W razie wypadku skontaktuj się z infolinią:
                     </p>
-                    <a href="tel:800123456" className="flex items-center gap-2 text-primary font-medium">
+                    <a
+                      href="tel:800123456"
+                      className="flex items-center gap-2 font-medium text-primary"
+                    >
                       <Phone className="h-4 w-4" />
                       800 123 456
                     </a>

@@ -18,7 +18,8 @@ const values = [
   {
     icon: Heart,
     title: 'Pasja',
-    description: 'Sami jesteśmy sportowcami i rozumiemy potrzeby zarówno uczestników, jak i organizatorów.',
+    description:
+      'Sami jesteśmy sportowcami i rozumiemy potrzeby zarówno uczestników, jak i organizatorów.',
   },
   {
     icon: Zap,
@@ -50,25 +51,25 @@ const AboutPage = () => {
     <Layout>
       <div className="container py-8">
         {/* Hero */}
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-primary/10 rounded-full">
+        <div className="mb-12 text-center">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-primary/10 p-4">
               <Timer className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">O ZmierzymyCzas</h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Jesteśmy zespołem pasjonatów sportu, którzy od ponad 10 lat dostarczają 
-            profesjonalne rozwiązania dla organizatorów wydarzeń sportowych w Polsce.
+          <h1 className="mb-4 text-3xl font-bold md:text-4xl">O ZmierzymyCzas</h1>
+          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+            Jesteśmy zespołem pasjonatów sportu, którzy od ponad 10 lat dostarczają profesjonalne
+            rozwiązania dla organizatorów wydarzeń sportowych w Polsce.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+        <div className="mb-16 grid grid-cols-2 gap-4 md:grid-cols-4">
           {stats.map((stat) => (
             <Card key={stat.label}>
               <CardContent className="pt-6 text-center">
-                <div className="text-3xl font-bold text-primary mb-1">{stat.value}</div>
+                <div className="mb-1 text-3xl font-bold text-primary">{stat.value}</div>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </CardContent>
             </Card>
@@ -77,29 +78,29 @@ const AboutPage = () => {
 
         {/* Story */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Nasza historia</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <h2 className="mb-6 text-2xl font-bold">Nasza historia</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div className="space-y-4 text-muted-foreground">
               <p>
-                ZmierzymyCzas powstał w 2016 roku z prostej potrzeby - jako organizatorzy biegów 
-                sami szukaliśmy narzędzia, które połączy rejestrację uczestników, pomiar czasu 
-                i publikację wyników w jednym miejscu.
+                ZmierzymyCzas powstał w 2016 roku z prostej potrzeby - jako organizatorzy biegów
+                sami szukaliśmy narzędzia, które połączy rejestrację uczestników, pomiar czasu i
+                publikację wyników w jednym miejscu.
               </p>
               <p>
-                Zaczęliśmy od obsługi lokalnych biegów przełajowych w okolicach Warszawy. 
-                Dziś obsługujemy wydarzenia w całej Polsce - od kameralnych biegów górskich 
-                po masowe maratony z dziesiątkami tysięcy uczestników.
+                Zaczęliśmy od obsługi lokalnych biegów przełajowych w okolicach Warszawy. Dziś
+                obsługujemy wydarzenia w całej Polsce - od kameralnych biegów górskich po masowe
+                maratony z dziesiątkami tysięcy uczestników.
               </p>
             </div>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Naszą misją jest uczynienie sportu dostępnym dla każdego. Wierzymy, że 
-                technologia powinna wspierać pasję, a nie ją komplikować. Dlatego nieustannie 
-                pracujemy nad tym, aby nasze rozwiązania były intuicyjne i niezawodne.
+                Naszą misją jest uczynienie sportu dostępnym dla każdego. Wierzymy, że technologia
+                powinna wspierać pasję, a nie ją komplikować. Dlatego nieustannie pracujemy nad tym,
+                aby nasze rozwiązania były intuicyjne i niezawodne.
               </p>
               <p>
-                Współpracujemy z Polskim Związkiem Lekkiej Atletyki oraz wieloma regionalnymi 
-                federacjami sportowymi. Jesteśmy dumni, że możemy wspierać rozwój sportu 
+                Współpracujemy z Polskim Związkiem Lekkiej Atletyki oraz wieloma regionalnymi
+                federacjami sportowymi. Jesteśmy dumni, że możemy wspierać rozwój sportu
                 amatorskiego w Polsce.
               </p>
             </div>
@@ -108,14 +109,14 @@ const AboutPage = () => {
 
         {/* Values */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">Nasze wartości</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="mb-6 text-2xl font-bold">Nasze wartości</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {values.map((value) => (
               <Card key={value.title}>
                 <CardContent className="pt-6">
-                  <value.icon className="h-10 w-10 text-primary mb-4" />
-                  <h3 className="font-semibold text-lg mb-2">{value.title}</h3>
-                  <p className="text-muted-foreground text-sm">{value.description}</p>
+                  <value.icon className="mb-4 h-10 w-10 text-primary" />
+                  <h3 className="mb-2 text-lg font-semibold">{value.title}</h3>
+                  <p className="text-sm text-muted-foreground">{value.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -124,16 +125,16 @@ const AboutPage = () => {
 
         {/* Team */}
         <div>
-          <h2 className="text-2xl font-bold mb-6">Zespół</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="mb-6 text-2xl font-bold">Zespół</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {team.map((member) => (
               <Card key={member.name}>
                 <CardContent className="pt-6 text-center">
-                  <div className="w-20 h-20 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted">
                     <Users className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <h3 className="font-semibold">{member.name}</h3>
-                  <p className="text-sm text-primary mb-2">{member.role}</p>
+                  <p className="mb-2 text-sm text-primary">{member.role}</p>
                   <p className="text-sm text-muted-foreground">{member.description}</p>
                 </CardContent>
               </Card>
