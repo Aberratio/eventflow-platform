@@ -18,7 +18,7 @@ export const Footer = () => {
     .sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="mt-auto border-t border-border">
+    <footer className="mt-auto border-t border-border" style={{ containIntrinsicSize: '0 320px', contentVisibility: 'auto' }}>
       <div className="bg-[hsl(0_0%_5%)]">
         <div className="container py-8 md:py-14">
           {/* Mobile: stacked layout / Desktop: 4-col grid */}
@@ -156,7 +156,7 @@ export const Footer = () => {
           </div>
 
           {/* Bottom row */}
-          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-5 sm:flex-row md:mt-10 md:pt-6">
+          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-5 sm:flex-row md:mt-10 md:pt-6" style={{ minHeight: '40px' }}>
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} ZmierzymyCzas. Wszystkie prawa zastrzeżone.
             </p>

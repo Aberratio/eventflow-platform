@@ -18,7 +18,7 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   if (completedEvents.length === 0) return null;
 
   return (
-    <section className="animate-fade-in relative py-10 md:py-14">
+    <section className="relative py-10 md:py-14">
       <div className="container relative mx-auto px-4">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
