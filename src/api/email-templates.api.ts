@@ -16,8 +16,8 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
   EmailTemplateVariable,
-  EmailTemplateScope,
 } from '@/types/email';
+// eslint-disable-next-line no-duplicate-imports
 import { SYSTEM_TRIGGER_TYPES, EMAIL_VARIABLES } from '@/types/email';
 import { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';
 
