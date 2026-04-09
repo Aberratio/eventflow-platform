@@ -12,6 +12,7 @@ import { CookieConsent } from '@/components/CookieConsent';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/errors';
 
 // ─── Eagerly loaded (critical path) ───────────────────────
 import Index from './pages/Index';
