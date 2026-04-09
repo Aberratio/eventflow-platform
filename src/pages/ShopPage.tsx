@@ -158,30 +158,23 @@ const ShopPage = () => {
 
   return (
     <Layout>
-      <div className="border-b border-border/50 bg-gradient-to-br from-primary/10 via-background to-warning/5">
-        <div className="container py-10 md:py-14">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="mb-3 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <ShoppingBag className="h-5 w-5 text-primary" />
-                </div>
-                <h1 className="text-3xl font-bold md:text-4xl">Sklep biegowy</h1>
+      <PageHero glow>
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <PageHeroTitle
+            icon={<ShoppingBag className="h-5 w-5" />}
+            title="Sklep biegowy"
+            subtitle="Znajdź idealne wyposażenie do treningów i zawodów"
+          />
+          <div className="flex gap-4">
+            <div className="rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-center backdrop-blur-sm">
+              <div className="mb-0.5 flex items-center gap-2 text-primary">
+                <Package className="h-4 w-4" />
+                <span className="text-2xl font-bold">{totalProducts}</span>
               </div>
-              <p className="max-w-md text-lg text-muted-foreground">
-                Znajdź idealne wyposażenie do treningów i zawodów
-              </p>
+              <p className="text-xs text-muted-foreground">Produktów</p>
             </div>
-            <div className="flex gap-4">
+            {discountedCount > 0 && (
               <div className="rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-center backdrop-blur-sm">
-                <div className="mb-0.5 flex items-center gap-2 text-primary">
-                  <Package className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{totalProducts}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Produktów</p>
-              </div>
-              {discountedCount > 0 && (
-                <div className="rounded-xl border border-border/50 bg-card/80 px-5 py-3 text-center backdrop-blur-sm">
                   <div className="mb-0.5 flex items-center gap-2 text-destructive">
                     <Sparkles className="h-4 w-4" />
                     <span className="text-2xl font-bold">{discountedCount}</span>
