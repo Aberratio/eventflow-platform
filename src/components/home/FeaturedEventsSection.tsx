@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { PageSection } from '@/components/ui/page-section';
 import { Event } from '@/types';
 import { ArrowRight, Star, Calendar, MapPin } from 'lucide-react';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
@@ -19,24 +21,18 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
   if (featuredEvents.length === 0) return null;
 
   return (
-    <section className="relative py-10 md:py-14">
-      <div className="container mx-auto px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-1 shrink-0 rounded-full bg-warning shadow-[0_0_8px_hsl(var(--warning)/0.3)]" />
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold leading-tight md:text-2xl">Polecane wydarzenia</h2>
-                <Badge variant="outline" className="border-warning/30 text-[10px] text-warning">
-                  <Star className="mr-0.5 h-2.5 w-2.5 fill-warning" />
-                  Sponsorowane
-                </Badge>
-              </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Wyróżnione zawody w tym sezonie
-              </p>
-            </div>
-          </div>
+    <PageSection>
+      <SectionHeading
+        title="Polecane wydarzenia"
+        subtitle="Wyróżnione zawody w tym sezonie"
+        accent="warning"
+        badge={
+          <Badge variant="outline" className="border-warning/30 text-[10px] text-warning">
+            <Star className="mr-0.5 h-2.5 w-2.5 fill-warning" />
+            Sponsorowane
+          </Badge>
+        }
+        action={
           <Button
             asChild
             variant="ghost"
@@ -48,7 +44,8 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
-        </div>
+        }
+      />
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {featuredEvents.map((event) => (
@@ -94,7 +91,6 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
             </Link>
           </Button>
         </div>
-      </div>
-    </section>
+    </PageSection>
   );
 };

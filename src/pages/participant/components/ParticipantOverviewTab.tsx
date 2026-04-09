@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { GradientDivider } from '@/components/ui/gradient-divider';
 import { Registration, Result, PersonalRecord, Message } from '@/types';
 import { Calendar, Trophy, Medal, Mail, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
@@ -88,7 +89,7 @@ const ParticipantOverviewTab = ({
       {/* Nearest Event Highlight */}
       {nearestRegistration && nearestRegistration.event && (
         <Card className="overflow-hidden border-primary/20">
-          <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
+          <GradientDivider />
           <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
               {/* Event Image */}
