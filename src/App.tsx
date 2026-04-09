@@ -53,6 +53,7 @@ const ChallengeDetailsPage = lazy(() => import('./pages/ChallengeDetailsPage'));
 const ServerError = lazy(() => import('./pages/ServerError'));
 const ServiceUnavailable = lazy(() => import('./pages/ServiceUnavailable'));
 const Forbidden = lazy(() => import('./pages/Forbidden'));
+const SkeletonShowcase = lazy(() => import('./pages/SkeletonShowcase'));
 
 // Dashboard pages (heaviest — always lazy)
 const ParticipantDashboard = lazy(() => import('./pages/participant/ParticipantDashboard'));
