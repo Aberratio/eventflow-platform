@@ -3,6 +3,8 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
+import { StatPill } from '@/components/ui/stat-pill';
 import { Trophy, Calendar, Target, Gift, ChevronRight, Users, Flame } from 'lucide-react';
 import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,36 +32,17 @@ const ChallengesListPage = () => {
 
   return (
     <Layout>
-      {/* Hero header */}
-      <div className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-warning/5" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]" />
-        <div className="container relative py-10 sm:py-14">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-xl border border-primary/20 bg-primary/15 p-2.5">
-              <Trophy className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold sm:text-3xl">Wyzwania</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Ukończ wymagane biegi i zdobądź nagrody!
-              </p>
-            </div>
-          </div>
-
-          {/* Quick stats */}
-          <div className="mt-5 flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
-              <Flame className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">{activeChallenges.length} aktywnych</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
-              <Target className="h-4 w-4 text-warning" />
-              <span className="text-muted-foreground">{mockChallenges.length} łącznie</span>
-            </div>
-          </div>
+      <PageHero glow>
+        <PageHeroTitle
+          icon={<Trophy className="h-6 w-6" />}
+          title="Wyzwania"
+          subtitle="Ukończ wymagane biegi i zdobądź nagrody!"
+        />
+        <div className="mt-5 flex items-center gap-4">
+          <StatPill icon={<Flame className="h-4 w-4 text-primary" />} label={`${activeChallenges.length} aktywnych`} />
+          <StatPill icon={<Target className="h-4 w-4 text-warning" />} label={`${mockChallenges.length} łącznie`} />
         </div>
-      </div>
+      </PageHero>
 
       <div className="container py-8">
         {/* Active challenges */}

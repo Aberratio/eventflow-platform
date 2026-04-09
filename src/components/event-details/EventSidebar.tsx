@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { GradientDivider } from '@/components/ui/gradient-divider';
 import { Event, Registration, User } from '@/types';
 import { Share2, Pencil, Globe, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
@@ -35,7 +36,7 @@ export const EventSidebar = ({
   return (
     <div className="space-y-6">
       <Card className="sticky top-20 overflow-hidden border-primary/20 shadow-md">
-        <div className="h-1 bg-gradient-to-r from-primary via-warning to-primary" />
+        <GradientDivider />
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">
             {userRegistration ? '✅ Jesteś zapisany!' : 'Zapisz się'}

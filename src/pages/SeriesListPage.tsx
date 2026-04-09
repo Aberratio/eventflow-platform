@@ -16,6 +16,8 @@ import { getSeries, getEvents } from '@/api';
 import { seriesTypeLabels } from '@/api/mock/labels';
 import { QUERY_KEYS, SERIES_STATUS_LABELS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
+import { StatPill } from '@/components/ui/stat-pill';
 
 const statusGroupConfig: Record<string, { accentColor: string }> = {
   Aktywna: { accentColor: 'bg-success' },
@@ -67,33 +69,18 @@ const SeriesListPage = () => {
 
   return (
     <Layout>
-      <div className="relative overflow-hidden border-b border-border/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-background to-primary/5" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,hsl(var(--warning)/0.06),transparent_60%)]" />
-        <div className="container relative py-10 sm:py-14">
-          <div className="mb-2 flex items-center gap-3">
-            <div className="rounded-xl border border-warning/20 bg-warning/15 p-2.5">
-              <Layers className="h-6 w-6 text-warning" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold sm:text-3xl">Serie wydarzeń</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                Dołącz do cyklicznych wydarzeń i zbieraj punkty w klasyfikacji generalnej
-              </p>
-            </div>
-          </div>
-          <div className="mt-5 flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
-              <Target className="h-4 w-4 text-success" />
-              <span className="text-muted-foreground">{activeCount} aktywnych</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3 py-1.5">
-              <Calendar className="h-4 w-4 text-warning" />
-              <span className="text-muted-foreground">{allSeries.length} łącznie</span>
-            </div>
-          </div>
+      <PageHero variant="warm" glow>
+        <PageHeroTitle
+          icon={<Layers className="h-6 w-6" />}
+          title="Serie wydarzeń"
+          subtitle="Dołącz do cyklicznych wydarzeń i zbieraj punkty w klasyfikacji generalnej"
+          accent="warning"
+        />
+        <div className="mt-5 flex items-center gap-4">
+          <StatPill icon={<Target className="h-4 w-4 text-success" />} label={`${activeCount} aktywnych`} />
+          <StatPill icon={<Calendar className="h-4 w-4 text-warning" />} label={`${allSeries.length} łącznie`} />
         </div>
-      </div>
+      </PageHero>
 
       <div className="container py-8">
         <div className="mb-6 rounded-xl border border-border/50 bg-card/50 p-4 backdrop-blur-sm">

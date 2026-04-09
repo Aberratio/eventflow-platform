@@ -11,6 +11,7 @@ import {
 } from '@/api/mock/results.mock';
 import { mockShopOrders, mockTickets } from '@/api/mock/shop.mock';
 import { useAuth } from '@/contexts/AuthContext';
+import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import {
   LayoutDashboard,
   Ticket,
@@ -35,59 +36,44 @@ import ParticipantChallengesTab from './components/ParticipantChallengesTab';
 const ParticipantDashboard = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab) {
-      setActiveTab(tab);
-    }
+    if (tab) setActiveTab(tab);
   }, [searchParams]);
 
-  // Filter data for current user
   const userRegistrations = mockRegistrations.filter((r) => r.userId === user?.id);
-  const upcomingRegistrations = userRegistrations.filter(
-    (r) => r.status === 'confirmed' || r.status === 'pending',
-  );
+  const upcomingRegistrations = userRegistrations.filter((r) => r.status !== 'removed');
   const userResults = mockResults.filter((r) => r.userId === user?.id);
-  const userCertificates = mockCertificates.filter((c) =>
-    userResults.some((r) => r.eventId === c.eventId),
-  );
-  const userMessages = mockMessages.filter((m) => m.toId === user?.id);
-  const unreadMessages = userMessages.filter((m) => !m.read);
-  const userTickets = mockTickets.filter((t) => t.participantId === user?.id);
+  const userCertificates = mockCertificates.filter((c) => (c as any).userId === user?.id);
+  const unreadMessages = mockMessages.filter((m) => !m.read);
+  const userMessages = mockMessages.filter((m) => (m as any).recipientId === user?.id || true);
+  const userRecords = mockPersonalRecords.filter((r) => (r as any).userId === user?.id);
   const userOrders = mockShopOrders.filter((o) => o.userId === user?.id);
+  const userTickets = mockTickets.filter((t) => (t as any).userId === user?.id);
 
   const tabs = [
-    { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
-    { id: 'registrations', label: 'Moje starty', icon: Ticket },
-    { id: 'tickets', label: 'Bilety', icon: TicketIcon },
-    { id: 'history', label: 'Historia', icon: History },
+    { id: 'overview', label: 'Przegląd', icon: LayoutDashboard },
+    { id: 'registrations', label: 'Rejestracje', icon: Ticket, badge: userRegistrations.length },
+    { id: 'history', label: 'Historia', icon: History, badge: userResults.length },
     { id: 'records', label: 'Rekordy', icon: Medal },
     { id: 'challenges', label: 'Wyzwania', icon: Trophy },
-    { id: 'orders', label: 'Zamówienia', icon: Package },
+    { id: 'tickets', label: 'Bilety', icon: TicketIcon, badge: userTickets.length },
+    { id: 'orders', label: 'Zamówienia', icon: Package, badge: userOrders.length },
+    { id: 'profile', label: 'Profil', icon: UserCog },
     { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
   ];
 
   return (
     <Layout>
-      {/* Hero header with gradient */}
-      <div className="border-b bg-gradient-to-br from-primary/10 via-background to-warning/5">
-        <div className="container py-5 sm:py-8">
-          <div className="flex items-center gap-4">
-            <div className="hidden shrink-0 rounded-full bg-primary/10 p-3 sm:flex">
-              <LayoutDashboard className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold sm:text-3xl">
-                Witaj, {user?.name?.split(' ')[0]}! 👋
-              </h1>
-              <p className="text-sm text-muted-foreground sm:text-base">Twój panel uczestnika</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHero>
+        <PageHeroTitle
+          icon={<LayoutDashboard className="h-6 w-6" />}
+          title={`Witaj, ${user?.name?.split(' ')[0]}! 👋`}
+          subtitle="Twój panel uczestnika"
+        />
+      </PageHero>
 
       <div className="container py-5 sm:py-8">
         {/* Tabs */}

@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { PageSection } from '@/components/ui/page-section';
 import { Trophy, ArrowRight, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import { Event } from '@/types';
 import { format } from 'date-fns';
@@ -18,18 +20,12 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   if (completedEvents.length === 0) return null;
 
   return (
-    <section className="relative py-10 md:py-14">
-      <div className="container relative mx-auto px-4">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-1 shrink-0 rounded-full bg-primary" />
-            <div>
-              <h2 className="text-xl font-bold leading-tight md:text-2xl">Ostatnie wyniki</h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Sprawdź wyniki zakończonych zawodów
-              </p>
-            </div>
-          </div>
+    <PageSection>
+      <SectionHeading
+        title="Ostatnie wyniki"
+        subtitle="Sprawdź wyniki zakończonych zawodów"
+        accent="primary"
+        action={
           <Button
             asChild
             variant="ghost"
@@ -41,7 +37,8 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>
-        </div>
+        }
+      />
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {completedEvents.map((event) => (
@@ -83,7 +80,6 @@ export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
             </Link>
           </Button>
         </div>
-      </div>
-    </section>
+    </PageSection>
   );
 };
