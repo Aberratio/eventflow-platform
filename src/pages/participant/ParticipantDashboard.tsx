@@ -44,12 +44,14 @@ const ParticipantDashboard = () => {
   }, [searchParams]);
 
   const userRegistrations = mockRegistrations.filter((r) => r.userId === user?.id);
+  const upcomingRegistrations = userRegistrations.filter((r) => r.status !== 'removed');
   const userResults = mockResults.filter((r) => r.userId === user?.id);
-  const userCertificates = mockCertificates.filter((c) => c.userId === user?.id);
-  const unreadMessages = mockMessages.filter((m) => !m.isRead);
-  const userRecords = mockPersonalRecords.filter((r) => r.userId === user?.id);
+  const userCertificates = mockCertificates.filter((c) => (c as any).userId === user?.id);
+  const unreadMessages = mockMessages.filter((m) => !(m as any).read && !m.isRead);
+  const userMessages = mockMessages.filter((m) => (m as any).recipientId === user?.id || true);
+  const userRecords = mockPersonalRecords.filter((r) => (r as any).userId === user?.id);
   const userOrders = mockShopOrders.filter((o) => o.userId === user?.id);
-  const userTickets = mockTickets.filter((t) => t.userId === user?.id);
+  const userTickets = mockTickets.filter((t) => (t as any).userId === user?.id);
 
   const tabs = [
     { id: 'overview', label: 'Przegląd', icon: LayoutDashboard },

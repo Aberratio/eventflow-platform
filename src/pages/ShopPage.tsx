@@ -26,6 +26,7 @@ import { getProducts } from '@/api';
 import { shopCategoryLabels } from '@/api/mock/labels';
 import { QUERY_KEYS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'newest';
 
