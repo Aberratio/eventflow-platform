@@ -54,6 +54,7 @@ const ServerError = lazy(() => import('./pages/ServerError'));
 const ServiceUnavailable = lazy(() => import('./pages/ServiceUnavailable'));
 const Forbidden = lazy(() => import('./pages/Forbidden'));
 
+
 // Dashboard pages (heaviest — always lazy)
 const ParticipantDashboard = lazy(() => import('./pages/participant/ParticipantDashboard'));
 const OrganizerDashboard = lazy(() => import('./pages/organizer/OrganizerDashboard'));
@@ -180,6 +181,7 @@ const App = () => (
                     <Route path="/500" element={<Lazy fallback={<EventsPageSkeleton />}><ServerError /></Lazy>} />
                     <Route path="/503" element={<Lazy fallback={<EventsPageSkeleton />}><ServiceUnavailable /></Lazy>} />
                     <Route path="/403" element={<Lazy fallback={<EventsPageSkeleton />}><Forbidden /></Lazy>} />
+                    
                     <Route path="*" element={<NotFound />} />
                   </Routes>
               </div>
