@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { PageHero, PageHeroTitle } from '../page-hero';
 import { SectionHeading } from '../section-heading';
 import { StatPill } from '../stat-pill';
@@ -8,6 +9,8 @@ import { GradientDivider } from '../gradient-divider';
 import { Eyebrow } from '../eyebrow';
 import { InfoBanner } from '../info-banner';
 import { PageSection } from '../page-section';
+import { ErrorPageShell } from '../error-page-shell';
+import { EmptyState } from '../empty-state';
 
 describe('Design System Components', () => {
   describe('PageHero', () => {
