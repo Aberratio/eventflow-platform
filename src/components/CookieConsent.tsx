@@ -56,7 +56,9 @@ export const CookieConsent = () => {
           setAnalytics(prefs.analytics ?? false);
           setMarketing(prefs.marketing ?? false);
           setFunctional(prefs.functional ?? false);
-        } catch (_e) { /* ignore malformed JSON */ }
+        } catch (_e) {
+          /* ignore malformed JSON */
+        }
       }
       setShowDetails(true);
       setVisible(true);

@@ -31,7 +31,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Pencil, Trash2, Eye, Package, Box, Infinity as InfinityIcon, Tags } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  Package,
+  Box,
+  Infinity as InfinityIcon,
+  Tags,
+} from 'lucide-react';
 import { shopCategoryLabels } from '@/api/mock/labels';
 import { mockShopProducts } from '@/api/mock/shop.mock';
 import { ShopProduct, ShopCategory } from '@/types';

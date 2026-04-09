@@ -229,7 +229,9 @@ const EventsPage = () => {
                   const parsed = parse(monthKey, 'LLLL yyyy', new Date(), { locale: pl });
                   isCurrentMonth =
                     getMonth(parsed) === getMonth(now) && getYear(parsed) === getYear(now);
-                } catch (_e) { /* ignore parse errors */ }
+                } catch (_e) {
+                  /* ignore parse errors */
+                }
 
                 return (
                   <div
