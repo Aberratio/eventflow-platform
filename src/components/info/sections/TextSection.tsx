@@ -1,5 +1,7 @@
 import { InfoPageSection } from '@/types';
 import { CheckCircle } from 'lucide-react';
+import { PageSection } from '@/components/ui/page-section';
+import { SectionHeading } from '@/components/ui/section-heading';
 
 interface TextSectionProps {
   section: InfoPageSection;
@@ -57,20 +59,13 @@ export const TextSection = ({ section }: TextSectionProps) => {
   };
 
   return (
-    <section className="py-8 md:py-12">
-      <div className="container">
-        <div className="mx-auto max-w-3xl">
-          {section.title && (
-            <div className="mb-5 flex items-center gap-3">
-              <div className="h-7 w-1 shrink-0 rounded-full bg-primary" />
-              <h2 className="text-xl font-bold md:text-2xl">{section.title}</h2>
-            </div>
-          )}
-          {section.content && (
-            <div className="space-y-3 pl-0 md:pl-1">{renderContent(section.content)}</div>
-          )}
-        </div>
+    <PageSection compact>
+      <div className="mx-auto max-w-3xl">
+        {section.title && <SectionHeading title={section.title} className="mb-5" />}
+        {section.content && (
+          <div className="space-y-3 pl-0 md:pl-1">{renderContent(section.content)}</div>
+        )}
       </div>
-    </section>
+    </PageSection>
   );
 };

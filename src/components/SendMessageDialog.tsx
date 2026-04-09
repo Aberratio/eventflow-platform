@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Registration, Distance } from '@/types';
 import { Mail, Users, Filter, Send } from 'lucide-react';
+import { InfoBanner } from '@/components/ui/info-banner';
 
 interface SendMessageDialogProps {
   open: boolean;
@@ -234,10 +235,9 @@ export const SendMessageDialog = ({
           </div>
 
           {/* Info */}
-          <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
+          <InfoBanner icon={<Mail className="h-4 w-4" />}>
             Wiadomość zostanie wysłana na adresy email odbiorców.
-          </div>
+          </InfoBanner>
         </div>
 
         <DialogFooter>
