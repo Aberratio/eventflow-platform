@@ -1,0 +1,199 @@
+/**
+ * API Payload types — strict input shapes for create/update operations.
+ *
+ * Unlike `Partial<T>`, these explicitly define which fields are required
+ * and which are optional at each operation boundary.
+ */
+
+import type {
+  SportDiscipline,
+  Distance,
+  OrganizerContact,
+  PaymentMethod,
+  EventMerchandise,
+  DiscountCode,
+  InsuranceOption,
+  GalleryAlbum,
+  BannerCropArea,
+  RegistrationEmbedConfig,
+  RegistrationFormConfig,
+  EventDisplayOptions,
+  PaymentConfig,
+  UserRole,
+  PaymentDetails,
+  MerchandiseOrder,
+  GlobalInsuranceSettings,
+  GoogleCalendarSettings,
+  Event,
+  Registration,
+  Result,
+  ShopOrder,
+  InfoPage,
+  InfoPageSection,
+} from '@/types';
+import type {
+  CreateEmailTemplatePayload,
+  EmailPreviewRequest,
+} from '@/types/email';
+
+// ──────────────── Events ────────────────
+
+export interface CreateEventPayload {
+  name: string;
+  slug: string;
+  discipline: SportDiscipline;
+  date: string;
+  location: string;
+  city: string;
+  description: string;
+  imageUrl: string;
+  distances: Distance[];
+  organizerId: string;
+  organizerName: string;
+  registrationDeadline: string;
+  organizerContact?: OrganizerContact;
+  seriesId?: string;
+  paymentMethods?: PaymentMethod[];
+  merchandise?: EventMerchandise[];
+  discountCodes?: DiscountCode[];
+  enableMerchandiseInRegistration?: boolean;
+  insuranceOption?: InsuranceOption;
+  galleryAlbums?: GalleryAlbum[];
+  bannerUrl?: string;
+  bannerCropArea?: BannerCropArea;
+  organizerLogoUrl?: string;
+  isVirtual?: boolean;
+  startDate?: string;
+  endDate?: string;
+  paymentConfig?: PaymentConfig;
+  organizersHtml?: string;
+  rulesHtml?: string;
+  finalAcceptanceHtml?: string;
+  requireFinalAcceptance?: boolean;
+  isPrivate?: boolean;
+  accessCode?: string;
+  registrationEmbed?: RegistrationEmbedConfig;
+  registrationFormConfig?: RegistrationFormConfig;
+  displayOptions?: EventDisplayOptions;
+}
+
+export type UpdateEventPayload = Partial<CreateEventPayload>;
+
+// ──────────────── Users ────────────────
+
+export interface CreateUserPayload {
+  name: string;
+  email: string;
+  role: UserRole;
+  phone?: string;
+  birthYear?: number;
+  gender?: 'M' | 'K';
+  club?: string;
+  companyName?: string;
+  nip?: string;
+  website?: string;
+  description?: string;
+}
+
+export type UpdateUserPayload = Partial<CreateUserPayload> & {
+  status?: 'active' | 'blocked';
+  avatar?: string;
+};
+
+// ──────────────── Auth ────────────────
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+}
+
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+}
+
+// ──────────────── Registrations ────────────────
+
+export interface CreateRegistrationPayload {
+  eventId: string;
+  eventName: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  distanceId: string;
+  distanceName: string;
+  category: string;
+  teamName?: string;
+  teamId?: string;
+  discountCode?: string;
+  merchandiseOrders?: MerchandiseOrder[];
+}
+
+export type UpdateRegistrationPayload = Partial<
+  Pick<Registration, 'status' | 'bibNumber' | 'teamName' | 'teamId' | 'pricePaid' | 'paymentDetails'>
+>;
+
+// ──────────────── Results ────────────────
+
+export interface CreateResultPayload {
+  eventId: string;
+  eventName: string;
+  distanceId: string;
+  distanceName: string;
+  userId: string;
+  userName: string;
+  bibNumber: string;
+  category: string;
+  time: string;
+  timeInSeconds: number;
+  position: number;
+  categoryPosition: number;
+  status: 'finished' | 'dnf' | 'dsq';
+  gender?: 'M' | 'K';
+  birthYear?: number;
+}
+
+export type UpdateResultPayload = Partial<CreateResultPayload>;
+
+// ──────────────── Shop ────────────────
+
+export interface CreateOrderPayload {
+  userId: string;
+  items: ShopOrder['items'];
+  deliveryMethod: ShopOrder['deliveryMethod'];
+  paymentMethod: ShopOrder['paymentMethod'];
+  shippingAddress?: ShopOrder['shippingAddress'];
+  invoiceData?: ShopOrder['invoiceData'];
+  customerNotes?: string;
+}
+
+// ──────────────── CMS ────────────────
+
+export interface CreateInfoPagePayload {
+  title: string;
+  slug: string;
+  icon: string;
+  description: string;
+  content: InfoPageSection[];
+  published?: boolean;
+  showInFooter?: boolean;
+  showInHeader?: boolean;
+  order?: number;
+}
+
+export type UpdateInfoPagePayload = Partial<CreateInfoPagePayload>;
+
+// ──────────────── Re-exports for convenience ────────────────
+
+export type { CreateEmailTemplatePayload, EmailPreviewRequest };
