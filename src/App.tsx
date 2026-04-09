@@ -12,6 +12,7 @@ import { CookieConsent } from '@/components/CookieConsent';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollToTop } from './components/ScrollToTop';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/errors';
 
 // ─── Eagerly loaded (critical path) ───────────────────────
 import Index from './pages/Index';
@@ -108,6 +109,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <CartProvider>
@@ -197,6 +199,7 @@ const App = () => (
       </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
