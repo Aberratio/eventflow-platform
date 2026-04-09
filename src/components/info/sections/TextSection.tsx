@@ -37,7 +37,7 @@ export const TextSection = ({ section }: TextSectionProps) => {
     lines.forEach((line, index) => {
       const trimmed = line.trim();
       if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
-        currentList.push(trimmed.replace(/^[•\-]\s*/, ''));
+        currentList.push(trimmed.replace(/^[•-]\s*/, ''));
       } else {
         flushList();
         if (trimmed) {

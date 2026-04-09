@@ -1,8 +1,12 @@
 import React, { useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { EMAIL_VARIABLES, EVENT_EMAIL_VARIABLES, SYSTEM_EMAIL_VARIABLES } from '@/types/email';
-import type { EmailVariableMeta, EmailTemplateScope } from '@/types/email';
+import {
+  EMAIL_VARIABLES,
+  EVENT_EMAIL_VARIABLES,
+  SYSTEM_EMAIL_VARIABLES,
+} from '@/types/email'; // eslint-disable-line no-duplicate-imports
+import type { EmailVariableMeta, EmailTemplateScope } from '@/types/email'; // eslint-disable-line no-duplicate-imports
 
 interface VariableChipsListProps {
   /** Ref to the input/textarea where variable will be inserted at cursor position */
