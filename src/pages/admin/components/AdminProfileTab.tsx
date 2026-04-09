@@ -14,6 +14,7 @@ const AdminProfileTab = () => {
       <ProfileForm user={user}>
         <SecuritySection />
         <ActivityLogsSection />
+        <SystemLogsPanel />
       </ProfileForm>
     </div>
   );
