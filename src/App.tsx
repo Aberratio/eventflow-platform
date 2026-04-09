@@ -181,7 +181,7 @@ const App = () => (
                     <Route path="/500" element={<Lazy fallback={<EventsPageSkeleton />}><ServerError /></Lazy>} />
                     <Route path="/503" element={<Lazy fallback={<EventsPageSkeleton />}><ServiceUnavailable /></Lazy>} />
                     <Route path="/403" element={<Lazy fallback={<EventsPageSkeleton />}><Forbidden /></Lazy>} />
-                    <Route path="/dev/skeletons" element={<Lazy fallback={<div />}><SkeletonShowcase /></Lazy>} />
+                    
                     <Route path="*" element={<NotFound />} />
                   </Routes>
               </div>
