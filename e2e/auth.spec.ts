@@ -299,7 +299,12 @@ test.describe('Logout Flow', () => {
 
     // Look for logout button
     const logoutBtn = page.locator('button:has-text("Wyloguj"), [aria-label="Wyloguj"]');
-    if (await logoutBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+    if (
+      await logoutBtn
+        .first()
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
+    ) {
       await logoutBtn.first().click();
       await page.waitForTimeout(500);
     }

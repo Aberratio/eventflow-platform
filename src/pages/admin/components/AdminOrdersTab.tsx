@@ -96,7 +96,7 @@ export const AdminOrdersTab = () => {
   };
 
   const filteredOrders = useMemo(() => {
-    let result = orders.filter((order) => {
+    const result = orders.filter((order) => {
       const name = getCustomerName(order.userId).toLowerCase();
       const matchesSearch =
         order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||

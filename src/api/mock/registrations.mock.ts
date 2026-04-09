@@ -154,7 +154,7 @@ function generateLargeStartList(): Registration[] {
       userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@tatryultra.pl`,
       distanceId: distance.id,
       distanceName: distance.name,
-      category: category,
+      category,
       registeredAt: new Date(
         2026,
         0,
@@ -199,7 +199,7 @@ function generateLargeStartList(): Registration[] {
       userEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@biegwiosenny.pl`,
       distanceId: distance.id,
       distanceName: distance.name,
-      category: category,
+      category,
       registeredAt: new Date(
         2025,
         2,

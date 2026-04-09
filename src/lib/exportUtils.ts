@@ -255,7 +255,7 @@ const objectToXml = (obj: Record<string, unknown>, indent = '  '): string => {
         const items = value
           .map((item) => {
             if (typeof item === 'object' && item !== null) {
-              return `${indent}  <item>\n${objectToXml(item as Record<string, unknown>, indent + '    ')}\n${indent}  </item>`;
+              return `${indent}  <item>\n${objectToXml(item as Record<string, unknown>, `${indent}    `)}\n${indent}  </item>`;
             }
             return `${indent}  <item>${escapeXml(item)}</item>`;
           })
@@ -263,7 +263,7 @@ const objectToXml = (obj: Record<string, unknown>, indent = '  '): string => {
         return `${indent}<${tag}>\n${items}\n${indent}</${tag}>`;
       }
       if (typeof value === 'object' && value !== null) {
-        return `${indent}<${tag}>\n${objectToXml(value as Record<string, unknown>, indent + '  ')}\n${indent}</${tag}>`;
+        return `${indent}<${tag}>\n${objectToXml(value as Record<string, unknown>, `${indent}  `)}\n${indent}</${tag}>`;
       }
       return `${indent}<${tag}>${escapeXml(value)}</${tag}>`;
     })

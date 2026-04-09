@@ -125,7 +125,7 @@ export const SeriesStandingsTable: React.FC<SeriesStandingsTableProps> = ({
                         to={`/events/${event.id}`}
                         className="transition-colors hover:text-primary"
                       >
-                        {event.name.length > 15 ? event.name.substring(0, 15) + '...' : event.name}
+                        {event.name.length > 15 ? `${event.name.substring(0, 15)}...` : event.name}
                       </Link>
                     </TableHead>
                   ))}

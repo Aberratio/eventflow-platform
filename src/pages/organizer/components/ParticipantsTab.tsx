@@ -171,7 +171,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const requiresManualPayment = event.paymentConfig?.type === 'organizer_bank';
 
   const filteredRegistrations = useMemo(() => {
-    let result = localRegistrations.filter((reg) => {
+    const result = localRegistrations.filter((reg) => {
       if (viewMode === 'active' && reg.status === 'removed') return false;
       if (viewMode === 'removed' && reg.status !== 'removed') return false;
       if (event.displayOptions?.hideUnpaid && reg.status === 'pending') return false;

@@ -66,7 +66,7 @@ export const getAvailableNumbersString = (registrations: Registration[], maxToSh
   const formatted = displayRanges.map((r, i) => formatRange(r, i === displayRanges.length - 1));
 
   if (ranges.length > maxToShow) {
-    return formatted.slice(0, -1).join(', ') + ' i więcej';
+    return `${formatted.slice(0, -1).join(', ')} i więcej`;
   }
 
   return formatted.join(', ');

@@ -69,7 +69,7 @@ export const BibNumberAssignment = ({
     const paidOnly = sortingOption === 'date_paid' || sortingOption === 'name_paid';
     const sortByName = sortingOption === 'name_paid' || sortingOption === 'name_all';
 
-    let eligible = registrations.filter((r) => {
+    const eligible = registrations.filter((r) => {
       // Must not have bib number
       if (r.bibNumber) return false;
       // Must not be removed or cancelled
