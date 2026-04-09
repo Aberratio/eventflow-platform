@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Event } from '@/types';
+import { appLogger } from '@/lib/logger';
 import {
   Edit,
   Trash2,
@@ -70,6 +71,10 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       cancelled: 'Anulowane',
     };
 
+    appLogger.event('status_change', `Zmieniono status wydarzenia «${event.name}» na ${statusLabels[newStatus]}`, {
+      targetType: 'event', targetId: event.id, targetName: event.name,
+      metadata: { oldStatus: event.status, newStatus },
+    });
     toast({
       title: 'Status zmieniony',
       description: `Wydarzenie jest teraz: ${statusLabels[newStatus]}`,
@@ -78,6 +83,9 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   };
 
   const handleDelete = () => {
+    appLogger.event('event_delete', `Usunięto wydarzenie «${event.name}»`, {
+      targetType: 'event', targetId: event.id, targetName: event.name,
+    });
     toast({
       title: 'Wydarzenie usunięte',
       description: 'Wydarzenie zostało trwale usunięte.',

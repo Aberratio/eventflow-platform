@@ -55,6 +55,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
+import { appLogger } from '@/lib/logger';
 
 export const UsersParticipantsTab = () => {
   const [search, setSearch] = useState('');
@@ -259,6 +260,10 @@ export const UsersParticipantsTab = () => {
                 </Button>
                 <Button
                   onClick={() => {
+                    appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${selectedRole}`, {
+                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                      metadata: { oldRole: selectedUser.role, newRole: selectedRole },
+                    });
                     toast.success(
                       `Rola użytkownika ${selectedUser.name} zmieniona na ${selectedRole}`,
                     );
@@ -323,6 +328,10 @@ export const UsersParticipantsTab = () => {
                     else next.add(selectedUser.id);
                     return next;
                   });
+                  appLogger.user(blocked ? 'user_unblock' : 'user_block',
+                    blocked ? `Odblokowano użytkownika ${selectedUser.name}` : `Zablokowano użytkownika ${selectedUser.name}`, {
+                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                    });
                   toast.success(
                     blocked
                       ? `Użytkownik ${selectedUser.name} został odblokowany`
@@ -352,6 +361,11 @@ export const UsersParticipantsTab = () => {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
+                if (selectedUser) {
+                  appLogger.user('user_delete', `Usunięto użytkownika ${selectedUser.name}`, {
+                    targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                  });
+                }
                 toast.success(`Użytkownik ${selectedUser?.name} został usunięty`);
               }}
             >

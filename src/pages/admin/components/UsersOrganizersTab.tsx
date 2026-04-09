@@ -57,6 +57,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import type { User, UserRole } from '@/types';
 import { AddOrganizerDialog } from './AddOrganizerDialog';
+import { appLogger } from '@/lib/logger';
 
 export const UsersOrganizersTab = () => {
   const [search, setSearch] = useState('');
@@ -85,6 +86,9 @@ export const UsersOrganizersTab = () => {
 
   const handleBlock = () => {
     if (!selectedUser) return;
+    appLogger.user('user_block', `Zablokowano organizatora ${selectedUser.name}`, {
+      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+    });
     toast.success(`Organizator ${selectedUser.name} został zablokowany`);
     setBlockDialogOpen(false);
     setSelectedUser(null);
@@ -92,6 +96,9 @@ export const UsersOrganizersTab = () => {
 
   const handleDelete = () => {
     if (!selectedUser) return;
+    appLogger.user('user_delete', `Usunięto organizatora ${selectedUser.name}`, {
+      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+    });
     toast.success(`Organizator ${selectedUser.name} został usunięty`);
     setDeleteDialogOpen(false);
     setSelectedUser(null);
@@ -105,6 +112,10 @@ export const UsersOrganizersTab = () => {
       moderator: 'Moderator',
       admin: 'Administrator',
     };
+    appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${roleLabels[selectedRole]}`, {
+      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+      metadata: { oldRole: selectedUser.role, newRole: selectedRole },
+    });
     toast.success(
       `Rola użytkownika ${selectedUser.name} została zmieniona na: ${roleLabels[selectedRole]}`,
     );

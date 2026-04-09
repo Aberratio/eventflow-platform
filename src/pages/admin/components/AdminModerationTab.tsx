@@ -28,6 +28,7 @@ import { addEventToGoogleCalendar } from '@/lib/googleCalendarUtils';
 import { CheckCircle, XCircle, Clock, AlertTriangle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { ModerationEventCard } from './ModerationEventCard';
+import { appLogger } from '@/lib/logger';
 
 export const AdminModerationTab = () => {
   const [events, setEvents] = useState(mockEvents);
@@ -56,6 +57,9 @@ export const AdminModerationTab = () => {
       else
         toast.error('Nie udało się dodać wydarzenia do kalendarza', { description: result.error });
     }
+    appLogger.moderation('event_approve', `Zatwierdzono wydarzenie «${selectedEvent.name}»`, {
+      targetType: 'event', targetId: selectedEvent.id, targetName: selectedEvent.name,
+    });
     toast.success('Wydarzenie zostało zatwierdzone', {
       description: `"${selectedEvent.name}" jest teraz widoczne publicznie.`,
     });
@@ -73,6 +77,10 @@ export const AdminModerationTab = () => {
           : e,
       ),
     );
+    appLogger.moderation('event_reject', `Odrzucono wydarzenie «${selectedEvent.name}»: ${rejectionReason.trim()}`, {
+      targetType: 'event', targetId: selectedEvent.id, targetName: selectedEvent.name,
+      metadata: { reason: rejectionReason.trim() },
+    });
     toast.error('Wydarzenie zostało odrzucone', {
       description: 'Organizator otrzyma powiadomienie z powodem odrzucenia.',
     });

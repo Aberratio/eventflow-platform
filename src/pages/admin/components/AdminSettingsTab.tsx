@@ -1,5 +1,6 @@
 import { mockGoogleCalendarSettings, mockGlobalInsuranceSettings } from '@/api';
 import { useState } from 'react';
+import { appLogger } from '@/lib/logger';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,10 @@ export const AdminSettingsTab = () => {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 800));
     setIsSaving(false);
+    appLogger.settings('insurance_save', 'Zapisano ustawienia ubezpieczeń NNW', {
+      targetType: 'settings',
+      metadata: { baseFee: insuranceSettings.baseFee, ageMultiplier: insuranceSettings.ageMultiplier, maxAge: insuranceSettings.maxAge },
+    });
     toast({
       title: 'Zapisano',
       description: 'Ustawienia ubezpieczeń zostały zaktualizowane',
@@ -42,6 +47,7 @@ export const AdminSettingsTab = () => {
       lastSyncAt: new Date().toISOString(),
     }));
     setIsConnecting(false);
+    appLogger.settings('calendar_connect', 'Połączono z Google Calendar');
     toast({
       title: 'Połączono',
       description: 'Google Calendar został podłączony',
@@ -50,6 +56,7 @@ export const AdminSettingsTab = () => {
 
   const handleDisconnectCalendar = () => {
     setCalendarSettings((prev) => ({ ...prev, connected: false, lastSyncAt: undefined }));
+    appLogger.settings('calendar_disconnect', 'Rozłączono z Google Calendar');
     toast({
       title: 'Rozłączono',
       description: 'Google Calendar został odłączony',

@@ -2,6 +2,7 @@ import { mockShopProducts } from '@/api';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { CartItem, ShopProduct, OrderDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { appLogger } from '@/lib/logger';
 
 interface CartContextType {
   items: CartItem[];
@@ -50,13 +51,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Dodano do koszyka',
         description: product?.name || 'Produkt został dodany',
       });
+      appLogger.shop('cart_add', `Dodano do koszyka: ${product?.name ?? item.productId} (ilość: ${item.quantity})`, {
+        targetType: 'product', targetId: item.productId, targetName: product?.name,
+        metadata: { quantity: item.quantity, size: item.size, color: item.color },
+      });
     },
     [getProduct, toast],
   );
 
   const removeItem = useCallback((productId: string) => {
+    const product = getProduct(productId);
+    appLogger.shop('cart_remove', `Usunięto z koszyka: ${product?.name ?? productId}`, {
+      targetType: 'product', targetId: productId, targetName: product?.name,
+    });
     setItems((prev) => prev.filter((i) => i.productId !== productId));
-  }, []);
+  }, [getProduct]);
 
   const removeItemByVariant = useCallback((productId: string, size?: string, color?: string) => {
     setItems((prev) =>
@@ -93,8 +102,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const clearCart = useCallback(() => {
+    if (items.length > 0) {
+      appLogger.shop('cart_clear', `Wyczyszczono koszyk (${items.length} pozycji)`);
+    }
     setItems([]);
-  }, []);
+  }, [items.length]);
 
   const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
