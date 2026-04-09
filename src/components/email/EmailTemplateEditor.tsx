@@ -1,3 +1,4 @@
+import { previewEmailTemplate } from '@/api';
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +31,6 @@ import { VariableChipsList } from './VariableChipsList';
 import { EmailPreviewPane } from './EmailPreviewPane';
 import { EmailTriggerSection } from './EmailTriggerSection';
 import { EmailRecipientsSection } from './EmailRecipientsSection';
-import { previewEmailTemplate } from '@/api/email-templates.api';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'Podaj nazwę szablonu').max(120),

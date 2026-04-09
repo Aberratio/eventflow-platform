@@ -1,3 +1,4 @@
+import { mockVirtualResultSubmissions } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Event, VirtualResultSubmission } from '@/types';
-import { mockVirtualResultSubmissions } from '@/api/mock/virtual-results.mock';
 import {
   Check,
   X,

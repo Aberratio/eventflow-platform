@@ -1,3 +1,10 @@
+import {
+  mockEvents,
+  mockMerchandise,
+  defaultPaymentMethods,
+  mockRegistrations,
+  mockUsers,
+} from '@/api';
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -7,10 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { mockEvents, mockMerchandise } from '@/api/mock/events.mock';
-import { defaultPaymentMethods } from '@/api/mock/labels';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import { EventOverviewTab } from '@/pages/organizer/components/EventOverviewTab';
 import { ParticipantsTab } from '@/pages/organizer/components/ParticipantsTab';
 import { ResultsTab } from '@/pages/organizer/components/ResultsTab';

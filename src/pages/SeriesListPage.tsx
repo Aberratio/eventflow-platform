@@ -1,3 +1,4 @@
+import { getSeries, getEvents, seriesTypeLabels } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -12,8 +13,6 @@ import {
 import { Filter, Calendar, Globe, MapPin, Trophy, Target, Layers } from 'lucide-react';
 import { SeriesType } from '@/types';
 import { ListContainer, ListGroup, ListEmptyState, SeriesListRow } from '@/components/lists';
-import { getSeries, getEvents } from '@/api';
-import { seriesTypeLabels } from '@/api/mock/labels';
 import { QUERY_KEYS, SERIES_STATUS_LABELS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';

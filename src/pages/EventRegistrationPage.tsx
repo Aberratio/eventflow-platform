@@ -1,9 +1,8 @@
+import { mockEvents, disciplineLabels } from '@/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { format } from 'date-fns';

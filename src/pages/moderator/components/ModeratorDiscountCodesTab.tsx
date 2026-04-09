@@ -1,3 +1,4 @@
+import { mockEvents } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -8,7 +9,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
-import { mockEvents } from '@/api/mock/events.mock';
 import { DiscountCode } from '@/types';
 import { Tag } from 'lucide-react';
 

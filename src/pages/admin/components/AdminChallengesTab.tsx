@@ -1,3 +1,9 @@
+import {
+  mockChallengeParticipations,
+  mockChallenges,
+  mockEvents,
+  mockSeries,
+} from '@/api';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,9 +52,6 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockSeries } from '@/api/mock/series.mock';
 import { Challenge, ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';

@@ -1,3 +1,4 @@
+import { shopCategoryLabels, mockShopProducts } from '@/api';
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -19,8 +20,6 @@ import {
   Truck,
   RotateCcw,
 } from 'lucide-react';
-import { shopCategoryLabels } from '@/api/mock/labels';
-import { mockShopProducts } from '@/api/mock/shop.mock';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 

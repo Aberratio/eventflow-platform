@@ -1,7 +1,5 @@
+import { mockEvents, mockRegistrations, mockUsers } from '@/api';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import { Calendar, Users, Building2, TrendingUp, Clock, ShieldCheck } from 'lucide-react';
 
 export const ModeratorOverviewTab = () => {

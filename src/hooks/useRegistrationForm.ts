@@ -1,14 +1,14 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
 import {
   getCurrentPrice,
   getExistingTeamsForEvent,
   validateDiscountCode,
   validateTeamName,
   applyDiscount,
-} from '@/api/mock/helpers';
-import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
+  mockGlobalInsuranceSettings,
+  mockRegistrations,
+} from '@/api';
+import { useState, useMemo, useEffect } from 'react';
+import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';

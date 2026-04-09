@@ -1,3 +1,4 @@
+import { mockEvents, disciplineLabels } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

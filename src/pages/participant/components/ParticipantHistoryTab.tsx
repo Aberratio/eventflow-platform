@@ -1,3 +1,4 @@
+import { mockEvents, disciplineLabels } from '@/api';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,8 +11,6 @@ import {
 } from '@/components/ui/select';
 import { Result, Certificate } from '@/types';
 import { Trophy } from 'lucide-react';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 import { toast } from 'sonner';
 import { ListContainer, ListGroup, ListEmptyState, ResultListRow } from '@/components/lists';
 

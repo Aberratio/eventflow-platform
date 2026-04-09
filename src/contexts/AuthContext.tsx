@@ -1,6 +1,6 @@
+import { mockUsers } from '@/api';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserRole } from '@/types';
-import { mockUsers } from '@/api/mock/users.mock';
 import { STORAGE_KEYS, MOCK_PASSWORD } from '@/constants';
 
 interface AuthContextType {

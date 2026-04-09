@@ -1,3 +1,4 @@
+import { mockSecuritySettings } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +40,6 @@ import {
   XCircle,
   Trash2,
 } from 'lucide-react';
-import { mockSecuritySettings } from '@/api/mock/admin.mock';
 import { format, formatDistanceToNow } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';

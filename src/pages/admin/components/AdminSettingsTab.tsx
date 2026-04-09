@@ -1,3 +1,4 @@
+import { mockGoogleCalendarSettings, mockGlobalInsuranceSettings } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,6 @@ import { Switch } from '@/components/ui/switch';
 import { Shield, Save, Calculator, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import { mockGoogleCalendarSettings } from '@/api/mock/calendar.mock';
-import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
 import type { GlobalInsuranceSettings, GoogleCalendarSettings } from '@/types';
 
 export const AdminSettingsTab = () => {

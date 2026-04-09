@@ -1,7 +1,7 @@
+import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { disciplineLabels } from '@/api/mock/labels';
 import { Eye, Globe, CreditCard, Building2 } from 'lucide-react';
 import type { EventFormState } from '../hooks/useEventFormState';
 

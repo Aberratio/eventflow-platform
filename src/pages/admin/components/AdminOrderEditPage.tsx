@@ -1,3 +1,4 @@
+import { mockShopOrders, mockShopProducts, mockUsers } from '@/api';
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -34,8 +35,6 @@ import {
   CreditCard,
   Clock,
 } from 'lucide-react';
-import { mockShopOrders, mockShopProducts } from '@/api/mock/shop.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import { ShopOrder, OrderHistoryEntry } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { OrderHistoryTimeline } from '@/components/admin/OrderHistoryTimeline';

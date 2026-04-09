@@ -1,3 +1,4 @@
+import { mockEvents, mockRegistrations, mockUsers } from '@/api';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import { Search, Users, Building2, Eye, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 

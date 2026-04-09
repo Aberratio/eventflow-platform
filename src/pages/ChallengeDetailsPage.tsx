@@ -1,3 +1,4 @@
+import { mockChallengeParticipations, mockChallenges } from '@/api';
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -30,7 +31,6 @@ import {
   Users,
   Flame,
 } from 'lucide-react';
-import { mockChallengeParticipations, mockChallenges } from '@/api/mock/challenges.mock';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';

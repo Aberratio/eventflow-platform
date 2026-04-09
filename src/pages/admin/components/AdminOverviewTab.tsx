@@ -1,10 +1,12 @@
+import {
+  mockSalesStats,
+  mockOnlineSessions,
+  mockEvents,
+  mockRegistrations,
+  mockShopOrders,
+  mockUsers,
+} from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockSalesStats } from '@/api/mock/admin.mock';
-import { mockOnlineSessions } from '@/api/mock/calendar.mock';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockRegistrations } from '@/api/mock/registrations.mock';
-import { mockShopOrders } from '@/api/mock/shop.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import {
   Calendar,
   Users,

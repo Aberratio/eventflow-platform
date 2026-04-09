@@ -1,3 +1,4 @@
+import { mockEvents, mockUsers } from '@/api';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -42,8 +43,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
-import { mockEvents } from '@/api/mock/events.mock';
-import { mockUsers } from '@/api/mock/users.mock';
 import {
   Search,
   MoreHorizontal,

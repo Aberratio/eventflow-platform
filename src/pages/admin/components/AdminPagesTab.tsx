@@ -1,3 +1,4 @@
+import { mockInfoPages } from '@/api';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +39,6 @@ import {
   Scale,
   CreditCard,
 } from 'lucide-react';
-import { mockInfoPages } from '@/api/mock/cms.mock';
 import { InfoPage } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 

@@ -1,7 +1,7 @@
+import { disciplineLabels } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { disciplineLabels } from '@/api/mock/labels';
 import { Event } from '@/types';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { PageHero } from '@/components/ui/page-hero';

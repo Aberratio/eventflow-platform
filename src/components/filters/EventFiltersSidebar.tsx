@@ -1,3 +1,4 @@
+import { mockEvents } from '@/api';
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,6 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { mockEvents } from '@/api/mock/events.mock';
 import { EventFiltersState } from '@/hooks/useEventFilters';
 import { FiltersContent } from './FiltersContent';
 

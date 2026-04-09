@@ -1,3 +1,9 @@
+import {
+  getCurrentPrice,
+  applyDiscount,
+  mockGlobalInsuranceSettings,
+  mockGroupDiscountCodes,
+} from '@/api';
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,9 +44,6 @@ import {
 } from 'lucide-react';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
-import { getCurrentPrice, applyDiscount } from '@/api/mock/helpers';
-import { mockGlobalInsuranceSettings } from '@/api/mock/insurance.mock';
-import { mockGroupDiscountCodes } from '@/api/mock/shop.mock';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';

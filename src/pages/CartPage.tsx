@@ -1,3 +1,4 @@
+import { mockDeliveryMethods, mockShopPaymentMethods } from '@/api';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -25,7 +26,6 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
-import { mockDeliveryMethods, mockShopPaymentMethods } from '@/api/mock/shop.mock';
 import { OrderDetails } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {

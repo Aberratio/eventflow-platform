@@ -1,3 +1,4 @@
+import { disciplineLabels } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +13,6 @@ import {
   AlertTriangle,
   FileText,
 } from 'lucide-react';
-import { disciplineLabels } from '@/api/mock/labels';
 import type { Event } from '@/types';
 
 interface ModerationEventCardProps {

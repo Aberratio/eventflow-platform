@@ -1,3 +1,4 @@
+import { mockPartners } from '@/api';
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
@@ -7,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Handshake } from 'lucide-react';
-import { mockPartners } from '@/api/mock/partners.mock';
 import { toast } from 'sonner';
 
 interface FormErrors {

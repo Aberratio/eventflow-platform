@@ -1,3 +1,4 @@
+import { mockResults, mockEvents, disciplineLabels } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
@@ -13,9 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from 'lucide-react';
-import { mockResults } from '@/api/mock/results.mock';
-import { mockEvents } from '@/api/mock/events.mock';
-import { disciplineLabels } from '@/api/mock/labels';
 
 const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();

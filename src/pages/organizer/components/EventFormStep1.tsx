@@ -1,3 +1,4 @@
+import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SportDiscipline, PaymentConfigType } from '@/types';
-import { disciplineLabels } from '@/api/mock/labels';
 import {
   Image,
   Crop,
