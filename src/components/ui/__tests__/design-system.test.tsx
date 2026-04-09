@@ -135,6 +135,61 @@ describe('Design System Components', () => {
     it('applies compact padding when compact', () => {
       const { container } = render(<PageSection compact>Test</PageSection>);
       expect(container.firstChild).toHaveClass('py-6');
-    });
+});
+
+describe('ErrorPageShell', () => {
+  it('renders children centered', () => {
+    render(<ErrorPageShell>Error content</ErrorPageShell>);
+    expect(screen.getByText('Error content')).toBeInTheDocument();
+  });
+
+  it('applies tint class', () => {
+    const { container } = render(<ErrorPageShell tint="destructive">Test</ErrorPageShell>);
+    expect(container.firstChild).toHaveClass('to-destructive/5');
+  });
+
+  it('defaults to muted tint', () => {
+    const { container } = render(<ErrorPageShell>Test</ErrorPageShell>);
+    expect(container.firstChild).toHaveClass('to-muted');
+  });
+});
+
+describe('EmptyState', () => {
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <BrowserRouter>{children}</BrowserRouter>
+  );
+
+  it('renders icon, title and subtitle', () => {
+    render(
+      <EmptyState
+        icon={<span data-testid="icon">📦</span>}
+        title="No items"
+        subtitle="Nothing here"
+      />,
+      { wrapper },
+    );
+    expect(screen.getByTestId('icon')).toBeInTheDocument();
+    expect(screen.getByText('No items')).toBeInTheDocument();
+    expect(screen.getByText('Nothing here')).toBeInTheDocument();
+  });
+
+  it('renders action button when provided', () => {
+    render(
+      <EmptyState
+        icon={<span>📦</span>}
+        title="Empty"
+        actionLabel="Go to shop"
+        actionHref="/shop"
+      />,
+      { wrapper },
+    );
+    expect(screen.getByText('Go to shop')).toBeInTheDocument();
+  });
+
+  it('does not render action when not provided', () => {
+    render(<EmptyState icon={<span>📦</span>} title="Empty" />, { wrapper });
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+});
   });
 });
