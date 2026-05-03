@@ -23,6 +23,15 @@ interface EventOverviewTabProps {
 
 export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
   const { toast } = useToast();
+  const statusLabels: Record<Event['status'], string> = {
+    draft: 'Szkic',
+    awaiting_approval: 'Oczekuje na akceptację',
+    approved: 'Zatwierdzone',
+    published: 'Opublikowane',
+    completed: 'Zakończone',
+    cancelled: 'Anulowane',
+    rejected: 'Odrzucone',
+  };
   const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
   const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
@@ -148,13 +157,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
             <div className="flex items-center gap-2">
               <Badge>{disciplineLabels[event.discipline]}</Badge>
               <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
-                {event.status === 'published'
-                  ? 'Opublikowane'
-                  : event.status === 'draft'
-                    ? 'Szkic'
-                    : event.status === 'completed'
-                      ? 'Zakończone'
-                      : 'Anulowane'}
+                {statusLabels[event.status]}
               </Badge>
               {event.featured && <Badge variant="outline">⭐ Wyróżnione</Badge>}
             </div>

@@ -56,8 +56,10 @@ import {
 import { toast } from 'sonner';
 import type { User, UserRole } from '@/types';
 import { appLogger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const UsersParticipantsTab = () => {
+  const { user: currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [blockedUsers, setBlockedUsers] = useState<Set<string>>(new Set());
@@ -73,6 +75,7 @@ export const UsersParticipantsTab = () => {
   const isBlocked = (userId: string) => blockedUsers.has(userId);
 
   const participants = mockUsers.filter((u) => u.role === 'participant');
+  const canManageAdmins = currentUser?.role === 'superadmin';
 
   const filteredParticipants = participants.filter((user) => {
     const matchesSearch =
@@ -250,7 +253,7 @@ export const UsersParticipantsTab = () => {
                     <SelectItem value="participant">Uczestnik</SelectItem>
                     <SelectItem value="organizer">Organizator</SelectItem>
                     <SelectItem value="moderator">Moderator</SelectItem>
-                    <SelectItem value="admin">Administrator</SelectItem>
+                    {canManageAdmins && <SelectItem value="admin">Administrator</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>

@@ -19,22 +19,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Calendar, MapPin, Settings, Eye } from 'lucide-react';
+import { Search, Calendar, MapPin, Settings, Eye, Plus } from 'lucide-react';
 
 const statusLabels: Record<string, string> = {
   draft: 'Wersja robocza',
   awaiting_approval: 'Oczekuje na akceptację',
+  approved: 'Zatwierdzone',
   published: 'Opublikowane',
   completed: 'Zakończone',
   cancelled: 'Anulowane',
+  rejected: 'Odrzucone',
 };
 
 const statusColors: Record<string, string> = {
   draft: 'bg-muted text-muted-foreground',
   awaiting_approval: 'bg-warning/10 text-warning border-warning/20',
+  approved: 'bg-success/10 text-success border-success/20',
   published: 'bg-primary/10 text-primary border-primary/20',
   completed: 'bg-muted text-muted-foreground',
   cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
+  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
 export const AdminEventsTab = () => {
@@ -72,9 +76,11 @@ export const AdminEventsTab = () => {
             <SelectItem value="all">Wszystkie statusy</SelectItem>
             <SelectItem value="draft">Wersja robocza</SelectItem>
             <SelectItem value="awaiting_approval">Oczekuje na akceptację</SelectItem>
+            <SelectItem value="approved">Zatwierdzone</SelectItem>
             <SelectItem value="published">Opublikowane</SelectItem>
             <SelectItem value="completed">Zakończone</SelectItem>
             <SelectItem value="cancelled">Anulowane</SelectItem>
+            <SelectItem value="rejected">Odrzucone</SelectItem>
           </SelectContent>
         </Select>
         <Select value={disciplineFilter} onValueChange={setDisciplineFilter}>
@@ -89,6 +95,12 @@ export const AdminEventsTab = () => {
             <SelectItem value="multisport">Multisport</SelectItem>
           </SelectContent>
         </Select>
+        <Button asChild>
+          <Link to="/admin/events/new">
+            <Plus className="mr-2 h-4 w-4" />
+            Nowe wydarzenie
+          </Link>
+        </Button>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border/50">

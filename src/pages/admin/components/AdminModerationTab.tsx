@@ -40,14 +40,14 @@ export const AdminModerationTab = () => {
   const [calendarSettings] = useState<GoogleCalendarSettings>(mockGoogleCalendarSettings);
 
   const pendingEvents = events.filter((e) => e.status === 'awaiting_approval');
-  const rejectedEvents = events.filter((e) => e.status === 'draft' && e.rejectionReason);
+  const rejectedEvents = events.filter((e) => e.status === 'rejected');
 
   const handleApprove = async () => {
     if (!selectedEvent) return;
     setEvents((prev) =>
       prev.map((e) =>
         e.id === selectedEvent.id
-          ? { ...e, status: 'published' as const, rejectionReason: undefined }
+          ? { ...e, status: 'approved' as const, rejectionReason: undefined }
           : e,
       ),
     );
@@ -61,7 +61,7 @@ export const AdminModerationTab = () => {
       targetType: 'event', targetId: selectedEvent.id, targetName: selectedEvent.name,
     });
     toast.success('Wydarzenie zostało zatwierdzone', {
-      description: `"${selectedEvent.name}" jest teraz widoczne publicznie.`,
+      description: `"${selectedEvent.name}" czeka teraz na publikację przez organizatora.`,
     });
     setApproveOpen(false);
     setDetailsOpen(false);
@@ -73,7 +73,7 @@ export const AdminModerationTab = () => {
     setEvents((prev) =>
       prev.map((e) =>
         e.id === selectedEvent.id
-          ? { ...e, status: 'draft' as const, rejectionReason: rejectionReason.trim() }
+          ? { ...e, status: 'rejected' as const, rejectionReason: rejectionReason.trim() }
           : e,
       ),
     );

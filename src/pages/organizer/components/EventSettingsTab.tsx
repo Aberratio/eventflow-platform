@@ -101,6 +101,12 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         return <Badge className="bg-success/10 text-success">Opublikowane</Badge>;
       case 'draft':
         return <Badge variant="secondary">Szkic</Badge>;
+      case 'awaiting_approval':
+        return <Badge variant="outline">Oczekuje na akceptację</Badge>;
+      case 'approved':
+        return <Badge variant="outline">Zatwierdzone</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Odrzucone</Badge>;
       case 'completed':
         return <Badge variant="outline">Zakończone</Badge>;
       case 'cancelled':

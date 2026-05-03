@@ -100,7 +100,7 @@ export const OnboardingDialog = () => {
       // Navigate to appropriate dashboard
       if (user?.role === 'organizer') {
         navigate('/organizer');
-      } else if (user?.role === 'admin') {
+      } else if (user?.role === 'admin' || user?.role === 'superadmin') {
         navigate('/admin');
       } else {
         navigate('/events');

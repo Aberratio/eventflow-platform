@@ -22,6 +22,7 @@ export const BottomNav = () => {
       case 'moderator':
         return '/moderator';
       case 'admin':
+      case 'superadmin':
         return '/admin';
       default:
         return '/';

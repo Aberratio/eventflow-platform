@@ -1,6 +1,6 @@
 import { Event } from '@/types';
 
-const GATEWAY_URL = 'https://gateway.lovable.dev/google_calendar/calendar/v3';
+const GOOGLE_CALENDAR_API_URL = import.meta.env.VITE_GOOGLE_CALENDAR_API_URL;
 
 /**
  * Parse Polish date format to ISO date string (YYYY-MM-DD)
@@ -45,6 +45,10 @@ export const addEventToGoogleCalendar = async (
   calendarId = 'primary',
 ): Promise<{ success: boolean; eventId?: string; error?: string }> => {
   try {
+    if (!GOOGLE_CALENDAR_API_URL) {
+      throw new Error('Google Calendar API URL is not configured.');
+    }
+
     // Parse event date
     const eventDate = parseEventDate(event.date);
 
@@ -69,7 +73,7 @@ export const addEventToGoogleCalendar = async (
       },
     };
 
-    const response = await fetch(`${GATEWAY_URL}/calendars/${calendarId}/events`, {
+    const response = await fetch(`${GOOGLE_CALENDAR_API_URL}/calendars/${calendarId}/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

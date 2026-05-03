@@ -37,7 +37,7 @@ export const ModeratorModerationTab = () => {
 
   const handleApprove = (event: Event) => {
     setEvents((prev) =>
-      prev.map((e) => (e.id === event.id ? { ...e, status: 'published' as const } : e)),
+      prev.map((e) => (e.id === event.id ? { ...e, status: 'approved' as const } : e)),
     );
     toast.success(`Wydarzenie "${event.name}" zostało zatwierdzone`);
   };

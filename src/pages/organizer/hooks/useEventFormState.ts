@@ -1,8 +1,19 @@
-import { mockEvents } from '@/api';
-import { useState } from 'react';
+import {
+  createEvent,
+  getEventById,
+  getOrganizerEventCredits,
+  getOrganizers,
+  mockEvents,
+  submitEvent,
+  updateEvent,
+} from '@/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import {
+  Event,
   SportDiscipline,
   BannerCropArea,
   PaymentConfigType,
@@ -11,6 +22,8 @@ import {
   DistanceRouteFile,
   RegistrationFormConfig,
   EventDisplayOptions,
+  EventCreditKind,
+  OrganizerEventCredits,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -46,9 +59,23 @@ const DEFAULT_DISPLAY_OPTIONS: EventDisplayOptions = {
 export const useEventFormState = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
   const isEditing = Boolean(id);
-  const existingEvent = isEditing ? mockEvents.find((e) => e.id === id) : null;
+  const [existingEvent, setExistingEvent] = useState<Event | null>(
+    isEditing ? mockEvents.find((e) => e.id === id) ?? null : null,
+  );
+  const canChooseOrganizer =
+    user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
+  const [organizers, setOrganizers] = useState(
+    canChooseOrganizer ? [] : user?.role === 'organizer' && user ? [user] : [],
+  );
+  const [selectedOrganizerId, setSelectedOrganizerId] = useState(
+    existingEvent?.organizerId || (user?.role === 'organizer' ? user.id : ''),
+  );
+  const [eventCredits, setEventCredits] = useState<OrganizerEventCredits | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [step, setStep] = useState(1);
 
@@ -194,6 +221,111 @@ export const useEventFormState = () => {
         ? 'awaiting_approval'
         : 'draft',
   );
+
+  useEffect(() => {
+    if (!isEditing || !id) return;
+    getEventById(id)
+      .then((response) => {
+        if (response.data) setExistingEvent(response.data);
+      })
+      .catch(() => undefined);
+  }, [id, isEditing]);
+
+  useEffect(() => {
+    if (!existingEvent) return;
+
+    setSelectedOrganizerId(existingEvent.organizerId);
+    setName(existingEvent.name || '');
+    setDiscipline(existingEvent.discipline || 'running');
+    setDate(existingEvent.date || '');
+    setRegistrationDeadline(existingEvent.registrationDeadline || '');
+    setLocation(existingEvent.location || '');
+    setCity(existingEvent.city || '');
+    setDescription(existingEvent.description || '');
+    setImageUrl(existingEvent.imageUrl || '');
+    setFeatured(existingEvent.featured || false);
+    setIsVirtual(existingEvent.isVirtual || false);
+    setStartDate(existingEvent.startDate || '');
+    setEndDate(existingEvent.endDate || '');
+    setIsPrivate(existingEvent.isPrivate || false);
+    setAccessCode(existingEvent.accessCode || '');
+    setBannerUrl(existingEvent.bannerUrl || '');
+    setBannerCropArea(existingEvent.bannerCropArea);
+    setOrganizerLogoUrl(existingEvent.organizerLogoUrl || '');
+    setPaymentConfigType(existingEvent.paymentConfig?.type || 'admin_gateway');
+    setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
+    setBankAccountHolder(existingEvent.paymentConfig?.bankAccountHolder || '');
+    setTransferTitle(
+      existingEvent.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
+    );
+    setOrganizersHtml(existingEvent.organizersHtml || '');
+    setRulesHtml(existingEvent.rulesHtml || '');
+    setRequireFinalAcceptance(existingEvent.requireFinalAcceptance || false);
+    setFinalAcceptanceHtml(existingEvent.finalAcceptanceHtml || '');
+    setEmbedEnabled(existingEvent.registrationEmbed?.enabled || false);
+    setEmbedStartDate(existingEvent.registrationEmbed?.startDate || '');
+    setEmbedEndDate(existingEvent.registrationEmbed?.endDate || '');
+    setFormConfig(existingEvent.registrationFormConfig || DEFAULT_FORM_CONFIG);
+    setDisplayOptions(existingEvent.displayOptions || DEFAULT_DISPLAY_OPTIONS);
+    setAgeCategories(
+      existingEvent.distances?.[0]?.ageCategories?.length
+        ? existingEvent.distances[0].ageCategories
+        : generateStandardAgeCategories(),
+    );
+    setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
+    setDistances(
+      existingEvent.distances.map((d) => ({
+        id: d.id,
+        name: d.name,
+        length: d.length.toString(),
+        unit: d.unit,
+        price: d.price.toString(),
+        limit: d.limit?.toString() || '',
+        disabledCategoryIds: [],
+        routeMapUrl: d.routeMapUrl || '',
+        routeElevationProfile: d.routeElevationProfile || '',
+        routeGpxUrl: d.routeGpxUrl || '',
+        routeFiles: d.routeFiles || [],
+      })),
+    );
+    setStatus(
+      existingEvent.status === 'published'
+        ? 'published'
+        : existingEvent.status === 'awaiting_approval'
+          ? 'awaiting_approval'
+          : 'draft',
+    );
+  }, [existingEvent]);
+
+  useEffect(() => {
+    if (!canChooseOrganizer) return;
+    getOrganizers()
+      .then((response) => {
+        setOrganizers(response.data);
+        if (!selectedOrganizerId && response.data[0]) {
+          setSelectedOrganizerId(response.data[0].id);
+        }
+      })
+      .catch(() => undefined);
+  }, [canChooseOrganizer, selectedOrganizerId]);
+
+  useEffect(() => {
+    if (canChooseOrganizer || user?.role !== 'organizer') return;
+    setOrganizers([user]);
+    if (!selectedOrganizerId) {
+      setSelectedOrganizerId(user.id);
+    }
+  }, [canChooseOrganizer, selectedOrganizerId, user]);
+
+  useEffect(() => {
+    if (!selectedOrganizerId) {
+      setEventCredits(null);
+      return;
+    }
+    getOrganizerEventCredits(selectedOrganizerId)
+      .then((response) => setEventCredits(response.data))
+      .catch(() => setEventCredits(null));
+  }, [selectedOrganizerId]);
 
   // Distance handlers
   const addDistance = () => {
@@ -422,18 +554,126 @@ export const useEventFormState = () => {
 
   const prevStep = () => setStep((prev) => prev - 1);
 
-  const handleSubmit = () => {
-    const messages = {
-      draft: 'Wydarzenie zostało zapisane jako szkic.',
-      awaiting_approval:
-        'Wydarzenie zostało zgłoszone do akceptacji. Administrator sprawdzi je wkrótce.',
-      published: 'Wydarzenie zostało opublikowane i jest widoczne dla uczestników.',
+  const buildPayload = () => {
+    const organizer = organizers.find((o) => o.id === selectedOrganizerId) || user;
+    return {
+      name,
+      slug: generateSlug(name),
+      discipline,
+      date,
+      location,
+      city,
+      description,
+      imageUrl,
+      distances: distances.map((dist) => ({
+        id: dist.id,
+        name: dist.name,
+        length: Number(dist.length),
+        unit: dist.unit,
+        price: Number(dist.price),
+        limit: dist.limit ? Number(dist.limit) : undefined,
+        registeredCount:
+          existingEvent?.distances.find((d) => d.id === dist.id)?.registeredCount || 0,
+        categories: allCategories
+          .filter((cat) => !dist.disabledCategoryIds.includes(cat.id))
+          .map((cat) => cat.name),
+        ageCategories,
+        specialCategories,
+        routeMapUrl: dist.routeMapUrl || undefined,
+        routeElevationProfile: dist.routeElevationProfile || undefined,
+        routeGpxUrl: dist.routeGpxUrl || undefined,
+        routeFiles: dist.routeFiles,
+      })),
+      organizerId: selectedOrganizerId,
+      organizerName: organizer?.companyName || organizer?.name || '',
+      registrationDeadline,
+      featured,
+      bannerUrl: bannerUrl || undefined,
+      bannerCropArea,
+      organizerLogoUrl: organizerLogoUrl || undefined,
+      isVirtual,
+      eventCreditKind: isVirtual ? 'virtual' : 'standard',
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      paymentConfig: {
+        type: paymentConfigType,
+        bankAccountNumber: bankAccountNumber || undefined,
+        bankAccountHolder: bankAccountHolder || undefined,
+        transferTitle: transferTitle || undefined,
+      },
+      organizersHtml,
+      rulesHtml,
+      finalAcceptanceHtml,
+      requireFinalAcceptance,
+      isPrivate,
+      accessCode: accessCode || undefined,
+      registrationEmbed: {
+        enabled: embedEnabled,
+        startDate: embedStartDate || undefined,
+        endDate: embedEndDate || undefined,
+      },
+      registrationFormConfig: formConfig,
+      displayOptions,
     };
-    toast({
-      title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
-      description: messages[status],
-    });
-    navigate(-1);
+  };
+
+  const selectedEventCreditKind: EventCreditKind = isVirtual ? 'virtual' : 'standard';
+  const selectedEventCredit = eventCredits?.byType?.[selectedEventCreditKind] ?? eventCredits;
+
+  const handleSubmit = async () => {
+    if (!selectedOrganizerId) {
+      toast({
+        title: 'Błąd',
+        description: 'Wybierz organizatora wydarzenia',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!isEditing && selectedEventCredit && selectedEventCredit.available <= 0) {
+      toast({
+        title: 'Brak wykupionych wydarzeń',
+        description: 'Organizator nie ma dostępnych kredytów dla tego typu wydarzenia.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = buildPayload();
+      let saved: Event;
+      if (isEditing && id) {
+        saved = (await updateEvent(id, payload)).data;
+      } else {
+        saved = (await createEvent(payload)).data;
+      }
+      if (status === 'awaiting_approval' && ['draft', 'rejected'].includes(saved.status)) {
+        saved = (await submitEvent(saved.id)).data;
+      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['organizer-events', selectedOrganizerId] }),
+        queryClient.invalidateQueries({ queryKey: ['organizer-event-credits', selectedOrganizerId] }),
+        queryClient.invalidateQueries({ queryKey: ['event', saved.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+      ]);
+
+      toast({
+        title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
+        description:
+          status === 'awaiting_approval'
+            ? 'Wydarzenie zostało zgłoszone do akceptacji.'
+            : 'Wydarzenie zostało zapisane jako szkic.',
+      });
+      navigate(isEditing ? `/organizer/events/${saved.id}` : '/organizer/events');
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zapisać wydarzenia',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
@@ -466,6 +706,15 @@ export const useEventFormState = () => {
     step,
     navigate,
     toast,
+    user,
+    canChooseOrganizer,
+    organizers,
+    selectedOrganizerId,
+    setSelectedOrganizerId,
+    eventCredits,
+    selectedEventCreditKind,
+    selectedEventCredit,
+    isSaving,
 
     // Step 1
     name,

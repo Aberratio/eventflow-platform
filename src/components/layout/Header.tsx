@@ -35,6 +35,7 @@ const roleLabels = {
   organizer: 'Organizator',
   moderator: 'Moderator',
   admin: 'Administrator',
+  superadmin: 'Superadmin',
 };
 
 const roleBadgeVariants = {
@@ -42,6 +43,7 @@ const roleBadgeVariants = {
   organizer: 'default',
   moderator: 'outline',
   admin: 'destructive',
+  superadmin: 'destructive',
 } as const;
 
 export const Header = () => {
@@ -71,6 +73,7 @@ export const Header = () => {
       case 'moderator':
         return '/moderator';
       case 'admin':
+      case 'superadmin':
         return '/admin';
       default:
         return '/';

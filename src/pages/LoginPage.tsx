@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Timer, Lock, Mail, Eye, EyeOff, User, Briefcase, UserCheck, Shield } from 'lucide-react';
+import { Timer, Lock, Mail, Eye, EyeOff, User, Briefcase, UserCheck, Shield, Crown } from 'lucide-react';
 import { MockCredentialCard, type MockCredential } from '@/components/auth/MockCredentialCard';
 
 const loginSchema = z.object({
@@ -61,10 +61,18 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   },
   {
     role: 'admin',
-    label: 'Super Admin',
+    label: 'Administrator',
     email: 'admin@zmierzymyczas.pl',
     password: 'demo1234',
     icon: Shield,
+    color: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
+  {
+    role: 'superadmin',
+    label: 'Super Admin',
+    email: 'superadmin@zmierzymyczas.pl',
+    password: 'demo1234',
+    icon: Crown,
     color: 'bg-destructive/10 text-destructive border-destructive/30',
   },
 ];
@@ -84,6 +92,7 @@ const LoginPage = () => {
         organizer: '/organizer',
         moderator: '/moderator',
         admin: '/admin',
+        superadmin: '/admin',
       }[user.role];
       navigate(redirectPath);
     }
@@ -98,7 +107,7 @@ const LoginPage = () => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const success = loginWithCredentials(data.email, data.password);
+    const success = await loginWithCredentials(data.email, data.password);
     if (success) {
       toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
     } else {

@@ -1,5 +1,6 @@
-import { mockEvents, mockRegistrations } from '@/api';
+import { getEventsByOrganizer, mockRegistrations } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -11,13 +12,23 @@ import { ArrowLeft, Plus, Calendar, MapPin, Users, Settings } from 'lucide-react
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
-type StatusFilter = 'all' | 'published' | 'draft' | 'completed';
+type StatusFilter =
+  | 'all'
+  | 'published'
+  | 'approved'
+  | 'awaiting_approval'
+  | 'draft'
+  | 'completed'
+  | 'rejected';
 
-const statusLabels: Record<StatusFilter, string> = {
+const statusLabels: Record<string, string> = {
   all: 'Wszystkie',
   published: 'Aktywne',
+  approved: 'Zatwierdzone',
+  awaiting_approval: 'Oczekujące',
   draft: 'Szkice',
   completed: 'Zakończone',
+  rejected: 'Odrzucone',
 };
 
 const OrganizerEventsPage = () => {
@@ -25,12 +36,21 @@ const OrganizerEventsPage = () => {
   const { user } = useAuth();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
-  const myEvents = mockEvents.filter((e) => e.organizerId === user?.id);
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['organizer-events', user?.id],
+    queryFn: () => getEventsByOrganizer(user?.id || ''),
+    enabled: Boolean(user?.id),
+  });
+
+  const myEvents = eventsResponse?.data ?? [];
 
   const filteredEvents = myEvents.filter((e) => {
     if (statusFilter === 'all') return true;
     if (statusFilter === 'completed') return e.status === 'completed';
-    if (statusFilter === 'draft') return ['draft', 'awaiting_approval'].includes(e.status);
+    if (statusFilter === 'draft') return e.status === 'draft';
+    if (statusFilter === 'approved') return e.status === 'approved';
+    if (statusFilter === 'awaiting_approval') return e.status === 'awaiting_approval';
+    if (statusFilter === 'rejected') return e.status === 'rejected';
     return e.status === 'published';
   });
 
@@ -42,6 +62,10 @@ const OrganizerEventsPage = () => {
         return <Badge variant="secondary">Szkic</Badge>;
       case 'awaiting_approval':
         return <Badge variant="outline">Oczekuje</Badge>;
+      case 'approved':
+        return <Badge variant="outline">Zatwierdzone</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Odrzucone</Badge>;
       case 'completed':
         return <Badge variant="secondary">Zakończone</Badge>;
       case 'cancelled':

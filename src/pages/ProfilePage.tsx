@@ -22,6 +22,7 @@ const ProfilePage = () => {
       case 'moderator':
         return <ModeratorProfileTab />;
       case 'admin':
+      case 'superadmin':
         return <AdminProfileTab />;
       default:
         return <ParticipantProfileTab />;

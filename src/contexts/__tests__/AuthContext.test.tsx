@@ -24,32 +24,34 @@ describe('AuthContext', () => {
     expect(result.current.user?.role).toBe('participant');
   });
 
-  it('loginWithCredentials validates password', () => {
+  it('loginWithCredentials validates password', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     let ok: boolean;
-    act(() => {
-      ok = result.current.loginWithCredentials('wrong@test.com', 'wrong');
+    await act(async () => {
+      ok = await result.current.loginWithCredentials('wrong@test.com', 'wrong');
     });
     expect(ok!).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
   });
 
-  it('loginWithCredentials succeeds with correct credentials', () => {
+  it('loginWithCredentials succeeds with correct credentials', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     let ok: boolean;
-    act(() => {
-      ok = result.current.loginWithCredentials('jan@example.com', 'demo1234');
+    await act(async () => {
+      ok = await result.current.loginWithCredentials('jan@example.com', 'demo1234');
     });
     expect(ok!).toBe(true);
     expect(result.current.isAuthenticated).toBe(true);
   });
 
-  it('logout clears user and storage', () => {
+  it('logout clears user and storage', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     act(() => result.current.login('admin'));
     expect(result.current.isAuthenticated).toBe(true);
 
-    act(() => result.current.logout());
+    await act(async () => {
+      await result.current.logout();
+    });
     expect(result.current.isAuthenticated).toBe(false);
     expect(localStorage.getItem('zmierzymyczas_auth')).toBeNull();
   });

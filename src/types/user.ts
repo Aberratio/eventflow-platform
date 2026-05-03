@@ -1,4 +1,4 @@
-export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin';
+export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin' | 'superadmin';
 
 export interface User {
   id: string;
@@ -75,7 +75,7 @@ export interface SecuritySettings {
 export interface OnlineSession {
   userId: string;
   userName: string;
-  role: 'admin' | 'moderator';
+  role: 'admin' | 'superadmin' | 'moderator';
   loginAt: string;
   lastActiveAt: string;
   ipAddress?: string;

@@ -307,12 +307,19 @@ export const mockUsers: User[] = [
     website: 'https://runpoland.pl',
     description: 'Ogólnopolska sieć biegów ulicznych i górskich.',
   },
-  // Admin
+  // Admins
   {
     id: 'a1',
     name: 'Admin Platformy',
     email: 'admin@zmierzymyczas.pl',
     role: 'admin',
     phone: '+48 800 123 456',
+  },
+  {
+    id: 'sa1',
+    name: 'Superadmin Platformy',
+    email: 'superadmin@zmierzymyczas.pl',
+    role: 'superadmin',
+    phone: '+48 800 000 001',
   },
 ];

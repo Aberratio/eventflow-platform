@@ -32,9 +32,11 @@ const EventDetailsPage = () => {
   const defaultTab = searchParams.get('tab') || 'info';
   const event = mockEvents.find((e) => e.slug === slug);
 
-  const isUnpublished = event && ['draft', 'awaiting_approval', 'rejected'].includes(event.status);
+  const isUnpublished =
+    event && ['draft', 'awaiting_approval', 'approved', 'rejected'].includes(event.status);
+  const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
   const canViewDraft =
-    user?.role === 'admin' ||
+    isAdminLike ||
     user?.role === 'moderator' ||
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
@@ -43,7 +45,7 @@ const EventDetailsPage = () => {
 
   const hasPrivateAccess = (() => {
     if (!isPrivateEvent || !event) return !isPrivateEvent;
-    if (user?.role === 'admin' || user?.role === 'moderator') return true;
+    if (isAdminLike || user?.role === 'moderator') return true;
     if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
     if (
       isAuthenticated &&

@@ -30,6 +30,7 @@ export const EventSidebar = ({
 }: EventSidebarProps) => {
   const canEdit =
     user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
     user?.role === 'moderator' ||
     (user?.role === 'organizer' && event.organizerId === user?.id);
 

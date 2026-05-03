@@ -46,6 +46,43 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="organizer">Organizator *</Label>
+              {form.canChooseOrganizer ? (
+                <Select
+                  value={form.selectedOrganizerId}
+                  onValueChange={form.setSelectedOrganizerId}
+                >
+                  <SelectTrigger id="organizer">
+                    <SelectValue placeholder="Wybierz organizatora" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {form.organizers.map((organizer) => (
+                      <SelectItem key={organizer.id} value={organizer.id}>
+                        {organizer.companyName || organizer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  id="organizer"
+                  value={form.user?.companyName || form.user?.name || ''}
+                  disabled
+                />
+              )}
+              <p
+                className={
+                  form.selectedEventCredit && form.selectedEventCredit.available <= 0
+                    ? 'text-sm text-destructive'
+                    : 'text-sm text-muted-foreground'
+                }
+              >
+                {form.selectedEventCredit
+                  ? `Dostępne wykupione wydarzenia dla tego typu: ${form.selectedEventCredit.available} z ${form.selectedEventCredit.total}`
+                  : 'Ładowanie dostępnych wydarzeń...'}
+              </p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="name">Nazwa wydarzenia *</Label>
               <Input

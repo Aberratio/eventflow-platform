@@ -1,8 +1,10 @@
-import { mockEvents, mockRegistrations } from '@/api';
-import { useState } from 'react';
+import { getEventById, mockRegistrations, publishEvent } from '@/api';
+import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventOverviewTab } from './components/EventOverviewTab';
 import { ParticipantsTab } from './components/ParticipantsTab';
@@ -23,23 +25,61 @@ import {
 import { DiscountCode } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+const statusLabels = {
+  draft: 'Szkic',
+  awaiting_approval: 'Oczekuje na akceptację',
+  approved: 'Zatwierdzone',
+  published: 'Opublikowane',
+  completed: 'Zakończone',
+  cancelled: 'Anulowane',
+  rejected: 'Odrzucone',
+} as const;
 
 const EventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const event = mockEvents.find((e) => e.id === id);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: ['event', id],
+    queryFn: () => getEventById(id || ''),
+    enabled: Boolean(id),
+  });
+
+  const event = eventResponse?.data ?? null;
+  const [localStatus, setLocalStatus] = useState(event?.status);
+  const visibleEvent = event && localStatus ? { ...event, status: localStatus } : event;
   const registrations = mockRegistrations.filter((r) => r.eventId === id);
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 
+  useEffect(() => {
+    if (event) {
+      setDiscountCodes(event.discountCodes || []);
+      setLocalStatus(event.status);
+    }
+  }, [event]);
+
   const canManage =
     user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
     user?.role === 'moderator' ||
-    (user?.role === 'organizer' && event?.organizerId === user?.id);
+    (user?.role === 'organizer' && visibleEvent?.organizerId === user?.id);
 
-  if (!event || !canManage) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-8">
+          <p className="text-muted-foreground">Ładowanie wydarzenia...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!visibleEvent || !canManage) {
     return (
       <Layout>
         <div className="container py-8">
@@ -54,6 +94,26 @@ const EventManage = () => {
     );
   }
 
+  const canPublish =
+    visibleEvent.status === 'approved' &&
+    (user?.role === 'admin' ||
+      user?.role === 'superadmin' ||
+      (user?.role === 'organizer' && visibleEvent.organizerId === user.id));
+
+  const handlePublish = async () => {
+    try {
+      const response = await publishEvent(visibleEvent.id);
+      setLocalStatus(response.data.status);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['event', visibleEvent.id] }),
+        queryClient.invalidateQueries({ queryKey: ['organizer-events', visibleEvent.organizerId] }),
+      ]);
+      toast.success('Wydarzenie zostało opublikowane');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nie udało się opublikować wydarzenia');
+    }
+  };
+
   return (
     <Layout>
       <div className="container py-8">
@@ -62,9 +122,17 @@ const EventManage = () => {
         </Button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">{event.name}</h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold">{visibleEvent.name}</h1>
+              <Badge variant={visibleEvent.status === 'published' ? 'default' : 'outline'}>
+                {statusLabels[visibleEvent.status]}
+              </Badge>
+            </div>
+            {canPublish && <Button onClick={handlePublish}>Opublikuj</Button>}
+          </div>
           <p className="text-muted-foreground">
-            {event.isVirtual
+            {visibleEvent.isVirtual
               ? 'Wydarzenie wirtualne • Cały świat'
               : `${event.city} • ${event.date}`}
           </p>
@@ -81,8 +149,8 @@ const EventManage = () => {
               <span className="hidden sm:inline">Uczestnicy</span>
             </TabsTrigger>
             <TabsTrigger value="results" className="flex items-center gap-2">
-              {event.isVirtual ? <Globe className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
-              <span className="hidden sm:inline">{event.isVirtual ? 'Weryfikacja' : 'Wyniki'}</span>
+              {visibleEvent.isVirtual ? <Globe className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
+              <span className="hidden sm:inline">{visibleEvent.isVirtual ? 'Weryfikacja' : 'Wyniki'}</span>
             </TabsTrigger>
             <TabsTrigger value="discounts" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
@@ -99,35 +167,35 @@ const EventManage = () => {
           </TabsList>
 
           <TabsContent value="overview">
-            <EventOverviewTab event={event} registrations={registrations} />
+            <EventOverviewTab event={visibleEvent} registrations={registrations} />
           </TabsContent>
 
           <TabsContent value="participants">
-            <ParticipantsTab event={event} registrations={registrations} />
+            <ParticipantsTab event={visibleEvent} registrations={registrations} />
           </TabsContent>
 
           <TabsContent value="results">
-            {event.isVirtual ? (
-              <VirtualResultsVerificationTab event={event} />
+            {visibleEvent.isVirtual ? (
+              <VirtualResultsVerificationTab event={visibleEvent} />
             ) : (
-              <ResultsTab event={event} registrations={registrations} />
+              <ResultsTab event={visibleEvent} registrations={registrations} />
             )}
           </TabsContent>
 
           <TabsContent value="discounts">
             <DiscountCodesEditor
               discountCodes={discountCodes}
-              distances={event.distances}
+              distances={visibleEvent.distances}
               onChange={setDiscountCodes}
             />
           </TabsContent>
 
           <TabsContent value="emails">
-            <EmailTemplatesManager eventId={event.id} scope="event" />
+            <EmailTemplatesManager eventId={visibleEvent.id} scope="event" />
           </TabsContent>
 
           <TabsContent value="settings">
-            <EventSettingsTab event={event} />
+            <EventSettingsTab event={visibleEvent} />
           </TabsContent>
         </Tabs>
       </div>

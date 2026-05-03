@@ -2,6 +2,15 @@ import type { OnlineSession, GoogleCalendarSettings } from '@/types';
 
 export const mockOnlineSessions: OnlineSession[] = [
   {
+    userId: 'sa1',
+    userName: 'Superadmin Platformy',
+    role: 'superadmin',
+    loginAt: new Date(Date.now() - 900000).toISOString(), // 15 min ago
+    lastActiveAt: new Date().toISOString(),
+    browser: 'Chrome 120',
+    location: 'Warszawa, PL',
+  },
+  {
     userId: 'a1',
     userName: 'Admin Platformy',
     role: 'admin',

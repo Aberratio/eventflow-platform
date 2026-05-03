@@ -70,6 +70,8 @@ import type {
   VirtualResultSubmission,
   VirtualResultSubmissionStatus,
   PaymentDetails,
+  OrganizerEventCredits,
+  EventCreditKind,
 } from '@/types';
 import type {
   EmailTemplate,
@@ -93,10 +95,24 @@ export interface ApiAdapter {
   createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>>;
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;
   deleteEvent(id: string): Promise<ApiResponse<void>>;
-  updateEventStatus(id: string, status: Event['status'], reason?: string): Promise<ApiResponse<Event>>;
+  updateEventStatus(
+    id: string,
+    status: Event['status'],
+    reason?: string,
+  ): Promise<ApiResponse<Event>>;
+  submitEvent(id: string): Promise<ApiResponse<Event>>;
+  approveEvent(id: string): Promise<ApiResponse<Event>>;
+  rejectEvent(id: string, reason: string): Promise<ApiResponse<Event>>;
+  publishEvent(id: string): Promise<ApiResponse<Event>>;
   getFeaturedEvents(): Promise<ApiResponse<Event[]>>;
   getLiveEvents(): Promise<ApiResponse<Event[]>>;
   getEventsByOrganizer(organizerId: string): Promise<ApiResponse<Event[]>>;
+  getOrganizerEventCredits(organizerId: string): Promise<ApiResponse<OrganizerEventCredits>>;
+  grantOrganizerEventCredits(
+    organizerId: string,
+    count: number,
+    kind?: EventCreditKind,
+  ): Promise<ApiResponse<OrganizerEventCredits>>;
 
   // ── Users ──
   getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>>;
@@ -124,9 +140,15 @@ export interface ApiAdapter {
   getRegistrationsByEvent(eventId: string): Promise<ApiResponse<Registration[]>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;
-  updateRegistration(id: string, data: UpdateRegistrationPayload): Promise<ApiResponse<Registration>>;
+  updateRegistration(
+    id: string,
+    data: UpdateRegistrationPayload,
+  ): Promise<ApiResponse<Registration>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
-  updatePaymentDetails(id: string, paymentDetails: PaymentDetails): Promise<ApiResponse<Registration>>;
+  updatePaymentDetails(
+    id: string,
+    paymentDetails: PaymentDetails,
+  ): Promise<ApiResponse<Registration>>;
 
   // ── Results ──
   getResults(filters?: ResultFilters): Promise<PaginatedResponse<Result>>;
@@ -138,7 +160,9 @@ export interface ApiAdapter {
   getPersonalRecords(userId: string): Promise<ApiResponse<PersonalRecord[]>>;
   getTeamResults(eventId: string): Promise<ApiResponse<TeamResult[]>>;
   getResultDocuments(eventId: string): Promise<ApiResponse<EventResultDocument[]>>;
-  uploadResultDocument(data: Partial<EventResultDocument>): Promise<ApiResponse<EventResultDocument>>;
+  uploadResultDocument(
+    data: Partial<EventResultDocument>,
+  ): Promise<ApiResponse<EventResultDocument>>;
 
   // ── Series ──
   getSeries(filters?: SeriesFilters): Promise<PaginatedResponse<EventSeries>>;
@@ -154,16 +178,27 @@ export interface ApiAdapter {
   getOrders(userId?: string): Promise<ApiResponse<ShopOrder[]>>;
   getOrderById(id: string): Promise<ApiResponse<ShopOrder | null>>;
   createOrder(data: CreateOrderPayload): Promise<ApiResponse<ShopOrder>>;
-  updateOrderStatus(id: string, status: ShopOrder['status'], trackingNumber?: string): Promise<ApiResponse<ShopOrder>>;
+  updateOrderStatus(
+    id: string,
+    status: ShopOrder['status'],
+    trackingNumber?: string,
+  ): Promise<ApiResponse<ShopOrder>>;
 
   // ── Challenges ──
   getChallenges(): Promise<ApiResponse<Challenge[]>>;
   getChallengeBySlug(slug: string): Promise<ApiResponse<Challenge | null>>;
   getChallengeById(id: string): Promise<ApiResponse<Challenge | null>>;
-  getChallengeParticipations(challengeId?: string, userId?: string): Promise<ApiResponse<ChallengeParticipation[]>>;
+  getChallengeParticipations(
+    challengeId?: string,
+    userId?: string,
+  ): Promise<ApiResponse<ChallengeParticipation[]>>;
   joinChallenge(challengeId: string): Promise<ApiResponse<ChallengeParticipation>>;
   submitChallengeEntry(data: Partial<ChallengeEntry>): Promise<ApiResponse<ChallengeEntry>>;
-  reviewChallengeEntry(entryId: string, status: ChallengeEntryStatus, reason?: string): Promise<ApiResponse<ChallengeEntry>>;
+  reviewChallengeEntry(
+    entryId: string,
+    status: ChallengeEntryStatus,
+    reason?: string,
+  ): Promise<ApiResponse<ChallengeEntry>>;
 
   // ── Messages ──
   getMessages(userId: string): Promise<ApiResponse<Message[]>>;
@@ -181,7 +216,9 @@ export interface ApiAdapter {
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
-  updateGlobalInsuranceSettings(data: Partial<GlobalInsuranceSettings>): Promise<ApiResponse<GlobalInsuranceSettings>>;
+  updateGlobalInsuranceSettings(
+    data: Partial<GlobalInsuranceSettings>,
+  ): Promise<ApiResponse<GlobalInsuranceSettings>>;
 
   // ── Admin ──
   getActivityLogs(filters?: ActivityLogFilters): Promise<ApiResponse<AdminActivityLog[]>>;
@@ -200,20 +237,33 @@ export interface ApiAdapter {
 
   // ── Calendar ──
   getCalendarSettings(): Promise<ApiResponse<GoogleCalendarSettings>>;
-  updateCalendarSettings(data: Partial<GoogleCalendarSettings>): Promise<ApiResponse<GoogleCalendarSettings>>;
+  updateCalendarSettings(
+    data: Partial<GoogleCalendarSettings>,
+  ): Promise<ApiResponse<GoogleCalendarSettings>>;
   addEventToCalendar(event: Event): Promise<ApiResponse<void>>;
 
   // ── Virtual Results ──
-  getVirtualResultSubmissions(filters?: VirtualResultFilters): Promise<ApiResponse<VirtualResultSubmission[]>>;
-  submitVirtualResult(data: Partial<VirtualResultSubmission>): Promise<ApiResponse<VirtualResultSubmission>>;
-  reviewVirtualResult(id: string, status: VirtualResultSubmissionStatus, reason?: string): Promise<ApiResponse<VirtualResultSubmission>>;
+  getVirtualResultSubmissions(
+    filters?: VirtualResultFilters,
+  ): Promise<ApiResponse<VirtualResultSubmission[]>>;
+  submitVirtualResult(
+    data: Partial<VirtualResultSubmission>,
+  ): Promise<ApiResponse<VirtualResultSubmission>>;
+  reviewVirtualResult(
+    id: string,
+    status: VirtualResultSubmissionStatus,
+    reason?: string,
+  ): Promise<ApiResponse<VirtualResultSubmission>>;
 
   // ── Email Templates ──
   getEmailTemplates(eventId?: string | null): Promise<PaginatedResponse<EmailTemplate>>;
   getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>>;
   getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>>;
   createEmailTemplate(payload: CreateEmailTemplatePayload): Promise<ApiResponse<EmailTemplate>>;
-  updateEmailTemplate(id: string, data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>): Promise<ApiResponse<EmailTemplate>>;
+  updateEmailTemplate(
+    id: string,
+    data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>,
+  ): Promise<ApiResponse<EmailTemplate>>;
   deleteEmailTemplate(id: string): Promise<ApiResponse<void>>;
   toggleEmailTemplate(id: string, active: boolean): Promise<ApiResponse<EmailTemplate>>;
   sendEmailNow(templateId: string, recipientIds?: string[]): Promise<ApiResponse<SendEmailResult>>;

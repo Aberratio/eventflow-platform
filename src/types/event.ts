@@ -1,5 +1,7 @@
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
 
+export type EventCreditKind = 'standard' | 'virtual' | 'timing';
+
 export type RegistrationStatus = 'open' | 'closed' | 'none';
 
 export type PriceTierMode = 'date' | 'participants';
@@ -171,9 +173,21 @@ export interface Event {
   organizerId: string;
   organizerName: string;
   organizerContact?: OrganizerContact;
-  status: 'draft' | 'awaiting_approval' | 'published' | 'completed' | 'cancelled' | 'rejected';
+  status:
+    | 'draft'
+    | 'awaiting_approval'
+    | 'approved'
+    | 'published'
+    | 'completed'
+    | 'cancelled'
+    | 'rejected';
   rejectionReason?: string;
   submittedAt?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  publishedAt?: string;
+  publishedBy?: string;
+  createdBy?: string;
   registrationDeadline: string;
   featured: boolean;
   liveResultsUrl?: string;
@@ -192,6 +206,7 @@ export interface Event {
   bannerCropArea?: BannerCropArea;
   organizerLogoUrl?: string;
   isVirtual?: boolean;
+  eventCreditKind?: EventCreditKind;
   startDate?: string;
   endDate?: string;
   resultDocuments?: EventResultDocument[];

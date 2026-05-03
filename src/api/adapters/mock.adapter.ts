@@ -22,6 +22,8 @@ import type {
   DeliveryMethod,
   ShopPaymentMethod,
   ShopOrder,
+  EventCreditKind,
+  OrganizerEventCredits,
   Challenge,
   ChallengeParticipation,
   ChallengeEntry,
@@ -137,6 +139,44 @@ function paginated<T>(data: T[]): PaginatedResponse<T> {
 let emailTemplates: EmailTemplate[] = [...mockEmailTemplates];
 let emailLogs: EmailSendLog[] = [...mockEmailSendLogs];
 let nextTemplateId = 100;
+type OrganizerEventCreditState = Record<EventCreditKind, { total: number; used: number }>;
+
+const createCreditState = (
+  standard: { total: number; used: number },
+  virtual: { total: number; used: number },
+  timing: { total: number; used: number },
+): OrganizerEventCreditState => ({ standard, virtual, timing });
+
+const organizerEventCredits: Record<string, OrganizerEventCreditState> = {
+  o1: createCreditState({ total: 3, used: 1 }, { total: 1, used: 1 }, { total: 0, used: 0 }),
+  o2: createCreditState({ total: 5, used: 2 }, { total: 2, used: 0 }, { total: 1, used: 0 }),
+  o3: createCreditState({ total: 2, used: 0 }, { total: 0, used: 0 }, { total: 0, used: 0 }),
+};
+
+const emptyCreditState = (): OrganizerEventCreditState =>
+  createCreditState({ total: 0, used: 0 }, { total: 0, used: 0 }, { total: 0, used: 0 });
+
+const toOrganizerEventCredits = (state: OrganizerEventCreditState): OrganizerEventCredits => {
+  const byType = Object.fromEntries(
+    (Object.entries(state) as Array<[EventCreditKind, { total: number; used: number }]>).map(
+      ([kind, credit]) => [
+        kind,
+        {
+          total: credit.total,
+          used: credit.used,
+          available: Math.max(0, credit.total - credit.used),
+        },
+      ],
+    ),
+  ) as Record<EventCreditKind, OrganizerEventCredits['byType'][EventCreditKind]>;
+
+  return {
+    total: Object.values(byType).reduce((sum, credit) => sum + credit.total, 0),
+    used: Object.values(byType).reduce((sum, credit) => sum + credit.used, 0),
+    available: Object.values(byType).reduce((sum, credit) => sum + credit.available, 0),
+    byType,
+  };
+};
 
 // ─────────────────────────────────────────────────────────
 // Mock Adapter Implementation
@@ -181,33 +221,85 @@ export const mockAdapter: ApiAdapter = {
 
   async createEvent(data) {
     await delay();
+    const credits = organizerEventCredits[data.organizerId];
+    const creditKind: EventCreditKind = data.isVirtual ? 'virtual' : 'standard';
+    const credit = credits?.[creditKind];
+    if (credit && credit.used >= credit.total) {
+      return fail(
+        null as unknown as Event,
+        'Organizer has no available event credits for this event type',
+      );
+    }
+    if (credit) credit.used += 1;
     const newEvent: Event = {
       id: `e-${Date.now()}`,
       status: 'draft',
       featured: false,
       ...data,
     } as Event;
+    mockEvents.push(newEvent);
     return ok(newEvent);
   },
 
   async updateEvent(id, data) {
     await delay();
-    const event = mockEvents.find((e) => e.id === id);
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
-    return ok({ ...event, ...data } as Event);
+    const updated = { ...event, ...data } as Event;
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
   },
 
   async deleteEvent(id) {
     await delay();
     const exists = mockEvents.some((e) => e.id === id);
-    return exists ? ok(undefined as unknown as void) : fail(undefined as unknown as void, 'Event not found');
+    return exists
+      ? ok(undefined as unknown as void)
+      : fail(undefined as unknown as void, 'Event not found');
   },
 
   async updateEventStatus(id, status, reason) {
     await delay();
-    const event = mockEvents.find((e) => e.id === id);
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
-    return ok({ ...event, status, rejectionReason: reason });
+    const updated = { ...event, status, rejectionReason: reason };
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
+  },
+
+  async submitEvent(id) {
+    return this.updateEventStatus(id, 'awaiting_approval');
+  },
+
+  async approveEvent(id) {
+    await delay();
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
+    if (!event) return fail(null as unknown as Event, 'Event not found');
+    const updated = {
+      ...event,
+      status: 'approved',
+      rejectionReason: undefined,
+      approvedAt: new Date().toISOString(),
+    };
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
+  },
+
+  async rejectEvent(id, reason) {
+    return this.updateEventStatus(id, 'rejected', reason);
+  },
+
+  async publishEvent(id) {
+    await delay();
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
+    if (!event) return fail(null as unknown as Event, 'Event not found');
+    const updated = { ...event, status: 'published', publishedAt: new Date().toISOString() };
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
   },
 
   async getFeaturedEvents() {
@@ -225,13 +317,27 @@ export const mockAdapter: ApiAdapter = {
     return ok(mockEvents.filter((e) => e.organizerId === organizerId));
   },
 
+  async getOrganizerEventCredits(organizerId) {
+    await delay();
+    return ok(toOrganizerEventCredits(organizerEventCredits[organizerId] ?? emptyCreditState()));
+  },
+
+  async grantOrganizerEventCredits(organizerId, count, kind = 'standard') {
+    await delay();
+    const current = organizerEventCredits[organizerId] ?? emptyCreditState();
+    current[kind].total += count;
+    organizerEventCredits[organizerId] = current;
+    return ok(toOrganizerEventCredits(current));
+  },
+
   // ── Users ──
 
   async getUsers(filters) {
     await delay();
     let filtered = [...mockUsers];
     if (filters?.role) filtered = filtered.filter((u) => u.role === filters.role);
-    if (filters?.status) filtered = filtered.filter((u) => (u.status ?? 'active') === filters.status);
+    if (filters?.status)
+      filtered = filtered.filter((u) => (u.status ?? 'active') === filters.status);
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       filtered = filtered.filter(
@@ -499,9 +605,12 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     let filtered = [...mockShopProducts];
     if (filters?.category) filtered = filtered.filter((p) => p.category === filters.category);
-    if (filters?.inStock !== undefined) filtered = filtered.filter((p) => p.inStock === filters.inStock);
-    if (filters?.minPrice !== undefined) filtered = filtered.filter((p) => p.price >= filters.minPrice!);
-    if (filters?.maxPrice !== undefined) filtered = filtered.filter((p) => p.price <= filters.maxPrice!);
+    if (filters?.inStock !== undefined)
+      filtered = filtered.filter((p) => p.inStock === filters.inStock);
+    if (filters?.minPrice !== undefined)
+      filtered = filtered.filter((p) => p.price >= filters.minPrice!);
+    if (filters?.maxPrice !== undefined)
+      filtered = filtered.filter((p) => p.price <= filters.maxPrice!);
     if (filters?.search) {
       const q = filters.search.toLowerCase();
       filtered = filtered.filter(

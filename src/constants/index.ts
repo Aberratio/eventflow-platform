@@ -4,6 +4,7 @@ export const USER_ROLES = {
   ORGANIZER: 'organizer',
   MODERATOR: 'moderator',
   ADMIN: 'admin',
+  SUPERADMIN: 'superadmin',
 } as const;
 
 export const ROLE_LABELS: Record<string, string> = {
@@ -11,6 +12,7 @@ export const ROLE_LABELS: Record<string, string> = {
   organizer: 'Organizator',
   moderator: 'Moderator',
   admin: 'Administrator',
+  superadmin: 'Superadmin',
 };
 
 // ─── Event Statuses ───

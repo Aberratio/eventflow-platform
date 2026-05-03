@@ -1,4 +1,15 @@
-import type { MerchandiseColor } from './event';
+import type { EventCreditKind, MerchandiseColor } from './event';
+import type { UserRole } from './user';
+
+export interface EventCreditBalance {
+  total: number;
+  used: number;
+  available: number;
+}
+
+export interface OrganizerEventCredits extends EventCreditBalance {
+  byType: Record<EventCreditKind, EventCreditBalance>;
+}
 
 export type ShopCategory =
   | 'apparel'
@@ -44,6 +55,10 @@ export interface ShopProduct {
   isService?: boolean;
   serviceDetails?: string;
   validityDays?: number;
+  visibleToRoles?: UserRole[];
+  serviceKind?: 'event_credit' | 'organizer_license';
+  eventCreditKind?: EventCreditKind;
+  eventCreditCount?: number;
 }
 
 export interface CartItem {

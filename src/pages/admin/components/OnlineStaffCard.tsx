@@ -24,6 +24,8 @@ const getActivityStatus = (
 
 export const OnlineStaffCard = ({ session }: OnlineStaffCardProps) => {
   const activity = getActivityStatus(session.lastActiveAt);
+  const roleLabel =
+    session.role === 'superadmin' ? 'Superadmin' : session.role === 'admin' ? 'Admin' : 'Moderator';
 
   const statusColors = {
     online: 'bg-success',
@@ -49,8 +51,11 @@ export const OnlineStaffCard = ({ session }: OnlineStaffCardProps) => {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate font-medium">{session.userName}</span>
-          <Badge variant={session.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
-            {session.role === 'admin' ? 'Admin' : 'Moderator'}
+          <Badge
+            variant={session.role === 'moderator' ? 'secondary' : 'default'}
+            className="text-xs"
+          >
+            {roleLabel}
           </Badge>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

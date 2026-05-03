@@ -26,6 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { QUERY_KEYS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
+import { useAuthSafe } from '@/contexts/AuthContext';
 
 type SortOption = 'popular' | 'price-asc' | 'price-desc' | 'newest';
 
@@ -38,6 +39,7 @@ const sortLabels: Record<SortOption, string> = {
 
 const ShopPage = () => {
   const isMobile = useIsMobile();
+  const auth = useAuthSafe();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<ShopCategory | 'all'>('all');
   const [brand, setBrand] = useState<string | 'all'>('all');
@@ -49,7 +51,12 @@ const ShopPage = () => {
     queryFn: () => getProducts(),
   });
 
-  const allProducts = productsData?.data ?? [];
+  const allProducts = useMemo(() => {
+    const role = auth?.user?.role;
+    return (productsData?.data ?? []).filter(
+      (product) => !product.visibleToRoles || (role && product.visibleToRoles.includes(role)),
+    );
+  }, [auth?.user?.role, productsData?.data]);
 
   const brands = useMemo(() => {
     const uniqueBrands = [...new Set(allProducts.map((p) => p.brand))];

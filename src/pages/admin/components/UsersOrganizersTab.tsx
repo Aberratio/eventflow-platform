@@ -58,8 +58,10 @@ import { Link } from 'react-router-dom';
 import type { User, UserRole } from '@/types';
 import { AddOrganizerDialog } from './AddOrganizerDialog';
 import { appLogger } from '@/lib/logger';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const UsersOrganizersTab = () => {
+  const { user: currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -74,6 +76,7 @@ export const UsersOrganizersTab = () => {
 
   const organizers = mockUsers.filter((u) => u.role === 'organizer');
   const nonOrganizers = mockUsers.filter((u) => u.role !== 'organizer');
+  const canManageAdmins = currentUser?.role === 'superadmin';
 
   const filteredOrganizers = organizers.filter(
     (user) =>
@@ -111,6 +114,7 @@ export const UsersOrganizersTab = () => {
       organizer: 'Organizator',
       moderator: 'Moderator',
       admin: 'Administrator',
+      superadmin: 'Superadmin',
     };
     appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${roleLabels[selectedRole]}`, {
       targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
@@ -311,7 +315,7 @@ export const UsersOrganizersTab = () => {
                   <SelectItem value="participant">Uczestnik</SelectItem>
                   <SelectItem value="organizer">Organizator</SelectItem>
                   <SelectItem value="moderator">Moderator</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
+                  {canManageAdmins && <SelectItem value="admin">Administrator</SelectItem>}
                 </SelectContent>
               </Select>
             </div>

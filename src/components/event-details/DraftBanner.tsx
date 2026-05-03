@@ -12,11 +12,13 @@ interface DraftBannerProps {
 }
 
 export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerProps) => {
-  const isAdminOrMod = user?.role === 'admin' || user?.role === 'moderator';
+  const isAdminOrMod =
+    user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
 
   const messages: Record<string, string> = {
     draft: 'Podgląd — wydarzenie nie jest widoczne publicznie',
     awaiting_approval: 'Podgląd — wydarzenie oczekuje na akceptację',
+    approved: 'Podgląd — wydarzenie zatwierdzone, oczekuje na publikację',
     rejected: 'Podgląd — wydarzenie zostało odrzucone',
   };
 

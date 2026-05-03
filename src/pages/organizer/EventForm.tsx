@@ -55,16 +55,31 @@ const EventForm = () => {
               Dalej <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={() => {
-              appLogger.event(form.isEditing ? 'event_update' : 'event_create',
-                form.isEditing ? `Zaktualizowano wydarzenie «${form.name}»` : `Utworzono wydarzenie «${form.name}»`, {
-                  targetType: 'event', targetName: form.name,
-                  metadata: { discipline: form.discipline },
-                });
-              form.handleSubmit();
-            }}>
+            <Button
+              onClick={() => {
+                appLogger.event(
+                  form.isEditing ? 'event_update' : 'event_create',
+                  form.isEditing
+                    ? `Zaktualizowano wydarzenie «${form.name}»`
+                    : `Utworzono wydarzenie «${form.name}»`,
+                  {
+                    targetType: 'event',
+                    targetName: form.name,
+                    metadata: { discipline: form.discipline },
+                  },
+                );
+                form.handleSubmit();
+              }}
+              disabled={
+                form.isSaving || (!form.isEditing && form.selectedEventCredit?.available === 0)
+              }
+            >
               <Save className="mr-2 h-4 w-4" />
-              {form.isEditing ? 'Zapisz zmiany' : 'Utwórz wydarzenie'}
+              {form.isSaving
+                ? 'Zapisywanie...'
+                : form.isEditing
+                  ? 'Zapisz zmiany'
+                  : 'Utwórz wydarzenie'}
             </Button>
           )}
         </div>

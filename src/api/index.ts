@@ -44,9 +44,15 @@ export const createEvent: ApiAdapter['createEvent'] = (...args) => ensureAdapter
 export const updateEvent: ApiAdapter['updateEvent'] = (...args) => ensureAdapter().then((a) => a.updateEvent(...args));
 export const deleteEvent: ApiAdapter['deleteEvent'] = (...args) => ensureAdapter().then((a) => a.deleteEvent(...args));
 export const updateEventStatus: ApiAdapter['updateEventStatus'] = (...args) => ensureAdapter().then((a) => a.updateEventStatus(...args));
+export const submitEvent: ApiAdapter['submitEvent'] = (...args) => ensureAdapter().then((a) => a.submitEvent(...args));
+export const approveEvent: ApiAdapter['approveEvent'] = (...args) => ensureAdapter().then((a) => a.approveEvent(...args));
+export const rejectEvent: ApiAdapter['rejectEvent'] = (...args) => ensureAdapter().then((a) => a.rejectEvent(...args));
+export const publishEvent: ApiAdapter['publishEvent'] = (...args) => ensureAdapter().then((a) => a.publishEvent(...args));
 export const getFeaturedEvents: ApiAdapter['getFeaturedEvents'] = (...args) => ensureAdapter().then((a) => a.getFeaturedEvents(...args));
 export const getLiveEvents: ApiAdapter['getLiveEvents'] = (...args) => ensureAdapter().then((a) => a.getLiveEvents(...args));
 export const getEventsByOrganizer: ApiAdapter['getEventsByOrganizer'] = (...args) => ensureAdapter().then((a) => a.getEventsByOrganizer(...args));
+export const getOrganizerEventCredits: ApiAdapter['getOrganizerEventCredits'] = (...args) => ensureAdapter().then((a) => a.getOrganizerEventCredits(...args));
+export const grantOrganizerEventCredits: ApiAdapter['grantOrganizerEventCredits'] = (...args) => ensureAdapter().then((a) => a.grantOrganizerEventCredits(...args));
 
 // Users
 export const getUsers: ApiAdapter['getUsers'] = (...args) => ensureAdapter().then((a) => a.getUsers(...args));

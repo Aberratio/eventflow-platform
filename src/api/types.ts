@@ -44,6 +44,7 @@ export interface EventFilters {
   search?: string;
   registrationStatus?: RegistrationStatus;
   includePrivate?: boolean;
+  includeUnpublished?: boolean;
 }
 
 export interface UserFilters {

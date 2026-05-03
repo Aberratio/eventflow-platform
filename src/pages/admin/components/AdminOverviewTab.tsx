@@ -53,7 +53,7 @@ export const AdminOverviewTab = () => {
     },
     {
       label: 'Administratorów',
-      value: mockUsers.filter((u) => u.role === 'admin').length,
+      value: mockUsers.filter((u) => u.role === 'admin' || u.role === 'superadmin').length,
       icon: Shield,
       color: 'bg-destructive/10 text-destructive',
     },
@@ -114,7 +114,9 @@ export const AdminOverviewTab = () => {
   const totalRevenue = mockSalesStats.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0);
   const totalOrders = mockShopOrders.length;
 
-  const adminCount = mockOnlineSessions.filter((s) => s.role === 'admin').length;
+  const adminCount = mockOnlineSessions.filter(
+    (s) => s.role === 'admin' || s.role === 'superadmin',
+  ).length;
   const moderatorCount = mockOnlineSessions.filter((s) => s.role === 'moderator').length;
 
   return (

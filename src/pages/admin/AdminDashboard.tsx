@@ -11,6 +11,7 @@ import { AdminPagesTab } from './components/AdminPagesTab';
 import { AdminSettingsTab } from './components/AdminSettingsTab';
 import { AdminChallengesTab } from './components/AdminChallengesTab';
 import { AdminFeaturedEventsTab } from './components/AdminFeaturedEventsTab';
+import { UsersAdminsTab } from './components/UsersAdminsTab';
 import {
   LayoutDashboard,
   Users,
@@ -37,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   id: string;
@@ -60,6 +62,7 @@ const navGroups: NavGroup[] = [
       { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
       { id: 'participants', label: 'Uczestnicy', icon: Users },
       { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
+      { id: 'admins', label: 'Admini', icon: ShieldCheck },
     ],
   },
   {
@@ -89,8 +92,17 @@ const navGroups: NavGroup[] = [
 const allItems = navGroups.flatMap((g) => g.items);
 
 const AdminDashboard = () => {
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState('overview');
   const isMobile = useIsMobile();
+  const canManageAdmins = user?.role === 'superadmin';
+
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.id !== 'admins' || canManageAdmins),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const activeItem = allItems.find((i) => i.id === activeSection);
 
@@ -104,6 +116,8 @@ const AdminDashboard = () => {
         return <UsersParticipantsTab />;
       case 'organizers':
         return <UsersOrganizersTab />;
+      case 'admins':
+        return canManageAdmins ? <UsersAdminsTab /> : <AdminOverviewTab />;
       case 'events':
         return <AdminEventsTab />;
       case 'featured':
@@ -149,7 +163,7 @@ const AdminDashboard = () => {
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {navGroups.map((group) => (
+                {visibleNavGroups.map((group) => (
                   <div key={group.label}>
                     <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {group.label}
@@ -172,7 +186,7 @@ const AdminDashboard = () => {
           <div className="flex gap-6">
             {/* Sidebar */}
             <nav className="w-56 shrink-0 space-y-4 rounded-lg border border-border bg-[hsl(var(--surface-overlay))] p-3">
-              {navGroups.map((group) => (
+              {visibleNavGroups.map((group) => (
                 <div key={group.label}>
                   <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {group.label}
