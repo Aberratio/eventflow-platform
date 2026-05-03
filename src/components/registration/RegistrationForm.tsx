@@ -4,7 +4,7 @@ import {
   mockGlobalInsuranceSettings,
   mockGroupDiscountCodes,
 } from '@/api';
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,7 @@ interface RegistrationFormProps {
   event: Event;
   onComplete: (data: RegistrationData) => void;
   onCancel: () => void;
+  previewMode?: boolean;
 }
 
 export interface RegistrationData {
@@ -101,16 +102,33 @@ const stepIcons: Record<string, typeof Ticket> = {
   Podsumowanie: Check,
 };
 
-export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFormProps) => {
+export const RegistrationForm = ({
+  event,
+  onComplete,
+  onCancel,
+  previewMode = false,
+}: RegistrationFormProps) => {
   const form = useRegistrationForm(event);
 
   const handleSubmit = () => {
     const data = form.buildSubmitData();
     if (data) {
-      appLogger.registration('registration_submit', `Rejestracja na wydarzenie «${event.name}» — dystans: ${data.distanceName}`, {
-        targetType: 'event', targetId: event.id, targetName: event.name,
-        metadata: { distanceId: data.distanceId, distanceName: data.distanceName, totalAmount: data.totalAmount },
-      });
+      if (!previewMode) {
+        appLogger.registration(
+          'registration_submit',
+          `Rejestracja na wydarzenie «${event.name}» — dystans: ${data.distanceName}`,
+          {
+            targetType: 'event',
+            targetId: event.id,
+            targetName: event.name,
+            metadata: {
+              distanceId: data.distanceId,
+              distanceName: data.distanceName,
+              totalAmount: data.totalAmount,
+            },
+          },
+        );
+      }
       onComplete(data);
     }
   };
@@ -168,14 +186,25 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         })}
       </div>
 
+      {previewMode && (
+        <Alert className="mb-6 border-primary/30 bg-primary/5">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertTitle>Tryb testowy formularza</AlertTitle>
+          <AlertDescription>
+            Przejdziesz przez formularz z realnymi cenami, ale bez prawdziwego zapisu i bez
+            płatności.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Step 1: Distance Selection */}
       {form.step === 1 && <DistanceStep event={event} form={form} />}
 
       {/* Step 2: Personal Data */}
-      {form.step === 2 && form.selectedDistance && <PersonalDataStep event={event} form={form} />}
+      {form.step === 2 && form.selectedDistance && <PersonalDataStep form={form} />}
 
       {/* Step 25: Team */}
-      {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep event={event} form={form} />}
+      {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep form={form} />}
 
       {/* Step 3: Insurance */}
       {form.step === 3 && form.isStepInActiveSteps(3) && form.hasInsurance && (
@@ -192,7 +221,7 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
 
       {/* Step 6: Summary */}
       {form.step === 6 && form.isStepInActiveSteps(6) && form.selectedDistance && (
-        <SummaryStep event={event} form={form} />
+        <SummaryStep event={event} form={form} previewMode={previewMode} />
       )}
 
       {/* Navigation */}
@@ -208,9 +237,11 @@ export const RegistrationForm = ({ event, onComplete, onCancel }: RegistrationFo
         )}
         {form.isLastStep ? (
           <Button onClick={handleSubmit} disabled={!form.agreedToTerms} size="lg">
-            {event.paymentConfig?.type === 'organizer_bank'
-              ? 'Zapisz się'
-              : `Płacę ${form.totalAmount} zł`}
+            {previewMode
+              ? 'Zakończ testowo, bez płatności'
+              : event.paymentConfig?.type === 'organizer_bank'
+                ? 'Zapisz się'
+                : `Płacę ${form.totalAmount} zł`}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
@@ -396,7 +427,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
   </Card>
 );
 
-const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => {
+const PersonalDataStep = ({ form }: { form: FormHook }) => {
   const selectedDistance = form.selectedDistance!;
   return (
     <Card>
@@ -611,7 +642,7 @@ const PersonalDataStep = ({ event, form }: { event: Event; form: FormHook }) => 
   );
 };
 
-const TeamStep = ({ event, form }: { event: Event; form: FormHook }) => (
+const TeamStep = ({ form }: { form: FormHook }) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
@@ -909,7 +940,15 @@ const DiscountStep = ({ event, form }: { event: Event; form: FormHook }) => (
   </Card>
 );
 
-const SummaryStep = ({ event, form }: { event: Event; form: FormHook }) => {
+const SummaryStep = ({
+  event,
+  form,
+  previewMode,
+}: {
+  event: Event;
+  form: FormHook;
+  previewMode: boolean;
+}) => {
   const selectedDistance = form.selectedDistance!;
   return (
     <Card>
@@ -990,7 +1029,7 @@ const SummaryStep = ({ event, form }: { event: Event; form: FormHook }) => {
             <span className="text-primary">{form.totalAmount} zł</span>
           </div>
         </div>
-        {event.paymentConfig?.type === 'organizer_bank' && (
+        {!previewMode && event.paymentConfig?.type === 'organizer_bank' && (
           <BankTransferDetails
             event={event}
             user={form.user}

@@ -93,7 +93,7 @@ button {
   box-shadow: var(--shadow-md);
 }
 
-/* ── Red accent bar (left border marker) ─────────────── */
+/* ── Accent bar (left border marker) ─────────────── */
 .accent-bar {
   border-left: 3px solid hsl(var(--primary));
   padding-left: 0.75rem;

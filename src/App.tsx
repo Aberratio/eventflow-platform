@@ -141,7 +141,9 @@ const App = () => (
                     <Route path="/reset-password" element={<Lazy fallback={<AuthPageSkeleton />}><ResetPasswordPage /></Lazy>} />
                     <Route path="/events" element={<Lazy fallback={<EventsPageSkeleton />}><EventsPage /></Lazy>} />
                     <Route path="/events/:slug" element={<Lazy fallback={<EventDetailsSkeleton />}><EventDetailsPage /></Lazy>} />
+                    <Route path="/events/:slug/preview" element={<Lazy fallback={<EventDetailsSkeleton />}><EventDetailsPage previewMode /></Lazy>} />
                     <Route path="/events/:slug/register" element={<Lazy fallback={<FormPageSkeleton />}><EventRegistrationPage /></Lazy>} />
+                    <Route path="/events/:slug/register/preview" element={<Lazy fallback={<FormPageSkeleton />}><EventRegistrationPage previewMode /></Lazy>} />
                     <Route path="/events/:slug/embed" element={<Lazy fallback={<FormPageSkeleton />}><EventRegistrationEmbed /></Lazy>} />
                     <Route path="/events/:slug/register/success" element={<Lazy fallback={<EventDetailsSkeleton />}><RegistrationSuccessPage /></Lazy>} />
                     <Route path="/series" element={<Lazy fallback={<ListPageSkeleton />}><SeriesListPage /></Lazy>} />

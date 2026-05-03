@@ -1,10 +1,11 @@
-import { mockEvents, mockRegistrations, mockResults } from '@/api';
+import { getEventBySlug, mockRegistrations, mockResults } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,14 +24,23 @@ import {
   EventStartListTab,
 } from '@/components/event-details';
 
-const EventDetailsPage = () => {
+interface EventDetailsPageProps {
+  previewMode?: boolean;
+}
+
+const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
 
   const defaultTab = searchParams.get('tab') || 'info';
-  const event = mockEvents.find((e) => e.slug === slug);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: ['event-by-slug', slug],
+    queryFn: () => getEventBySlug(slug || ''),
+    enabled: Boolean(slug),
+  });
+  const event = eventResponse?.data ?? null;
 
   const isUnpublished =
     event && ['draft', 'awaiting_approval', 'approved', 'rejected'].includes(event.status);
@@ -60,7 +70,22 @@ const EventDetailsPage = () => {
     return storedCode === event.accessCode;
   })();
 
-  if (!event || (isUnpublished && !canViewDraft) || (isPrivateEvent && !hasPrivateAccess)) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-12 text-center">
+          <p className="text-muted-foreground">Ładowanie wydarzenia...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (
+    !event ||
+    (previewMode && !canViewDraft) ||
+    (isUnpublished && !canViewDraft) ||
+    (isPrivateEvent && !hasPrivateAccess)
+  ) {
     return (
       <Layout>
         <div className="container py-12 text-center">
@@ -79,8 +104,10 @@ const EventDetailsPage = () => {
   const allDistancesFull =
     event.distances.length > 0 &&
     event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit);
-  const isRegistrationOpen =
-    !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+  const isDraftPreview = previewMode && Boolean(isUnpublished);
+  const isRegistrationOpen = isDraftPreview
+    ? event.distances.length > 0 && !allDistancesFull
+    : !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
 
   const getClosedReason = (): string | null => {
     if (isPast) return 'Zawody już się odbyły';
@@ -102,6 +129,11 @@ const EventDetailsPage = () => {
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
   const handleRegister = () => {
+    if (isDraftPreview) {
+      navigate(`/events/${slug}/register/preview`);
+      return;
+    }
+
     if (!isAuthenticated) {
       toast({
         title: 'Wymagane logowanie',
@@ -123,7 +155,11 @@ const EventDetailsPage = () => {
 
   return (
     <Layout>
-      {isUnpublished && <DraftBanner event={event} user={user} />}
+      {isDraftPreview ? (
+        <PreviewBanner />
+      ) : (
+        isUnpublished && <DraftBanner event={event} user={user} />
+      )}
       {isPrivateEvent && !isUnpublished && <PrivateBanner />}
 
       <EventHeroBanner event={event} isPast={isPast} onBack={() => navigate(-1)} />
@@ -274,6 +310,7 @@ const EventDetailsPage = () => {
             closedReason={getClosedReason()}
             onRegister={handleRegister}
             onShare={handleShare}
+            previewMode={isDraftPreview}
           />
         </div>
       </div>
@@ -296,6 +333,15 @@ const StatItem = ({
     <div>
       <div className="text-sm text-muted-foreground">{label}</div>
       <div className="font-medium">{value}</div>
+    </div>
+  </div>
+);
+
+const PreviewBanner = () => (
+  <div className="border-b border-primary/20 bg-primary/10 text-primary">
+    <div className="container flex items-center gap-2 py-2 text-sm font-medium">
+      <Eye className="h-4 w-4 shrink-0" />
+      <span>Tryb podglądu szkicu - widok uczestnika. Wydarzenie nie jest widoczne publicznie.</span>
     </div>
   </div>
 );

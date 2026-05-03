@@ -31,7 +31,7 @@ export const GlitchText = ({ children, className, intensity = 'medium' }: Glitch
         {children}
       </span>
 
-      {/* Warstwa glitch - ciemna (brand red z przesunięciem) */}
+      {/* Warstwa glitch - ciemna (brand z przesunięciem) */}
       <span
         className={cn('absolute inset-0 animate-glitch-skew font-bold text-foreground opacity-40')}
         style={{

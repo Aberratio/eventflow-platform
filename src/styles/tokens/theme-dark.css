@@ -1,0 +1,170 @@
+/* ============================================================
+   DESIGN SYSTEM - DARK THEME
+   Semantic tokens for the dark enterprise UI.
+   ============================================================ */
+
+:root {
+  /* Extended brand tokens */
+  --primary-subtle: 0 0% 14%;
+  --primary-glow: var(--color-brand-navy-light);
+  --primary-dark: var(--color-brand-navy-dark);
+
+  /* Header */
+  --header-bg: 0 0% 7%;
+  --header-border: 0 0% 16%;
+
+  /* Surface layers */
+  --surface-elevated: 0 0% 13%;
+  --surface-overlay: 0 0% 5%;
+  --border-subtle: 0 0% 12%;
+  --border-active: 0 0% 20%;
+
+  /* Text hierarchy */
+  --text-primary: 0 0% 95%;
+  --text-secondary: 0 0% 65%;
+  --text-muted: 0 0% 48%;
+
+  /* Gradient tokens */
+  --gradient-hero: linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(0 0% 9%) 100%);
+  --gradient-section-alt: linear-gradient(180deg, hsl(0 0% 8%) 0%, hsl(0 0% 7%) 100%);
+  --gradient-card-hover: linear-gradient(135deg, hsl(0 0% 13%) 0%, hsl(0 0% 10%) 100%);
+  --gradient-footer: linear-gradient(180deg, hsl(0 0% 6%) 0%, hsl(0 0% 4%) 100%);
+  --gradient-divider: linear-gradient(90deg, transparent 0%, hsl(0 0% 20%) 50%, transparent 100%);
+
+  /* Typography scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+  --font-size-6xl: 3.75rem;
+
+  /* Line heights */
+  --lh-tight: 1.2;
+  --lh-snug: 1.35;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  /* Transitions */
+  --transition-fast: all 0.15s ease;
+  --transition-base: all 0.2s ease;
+  --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing extras */
+  --section-gap: 5rem;
+
+  /* Page hero */
+  --page-hero-py: 2.5rem;
+  --page-hero-py-md: 3.5rem;
+
+  /* Gradient presets */
+  --gradient-page-hero: linear-gradient(
+    to bottom right,
+    hsl(var(--primary) / 0.1),
+    hsl(var(--background)),
+    hsl(var(--warning) / 0.05)
+  );
+  --gradient-page-hero-alt: linear-gradient(
+    to bottom right,
+    hsl(var(--warning) / 0.05),
+    hsl(var(--background)),
+    hsl(var(--primary) / 0.05)
+  );
+  --gradient-accent-bar: linear-gradient(
+    to right,
+    hsl(var(--primary)),
+    hsl(var(--warning)),
+    hsl(var(--primary))
+  );
+  --gradient-radial-glow: radial-gradient(
+    ellipse at top right,
+    hsl(var(--primary) / 0.08),
+    transparent 60%
+  );
+
+  /* Z-index */
+  --z-header: 50;
+  --z-modal: 100;
+  --z-toast: 200;
+
+  /* Neutrals - dark first */
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 0 0% 12%;
+  --popover-foreground: 0 0% 95%;
+
+  /* Brand colors */
+  --primary: var(--color-brand-navy);
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary / muted */
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 0 0% 92%;
+
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 58%;
+
+  /* Accent: subtle hover state */
+  --accent: 0 0% 16%;
+  --accent-foreground: 0 0% 95%;
+
+  /* Semantic */
+  --destructive: var(--color-danger);
+  --destructive-foreground: 0 0% 100%;
+
+  --success: var(--color-success);
+  --success-foreground: 0 0% 100%;
+
+  --warning: var(--color-warning);
+  --warning-foreground: 0 0% 8%;
+
+  --info: var(--color-info);
+  --info-foreground: 0 0% 100%;
+
+  /* Subtle status backgrounds */
+  --success-subtle: var(--color-success);
+  --warning-subtle: var(--color-warning);
+  --info-subtle: var(--color-info);
+
+  /* Borders & inputs */
+  --border: 0 0% 13%;
+  --input: 0 0% 16%;
+  --ring: var(--color-brand-navy);
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Sidebar - darkest layer */
+  --sidebar-background: 0 0% 5%;
+  --sidebar-foreground: 0 0% 75%;
+  --sidebar-primary: var(--color-brand-navy);
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 12%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border: 0 0% 14%;
+  --sidebar-ring: var(--color-brand-navy);
+
+  /* Charts */
+  --chart-1: var(--color-brand-navy);
+  --chart-2: 0 0% 45%;
+  --chart-3: var(--color-warning);
+  --chart-4: 0 0% 60%;
+  --chart-5: var(--color-brand-navy-light);
+
+  /* Shadows (dark theme - stronger blacks) */
+  --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+  --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
+  --shadow-sm: 0 2px 4px -1px hsl(0 0% 0% / 0.35), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
+  --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.25);
+  --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.45), 0 4px 6px -4px hsl(0 0% 0% / 0.25);
+  --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.5), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+  --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.7);
+}

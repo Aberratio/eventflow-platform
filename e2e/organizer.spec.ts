@@ -1,6 +1,7 @@
 import { test, expect } from '../playwright-fixture';
+import type { Page } from '@playwright/test';
 
-async function loginAsOrganizer(page: any) {
+async function loginAsOrganizer(page: Page) {
   await page.goto('/login');
   await page.fill('input[type="email"]', 'marek@timing.pl');
   await page.fill('input[type="password"]', 'demo1234');
@@ -45,5 +46,20 @@ test.describe('Organizer Dashboard', () => {
     await page.goto('/organizer/events/new');
     await page.waitForTimeout(500);
     await expect(page.locator('body')).not.toBeEmpty();
+  });
+
+  test('draft event page button opens participant preview URL', async ({ page }) => {
+    await page.goto('/organizer/events/e19');
+    await page.getByRole('link', { name: /Zobacz stronę wydarzenia/i }).click();
+    await expect(page).toHaveURL(/\/events\/bieg-miejski-lodz\/preview$/);
+    await expect(page.getByText('Tryb podglądu szkicu')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Przetestuj formularz/i })).toBeVisible();
+  });
+});
+
+test.describe('Draft Event Preview Access', () => {
+  test('anonymous users cannot open a draft preview URL', async ({ page }) => {
+    await page.goto('/events/bieg-miejski-lodz/preview');
+    await expect(page.getByText('Wydarzenie nie zostało znalezione')).toBeVisible();
   });
 });

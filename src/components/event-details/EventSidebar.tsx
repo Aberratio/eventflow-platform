@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GradientDivider } from '@/components/ui/gradient-divider';
 import { Event, Registration, User } from '@/types';
-import { Share2, Pencil, Globe, Mail, Phone } from 'lucide-react';
+import { Share2, Pencil, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,7 @@ interface EventSidebarProps {
   closedReason: string | null;
   onRegister: () => void;
   onShare: () => void;
+  previewMode?: boolean;
 }
 
 export const EventSidebar = ({
@@ -27,12 +28,14 @@ export const EventSidebar = ({
   closedReason,
   onRegister,
   onShare,
+  previewMode = false,
 }: EventSidebarProps) => {
   const canEdit =
-    user?.role === 'admin' ||
-    user?.role === 'superadmin' ||
-    user?.role === 'moderator' ||
-    (user?.role === 'organizer' && event.organizerId === user?.id);
+    !previewMode &&
+    (user?.role === 'admin' ||
+      user?.role === 'superadmin' ||
+      user?.role === 'moderator' ||
+      (user?.role === 'organizer' && event.organizerId === user?.id));
 
   return (
     <div className="space-y-6">
@@ -40,7 +43,7 @@ export const EventSidebar = ({
         <GradientDivider />
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">
-            {userRegistration ? '✅ Jesteś zapisany!' : 'Zapisz się'}
+            {userRegistration ? '✅ Jesteś zapisany!' : previewMode ? 'Test zapisów' : 'Zapisz się'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -82,12 +85,13 @@ export const EventSidebar = ({
                 size="lg"
                 disabled={!isRegistrationOpen}
               >
-                Zapisz się teraz
+                {previewMode ? 'Przetestuj formularz' : 'Zapisz się teraz'}
               </Button>
               {isRegistrationOpen ? (
                 <p className="text-center text-xs text-muted-foreground">
-                  Zapisy do{' '}
-                  {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+                  {previewMode
+                    ? 'Symulator nie utworzy prawdziwego zapisu ani płatności.'
+                    : `Zapisy do ${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}`}
                 </p>
               ) : (
                 <p className="text-center text-sm font-medium text-destructive">{closedReason}</p>

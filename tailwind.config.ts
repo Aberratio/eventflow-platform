@@ -21,9 +21,9 @@ export default {
       colors: {
         /* === BRAND STATIC TOKENS === */
         brand: {
-          red: '#C41E1E' /* primary brand red */,
-          'red-light': '#E53535' /* destructive / lighter */,
-          'red-dark': '#8B1515' /* hover state */,
+          navy: '#1B5599' /* primary brand navy */,
+          'navy-light': '#3188EA' /* emphasis / glow */,
+          'navy-dark': '#144385' /* hover state */,
           black: '#141414',
           gray: {
             '50': '#F9F9F9',

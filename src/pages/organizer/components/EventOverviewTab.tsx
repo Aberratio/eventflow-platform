@@ -34,6 +34,10 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
   };
   const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
   const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
+  const previewStatuses: Event['status'][] = ['draft', 'awaiting_approval', 'approved', 'rejected'];
+  const eventPageUrl = previewStatuses.includes(event.status)
+    ? `/events/${event.slug}/preview`
+    : `/events/${event.slug}`;
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
     const distance = event.distances.find((d) => d.id === reg.distanceId);
     return acc + (distance?.price || 0);
@@ -178,7 +182,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
             <p className="text-muted-foreground">{event.description}</p>
 
             <Button variant="outline" asChild>
-              <Link to={`/events/${event.slug}`}>
+              <Link to={eventPageUrl}>
                 <ExternalLink className="mr-2 h-4 w-4" /> Zobacz stronę wydarzenia
               </Link>
             </Button>

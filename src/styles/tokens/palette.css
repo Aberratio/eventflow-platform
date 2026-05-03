@@ -1,0 +1,30 @@
+/* ============================================================
+   DESIGN SYSTEM - PALETTE
+   Raw color values shared by themes.
+   ============================================================ */
+
+:root {
+  /* Brand */
+  --color-brand-navy: 215 72% 38%;
+  --color-brand-navy-light: 213 82% 55%;
+  --color-brand-navy-dark: 215 74% 30%;
+  --color-brand-black: 0 0% 8%;
+
+  /* Neutral scale */
+  --color-gray-50: 0 0% 98%;
+  --color-gray-100: 0 0% 94%;
+  --color-gray-200: 0 0% 88%;
+  --color-gray-300: 0 0% 77%;
+  --color-gray-400: 0 0% 60%;
+  --color-gray-500: 0 0% 43%;
+  --color-gray-600: 0 0% 29%;
+  --color-gray-700: 0 0% 19%;
+  --color-gray-800: 0 0% 12%;
+  --color-gray-900: 0 0% 8%;
+
+  /* Semantic colors */
+  --color-danger: 0 84% 56%;
+  --color-success: 142 71% 40%;
+  --color-warning: 45 93% 47%;
+  --color-info: 210 40% 50%;
+}

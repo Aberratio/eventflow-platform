@@ -1,23 +1,46 @@
-import { mockEvents, disciplineLabels } from '@/api';
+import { disciplineLabels, getEventBySlug } from '@/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle2, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 
-const EventRegistrationPage = () => {
+interface EventRegistrationPageProps {
+  previewMode?: boolean;
+}
+
+const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPageProps) => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const [previewRegistrationData, setPreviewRegistrationData] = useState<RegistrationData | null>(
+    null,
+  );
 
-  const event = mockEvents.find((e) => e.slug === slug);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: ['event-by-slug', slug],
+    queryFn: () => getEventBySlug(slug || ''),
+    enabled: Boolean(slug),
+  });
+
+  const event = eventResponse?.data ?? null;
+  const isUnpublished =
+    event && ['draft', 'awaiting_approval', 'approved', 'rejected'].includes(event.status);
+  const canManagePreview =
+    user?.role === 'admin' ||
+    user?.role === 'superadmin' ||
+    user?.role === 'moderator' ||
+    (user?.role === 'organizer' && event?.organizerId === user?.id);
+  const isPreviewAvailable = previewMode && Boolean(isUnpublished) && canManagePreview;
 
   const isPast = event ? new Date(event.date) < new Date() : false;
   const deadlinePassed = event ? new Date(event.registrationDeadline) < new Date() : false;
@@ -26,21 +49,22 @@ const EventRegistrationPage = () => {
     ? event.distances.length > 0 &&
       event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit)
     : false;
-  const isRegistrationOpen =
-    !!event && !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+  const isRegistrationOpen = isPreviewAvailable
+    ? !!event && event.distances.length > 0 && !allDistancesFull
+    : !!event && !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!previewMode && !isAuthenticated) {
       toast({
         title: 'Wymagane logowanie',
         description: 'Zaloguj się, aby zapisać się na zawody.',
       });
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, previewMode]);
 
   useEffect(() => {
-    if (event && !isRegistrationOpen) {
+    if (event && !previewMode && !isRegistrationOpen) {
       toast({
         title: 'Zapisy zamknięte',
         description: 'Zapisy na te zawody są zamknięte.',
@@ -48,9 +72,19 @@ const EventRegistrationPage = () => {
       });
       navigate(`/events/${slug}`);
     }
-  }, [event, isRegistrationOpen, navigate, slug]);
+  }, [event, isRegistrationOpen, navigate, previewMode, slug]);
 
-  if (!event) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-12 text-center">
+          <p className="text-muted-foreground">Ładowanie formularza...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!event || (previewMode && !isPreviewAvailable)) {
     return (
       <Layout>
         <div className="container py-12 text-center">
@@ -63,11 +97,54 @@ const EventRegistrationPage = () => {
     );
   }
 
+  if (previewRegistrationData) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <div className="mx-auto max-w-xl text-center">
+            <Card className="border-primary/20">
+              <CardContent className="space-y-5 pt-8">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                  <CheckCircle2 className="h-9 w-9 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h1 className="text-2xl font-bold">Testowa rejestracja zakończona</h1>
+                  <p className="text-muted-foreground">
+                    Zakończyłaś testową rejestrację na wydarzeniu w szkicu. Po opublikowaniu
+                    wydarzenia zapisy będą prowadzone naprawdę.
+                  </p>
+                </div>
+                <div className="rounded-lg bg-muted/50 p-4 text-sm">
+                  <p>
+                    Dystans:{' '}
+                    <span className="font-medium">{previewRegistrationData.distanceName}</span>
+                  </p>
+                  <p>
+                    Kwota testowego koszyka:{' '}
+                    <span className="font-medium">{previewRegistrationData.totalAmount} zł</span>
+                  </p>
+                </div>
+                <Button onClick={() => navigate(`/events/${slug}/preview`)}>
+                  Wróć do podglądu wydarzenia
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!isRegistrationOpen) {
     return null;
   }
 
   const handleComplete = (data: RegistrationData) => {
+    if (isPreviewAvailable) {
+      setPreviewRegistrationData(data);
+      return;
+    }
+
     // Redirect to success page with registration data
     navigate(`/events/${slug}/register/success`, {
       state: {
@@ -83,7 +160,7 @@ const EventRegistrationPage = () => {
   };
 
   const handleCancel = () => {
-    navigate(`/events/${slug}`);
+    navigate(isPreviewAvailable ? `/events/${slug}/preview` : `/events/${slug}`);
   };
 
   return (
@@ -99,6 +176,7 @@ const EventRegistrationPage = () => {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="mb-2 flex flex-wrap gap-2">
+                {isPreviewAvailable && <Badge variant="outline">Tryb testowy</Badge>}
                 <Badge className="flex items-center gap-1.5">
                   <DisciplineIcon
                     discipline={event.discipline}
@@ -126,7 +204,12 @@ const EventRegistrationPage = () => {
 
       {/* Registration Form */}
       <div className="container py-8">
-        <RegistrationForm event={event} onComplete={handleComplete} onCancel={handleCancel} />
+        <RegistrationForm
+          event={event}
+          onComplete={handleComplete}
+          onCancel={handleCancel}
+          previewMode={isPreviewAvailable}
+        />
       </div>
     </Layout>
   );
