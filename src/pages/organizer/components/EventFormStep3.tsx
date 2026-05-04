@@ -1,4 +1,4 @@
-import { disciplineLabels } from '@/api';
+﻿import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" /> Podgląd wydarzenia
+            <Eye className="h-5 w-5" /> PodglÄ…d wydarzenia
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -64,15 +64,15 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               <p className="font-medium text-primary">/events/{form.generateSlug(form.name)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Metoda płatności</p>
+              <p className="text-sm text-muted-foreground">Metoda pĹ‚atnoĹ›ci</p>
               <p className="flex items-center gap-2 font-medium">
                 {form.paymentConfigType === 'admin_gateway' ? (
                   <>
-                    <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza (automatyczna)
+                    <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
                   </>
                 ) : (
                   <>
-                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
+                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
                   </>
                 )}
               </p>
@@ -94,7 +94,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               {form.allCategories.map((cat) => (
                 <Badge key={cat.id} variant={cat.type === 'special' ? 'outline' : 'secondary'}>
                   {cat.name}
-                  {cat.type === 'special' ? ' ★' : ''}
+                  {cat.type === 'special' ? ' â…' : ''}
                 </Badge>
               ))}
             </div>
@@ -117,7 +117,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
                 <Globe className="mr-1 h-3 w-3" /> Wirtualny
               </Badge>
             )}
-            {form.featured && <Badge variant="default">⭐ Wyróżnione wydarzenie</Badge>}
+            {form.featured && <Badge variant="default">â­ WyrĂłĹĽnione wydarzenie</Badge>}
           </div>
         </CardContent>
       </Card>
@@ -136,24 +136,21 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               Zapisz jako szkic
             </Button>
             <Button
-              variant={form.status === 'awaiting_approval' ? 'default' : 'outline'}
-              onClick={() => form.setStatus('awaiting_approval')}
+              variant={form.status === 'active' ? 'default' : 'outline'}
+              onClick={() => form.setStatus('active')}
               className="flex-1"
             >
-              Zgłoś do akceptacji
+              Ustaw jako aktywne
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
             {form.status === 'draft'
-              ? 'Wydarzenie będzie widoczne tylko dla Ciebie. Możesz je zgłosić do akceptacji później.'
-              : 'Wydarzenie zostanie przesłane do administratora w celu weryfikacji i zatwierdzenia.'}
+              ? 'Wydarzenie będzie widoczne tylko w panelu organizatora. Możesz ustawić je jako aktywne później.'
+              : 'Wydarzenie zostanie zapisane jako aktywne i będzie widoczne publicznie.'}
           </p>
-          <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-            <strong>Uwaga:</strong> Wszystkie nowe wydarzenia wymagają zatwierdzenia przez
-            administratora przed publikacją.
-          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
+

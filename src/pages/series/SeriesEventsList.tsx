@@ -9,6 +9,14 @@ interface SeriesEventsListProps {
   events: Event[];
 }
 
+const statusLabels: Record<Event['status'], string> = {
+  draft: 'Wersja robocza',
+  active: 'Otwarta rejestracja',
+  past: 'Zakończone',
+  archived: 'Archiwum',
+  deleted: 'Usunięte',
+};
+
 export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) => (
   <Card>
     <CardHeader>
@@ -25,7 +33,7 @@ export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) =>
           {events.map((event) => (
             <Link
               key={event.id}
-              to={`/events/${event.id}`}
+              to={`/events/${event.slug}`}
               className="block rounded-lg border p-4 transition-colors hover:bg-muted/50"
             >
               <div className="flex items-start justify-between gap-4">
@@ -54,18 +62,14 @@ export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) =>
                 </div>
                 <Badge
                   variant={
-                    event.status === 'published'
+                    event.status === 'active'
                       ? 'default'
-                      : event.status === 'completed'
+                      : event.status === 'past'
                         ? 'secondary'
                         : 'outline'
                   }
                 >
-                  {event.status === 'published'
-                    ? 'Otwarta rejestracja'
-                    : event.status === 'completed'
-                      ? 'Zakończone'
-                      : 'Wersja robocza'}
+                  {statusLabels[event.status]}
                 </Badge>
               </div>
             </Link>

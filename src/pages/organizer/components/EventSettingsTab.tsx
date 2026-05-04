@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +26,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Event } from '@/types';
+import { deleteEvent, updateEventStatus } from '@/api';
+import type { Event } from '@/types';
 import { appLogger } from '@/lib/logger';
 import {
   Edit,
@@ -33,25 +35,45 @@ import {
   Eye,
   EyeOff,
   CheckCircle,
-  XCircle,
   AlertTriangle,
   Lock,
   Copy,
   RefreshCw,
+  Archive,
 } from 'lucide-react';
 
 interface EventSettingsTabProps {
   event: Event;
 }
 
+type EditableEventStatus = 'draft' | 'active' | 'past' | 'archived';
+
+const statusLabels: Record<Event['status'], string> = {
+  draft: 'Szkic',
+  active: 'Aktywne',
+  past: 'Przeszłe',
+  archived: 'Zarchiwizowane',
+  deleted: 'Usunięte',
+};
+
+const statusDescriptions: Record<EditableEventStatus, string> = {
+  draft: 'Widoczne tylko w panelu organizatora.',
+  active: 'Widoczne publicznie dla uczestników.',
+  past: 'Wydarzenie po terminie, nadal widoczne publicznie.',
+  archived: 'Ukryte z głównego panelu organizatora, widoczne publicznie.',
+};
+
 export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [newStatus, setNewStatus] = useState<'draft' | 'published' | 'cancelled'>('draft');
+  const [newStatus, setNewStatus] = useState<EditableEventStatus>('draft');
   const [isPrivate, setIsPrivate] = useState(event.isPrivate || false);
   const [accessCode, setAccessCode] = useState(event.accessCode || '');
+  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
 
@@ -59,66 +81,111 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     navigate(`/organizer/events/${event.id}/edit`);
   };
 
-  const handleStatusChange = (status: 'draft' | 'published' | 'cancelled') => {
+  const handleStatusChange = (status: EditableEventStatus) => {
     setNewStatus(status);
     setStatusDialogOpen(true);
   };
 
-  const confirmStatusChange = () => {
-    const statusLabels = {
-      draft: 'Szkic',
-      published: 'Opublikowane',
-      cancelled: 'Anulowane',
-    };
-
-    appLogger.event('status_change', `Zmieniono status wydarzenia «${event.name}» na ${statusLabels[newStatus]}`, {
-      targetType: 'event', targetId: event.id, targetName: event.name,
-      metadata: { oldStatus: event.status, newStatus },
-    });
-    toast({
-      title: 'Status zmieniony',
-      description: `Wydarzenie jest teraz: ${statusLabels[newStatus]}`,
-    });
-    setStatusDialogOpen(false);
+  const invalidateEventQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['event', event.id] }),
+      queryClient.invalidateQueries({ queryKey: ['organizer-events', event.organizerId] }),
+      queryClient.invalidateQueries({ queryKey: ['events'] }),
+    ]);
   };
 
-  const handleDelete = () => {
-    appLogger.event('event_delete', `Usunięto wydarzenie «${event.name}»`, {
-      targetType: 'event', targetId: event.id, targetName: event.name,
-    });
-    toast({
-      title: 'Wydarzenie usunięte',
-      description: 'Wydarzenie zostało trwale usunięte.',
-      variant: 'destructive',
-    });
-    setDeleteDialogOpen(false);
-    navigate('/organizer');
+  const confirmStatusChange = async () => {
+    try {
+      setIsSavingStatus(true);
+      await updateEventStatus(event.id, newStatus);
+      appLogger.event('status_change', `Zmieniono status wydarzenia "${event.name}" na ${statusLabels[newStatus]}`, {
+        targetType: 'event',
+        targetId: event.id,
+        targetName: event.name,
+        metadata: { oldStatus: event.status, newStatus },
+      });
+      await invalidateEventQueries();
+      toast({
+        title: 'Status zmieniony',
+        description: `Wydarzenie jest teraz: ${statusLabels[newStatus]}`,
+      });
+      setStatusDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zmienić statusu',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie później.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingStatus(false);
+    }
   };
 
-  const getStatusBadge = (status: string) => {
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteEvent(event.id);
+      appLogger.event('event_delete', `Oznaczono wydarzenie "${event.name}" jako usunięte`, {
+        targetType: 'event',
+        targetId: event.id,
+        targetName: event.name,
+      });
+      await Promise.all([
+        invalidateEventQueries(),
+        queryClient.invalidateQueries({ queryKey: ['organizer-event-limit', event.organizerId] }),
+      ]);
+      toast({
+        title: 'Wydarzenie usunięte',
+        description: 'Wydarzenie oznaczono jako usunięte. Rekord pozostaje w bazie danych.',
+        variant: 'destructive',
+      });
+      setDeleteDialogOpen(false);
+      navigate('/organizer');
+    } catch (error) {
+      toast({
+        title: 'Nie udało się usunąć wydarzenia',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Organizator nie może usuwać wydarzeń, które już się odbyły.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const getStatusBadge = (status: Event['status']) => {
     switch (status) {
-      case 'published':
-        return <Badge className="bg-success/10 text-success">Opublikowane</Badge>;
+      case 'active':
+        return <Badge className="bg-success/10 text-success">Aktywne</Badge>;
       case 'draft':
         return <Badge variant="secondary">Szkic</Badge>;
-      case 'awaiting_approval':
-        return <Badge variant="outline">Oczekuje na akceptację</Badge>;
-      case 'approved':
-        return <Badge variant="outline">Zatwierdzone</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Odrzucone</Badge>;
-      case 'completed':
-        return <Badge variant="outline">Zakończone</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Anulowane</Badge>;
+      case 'past':
+        return <Badge variant="outline">Przeszłe</Badge>;
+      case 'archived':
+        return <Badge variant="outline">Zarchiwizowane</Badge>;
+      case 'deleted':
+        return <Badge variant="destructive">Usunięte</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
+  const statusCards: Array<{
+    status: EditableEventStatus;
+    title: string;
+    icon: typeof Eye;
+    iconClassName: string;
+  }> = [
+    { status: 'draft', title: 'Szkic', icon: EyeOff, iconClassName: 'text-muted-foreground' },
+    { status: 'active', title: 'Aktywne', icon: Eye, iconClassName: 'text-success' },
+    { status: 'past', title: 'Przeszłe', icon: CheckCircle, iconClassName: 'text-muted-foreground' },
+    { status: 'archived', title: 'Archiwum', icon: Archive, iconClassName: 'text-primary' },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Edit event */}
       <Card>
         <CardHeader>
           <CardTitle>Edycja wydarzenia</CardTitle>
@@ -131,82 +198,48 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Status management */}
       <Card>
         <CardHeader>
           <CardTitle>Status wydarzenia</CardTitle>
           <CardDescription>Aktualny status: {getStatusBadge(event.status)}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Card
-              className={`cursor-pointer transition-colors hover:border-primary ${
-                event.status === 'draft' ? 'border-primary bg-primary/5' : ''
-              }`}
-              onClick={() => handleStatusChange('draft')}
-            >
-              <CardContent className="pt-6 text-center">
-                <EyeOff className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                <h4 className="font-medium">Szkic</h4>
-                <p className="text-sm text-muted-foreground">Widoczne tylko dla Ciebie</p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className={`cursor-pointer transition-colors hover:border-primary ${
-                event.status === 'published' ? 'border-primary bg-primary/5' : ''
-              }`}
-              onClick={() => handleStatusChange('published')}
-            >
-              <CardContent className="pt-6 text-center">
-                <Eye className="mx-auto mb-2 h-8 w-8 text-success" />
-                <h4 className="font-medium">Opublikowane</h4>
-                <p className="text-sm text-muted-foreground">Widoczne dla wszystkich</p>
-              </CardContent>
-            </Card>
-
-            <Card
-              className={`cursor-pointer transition-colors hover:border-destructive ${
-                event.status === 'cancelled' ? 'border-destructive bg-destructive/5' : ''
-              }`}
-              onClick={() => handleStatusChange('cancelled')}
-            >
-              <CardContent className="pt-6 text-center">
-                <XCircle className="mx-auto mb-2 h-8 w-8 text-destructive" />
-                <h4 className="font-medium">Anulowane</h4>
-                <p className="text-sm text-muted-foreground">Wydarzenie odwołane</p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {statusCards.map(({ status, title, icon: Icon, iconClassName }) => (
+              <Card
+                key={status}
+                className={`cursor-pointer transition-colors hover:border-primary ${
+                  event.status === status ? 'border-primary bg-primary/5' : ''
+                }`}
+                onClick={() => handleStatusChange(status)}
+              >
+                <CardContent className="pt-6 text-center">
+                  <Icon className={`mx-auto mb-2 h-8 w-8 ${iconClassName}`} />
+                  <h4 className="font-medium">{title}</h4>
+                  <p className="text-sm text-muted-foreground">{statusDescriptions[status]}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Complete event */}
-      {event.status === 'published' && (
+      {event.status === 'active' && (
         <Card>
           <CardHeader>
-            <CardTitle>Zakończ wydarzenie</CardTitle>
+            <CardTitle>Oznacz jako przeszłe</CardTitle>
             <CardDescription>
-              Po wprowadzeniu wszystkich wyników możesz oznaczyć wydarzenie jako zakończone
+              Po wprowadzeniu wszystkich wyników możesz oznaczyć wydarzenie jako przeszłe.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button
-              variant="outline"
-              onClick={() => {
-                toast({
-                  title: 'Wydarzenie zakończone',
-                  description: 'Wydarzenie zostało oznaczone jako zakończone.',
-                });
-              }}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" /> Oznacz jako zakończone
+            <Button variant="outline" onClick={() => handleStatusChange('past')}>
+              <CheckCircle className="mr-2 h-4 w-4" /> Oznacz jako przeszłe
             </Button>
           </CardContent>
         </Card>
       )}
 
-      {/* Privacy settings */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -214,7 +247,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             Prywatność
           </CardTitle>
           <CardDescription>
-            Prywatne wydarzenie nie jest widoczne publicznie — uczestnicy mogą dołączyć tylko przez
+            Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy mogą dołączyć tylko przez
             specjalny link.
           </CardDescription>
         </CardHeader>
@@ -290,14 +323,15 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Danger zone */}
       <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            Strefa niebezpieczna
+            Strefa usuwania
           </CardTitle>
-          <CardDescription>Te akcje są nieodwracalne. Zachowaj ostrożność.</CardDescription>
+          <CardDescription>
+            Usunięcie oznacza status `deleted`. Rekord pozostaje w bazie danych i nie liczy się do limitu.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
@@ -306,43 +340,32 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </CardContent>
       </Card>
 
-      {/* Status change dialog */}
       <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Zmień status wydarzenia</DialogTitle>
             <DialogDescription>
-              Czy na pewno chcesz zmienić status wydarzenia na{' '}
-              {newStatus === 'draft'
-                ? 'Szkic'
-                : newStatus === 'published'
-                  ? 'Opublikowane'
-                  : 'Anulowane'}
-              ?
+              Czy na pewno chcesz zmienić status wydarzenia na {statusLabels[newStatus]}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button
-              variant={newStatus === 'cancelled' ? 'destructive' : 'default'}
-              onClick={confirmStatusChange}
-            >
-              Zmień status
+            <Button onClick={confirmStatusChange} disabled={isSavingStatus}>
+              {isSavingStatus ? 'Zapisywanie...' : 'Zmień status'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Czy na pewno chcesz usunąć to wydarzenie?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ta akcja jest nieodwracalna. Wszystkie dane wydarzenia, zapisy uczestników i wyniki
-              zostaną trwale usunięte.
+              Wydarzenie zostanie oznaczone jako usunięte i zniknie z panelu organizatora oraz list
+              publicznych. Dane pozostaną w bazie do wglądu administracji.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -350,8 +373,9 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={handleDelete}
+              disabled={isDeleting}
             >
-              Usuń wydarzenie
+              {isDeleting ? 'Usuwanie...' : 'Usuń wydarzenie'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

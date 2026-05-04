@@ -22,8 +22,7 @@ import type {
   DeliveryMethod,
   ShopPaymentMethod,
   ShopOrder,
-  EventCreditKind,
-  OrganizerEventCredits,
+  OrganizerEventLimit,
   Challenge,
   ChallengeParticipation,
   ChallengeEntry,
@@ -139,44 +138,31 @@ function paginated<T>(data: T[]): PaginatedResponse<T> {
 let emailTemplates: EmailTemplate[] = [...mockEmailTemplates];
 let emailLogs: EmailSendLog[] = [...mockEmailSendLogs];
 let nextTemplateId = 100;
-type OrganizerEventCreditState = Record<EventCreditKind, { total: number; used: number }>;
 
-const createCreditState = (
-  standard: { total: number; used: number },
-  virtual: { total: number; used: number },
-  timing: { total: number; used: number },
-): OrganizerEventCreditState => ({ standard, virtual, timing });
-
-const organizerEventCredits: Record<string, OrganizerEventCreditState> = {
-  o1: createCreditState({ total: 3, used: 1 }, { total: 1, used: 1 }, { total: 0, used: 0 }),
-  o2: createCreditState({ total: 5, used: 2 }, { total: 2, used: 0 }, { total: 1, used: 0 }),
-  o3: createCreditState({ total: 2, used: 0 }, { total: 0, used: 0 }, { total: 0, used: 0 }),
+const organizerEventLimits: Record<string, number> = {
+  o1: 4,
+  o2: 8,
+  o3: 7,
+  'u-organizer': 11,
+  'u-organizer-2': 11,
+  'u-organizer-3': 11,
 };
 
-const emptyCreditState = (): OrganizerEventCreditState =>
-  createCreditState({ total: 0, used: 0 }, { total: 0, used: 0 }, { total: 0, used: 0 });
+const countOrganizerEvents = (organizerId: string) =>
+  mockEvents.filter((event) => event.organizerId === organizerId && event.status !== 'deleted')
+    .length;
 
-const toOrganizerEventCredits = (state: OrganizerEventCreditState): OrganizerEventCredits => {
-  const byType = Object.fromEntries(
-    (Object.entries(state) as Array<[EventCreditKind, { total: number; used: number }]>).map(
-      ([kind, credit]) => [
-        kind,
-        {
-          total: credit.total,
-          used: credit.used,
-          available: Math.max(0, credit.total - credit.used),
-        },
-      ],
-    ),
-  ) as Record<EventCreditKind, OrganizerEventCredits['byType'][EventCreditKind]>;
-
+const toOrganizerEventLimit = (organizerId: string): OrganizerEventLimit => {
+  const used = countOrganizerEvents(organizerId);
+  const limit = organizerEventLimits[organizerId] ?? Math.max(used, 0);
   return {
-    total: Object.values(byType).reduce((sum, credit) => sum + credit.total, 0),
-    used: Object.values(byType).reduce((sum, credit) => sum + credit.used, 0),
-    available: Object.values(byType).reduce((sum, credit) => sum + credit.available, 0),
-    byType,
+    limit,
+    used,
+    available: Math.max(0, limit - used),
   };
 };
+
+const publicEventStatuses: Event['status'][] = ['active', 'past', 'archived'];
 
 // ─────────────────────────────────────────────────────────
 // Mock Adapter Implementation
@@ -188,6 +174,11 @@ export const mockAdapter: ApiAdapter = {
   async getEvents(filters) {
     await delay();
     let filtered = [...mockEvents];
+    if (!filters?.includeUnpublished) {
+      filtered = filtered.filter((e) => publicEventStatuses.includes(e.status));
+    } else if (!filters.includeDeleted) {
+      filtered = filtered.filter((e) => e.status !== 'deleted');
+    }
     if (!filters?.includePrivate) filtered = filtered.filter((e) => !e.isPrivate);
     if (filters?.discipline) filtered = filtered.filter((e) => e.discipline === filters.discipline);
     if (filters?.city)
@@ -221,16 +212,13 @@ export const mockAdapter: ApiAdapter = {
 
   async createEvent(data) {
     await delay();
-    const credits = organizerEventCredits[data.organizerId];
-    const creditKind: EventCreditKind = data.isVirtual ? 'virtual' : 'standard';
-    const credit = credits?.[creditKind];
-    if (credit && credit.used >= credit.total) {
+    const eventLimit = toOrganizerEventLimit(data.organizerId);
+    if (eventLimit.used >= eventLimit.limit) {
       return fail(
         null as unknown as Event,
-        'Organizer has no available event credits for this event type',
+        'Organizer has no available event slots',
       );
     }
-    if (credit) credit.used += 1;
     const newEvent: Event = {
       id: `e-${Date.now()}`,
       status: 'draft',
@@ -253,10 +241,10 @@ export const mockAdapter: ApiAdapter = {
 
   async deleteEvent(id) {
     await delay();
-    const exists = mockEvents.some((e) => e.id === id);
-    return exists
-      ? ok(undefined as unknown as void)
-      : fail(undefined as unknown as void, 'Event not found');
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    if (eventIndex === -1) return fail(undefined as unknown as void, 'Event not found');
+    mockEvents[eventIndex] = { ...mockEvents[eventIndex], status: 'deleted' };
+    return ok(undefined as unknown as void);
   },
 
   async updateEventStatus(id, status, reason) {
@@ -270,7 +258,7 @@ export const mockAdapter: ApiAdapter = {
   },
 
   async submitEvent(id) {
-    return this.updateEventStatus(id, 'awaiting_approval');
+    return this.updateEventStatus(id, 'active');
   },
 
   async approveEvent(id) {
@@ -280,7 +268,7 @@ export const mockAdapter: ApiAdapter = {
     if (!event) return fail(null as unknown as Event, 'Event not found');
     const updated = {
       ...event,
-      status: 'approved',
+      status: 'active',
       rejectionReason: undefined,
       approvedAt: new Date().toISOString(),
     };
@@ -289,7 +277,7 @@ export const mockAdapter: ApiAdapter = {
   },
 
   async rejectEvent(id, reason) {
-    return this.updateEventStatus(id, 'rejected', reason);
+    return this.updateEventStatus(id, 'draft', reason);
   },
 
   async publishEvent(id) {
@@ -297,7 +285,7 @@ export const mockAdapter: ApiAdapter = {
     const eventIndex = mockEvents.findIndex((e) => e.id === id);
     const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
-    const updated = { ...event, status: 'published', publishedAt: new Date().toISOString() };
+    const updated = { ...event, status: 'active', publishedAt: new Date().toISOString() };
     mockEvents[eventIndex] = updated;
     return ok(updated);
   },
@@ -317,17 +305,19 @@ export const mockAdapter: ApiAdapter = {
     return ok(mockEvents.filter((e) => e.organizerId === organizerId));
   },
 
-  async getOrganizerEventCredits(organizerId) {
+  async getOrganizerEventLimit(organizerId) {
     await delay();
-    return ok(toOrganizerEventCredits(organizerEventCredits[organizerId] ?? emptyCreditState()));
+    return ok(toOrganizerEventLimit(organizerId));
   },
 
-  async grantOrganizerEventCredits(organizerId, count, kind = 'standard') {
+  async updateOrganizerEventLimit(organizerId, limit) {
     await delay();
-    const current = organizerEventCredits[organizerId] ?? emptyCreditState();
-    current[kind].total += count;
-    organizerEventCredits[organizerId] = current;
-    return ok(toOrganizerEventCredits(current));
+    const used = countOrganizerEvents(organizerId);
+    if (limit < used) {
+      return fail(toOrganizerEventLimit(organizerId), 'Event limit cannot be lower than current event count');
+    }
+    organizerEventLimits[organizerId] = limit;
+    return ok(toOrganizerEventLimit(organizerId));
   },
 
   // ── Users ──

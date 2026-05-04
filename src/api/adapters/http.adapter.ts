@@ -64,12 +64,12 @@ export const httpAdapter: ApiAdapter = {
   getLiveEvents: () => request('/events/live'),
   getEventsByOrganizer: (organizerId) =>
     request(`/organizers/${encodeURIComponent(organizerId)}/events`),
-  getOrganizerEventCredits: (organizerId) =>
-    request(`/organizers/${encodeURIComponent(organizerId)}/event-credits`),
-  grantOrganizerEventCredits: (organizerId, count, kind) =>
+  getOrganizerEventLimit: (organizerId) =>
+    request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`),
+  updateOrganizerEventLimit: (organizerId, limit) =>
     request(
-      `/organizers/${encodeURIComponent(organizerId)}/event-credits`,
-      json('POST', { count, kind }),
+      `/organizers/${encodeURIComponent(organizerId)}/event-limit`,
+      json('PATCH', { limit }),
     ),
 
   getUsers: (filters) => paginated('/users', filters as Record<string, QueryValue>),

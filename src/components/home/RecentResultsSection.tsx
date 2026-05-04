@@ -13,7 +13,7 @@ interface RecentResultsSectionProps {
 
 export const RecentResultsSection = ({ events }: RecentResultsSectionProps) => {
   const completedEvents = events
-    .filter((e) => e.status === 'completed')
+    .filter((e) => e.status === 'past')
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6);
 

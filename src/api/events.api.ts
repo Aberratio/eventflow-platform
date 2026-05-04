@@ -8,6 +8,11 @@ export async function getEvents(filters?: EventFilters): Promise<PaginatedRespon
   await simulateDelay();
   let filtered = [...mockEvents];
 
+  if (!filters?.includeUnpublished) {
+    filtered = filtered.filter((e) => ['active', 'past', 'archived'].includes(e.status));
+  } else if (!filters.includeDeleted) {
+    filtered = filtered.filter((e) => e.status !== 'deleted');
+  }
   // Exclude private events by default
   if (!filters?.includePrivate) filtered = filtered.filter((e) => !e.isPrivate);
 

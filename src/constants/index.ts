@@ -1,4 +1,3 @@
-// ─── User Roles ───
 export const USER_ROLES = {
   PARTICIPANT: 'participant',
   ORGANIZER: 'organizer',
@@ -15,24 +14,22 @@ export const ROLE_LABELS: Record<string, string> = {
   superadmin: 'Superadmin',
 };
 
-// ─── Event Statuses ───
 export const EVENT_STATUSES = {
   DRAFT: 'draft',
-  PENDING: 'pending',
-  PUBLISHED: 'published',
-  COMPLETED: 'completed',
-  CANCELLED: 'cancelled',
+  ACTIVE: 'active',
+  PAST: 'past',
+  ARCHIVED: 'archived',
+  DELETED: 'deleted',
 } as const;
 
 export const EVENT_STATUS_LABELS: Record<string, string> = {
   draft: 'Szkic',
-  pending: 'Oczekuje',
-  published: 'Opublikowane',
-  completed: 'Zakończone',
-  cancelled: 'Anulowane',
+  active: 'Aktywne',
+  past: 'Przeszłe',
+  archived: 'Zarchiwizowane',
+  deleted: 'Usunięte',
 };
 
-// ─── Registration Statuses ───
 export const REGISTRATION_STATUSES = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
@@ -47,7 +44,6 @@ export const REGISTRATION_STATUS_LABELS: Record<string, string> = {
   waitlist: 'Lista rezerwowa',
 };
 
-// ─── Payment Statuses ───
 export const PAYMENT_STATUSES = {
   PENDING: 'pending',
   COMPLETED: 'completed',
@@ -62,7 +58,6 @@ export const PAYMENT_STATUS_LABELS: Record<string, string> = {
   refunded: 'Zwrócona',
 };
 
-// ─── Order Statuses ───
 export const ORDER_STATUSES = {
   PENDING: 'pending',
   PROCESSING: 'processing',
@@ -79,21 +74,18 @@ export const ORDER_STATUS_LABELS: Record<string, string> = {
   cancelled: 'Anulowane',
 };
 
-// ─── Series Statuses ───
 export const SERIES_STATUS_LABELS: Record<string, string> = {
   active: 'Aktywna',
   completed: 'Zakończona',
   upcoming: 'Nadchodząca',
 };
 
-// ─── Storage Keys ───
 export const STORAGE_KEYS = {
   AUTH: 'zmierzymyczas_auth',
   EVENTS_FILTERS: 'events-page-filters',
   COOKIE_CONSENT: 'cookie-consent',
 } as const;
 
-// ─── Query Keys (TanStack Query) ───
 export const QUERY_KEYS = {
   events: ['events'] as const,
   featuredEvents: ['events', 'featured'] as const,
@@ -127,8 +119,6 @@ export const QUERY_KEYS = {
   insuranceSettings: ['insuranceSettings'] as const,
 } as const;
 
-// ─── Pagination ───
 export const DEFAULT_PAGE_SIZE = 20;
 
-// ─── Mock Auth ───
 export const MOCK_PASSWORD = 'demo1234';

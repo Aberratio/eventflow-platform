@@ -16,6 +16,7 @@ export interface User {
   description?: string;
   isNewUser?: boolean;
   status?: 'active' | 'blocked';
+  eventLimit?: number;
 }
 
 export type AdminActionType =

@@ -3,8 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Users, Building2, TrendingUp, Clock, ShieldCheck } from 'lucide-react';
 
 export const ModeratorOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter((e) => e.status === 'awaiting_approval').length;
-  const publishedEvents = mockEvents.filter((e) => e.status === 'published').length;
+  const pendingModerationCount = mockEvents.filter((e) => e.status === 'draft').length;
+  const publishedEvents = mockEvents.filter((e) => e.status === 'active').length;
   const participantCount = mockUsers.filter((u) => u.role === 'participant').length;
   const organizerCount = mockUsers.filter((u) => u.role === 'organizer').length;
 
@@ -119,7 +119,7 @@ export const ModeratorOverviewTab = () => {
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {mockEvents
-                .filter((e) => e.status === 'published')
+                .filter((e) => e.status === 'active')
                 .slice(0, 5)
                 .map((event) => (
                   <div

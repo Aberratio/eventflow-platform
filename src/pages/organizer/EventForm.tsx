@@ -71,7 +71,7 @@ const EventForm = () => {
                 form.handleSubmit();
               }}
               disabled={
-                form.isSaving || (!form.isEditing && form.selectedEventCredit?.available === 0)
+                form.isSaving || (!form.isEditing && form.selectedEventLimit?.available === 0)
               }
             >
               <Save className="mr-2 h-4 w-4" />

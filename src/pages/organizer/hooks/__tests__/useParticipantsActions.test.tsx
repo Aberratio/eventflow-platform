@@ -15,7 +15,7 @@ const mockEvent: Event = {
   city: 'Test City',
   description: 'Test',
   discipline: 'running',
-  status: 'published',
+  status: 'active',
   registrationStatus: 'open',
   imageUrl: '',
   distances: [],

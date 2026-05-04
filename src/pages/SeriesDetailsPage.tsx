@@ -66,7 +66,7 @@ const SeriesDetailsPage = () => {
   }, [series]);
 
   const completedEvents = useMemo(() => {
-    return seriesEvents.filter((e) => e.status === 'completed');
+    return seriesEvents.filter((e) => e.status === 'past');
   }, [seriesEvents]);
 
   const standings = useMemo((): SeriesStanding[] => {

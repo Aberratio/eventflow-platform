@@ -27,7 +27,7 @@ const mockEvent: Event = {
   description: 'Opis',
   registrationStatus: 'open',
   imageUrl: '/test.jpg',
-  status: 'published',
+  status: 'active',
   registrationDeadline: '2026-09-10',
   featured: false,
 };

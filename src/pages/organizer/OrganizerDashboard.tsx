@@ -1,7 +1,7 @@
-import { getEventsByOrganizer, getOrganizerEventCredits, mockShopProducts } from '@/api';
+import { getEventsByOrganizer, getOrganizerEventLimit } from '@/api';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,104 +9,63 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
-import type { EventCreditKind, OrganizerEventCredits } from '@/types';
-import {
-  Calendar,
-  Users,
-  TrendingUp,
-  Plus,
-  LayoutDashboard,
-  CalendarDays,
-  Globe2,
-  Timer,
-  ShoppingCart,
-} from 'lucide-react';
+import type { Event, OrganizerEventLimit } from '@/types';
+import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays, Archive } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListContainer, ListRow } from '@/components/lists';
 
-const EMPTY_EVENT_CREDITS: OrganizerEventCredits = {
+const EMPTY_EVENT_LIMIT: OrganizerEventLimit = {
   total: 0,
+  limit: 0,
   used: 0,
   available: 0,
-  byType: {
-    standard: { total: 0, used: 0, available: 0 },
-    virtual: { total: 0, used: 0, available: 0 },
-    timing: { total: 0, used: 0, available: 0 },
-  },
 };
 
-const creditKinds: Array<{
-  kind: EventCreditKind;
-  title: string;
-  description: string;
-  icon: typeof CalendarDays;
-}> = [
-  {
-    kind: 'standard',
-    title: 'Wydarzenia zwykłe',
-    description: 'Standardowe wydarzenia z zapisami i obsługą wyników.',
-    icon: CalendarDays,
-  },
-  {
-    kind: 'virtual',
-    title: 'Wydarzenia wirtualne',
-    description: 'Wydarzenia z oknem aktywności i zgłaszaniem rezultatów online.',
-    icon: Globe2,
-  },
-  {
-    kind: 'timing',
-    title: 'Pomiar czasu',
-    description: 'Wydarzenia wymagające pakietu profesjonalnego pomiaru czasu.',
-    icon: Timer,
-  },
-];
+const statusConfig: Record<
+  Event['status'],
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
+  active: { label: 'Aktywne', variant: 'default' },
+  past: { label: 'Przeszłe', variant: 'secondary' },
+  archived: { label: 'Zarchiwizowane', variant: 'outline' },
+  draft: { label: 'Szkic', variant: 'outline' },
+  deleted: { label: 'Usunięte', variant: 'destructive' },
+};
 
 const OrganizerDashboard = () => {
   const { user } = useAuth();
-  const { addItem } = useCart();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+
   const { data: eventsResponse } = useQuery({
     queryKey: ['organizer-events', user?.id],
     queryFn: () => getEventsByOrganizer(user?.id || ''),
     enabled: Boolean(user?.id),
   });
-  const myEvents = eventsResponse?.data ?? [];
-  const { data: eventCreditsResponse } = useQuery({
-    queryKey: ['organizer-event-credits', user?.id],
-    queryFn: () => getOrganizerEventCredits(user?.id || ''),
+
+  const { data: eventLimitResponse } = useQuery({
+    queryKey: ['organizer-event-limit', user?.id],
+    queryFn: () => getOrganizerEventLimit(user?.id || ''),
     enabled: Boolean(user?.id),
   });
-  const eventCredits = eventCreditsResponse?.data ?? EMPTY_EVENT_CREDITS;
-  const creditProducts = Object.fromEntries(
-    mockShopProducts
-      .filter((product) => product.serviceKind === 'event_credit' && product.eventCreditKind)
-      .map((product) => [product.eventCreditKind, product]),
-  ) as Partial<Record<EventCreditKind, (typeof mockShopProducts)[number]>>;
+
+  const myEvents = eventsResponse?.data ?? [];
+  const eventLimit = eventLimitResponse?.data ?? EMPTY_EVENT_LIMIT;
+  const visibleEvents = myEvents.filter((event) => event.status !== 'archived' && event.status !== 'deleted');
+  const archivedEvents = myEvents.filter((event) => event.status === 'archived');
   const totalParticipants = myEvents.reduce(
     (acc, e) => acc + e.distances.reduce((a, d) => a + d.registeredCount, 0),
     0,
   );
+  const canCreateEvent = eventLimit.available > 0;
 
   const tabs = [
     { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
     { id: 'events', label: 'Moje wydarzenia', icon: CalendarDays },
+    { id: 'archive', label: 'Archiwum', icon: Archive },
   ];
 
-  const getStatusBadge = (event: (typeof myEvents)[0]) => {
-    const statusConfig: Record<
-      string,
-      { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
-    > = {
-      published: { label: 'Aktywne', variant: 'default' },
-      completed: { label: 'Zakończone', variant: 'secondary' },
-      draft: { label: 'Szkic', variant: 'outline' },
-      awaiting_approval: { label: 'Oczekuje', variant: 'outline' },
-      rejected: { label: 'Odrzucone', variant: 'destructive' },
-      cancelled: { label: 'Anulowane', variant: 'destructive' },
-    };
+  const getStatusBadge = (event: Event) => {
     const config = statusConfig[event.status] || statusConfig.draft;
     return (
       <Badge variant={config.variant} className="text-xs">
@@ -115,12 +74,43 @@ const OrganizerDashboard = () => {
     );
   };
 
-  const handleBuyCredit = (kind: EventCreditKind) => {
-    const product = creditProducts[kind];
-    if (!product) return;
-    addItem({ productId: product.id, quantity: 1 });
-    navigate('/cart');
-  };
+  const renderEventList = (events: Event[], emptyText: string) => (
+    <ListContainer>
+      {events.length === 0 ? (
+        <div className="p-6 text-center text-sm text-muted-foreground">{emptyText}</div>
+      ) : (
+        events.map((event) => {
+          const participantCount = event.distances.reduce((a, d) => a + d.registeredCount, 0);
+          return (
+            <ListRow
+              key={event.id}
+              icon={<DisciplineIcon discipline={event.discipline} />}
+              title={event.name}
+              subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${participantCount} uczestników`}
+              badge={getStatusBadge(event)}
+              action={
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
+                </Button>
+              }
+            />
+          );
+        })
+      )}
+    </ListContainer>
+  );
+
+  const createButton = canCreateEvent ? (
+    <Button asChild className="self-start sm:self-auto">
+      <Link to="/organizer/events/new">
+        <Plus className="mr-2 h-4 w-4" /> Nowe wydarzenie
+      </Link>
+    </Button>
+  ) : (
+    <Button disabled className="self-start sm:self-auto">
+      <Plus className="mr-2 h-4 w-4" /> Limit wyczerpany
+    </Button>
+  );
 
   return (
     <Layout>
@@ -130,12 +120,26 @@ const OrganizerDashboard = () => {
             <h1 className="text-2xl font-bold sm:text-3xl">Panel Organizatora</h1>
             <p className="text-muted-foreground">Zarządzaj swoimi wydarzeniami</p>
           </div>
-          <Button asChild className="self-start sm:self-auto">
-            <Link to="/organizer/events/new">
-              <Plus className="mr-2 h-4 w-4" /> Nowe wydarzenie
-            </Link>
-          </Button>
+          {createButton}
         </div>
+
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Limit wydarzeń</p>
+              <p className="text-lg font-semibold">
+                Wykorzystano {eventLimit.used} z {eventLimit.limit} wydarzeń. Dostępne:{' '}
+                {eventLimit.available}.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Do limitu liczą się wszystkie wydarzenia poza usuniętymi, również szkice i archiwum.
+              </p>
+            </div>
+            <Badge variant={canCreateEvent ? 'secondary' : 'destructive'} className="self-start">
+              {canCreateEvent ? `${eventLimit.available} dostępne` : 'Brak wolnych miejsc'}
+            </Badge>
+          </CardContent>
+        </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="h-auto w-full flex-wrap gap-1 bg-muted/50 p-1 sm:inline-flex sm:w-auto">
@@ -160,8 +164,8 @@ const OrganizerDashboard = () => {
                       <Calendar className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <div className="text-2xl font-bold">{myEvents.length}</div>
-                      <div className="text-sm text-muted-foreground">Wydarzeń</div>
+                      <div className="text-2xl font-bold">{visibleEvents.length}</div>
+                      <div className="text-sm text-muted-foreground">Wydarzeń w panelu</div>
                     </div>
                   </div>
                 </CardContent>
@@ -187,7 +191,7 @@ const OrganizerDashboard = () => {
                     </div>
                     <div>
                       <div className="text-2xl font-bold">
-                        {myEvents.filter((e) => e.status === 'published').length}
+                        {myEvents.filter((e) => e.status === 'active').length}
                       </div>
                       <div className="text-sm text-muted-foreground">Aktywnych</div>
                     </div>
@@ -201,28 +205,7 @@ const OrganizerDashboard = () => {
                 <CardTitle>Ostatnie wydarzenia</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ListContainer>
-                  {myEvents.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-muted-foreground">
-                      Nie masz jeszcze żadnych wydarzeń.
-                    </div>
-                  ) : (
-                    myEvents.slice(0, 5).map((event) => (
-                      <ListRow
-                        key={event.id}
-                        icon={<DisciplineIcon discipline={event.discipline} />}
-                        title={event.name}
-                        subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })}`}
-                        badge={getStatusBadge(event)}
-                        action={
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
-                          </Button>
-                        }
-                      />
-                    ))
-                  )}
-                </ListContainer>
+                {renderEventList(visibleEvents.slice(0, 5), 'Nie masz jeszcze żadnych wydarzeń w panelu.')}
               </CardContent>
             </Card>
           </TabsContent>
@@ -230,120 +213,29 @@ const OrganizerDashboard = () => {
           <TabsContent value="events" className="mt-0 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <CardTitle>Limity wydarzeń</CardTitle>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Możesz jeszcze utworzyć {eventCredits.available} wydarzeń z wykupionych
-                      pakietów.
-                    </p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/shop">
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      Sklep
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-3">
-                  {creditKinds.map(({ kind, title, description, icon: Icon }) => {
-                    const credit = eventCredits.byType[kind];
-                    const product = creditProducts[kind];
-                    const isEmpty = credit.available <= 0;
-
-                    return (
-                      <div
-                        key={kind}
-                        className={`rounded-lg border p-4 ${isEmpty ? 'border-destructive/25 bg-destructive/5' : 'bg-muted/20'}`}
-                      >
-                        <div className="mb-3 flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <div className="rounded-md bg-primary/10 p-2 text-primary">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">{title}</h3>
-                              {product && (
-                                <p className="text-sm font-medium text-muted-foreground">
-                                  {product.price} zł / wydarzenie
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <Badge variant={isEmpty ? 'destructive' : 'secondary'}>
-                            {credit.available} dostępne
-                          </Badge>
-                        </div>
-                        <p className="mb-4 text-sm text-muted-foreground">{description}</p>
-                        <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
-                          <div className="rounded-md bg-background p-2">
-                            <span className="block text-muted-foreground">Wykupione</span>
-                            <span className="font-semibold">{credit.total}</span>
-                          </div>
-                          <div className="rounded-md bg-background p-2">
-                            <span className="block text-muted-foreground">Wykorzystane</span>
-                            <span className="font-semibold">{credit.used}</span>
-                          </div>
-                        </div>
-                        <Button
-                          variant={isEmpty ? 'default' : 'outline'}
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleBuyCredit(kind)}
-                          disabled={!product}
-                        >
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          {isEmpty ? 'Wykup pakiet' : 'Dokup pakiet'}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Wszystkie wydarzenia</CardTitle>
-                  <Button asChild size="sm">
-                    <Link to="/organizer/events/new">
-                      <Plus className="mr-2 h-4 w-4" /> Dodaj
-                    </Link>
-                  </Button>
+                  {createButton}
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <ListContainer>
-                  {myEvents.length === 0 ? (
-                    <div className="p-6 text-center text-sm text-muted-foreground">
-                      Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze z przycisku Dodaj.
-                    </div>
-                  ) : (
-                    myEvents.map((event) => {
-                      const participantCount = event.distances.reduce(
-                        (a, d) => a + d.registeredCount,
-                        0,
-                      );
-                      return (
-                        <ListRow
-                          key={event.id}
-                          icon={<DisciplineIcon discipline={event.discipline} />}
-                          title={event.name}
-                          subtitle={`${event.city} • ${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${participantCount} uczestników`}
-                          badge={getStatusBadge(event)}
-                          action={
-                            <Button variant="outline" size="sm" asChild>
-                              <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
-                            </Button>
-                          }
-                        />
-                      );
-                    })
-                  )}
-                </ListContainer>
+                {renderEventList(
+                  visibleEvents,
+                  canCreateEvent
+                    ? 'Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze z przycisku Dodaj.'
+                    : 'Nie masz wydarzeń w głównym panelu.',
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="archive" className="mt-0 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Archiwum wydarzeń</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {renderEventList(archivedEvents, 'Archiwum jest puste.')}
               </CardContent>
             </Card>
           </TabsContent>

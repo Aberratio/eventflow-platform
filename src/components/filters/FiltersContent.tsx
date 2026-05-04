@@ -140,10 +140,10 @@ export const FiltersContent = ({
               onCheckedChange={() => toggleArrayFilter('statuses', 'none')}
             />
             <CheckboxItem
-              id="status-completed"
+              id="status-past"
               label="Zakończone"
-              checked={filters.statuses.includes('completed')}
-              onCheckedChange={() => toggleArrayFilter('statuses', 'completed')}
+              checked={filters.statuses.includes('past')}
+              onCheckedChange={() => toggleArrayFilter('statuses', 'past')}
             />
           </FilterSection>
 

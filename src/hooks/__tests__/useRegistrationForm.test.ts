@@ -18,7 +18,7 @@ const mockEvent: Event = {
   organizerId: 'o1',
   organizerName: 'Org',
   discipline: 'running',
-  status: 'published',
+  status: 'active',
   imageUrl: '/test.jpg',
   distances: [
     {

@@ -1,11 +1,11 @@
-import {
+﻿import {
   createEvent,
   getEventById,
-  getOrganizerEventCredits,
+  getOrganizerEventLimit,
   getOrganizers,
   mockEvents,
-  submitEvent,
   updateEvent,
+  updateEventStatus,
 } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -22,8 +22,7 @@ import {
   DistanceRouteFile,
   RegistrationFormConfig,
   EventDisplayOptions,
-  EventCreditKind,
-  OrganizerEventCredits,
+  OrganizerEventLimit,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -74,7 +73,7 @@ export const useEventFormState = () => {
   const [selectedOrganizerId, setSelectedOrganizerId] = useState(
     existingEvent?.organizerId || (user?.role === 'organizer' ? user.id : ''),
   );
-  const [eventCredits, setEventCredits] = useState<OrganizerEventCredits | null>(null);
+  const [eventLimit, setEventLimit] = useState<OrganizerEventLimit | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const [step, setStep] = useState(1);
@@ -122,7 +121,7 @@ export const useEventFormState = () => {
     existingEvent?.paymentConfig?.bankAccountHolder || '',
   );
   const [transferTitle, setTransferTitle] = useState(
-    existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
+    existingEvent?.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
   );
 
   // Rich text
@@ -214,12 +213,8 @@ export const useEventFormState = () => {
     })) || [],
   );
 
-  const [status, setStatus] = useState<'draft' | 'awaiting_approval' | 'published'>(
-    existingEvent?.status === 'published'
-      ? 'published'
-      : existingEvent?.status === 'awaiting_approval'
-        ? 'awaiting_approval'
-        : 'draft',
+  const [status, setStatus] = useState<'draft' | 'active'>(
+    existingEvent?.status === 'active' ? 'active' : 'draft',
   );
 
   useEffect(() => {
@@ -256,7 +251,7 @@ export const useEventFormState = () => {
     setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
     setBankAccountHolder(existingEvent.paymentConfig?.bankAccountHolder || '');
     setTransferTitle(
-      existingEvent.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
+      existingEvent.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
     );
     setOrganizersHtml(existingEvent.organizersHtml || '');
     setRulesHtml(existingEvent.rulesHtml || '');
@@ -288,13 +283,7 @@ export const useEventFormState = () => {
         routeFiles: d.routeFiles || [],
       })),
     );
-    setStatus(
-      existingEvent.status === 'published'
-        ? 'published'
-        : existingEvent.status === 'awaiting_approval'
-          ? 'awaiting_approval'
-          : 'draft',
-    );
+    setStatus(existingEvent.status === 'active' ? 'active' : 'draft');
   }, [existingEvent]);
 
   useEffect(() => {
@@ -319,12 +308,12 @@ export const useEventFormState = () => {
 
   useEffect(() => {
     if (!selectedOrganizerId) {
-      setEventCredits(null);
+      setEventLimit(null);
       return;
     }
-    getOrganizerEventCredits(selectedOrganizerId)
-      .then((response) => setEventCredits(response.data))
-      .catch(() => setEventCredits(null));
+    getOrganizerEventLimit(selectedOrganizerId)
+      .then((response) => setEventLimit(response.data))
+      .catch(() => setEventLimit(null));
   }, [selectedOrganizerId]);
 
   // Distance handlers
@@ -488,24 +477,24 @@ export const useEventFormState = () => {
   const validateStep1 = (): boolean => {
     if (!name || !date || !registrationDeadline) {
       toast({
-        title: 'Błąd',
-        description: 'Wypełnij wszystkie wymagane pola',
+        title: 'BĹ‚Ä…d',
+        description: 'WypeĹ‚nij wszystkie wymagane pola',
         variant: 'destructive',
       });
       return false;
     }
     if (!isVirtual && (!location || !city)) {
       toast({
-        title: 'Błąd',
-        description: 'Wypełnij lokalizację i miasto',
+        title: 'BĹ‚Ä…d',
+        description: 'WypeĹ‚nij lokalizacjÄ™ i miasto',
         variant: 'destructive',
       });
       return false;
     }
     if (isVirtual && (!startDate || !endDate)) {
       toast({
-        title: 'Błąd',
-        description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego',
+        title: 'BĹ‚Ä…d',
+        description: 'WypeĹ‚nij daty rozpoczÄ™cia i zakoĹ„czenia okna wirtualnego',
         variant: 'destructive',
       });
       return false;
@@ -515,8 +504,8 @@ export const useEventFormState = () => {
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
     ) {
       toast({
-        title: 'Błąd',
-        description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym',
+        title: 'BĹ‚Ä…d',
+        description: 'Podaj numer konta i wĹ‚aĹ›ciciela dla pĹ‚atnoĹ›ci przelewem bankowym',
         variant: 'destructive',
       });
       return false;
@@ -527,7 +516,7 @@ export const useEventFormState = () => {
   const validateStep2 = (): boolean => {
     if (distances.length === 0) {
       toast({
-        title: 'Błąd',
+        title: 'BĹ‚Ä…d',
         description: 'Dodaj przynajmniej jeden dystans',
         variant: 'destructive',
       });
@@ -536,8 +525,8 @@ export const useEventFormState = () => {
     for (const dist of distances) {
       if (!dist.name || !dist.length || !dist.price) {
         toast({
-          title: 'Błąd',
-          description: 'Wypełnij wszystkie pola dystansów',
+          title: 'BĹ‚Ä…d',
+          description: 'WypeĹ‚nij wszystkie pola dystansĂłw',
           variant: 'destructive',
         });
         return false;
@@ -592,7 +581,6 @@ export const useEventFormState = () => {
       bannerCropArea,
       organizerLogoUrl: organizerLogoUrl || undefined,
       isVirtual,
-      eventCreditKind: isVirtual ? 'virtual' : 'standard',
       startDate: startDate || undefined,
       endDate: endDate || undefined,
       paymentConfig: {
@@ -617,22 +605,21 @@ export const useEventFormState = () => {
     };
   };
 
-  const selectedEventCreditKind: EventCreditKind = isVirtual ? 'virtual' : 'standard';
-  const selectedEventCredit = eventCredits?.byType?.[selectedEventCreditKind] ?? eventCredits;
+  const selectedEventLimit = eventLimit;
 
   const handleSubmit = async () => {
     if (!selectedOrganizerId) {
       toast({
-        title: 'Błąd',
+        title: 'BĹ‚Ä…d',
         description: 'Wybierz organizatora wydarzenia',
         variant: 'destructive',
       });
       return;
     }
-    if (!isEditing && selectedEventCredit && selectedEventCredit.available <= 0) {
+    if (!isEditing && selectedEventLimit && selectedEventLimit.available <= 0) {
       toast({
-        title: 'Brak wykupionych wydarzeń',
-        description: 'Organizator nie ma dostępnych kredytów dla tego typu wydarzenia.',
+        title: 'Limit wydarzeń wyczerpany',
+        description: 'Organizator nie ma wolnego miejsca na kolejne wydarzenie.',
         variant: 'destructive',
       });
       return;
@@ -647,12 +634,12 @@ export const useEventFormState = () => {
       } else {
         saved = (await createEvent(payload)).data;
       }
-      if (status === 'awaiting_approval' && ['draft', 'rejected'].includes(saved.status)) {
-        saved = (await submitEvent(saved.id)).data;
+      if (status === 'active' && saved.status !== 'active') {
+        saved = (await updateEventStatus(saved.id, 'active')).data;
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['organizer-events', selectedOrganizerId] }),
-        queryClient.invalidateQueries({ queryKey: ['organizer-event-credits', selectedOrganizerId] }),
+        queryClient.invalidateQueries({ queryKey: ['organizer-event-limit', selectedOrganizerId] }),
         queryClient.invalidateQueries({ queryKey: ['event', saved.id] }),
         queryClient.invalidateQueries({ queryKey: ['events'] }),
       ]);
@@ -660,15 +647,15 @@ export const useEventFormState = () => {
       toast({
         title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
         description:
-          status === 'awaiting_approval'
-            ? 'Wydarzenie zostało zgłoszone do akceptacji.'
-            : 'Wydarzenie zostało zapisane jako szkic.',
+          status === 'active'
+            ? 'Wydarzenie zostało ustawione jako aktywne.'
+            : 'Wydarzenie zostaĹ‚o zapisane jako szkic.',
       });
       navigate(isEditing ? `/organizer/events/${saved.id}` : '/organizer/events');
     } catch (error) {
       toast({
-        title: 'Nie udało się zapisać wydarzenia',
-        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
+        title: 'Nie udaĹ‚o siÄ™ zapisaÄ‡ wydarzenia',
+        description: error instanceof Error ? error.message : 'SprĂłbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -681,16 +668,9 @@ export const useEventFormState = () => {
   const generateSlug = (eventName: string) => {
     return eventName
       .toLowerCase()
-      .replace(/[ąáàâä]/g, 'a')
-      .replace(/[ęéèêë]/g, 'e')
-      .replace(/[íìîï]/g, 'i')
-      .replace(/[óòôö]/g, 'o')
-      .replace(/[úùûü]/g, 'u')
-      .replace(/[ćç]/g, 'c')
-      .replace(/[ł]/g, 'l')
-      .replace(/[ń]/g, 'n')
-      .replace(/[ś]/g, 's')
-      .replace(/[źż]/g, 'z')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ł/g, 'l')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
   };
@@ -711,9 +691,8 @@ export const useEventFormState = () => {
     organizers,
     selectedOrganizerId,
     setSelectedOrganizerId,
-    eventCredits,
-    selectedEventCreditKind,
-    selectedEventCredit,
+    eventLimit,
+    selectedEventLimit,
     isSaving,
 
     // Step 1
@@ -814,3 +793,5 @@ export const useEventFormState = () => {
 };
 
 export type EventFormState = ReturnType<typeof useEventFormState>;
+
+

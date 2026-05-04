@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Eye, Pencil, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { Event, User } from '@/types';
 import { getEditUrl } from './index';
 
@@ -11,15 +11,10 @@ interface DraftBannerProps {
   onReject?: () => void;
 }
 
-export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerProps) => {
-  const isAdminOrMod =
-    user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
-
-  const messages: Record<string, string> = {
-    draft: 'Podgląd — wydarzenie nie jest widoczne publicznie',
-    awaiting_approval: 'Podgląd — wydarzenie oczekuje na akceptację',
-    approved: 'Podgląd — wydarzenie zatwierdzone, oczekuje na publikację',
-    rejected: 'Podgląd — wydarzenie zostało odrzucone',
+export const DraftBanner = ({ event, user }: DraftBannerProps) => {
+  const messages: Partial<Record<Event['status'], string>> = {
+    draft: 'Podgląd - wydarzenie nie jest widoczne publicznie',
+    deleted: 'Podgląd - wydarzenie jest oznaczone jako usunięte',
   };
 
   const message = messages[event.status];
@@ -31,37 +26,8 @@ export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerPro
         <div className="flex items-center gap-2 text-sm font-medium">
           <Eye className="h-4 w-4 shrink-0" />
           <span>{message}</span>
-          {event.status === 'rejected' && event.rejectionReason && (
-            <span className="font-normal">— {event.rejectionReason}</span>
-          )}
         </div>
-        <div className="flex items-center gap-2">
-          {isAdminOrMod && event.status === 'awaiting_approval' && (
-            <>
-              {onApprove && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
-                  onClick={onApprove}
-                >
-                  <ShieldCheck className="mr-1 h-3 w-3" />
-                  Zatwierdź
-                </Button>
-              )}
-              {onReject && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
-                  onClick={onReject}
-                >
-                  <AlertTriangle className="mr-1 h-3 w-3" />
-                  Odrzuć
-                </Button>
-              )}
-            </>
-          )}
+        {event.status !== 'deleted' && (
           <Button
             size="sm"
             variant="outline"
@@ -73,7 +39,7 @@ export const DraftBanner = ({ event, user, onApprove, onReject }: DraftBannerPro
               Edytuj
             </Link>
           </Button>
-        </div>
+        )}
       </div>
     </div>
   );

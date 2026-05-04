@@ -1,4 +1,4 @@
-import { grantOrganizerEventCredits, mockDeliveryMethods, mockShopPaymentMethods } from '@/api';
+import { mockDeliveryMethods, mockShopPaymentMethods } from '@/api';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -26,8 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
-import { useAuthSafe } from '@/contexts/AuthContext';
-import { EventCreditKind, OrderDetails } from '@/types';
+import { OrderDetails } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {
   card: <CreditCard className="h-4 w-4" />,
@@ -47,7 +46,6 @@ const CartPage = () => {
     totalItems,
     setLastOrder,
   } = useCart();
-  const auth = useAuthSafe();
   const navigate = useNavigate();
 
   const [selectedDelivery, setSelectedDelivery] = useState<string>('');
@@ -109,25 +107,6 @@ const CartPage = () => {
       estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
       createdAt: new Date().toISOString(),
     };
-
-    const eventCreditItems = items
-      .map((item) => {
-        const product = getProduct(item.productId);
-        if (product?.serviceKind !== 'event_credit' || !product.eventCreditKind) return null;
-        return {
-          kind: product.eventCreditKind as EventCreditKind,
-          count: item.quantity * (product.eventCreditCount ?? 1),
-        };
-      })
-      .filter(Boolean) as Array<{ kind: EventCreditKind; count: number }>;
-
-    if (auth?.user?.id && eventCreditItems.length > 0) {
-      await Promise.all(
-        eventCreditItems.map((credit) =>
-          grantOrganizerEventCredits(auth.user!.id, credit.count, credit.kind),
-        ),
-      );
-    }
 
     setLastOrder(orderDetails);
     clearCart();

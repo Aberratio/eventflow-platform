@@ -1,4 +1,4 @@
-import { disciplineLabels } from '@/api';
+﻿import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,14 +73,14 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               )}
               <p
                 className={
-                  form.selectedEventCredit && form.selectedEventCredit.available <= 0
+                  form.selectedEventLimit && form.selectedEventLimit.available <= 0
                     ? 'text-sm text-destructive'
                     : 'text-sm text-muted-foreground'
                 }
               >
-                {form.selectedEventCredit
-                  ? `Dostępne wykupione wydarzenia dla tego typu: ${form.selectedEventCredit.available} z ${form.selectedEventCredit.total}`
-                  : 'Ładowanie dostępnych wydarzeń...'}
+                {form.selectedEventLimit
+                  ? `Limit wydarzeń: wykorzystano ${form.selectedEventLimit.used} z ${form.selectedEventLimit.limit}. Dostępne: ${form.selectedEventLimit.available}.`
+                  : 'Ładowanie limitu wydarzeń...'}
               </p>
             </div>
             <div className="space-y-2">
@@ -143,7 +143,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   form.setIsVirtual(checked === true);
                   if (checked) {
                     form.setLocation('Wydarzenie wirtualne');
-                    form.setCity('Cały świat');
+                    form.setCity('CaĹ‚y Ĺ›wiat');
                   } else {
                     form.setLocation('');
                     form.setCity('');
@@ -159,8 +159,8 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             </div>
             {form.isVirtual && (
               <p className="pl-6 text-sm text-muted-foreground">
-                Uczestnicy wykonują aktywność samodzielnie w dowolnym miejscu i wprowadzają swoje
-                wyniki po zakończeniu okna czasowego.
+                Uczestnicy wykonujÄ… aktywnoĹ›Ä‡ samodzielnie w dowolnym miejscu i wprowadzajÄ… swoje
+                wyniki po zakoĹ„czeniu okna czasowego.
               </p>
             )}
           </div>
@@ -168,7 +168,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
           {form.isVirtual && (
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Data rozpoczęcia okna *</Label>
+                <Label htmlFor="startDate">Data rozpoczÄ™cia okna *</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -177,7 +177,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">Data zakończenia okna *</Label>
+                <Label htmlFor="endDate">Data zakoĹ„czenia okna *</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -210,11 +210,11 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             {form.isPrivate && (
               <div className="space-y-3 pl-6">
                 <p className="text-sm text-muted-foreground">
-                  Prywatne wydarzenie nie będzie widoczne publicznie. Uczestnicy mogą dołączyć tylko
+                  Prywatne wydarzenie nie bÄ™dzie widoczne publicznie. Uczestnicy mogÄ… doĹ‚Ä…czyÄ‡ tylko
                   przez specjalny link.
                 </p>
                 <div className="space-y-2">
-                  <Label htmlFor="accessCode">Kod dostępu</Label>
+                  <Label htmlFor="accessCode">Kod dostÄ™pu</Label>
                   <div className="flex gap-2">
                     <Input
                       id="accessCode"
@@ -243,7 +243,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                         form.toast({
                           title: 'Skopiowano',
                           description:
-                            'Link do prywatnego wydarzenia został skopiowany do schowka.',
+                            'Link do prywatnego wydarzenia zostaĹ‚ skopiowany do schowka.',
                         });
                       }}
                       title="Kopiuj link"
@@ -285,7 +285,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               id="description"
               value={form.description}
               onChange={(e) => form.setDescription(e.target.value)}
-              placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
+              placeholder="Opisz szczegĂłĹ‚y wydarzenia, trasÄ™, atrakcje..."
               rows={4}
             />
           </div>
@@ -307,7 +307,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               onCheckedChange={(checked) => form.setFeatured(checked === true)}
             />
             <Label htmlFor="featured" className="cursor-pointer">
-              Wyróżnij wydarzenie na stronie głównej
+              WyrĂłĹĽnij wydarzenie na stronie gĹ‚Ăłwnej
             </Label>
           </div>
 
@@ -357,10 +357,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
           <div className="mt-6 border-t pt-6">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
               <CreditCard className="h-5 w-5 text-primary" />
-              Konfiguracja płatności
+              Konfiguracja pĹ‚atnoĹ›ci
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">
-              Wybierz sposób przyjmowania płatności od uczestników
+              Wybierz sposĂłb przyjmowania pĹ‚atnoĹ›ci od uczestnikĂłw
             </p>
             <RadioGroup
               value={form.paymentConfigType}
@@ -376,10 +376,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                     htmlFor="admin_gateway"
                     className="flex cursor-pointer items-center gap-2 font-medium"
                   >
-                    <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza (automatyczna)
+                    <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
                   </Label>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Płatności są przetwarzane automatycznie przez bramkę płatniczą administratora
+                    PĹ‚atnoĹ›ci sÄ… przetwarzane automatycznie przez bramkÄ™ pĹ‚atniczÄ… administratora
                     serwisu.
                   </p>
                 </div>
@@ -393,11 +393,11 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                     htmlFor="organizer_bank"
                     className="flex cursor-pointer items-center gap-2 font-medium"
                   >
-                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
+                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
                   </Label>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Uczestnicy wpłacają na Twoje konto bankowe. Musisz ręcznie potwierdzać otrzymane
-                    wpłaty.
+                    Uczestnicy wpĹ‚acajÄ… na Twoje konto bankowe. Musisz rÄ™cznie potwierdzaÄ‡ otrzymane
+                    wpĹ‚aty.
                   </p>
                   {form.paymentConfigType === 'organizer_bank' && (
                     <div className="mt-4 space-y-4 border-t border-dashed pt-4">
@@ -410,28 +410,28 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                           placeholder="PL 00 0000 0000 0000 0000 0000 0000"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Podaj pełny numer konta w formacie IBAN
+                          Podaj peĹ‚ny numer konta w formacie IBAN
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="bankAccountHolder">Właściciel konta *</Label>
+                        <Label htmlFor="bankAccountHolder">WĹ‚aĹ›ciciel konta *</Label>
                         <Input
                           id="bankAccountHolder"
                           value={form.bankAccountHolder}
                           onChange={(e) => form.setBankAccountHolder(e.target.value)}
-                          placeholder="Nazwa firmy lub Imię Nazwisko"
+                          placeholder="Nazwa firmy lub ImiÄ™ Nazwisko"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="transferTitle">Wzór tytułu przelewu</Label>
+                        <Label htmlFor="transferTitle">WzĂłr tytuĹ‚u przelewu</Label>
                         <Input
                           id="transferTitle"
                           value={form.transferTitle}
                           onChange={(e) => form.setTransferTitle(e.target.value)}
-                          placeholder="Opłata za {eventName} - {participantName}"
+                          placeholder="OpĹ‚ata za {eventName} - {participantName}"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Dostępne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
+                          DostÄ™pne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
                           {'{distanceName}'}
                         </p>
                       </div>
@@ -448,13 +448,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               <FileText className="h-5 w-5 text-primary" /> Dodatkowe informacje (opcjonalne)
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">
-              Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
+              Te pola pozwalajÄ… na formatowanie tekstu, dodawanie linkĂłw i list.
             </p>
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label>Organizatorzy</Label>
                 <p className="text-sm text-muted-foreground">
-                  Możesz wpisać wielu organizatorów, sponsorów z linkami do ich stron.
+                  MoĹĽesz wpisaÄ‡ wielu organizatorĂłw, sponsorĂłw z linkami do ich stron.
                 </p>
                 <RichTextEditor
                   value={form.organizersHtml}
@@ -466,12 +466,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               <div className="space-y-2">
                 <Label>Regulamin</Label>
                 <p className="text-sm text-muted-foreground">
-                  Wpisz treść regulaminu lub dodaj linki do plików PDF.
+                  Wpisz treĹ›Ä‡ regulaminu lub dodaj linki do plikĂłw PDF.
                 </p>
                 <RichTextEditor
                   value={form.rulesHtml}
                   onChange={form.setRulesHtml}
-                  placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
+                  placeholder="Wpisz regulamin lub dodaj linki do dokumentĂłw..."
                   minHeight="120px"
                 />
               </div>
@@ -490,13 +490,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   <div className="space-y-2 pl-6">
                     <Label>Tekst akceptacji</Label>
                     <p className="text-sm text-muted-foreground">
-                      Ten tekst pojawi się jako checkbox, który uczestnik musi zaakceptować przy
+                      Ten tekst pojawi siÄ™ jako checkbox, ktĂłry uczestnik musi zaakceptowaÄ‡ przy
                       rejestracji.
                     </p>
                     <RichTextEditor
                       value={form.finalAcceptanceHtml}
                       onChange={form.setFinalAcceptanceHtml}
-                      placeholder="Oświadczam, że zapoznałem się z regulaminem..."
+                      placeholder="OĹ›wiadczam, ĹĽe zapoznaĹ‚em siÄ™ z regulaminem..."
                       minHeight="100px"
                     />
                   </div>
@@ -517,9 +517,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Włącz widget do osadzenia</Label>
+              <Label>WĹ‚Ä…cz widget do osadzenia</Label>
               <p className="text-sm text-muted-foreground">
-                Partnerzy mogą umieścić formularz zapisów na swojej stronie
+                Partnerzy mogÄ… umieĹ›ciÄ‡ formularz zapisĂłw na swojej stronie
               </p>
             </div>
             <Switch checked={form.embedEnabled} onCheckedChange={form.setEmbedEnabled} />
@@ -528,7 +528,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             <div className="space-y-4 border-t pt-2">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Data rozpoczęcia (opcjonalnie)</Label>
+                  <Label>Data rozpoczÄ™cia (opcjonalnie)</Label>
                   <Input
                     type="date"
                     value={form.embedStartDate}
@@ -536,7 +536,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Data zakończenia (opcjonalnie)</Label>
+                  <Label>Data zakoĹ„czenia (opcjonalnie)</Label>
                   <Input
                     type="date"
                     value={form.embedEndDate}
@@ -566,16 +566,16 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Wybierz, które pola będą widoczne w formularzu rejestracji dla uczestników.
+            Wybierz, ktĂłre pola bÄ™dÄ… widoczne w formularzu rejestracji dla uczestnikĂłw.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {[
               { key: 'collectPhone' as const, label: 'Telefon kontaktowy' },
               { key: 'collectClub' as const, label: 'Klub / organizacja' },
               { key: 'collectBirthDate' as const, label: 'Data urodzenia' },
-              { key: 'collectTeam' as const, label: 'Zapis drużynowy' },
+              { key: 'collectTeam' as const, label: 'Zapis druĹĽynowy' },
               { key: 'collectInsurance' as const, label: 'Ubezpieczenie NNW' },
-              { key: 'collectMerchandise' as const, label: 'Gadżety / merchandise' },
+              { key: 'collectMerchandise' as const, label: 'GadĹĽety / merchandise' },
             ].map((field) => (
               <label
                 key={field.key}
@@ -598,12 +598,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Monitor className="h-5 w-5 text-primary" /> Opcje wyświetlania listy uczestników
+            <Monitor className="h-5 w-5 text-primary" /> Opcje wyĹ›wietlania listy uczestnikĂłw
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Domyślne sortowanie</Label>
+            <Label>DomyĹ›lne sortowanie</Label>
             <Select
               value={form.displayOptions.defaultSort}
               onValueChange={(v) =>
@@ -631,7 +631,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 form.setDisplayOptions({ ...form.displayOptions, uppercaseNames: !!checked })
               }
             />
-            <span className="text-sm">Wymuś wielkie litery w nazwiskach (np. Jan KOWALSKI)</span>
+            <span className="text-sm">WymuĹ› wielkie litery w nazwiskach (np. Jan KOWALSKI)</span>
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <Checkbox
@@ -640,7 +640,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 form.setDisplayOptions({ ...form.displayOptions, hideUnpaid: !!checked })
               }
             />
-            <span className="text-sm">Ukryj nieopłaconych uczestników na liście publicznej</span>
+            <span className="text-sm">Ukryj nieopĹ‚aconych uczestnikĂłw na liĹ›cie publicznej</span>
           </label>
         </CardContent>
       </Card>
@@ -658,3 +658,4 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
     </>
   );
 };
+

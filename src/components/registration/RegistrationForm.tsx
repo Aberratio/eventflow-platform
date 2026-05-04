@@ -4,7 +4,7 @@ import {
   mockGlobalInsuranceSettings,
   mockGroupDiscountCodes,
 } from '@/api';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -429,6 +429,28 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
 
 const PersonalDataStep = ({ form }: { form: FormHook }) => {
   const selectedDistance = form.selectedDistance!;
+  const ageCategories = selectedDistance.ageCategories ?? [];
+  const userGender = form.user?.gender;
+  const userBirthYear = form.birthYear ? parseInt(form.birthYear) : null;
+  const categoriesMatchingBirthYear = userBirthYear
+    ? ageCategories.filter(
+        (cat) => userBirthYear >= cat.birthYearFrom && userBirthYear <= cat.birthYearTo,
+      )
+    : [];
+  const matchedCategory =
+    userGender && userBirthYear
+      ? categoriesMatchingBirthYear.find((cat) => cat.gender === userGender) || null
+      : null;
+  const autoCategory =
+    matchedCategory ??
+    (categoriesMatchingBirthYear.length === 1 ? categoriesMatchingBirthYear[0] : null);
+
+  useEffect(() => {
+    if (autoCategory && form.selectedCategory !== autoCategory.name) {
+      form.setSelectedCategory(autoCategory.name);
+    }
+  }, [autoCategory, form]);
+
   return (
     <Card>
       <CardHeader>
@@ -528,99 +550,103 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
 
         <div className="space-y-3">
           <Label className="text-base font-medium">Kategoria wiekowa</Label>
-          {selectedDistance.ageCategories && selectedDistance.ageCategories.length > 0 ? (
-            (() => {
-              const userGender = form.user?.gender;
-              const userBirthYear = form.birthYear ? parseInt(form.birthYear) : null;
-              const matchedCategory =
-                userGender && userBirthYear
-                  ? selectedDistance.ageCategories!.find(
-                      (cat) =>
-                        cat.gender === userGender &&
-                        userBirthYear >= cat.birthYearFrom &&
-                        userBirthYear <= cat.birthYearTo,
-                    )
-                  : null;
-              if (matchedCategory && form.selectedCategory !== matchedCategory.name) {
-                setTimeout(() => form.setSelectedCategory(matchedCategory.name), 0);
-              }
-              return (
-                <>
-                  {matchedCategory ? (
-                    <div className="rounded-lg border-2 border-primary bg-primary/5 p-3">
-                      <p className="mb-1 text-sm text-muted-foreground">
-                        Automatycznie przypisana kategoria:
-                      </p>
-                      <p className="text-lg font-semibold">{matchedCategory.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Płeć: {matchedCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki:{' '}
-                        {matchedCategory.birthYearFrom}–{matchedCategory.birthYearTo}
-                      </p>
+          {ageCategories.length > 0 ? (
+            <>
+              {autoCategory ? (
+                <div className="rounded-lg border-2 border-primary bg-primary/5 p-3">
+                  <p className="mb-1 text-sm text-muted-foreground">
+                    Automatycznie przypisana kategoria:
+                  </p>
+                  <p className="text-lg font-semibold">{autoCategory.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Płeć: {autoCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki:{' '}
+                    {autoCategory.birthYearFrom}–{autoCategory.birthYearTo}
+                  </p>
+                </div>
+              ) : userBirthYear && categoriesMatchingBirthYear.length > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Wybierz kategorię pasującą do rocznika {userBirthYear}.
+                  </p>
+                  <RadioGroup
+                    value={form.selectedCategory}
+                    onValueChange={form.setSelectedCategory}
+                  >
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {categoriesMatchingBirthYear.map((category) => (
+                        <label
+                          key={category.id}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${form.selectedCategory === category.name ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                        >
+                          <RadioGroupItem value={category.name} />
+                          <span className="font-medium">
+                            {category.name} ({category.gender === 'K' ? 'kobiety' : 'mężczyźni'})
+                          </span>
+                        </label>
+                      ))}
                     </div>
-                  ) : !userGender || !userBirthYear ? (
-                    <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                      <UserCog className="h-4 w-4 text-amber-600" />
-                      <AlertTitle className="text-amber-800 dark:text-amber-200">
-                        Uzupełnij profil
-                      </AlertTitle>
-                      <AlertDescription className="text-amber-700 dark:text-amber-300">
-                        Aby automatycznie przypisać kategorię wiekową, uzupełnij datę urodzenia i
-                        płeć w swoim profilu.
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Brak pasującej kategorii</AlertTitle>
-                      <AlertDescription>
-                        Nie znaleziono pasującej kategorii wiekowej dla Twoich danych (rok:{' '}
-                        {userBirthYear}, płeć: {userGender === 'K' ? 'Kobieta' : 'Mężczyzna'}).
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  {selectedDistance.specialCategories &&
-                    selectedDistance.specialCategories.length > 0 && (
-                      <div className="mt-4 space-y-3">
-                        <Separator />
-                        <Label className="text-base font-medium">
-                          Kategorie specjalne (opcjonalne)
-                        </Label>
-                        <div className="space-y-2">
-                          {selectedDistance.specialCategories.map((cat) => (
-                            <label
-                              key={cat.id}
-                              className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/50"
-                            >
-                              <Checkbox
-                                checked={form.selectedCategory.includes(cat.name)}
-                                onCheckedChange={(checked) => {
-                                  if (checked)
-                                    form.setSelectedCategory((prev) =>
-                                      prev ? `${prev}, ${cat.name}` : cat.name,
-                                    );
-                                  else
-                                    form.setSelectedCategory((prev) =>
-                                      prev
-                                        .replace(`, ${cat.name}`, '')
-                                        .replace(cat.name, '')
-                                        .replace(/^, |, $/g, ''),
-                                    );
-                                }}
-                              />
-                              <div>
-                                <span className="font-medium">{cat.name}</span>
-                                {cat.description && (
-                                  <p className="text-xs text-muted-foreground">{cat.description}</p>
-                                )}
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                </>
-              );
-            })()
+                  </RadioGroup>
+                </div>
+              ) : !userBirthYear ? (
+                <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+                  <UserCog className="h-4 w-4 text-amber-600" />
+                  <AlertTitle className="text-amber-800 dark:text-amber-200">
+                    Podaj datę urodzenia
+                  </AlertTitle>
+                  <AlertDescription className="text-amber-700 dark:text-amber-300">
+                    Po wybraniu daty formularz pokaże pasujące kategorie wiekowe.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Brak pasującej kategorii</AlertTitle>
+                  <AlertDescription>
+                    Nie znaleziono kategorii wiekowej dla rocznika {userBirthYear}.
+                  </AlertDescription>
+                </Alert>
+              )}
+              {selectedDistance.specialCategories &&
+                selectedDistance.specialCategories.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <Separator />
+                    <Label className="text-base font-medium">
+                      Kategorie specjalne (opcjonalne)
+                    </Label>
+                    <div className="space-y-2">
+                      {selectedDistance.specialCategories.map((cat) => (
+                        <label
+                          key={cat.id}
+                          className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 hover:bg-muted/50"
+                        >
+                          <Checkbox
+                            checked={form.selectedCategory.includes(cat.name)}
+                            onCheckedChange={(checked) => {
+                              if (checked)
+                                form.setSelectedCategory((prev) =>
+                                  prev ? `${prev}, ${cat.name}` : cat.name,
+                                );
+                              else
+                                form.setSelectedCategory((prev) =>
+                                  prev
+                                    .replace(`, ${cat.name}`, '')
+                                    .replace(cat.name, '')
+                                    .replace(/^, |, $/g, ''),
+                                );
+                            }}
+                          />
+                          <div>
+                            <span className="font-medium">{cat.name}</span>
+                            {cat.description && (
+                              <p className="text-xs text-muted-foreground">{cat.description}</p>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </>
           ) : (
             <RadioGroup value={form.selectedCategory} onValueChange={form.setSelectedCategory}>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

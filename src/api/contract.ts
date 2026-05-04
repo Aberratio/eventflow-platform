@@ -70,8 +70,7 @@ import type {
   VirtualResultSubmission,
   VirtualResultSubmissionStatus,
   PaymentDetails,
-  OrganizerEventCredits,
-  EventCreditKind,
+  OrganizerEventLimit,
 } from '@/types';
 import type {
   EmailTemplate,
@@ -107,12 +106,11 @@ export interface ApiAdapter {
   getFeaturedEvents(): Promise<ApiResponse<Event[]>>;
   getLiveEvents(): Promise<ApiResponse<Event[]>>;
   getEventsByOrganizer(organizerId: string): Promise<ApiResponse<Event[]>>;
-  getOrganizerEventCredits(organizerId: string): Promise<ApiResponse<OrganizerEventCredits>>;
-  grantOrganizerEventCredits(
+  getOrganizerEventLimit(organizerId: string): Promise<ApiResponse<OrganizerEventLimit>>;
+  updateOrganizerEventLimit(
     organizerId: string,
-    count: number,
-    kind?: EventCreditKind,
-  ): Promise<ApiResponse<OrganizerEventCredits>>;
+    limit: number,
+  ): Promise<ApiResponse<OrganizerEventLimit>>;
 
   // ── Users ──
   getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>>;

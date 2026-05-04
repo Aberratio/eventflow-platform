@@ -20,25 +20,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Search, Calendar, MapPin, Settings, Eye, Plus } from 'lucide-react';
+import type { Event } from '@/types';
 
-const statusLabels: Record<string, string> = {
+const statusLabels: Record<Event['status'], string> = {
   draft: 'Wersja robocza',
-  awaiting_approval: 'Oczekuje na akceptację',
-  approved: 'Zatwierdzone',
-  published: 'Opublikowane',
-  completed: 'Zakończone',
-  cancelled: 'Anulowane',
-  rejected: 'Odrzucone',
+  active: 'Aktywne',
+  past: 'Przeszłe',
+  archived: 'Zarchiwizowane',
+  deleted: 'Usunięte',
 };
 
-const statusColors: Record<string, string> = {
+const statusColors: Record<Event['status'], string> = {
   draft: 'bg-muted text-muted-foreground',
-  awaiting_approval: 'bg-warning/10 text-warning border-warning/20',
-  approved: 'bg-success/10 text-success border-success/20',
-  published: 'bg-primary/10 text-primary border-primary/20',
-  completed: 'bg-muted text-muted-foreground',
-  cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
-  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
+  active: 'bg-primary/10 text-primary border-primary/20',
+  past: 'bg-muted text-muted-foreground',
+  archived: 'bg-secondary text-secondary-foreground',
+  deleted: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
 export const AdminEventsTab = () => {
@@ -75,12 +72,10 @@ export const AdminEventsTab = () => {
           <SelectContent>
             <SelectItem value="all">Wszystkie statusy</SelectItem>
             <SelectItem value="draft">Wersja robocza</SelectItem>
-            <SelectItem value="awaiting_approval">Oczekuje na akceptację</SelectItem>
-            <SelectItem value="approved">Zatwierdzone</SelectItem>
-            <SelectItem value="published">Opublikowane</SelectItem>
-            <SelectItem value="completed">Zakończone</SelectItem>
-            <SelectItem value="cancelled">Anulowane</SelectItem>
-            <SelectItem value="rejected">Odrzucone</SelectItem>
+            <SelectItem value="active">Aktywne</SelectItem>
+            <SelectItem value="past">Przeszłe</SelectItem>
+            <SelectItem value="archived">Zarchiwizowane</SelectItem>
+            <SelectItem value="deleted">Usunięte</SelectItem>
           </SelectContent>
         </Select>
         <Select value={disciplineFilter} onValueChange={setDisciplineFilter}>
@@ -146,7 +141,7 @@ export const AdminEventsTab = () => {
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
-                      <Link to={`/events/${event.slug}`}>
+                      <Link to={event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`}>
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -163,9 +158,7 @@ export const AdminEventsTab = () => {
         </Table>
       </div>
 
-      <div className="text-sm text-muted-foreground">
-        Znaleziono {filteredEvents.length} wydarzeń
-      </div>
+      <div className="text-sm text-muted-foreground">Znaleziono {filteredEvents.length} wydarzeń</div>
     </div>
   );
 };

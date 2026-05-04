@@ -41,7 +41,7 @@ const EventsPage = () => {
     const years = new Set<number>();
     allEvents
       .filter((e) => !e.isPrivate)
-      .filter((e) => e.status === 'published' || e.status === 'completed')
+      .filter((e) => e.status === 'active' || e.status === 'past' || e.status === 'archived')
       .forEach((e) => years.add(getYear(new Date(e.date))));
     return Array.from(years).sort((a, b) => a - b);
   }, [allEvents]);
@@ -49,7 +49,7 @@ const EventsPage = () => {
   const filteredEvents = useMemo(() => {
     return allEvents
       .filter((e) => !e.isPrivate)
-      .filter((e) => e.status === 'published' || e.status === 'completed')
+      .filter((e) => e.status === 'active' || e.status === 'past' || e.status === 'archived')
       .filter((e) => getYear(new Date(e.date)) === filters.selectedYear)
       .filter((e) => {
         if (filters.search) {
@@ -67,7 +67,7 @@ const EventsPage = () => {
       .filter((e) => {
         if (filters.statuses.length === 0) return true;
         const isPast = new Date(e.date) < new Date();
-        if (filters.statuses.includes('completed') && isPast) return true;
+        if (filters.statuses.includes('past') && isPast) return true;
         if (!isPast && filters.statuses.includes(e.registrationStatus)) return true;
         return false;
       })

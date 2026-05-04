@@ -14,7 +14,7 @@ import { Tag } from 'lucide-react';
 
 export const ModeratorDiscountCodesTab = () => {
   const publishedEvents = mockEvents.filter(
-    (e) => e.status === 'published' || e.status === 'completed',
+    (e) => e.status === 'active' || e.status === 'past' || e.status === 'archived',
   );
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const selectedEvent = publishedEvents.find((e) => e.id === selectedEventId);

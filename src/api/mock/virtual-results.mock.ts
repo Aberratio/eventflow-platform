@@ -49,7 +49,7 @@ export const mockVirtualEvents: Partial<Event>[] = [
     ],
     organizerId: 'o3',
     organizerName: 'RunPoland',
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-01-10',
     featured: false,
   },

@@ -1,14 +1,14 @@
-import type { Event, EventMerchandise, PriceTier } from '@/types';
+﻿import type { Event, EventMerchandise, PriceTier } from '@/types';
 
 export const mockMerchandise: EventMerchandise[] = [
   {
     id: 'merch1',
-    name: 'Koszulka pamiątkowa',
+    name: 'Koszulka pamiÄ…tkowa',
     description: 'Oficjalna koszulka techniczna z logo wydarzenia',
     price: 89,
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     colors: [
-      { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
+      { id: 'c1', name: 'BiaĹ‚y', hex: '#FFFFFF' },
       { id: 'c2', name: 'Czarny', hex: '#000000' },
       { id: 'c3', name: 'Niebieski', hex: '#2563EB' },
     ],
@@ -17,12 +17,12 @@ export const mockMerchandise: EventMerchandise[] = [
   },
   {
     id: 'merch2',
-    name: 'Medal pamiątkowy',
-    description: 'Ekskluzywny medal dla wszystkich finisherów',
+    name: 'Medal pamiÄ…tkowy',
+    description: 'Ekskluzywny medal dla wszystkich finisherĂłw',
     price: 49,
     sizes: [],
     colors: [
-      { id: 'c4', name: 'Złoty', hex: '#FFD700' },
+      { id: 'c4', name: 'ZĹ‚oty', hex: '#FFD700' },
       { id: 'c5', name: 'Srebrny', hex: '#C0C0C0' },
     ],
     imageUrl: 'https://via.placeholder.com/200x200?text=Medal',
@@ -58,7 +58,7 @@ const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => 
       discountType: 'percent',
       discountValue: 30,
       endDate: earlyBirdEnd.toISOString().split('T')[0],
-      description: 'Zapisz się wcześniej i zaoszczędź 30%!',
+      description: 'Zapisz siÄ™ wczeĹ›niej i zaoszczÄ™dĹş 30%!',
     },
     {
       id: 'pt2',
@@ -80,17 +80,17 @@ const createPriceTiers = (eventDate: string, basePrice: number): PriceTier[] => 
 };
 
 export const mockEvents: Event[] = [
-  // Event with full registration options - Bieg Górski Tatry Ultra
+  // Event with full registration options - Bieg GĂłrski Tatry Ultra
   {
     id: 'e11',
-    name: 'Bieg Górski Tatry Ultra 2026',
+    name: 'Bieg GĂłrski Tatry Ultra 2026',
     slug: 'bieg-gorski-tatry-ultra-2026',
     discipline: 'running',
     date: '2026-06-15',
-    location: 'Kuźnice',
+    location: 'KuĹşnice',
     city: 'Zakopane',
     description:
-      'Najtrudniejszy górski ultramaraton w Polsce! Trasa prowadzi przez najwyższe partie Tatr Zachodnich. Przewyższenie +4500m. Limit czasu 24h.',
+      'Najtrudniejszy gĂłrski ultramaraton w Polsce! Trasa prowadzi przez najwyĹĽsze partie Tatr Zachodnich. PrzewyĹĽszenie +4500m. Limit czasu 24h.',
     imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
     bannerUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=1600&fit=crop',
     bannerCropArea: { x: 0, y: 15, width: 100, height: 50 },
@@ -102,17 +102,17 @@ export const mockEvents: Event[] = [
         name: 'Oficjalny album Tatry Ultra 2026',
         url: 'https://photos.google.com/share/tatry-ultra-2026',
         platform: 'google_photos',
-        photographer: 'Studio Górskie',
+        photographer: 'Studio GĂłrskie',
       },
       {
         id: 'ga-e11-2',
-        name: 'Zdjęcia amatorskie - Flickr',
+        name: 'ZdjÄ™cia amatorskie - Flickr',
         url: 'https://flickr.com/groups/tatry-ultra-2026',
         platform: 'flickr',
       },
       {
         id: 'ga-e11-3',
-        name: 'Album fanów na Facebooku',
+        name: 'Album fanĂłw na Facebooku',
         url: 'https://facebook.com/media/set/tatry-ultra',
         platform: 'facebook',
       },
@@ -160,7 +160,7 @@ export const mockEvents: Event[] = [
             discountType: 'percent',
             discountValue: 30,
             endDate: '2026-02-28',
-            description: 'Zaoszczędź 30%!',
+            description: 'ZaoszczÄ™dĹş 30%!',
           },
           {
             id: 'pt2',
@@ -182,10 +182,10 @@ export const mockEvents: Event[] = [
         vipPrices: [
           {
             id: 'vip1',
-            name: 'Osoba niepełnosprawna',
+            name: 'Osoba niepeĹ‚nosprawna',
             discountType: 'percent',
             discountValue: 50,
-            customFieldLabel: 'Nr orzeczenia o niepełnosprawności',
+            customFieldLabel: 'Nr orzeczenia o niepeĹ‚nosprawnoĹ›ci',
             customFieldRequired: true,
           },
           {
@@ -201,7 +201,7 @@ export const mockEvents: Event[] = [
         routeFiles: [
           {
             id: 'rf-u1',
-            name: 'Szczegółowa mapa z oznaczeniami',
+            name: 'SzczegĂłĹ‚owa mapa z oznaczeniami',
             type: 'map',
             url: 'https://images.unsplash.com/photo-1569336415962-a4bd9f69cd83?w=800',
           },
@@ -246,7 +246,7 @@ export const mockEvents: Event[] = [
             discountType: 'fixed',
             discountValue: 90,
             endDate: '2026-02-28',
-            description: 'Zaoszczędź 90 zł!',
+            description: 'ZaoszczÄ™dĹş 90 zĹ‚!',
           },
           {
             id: 'pt2',
@@ -268,7 +268,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd22',
-        name: 'Półmaraton 21K',
+        name: 'PĂłĹ‚maraton 21K',
         length: 21,
         unit: 'km',
         categories: [
@@ -299,7 +299,7 @@ export const mockEvents: Event[] = [
             discountType: 'percent',
             discountValue: 30,
             endDate: '2026-02-28',
-            description: 'Zaoszczędź 30%!',
+            description: 'ZaoszczÄ™dĹş 30%!',
           },
           {
             id: 'pt2',
@@ -327,31 +327,31 @@ export const mockEvents: Event[] = [
       phone: '+48 600 123 456',
       website: 'https://runpoland.pl',
     },
-    status: 'completed',
+    status: 'past',
     seriesId: 'series2',
     registrationDeadline: '2026-06-10',
     featured: true,
     paymentMethods: [
       { id: 'pm1', name: 'Przelew bankowy', enabled: true },
       { id: 'pm2', name: 'BLIK', enabled: true },
-      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+      { id: 'pm3', name: 'Karta pĹ‚atnicza', enabled: true },
     ],
     merchandise: [
       {
         id: 'merch-ultra1',
         name: 'Koszulka techniczna Tatry Ultra',
-        description: 'Wysokiej jakości koszulka do biegania z logo wydarzenia',
+        description: 'Wysokiej jakoĹ›ci koszulka do biegania z logo wydarzenia',
         price: 119,
         sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
         colors: [
           { id: 'c1', name: 'Granatowy', hex: '#1E3A5F' },
-          { id: 'c2', name: 'Pomarańczowy', hex: '#F97316' },
+          { id: 'c2', name: 'PomaraĹ„czowy', hex: '#F97316' },
         ],
         available: true,
       },
       {
         id: 'merch-ultra2',
-        name: 'Buff górski',
+        name: 'Buff gĂłrski',
         description: 'Wielofunkcyjny komin z motywem Tatr',
         price: 59,
         sizes: [],
@@ -411,7 +411,7 @@ export const mockEvents: Event[] = [
           },
           {
             userId: 'p3',
-            userName: 'Piotr Wiśniewski',
+            userName: 'Piotr WiĹ›niewski',
             usedAt: '2026-01-22T08:00:00Z',
             registrationId: 'r-dc3',
             distanceName: 'Ultra 80km',
@@ -421,7 +421,7 @@ export const mockEvents: Event[] = [
             userName: 'Magdalena Szybka',
             usedAt: '2026-01-25T11:15:00Z',
             registrationId: 'r-dc4',
-            distanceName: 'Półmaraton 21km',
+            distanceName: 'PĂłĹ‚maraton 21km',
           },
           {
             userId: 'p7',
@@ -462,7 +462,7 @@ export const mockEvents: Event[] = [
             userName: 'Grzegorz Trail',
             usedAt: '2026-02-03T07:20:00Z',
             registrationId: 'r-dc8',
-            distanceName: 'Półmaraton 21km',
+            distanceName: 'PĂłĹ‚maraton 21km',
           },
         ],
       },
@@ -483,7 +483,7 @@ export const mockEvents: Event[] = [
       id: 'ins1',
       name: 'Ubezpieczenie NNW Zawodnika',
       description:
-        'Ubezpieczenie od następstw nieszczęśliwych wypadków podczas zawodów. Obejmuje koszty leczenia, rehabilitacji oraz świadczenie za trwały uszczerbek na zdrowiu.',
+        'Ubezpieczenie od nastÄ™pstw nieszczÄ™Ĺ›liwych wypadkĂłw podczas zawodĂłw. Obejmuje koszty leczenia, rehabilitacji oraz Ĺ›wiadczenie za trwaĹ‚y uszczerbek na zdrowiu.',
       baseFee: 9,
       ageMultiplier: 0.5,
       maxAge: 70,
@@ -491,37 +491,37 @@ export const mockEvents: Event[] = [
     },
     // Rich text fields
     organizersHtml: `
-      <p><strong>Organizator główny:</strong></p>
-      <p><a href="https://runpoland.pl">RunPoland</a> - największa organizacja biegów górskich w Polsce</p>
-      <p><strong>Współorganizatorzy:</strong></p>
+      <p><strong>Organizator gĹ‚Ăłwny:</strong></p>
+      <p><a href="https://runpoland.pl">RunPoland</a> - najwiÄ™ksza organizacja biegĂłw gĂłrskich w Polsce</p>
+      <p><strong>WspĂłĹ‚organizatorzy:</strong></p>
       <ul>
-        <li>Tatrzański Park Narodowy</li>
-        <li>Urząd Miasta Zakopane</li>
-        <li><a href="https://www.pza.org.pl">Polski Związek Alpinizmu</a></li>
+        <li>TatrzaĹ„ski Park Narodowy</li>
+        <li>UrzÄ…d Miasta Zakopane</li>
+        <li><a href="https://www.pza.org.pl">Polski ZwiÄ…zek Alpinizmu</a></li>
       </ul>
       <p><strong>Sponsor tytularny:</strong></p>
       <p><a href="https://salomon.com">Salomon</a></p>
     `,
     rulesHtml: `
-      <p><a href="/regulaminy/tatry-ultra-2026.pdf">📄 Regulamin zawodów Tatry Ultra 2026 (PDF)</a></p>
-      <p><a href="/regulaminy/regulamin-nnw.pdf">📄 Regulamin ubezpieczenia NNW (PDF)</a></p>
-      <p><a href="/regulaminy/rodo-runpoland.pdf">📄 Klauzula informacyjna RODO (PDF)</a></p>
-      <h3>Główne punkty regulaminu:</h3>
+      <p><a href="/regulaminy/tatry-ultra-2026.pdf">đź“„ Regulamin zawodĂłw Tatry Ultra 2026 (PDF)</a></p>
+      <p><a href="/regulaminy/regulamin-nnw.pdf">đź“„ Regulamin ubezpieczenia NNW (PDF)</a></p>
+      <p><a href="/regulaminy/rodo-runpoland.pdf">đź“„ Klauzula informacyjna RODO (PDF)</a></p>
+      <h3>GĹ‚Ăłwne punkty regulaminu:</h3>
       <ol>
-        <li>Obowiązkowy ekwipunek górski</li>
+        <li>ObowiÄ…zkowy ekwipunek gĂłrski</li>
         <li>Limit czasowy 24 godziny</li>
-        <li>Minimalna ilość wody: 1,5L</li>
-        <li>Obowiązkowe oświetlenie dla startu nocnego</li>
+        <li>Minimalna iloĹ›Ä‡ wody: 1,5L</li>
+        <li>ObowiÄ…zkowe oĹ›wietlenie dla startu nocnego</li>
       </ol>
     `,
     finalAcceptanceHtml: `
-      <p><strong>Oświadczam, że:</strong></p>
+      <p><strong>OĹ›wiadczam, ĹĽe:</strong></p>
       <ol>
         <li>Administratorem moich danych osobowych jest RunPoland Sp. z o.o.</li>
-        <li>Kontakt z osobą odpowiedzialną za ochronę danych: <a href="mailto:rodo@runpoland.pl">rodo@runpoland.pl</a></li>
-        <li>Moje dane będą przetwarzane w celu przeprowadzenia imprezy sportowej oraz publikacji wyników</li>
-        <li>Jestem świadomy/a ryzyka związanego z udziałem w biegu górskim i startuję na własną odpowiedzialność</li>
-        <li>Stan mojego zdrowia pozwala na udział w zawodach o charakterze ekstremalnym</li>
+        <li>Kontakt z osobÄ… odpowiedzialnÄ… za ochronÄ™ danych: <a href="mailto:rodo@runpoland.pl">rodo@runpoland.pl</a></li>
+        <li>Moje dane bÄ™dÄ… przetwarzane w celu przeprowadzenia imprezy sportowej oraz publikacji wynikĂłw</li>
+        <li>Jestem Ĺ›wiadomy/a ryzyka zwiÄ…zanego z udziaĹ‚em w biegu gĂłrskim i startujÄ™ na wĹ‚asnÄ… odpowiedzialnoĹ›Ä‡</li>
+        <li>Stan mojego zdrowia pozwala na udziaĹ‚ w zawodach o charakterze ekstremalnym</li>
       </ol>
     `,
     requireFinalAcceptance: true,
@@ -554,17 +554,17 @@ export const mockEvents: Event[] = [
       hideUnpaid: false,
     },
   },
-  // City Trail Łódź - medium options - LIVE EVENT
+  // City Trail ĹĂłdĹş - medium options - LIVE EVENT
   {
     id: 'e12',
-    name: 'City Trail Łódź 2026',
+    name: 'City Trail ĹĂłdĹş 2026',
     slug: 'city-trail-lodz-2026',
     discipline: 'running',
     date: new Date().toISOString().split('T')[0], // Today's date for LIVE
     location: 'Park im. Poniatowskiego',
-    city: 'Łódź',
+    city: 'ĹĂłdĹş',
     description:
-      'Bieg przełajowy w sercu Łodzi. Trasa prowadzi przez najpiękniejsze parki miasta. Idealne wydarzenie na wiosnę!',
+      'Bieg przeĹ‚ajowy w sercu Ĺodzi. Trasa prowadzi przez najpiÄ™kniejsze parki miasta. Idealne wydarzenie na wiosnÄ™!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     bannerUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&h=1600&fit=crop',
     bannerCropArea: { x: 0, y: 20, width: 100, height: 45 },
@@ -657,23 +657,23 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-04-05',
     featured: false,
     paymentMethods: [
       { id: 'pm2', name: 'BLIK', enabled: true },
-      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+      { id: 'pm3', name: 'Karta pĹ‚atnicza', enabled: true },
     ],
     merchandise: [
       {
         id: 'merch-trail1',
         name: 'Koszulka City Trail',
-        description: 'Bawełniana koszulka z logo biegu',
+        description: 'BaweĹ‚niana koszulka z logo biegu',
         price: 69,
         sizes: ['S', 'M', 'L', 'XL'],
         colors: [
           { id: 'c1', name: 'Zielony', hex: '#22C55E' },
-          { id: 'c2', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c2', name: 'BiaĹ‚y', hex: '#FFFFFF' },
         ],
         available: true,
       },
@@ -698,10 +698,10 @@ export const mockEvents: Event[] = [
           },
           {
             userId: 'p8',
-            userName: 'Beata Górska',
+            userName: 'Beata GĂłrska',
             usedAt: '2026-01-28T10:00:00Z',
             registrationId: 'r-dc10',
-            distanceName: 'Półmaraton',
+            distanceName: 'PĂłĹ‚maraton',
           },
         ],
       },
@@ -710,10 +710,10 @@ export const mockEvents: Event[] = [
     // Rich text - simple version
     organizersHtml: `
       <p><strong>Organizator:</strong> <a href="https://sportevents.pl">Sportowe Wydarzenia Sp. z o.o.</a></p>
-      <p>Wsparcie: Urząd Miasta Łódź, MOSiR Łódź</p>
+      <p>Wsparcie: UrzÄ…d Miasta ĹĂłdĹş, MOSiR ĹĂłdĹş</p>
     `,
     rulesHtml: `
-      <p><a href="/regulaminy/city-trail-lodz.pdf">📄 Regulamin biegu (PDF)</a></p>
+      <p><a href="/regulaminy/city-trail-lodz.pdf">đź“„ Regulamin biegu (PDF)</a></p>
     `,
   },
   // Maraton Rowerowy Mazury - cycling with merchandise
@@ -723,10 +723,10 @@ export const mockEvents: Event[] = [
     slug: 'maraton-rowerowy-mazury-2026',
     discipline: 'cycling',
     date: '2026-07-11',
-    location: 'Centrum Żeglarstwa Mikołajki',
-    city: 'Mikołajki',
+    location: 'Centrum Ĺ»eglarstwa MikoĹ‚ajki',
+    city: 'MikoĹ‚ajki',
     description:
-      'Malownicza trasa wśród jezior mazurskich. Idealne połączenie sportu i natury. Trasy dla każdego poziomu zaawansowania!',
+      'Malownicza trasa wĹ›rĂłd jezior mazurskich. Idealne poĹ‚Ä…czenie sportu i natury. Trasy dla kaĹĽdego poziomu zaawansowania!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
     bannerUrl:
       'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=1200&h=1600&fit=crop',
@@ -736,7 +736,7 @@ export const mockEvents: Event[] = [
     distances: [
       {
         id: 'd25',
-        name: 'Trasa długa 150 km',
+        name: 'Trasa dĹ‚uga 150 km',
         length: 150,
         unit: 'km',
         categories: [
@@ -760,7 +760,7 @@ export const mockEvents: Event[] = [
             discountType: 'fixed',
             discountValue: 60,
             endDate: '2026-04-30',
-            description: 'Zaoszczędź 60 zł!',
+            description: 'ZaoszczÄ™dĹş 60 zĹ‚!',
           },
           {
             id: 'pt2',
@@ -782,7 +782,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd26',
-        name: 'Trasa średnia 80 km',
+        name: 'Trasa Ĺ›rednia 80 km',
         length: 80,
         unit: 'km',
         categories: [
@@ -806,7 +806,7 @@ export const mockEvents: Event[] = [
             discountType: 'fixed',
             discountValue: 40,
             endDate: '2026-04-30',
-            description: 'Zaoszczędź 40 zł!',
+            description: 'ZaoszczÄ™dĹş 40 zĹ‚!',
           },
           {
             id: 'pt2',
@@ -858,25 +858,25 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-07-08',
     featured: true,
     paymentMethods: [
       { id: 'pm1', name: 'Przelew bankowy', enabled: true },
       { id: 'pm2', name: 'BLIK', enabled: true },
-      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+      { id: 'pm3', name: 'Karta pĹ‚atnicza', enabled: true },
       { id: 'pm4', name: 'PayU', enabled: true },
     ],
     merchandise: [
       {
         id: 'merch-bike1',
         name: 'Koszulka kolarska Mazury',
-        description: 'Profesjonalna koszulka kolarska z pełnym zamkiem',
+        description: 'Profesjonalna koszulka kolarska z peĹ‚nym zamkiem',
         price: 189,
         sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
         colors: [
           { id: 'c1', name: 'Niebieski', hex: '#3B82F6' },
-          { id: 'c2', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c2', name: 'BiaĹ‚y', hex: '#FFFFFF' },
         ],
         available: true,
       },
@@ -888,14 +888,14 @@ export const mockEvents: Event[] = [
         sizes: [],
         colors: [
           { id: 'c3', name: 'Niebieski', hex: '#3B82F6' },
-          { id: 'c4', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c4', name: 'BiaĹ‚y', hex: '#FFFFFF' },
         ],
         available: true,
       },
       {
         id: 'merch-bike3',
-        name: 'Rękawiczki kolarskie',
-        description: 'Letnie rękawiczki z wkładką żelową',
+        name: 'RÄ™kawiczki kolarskie',
+        description: 'Letnie rÄ™kawiczki z wkĹ‚adkÄ… ĹĽelowÄ…',
         price: 79,
         sizes: ['S', 'M', 'L', 'XL'],
         colors: [{ id: 'c5', name: 'Czarny', hex: '#000000' }],
@@ -925,17 +925,17 @@ export const mockEvents: Event[] = [
     ],
     enableMerchandiseInRegistration: true,
   },
-  // Sprint Triathlon Wrocław - with merchandise and insurance
+  // Sprint Triathlon WrocĹ‚aw - with merchandise and insurance
   {
     id: 'e14',
-    name: 'Sprint Triathlon Wrocław 2026',
+    name: 'Sprint Triathlon WrocĹ‚aw 2026',
     slug: 'sprint-triathlon-wroclaw-2026',
     discipline: 'triathlon',
     date: '2026-05-24',
     location: 'Stadion Olimpijski',
-    city: 'Wrocław',
+    city: 'WrocĹ‚aw',
     description:
-      'Szybki triathlon w centrum Wrocławia. Pływanie w Odrze, rower po bulwarach, bieg wokół stadionu. Idealne wprowadzenie do triathlonu!',
+      'Szybki triathlon w centrum WrocĹ‚awia. PĹ‚ywanie w Odrze, rower po bulwarach, bieg wokĂłĹ‚ stadionu. Idealne wprowadzenie do triathlonu!',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     bannerUrl:
       'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=1200&h=1600&fit=crop',
@@ -974,7 +974,7 @@ export const mockEvents: Event[] = [
             discountType: 'percent',
             discountValue: 25,
             endDate: '2026-03-15',
-            description: 'Zapisz się wcześniej!',
+            description: 'Zapisz siÄ™ wczeĹ›niej!',
           },
           {
             id: 'pt2',
@@ -1017,7 +1017,7 @@ export const mockEvents: Event[] = [
             discountType: 'fixed',
             discountValue: 40,
             endDate: '2026-03-15',
-            description: 'Zapisz się wcześniej!',
+            description: 'Zapisz siÄ™ wczeĹ›niej!',
           },
           {
             id: 'pt2',
@@ -1033,30 +1033,30 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-05-17',
     featured: false,
     paymentMethods: [
       { id: 'pm2', name: 'BLIK', enabled: true },
-      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+      { id: 'pm3', name: 'Karta pĹ‚atnicza', enabled: true },
     ],
     merchandise: [
       {
         id: 'merch-tri1',
-        name: 'Koszulka triatlonowa Wrocław',
-        description: 'Szybkoschnąca koszulka z logo wydarzenia',
+        name: 'Koszulka triatlonowa WrocĹ‚aw',
+        description: 'SzybkoschnÄ…ca koszulka z logo wydarzenia',
         price: 99,
         sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
         colors: [
           { id: 'c1', name: 'Niebieski', hex: '#2563EB' },
-          { id: 'c2', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c2', name: 'BiaĹ‚y', hex: '#FFFFFF' },
         ],
         available: true,
       },
       {
         id: 'merch-tri2',
-        name: 'Czepek pływacki',
-        description: 'Silikonowy czepek z logo Triathlon Wrocław',
+        name: 'Czepek pĹ‚ywacki',
+        description: 'Silikonowy czepek z logo Triathlon WrocĹ‚aw',
         price: 35,
         sizes: [],
         colors: [
@@ -1067,11 +1067,11 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'merch-tri3',
-        name: 'Kubek pamiątkowy',
+        name: 'Kubek pamiÄ…tkowy',
         description: 'Ceramiczny kubek 330ml',
         price: 29,
         sizes: [],
-        colors: [{ id: 'c5', name: 'Biały', hex: '#FFFFFF' }],
+        colors: [{ id: 'c5', name: 'BiaĹ‚y', hex: '#FFFFFF' }],
         available: true,
       },
       {
@@ -1082,7 +1082,7 @@ export const mockEvents: Event[] = [
         sizes: [],
         colors: [
           { id: 'c6', name: 'Niebieski', hex: '#2563EB' },
-          { id: 'c7', name: 'Pomarańczowy', hex: '#F97316' },
+          { id: 'c7', name: 'PomaraĹ„czowy', hex: '#F97316' },
           { id: 'c8', name: 'Zielony', hex: '#22C55E' },
         ],
         available: true,
@@ -1105,7 +1105,7 @@ export const mockEvents: Event[] = [
       id: 'ins2',
       name: 'Ubezpieczenie NNW Triatlonisty',
       description:
-        'Kompleksowe ubezpieczenie obejmujące wszystkie dyscypliny triathlonu: pływanie, rower i bieg.',
+        'Kompleksowe ubezpieczenie obejmujÄ…ce wszystkie dyscypliny triathlonu: pĹ‚ywanie, rower i bieg.',
       baseFee: 9,
       ageMultiplier: 0.5,
       maxAge: 70,
@@ -1122,7 +1122,7 @@ export const mockEvents: Event[] = [
     location: 'Stadion Narodowy',
     city: 'Warszawa',
     description:
-      'Największy maraton w Polsce. Trasa prowadzi przez najpiękniejsze miejsca stolicy. Limit czasu 6 godzin.',
+      'NajwiÄ™kszy maraton w Polsce. Trasa prowadzi przez najpiÄ™kniejsze miejsca stolicy. Limit czasu 6 godzin.',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     distances: [
       {
@@ -1183,14 +1183,14 @@ export const mockEvents: Event[] = [
       phone: '+48 22 123 45 67',
       website: 'https://maratonwarszawski.pl',
     },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2025-04-10',
     featured: true,
     liveResultsUrl: 'https://example.com/live-results/maraton-warszawski',
     paymentMethods: [
       { id: 'pm1', name: 'Przelew bankowy', enabled: true },
       { id: 'pm2', name: 'BLIK', enabled: true },
-      { id: 'pm3', name: 'Karta płatnicza', enabled: true },
+      { id: 'pm3', name: 'Karta pĹ‚atnicza', enabled: true },
     ],
     merchandise: [
       {
@@ -1200,7 +1200,7 @@ export const mockEvents: Event[] = [
         price: 99,
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         colors: [
-          { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c1', name: 'BiaĹ‚y', hex: '#FFFFFF' },
           { id: 'c2', name: 'Czerwony', hex: '#DC2626' },
         ],
         imageUrl: 'https://via.placeholder.com/200x200?text=Koszulka',
@@ -1210,13 +1210,13 @@ export const mockEvents: Event[] = [
   },
   {
     id: 'e2',
-    name: 'Tour de Pologne Amatorów',
+    name: 'Tour de Pologne AmatorĂłw',
     slug: 'tour-de-pologne-amatorow-2025',
     discipline: 'cycling',
     date: '2025-07-20',
     location: 'Katowice',
     city: 'Katowice',
-    description: 'Amatorska edycja legendarnego wyścigu. Przejedź tą samą trasą co zawodowcy!',
+    description: 'Amatorska edycja legendarnego wyĹ›cigu. PrzejedĹş tÄ… samÄ… trasÄ… co zawodowcy!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
     distances: [
       {
@@ -1252,7 +1252,7 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2025-07-15',
     featured: true,
     paymentMethods: [
@@ -1267,9 +1267,9 @@ export const mockEvents: Event[] = [
     slug: 'gdynia-triathlon-2025',
     discipline: 'triathlon',
     date: '2025-08-17',
-    location: 'Plaża Gdynia Śródmieście',
+    location: 'PlaĹĽa Gdynia ĹšrĂłdmieĹ›cie',
     city: 'Gdynia',
-    description: 'Kultowy triathlon z pływaniem w Zatoce Gdańskiej. Dystans olimpijski i sprint.',
+    description: 'Kultowy triathlon z pĹ‚ywaniem w Zatoce GdaĹ„skiej. Dystans olimpijski i sprint.',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     distances: [
       {
@@ -1301,7 +1301,7 @@ export const mockEvents: Event[] = [
         priceTiers: [
           {
             id: 'pt1',
-            name: 'Pierwsze 500 osób',
+            name: 'Pierwsze 500 osĂłb',
             discountType: 'percent',
             discountValue: 25,
             participantLimit: 500,
@@ -1309,7 +1309,7 @@ export const mockEvents: Event[] = [
           },
           {
             id: 'pt2',
-            name: '500-1000 osób',
+            name: '500-1000 osĂłb',
             discountType: 'percent',
             discountValue: 10,
             participantLimit: 1000,
@@ -1317,7 +1317,7 @@ export const mockEvents: Event[] = [
           },
           {
             id: 'pt3',
-            name: 'Powyżej 1000',
+            name: 'PowyĹĽej 1000',
             discountType: 'percent',
             discountValue: 0,
             participantLimit: 1500,
@@ -1327,7 +1327,7 @@ export const mockEvents: Event[] = [
         vipPrices: [
           {
             id: 'vip3',
-            name: 'Członek klubu PZTri',
+            name: 'CzĹ‚onek klubu PZTri',
             discountType: 'percent',
             discountValue: 15,
             customFieldLabel: 'Nr licencji PZTri',
@@ -1364,23 +1364,23 @@ export const mockEvents: Event[] = [
         priceTiers: [
           {
             id: 'pt1',
-            name: 'Pierwsze 300 osób',
+            name: 'Pierwsze 300 osĂłb',
             discountType: 'fixed',
             discountValue: 50,
             participantLimit: 300,
-            description: '50 zł taniej!',
+            description: '50 zĹ‚ taniej!',
           },
           {
             id: 'pt2',
-            name: '300-700 osób',
+            name: '300-700 osĂłb',
             discountType: 'fixed',
             discountValue: 20,
             participantLimit: 700,
-            description: '20 zł taniej',
+            description: '20 zĹ‚ taniej',
           },
           {
             id: 'pt3',
-            name: 'Powyżej 700',
+            name: 'PowyĹĽej 700',
             discountType: 'percent',
             discountValue: 0,
             participantLimit: 1000,
@@ -1392,7 +1392,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-08-10',
     featured: false,
@@ -1400,14 +1400,14 @@ export const mockEvents: Event[] = [
   },
   {
     id: 'e4',
-    name: 'Bieg Piastów - Polana Jakuszycka',
+    name: 'Bieg PiastĂłw - Polana Jakuszycka',
     slug: 'bieg-piastow-2025',
     discipline: 'running',
     date: '2025-03-01',
     location: 'Polana Jakuszycka',
-    city: 'Szklarska Poręba',
+    city: 'Szklarska PorÄ™ba',
     description:
-      'Legendarny bieg narciarski w sercu Karkonoszy. Zimowa edycja dla miłośników aktywności outdoor.',
+      'Legendarny bieg narciarski w sercu Karkonoszy. Zimowa edycja dla miĹ‚oĹ›nikĂłw aktywnoĹ›ci outdoor.',
     imageUrl: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800',
     distances: [
       {
@@ -1438,25 +1438,25 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-02-25',
     featured: true,
   },
   {
     id: 'e5',
-    name: 'Półmaraton Krakowski',
+    name: 'PĂłĹ‚maraton Krakowski',
     slug: 'polmaraton-krakowski-2025',
     discipline: 'running',
     date: '2025-05-18',
-    location: 'Rynek Główny',
-    city: 'Kraków',
-    description: 'Biegnij ulicami historycznego Krakowa. Start i meta na Rynku Głównym.',
+    location: 'Rynek GĹ‚Ăłwny',
+    city: 'KrakĂłw',
+    description: 'Biegnij ulicami historycznego Krakowa. Start i meta na Rynku GĹ‚Ăłwnym.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
         id: 'd9',
-        name: 'Półmaraton',
+        name: 'PĂłĹ‚maraton',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -1478,7 +1478,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-05-15',
     featured: false,
@@ -1492,7 +1492,7 @@ export const mockEvents: Event[] = [
     location: 'Zamek Ogrodzieniec',
     city: 'Ogrodzieniec',
     description:
-      'Przepiękna trasa MTB wzdłuż jurajskich zamków. Dystanse dla każdego poziomu zaawansowania.',
+      'PrzepiÄ™kna trasa MTB wzdĹ‚uĹĽ jurajskich zamkĂłw. Dystanse dla kaĹĽdego poziomu zaawansowania.',
     imageUrl: 'https://images.unsplash.com/photo-1544191696-15693072e0b5?w=800',
     distances: [
       {
@@ -1533,21 +1533,21 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-06-10',
     featured: false,
   },
   {
     id: 'e7',
-    name: 'Ironman 70.3 Gdańsk',
+    name: 'Ironman 70.3 GdaĹ„sk',
     slug: 'ironman-703-gdansk-2025',
     discipline: 'triathlon',
     date: '2025-09-07',
-    location: 'Stocznia Gdańska',
-    city: 'Gdańsk',
+    location: 'Stocznia GdaĹ„ska',
+    city: 'GdaĹ„sk',
     description:
-      'Oficjalny Ironman 70.3 w Polsce. Pływanie w Motławie, rower po Żuławach, bieg przez Stare Miasto.',
+      'Oficjalny Ironman 70.3 w Polsce. PĹ‚ywanie w MotĹ‚awie, rower po Ĺ»uĹ‚awach, bieg przez Stare Miasto.',
     imageUrl: 'https://images.unsplash.com/photo-1559311648-d7e85ef3a7b6?w=800',
     distances: [
       {
@@ -1581,7 +1581,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-08-31',
     featured: true,
@@ -1589,18 +1589,18 @@ export const mockEvents: Event[] = [
   },
   {
     id: 'e8',
-    name: 'Cross Duathlon Poznań',
+    name: 'Cross Duathlon PoznaĹ„',
     slug: 'cross-duathlon-poznan-2025',
     discipline: 'multisport',
     date: '2025-10-05',
     location: 'Malta Lake',
-    city: 'Poznań',
-    description: 'Bieg-Rower-Bieg nad Jeziorem Malta. Tereny zielone i ścieżki rowerowe.',
+    city: 'PoznaĹ„',
+    description: 'Bieg-Rower-Bieg nad Jeziorem Malta. Tereny zielone i Ĺ›cieĹĽki rowerowe.',
     imageUrl: 'https://images.unsplash.com/photo-1571188654248-7a89213915f7?w=800',
     distances: [
       {
         id: 'd15',
-        name: 'Długi',
+        name: 'DĹ‚ugi',
         length: 45,
         unit: 'km',
         categories: ['M', 'K'],
@@ -1610,7 +1610,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd16',
-        name: 'Krótki',
+        name: 'KrĂłtki',
         length: 22,
         unit: 'km',
         categories: ['M', 'K'],
@@ -1626,20 +1626,20 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-09-30',
     featured: false,
   },
   {
     id: 'e9',
-    name: 'Nocny Bieg Wrocławski',
+    name: 'Nocny Bieg WrocĹ‚awski',
     slug: 'nocny-bieg-wroclawski-2025',
     discipline: 'running',
     date: '2025-02-15',
     location: 'Hala Stulecia',
-    city: 'Wrocław',
-    description: 'Magiczny bieg nocą przez oświetlone ulice Wrocławia. Start o 21:00!',
+    city: 'WrocĹ‚aw',
+    description: 'Magiczny bieg nocÄ… przez oĹ›wietlone ulice WrocĹ‚awia. Start o 21:00!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
       {
@@ -1656,7 +1656,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationDeadline: '2025-02-10',
     featured: false,
   },
@@ -1666,8 +1666,8 @@ export const mockEvents: Event[] = [
     slug: 'ultramaraton-bieszczadzki-2025',
     discipline: 'running',
     date: '2025-07-05',
-    location: 'Ustrzyki Górne',
-    city: 'Ustrzyki Górne',
+    location: 'Ustrzyki GĂłrne',
+    city: 'Ustrzyki GĂłrne',
     description: 'Najtrudniejszy ultramaraton w Polsce. 100km po dzikich Bieszczadach.',
     imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800',
     distances: [
@@ -1699,12 +1699,12 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-06-30',
     featured: false,
   },
-  // Bieg Wiosenny - zakończone wydarzenie z serii Grand Prix
+  // Bieg Wiosenny - zakoĹ„czone wydarzenie z serii Grand Prix
   {
     id: 'e15',
     name: 'Bieg Wiosenny 2025',
@@ -1714,7 +1714,7 @@ export const mockEvents: Event[] = [
     location: 'Park Skaryszewski',
     city: 'Warszawa',
     description:
-      'Wiosenny bieg w pięknym warszawskim parku. Idealne wydarzenie na rozpoczęcie sezonu biegowego!',
+      'Wiosenny bieg w piÄ™knym warszawskim parku. Idealne wydarzenie na rozpoczÄ™cie sezonu biegowego!',
     imageUrl: '',
     distances: [
       {
@@ -1745,7 +1745,7 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'completed',
+    status: 'past',
     seriesId: 'series2',
     registrationDeadline: '2025-04-07',
     featured: false,
@@ -1753,20 +1753,20 @@ export const mockEvents: Event[] = [
   // Events with different registration statuses for variety
   {
     id: 'e20',
-    name: 'Półmaraton Poznański 2026',
+    name: 'PĂłĹ‚maraton PoznaĹ„ski 2026',
     slug: 'polmaraton-poznanski-2026',
     discipline: 'running',
     date: '2026-03-22',
     location: 'Stary Rynek',
-    city: 'Poznań',
+    city: 'PoznaĹ„',
     description:
-      'Jeden z najstarszych półmaratonów w Polsce. Trasa przez centrum miasta z metą na Starym Rynku.',
+      'Jeden z najstarszych pĂłĹ‚maratonĂłw w Polsce. Trasa przez centrum miasta z metÄ… na Starym Rynku.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     registrationStatus: 'closed' as const,
     distances: [
       {
         id: 'd40',
-        name: 'Półmaraton 21 km',
+        name: 'PĂłĹ‚maraton 21 km',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -1788,7 +1788,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-03-15',
     featured: false,
   },
@@ -1798,10 +1798,10 @@ export const mockEvents: Event[] = [
     slug: 'bieg-sylwestrowy-2026',
     discipline: 'running',
     date: '2026-12-31',
-    location: 'Rynek Główny',
-    city: 'Kraków',
+    location: 'Rynek GĹ‚Ăłwny',
+    city: 'KrakĂłw',
     description:
-      'Pożegnaj stary rok biegiem przez centrum Krakowa! Magiczna atmosfera i fajerwerki na mecie.',
+      'PoĹĽegnaj stary rok biegiem przez centrum Krakowa! Magiczna atmosfera i fajerwerki na mecie.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     registrationStatus: 'none' as const,
     distances: [
@@ -1829,20 +1829,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-12-28',
     featured: false,
   },
   {
     id: 'e22',
-    name: 'Maraton Gdański 2026',
+    name: 'Maraton GdaĹ„ski 2026',
     slug: 'maraton-gdanski-2026',
     discipline: 'running',
     date: '2026-04-19',
     location: 'Stadion Energa',
-    city: 'Gdańsk',
+    city: 'GdaĹ„sk',
     description:
-      'Biegnij przez Trójmiasto! Trasa wiedzie przez Gdańsk, Sopot i Gdynię z widokami na Bałtyk.',
+      'Biegnij przez TrĂłjmiasto! Trasa wiedzie przez GdaĹ„sk, Sopot i GdyniÄ™ z widokami na BaĹ‚tyk.',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     registrationStatus: 'open' as const,
     distances: [
@@ -1858,7 +1858,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd45',
-        name: 'Półmaraton 21 km',
+        name: 'PĂłĹ‚maraton 21 km',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -1874,7 +1874,7 @@ export const mockEvents: Event[] = [
       phone: '+48 22 123 45 67',
       website: 'https://runpoland.pl',
     },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-04-14',
     featured: true,
   },
@@ -1887,7 +1887,7 @@ export const mockEvents: Event[] = [
     location: 'Karpacz',
     city: 'Karpacz',
     description:
-      'Górski trail wśród szczytów Karkonoszy. Widoki, które zapierają dech! Zapisy od marca.',
+      'GĂłrski trail wĹ›rĂłd szczytĂłw Karkonoszy. Widoki, ktĂłre zapierajÄ… dech! Zapisy od marca.',
     imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
     registrationStatus: 'none' as const,
     distances: [
@@ -1925,7 +1925,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-07-10',
     featured: false,
   },
@@ -1936,10 +1936,10 @@ export const mockEvents: Event[] = [
     slug: 'firmowy-bieg-integracyjny-2026',
     discipline: 'running' as const,
     date: '2026-06-15',
-    location: 'Park Łazienkowski',
+    location: 'Park Ĺazienkowski',
     city: 'Warszawa',
     description:
-      'Zamknięty bieg firmowy dla pracowników firmy TechCorp. Wydarzenie prywatne — udział tylko przez zaproszenie.',
+      'ZamkniÄ™ty bieg firmowy dla pracownikĂłw firmy TechCorp. Wydarzenie prywatne â€” udziaĹ‚ tylko przez zaproszenie.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     registrationStatus: 'open' as const,
     distances: [
@@ -1967,7 +1967,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published' as const,
+    status: 'active' as const,
     registrationDeadline: '2026-06-10',
     featured: false,
     isPrivate: true,
@@ -1975,7 +1975,7 @@ export const mockEvents: Event[] = [
   },
   {
     id: 'e24',
-    name: 'Kolarskie Mistrzostwa Śląska 2026',
+    name: 'Kolarskie Mistrzostwa ĹšlÄ…ska 2026',
     slug: 'kolarskie-mistrzostwa-slaska-2026',
     discipline: 'cycling',
     date: '2026-05-30',
@@ -2010,19 +2010,19 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-05-20',
     featured: false,
   },
   {
     id: 'e25',
-    name: 'Aquathlon Wrocław 2026',
+    name: 'Aquathlon WrocĹ‚aw 2026',
     slug: 'aquathlon-wroclaw-2026',
     discipline: 'multisport',
     date: '2026-06-07',
-    location: 'Aquapark Wrocław',
-    city: 'Wrocław',
-    description: 'Pływanie + bieg w centrum Wrocławia. Idealne wprowadzenie do multisportu!',
+    location: 'Aquapark WrocĹ‚aw',
+    city: 'WrocĹ‚aw',
+    description: 'PĹ‚ywanie + bieg w centrum WrocĹ‚awia. Idealne wprowadzenie do multisportu!',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     registrationStatus: 'open' as const,
     distances: [
@@ -2050,7 +2050,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-06-01',
     featured: false,
   },
@@ -2061,10 +2061,10 @@ export const mockEvents: Event[] = [
     slug: 'maraton-krakowski-2026',
     discipline: 'running',
     date: '2026-06-15',
-    location: 'Rynek Główny',
-    city: 'Kraków',
+    location: 'Rynek GĹ‚Ăłwny',
+    city: 'KrakĂłw',
     description:
-      'Największy maraton w Małopolsce! Trasa prowadzi przez najpiękniejsze zabytki Krakowa.',
+      'NajwiÄ™kszy maraton w MaĹ‚opolsce! Trasa prowadzi przez najpiÄ™kniejsze zabytki Krakowa.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -2079,7 +2079,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd33',
-        name: 'Półmaraton',
+        name: 'PĂłĹ‚maraton',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -2101,20 +2101,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'awaiting_approval',
+    status: 'draft',
     submittedAt: '2026-01-10T09:00:00Z',
     registrationDeadline: '2026-06-10',
     featured: false,
   },
   {
     id: 'e17',
-    name: 'Triathlon Bałtycki 2026',
+    name: 'Triathlon BaĹ‚tycki 2026',
     slug: 'triathlon-baltycki-2026',
     discipline: 'triathlon',
     date: '2026-08-20',
-    location: 'Plaża Miejska',
+    location: 'PlaĹĽa Miejska',
     city: 'Sopot',
-    description: 'Triathlon z pływaniem w morzu! Wyjątkowe wydarzenie na polskim wybrzeżu.',
+    description: 'Triathlon z pĹ‚ywaniem w morzu! WyjÄ…tkowe wydarzenie na polskim wybrzeĹĽu.',
     imageUrl: 'https://images.unsplash.com/photo-1559311648-d7e85ef3a7b6?w=800',
     distances: [
       {
@@ -2158,7 +2158,7 @@ export const mockEvents: Event[] = [
       phone: '+48 32 987 65 43',
       website: 'https://sportevents.pl',
     },
-    status: 'awaiting_approval',
+    status: 'draft',
     submittedAt: '2026-01-12T14:30:00Z',
     registrationDeadline: '2026-08-15',
     featured: false,
@@ -2169,9 +2169,9 @@ export const mockEvents: Event[] = [
     slug: 'gran-fondo-beskidy-2026',
     discipline: 'cycling',
     date: '2026-07-05',
-    location: 'Stadion Wisły',
-    city: 'Wisła',
-    description: 'Epicka trasa przez góry Beskidów. Ponad 3000m przewyższenia!',
+    location: 'Stadion WisĹ‚y',
+    city: 'WisĹ‚a',
+    description: 'Epicka trasa przez gĂłry BeskidĂłw. Ponad 3000m przewyĹĽszenia!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
     distances: [
       {
@@ -2202,7 +2202,7 @@ export const mockEvents: Event[] = [
       phone: '+48 22 123 45 67',
       website: 'https://runpoland.pl',
     },
-    status: 'awaiting_approval',
+    status: 'draft',
     submittedAt: '2026-01-14T11:00:00Z',
     registrationDeadline: '2026-07-01',
     featured: false,
@@ -2210,13 +2210,13 @@ export const mockEvents: Event[] = [
   // Event that was rejected (draft with rejection reason)
   {
     id: 'e19',
-    name: 'Bieg Miejski Łódź',
+    name: 'Bieg Miejski ĹĂłdĹş',
     slug: 'bieg-miejski-lodz',
     discipline: 'running',
     date: '2026-05-10',
     location: 'Manufaktura',
-    city: 'Łódź',
-    description: 'Bieg przez centrum Łodzi.',
+    city: 'ĹĂłdĹş',
+    description: 'Bieg przez centrum Ĺodzi.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
       {
@@ -2235,7 +2235,7 @@ export const mockEvents: Event[] = [
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
     status: 'draft',
     rejectionReason:
-      'Proszę o uzupełnienie regulaminu zawodów oraz dodanie szczegółowej mapy trasy. Wymagane jest również załączenie zezwolenia na organizację imprezy masowej.',
+      'ProszÄ™ o uzupeĹ‚nienie regulaminu zawodĂłw oraz dodanie szczegĂłĹ‚owej mapy trasy. Wymagane jest rĂłwnieĹĽ zaĹ‚Ä…czenie zezwolenia na organizacjÄ™ imprezy masowej.',
     registrationDeadline: '2026-05-05',
     featured: false,
   },
@@ -2246,9 +2246,9 @@ export const mockEvents: Event[] = [
     slug: 'maraton-warszawski-2025',
     discipline: 'running',
     date: '2025-09-28',
-    location: 'Pałac Kultury i Nauki',
+    location: 'PaĹ‚ac Kultury i Nauki',
     city: 'Warszawa',
-    description: 'Największy maraton w Polsce! Trasa wiedzie przez najpiękniejsze zakątki stolicy.',
+    description: 'NajwiÄ™kszy maraton w Polsce! Trasa wiedzie przez najpiÄ™kniejsze zakÄ…tki stolicy.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -2279,25 +2279,25 @@ export const mockEvents: Event[] = [
       phone: '+48 22 123 45 67',
       website: 'https://runpoland.pl',
     },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-09-20',
     featured: false,
   },
   {
     id: 'e2025-02',
-    name: 'Półmaraton Gdański 2025',
+    name: 'PĂłĹ‚maraton GdaĹ„ski 2025',
     slug: 'polmaraton-gdanski-2025',
     discipline: 'running',
     date: '2025-10-12',
     location: 'Stadion Energa',
-    city: 'Gdańsk',
-    description: 'Biegnij przez Trójmiasto z widokiem na Bałtyk!',
+    city: 'GdaĹ„sk',
+    description: 'Biegnij przez TrĂłjmiasto z widokiem na BaĹ‚tyk!',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     distances: [
       {
         id: 'd2025-03',
-        name: 'Półmaraton 21K',
+        name: 'PĂłĹ‚maraton 21K',
         length: 21.097,
         unit: 'km',
         categories: ['M', 'K'],
@@ -2319,20 +2319,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-10-05',
     featured: false,
   },
   {
     id: 'e2025-03',
-    name: 'Bieg Niepodległości 2025',
+    name: 'Bieg NiepodlegĹ‚oĹ›ci 2025',
     slug: 'bieg-niepodleglosci-2025',
     discipline: 'running',
     date: '2025-11-11',
     location: 'Stary Rynek',
-    city: 'Poznań',
-    description: 'Świętuj Dzień Niepodległości biegiem przez historyczne ulice Poznania!',
+    city: 'PoznaĹ„',
+    description: 'ĹšwiÄ™tuj DzieĹ„ NiepodlegĹ‚oĹ›ci biegiem przez historyczne ulice Poznania!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
       {
@@ -2359,20 +2359,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-11-08',
     featured: false,
   },
   {
     id: 'e2025-04',
-    name: 'Sylwestrowy Bieg Kraków 2025',
+    name: 'Sylwestrowy Bieg KrakĂłw 2025',
     slug: 'sylwestrowy-bieg-krakow-2025',
     discipline: 'running',
     date: '2025-12-31',
-    location: 'Rynek Główny',
-    city: 'Kraków',
-    description: 'Pożegnaj stary rok biegiem przez magiczny Kraków!',
+    location: 'Rynek GĹ‚Ăłwny',
+    city: 'KrakĂłw',
+    description: 'PoĹĽegnaj stary rok biegiem przez magiczny KrakĂłw!',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -2389,20 +2389,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o3',
     organizerName: 'RunPoland',
     organizerContact: { email: 'kontakt@runpoland.pl', phone: '+48 22 123 45 67' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-12-28',
     featured: false,
   },
   {
     id: 'e2025-05',
-    name: 'Maraton Rowerowy Dolnośląski 2025',
+    name: 'Maraton Rowerowy DolnoĹ›lÄ…ski 2025',
     slug: 'maraton-rowerowy-dolnoslaski-2025',
     discipline: 'cycling',
     date: '2025-08-23',
-    location: 'Wrocław Stadion',
-    city: 'Wrocław',
-    description: 'Malownicza trasa przez Dolny Śląsk. Przepiękne widoki i świetna organizacja!',
+    location: 'WrocĹ‚aw Stadion',
+    city: 'WrocĹ‚aw',
+    description: 'Malownicza trasa przez Dolny ĹšlÄ…sk. PrzepiÄ™kne widoki i Ĺ›wietna organizacja!',
     imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800',
     distances: [
       {
@@ -2429,20 +2429,20 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-08-18',
     featured: false,
   },
   {
     id: 'e2025-06',
-    name: 'Triathlon Śląski 2025',
+    name: 'Triathlon ĹšlÄ…ski 2025',
     slug: 'triathlon-slaski-2025',
     discipline: 'triathlon',
     date: '2025-07-19',
     location: 'Jezioro Pogoria',
-    city: 'Dąbrowa Górnicza',
-    description: 'Triathlon w sercu Śląska! Pływanie w czystym jeziorze, rower przez lasy.',
+    city: 'DÄ…browa GĂłrnicza',
+    description: 'Triathlon w sercu ĹšlÄ…ska! PĹ‚ywanie w czystym jeziorze, rower przez lasy.',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     distances: [
       {
@@ -2469,7 +2469,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'completed',
+    status: 'past',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2025-07-12',
     featured: false,
@@ -2481,7 +2481,7 @@ export const mockEvents: Event[] = [
     slug: 'bieg-walentynkowy-2026',
     discipline: 'running',
     date: '2026-02-14',
-    location: 'Park Łazienkowski',
+    location: 'Park Ĺazienkowski',
     city: 'Warszawa',
     description: 'Romantyczny bieg w Walentynki! Biegnij w parze lub samodzielnie.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
@@ -2511,7 +2511,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o3',
     organizerName: 'RunPoland',
     organizerContact: { email: 'kontakt@runpoland.pl', phone: '+48 22 123 45 67' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-02-12',
     featured: false,
   },
@@ -2521,9 +2521,9 @@ export const mockEvents: Event[] = [
     slug: 'triathlon-mazury-2026',
     discipline: 'triathlon',
     date: '2026-08-15',
-    location: 'Marina Giżycko',
-    city: 'Giżycko',
-    description: 'Triathlon w krainie tysięcy jezior! Pływanie w krystalicznie czystej wodzie.',
+    location: 'Marina GiĹĽycko',
+    city: 'GiĹĽycko',
+    description: 'Triathlon w krainie tysiÄ™cy jezior! PĹ‚ywanie w krystalicznie czystej wodzie.',
     imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800',
     registrationStatus: 'open' as const,
     distances: [
@@ -2564,19 +2564,19 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-08-10',
     featured: true,
   },
   {
     id: 'e26-sep',
-    name: 'Maraton Wrocławski 2026',
+    name: 'Maraton WrocĹ‚awski 2026',
     slug: 'maraton-wroclawski-2026',
     discipline: 'running',
     date: '2026-09-13',
     location: 'Hala Stulecia',
-    city: 'Wrocław',
-    description: 'Biegnij przez 100 mostów Wrocławia! Najpiękniejszy maraton miejski w Polsce.',
+    city: 'WrocĹ‚aw',
+    description: 'Biegnij przez 100 mostĂłw WrocĹ‚awia! NajpiÄ™kniejszy maraton miejski w Polsce.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     registrationStatus: 'open' as const,
     distances: [
@@ -2592,7 +2592,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'd26-sep2',
-        name: 'Półmaraton 21K',
+        name: 'PĂłĹ‚maraton 21K',
         length: 21.097,
         unit: 'km',
         categories: ['M', 'K'],
@@ -2618,7 +2618,7 @@ export const mockEvents: Event[] = [
       phone: '+48 22 123 45 67',
       website: 'https://runpoland.pl',
     },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-09-08',
     featured: true,
   },
@@ -2630,7 +2630,7 @@ export const mockEvents: Event[] = [
     date: '2026-10-18',
     location: 'Spodek',
     city: 'Katowice',
-    description: 'Jesienny bieg w kolorach złotej polskiej jesieni. Start spod Spodka!',
+    description: 'Jesienny bieg w kolorach zĹ‚otej polskiej jesieni. Start spod Spodka!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     registrationStatus: 'none' as const,
     distances: [
@@ -2658,25 +2658,25 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-10-14',
     featured: false,
   },
   {
     id: 'e26-nov',
-    name: 'Półmaraton Gdynia 2026',
+    name: 'PĂłĹ‚maraton Gdynia 2026',
     slug: 'polmaraton-gdynia-2026',
     discipline: 'running',
     date: '2026-11-08',
-    location: 'Skwer Kościuszki',
+    location: 'Skwer KoĹ›ciuszki',
     city: 'Gdynia',
-    description: 'Kultowy półmaraton z widokiem na morze. Trasa wzdłuż wybrzeża!',
+    description: 'Kultowy pĂłĹ‚maraton z widokiem na morze. Trasa wzdĹ‚uĹĽ wybrzeĹĽa!',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     registrationStatus: 'open' as const,
     distances: [
       {
         id: 'd26-nov1',
-        name: 'Półmaraton 21K',
+        name: 'PĂłĹ‚maraton 21K',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -2698,7 +2698,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o3',
     organizerName: 'RunPoland',
     organizerContact: { email: 'kontakt@runpoland.pl', phone: '+48 22 123 45 67' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-11-03',
     featured: false,
   },
@@ -2713,9 +2713,9 @@ export const mockEvents: Event[] = [
     startDate: '2026-01-01',
     endDate: '2026-01-15',
     location: 'Wydarzenie wirtualne',
-    city: 'Cały świat',
+    city: 'CaĹ‚y Ĺ›wiat',
     description:
-      'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na świecie i zgłoś swój wynik.',
+      'Rozpocznij Nowy Rok od biegu! Wykonaj dystans w dowolnym miejscu na Ĺ›wiecie i zgĹ‚oĹ› swĂłj wynik.',
     imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800',
     distances: [
       {
@@ -2740,7 +2740,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'vd-21k',
-        name: 'Półmaraton',
+        name: 'PĂłĹ‚maraton',
         length: 21.097,
         unit: 'km',
         categories: ['Open'],
@@ -2751,7 +2751,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o3',
     organizerName: 'RunPoland',
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-01-10',
     featured: false,
     paymentConfig: {
@@ -2770,7 +2770,7 @@ export const mockEvents: Event[] = [
     location: 'Park Miejski',
     city: 'Gliwice',
     description:
-      'Kameralny bieg lokalny z płatnością przelewem bankowym. Organizator ręcznie potwierdza wpłaty.',
+      'Kameralny bieg lokalny z pĹ‚atnoĹ›ciÄ… przelewem bankowym. Organizator rÄ™cznie potwierdza wpĹ‚aty.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
       {
@@ -2797,7 +2797,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-05-17',
     featured: false,
     paymentConfig: {
@@ -2815,7 +2815,7 @@ export const mockEvents: Event[] = [
         price: 69,
         sizes: ['S', 'M', 'L', 'XL'],
         colors: [
-          { id: 'c1', name: 'Biały', hex: '#FFFFFF' },
+          { id: 'c1', name: 'BiaĹ‚y', hex: '#FFFFFF' },
           { id: 'c2', name: 'Czarny', hex: '#000000' },
         ],
         available: true,
@@ -2842,7 +2842,7 @@ export const mockEvents: Event[] = [
     insuranceOption: {
       id: 'ins-bt',
       name: 'Ubezpieczenie NNW',
-      description: 'Ubezpieczenie od następstw nieszczęśliwych wypadków',
+      description: 'Ubezpieczenie od nastÄ™pstw nieszczÄ™Ĺ›liwych wypadkĂłw',
       baseFee: 8,
       ageMultiplier: 0.3,
       maxAge: 70,
@@ -2858,10 +2858,10 @@ export const mockEvents: Event[] = [
     slug: 'maraton-automatyczny-2026',
     discipline: 'running',
     date: '2026-06-28',
-    location: 'Stadion Śląski',
-    city: 'Chorzów',
+    location: 'Stadion ĹšlÄ…ski',
+    city: 'ChorzĂłw',
     description:
-      'Maraton z automatyczną bramką płatniczą. Płatności online przetwarzane natychmiast.',
+      'Maraton z automatycznÄ… bramkÄ… pĹ‚atniczÄ…. PĹ‚atnoĹ›ci online przetwarzane natychmiast.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -2876,7 +2876,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'dgw-21k',
-        name: 'Półmaraton 21K',
+        name: 'PĂłĹ‚maraton 21K',
         length: 21.097,
         unit: 'km',
         categories: ['M18-29', 'M30-39', 'M40-49', 'M50+', 'K18-29', 'K30-39', 'K40-49', 'K50+'],
@@ -2888,7 +2888,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
     organizerContact: { email: 'info@sportevents.pl', phone: '+48 32 987 65 43' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-06-25',
     featured: true,
     paymentConfig: {
@@ -2899,7 +2899,7 @@ export const mockEvents: Event[] = [
       {
         id: 'merch-gw1',
         name: 'Koszulka finishera',
-        description: 'Oficjalna koszulka dla finisherów',
+        description: 'Oficjalna koszulka dla finisherĂłw',
         price: 99,
         sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
         colors: [{ id: 'c1', name: 'Czerwony', hex: '#DC2626' }],
@@ -2920,7 +2920,7 @@ export const mockEvents: Event[] = [
     startDate: '2026-03-01',
     endDate: '2026-03-31',
     location: 'Wydarzenie wirtualne',
-    city: 'Cały świat',
+    city: 'CaĹ‚y Ĺ›wiat',
     description: 'Wiosenna edycja wirtualnego maratonu. Biegnij kiedy chcesz, gdzie chcesz!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
@@ -2946,7 +2946,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'v2-21k',
-        name: 'Półmaraton',
+        name: 'PĂłĹ‚maraton',
         length: 21.097,
         unit: 'km',
         categories: ['Open'],
@@ -2957,7 +2957,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o3',
     organizerName: 'RunPoland',
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-03-25',
     featured: false,
     paymentConfig: {
@@ -2968,10 +2968,10 @@ export const mockEvents: Event[] = [
       {
         id: 'merch-v2-1',
         name: 'Medal wirtualny',
-        description: 'Pamiątkowy medal wysyłany pocztą',
+        description: 'PamiÄ…tkowy medal wysyĹ‚any pocztÄ…',
         price: 49,
         sizes: [],
-        colors: [{ id: 'c1', name: 'Złoty', hex: '#FFD700' }],
+        colors: [{ id: 'c1', name: 'ZĹ‚oty', hex: '#FFD700' }],
         available: true,
       },
     ],
@@ -2989,9 +2989,9 @@ export const mockEvents: Event[] = [
     startDate: '2026-04-01',
     endDate: '2026-04-30',
     location: 'Wydarzenie wirtualne',
-    city: 'Cały świat',
+    city: 'CaĹ‚y Ĺ›wiat',
     description:
-      'Wyzwanie hybrydowe z płatnością przelewem. Organizator weryfikuje wpłaty i wyniki.',
+      'Wyzwanie hybrydowe z pĹ‚atnoĹ›ciÄ… przelewem. Organizator weryfikuje wpĹ‚aty i wyniki.',
     imageUrl: 'https://images.unsplash.com/photo-1544191696-15693072e0b5?w=800',
     distances: [
       {
@@ -3006,7 +3006,7 @@ export const mockEvents: Event[] = [
       },
       {
         id: 'dmx-21k',
-        name: 'Półmaraton',
+        name: 'PĂłĹ‚maraton',
         length: 21.097,
         unit: 'km',
         categories: ['Open'],
@@ -3018,7 +3018,7 @@ export const mockEvents: Event[] = [
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
     organizerContact: { email: 'marek@timing.pl', phone: '+48 501 234 567' },
-    status: 'published',
+    status: 'active',
     registrationDeadline: '2026-04-25',
     featured: false,
     paymentConfig: {
@@ -3035,18 +3035,18 @@ export const mockEvents: Event[] = [
         description: 'Koszulka techniczna wyzwania',
         price: 79,
         sizes: ['S', 'M', 'L', 'XL'],
-        colors: [{ id: 'c1', name: 'Pomarańczowy', hex: '#F97316' }],
+        colors: [{ id: 'c1', name: 'PomaraĹ„czowy', hex: '#F97316' }],
         available: true,
       },
       {
         id: 'merch-mx2',
-        name: 'Opaska na rękę',
-        description: 'Silikonowa opaska pamiątkowa',
+        name: 'Opaska na rÄ™kÄ™',
+        description: 'Silikonowa opaska pamiÄ…tkowa',
         price: 19,
         sizes: [],
         colors: [
           { id: 'c2', name: 'Czarny', hex: '#000000' },
-          { id: 'c3', name: 'Pomarańczowy', hex: '#F97316' },
+          { id: 'c3', name: 'PomaraĹ„czowy', hex: '#F97316' },
         ],
         available: true,
       },
@@ -3054,7 +3054,7 @@ export const mockEvents: Event[] = [
     insuranceOption: {
       id: 'ins-mx',
       name: 'Ubezpieczenie NNW',
-      description: 'Ubezpieczenie od następstw nieszczęśliwych wypadków',
+      description: 'Ubezpieczenie od nastÄ™pstw nieszczÄ™Ĺ›liwych wypadkĂłw',
       baseFee: 10,
       ageMultiplier: 0.4,
       maxAge: 65,
@@ -3072,8 +3072,8 @@ export const mockEvents: Event[] = [
     discipline: 'running',
     date: '2026-05-01',
     location: 'Park Centralny',
-    city: 'Łódź',
-    description: 'Prosty bieg miejski bez dodatkowych materiałów foto.',
+    city: 'ĹĂłdĹş',
+    description: 'Prosty bieg miejski bez dodatkowych materiaĹ‚Ăłw foto.',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
       {
@@ -3089,7 +3089,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o1',
     organizerName: 'Marek Organizator',
-    status: 'completed',
+    status: 'past',
     registrationDeadline: '2026-04-28',
     featured: false,
     // NO galleryAlbums - testing empty state
@@ -3102,8 +3102,8 @@ export const mockEvents: Event[] = [
     discipline: 'running',
     date: '2026-06-01',
     location: 'Stadion Miejski',
-    city: 'Poznań',
-    description: 'Wydarzenie z jednym oficjalnym albumem zdjęć.',
+    city: 'PoznaĹ„',
+    description: 'Wydarzenie z jednym oficjalnym albumem zdjÄ™Ä‡.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -3119,7 +3119,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
-    status: 'completed',
+    status: 'past',
     registrationDeadline: '2026-05-28',
     featured: false,
     galleryAlbums: [
@@ -3128,7 +3128,7 @@ export const mockEvents: Event[] = [
         name: 'Oficjalny album wydarzenia',
         url: 'https://photos.google.com/share/bieg-poznan-2026',
         platform: 'google_photos',
-        photographer: 'Foto Studio Poznań',
+        photographer: 'Foto Studio PoznaĹ„',
       },
     ],
   },
@@ -3140,7 +3140,7 @@ export const mockEvents: Event[] = [
     discipline: 'running',
     date: '2026-07-15',
     location: 'Rynek',
-    city: 'Wrocław',
+    city: 'WrocĹ‚aw',
     description: 'Bardzo popularny bieg - wszystkie miejsca wyprzedane!',
     imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800',
     distances: [
@@ -3167,7 +3167,7 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o3',
     organizerName: 'RunPoland',
-    status: 'published',
+    status: 'active',
     registrationStatus: 'closed' as const,
     registrationDeadline: '2026-07-10',
     featured: false,
@@ -3175,13 +3175,13 @@ export const mockEvents: Event[] = [
   // Completed event with NO results yet
   {
     id: 'e-no-results',
-    name: 'Bieg Bez Wyników 2026',
+    name: 'Bieg Bez WynikĂłw 2026',
     slug: 'bieg-bez-wynikow-2026',
     discipline: 'running',
     date: '2026-01-20',
-    location: 'Park Śląski',
-    city: 'Chorzów',
-    description: 'Wydarzenie zakończone, wyniki w trakcie przetwarzania.',
+    location: 'Park ĹšlÄ…ski',
+    city: 'ChorzĂłw',
+    description: 'Wydarzenie zakoĹ„czone, wyniki w trakcie przetwarzania.',
     imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
     distances: [
       {
@@ -3197,9 +3197,10 @@ export const mockEvents: Event[] = [
     ],
     organizerId: 'o2',
     organizerName: 'Sportowe Wydarzenia Sp. z o.o.',
-    status: 'completed',
+    status: 'past',
     registrationDeadline: '2026-01-17',
     featured: false,
     // No results in mockResults for this event
   },
 ];
+

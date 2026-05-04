@@ -36,7 +36,7 @@ import {
 import { OnlineStaffCard } from './OnlineStaffCard';
 
 export const AdminOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter((e) => e.status === 'awaiting_approval').length;
+  const pendingModerationCount = mockEvents.filter((e) => e.status === 'draft').length;
 
   const stats = [
     {
@@ -300,7 +300,7 @@ export const AdminOverviewTab = () => {
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {mockEvents
-                .filter((e) => e.status === 'published')
+                .filter((e) => e.status === 'active')
                 .slice(0, 5)
                 .map((event) => (
                   <div

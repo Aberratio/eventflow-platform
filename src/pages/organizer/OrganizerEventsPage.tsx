@@ -11,24 +11,33 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Plus, Calendar, MapPin, Users, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import type { Event } from '@/types';
 
-type StatusFilter =
-  | 'all'
-  | 'published'
-  | 'approved'
-  | 'awaiting_approval'
-  | 'draft'
-  | 'completed'
-  | 'rejected';
+type StatusFilter = 'all' | 'active' | 'draft' | 'past' | 'archived';
 
-const statusLabels: Record<string, string> = {
+const statusLabels: Record<StatusFilter, string> = {
   all: 'Wszystkie',
-  published: 'Aktywne',
-  approved: 'Zatwierdzone',
-  awaiting_approval: 'Oczekujące',
+  active: 'Aktywne',
   draft: 'Szkice',
-  completed: 'Zakończone',
-  rejected: 'Odrzucone',
+  past: 'Przeszłe',
+  archived: 'Archiwum',
+};
+
+const getStatusBadge = (status: Event['status']) => {
+  switch (status) {
+    case 'active':
+      return <Badge variant="default">Aktywne</Badge>;
+    case 'draft':
+      return <Badge variant="secondary">Szkic</Badge>;
+    case 'past':
+      return <Badge variant="secondary">Przeszłe</Badge>;
+    case 'archived':
+      return <Badge variant="outline">Zarchiwizowane</Badge>;
+    case 'deleted':
+      return <Badge variant="destructive">Usunięte</Badge>;
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
 };
 
 const OrganizerEventsPage = () => {
@@ -42,38 +51,9 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
-  const myEvents = eventsResponse?.data ?? [];
-
-  const filteredEvents = myEvents.filter((e) => {
-    if (statusFilter === 'all') return true;
-    if (statusFilter === 'completed') return e.status === 'completed';
-    if (statusFilter === 'draft') return e.status === 'draft';
-    if (statusFilter === 'approved') return e.status === 'approved';
-    if (statusFilter === 'awaiting_approval') return e.status === 'awaiting_approval';
-    if (statusFilter === 'rejected') return e.status === 'rejected';
-    return e.status === 'published';
-  });
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'published':
-        return <Badge variant="default">Aktywne</Badge>;
-      case 'draft':
-        return <Badge variant="secondary">Szkic</Badge>;
-      case 'awaiting_approval':
-        return <Badge variant="outline">Oczekuje</Badge>;
-      case 'approved':
-        return <Badge variant="outline">Zatwierdzone</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Odrzucone</Badge>;
-      case 'completed':
-        return <Badge variant="secondary">Zakończone</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Anulowane</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const myEvents = (eventsResponse?.data ?? []).filter((event) => event.status !== 'deleted');
+  const filteredEvents =
+    statusFilter === 'all' ? myEvents : myEvents.filter((event) => event.status === statusFilter);
 
   const getParticipantCount = (eventId: string) => {
     return mockRegistrations.filter(
@@ -116,7 +96,7 @@ const OrganizerEventsPage = () => {
               <p className="font-medium">Brak wydarzeń</p>
               <p className="mt-1 text-sm">
                 {statusFilter === 'all'
-                  ? 'Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze!'
+                  ? 'Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze.'
                   : `Brak wydarzeń w kategorii "${statusLabels[statusFilter]}"`}
               </p>
             </CardContent>

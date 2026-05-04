@@ -42,8 +42,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   });
   const event = eventResponse?.data ?? null;
 
-  const isUnpublished =
-    event && ['draft', 'awaiting_approval', 'approved', 'rejected'].includes(event.status);
+  const isUnpublished = event && event.status === 'draft';
   const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
   const canViewDraft =
     isAdminLike ||

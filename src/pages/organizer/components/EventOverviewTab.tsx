@@ -2,19 +2,9 @@ import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Event, Registration } from '@/types';
-import {
-  Users,
-  Calendar,
-  MapPin,
-  TrendingUp,
-  ExternalLink,
-  AlertTriangle,
-  Send,
-} from 'lucide-react';
+import { Users, Calendar, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
 interface EventOverviewTabProps {
   event: Event;
@@ -22,22 +12,16 @@ interface EventOverviewTabProps {
 }
 
 export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
-  const { toast } = useToast();
   const statusLabels: Record<Event['status'], string> = {
     draft: 'Szkic',
-    awaiting_approval: 'Oczekuje na akceptację',
-    approved: 'Zatwierdzone',
-    published: 'Opublikowane',
-    completed: 'Zakończone',
-    cancelled: 'Anulowane',
-    rejected: 'Odrzucone',
+    active: 'Aktywne',
+    past: 'Przeszłe',
+    archived: 'Zarchiwizowane',
+    deleted: 'Usunięte',
   };
   const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
   const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
-  const previewStatuses: Event['status'][] = ['draft', 'awaiting_approval', 'approved', 'rejected'];
-  const eventPageUrl = previewStatuses.includes(event.status)
-    ? `/events/${event.slug}/preview`
-    : `/events/${event.slug}`;
+  const eventPageUrl = event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
     const distance = event.distances.find((d) => d.id === reg.distanceId);
     return acc + (distance?.price || 0);
@@ -51,48 +35,8 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
       : 0,
   }));
 
-  const handleResubmit = () => {
-    toast({
-      title: 'Wydarzenie zgłoszone ponownie',
-      description: 'Twoje wydarzenie zostało przesłane do ponownej weryfikacji.',
-    });
-  };
-
   return (
     <div className="space-y-6">
-      {/* Rejection alert */}
-      {event.status === 'rejected' && event.rejectionReason && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Wydarzenie odrzucone</AlertTitle>
-          <AlertDescription className="mt-2">
-            <p className="mb-3">{event.rejectionReason}</p>
-            <Button size="sm" onClick={handleResubmit}>
-              <Send className="mr-2 h-4 w-4" />
-              Popraw i zgłoś ponownie
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Awaiting approval info */}
-      {event.status === 'awaiting_approval' && (
-        <Alert>
-          <Calendar className="h-4 w-4" />
-          <AlertTitle>Oczekuje na akceptację</AlertTitle>
-          <AlertDescription>
-            Twoje wydarzenie zostało przesłane do weryfikacji. Otrzymasz powiadomienie po
-            rozpatrzeniu.
-            {event.submittedAt && (
-              <span className="mt-1 block text-xs text-muted-foreground">
-                Zgłoszono: {new Date(event.submittedAt).toLocaleDateString('pl-PL')}
-              </span>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Quick stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
@@ -151,7 +95,6 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
         </Card>
       </div>
 
-      {/* Event details */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -160,10 +103,10 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge>{disciplineLabels[event.discipline]}</Badge>
-              <Badge variant={event.status === 'published' ? 'default' : 'secondary'}>
+              <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
                 {statusLabels[event.status]}
               </Badge>
-              {event.featured && <Badge variant="outline">⭐ Wyróżnione</Badge>}
+              {event.featured && <Badge variant="outline">Wyróżnione</Badge>}
             </div>
 
             <div className="space-y-2">
@@ -200,7 +143,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{distance.name}</span>
                     <span className="text-sm text-muted-foreground">
-                      {count} / {distance.limit || '∞'}
+                      {count} / {distance.limit || 'bez limitu'}
                     </span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">

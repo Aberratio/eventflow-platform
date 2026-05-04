@@ -23,7 +23,7 @@ describe('constants', () => {
   });
 
   it('has event status labels', () => {
-    expect(EVENT_STATUS_LABELS.published).toBe('Opublikowane');
+    expect(EVENT_STATUS_LABELS.active).toBe('Aktywne');
   });
 
   it('generates query keys correctly', () => {

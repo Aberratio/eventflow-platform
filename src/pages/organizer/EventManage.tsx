@@ -1,6 +1,6 @@
-import { getEventById, mockRegistrations, publishEvent } from '@/api';
+import { getEventById, mockRegistrations } from '@/api';
 import { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -25,23 +25,19 @@ import {
 import { DiscountCode } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 
 const statusLabels = {
   draft: 'Szkic',
-  awaiting_approval: 'Oczekuje na akceptację',
-  approved: 'Zatwierdzone',
-  published: 'Opublikowane',
-  completed: 'Zakończone',
-  cancelled: 'Anulowane',
-  rejected: 'Odrzucone',
+  active: 'Aktywne',
+  past: 'Przeszłe',
+  archived: 'Zarchiwizowane',
+  deleted: 'Usunięte',
 } as const;
 
 const EventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -79,7 +75,7 @@ const EventManage = () => {
     );
   }
 
-  if (!visibleEvent || !canManage) {
+  if (!visibleEvent || !canManage || visibleEvent.status === 'deleted') {
     return (
       <Layout>
         <div className="container py-8">
@@ -94,26 +90,6 @@ const EventManage = () => {
     );
   }
 
-  const canPublish =
-    visibleEvent.status === 'approved' &&
-    (user?.role === 'admin' ||
-      user?.role === 'superadmin' ||
-      (user?.role === 'organizer' && visibleEvent.organizerId === user.id));
-
-  const handlePublish = async () => {
-    try {
-      const response = await publishEvent(visibleEvent.id);
-      setLocalStatus(response.data.status);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['event', visibleEvent.id] }),
-        queryClient.invalidateQueries({ queryKey: ['organizer-events', visibleEvent.organizerId] }),
-      ]);
-      toast.success('Wydarzenie zostało opublikowane');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udało się opublikować wydarzenia');
-    }
-  };
-
   return (
     <Layout>
       <div className="container py-8">
@@ -125,16 +101,15 @@ const EventManage = () => {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h1 className="text-3xl font-bold">{visibleEvent.name}</h1>
-              <Badge variant={visibleEvent.status === 'published' ? 'default' : 'outline'}>
+              <Badge variant={visibleEvent.status === 'active' ? 'default' : 'outline'}>
                 {statusLabels[visibleEvent.status]}
               </Badge>
             </div>
-            {canPublish && <Button onClick={handlePublish}>Opublikuj</Button>}
           </div>
           <p className="text-muted-foreground">
             {visibleEvent.isVirtual
-              ? 'Wydarzenie wirtualne • Cały świat'
-              : `${event.city} • ${event.date}`}
+              ? 'Wydarzenie wirtualne - cały świat'
+              : `${visibleEvent.city} - ${visibleEvent.date}`}
           </p>
         </div>
 
