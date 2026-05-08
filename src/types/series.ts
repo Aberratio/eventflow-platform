@@ -12,5 +12,10 @@ export interface EventSeries {
   rules?: string;
   startDate?: string;
   endDate?: string;
-  status: 'active' | 'completed' | 'upcoming';
+  status: 'active' | 'completed' | 'upcoming' | 'archived';
+  products?: Array<{
+    productId: string;
+    purpose: 'reward' | 'addon';
+    sortOrder: number;
+  }>;
 }

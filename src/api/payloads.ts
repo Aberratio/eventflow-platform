@@ -30,6 +30,10 @@ import type {
   ShopOrder,
   InfoPage,
   InfoPageSection,
+  EventSeries,
+  ShopProduct,
+  ShopCategoryConfig,
+  Challenge,
 } from '@/types';
 import type {
   CreateEmailTemplatePayload,
@@ -177,6 +181,32 @@ export interface CreateOrderPayload {
   invoiceData?: ShopOrder['invoiceData'];
   customerNotes?: string;
 }
+
+export type CreateShopProductPayload = Omit<ShopProduct, 'id' | 'rating' | 'reviewCount'> & {
+  id?: string;
+};
+
+export type UpdateShopProductPayload = Partial<CreateShopProductPayload>;
+
+export type CreateShopCategoryPayload = Pick<ShopCategoryConfig, 'id' | 'name'> &
+  Partial<Pick<ShopCategoryConfig, 'sortOrder'>>;
+
+export type UpdateShopCategoryPayload = Partial<CreateShopCategoryPayload> & {
+  status?: 'active' | 'archived';
+};
+
+export type CreateSeriesPayload = Omit<EventSeries, 'id'> & {
+  id?: string;
+};
+
+export type UpdateSeriesPayload = Partial<CreateSeriesPayload>;
+
+export type CreateChallengePayload = Omit<Challenge, 'id' | 'rewards'> & {
+  id?: string;
+  rewards?: Challenge['rewards'];
+};
+
+export type UpdateChallengePayload = Partial<CreateChallengePayload>;
 
 // ──────────────── CMS ────────────────
 

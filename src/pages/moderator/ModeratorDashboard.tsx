@@ -8,6 +8,7 @@ import { ModeratorOrdersTab } from './components/ModeratorOrdersTab';
 import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTab';
 import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
 import { AdminFeaturedEventsTab } from '@/pages/admin/components/AdminFeaturedEventsTab';
+import { AdminSeriesTab } from '@/pages/admin/components/AdminSeriesTab';
 import {
   LayoutDashboard,
   Users,
@@ -51,6 +52,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: 'moderation', label: 'Moderacja', icon: ShieldCheck },
       { id: 'featured', label: 'Polecane', icon: Star },
+      { id: 'series', label: 'Serie', icon: Trophy },
       { id: 'participants', label: 'Uczestnicy', icon: Users },
       { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
     ],
@@ -82,6 +84,8 @@ const ModeratorDashboard = () => {
         return <ModeratorModerationTab />;
       case 'featured':
         return <AdminFeaturedEventsTab />;
+      case 'series':
+        return <AdminSeriesTab basePath="/moderator" />;
       case 'participants':
         return <UsersReadOnlyTab userType="participant" />;
       case 'organizers':

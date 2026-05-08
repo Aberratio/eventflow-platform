@@ -100,11 +100,21 @@ export const uploadResultDocument: ApiAdapter['uploadResultDocument'] = (...args
 export const getSeries: ApiAdapter['getSeries'] = (...args) => ensureAdapter().then((a) => a.getSeries(...args));
 export const getSeriesById: ApiAdapter['getSeriesById'] = (...args) => ensureAdapter().then((a) => a.getSeriesById(...args));
 export const getSeriesBySlug: ApiAdapter['getSeriesBySlug'] = (...args) => ensureAdapter().then((a) => a.getSeriesBySlug(...args));
+export const createSeries: ApiAdapter['createSeries'] = (...args) => ensureAdapter().then((a) => a.createSeries(...args));
+export const updateSeries: ApiAdapter['updateSeries'] = (...args) => ensureAdapter().then((a) => a.updateSeries(...args));
+export const archiveSeries: ApiAdapter['archiveSeries'] = (...args) => ensureAdapter().then((a) => a.archiveSeries(...args));
 
 // Shop
 export const getProducts: ApiAdapter['getProducts'] = (...args) => ensureAdapter().then((a) => a.getProducts(...args));
 export const getProductBySlug: ApiAdapter['getProductBySlug'] = (...args) => ensureAdapter().then((a) => a.getProductBySlug(...args));
 export const getProductById: ApiAdapter['getProductById'] = (...args) => ensureAdapter().then((a) => a.getProductById(...args));
+export const createProduct: ApiAdapter['createProduct'] = (...args) => ensureAdapter().then((a) => a.createProduct(...args));
+export const updateProduct: ApiAdapter['updateProduct'] = (...args) => ensureAdapter().then((a) => a.updateProduct(...args));
+export const deleteProduct: ApiAdapter['deleteProduct'] = (...args) => ensureAdapter().then((a) => a.deleteProduct(...args));
+export const getShopCategories: ApiAdapter['getShopCategories'] = (...args) => ensureAdapter().then((a) => a.getShopCategories(...args));
+export const createShopCategory: ApiAdapter['createShopCategory'] = (...args) => ensureAdapter().then((a) => a.createShopCategory(...args));
+export const updateShopCategory: ApiAdapter['updateShopCategory'] = (...args) => ensureAdapter().then((a) => a.updateShopCategory(...args));
+export const deleteShopCategory: ApiAdapter['deleteShopCategory'] = (...args) => ensureAdapter().then((a) => a.deleteShopCategory(...args));
 export const getDeliveryMethods: ApiAdapter['getDeliveryMethods'] = (...args) => ensureAdapter().then((a) => a.getDeliveryMethods(...args));
 export const getShopPaymentMethods: ApiAdapter['getShopPaymentMethods'] = (...args) => ensureAdapter().then((a) => a.getShopPaymentMethods(...args));
 export const getOrders: ApiAdapter['getOrders'] = (...args) => ensureAdapter().then((a) => a.getOrders(...args));
@@ -116,6 +126,9 @@ export const updateOrderStatus: ApiAdapter['updateOrderStatus'] = (...args) => e
 export const getChallenges: ApiAdapter['getChallenges'] = (...args) => ensureAdapter().then((a) => a.getChallenges(...args));
 export const getChallengeBySlug: ApiAdapter['getChallengeBySlug'] = (...args) => ensureAdapter().then((a) => a.getChallengeBySlug(...args));
 export const getChallengeById: ApiAdapter['getChallengeById'] = (...args) => ensureAdapter().then((a) => a.getChallengeById(...args));
+export const createChallenge: ApiAdapter['createChallenge'] = (...args) => ensureAdapter().then((a) => a.createChallenge(...args));
+export const updateChallenge: ApiAdapter['updateChallenge'] = (...args) => ensureAdapter().then((a) => a.updateChallenge(...args));
+export const archiveChallenge: ApiAdapter['archiveChallenge'] = (...args) => ensureAdapter().then((a) => a.archiveChallenge(...args));
 export const getChallengeParticipations: ApiAdapter['getChallengeParticipations'] = (...args) => ensureAdapter().then((a) => a.getChallengeParticipations(...args));
 export const joinChallenge: ApiAdapter['joinChallenge'] = (...args) => ensureAdapter().then((a) => a.joinChallenge(...args));
 export const submitChallengeEntry: ApiAdapter['submitChallengeEntry'] = (...args) => ensureAdapter().then((a) => a.submitChallengeEntry(...args));
@@ -189,6 +202,7 @@ export type {
   ActivityLogFilters,
   VirtualResultFilters,
   ChallengeParticipationFilters,
+  ChallengeFilters,
   SeriesFilters,
 } from './types';
 export type { ApiAdapter } from './contract';
@@ -206,6 +220,14 @@ export type {
   CreateResultPayload,
   UpdateResultPayload,
   CreateOrderPayload,
+  CreateShopProductPayload,
+  UpdateShopProductPayload,
+  CreateShopCategoryPayload,
+  UpdateShopCategoryPayload,
+  CreateSeriesPayload,
+  UpdateSeriesPayload,
+  CreateChallengePayload,
+  UpdateChallengePayload,
   CreateInfoPagePayload,
   UpdateInfoPagePayload,
 } from './payloads';

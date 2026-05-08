@@ -1,4 +1,4 @@
-import { getProducts, shopCategoryLabels } from '@/api';
+import { getProducts, getShopCategories } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -50,6 +50,10 @@ const ShopPage = () => {
     queryKey: QUERY_KEYS.products,
     queryFn: () => getProducts(),
   });
+  const { data: categoriesData } = useQuery({
+    queryKey: QUERY_KEYS.shopCategories,
+    queryFn: () => getShopCategories(),
+  });
 
   const allProducts = useMemo(() => {
     const role = auth?.user?.role;
@@ -62,6 +66,8 @@ const ShopPage = () => {
     const uniqueBrands = [...new Set(allProducts.map((p) => p.brand))];
     return uniqueBrands.sort();
   }, [allProducts]);
+  const categories = categoriesData?.data ?? [];
+  const categoryLabels = Object.fromEntries(categories.map((item) => [item.id, item.name]));
 
   const filteredProducts = useMemo(() => {
     let products = [...allProducts];
@@ -115,9 +121,9 @@ const ShopPage = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Wszystkie kategorie</SelectItem>
-            {Object.entries(shopCategoryLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>
-                {label}
+            {categories.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -242,9 +248,9 @@ const ShopPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Wszystkie kategorie</SelectItem>
-                      {Object.entries(shopCategoryLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
+                      {categories.map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -301,7 +307,7 @@ const ShopPage = () => {
           <div className="mb-6 flex flex-wrap gap-2">
             {category !== 'all' && (
               <Badge variant="secondary" className="gap-1 px-3 py-1">
-                {shopCategoryLabels[category]}
+                {categoryLabels[category] ?? category}
                 <button onClick={() => setCategory('all')} className="ml-1 hover:text-destructive">
                   <X className="h-3 w-3" />
                 </button>

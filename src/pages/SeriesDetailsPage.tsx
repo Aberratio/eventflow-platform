@@ -1,5 +1,6 @@
-import { mockEvents, mockResults, mockSeries } from '@/api';
+import { getEvents, getResults, getSeriesBySlug } from '@/api';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { SeriesHero } from './series/SeriesHero';
 import { SeriesStandingsTable, type SeriesStanding } from './series/SeriesStandingsTable';
 import { SeriesEventsList } from './series/SeriesEventsList';
+import { QUERY_KEYS } from '@/constants';
 
 const getPointsForPosition = (position: number): number => {
   const pointsTable: Record<number, number> = {
@@ -54,16 +56,31 @@ const isInAgeCategory = (age: number | null, category: string): boolean => {
 
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const series = mockSeries.find((s) => s.slug === slug);
   const { toast } = useToast();
+  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+    queryKey: slug ? QUERY_KEYS.seriesBySlug(slug) : ['series'],
+    queryFn: () => getSeriesBySlug(slug!),
+    enabled: !!slug,
+  });
+  const { data: eventsData } = useQuery({
+    queryKey: QUERY_KEYS.events,
+    queryFn: () => getEvents(),
+  });
+  const { data: resultsData } = useQuery({
+    queryKey: QUERY_KEYS.results,
+    queryFn: () => getResults(),
+  });
+  const series = seriesData?.data;
+  const allEvents = eventsData?.data ?? [];
+  const allResults = resultsData?.data ?? [];
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'M' | 'K'>('all');
   const [ageFilter, setAgeFilter] = useState<string>('all');
 
   const seriesEvents = useMemo(() => {
     if (!series) return [];
-    return mockEvents.filter((event) => series.eventIds.includes(event.id));
-  }, [series]);
+    return allEvents.filter((event) => series.eventIds.includes(event.id));
+  }, [allEvents, series]);
 
   const completedEvents = useMemo(() => {
     return seriesEvents.filter((e) => e.status === 'past');
@@ -74,7 +91,7 @@ const SeriesDetailsPage = () => {
     const standingsMap = new Map<string, SeriesStanding>();
 
     completedEvents.forEach((event) => {
-      const eventResults = mockResults.filter((r) => r.eventId === event.id);
+      const eventResults = allResults.filter((r) => r.eventId === event.id);
       eventResults.forEach((result) => {
         const points = getPointsForPosition(result.position);
         if (!standingsMap.has(result.userId)) {
@@ -102,7 +119,7 @@ const SeriesDetailsPage = () => {
         ? b.totalPoints - a.totalPoints
         : b.eventsCount - a.eventsCount,
     );
-  }, [series, completedEvents]);
+  }, [allResults, series, completedEvents]);
 
   const filteredStandings = useMemo(() => {
     return standings.filter((s) => {
@@ -114,6 +131,14 @@ const SeriesDetailsPage = () => {
       return true;
     });
   }, [standings, genderFilter, ageFilter]);
+
+  if (seriesLoading) {
+    return (
+      <Layout>
+        <div className="container py-16 text-center text-muted-foreground">Ładowanie serii...</div>
+      </Layout>
+    );
+  }
 
   if (!series) {
     return (

@@ -21,6 +21,7 @@ import type {
   ActivityLogFilters,
   VirtualResultFilters,
   SeriesFilters,
+  ChallengeFilters,
 } from './types';
 import type {
   CreateEventPayload,
@@ -36,6 +37,14 @@ import type {
   CreateResultPayload,
   UpdateResultPayload,
   CreateOrderPayload,
+  CreateShopProductPayload,
+  UpdateShopProductPayload,
+  CreateShopCategoryPayload,
+  UpdateShopCategoryPayload,
+  CreateSeriesPayload,
+  UpdateSeriesPayload,
+  CreateChallengePayload,
+  UpdateChallengePayload,
   CreateInfoPagePayload,
   UpdateInfoPagePayload,
 } from './payloads';
@@ -50,6 +59,7 @@ import type {
   EventResultDocument,
   EventSeries,
   ShopProduct,
+  ShopCategoryConfig,
   DeliveryMethod,
   ShopPaymentMethod,
   ShopOrder,
@@ -166,11 +176,24 @@ export interface ApiAdapter {
   getSeries(filters?: SeriesFilters): Promise<PaginatedResponse<EventSeries>>;
   getSeriesById(id: string): Promise<ApiResponse<EventSeries | null>>;
   getSeriesBySlug(slug: string): Promise<ApiResponse<EventSeries | null>>;
+  createSeries(data: CreateSeriesPayload): Promise<ApiResponse<EventSeries>>;
+  updateSeries(id: string, data: UpdateSeriesPayload): Promise<ApiResponse<EventSeries>>;
+  archiveSeries(id: string): Promise<ApiResponse<EventSeries>>;
 
   // ── Shop ──
   getProducts(filters?: ShopProductFilters): Promise<PaginatedResponse<ShopProduct>>;
   getProductBySlug(slug: string): Promise<ApiResponse<ShopProduct | null>>;
   getProductById(id: string): Promise<ApiResponse<ShopProduct | null>>;
+  createProduct(data: CreateShopProductPayload): Promise<ApiResponse<ShopProduct>>;
+  updateProduct(id: string, data: UpdateShopProductPayload): Promise<ApiResponse<ShopProduct>>;
+  deleteProduct(id: string): Promise<ApiResponse<void>>;
+  getShopCategories(includeArchived?: boolean): Promise<ApiResponse<ShopCategoryConfig[]>>;
+  createShopCategory(data: CreateShopCategoryPayload): Promise<ApiResponse<ShopCategoryConfig>>;
+  updateShopCategory(
+    id: string,
+    data: UpdateShopCategoryPayload,
+  ): Promise<ApiResponse<ShopCategoryConfig>>;
+  deleteShopCategory(id: string): Promise<ApiResponse<void>>;
   getDeliveryMethods(): Promise<ApiResponse<DeliveryMethod[]>>;
   getShopPaymentMethods(): Promise<ApiResponse<ShopPaymentMethod[]>>;
   getOrders(userId?: string): Promise<ApiResponse<ShopOrder[]>>;
@@ -183,9 +206,12 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<ShopOrder>>;
 
   // ── Challenges ──
-  getChallenges(): Promise<ApiResponse<Challenge[]>>;
+  getChallenges(filters?: ChallengeFilters): Promise<ApiResponse<Challenge[]>>;
   getChallengeBySlug(slug: string): Promise<ApiResponse<Challenge | null>>;
   getChallengeById(id: string): Promise<ApiResponse<Challenge | null>>;
+  createChallenge(data: CreateChallengePayload): Promise<ApiResponse<Challenge>>;
+  updateChallenge(id: string, data: UpdateChallengePayload): Promise<ApiResponse<Challenge>>;
+  archiveChallenge(id: string): Promise<ApiResponse<Challenge>>;
   getChallengeParticipations(
     challengeId?: string,
     userId?: string,

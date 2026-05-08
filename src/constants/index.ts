@@ -78,6 +78,7 @@ export const SERIES_STATUS_LABELS: Record<string, string> = {
   active: 'Aktywna',
   completed: 'Zakończona',
   upcoming: 'Nadchodząca',
+  archived: 'Archiwalna',
 };
 
 export const STORAGE_KEYS = {
@@ -97,6 +98,7 @@ export const QUERY_KEYS = {
   seriesBySlug: (slug: string) => ['series', 'slug', slug] as const,
   products: ['products'] as const,
   productBySlug: (slug: string) => ['products', 'slug', slug] as const,
+  shopCategories: ['shopCategories'] as const,
   partners: ['partners'] as const,
   featuredPartners: ['partners', 'featured'] as const,
   results: ['results'] as const,
@@ -106,7 +108,9 @@ export const QUERY_KEYS = {
   registrationsByEvent: (eventId: string) => ['registrations', 'event', eventId] as const,
   registrationsByUser: (userId: string) => ['registrations', 'user', userId] as const,
   challenges: ['challenges'] as const,
+  challenge: (id: string) => ['challenges', id] as const,
   challengeBySlug: (slug: string) => ['challenges', 'slug', slug] as const,
+  challengeParticipations: ['challengeParticipations'] as const,
   messages: ['messages'] as const,
   tickets: ['tickets'] as const,
   orders: ['orders'] as const,

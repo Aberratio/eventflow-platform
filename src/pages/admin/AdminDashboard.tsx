@@ -11,6 +11,7 @@ import { AdminPagesTab } from './components/AdminPagesTab';
 import { AdminSettingsTab } from './components/AdminSettingsTab';
 import { AdminChallengesTab } from './components/AdminChallengesTab';
 import { AdminFeaturedEventsTab } from './components/AdminFeaturedEventsTab';
+import { AdminSeriesTab } from './components/AdminSeriesTab';
 import { UsersAdminsTab } from './components/UsersAdminsTab';
 import {
   LayoutDashboard,
@@ -77,6 +78,7 @@ const navGroups: NavGroup[] = [
     label: 'Treści',
     items: [
       { id: 'events', label: 'Wydarzenia', icon: Calendar },
+      { id: 'series', label: 'Serie', icon: Trophy },
       { id: 'featured', label: 'Polecane', icon: Star },
       { id: 'partners', label: 'Partnerzy', icon: Handshake },
       { id: 'pages', label: 'Strony', icon: FileText },
@@ -120,6 +122,8 @@ const AdminDashboard = () => {
         return canManageAdmins ? <UsersAdminsTab /> : <AdminOverviewTab />;
       case 'events':
         return <AdminEventsTab />;
+      case 'series':
+        return <AdminSeriesTab />;
       case 'featured':
         return <AdminFeaturedEventsTab />;
       case 'shop':

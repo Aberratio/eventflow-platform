@@ -29,9 +29,14 @@ export interface Challenge {
   imageUrl?: string;
   seriesId?: string;
   events: ChallengeEvent[];
+  products?: Array<{
+    productId: string;
+    purpose: 'reward' | 'addon';
+    sortOrder: number;
+  }>;
   rule: ChallengeRule;
   rewards: ChallengeReward[];
-  status: 'active' | 'completed' | 'upcoming';
+  status: 'active' | 'completed' | 'upcoming' | 'archived';
   startDate?: string;
   endDate?: string;
   createdBy: string;

@@ -19,6 +19,7 @@ import type {
   EventResultDocument,
   EventSeries,
   ShopProduct,
+  ShopCategoryConfig,
   DeliveryMethod,
   ShopPaymentMethod,
   ShopOrder,
@@ -138,6 +139,15 @@ function paginated<T>(data: T[]): PaginatedResponse<T> {
 let emailTemplates: EmailTemplate[] = [...mockEmailTemplates];
 let emailLogs: EmailSendLog[] = [...mockEmailSendLogs];
 let nextTemplateId = 100;
+let shopProducts: ShopProduct[] = [...mockShopProducts];
+let shopCategories: ShopCategoryConfig[] = Object.entries({
+  apparel: 'Odzież',
+  footwear: 'Obuwie',
+  accessories: 'Akcesoria',
+  nutrition: 'Odżywianie',
+  electronics: 'Elektronika',
+  services: 'Usługi',
+}).map(([id, name], index) => ({ id, name, sortOrder: index, status: 'active' }));
 
 const organizerEventLimits: Record<string, number> = {
   o1: 4,
@@ -589,11 +599,31 @@ export const mockAdapter: ApiAdapter = {
     return series ? ok(series) : fail(null, 'Series not found');
   },
 
+  async createSeries(data) {
+    await delay();
+    const series = { id: `series-${Date.now()}`, ...data } as EventSeries;
+    mockSeries.push(series);
+    return ok(series);
+  },
+
+  async updateSeries(id, data) {
+    await delay();
+    const index = mockSeries.findIndex((s) => s.id === id);
+    if (index === -1) return fail(null as unknown as EventSeries, 'Series not found');
+    mockSeries[index] = { ...mockSeries[index], ...data } as EventSeries;
+    return ok(mockSeries[index]);
+  },
+
+  async archiveSeries(id) {
+    return this.updateSeries(id, { status: 'archived' });
+  },
+
   // ── Shop ──
 
   async getProducts(filters) {
     await delay();
-    let filtered = [...mockShopProducts];
+    let filtered = [...shopProducts];
+    if (!filters?.includeArchived) filtered = filtered.filter((p) => p.status !== 'archived');
     if (filters?.category) filtered = filtered.filter((p) => p.category === filters.category);
     if (filters?.inStock !== undefined)
       filtered = filtered.filter((p) => p.inStock === filters.inStock);
@@ -612,14 +642,72 @@ export const mockAdapter: ApiAdapter = {
 
   async getProductBySlug(slug) {
     await delay();
-    const product = mockShopProducts.find((p) => p.slug === slug) ?? null;
+    const product = shopProducts.find((p) => p.slug === slug && p.status !== 'archived') ?? null;
     return product ? ok(product) : fail(null, 'Product not found');
   },
 
   async getProductById(id) {
     await delay();
-    const product = mockShopProducts.find((p) => p.id === id) ?? null;
+    const product = shopProducts.find((p) => p.id === id) ?? null;
     return product ? ok(product) : fail(null, 'Product not found');
+  },
+
+  async createProduct(data) {
+    await delay();
+    const product = { id: `prod-${Date.now()}`, status: 'active', ...data } as ShopProduct;
+    shopProducts = [...shopProducts, product];
+    return ok(product);
+  },
+
+  async updateProduct(id, data) {
+    await delay();
+    const index = shopProducts.findIndex((p) => p.id === id);
+    if (index === -1) return fail(null as unknown as ShopProduct, 'Product not found');
+    shopProducts[index] = { ...shopProducts[index], ...data };
+    return ok(shopProducts[index]);
+  },
+
+  async deleteProduct(id) {
+    await delay();
+    shopProducts = shopProducts.map((p) => (p.id === id ? { ...p, status: 'archived' } : p));
+    return ok(undefined as unknown as void);
+  },
+
+  async getShopCategories(includeArchived) {
+    await delay();
+    return ok(
+      includeArchived
+        ? [...shopCategories]
+        : shopCategories.filter((category) => category.status !== 'archived'),
+    );
+  },
+
+  async createShopCategory(data) {
+    await delay();
+    const category: ShopCategoryConfig = {
+      id: data.id,
+      name: data.name,
+      sortOrder: data.sortOrder ?? shopCategories.length,
+      status: 'active',
+    };
+    shopCategories = [...shopCategories, category];
+    return ok(category);
+  },
+
+  async updateShopCategory(id, data) {
+    await delay();
+    const index = shopCategories.findIndex((category) => category.id === id);
+    if (index === -1) return fail(null as unknown as ShopCategoryConfig, 'Category not found');
+    shopCategories[index] = { ...shopCategories[index], ...data };
+    return ok(shopCategories[index]);
+  },
+
+  async deleteShopCategory(id) {
+    await delay();
+    shopCategories = shopCategories.map((category) =>
+      category.id === id ? { ...category, status: 'archived' } : category,
+    );
+    return ok(undefined as unknown as void);
   },
 
   async getDeliveryMethods() {
@@ -670,9 +758,14 @@ export const mockAdapter: ApiAdapter = {
 
   // ── Challenges ──
 
-  async getChallenges() {
+  async getChallenges(filters) {
     await delay();
-    return ok([...mockChallenges]);
+    let filtered = [...mockChallenges];
+    if (!filters?.includeArchived) filtered = filtered.filter((c) => c.status !== 'archived');
+    if (filters?.status) filtered = filtered.filter((c) => c.status === filters.status);
+    if (filters?.seriesId) filtered = filtered.filter((c) => c.seriesId === filters.seriesId);
+    if (filters?.search) filtered = filtered.filter((c) => c.name.toLowerCase().includes(filters.search!.toLowerCase()));
+    return ok(filtered);
   },
 
   async getChallengeBySlug(slug) {
@@ -685,6 +778,25 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     const ch = mockChallenges.find((c) => c.id === id) ?? null;
     return ch ? ok(ch) : fail(null, 'Challenge not found');
+  },
+
+  async createChallenge(data) {
+    await delay();
+    const challenge = { id: `challenge-${Date.now()}`, rewards: [], createdBy: 'mock', ...data } as Challenge;
+    mockChallenges.push(challenge);
+    return ok(challenge);
+  },
+
+  async updateChallenge(id, data) {
+    await delay();
+    const index = mockChallenges.findIndex((c) => c.id === id);
+    if (index === -1) return fail(null as unknown as Challenge, 'Challenge not found');
+    mockChallenges[index] = { ...mockChallenges[index], ...data } as Challenge;
+    return ok(mockChallenges[index]);
+  },
+
+  async archiveChallenge(id) {
+    return this.updateChallenge(id, { status: 'archived' });
   },
 
   async getChallengeParticipations(challengeId, userId) {

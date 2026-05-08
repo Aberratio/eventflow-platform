@@ -75,6 +75,7 @@ export interface ShopProductFilters {
   minPrice?: number;
   maxPrice?: number;
   inStock?: boolean;
+  includeArchived?: boolean;
 }
 
 export interface OrderFilters {
@@ -101,8 +102,16 @@ export interface ChallengeParticipationFilters {
 
 export interface SeriesFilters {
   type?: string;
-  status?: 'active' | 'completed' | 'upcoming';
+  status?: 'active' | 'completed' | 'upcoming' | 'archived';
   search?: string;
+  includeArchived?: boolean;
+}
+
+export interface ChallengeFilters {
+  status?: 'active' | 'completed' | 'upcoming' | 'archived';
+  seriesId?: string;
+  search?: string;
+  includeArchived?: boolean;
 }
 
 // ──────────────── Auth payloads ────────────────

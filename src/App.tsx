@@ -85,6 +85,11 @@ const AdminChallengeEditPage = lazy(() =>
     default: m.AdminChallengeEditPage,
   })),
 );
+const AdminSeriesEditPage = lazy(() =>
+  import('./pages/admin/components/AdminSeriesEditPage').then((m) => ({
+    default: m.AdminSeriesEditPage,
+  })),
+);
 const AdminPartnerEditPage = lazy(() =>
   import('./pages/admin/components/AdminPartnerEditPage').then((m) => ({
     default: m.AdminPartnerEditPage,
@@ -165,12 +170,18 @@ const App = () => (
                     <Route path="/organizer/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><EventManage /></Lazy>} />
                     <Route path="/organizer/events/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><EventForm /></Lazy>} />
                     <Route path="/moderator" element={<Lazy fallback={<DashboardSkeleton />}><ModeratorDashboard /></Lazy>} />
+                    <Route path="/moderator/series/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminSeriesEditPage /></Lazy>} />
+                    <Route path="/moderator/series/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminSeriesEditPage /></Lazy>} />
+                    <Route path="/moderator/challenges/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminChallengeEditPage /></Lazy>} />
+                    <Route path="/moderator/challenges/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminChallengeEditPage /></Lazy>} />
                     <Route path="/moderator/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><EventManage /></Lazy>} />
                     <Route path="/moderator/events/new" element={<Lazy fallback={<FormPageSkeleton />}><EventForm /></Lazy>} />
                     <Route path="/moderator/*" element={<Lazy fallback={<DashboardSkeleton />}><ModeratorDashboard /></Lazy>} />
                     <Route path="/admin" element={<Lazy fallback={<AdminDashboardSkeleton />}><AdminDashboard /></Lazy>} />
                     <Route path="/admin/events/new" element={<Lazy fallback={<FormPageSkeleton />}><EventForm /></Lazy>} />
                     <Route path="/admin/events/:id" element={<Lazy fallback={<DashboardSkeleton />}><AdminEventManage /></Lazy>} />
+                    <Route path="/admin/series/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminSeriesEditPage /></Lazy>} />
+                    <Route path="/admin/series/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminSeriesEditPage /></Lazy>} />
                     <Route path="/admin/shop/products/new" element={<Lazy fallback={<FormPageSkeleton />}><AdminProductEditPage /></Lazy>} />
                     <Route path="/admin/shop/products/:id/edit" element={<Lazy fallback={<FormPageSkeleton />}><AdminProductEditPage /></Lazy>} />
                     <Route path="/admin/pages/new" element={<Lazy fallback={<FormPageSkeleton />}><PageEditorPage /></Lazy>} />

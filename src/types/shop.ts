@@ -7,13 +7,14 @@ export interface OrganizerEventLimit {
   available: number;
 }
 
-export type ShopCategory =
-  | 'apparel'
-  | 'footwear'
-  | 'accessories'
-  | 'nutrition'
-  | 'electronics'
-  | 'services';
+export type ShopCategory = string;
+
+export interface ShopCategoryConfig {
+  id: string;
+  name: string;
+  sortOrder: number;
+  status?: 'active' | 'archived';
+}
 
 export interface DeliveryMethod {
   id: string;
@@ -53,6 +54,7 @@ export interface ShopProduct {
   validityDays?: number;
   visibleToRoles?: UserRole[];
   serviceKind?: 'organizer_license';
+  status?: 'active' | 'archived';
 }
 
 export interface CartItem {

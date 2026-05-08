@@ -1,6 +1,7 @@
-import { shopCategoryLabels, mockShopProducts } from '@/api';
-import { useState } from 'react';
+import { getProductBySlug, getShopCategories } from '@/api';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,17 +23,43 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
+import { QUERY_KEYS } from '@/constants';
 
 const ShopProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addItem } = useCart();
 
-  const product = mockShopProducts.find((p) => p.slug === slug);
+  const { data: productData, isLoading: productLoading } = useQuery({
+    queryKey: slug ? QUERY_KEYS.productBySlug(slug) : ['product'],
+    queryFn: () => getProductBySlug(slug!),
+    enabled: !!slug,
+  });
+  const { data: categoriesData } = useQuery({
+    queryKey: QUERY_KEYS.shopCategories,
+    queryFn: () => getShopCategories(),
+  });
+  const product = productData?.data;
+  const categoryLabels = Object.fromEntries((categoriesData?.data ?? []).map((item) => [item.id, item.name]));
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product?.sizes?.[0]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product?.colors?.[0]?.id);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(product?.imageUrl || '');
+
+  useEffect(() => {
+    if (!product) return;
+    setSelectedSize(product.sizes?.[0]);
+    setSelectedColor(product.colors?.[0]?.id);
+    setSelectedImage(product.imageUrl || '');
+  }, [product]);
+
+  if (productLoading) {
+    return (
+      <Layout>
+        <div className="container py-16 text-center text-muted-foreground">Ładowanie produktu...</div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -125,7 +152,7 @@ const ShopProductPage = () => {
           <div>
             <div className="mb-3 flex flex-wrap gap-2">
               <Badge variant="secondary" className="text-xs">
-                {shopCategoryLabels[product.category]}
+                {categoryLabels[product.category] ?? product.category}
               </Badge>
               {product.featured && (
                 <Badge className="border border-warning/30 bg-warning/20 text-xs text-warning-foreground">

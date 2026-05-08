@@ -142,10 +142,23 @@ export const httpAdapter: ApiAdapter = {
   getSeries: (filters) => paginated('/series', filters as Record<string, QueryValue>),
   getSeriesById: (id) => request(`/series/${encodeURIComponent(id)}`),
   getSeriesBySlug: (slug) => request(`/series/slug/${encodeURIComponent(slug)}`),
+  createSeries: (data) => request('/series', json('POST', data)),
+  updateSeries: (id, data) => request(`/series/${encodeURIComponent(id)}`, json('PATCH', data)),
+  archiveSeries: (id) => request(`/series/${encodeURIComponent(id)}/archive`, json('POST')),
 
   getProducts: (filters) => paginated('/shop/products', filters as Record<string, QueryValue>),
   getProductBySlug: (slug) => request(`/shop/products/slug/${encodeURIComponent(slug)}`),
   getProductById: (id) => request(`/shop/products/${encodeURIComponent(id)}`),
+  createProduct: (data) => request('/shop/products', json('POST', data)),
+  updateProduct: (id, data) =>
+    request(`/shop/products/${encodeURIComponent(id)}`, json('PATCH', data)),
+  deleteProduct: (id) => request(`/shop/products/${encodeURIComponent(id)}`, json('DELETE')),
+  getShopCategories: (includeArchived) =>
+    request(`/shop/categories${query({ includeArchived })}`),
+  createShopCategory: (data) => request('/shop/categories', json('POST', data)),
+  updateShopCategory: (id, data) =>
+    request(`/shop/categories/${encodeURIComponent(id)}`, json('PATCH', data)),
+  deleteShopCategory: (id) => request(`/shop/categories/${encodeURIComponent(id)}`, json('DELETE')),
   getDeliveryMethods: () => request('/shop/delivery-methods'),
   getShopPaymentMethods: () => request('/shop/payment-methods'),
   getOrders: (userId) => request(`/shop/orders${query({ userId })}`),
@@ -157,9 +170,13 @@ export const httpAdapter: ApiAdapter = {
       json('PATCH', { status, trackingNumber }),
     ),
 
-  getChallenges: () => request('/challenges'),
+  getChallenges: (filters) => request(`/challenges${query(filters as Record<string, QueryValue>)}`),
   getChallengeBySlug: (slug) => request(`/challenges/slug/${encodeURIComponent(slug)}`),
   getChallengeById: (id) => request(`/challenges/${encodeURIComponent(id)}`),
+  createChallenge: (data) => request('/challenges', json('POST', data)),
+  updateChallenge: (id, data) =>
+    request(`/challenges/${encodeURIComponent(id)}`, json('PATCH', data)),
+  archiveChallenge: (id) => request(`/challenges/${encodeURIComponent(id)}/archive`, json('POST')),
   getChallengeParticipations: (challengeId, userId) =>
     request(`/challenge-participations${query({ challengeId, userId })}`),
   joinChallenge: (challengeId) =>
