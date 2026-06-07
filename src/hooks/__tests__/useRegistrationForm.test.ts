@@ -55,6 +55,73 @@ describe('useRegistrationForm', () => {
     expect(result.current.isFirstStep).toBe(true);
   });
 
+  it('selects the only available distance by default', () => {
+    const singleDistanceEvent = {
+      ...mockEvent,
+      distances: [mockEvent.distances[0]],
+    };
+
+    const { result } = renderHook(() => useRegistrationForm(singleDistanceEvent), { wrapper });
+
+    expect(result.current.selectedDistanceId).toBe('d1');
+    expect(result.current.canProceed()).toBe(true);
+  });
+
+  it('does not select a full single distance by default', () => {
+    const fullDistanceEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          limit: 5,
+          registeredCount: 5,
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useRegistrationForm(fullDistanceEvent), { wrapper });
+
+    expect(result.current.selectedDistanceId).toBe('');
+    expect(result.current.canProceed()).toBe(false);
+  });
+
+  it('selects the only category for the selected distance by default', () => {
+    const singleCategoryEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          categories: ['Open'],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useRegistrationForm(singleCategoryEvent), { wrapper });
+
+    expect(result.current.selectedDistanceId).toBe('d1');
+    expect(result.current.selectedCategory).toBe('Open');
+  });
+
+  it('keeps selected special categories when the base category is still valid', () => {
+    const singleCategoryEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          categories: ['Open'],
+        },
+      ],
+    };
+
+    const { result } = renderHook(() => useRegistrationForm(singleCategoryEvent), { wrapper });
+
+    act(() => {
+      result.current.setSelectedCategory('Open, Firmowa');
+    });
+
+    expect(result.current.selectedCategory).toBe('Open, Firmowa');
+  });
+
   it('canProceed returns false when no distance selected', () => {
     const { result } = renderHook(() => useRegistrationForm(mockEvent), { wrapper });
     expect(result.current.canProceed()).toBe(false);

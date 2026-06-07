@@ -55,6 +55,16 @@ export const useRegistrationForm = (event: Event) => {
   }, [user]);
 
   useEffect(() => {
+    const availableDistances = event.distances.filter(
+      (distance) => distance.limit == null || distance.registeredCount < distance.limit,
+    );
+
+    if (availableDistances.length === 1 && selectedDistanceId !== availableDistances[0].id) {
+      setSelectedDistanceId(availableDistances[0].id);
+    }
+  }, [event.distances, selectedDistanceId]);
+
+  useEffect(() => {
     if (isProfileComplete && user?.birthYear) {
       setBirthYear(String(user.birthYear));
       setBirthMonth('01');
@@ -129,6 +139,23 @@ export const useRegistrationForm = (event: Event) => {
   }, [appliedDiscount, distancePrice]);
 
   const totalAmount = distancePrice - discountAmount + merchandiseTotal + insurancePrice;
+
+  useEffect(() => {
+    if (!selectedDistance) return;
+
+    const regularCategories = selectedDistance.categories ?? [];
+    const selectedBaseCategory = selectedCategory.split(',')[0]?.trim() ?? '';
+
+    if (regularCategories.length === 1 && !selectedBaseCategory) {
+      setSelectedCategory(regularCategories[0]);
+    } else if (
+      regularCategories.length > 0 &&
+      selectedBaseCategory &&
+      !regularCategories.includes(selectedBaseCategory)
+    ) {
+      setSelectedCategory(regularCategories.length === 1 ? regularCategories[0] : '');
+    }
+  }, [selectedDistance, selectedCategory]);
 
   useEffect(() => {
     if (wantsTeam && teamMode === 'create' && teamName) {

@@ -1,13 +1,6 @@
-import {
-  getOrganizerEventLimit,
-  mockEvents,
-  mockRegistrations,
-  mockUsers,
-  updateOrganizerEventLimit,
-} from '@/api';
+import { getOrganizerEventLimit, mockEvents, mockRegistrations, mockUsers } from '@/api';
 import { useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,10 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Users, Building2, Eye, Lock, Save } from 'lucide-react';
+import { Search, Users, Building2, Eye, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { OrganizerEventLimit } from '@/types';
-import { toast } from 'sonner';
 
 interface UsersReadOnlyTabProps {
   userType: 'participant' | 'organizer';
@@ -30,8 +22,6 @@ interface UsersReadOnlyTabProps {
 export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
   const [search, setSearch] = useState('');
   const [eventLimits, setEventLimits] = useState<Record<string, OrganizerEventLimit>>({});
-  const [limitDrafts, setLimitDrafts] = useState<Record<string, string>>({});
-  const [savingLimitId, setSavingLimitId] = useState<string | null>(null);
 
   const users = useMemo(() => mockUsers.filter((u) => u.role === userType), [userType]);
 
@@ -40,7 +30,6 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
     users.forEach((organizer) => {
       getOrganizerEventLimit(organizer.id).then((response) => {
         setEventLimits((prev) => ({ ...prev, [organizer.id]: response.data }));
-        setLimitDrafts((prev) => ({ ...prev, [organizer.id]: String(response.data.limit) }));
       });
     });
   }, [userType, users]);
@@ -60,26 +49,6 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
     return mockEvents.filter((e) => e.organizerId === organizerId && e.status !== 'deleted').length;
   };
 
-  const saveLimit = async (organizerId: string) => {
-    const nextLimit = Number(limitDrafts[organizerId] ?? 0);
-    if (!Number.isInteger(nextLimit) || nextLimit < 0) {
-      toast.error('Limit musi być liczbą całkowitą większą lub równą 0');
-      return;
-    }
-
-    try {
-      setSavingLimitId(organizerId);
-      const response = await updateOrganizerEventLimit(organizerId, nextLimit);
-      setEventLimits((prev) => ({ ...prev, [organizerId]: response.data }));
-      setLimitDrafts((prev) => ({ ...prev, [organizerId]: String(response.data.limit) }));
-      toast.success('Limit wydarzeń został zapisany');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać limitu');
-    } finally {
-      setSavingLimitId(null);
-    }
-  };
-
   const isParticipant = userType === 'participant';
   const Icon = isParticipant ? Users : Building2;
   const title = isParticipant ? 'Uczestnicy' : 'Organizatorzy';
@@ -89,8 +58,8 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
       <Alert className="border-muted bg-muted/50">
         <Lock className="h-4 w-4" />
         <AlertDescription>
-          Widok moderatora pozostaje ograniczony. Moderator może jednak zmieniać limit wydarzeń
-          organizatora.
+          Widok moderatora pozostaje ograniczony. Limit wydarzeń organizatora może zmienić tylko
+          administrator lub superadministrator.
         </AlertDescription>
       </Alert>
 
@@ -156,31 +125,9 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
                           <TableCell>{user.companyName || '-'}</TableCell>
                           <TableCell>{getOrganizerEvents(user.id)}</TableCell>
                           <TableCell>
-                            <div className="flex min-w-56 items-center gap-2">
-                              <Input
-                                type="number"
-                                min={limit?.used ?? 0}
-                                value={limitDrafts[user.id] ?? ''}
-                                onChange={(event) =>
-                                  setLimitDrafts((prev) => ({
-                                    ...prev,
-                                    [user.id]: event.target.value,
-                                  }))
-                                }
-                                className="w-24"
-                              />
-                              <span className="text-xs text-muted-foreground">
-                                {limit ? `${limit.used}/${limit.limit}` : '...'}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => saveLimit(user.id)}
-                                disabled={savingLimitId === user.id}
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            {limit
+                              ? `${limit.used}/${limit.limit} (${limit.available} dostępne)`
+                              : '...'}
                           </TableCell>
                         </>
                       )}

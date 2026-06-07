@@ -30,7 +30,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.error?.message ?? payload?.message ?? `API error ${response.status}`);
+    const code = payload?.error?.code;
+    const messages: Record<string, string> = {
+      event_limit_exceeded:
+        'Limit wydarzeń został wyczerpany. Skontaktuj się z administratorem, aby zwiększyć limit.',
+      event_limit_below_usage:
+        'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
+      event_delete_forbidden:
+        'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
+      event_archive_before_start:
+        'Archiwizować można tylko wydarzenia, które już się zakończyły.',
+    };
+    throw new Error(messages[code] ?? payload?.error?.message ?? payload?.message ?? `API error ${response.status}`);
   }
   return payload as ApiResponse<T>;
 }

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Event, Registration } from '@/types';
 import { Users, Calendar, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 
 interface EventOverviewTabProps {
   event: Event;
@@ -14,6 +15,8 @@ interface EventOverviewTabProps {
 export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
   const statusLabels: Record<Event['status'], string> = {
     draft: 'Szkic',
+    awaiting_approval: 'Do sprawdzenia',
+    approved: 'Zatwierdzone',
     active: 'Aktywne',
     past: 'Przeszłe',
     archived: 'Zarchiwizowane',
@@ -21,7 +24,8 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
   };
   const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
   const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
-  const eventPageUrl = event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
+  const eventPageUrl =
+    event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
   const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
     const distance = event.distances.find((d) => d.id === reg.distanceId);
     return acc + (distance?.price || 0);
@@ -122,7 +126,7 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
               </div>
             </div>
 
-            <p className="text-muted-foreground">{event.description}</p>
+            <RichTextDisplay html={event.description} className="text-muted-foreground" />
 
             <Button variant="outline" asChild>
               <Link to={eventPageUrl}>

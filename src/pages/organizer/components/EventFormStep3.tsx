@@ -1,7 +1,8 @@
 ﻿import { disciplineLabels } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { FieldHelp } from '@/components/ui/field-help';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Eye, Globe, CreditCard, Building2 } from 'lucide-react';
 import type { EventFormState } from '../hooks/useEventFormState';
 
@@ -82,7 +83,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
           {form.description && (
             <div>
               <p className="text-sm text-muted-foreground">Opis</p>
-              <p className="font-medium">{form.description}</p>
+              <RichTextDisplay html={form.description} className="font-medium" />
             </div>
           )}
 
@@ -117,40 +118,28 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
                 <Globe className="mr-1 h-3 w-3" /> Wirtualny
               </Badge>
             )}
-            {form.featured && <Badge variant="default">â­ WyrĂłĹĽnione wydarzenie</Badge>}
+            {form.canManageFeatured && form.featured && (
+              <Badge variant="default">â­ WyrĂłĹĽnione wydarzenie</Badge>
+            )}
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Status publikacji</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            Status po zapisie
+            <FieldHelp description="Organizator tworzy szkic. Publikacja jest dostepna dopiero po sprawdzeniu i zatwierdzeniu przez admina lub moderatora." />
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button
-              variant={form.status === 'draft' ? 'default' : 'outline'}
-              onClick={() => form.setStatus('draft')}
-              className="flex-1"
-            >
-              Zapisz jako szkic
-            </Button>
-            <Button
-              variant={form.status === 'active' ? 'default' : 'outline'}
-              onClick={() => form.setStatus('active')}
-              className="flex-1"
-            >
-              Ustaw jako aktywne
-            </Button>
-          </div>
+          <Badge variant="secondary">Szkic</Badge>
           <p className="text-sm text-muted-foreground">
-            {form.status === 'draft'
-              ? 'Wydarzenie będzie widoczne tylko w panelu organizatora. Możesz ustawić je jako aktywne później.'
-              : 'Wydarzenie zostanie zapisane jako aktywne i będzie widoczne publicznie.'}
+            Wydarzenie będzie widoczne tylko w panelu organizatora. Po zapisaniu możesz oddać je
+            do sprawdzenia w ustawieniach wydarzenia.
           </p>
         </CardContent>
       </Card>
     </div>
   );
 };
-

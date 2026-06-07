@@ -1,45 +1,62 @@
-import { disciplineLabels, mockEvents, updateEventStatus } from '@/api';
+import { approveEvent, disciplineLabels, mockEvents, rejectEvent } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Event } from '@/types';
-import { CheckCircle, FileText, Archive, EyeOff, Eye } from 'lucide-react';
+import type { Event } from '@/types';
+import { CheckCircle, FileText, Eye, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const statusLabels: Record<Event['status'], string> = {
   draft: 'Szkic',
-  active: 'Aktywne',
-  past: 'Przeszłe',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
+  active: 'Opublikowane',
+  past: 'Przeszle',
   archived: 'Zarchiwizowane',
-  deleted: 'Usunięte',
+  deleted: 'Usuniete',
 };
 
 export const AdminModerationTab = () => {
   const [events, setEvents] = useState(mockEvents);
 
-  const draftEvents = events.filter((event) => event.status === 'draft');
-  const activeEvents = events.filter((event) => event.status === 'active');
+  const pendingEvents = events.filter((event) => event.status === 'awaiting_approval');
+  const approvedEvents = events.filter((event) => event.status === 'approved');
 
-  const changeStatus = async (event: Event, status: Event['status']) => {
+  const approve = async (event: Event) => {
     try {
-      await updateEventStatus(event.id, status);
-      setEvents((prev) => prev.map((item) => (item.id === event.id ? { ...item, status } : item)));
-      toast.success(`Status wydarzenia zmieniony na: ${statusLabels[status]}`);
+      const response = await approveEvent(event.id);
+      setEvents((prev) =>
+        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
+      );
+      toast.success('Wydarzenie zatwierdzone. Organizator moze je teraz opublikowac.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udało się zmienić statusu');
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
     }
   };
 
-  const renderEvents = (items: Event[]) => {
+  const reject = async (event: Event) => {
+    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    if (!reason?.trim()) return;
+    try {
+      const response = await rejectEvent(event.id, reason.trim());
+      setEvents((prev) =>
+        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
+      );
+      toast.success('Wydarzenie odeslane do poprawy.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odrzucic wydarzenia');
+    }
+  };
+
+  const renderEvents = (items: Event[], emptyText: string) => {
     if (items.length === 0) {
       return (
         <Card>
           <CardContent className="py-12 text-center">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary/50" />
-            <h3 className="mb-2 text-lg font-medium">Brak wydarzeń w tej sekcji</h3>
-            <p className="text-muted-foreground">Nowa logika nie wymaga kolejki akceptacji.</p>
+            <h3 className="mb-2 text-lg font-medium">{emptyText}</h3>
           </CardContent>
         </Card>
       );
@@ -60,28 +77,28 @@ export const AdminModerationTab = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
-              <a href={event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`}>
+              <a href={`/events/${event.slug}/preview`}>
                 <Eye className="mr-2 h-4 w-4" />
-                Podgląd
+                Podglad
               </a>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <a href={`/admin/events/${event.id}`}>
                 <FileText className="mr-2 h-4 w-4" />
-                Zarządzaj
+                Zarzadzaj
               </a>
             </Button>
-            {event.status === 'draft' && (
-              <Button size="sm" onClick={() => changeStatus(event, 'active')}>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Ustaw aktywne
-              </Button>
-            )}
-            {event.status === 'active' && (
-              <Button variant="outline" size="sm" onClick={() => changeStatus(event, 'archived')}>
-                <Archive className="mr-2 h-4 w-4" />
-                Archiwizuj
-              </Button>
+            {event.status === 'awaiting_approval' && (
+              <>
+                <Button size="sm" onClick={() => approve(event)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Zatwierdz
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => reject(event)}>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Odeslij
+                </Button>
+              </>
             )}
           </div>
         </CardContent>
@@ -92,52 +109,23 @@ export const AdminModerationTab = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">Statusy wydarzeń</h2>
+        <h2 className="text-xl font-semibold">Moderacja wydarzen</h2>
         <p className="text-muted-foreground">
-          Wydarzenia nie przechodzą już przez akceptację. Admin i moderator mogą ręcznie ustawiać
-          statusy oraz limity organizatorów.
+          Admin lub moderator zatwierdza wydarzenie oddane do sprawdzenia. Publikuje je dopiero
+          organizator.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-muted p-3 text-muted-foreground">
-                <EyeOff className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{draftEvents.length}</div>
-                <div className="text-sm text-muted-foreground">Szkiców</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3 text-primary">
-                <Eye className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{activeEvents.length}</div>
-                <div className="text-sm text-muted-foreground">Aktywnych</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="drafts" className="space-y-4">
+      <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="drafts">Szkice ({draftEvents.length})</TabsTrigger>
-          <TabsTrigger value="active">Aktywne ({activeEvents.length})</TabsTrigger>
+          <TabsTrigger value="pending">Do sprawdzenia ({pendingEvents.length})</TabsTrigger>
+          <TabsTrigger value="approved">Zatwierdzone ({approvedEvents.length})</TabsTrigger>
         </TabsList>
-        <TabsContent value="drafts" className="space-y-4">
-          {renderEvents(draftEvents)}
+        <TabsContent value="pending" className="space-y-4">
+          {renderEvents(pendingEvents, 'Brak wydarzen do sprawdzenia')}
         </TabsContent>
-        <TabsContent value="active" className="space-y-4">
-          {renderEvents(activeEvents)}
+        <TabsContent value="approved" className="space-y-4">
+          {renderEvents(approvedEvents, 'Brak zatwierdzonych wydarzen oczekujacych na publikacje')}
         </TabsContent>
       </Tabs>
     </div>

@@ -13,7 +13,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
     <CardContent className="space-y-6 pt-6">
       <div>
         <h3 className="mb-4 font-semibold">O wydarzeniu</h3>
-        <p className="text-muted-foreground">{event.description}</p>
+        <RichTextDisplay html={event.description} className="text-muted-foreground" />
       </div>
 
       {event.organizersHtml && (

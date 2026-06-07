@@ -22,6 +22,7 @@ import {
   EventInfoTab,
   EventDistancesTab,
   EventStartListTab,
+  getEditUrl,
 } from '@/components/event-details';
 
 interface EventDetailsPageProps {
@@ -155,7 +156,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   return (
     <Layout>
       {isDraftPreview ? (
-        <PreviewBanner />
+        <PreviewBanner settingsUrl={`${getEditUrl(event, user)}?tab=settings`} />
       ) : (
         isUnpublished && <DraftBanner event={event} user={user} />
       )}
@@ -336,11 +337,23 @@ const StatItem = ({
   </div>
 );
 
-const PreviewBanner = () => (
+const PreviewBanner = ({ settingsUrl }: { settingsUrl: string }) => (
   <div className="border-b border-primary/20 bg-primary/10 text-primary">
-    <div className="container flex items-center gap-2 py-2 text-sm font-medium">
-      <Eye className="h-4 w-4 shrink-0" />
-      <span>Tryb podglądu szkicu - widok uczestnika. Wydarzenie nie jest widoczne publicznie.</span>
+    <div className="container flex flex-col gap-2 py-2 text-sm font-medium sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2">
+        <Eye className="h-4 w-4 shrink-0" />
+        <span>
+          Tryb podglądu szkicu - widok uczestnika. Wydarzenie nie jest widoczne publicznie.
+        </span>
+      </div>
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="h-8 w-fit border-primary/30 bg-background/80 text-foreground hover:bg-accent"
+      >
+        <Link to={settingsUrl}>Wróć do ustawień</Link>
+      </Button>
     </div>
   </div>
 );

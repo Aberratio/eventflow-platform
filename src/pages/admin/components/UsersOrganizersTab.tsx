@@ -114,7 +114,9 @@ export const UsersOrganizersTab = () => {
   });
 
   const getOrganizerEvents = (organizerId: string) =>
-    mockEvents.filter((e) => e.organizerId === organizerId);
+    mockEvents.filter(
+      (e) => e.organizerId === organizerId && (canManageAdmins || e.status !== 'deleted'),
+    );
 
   const saveLimit = async (organizerId: string) => {
     const draft = Number(limitDrafts[organizerId] ?? 0);
@@ -380,7 +382,7 @@ export const UsersOrganizersTab = () => {
             <DialogTitle>Wydarzenia organizatora: {selectedUser?.name}</DialogTitle>
           </DialogHeader>
           <Tabs defaultValue="current" className="pt-2">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className={`grid w-full ${canManageAdmins ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="current">Bieżące ({currentEvents.length})</TabsTrigger>
               <TabsTrigger value="archive">Archiwum ({archivedEvents.length})</TabsTrigger>
               <TabsTrigger value="deleted">Usunięte ({deletedEvents.length})</TabsTrigger>

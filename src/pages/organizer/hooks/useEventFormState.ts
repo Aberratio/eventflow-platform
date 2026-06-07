@@ -5,7 +5,6 @@
   getOrganizers,
   mockEvents,
   updateEvent,
-  updateEventStatus,
 } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -67,6 +66,7 @@ export const useEventFormState = () => {
   );
   const canChooseOrganizer =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
+  const canManageFeatured = canChooseOrganizer;
   const [organizers, setOrganizers] = useState(
     canChooseOrganizer ? [] : user?.role === 'organizer' && user ? [user] : [],
   );
@@ -213,10 +213,6 @@ export const useEventFormState = () => {
     })) || [],
   );
 
-  const [status, setStatus] = useState<'draft' | 'active'>(
-    existingEvent?.status === 'active' ? 'active' : 'draft',
-  );
-
   useEffect(() => {
     if (!isEditing || !id) return;
     getEventById(id)
@@ -283,7 +279,6 @@ export const useEventFormState = () => {
         routeFiles: d.routeFiles || [],
       })),
     );
-    setStatus(existingEvent.status === 'active' ? 'active' : 'draft');
   }, [existingEvent]);
 
   useEffect(() => {
@@ -483,10 +478,34 @@ export const useEventFormState = () => {
       });
       return false;
     }
+    if (registrationDeadline > date) {
+      toast({
+        title: 'BĹ‚Ä…d',
+        description: 'Termin rejestracji nie moze byc pozniejszy niz data wydarzenia',
+        variant: 'destructive',
+      });
+      return false;
+    }
     if (!isVirtual && (!location || !city)) {
       toast({
         title: 'BĹ‚Ä…d',
         description: 'WypeĹ‚nij lokalizacjÄ™ i miasto',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (isVirtual && startDate > endDate) {
+      toast({
+        title: 'BĹ‚Ä…d',
+        description: 'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (isPrivate && !accessCode.trim()) {
+      toast({
+        title: 'BĹ‚Ä…d',
+        description: 'Podaj kod dostepu dla wydarzenia prywatnego',
         variant: 'destructive',
       });
       return false;
@@ -531,6 +550,22 @@ export const useEventFormState = () => {
         });
         return false;
       }
+      if (Number(dist.length) <= 0 || Number(dist.price) < 0) {
+        toast({
+          title: 'BĹ‚Ä…d',
+          description: 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      if (dist.limit && Number(dist.limit) <= 0) {
+        toast({
+          title: 'BĹ‚Ä…d',
+          description: 'Limit uczestnikow musi byc dodatni albo pusty',
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
     return true;
   };
@@ -545,7 +580,7 @@ export const useEventFormState = () => {
 
   const buildPayload = () => {
     const organizer = organizers.find((o) => o.id === selectedOrganizerId) || user;
-    return {
+    const payload = {
       name,
       slug: generateSlug(name),
       discipline,
@@ -576,7 +611,6 @@ export const useEventFormState = () => {
       organizerId: selectedOrganizerId,
       organizerName: organizer?.companyName || organizer?.name || '',
       registrationDeadline,
-      featured,
       bannerUrl: bannerUrl || undefined,
       bannerCropArea,
       organizerLogoUrl: organizerLogoUrl || undefined,
@@ -603,6 +637,7 @@ export const useEventFormState = () => {
       registrationFormConfig: formConfig,
       displayOptions,
     };
+    return canManageFeatured ? { ...payload, featured } : payload;
   };
 
   const selectedEventLimit = eventLimit;
@@ -630,12 +665,17 @@ export const useEventFormState = () => {
       const payload = buildPayload();
       let saved: Event;
       if (isEditing && id) {
-        saved = (await updateEvent(id, payload)).data;
+        const response = await updateEvent(id, payload);
+        if (!response.success) {
+          throw new Error(response.message || 'Nie udało się zapisać wydarzenia.');
+        }
+        saved = response.data;
       } else {
-        saved = (await createEvent(payload)).data;
-      }
-      if (status === 'active' && saved.status !== 'active') {
-        saved = (await updateEventStatus(saved.id, 'active')).data;
+        const response = await createEvent(payload);
+        if (!response.success) {
+          throw new Error(response.message || 'Nie udało się utworzyć wydarzenia.');
+        }
+        saved = response.data;
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['organizer-events', selectedOrganizerId] }),
@@ -646,10 +686,7 @@ export const useEventFormState = () => {
 
       toast({
         title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
-        description:
-          status === 'active'
-            ? 'Wydarzenie zostało ustawione jako aktywne.'
-            : 'Wydarzenie zostaĹ‚o zapisane jako szkic.',
+        description: 'Wydarzenie zostało zapisane jako szkic.',
       });
       navigate(isEditing ? `/organizer/events/${saved.id}` : '/organizer/events');
     } catch (error) {
@@ -683,11 +720,14 @@ export const useEventFormState = () => {
   return {
     // Meta
     isEditing,
+    originalIsPrivate: existingEvent?.isPrivate || false,
+    privacyChanged: isEditing && (existingEvent?.isPrivate || false) !== isPrivate,
     step,
     navigate,
     toast,
     user,
     canChooseOrganizer,
+    canManageFeatured,
     organizers,
     selectedOrganizerId,
     setSelectedOrganizerId,
@@ -780,9 +820,6 @@ export const useEventFormState = () => {
     allCategories,
 
     // Step 3
-    status,
-    setStatus,
-
     // Actions
     nextStep,
     prevStep,

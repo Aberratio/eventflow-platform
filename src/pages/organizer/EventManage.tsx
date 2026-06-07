@@ -1,7 +1,7 @@
 import { getEventById, mockRegistrations } from '@/api';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const statusLabels = {
   draft: 'Szkic',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
   active: 'Aktywne',
   past: 'Przeszłe',
   archived: 'Zarchiwizowane',
@@ -37,7 +39,19 @@ const statusLabels = {
 const EventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const requestedTab = searchParams.get('tab');
+  const defaultTab = [
+    'overview',
+    'participants',
+    'results',
+    'discounts',
+    'emails',
+    'settings',
+  ].includes(requestedTab ?? '')
+    ? requestedTab!
+    : 'overview';
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -113,7 +127,7 @@ const EventManage = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue={defaultTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6 lg:inline-grid lg:w-auto">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
@@ -124,8 +138,14 @@ const EventManage = () => {
               <span className="hidden sm:inline">Uczestnicy</span>
             </TabsTrigger>
             <TabsTrigger value="results" className="flex items-center gap-2">
-              {visibleEvent.isVirtual ? <Globe className="h-4 w-4" /> : <Trophy className="h-4 w-4" />}
-              <span className="hidden sm:inline">{visibleEvent.isVirtual ? 'Weryfikacja' : 'Wyniki'}</span>
+              {visibleEvent.isVirtual ? (
+                <Globe className="h-4 w-4" />
+              ) : (
+                <Trophy className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {visibleEvent.isVirtual ? 'Weryfikacja' : 'Wyniki'}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="discounts" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />

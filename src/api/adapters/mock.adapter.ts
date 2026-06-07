@@ -150,7 +150,7 @@ let shopCategories: ShopCategoryConfig[] = Object.entries({
 }).map(([id, name], index) => ({ id, name, sortOrder: index, status: 'active' }));
 
 const organizerEventLimits: Record<string, number> = {
-  o1: 4,
+  o1: 100,
   o2: 8,
   o3: 7,
   'u-organizer': 11,
@@ -161,6 +161,12 @@ const organizerEventLimits: Record<string, number> = {
 const countOrganizerEvents = (organizerId: string) =>
   mockEvents.filter((event) => event.organizerId === organizerId && event.status !== 'deleted')
     .length;
+
+const hasEventEnded = (event: Event) =>
+  (event.endDate || event.date).slice(0, 10) < new Date().toISOString().slice(0, 10);
+
+const hasRegistrations = (eventId: string) =>
+  mockRegistrations.some((registration) => registration.eventId === eventId && registration.status !== 'removed');
 
 const toOrganizerEventLimit = (organizerId: string): OrganizerEventLimit => {
   const used = countOrganizerEvents(organizerId);
@@ -253,6 +259,17 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     const eventIndex = mockEvents.findIndex((e) => e.id === id);
     if (eventIndex === -1) return fail(undefined as unknown as void, 'Event not found');
+    const event = mockEvents[eventIndex];
+    if (
+      ['past', 'archived', 'deleted'].includes(event.status) ||
+      event.date.slice(0, 10) < new Date().toISOString().slice(0, 10) ||
+      hasRegistrations(event.id)
+    ) {
+      return fail(
+        undefined as unknown as void,
+        'Usunac mozna tylko nadchodzace wydarzenie bez zapisow',
+      );
+    }
     mockEvents[eventIndex] = { ...mockEvents[eventIndex], status: 'deleted' };
     return ok(undefined as unknown as void);
   },
@@ -262,13 +279,38 @@ export const mockAdapter: ApiAdapter = {
     const eventIndex = mockEvents.findIndex((e) => e.id === id);
     const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
+    if (status === 'archived' && !hasEventEnded(event)) {
+      return fail(
+        null as unknown as Event,
+        'Archiwizować można tylko wydarzenia, które już się zakończyły',
+      );
+    }
+    if (!['draft', 'past', 'archived'].includes(status)) {
+      return fail(
+        null as unknown as Event,
+        'Uzyj akcji oddania do sprawdzenia, zatwierdzenia, odrzucenia lub publikacji',
+      );
+    }
     const updated = { ...event, status, rejectionReason: reason };
     mockEvents[eventIndex] = updated;
     return ok(updated);
   },
 
   async submitEvent(id) {
-    return this.updateEventStatus(id, 'active');
+    await delay();
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
+    if (!event || event.status !== 'draft') {
+      return fail(null as unknown as Event, 'Event cannot be submitted in its current status');
+    }
+    const updated = {
+      ...event,
+      status: 'awaiting_approval' as const,
+      rejectionReason: undefined,
+      submittedAt: new Date().toISOString(),
+    };
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
   },
 
   async approveEvent(id) {
@@ -276,9 +318,12 @@ export const mockAdapter: ApiAdapter = {
     const eventIndex = mockEvents.findIndex((e) => e.id === id);
     const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
+    if (event.status !== 'awaiting_approval') {
+      return fail(null as unknown as Event, 'Event cannot be approved in its current status');
+    }
     const updated = {
       ...event,
-      status: 'active',
+      status: 'approved' as const,
       rejectionReason: undefined,
       approvedAt: new Date().toISOString(),
     };
@@ -287,7 +332,15 @@ export const mockAdapter: ApiAdapter = {
   },
 
   async rejectEvent(id, reason) {
-    return this.updateEventStatus(id, 'draft', reason);
+    await delay();
+    const eventIndex = mockEvents.findIndex((e) => e.id === id);
+    const event = mockEvents[eventIndex];
+    if (!event || event.status !== 'awaiting_approval') {
+      return fail(null as unknown as Event, 'Event cannot be rejected in its current status');
+    }
+    const updated = { ...event, status: 'draft' as const, rejectionReason: reason };
+    mockEvents[eventIndex] = updated;
+    return ok(updated);
   },
 
   async publishEvent(id) {
@@ -295,6 +348,9 @@ export const mockAdapter: ApiAdapter = {
     const eventIndex = mockEvents.findIndex((e) => e.id === id);
     const event = mockEvents[eventIndex];
     if (!event) return fail(null as unknown as Event, 'Event not found');
+    if (event.status !== 'approved') {
+      return fail(null as unknown as Event, 'Event cannot be published in its current status');
+    }
     const updated = { ...event, status: 'active', publishedAt: new Date().toISOString() };
     mockEvents[eventIndex] = updated;
     return ok(updated);

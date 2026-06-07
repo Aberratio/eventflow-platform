@@ -3,7 +3,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Event, Distance } from '@/types';
-import { Download } from 'lucide-react';
+import { Download, Tags, UsersRound } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
@@ -16,6 +17,20 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
   const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
   const isFull = spotsLeft !== null && spotsLeft <= 0;
   const { price: currentPrice, tierName } = getCurrentPrice(distance);
+  const ageCategories = distance.ageCategories ?? [];
+  const specialCategories = distance.specialCategories ?? [];
+  const structuredCategoryNames = new Set([
+    ...ageCategories.map((category) => category.name),
+    ...specialCategories.map((category) => category.name),
+  ]);
+  const generalCategories = distance.categories.filter(
+    (category) => !structuredCategoryNames.has(category),
+  );
+  const fallbackCategories =
+    ageCategories.length === 0 && specialCategories.length === 0
+      ? distance.categories
+      : generalCategories;
+  const categoryCount = ageCategories.length + specialCategories.length + fallbackCategories.length;
 
   return (
     <Card>
@@ -29,20 +44,88 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
               </div>
             </div>
 
-            {distance.ageCategories && distance.ageCategories.length > 0 ? (
-              <div>
-                <p className="mb-1 text-sm font-medium">Kategorie wiekowe:</p>
-                <div className="flex flex-wrap gap-1">
-                  {distance.ageCategories.map((cat) => (
-                    <Badge key={cat.id} variant="outline" className="text-xs">
-                      {cat.name} ({cat.gender}) {cat.birthYearFrom}–{cat.birthYearTo}
-                    </Badge>
-                  ))}
+            {categoryCount > 0 && (
+              <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-md bg-primary/10 p-1.5">
+                      <Tags className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium">Kategorie</p>
+                  </div>
+                  <Badge variant="secondary" className="text-[11px] font-medium">
+                    {categoryCount}
+                  </Badge>
                 </div>
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                Kategorie: {distance.categories.join(', ')}
+
+                <div className="space-y-3">
+                  {ageCategories.length > 0 && (
+                    <CategorySection label="Wiekowe" count={ageCategories.length}>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {ageCategories.map((cat) => (
+                          <div
+                            key={cat.id}
+                            className="rounded-md border border-border/60 bg-background/60 px-3 py-2"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium">{cat.name}</span>
+                              <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                                {cat.gender === 'K' ? 'K' : 'M'}
+                              </Badge>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Roczniki {cat.birthYearFrom}-{cat.birthYearTo}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CategorySection>
+                  )}
+
+                  {specialCategories.length > 0 && (
+                    <CategorySection label="Specjalne" count={specialCategories.length}>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {specialCategories.map((cat) => (
+                          <div
+                            key={cat.id}
+                            className="rounded-md border border-warning/20 bg-warning/[0.04] px-3 py-2"
+                          >
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                              <UsersRound className="h-3.5 w-3.5 text-warning/80" />
+                              <span>{cat.name}</span>
+                            </div>
+                            {cat.description && (
+                              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                                {cat.description}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CategorySection>
+                  )}
+
+                  {fallbackCategories.length > 0 && (
+                    <CategorySection
+                      label={
+                        ageCategories.length || specialCategories.length ? 'Pozostałe' : 'Dostępne'
+                      }
+                      count={fallbackCategories.length}
+                    >
+                      <div className="flex flex-wrap gap-1.5">
+                        {fallbackCategories.map((category) => (
+                          <Badge
+                            key={category}
+                            variant="outline"
+                            className="border-border/70 bg-background/60 text-xs font-normal text-foreground"
+                          >
+                            {category}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CategorySection>
+                  )}
+                </div>
               </div>
             )}
 
@@ -161,6 +244,25 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
     </Card>
   );
 };
+
+const CategorySection = ({
+  label,
+  count,
+  children,
+}: {
+  label: string;
+  count: number;
+  children: ReactNode;
+}) => (
+  <div>
+    <div className="mb-2 flex items-center gap-2">
+      <span className="text-xs font-medium uppercase text-muted-foreground">{label}</span>
+      <span className="h-px flex-1 bg-border/60" />
+      <span className="text-[11px] text-muted-foreground">{count}</span>
+    </div>
+    {children}
+  </div>
+);
 
 export const EventDistancesTab = ({ event }: EventDistancesTabProps) => (
   <div className="space-y-4">

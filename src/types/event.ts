@@ -173,6 +173,8 @@ export interface Event {
   organizerContact?: OrganizerContact;
   status:
     | 'draft'
+    | 'awaiting_approval'
+    | 'approved'
     | 'active'
     | 'past'
     | 'archived'

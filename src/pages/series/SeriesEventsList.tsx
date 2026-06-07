@@ -11,6 +11,8 @@ interface SeriesEventsListProps {
 
 const statusLabels: Record<Event['status'], string> = {
   draft: 'Wersja robocza',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
   active: 'Otwarta rejestracja',
   past: 'Zakończone',
   archived: 'Archiwum',

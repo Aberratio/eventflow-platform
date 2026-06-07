@@ -21,9 +21,12 @@ import {
 } from '@/components/ui/select';
 import { Search, Calendar, MapPin, Settings, Eye, Plus } from 'lucide-react';
 import type { Event } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 const statusLabels: Record<Event['status'], string> = {
   draft: 'Wersja robocza',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
   active: 'Aktywne',
   past: 'Przeszłe',
   archived: 'Zarchiwizowane',
@@ -32,6 +35,8 @@ const statusLabels: Record<Event['status'], string> = {
 
 const statusColors: Record<Event['status'], string> = {
   draft: 'bg-muted text-muted-foreground',
+  awaiting_approval: 'bg-warning/10 text-warning border-warning/20',
+  approved: 'bg-primary/10 text-primary border-primary/20',
   active: 'bg-primary/10 text-primary border-primary/20',
   past: 'bg-muted text-muted-foreground',
   archived: 'bg-secondary text-secondary-foreground',
@@ -39,11 +44,14 @@ const statusColors: Record<Event['status'], string> = {
 };
 
 export const AdminEventsTab = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
+  const canSeeDeleted = user?.role === 'superadmin';
 
   const filteredEvents = mockEvents.filter((event) => {
+    if (event.status === 'deleted' && !canSeeDeleted) return false;
     const matchesSearch =
       event.name.toLowerCase().includes(search.toLowerCase()) ||
       event.city.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,10 +80,12 @@ export const AdminEventsTab = () => {
           <SelectContent>
             <SelectItem value="all">Wszystkie statusy</SelectItem>
             <SelectItem value="draft">Wersja robocza</SelectItem>
+            <SelectItem value="awaiting_approval">Do sprawdzenia</SelectItem>
+            <SelectItem value="approved">Zatwierdzone</SelectItem>
             <SelectItem value="active">Aktywne</SelectItem>
             <SelectItem value="past">Przeszłe</SelectItem>
             <SelectItem value="archived">Zarchiwizowane</SelectItem>
-            <SelectItem value="deleted">Usunięte</SelectItem>
+            {canSeeDeleted && <SelectItem value="deleted">Usunięte</SelectItem>}
           </SelectContent>
         </Select>
         <Select value={disciplineFilter} onValueChange={setDisciplineFilter}>

@@ -112,6 +112,57 @@ export async function updateEventStatus(
   return { data: updated, success: true };
 }
 
+export async function submitEvent(id: string): Promise<ApiResponse<Event>> {
+  await simulateDelay();
+  const event = mockEvents.find((e) => e.id === id);
+  if (!event) return { data: null as unknown as Event, success: false, message: 'Event not found' };
+  if (event.status !== 'draft') {
+    return { data: null as unknown as Event, success: false, message: 'Event cannot be submitted' };
+  }
+  return {
+    data: {
+      ...event,
+      status: 'awaiting_approval',
+      rejectionReason: undefined,
+      submittedAt: new Date().toISOString(),
+    },
+    success: true,
+  };
+}
+
+export async function approveEvent(id: string): Promise<ApiResponse<Event>> {
+  await simulateDelay();
+  const event = mockEvents.find((e) => e.id === id);
+  if (!event) return { data: null as unknown as Event, success: false, message: 'Event not found' };
+  if (event.status !== 'awaiting_approval') {
+    return { data: null as unknown as Event, success: false, message: 'Event cannot be approved' };
+  }
+  return {
+    data: { ...event, status: 'approved', rejectionReason: undefined, approvedAt: new Date().toISOString() },
+    success: true,
+  };
+}
+
+export async function rejectEvent(id: string, reason: string): Promise<ApiResponse<Event>> {
+  await simulateDelay();
+  const event = mockEvents.find((e) => e.id === id);
+  if (!event) return { data: null as unknown as Event, success: false, message: 'Event not found' };
+  if (event.status !== 'awaiting_approval') {
+    return { data: null as unknown as Event, success: false, message: 'Event cannot be rejected' };
+  }
+  return { data: { ...event, status: 'draft', rejectionReason: reason }, success: true };
+}
+
+export async function publishEvent(id: string): Promise<ApiResponse<Event>> {
+  await simulateDelay();
+  const event = mockEvents.find((e) => e.id === id);
+  if (!event) return { data: null as unknown as Event, success: false, message: 'Event not found' };
+  if (event.status !== 'approved') {
+    return { data: null as unknown as Event, success: false, message: 'Event cannot be published' };
+  }
+  return { data: { ...event, status: 'active', publishedAt: new Date().toISOString() }, success: true };
+}
+
 // GET /api/events/featured
 export async function getFeaturedEvents(): Promise<ApiResponse<Event[]>> {
   await simulateDelay();

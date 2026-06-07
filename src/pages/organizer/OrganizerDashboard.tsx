@@ -30,6 +30,8 @@ const statusConfig: Record<
   past: { label: 'Przeszłe', variant: 'secondary' },
   archived: { label: 'Zarchiwizowane', variant: 'outline' },
   draft: { label: 'Szkic', variant: 'outline' },
+  awaiting_approval: { label: 'Do sprawdzenia', variant: 'outline' },
+  approved: { label: 'Zatwierdzone', variant: 'secondary' },
   deleted: { label: 'Usunięte', variant: 'destructive' },
 };
 

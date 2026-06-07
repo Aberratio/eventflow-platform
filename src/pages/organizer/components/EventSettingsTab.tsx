@@ -1,20 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,41 +18,34 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { deleteEvent, updateEventStatus } from '@/api';
+import { deleteEvent, publishEvent, submitEvent, updateEvent, updateEventStatus } from '@/api';
 import type { Event } from '@/types';
 import { appLogger } from '@/lib/logger';
 import {
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  CheckCircle,
   AlertTriangle,
-  Lock,
-  Copy,
-  RefreshCw,
   Archive,
+  Copy,
+  Edit,
+  Eye,
+  Lock,
+  RefreshCw,
+  Send,
+  Trash2,
 } from 'lucide-react';
+import { PrivacyChangeConfirmDialog } from './PrivacyChangeConfirmDialog';
 
 interface EventSettingsTabProps {
   event: Event;
 }
 
-type EditableEventStatus = 'draft' | 'active' | 'past' | 'archived';
-
 const statusLabels: Record<Event['status'], string> = {
   draft: 'Szkic',
-  active: 'Aktywne',
-  past: 'Przeszłe',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
+  active: 'Opublikowane',
+  past: 'Przeszle',
   archived: 'Zarchiwizowane',
-  deleted: 'Usunięte',
-};
-
-const statusDescriptions: Record<EditableEventStatus, string> = {
-  draft: 'Widoczne tylko w panelu organizatora.',
-  active: 'Widoczne publicznie dla uczestników.',
-  past: 'Wydarzenie po terminie, nadal widoczne publicznie.',
-  archived: 'Ukryte z głównego panelu organizatora, widoczne publicznie.',
+  deleted: 'Usuniete',
 };
 
 export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
@@ -68,23 +53,35 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [newStatus, setNewStatus] = useState<EditableEventStatus>('draft');
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(event.isPrivate || false);
   const [accessCode, setAccessCode] = useState(event.accessCode || '');
-  const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
+  const [pendingIsPrivate, setPendingIsPrivate] = useState<boolean | null>(null);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPrivacySaving, setIsPrivacySaving] = useState(false);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const eventEndDate = (event.endDate || event.date).slice(0, 10);
+  const hasEnded = eventEndDate < today;
+  const hasRegistrations = event.distances.some((distance) => distance.registeredCount > 0);
+  const canDeleteUpcoming =
+    !['past', 'archived', 'deleted'].includes(event.status) &&
+    event.date.slice(0, 10) >= today &&
+    !hasRegistrations;
+  const canArchive = event.status !== 'archived' && (event.status === 'past' || hasEnded);
+  const canSubmitReview = event.status === 'draft';
+  const canPublish = event.status === 'approved';
 
   const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
 
-  const handleEdit = () => {
-    navigate(`/organizer/events/${event.id}/edit`);
-  };
-
-  const handleStatusChange = (status: EditableEventStatus) => {
-    setNewStatus(status);
-    setStatusDialogOpen(true);
-  };
+  useEffect(() => {
+    setIsPrivate(event.isPrivate || false);
+    setAccessCode(event.accessCode || '');
+  }, [event.accessCode, event.isPrivate]);
 
   const invalidateEventQueries = async () => {
     await Promise.all([
@@ -94,38 +91,145 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     ]);
   };
 
-  const confirmStatusChange = async () => {
+  const requestPrivacyChange = (checked: boolean) => {
+    if (checked === isPrivate) return;
+    setPendingIsPrivate(checked);
+    setPrivacyDialogOpen(true);
+  };
+
+  const handlePrivacyChange = async () => {
+    if (pendingIsPrivate === null) return;
+
+    const nextAccessCode =
+      pendingIsPrivate && !accessCode ? generateAccessCode() : accessCode || undefined;
+
     try {
-      setIsSavingStatus(true);
-      await updateEventStatus(event.id, newStatus);
-      appLogger.event('status_change', `Zmieniono status wydarzenia "${event.name}" na ${statusLabels[newStatus]}`, {
-        targetType: 'event',
-        targetId: event.id,
-        targetName: event.name,
-        metadata: { oldStatus: event.status, newStatus },
+      setIsPrivacySaving(true);
+      const response = await updateEvent(event.id, {
+        isPrivate: pendingIsPrivate,
+        accessCode: nextAccessCode,
       });
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie zmienic prywatnosci wydarzenia.');
+      }
+      setIsPrivate(pendingIsPrivate);
+      setAccessCode(response.data.accessCode || nextAccessCode || '');
+      appLogger.event(
+        'event_privacy_change',
+        pendingIsPrivate
+          ? `Ustawiono wydarzenie "${event.name}" jako prywatne`
+          : `Ustawiono wydarzenie "${event.name}" jako publiczne`,
+        {
+          targetType: 'event',
+          targetId: event.id,
+          targetName: event.name,
+          metadata: { isPrivate: pendingIsPrivate },
+        },
+      );
       await invalidateEventQueries();
       toast({
-        title: 'Status zmieniony',
-        description: `Wydarzenie jest teraz: ${statusLabels[newStatus]}`,
+        title: pendingIsPrivate ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
+        description: pendingIsPrivate
+          ? 'Wydarzenie nie bedzie widoczne publicznie.'
+          : 'Wydarzenie bedzie widoczne dla wszystkich.',
       });
-      setStatusDialogOpen(false);
+      setPrivacyDialogOpen(false);
+      setPendingIsPrivate(null);
     } catch (error) {
       toast({
-        title: 'Nie udało się zmienić statusu',
-        description: error instanceof Error ? error.message : 'Spróbuj ponownie później.',
+        title: 'Nie udalo sie zmienic prywatnosci',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
         variant: 'destructive',
       });
     } finally {
-      setIsSavingStatus(false);
+      setIsPrivacySaving(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      setIsSubmittingReview(true);
+      const response = await submitEvent(event.id);
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie oddac wydarzenia do sprawdzenia.');
+      }
+      await invalidateEventQueries();
+      toast({
+        title: 'Wydarzenie oddane do sprawdzenia',
+        description: 'Admin lub moderator musi je zatwierdzic przed publikacja.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udalo sie oddac wydarzenia do sprawdzenia',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    try {
+      setIsPublishing(true);
+      const response = await publishEvent(event.id);
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie opublikowac wydarzenia.');
+      }
+      await invalidateEventQueries();
+      toast({
+        title: 'Wydarzenie opublikowane',
+        description: 'Od teraz jest publicznie widoczne dla uczestnikow.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udalo sie opublikowac wydarzenia',
+        description: error instanceof Error ? error.message : 'Wydarzenie musi byc zatwierdzone.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      setIsArchiving(true);
+      const response = await updateEventStatus(event.id, 'archived');
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie zarchiwizowac wydarzenia.');
+      }
+      appLogger.event('status_change', `Zarchiwizowano wydarzenie "${event.name}"`, {
+        targetType: 'event',
+        targetId: event.id,
+        targetName: event.name,
+        metadata: { oldStatus: event.status, newStatus: 'archived' },
+      });
+      await invalidateEventQueries();
+      toast({ title: 'Wydarzenie zarchiwizowane' });
+      setArchiveDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Nie udalo sie zarchiwizowac wydarzenia',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Archiwizowac mozna tylko wydarzenia, ktore juz sie zakonczyly.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsArchiving(false);
     }
   };
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await deleteEvent(event.id);
-      appLogger.event('event_delete', `Oznaczono wydarzenie "${event.name}" jako usunięte`, {
+      const response = await deleteEvent(event.id);
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie usunac wydarzenia.');
+      }
+      appLogger.event('event_delete', `Oznaczono wydarzenie "${event.name}" jako usuniete`, {
         targetType: 'event',
         targetId: event.id,
         targetName: event.name,
@@ -135,19 +239,19 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         queryClient.invalidateQueries({ queryKey: ['organizer-event-limit', event.organizerId] }),
       ]);
       toast({
-        title: 'Wydarzenie usunięte',
-        description: 'Wydarzenie oznaczono jako usunięte. Rekord pozostaje w bazie danych.',
+        title: 'Wydarzenie usuniete',
+        description: 'Wydarzenie zniknie z panelu organizatora i list publicznych.',
         variant: 'destructive',
       });
       setDeleteDialogOpen(false);
       navigate('/organizer');
     } catch (error) {
       toast({
-        title: 'Nie udało się usunąć wydarzenia',
+        title: 'Nie udalo sie usunac wydarzenia',
         description:
           error instanceof Error
             ? error.message
-            : 'Organizator nie może usuwać wydarzeń, które już się odbyły.',
+            : 'Usunac mozna tylko nadchodzace wydarzenie bez zapisow.',
         variant: 'destructive',
       });
     } finally {
@@ -158,41 +262,31 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const getStatusBadge = (status: Event['status']) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-success/10 text-success">Aktywne</Badge>;
+        return <Badge className="bg-success/10 text-success">Opublikowane</Badge>;
       case 'draft':
         return <Badge variant="secondary">Szkic</Badge>;
-      case 'past':
-        return <Badge variant="outline">Przeszłe</Badge>;
+      case 'awaiting_approval':
+        return <Badge variant="outline">Do sprawdzenia</Badge>;
+      case 'approved':
+        return <Badge className="bg-primary/10 text-primary">Zatwierdzone</Badge>;
       case 'archived':
         return <Badge variant="outline">Zarchiwizowane</Badge>;
       case 'deleted':
-        return <Badge variant="destructive">Usunięte</Badge>;
+        return <Badge variant="destructive">Usuniete</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{statusLabels[status]}</Badge>;
     }
   };
-
-  const statusCards: Array<{
-    status: EditableEventStatus;
-    title: string;
-    icon: typeof Eye;
-    iconClassName: string;
-  }> = [
-    { status: 'draft', title: 'Szkic', icon: EyeOff, iconClassName: 'text-muted-foreground' },
-    { status: 'active', title: 'Aktywne', icon: Eye, iconClassName: 'text-success' },
-    { status: 'past', title: 'Przeszłe', icon: CheckCircle, iconClassName: 'text-muted-foreground' },
-    { status: 'archived', title: 'Archiwum', icon: Archive, iconClassName: 'text-primary' },
-  ];
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Edycja wydarzenia</CardTitle>
-          <CardDescription>Zmień szczegóły wydarzenia, dystanse i kategorie</CardDescription>
+          <CardDescription>Zmien szczegoly wydarzenia, dystanse i kategorie</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleEdit}>
+          <Button onClick={() => navigate(`/organizer/events/${event.id}/edit`)}>
             <Edit className="mr-2 h-4 w-4" /> Edytuj wydarzenie
           </Button>
         </CardContent>
@@ -204,37 +298,38 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           <CardDescription>Aktualny status: {getStatusBadge(event.status)}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {statusCards.map(({ status, title, icon: Icon, iconClassName }) => (
-              <Card
-                key={status}
-                className={`cursor-pointer transition-colors hover:border-primary ${
-                  event.status === status ? 'border-primary bg-primary/5' : ''
-                }`}
-                onClick={() => handleStatusChange(status)}
-              >
-                <CardContent className="pt-6 text-center">
-                  <Icon className={`mx-auto mb-2 h-8 w-8 ${iconClassName}`} />
-                  <h4 className="font-medium">{title}</h4>
-                  <p className="text-sm text-muted-foreground">{statusDescriptions[status]}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <p className="text-sm text-muted-foreground">
+            Organizator nie zmienia statusow recznie. Po zatwierdzeniu przez admina lub moderatora
+            moze opublikowac wydarzenie dla uczestnikow.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {canSubmitReview && (
+              <Button onClick={handleSubmitReview} disabled={isSubmittingReview}>
+                <Send className="mr-2 h-4 w-4" />
+                {isSubmittingReview ? 'Wysylanie...' : 'Oddaj do sprawdzenia'}
+              </Button>
+            )}
+            {canPublish && (
+              <Button onClick={handlePublish} disabled={isPublishing}>
+                <Eye className="mr-2 h-4 w-4" />
+                {isPublishing ? 'Publikowanie...' : 'Opublikuj'}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {event.status === 'active' && (
+      {canArchive && (
         <Card>
           <CardHeader>
-            <CardTitle>Oznacz jako przeszłe</CardTitle>
+            <CardTitle>Archiwum</CardTitle>
             <CardDescription>
-              Po wprowadzeniu wszystkich wyników możesz oznaczyć wydarzenie jako przeszłe.
+              Przeszle wydarzenie mozesz przeniesc do archiwum organizatora.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={() => handleStatusChange('past')}>
-              <CheckCircle className="mr-2 h-4 w-4" /> Oznacz jako przeszłe
+            <Button variant="outline" onClick={() => setArchiveDialogOpen(true)}>
+              <Archive className="mr-2 h-4 w-4" /> Przenies do archiwum
             </Button>
           </CardContent>
         </Card>
@@ -244,10 +339,10 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-5 w-5" />
-            Prywatność
+            Prywatnosc
           </CardTitle>
           <CardDescription>
-            Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy mogą dołączyć tylko przez
+            Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy moga dolaczyc tylko przez
             specjalny link.
           </CardDescription>
         </CardHeader>
@@ -259,37 +354,20 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             <Switch
               id="privacy-toggle"
               checked={isPrivate}
-              onCheckedChange={(checked) => {
-                setIsPrivate(checked);
-                if (checked && !accessCode) {
-                  setAccessCode(generateAccessCode());
-                }
-                toast({
-                  title: checked ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
-                  description: checked
-                    ? 'Wydarzenie nie będzie widoczne publicznie.'
-                    : 'Wydarzenie będzie widoczne dla wszystkich.',
-                });
-              }}
+              onCheckedChange={requestPrivacyChange}
+              disabled={isPrivacySaving}
             />
           </div>
           {isPrivate && (
             <div className="space-y-3 border-t pt-2">
               <div className="space-y-2">
-                <Label>Kod dostępu</Label>
+                <Label>Kod dostepu</Label>
                 <div className="flex gap-2">
                   <Input value={accessCode} readOnly className="font-mono" />
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => {
-                      const newCode = generateAccessCode();
-                      setAccessCode(newCode);
-                      toast({
-                        title: 'Nowy kod',
-                        description: 'Wygenerowano nowy kod dostępu. Stary kod przestaje działać.',
-                      });
-                    }}
+                    onClick={() => setAccessCode(generateAccessCode())}
                     title="Wygeneruj nowy kod"
                   >
                     <RefreshCw className="h-4 w-4" />
@@ -323,49 +401,50 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
-            Strefa usuwania
-          </CardTitle>
-          <CardDescription>
-            Usunięcie oznacza status `deleted`. Rekord pozostaje w bazie danych i nie liczy się do limitu.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="mr-2 h-4 w-4" /> Usuń wydarzenie
-          </Button>
-        </CardContent>
-      </Card>
+      {canDeleteUpcoming && (
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Usuniecie nadchodzacego wydarzenia
+            </CardTitle>
+            <CardDescription>
+              Wydarzenie bez zapisow moze zostac usuniete przed terminem. Przeszle wydarzenia
+              przenos do archiwum.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Usun wydarzenie
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Zmień status wydarzenia</DialogTitle>
-            <DialogDescription>
-              Czy na pewno chcesz zmienić status wydarzenia na {statusLabels[newStatus]}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>
-              Anuluj
-            </Button>
-            <Button onClick={confirmStatusChange} disabled={isSavingStatus}>
-              {isSavingStatus ? 'Zapisywanie...' : 'Zmień status'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Zarchiwizowac wydarzenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Wydarzenie zostanie przeniesione do archiwum organizatora.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={handleArchive} disabled={isArchiving}>
+              {isArchiving ? 'Archiwizowanie...' : 'Archiwizuj'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunąć to wydarzenie?</AlertDialogTitle>
+            <AlertDialogTitle>Czy na pewno chcesz usunac to wydarzenie?</AlertDialogTitle>
             <AlertDialogDescription>
-              Wydarzenie zostanie oznaczone jako usunięte i zniknie z panelu organizatora oraz list
-              publicznych. Dane pozostaną w bazie do wglądu administracji.
+              Wydarzenie zostanie oznaczone jako usuniete i zniknie z panelu organizatora oraz list
+              publicznych.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -375,11 +454,26 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Usuwanie...' : 'Usuń wydarzenie'}
+              {isDeleting ? 'Usuwanie...' : 'Usun wydarzenie'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {pendingIsPrivate !== null && (
+        <PrivacyChangeConfirmDialog
+          open={privacyDialogOpen}
+          nextIsPrivate={pendingIsPrivate}
+          isConfirming={isPrivacySaving}
+          onOpenChange={(open) => {
+            setPrivacyDialogOpen(open);
+            if (!open && !isPrivacySaving) {
+              setPendingIsPrivate(null);
+            }
+          }}
+          onConfirm={handlePrivacyChange}
+        />
+      )}
     </div>
   );
 };

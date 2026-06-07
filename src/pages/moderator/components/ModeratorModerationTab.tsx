@@ -1,36 +1,53 @@
-import { disciplineLabels, mockEvents, updateEventStatus } from '@/api';
+import { approveEvent, disciplineLabels, mockEvents, rejectEvent } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Event } from '@/types';
+import type { Event } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Archive, Calendar, CheckCircle, Eye, FileText, MapPin } from 'lucide-react';
+import { Calendar, CheckCircle, Eye, FileText, MapPin, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { htmlToPlainText } from '@/lib/html';
 
 export const ModeratorModerationTab = () => {
   const [events, setEvents] = useState(mockEvents);
-  const draftEvents = events.filter((event) => event.status === 'draft');
+  const pendingEvents = events.filter((event) => event.status === 'awaiting_approval');
 
-  const setStatus = async (event: Event, status: Event['status']) => {
+  const approve = async (event: Event) => {
     try {
-      await updateEventStatus(event.id, status);
-      setEvents((prev) => prev.map((item) => (item.id === event.id ? { ...item, status } : item)));
-      toast.success(`Status wydarzenia "${event.name}" został zmieniony`);
+      const response = await approveEvent(event.id);
+      setEvents((prev) =>
+        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
+      );
+      toast.success('Wydarzenie zatwierdzone. Organizator moze je teraz opublikowac.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udało się zmienić statusu');
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
     }
   };
 
-  if (draftEvents.length === 0) {
+  const reject = async (event: Event) => {
+    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    if (!reason?.trim()) return;
+    try {
+      const response = await rejectEvent(event.id, reason.trim());
+      setEvents((prev) =>
+        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
+      );
+      toast.success('Wydarzenie odeslane do poprawy.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odeslac wydarzenia');
+    }
+  };
+
+  if (pendingEvents.length === 0) {
     return (
       <Card>
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary/50" />
-            <p className="text-lg font-medium">Brak szkiców do przejrzenia</p>
-            <p className="text-sm">Nowa logika nie wymaga kolejki akceptacji wydarzeń.</p>
+            <p className="text-lg font-medium">Brak wydarzen do sprawdzenia</p>
+            <p className="text-sm">Organizatorzy musza najpierw oddac szkic do sprawdzenia.</p>
           </div>
         </CardContent>
       </Card>
@@ -40,11 +57,11 @@ export const ModeratorModerationTab = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Szkice organizatorów ({draftEvents.length})</h2>
+        <h2 className="text-xl font-semibold">Wydarzenia do sprawdzenia ({pendingEvents.length})</h2>
       </div>
 
       <div className="grid gap-4">
-        {draftEvents.map((event) => (
+        {pendingEvents.map((event) => (
           <Card key={event.id}>
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between gap-4">
@@ -52,7 +69,7 @@ export const ModeratorModerationTab = () => {
                   <CardTitle className="text-lg">{event.name}</CardTitle>
                   <p className="text-sm text-muted-foreground">{event.organizerName}</p>
                 </div>
-                <Badge variant="outline">Szkic</Badge>
+                <Badge variant="outline">Do sprawdzenia</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -69,30 +86,30 @@ export const ModeratorModerationTab = () => {
                   <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
                 </div>
 
-                <p className="line-clamp-2 text-sm">{event.description}</p>
+                <p className="line-clamp-2 text-sm">{htmlToPlainText(event.description)}</p>
                 <div className="text-sm">
                   <strong>Dystanse:</strong> {event.distances.map((d) => d.name).join(', ')}
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button onClick={() => setStatus(event, 'active')} className="gap-2">
+                  <Button onClick={() => approve(event)} className="gap-2">
                     <CheckCircle className="h-4 w-4" />
-                    Ustaw aktywne
+                    Zatwierdz
                   </Button>
-                  <Button variant="outline" onClick={() => setStatus(event, 'archived')} className="gap-2">
-                    <Archive className="h-4 w-4" />
-                    Archiwizuj
+                  <Button variant="destructive" onClick={() => reject(event)} className="gap-2">
+                    <XCircle className="h-4 w-4" />
+                    Odeslij
                   </Button>
                   <Button variant="outline" size="default" asChild className="gap-2">
                     <a href={`/events/${event.slug}/preview`}>
                       <Eye className="h-4 w-4" />
-                      Podgląd
+                      Podglad
                     </a>
                   </Button>
                   <Button variant="outline" size="default" asChild className="gap-2">
                     <a href={`/moderator/events/${event.id}`}>
                       <FileText className="h-4 w-4" />
-                      Zarządzaj
+                      Zarzadzaj
                     </a>
                   </Button>
                 </div>

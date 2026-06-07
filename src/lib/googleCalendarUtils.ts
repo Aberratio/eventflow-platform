@@ -1,4 +1,5 @@
 import { Event } from '@/types';
+import { htmlToPlainText } from '@/lib/html';
 
 const GOOGLE_CALENDAR_API_URL = import.meta.env.VITE_GOOGLE_CALENDAR_API_URL;
 
@@ -55,7 +56,7 @@ export const addEventToGoogleCalendar = async (
     const calendarEvent = {
       summary: event.name,
       location: `${event.location}, ${event.city}`,
-      description: `${event.description}\n\nOrganizator: ${event.organizerName}\n\nWięcej informacji: ${window.location.origin}/events/${event.slug}`,
+      description: `${htmlToPlainText(event.description)}\n\nOrganizator: ${event.organizerName}\n\nWięcej informacji: ${window.location.origin}/events/${event.slug}`,
       start: {
         date: eventDate, // Format: YYYY-MM-DD for all-day events
         timeZone: 'Europe/Warsaw',

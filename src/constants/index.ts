@@ -16,6 +16,8 @@ export const ROLE_LABELS: Record<string, string> = {
 
 export const EVENT_STATUSES = {
   DRAFT: 'draft',
+  AWAITING_APPROVAL: 'awaiting_approval',
+  APPROVED: 'approved',
   ACTIVE: 'active',
   PAST: 'past',
   ARCHIVED: 'archived',
@@ -24,6 +26,8 @@ export const EVENT_STATUSES = {
 
 export const EVENT_STATUS_LABELS: Record<string, string> = {
   draft: 'Szkic',
+  awaiting_approval: 'Do sprawdzenia',
+  approved: 'Zatwierdzone',
   active: 'Aktywne',
   past: 'Przeszłe',
   archived: 'Zarchiwizowane',

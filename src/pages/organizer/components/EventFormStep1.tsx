@@ -2,8 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
 import {
   Select,
   SelectContent,
@@ -47,7 +47,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="organizer">Organizator *</Label>
+              <HelpLabel
+                htmlFor="organizer"
+                description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
+              >
+                Organizator *
+              </HelpLabel>
               {form.canChooseOrganizer ? (
                 <Select
                   value={form.selectedOrganizerId}
@@ -84,7 +89,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Nazwa wydarzenia *</Label>
+              <HelpLabel
+                htmlFor="name"
+                description="Publiczna nazwa wydarzenia widoczna na listach, stronie szczegolow, w rejestracji i komunikacji z uczestnikami."
+              >
+                Nazwa wydarzenia *
+              </HelpLabel>
               <Input
                 id="name"
                 value={form.name}
@@ -93,7 +103,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="discipline">Dyscyplina *</Label>
+              <HelpLabel
+                htmlFor="discipline"
+                description="Okresla typ sportu. Wplywa na ikony, filtry wydarzen i sposob prezentacji wydarzenia w serwisie."
+              >
+                Dyscyplina *
+              </HelpLabel>
               <Select
                 value={form.discipline}
                 onValueChange={(v: SportDiscipline) => form.setDiscipline(v)}
@@ -114,7 +129,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Data wydarzenia *</Label>
+              <HelpLabel
+                htmlFor="date"
+                description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
+              >
+                Data wydarzenia *
+              </HelpLabel>
               <Input
                 id="date"
                 type="date"
@@ -123,7 +143,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="deadline">Termin rejestracji *</Label>
+              <HelpLabel
+                htmlFor="deadline"
+                description="Ostatni dzien, w ktorym uczestnicy moga zapisac sie na wydarzenie, jesli zapisy sa otwarte."
+              >
+                Termin rejestracji *
+              </HelpLabel>
               <Input
                 id="deadline"
                 type="date"
@@ -155,12 +180,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 <Label htmlFor="isVirtual" className="cursor-pointer font-medium">
                   Wydarzenie wirtualne
                 </Label>
+                <FieldHelp description="Wlaczenie tej opcji oznacza, ze uczestnik realizuje aktywnosc samodzielnie poza jedna fizyczna lokalizacja i moze podac wynik w okreslonym oknie." />
               </div>
             </div>
             {form.isVirtual && (
               <p className="pl-6 text-sm text-muted-foreground">
-                Uczestnicy wykonujÄ… aktywnoĹ›Ä‡ samodzielnie w dowolnym miejscu i wprowadzajÄ… swoje
-                wyniki po zakoĹ„czeniu okna czasowego.
+                Uczestnicy wykonujÄ… aktywnoĹ›Ä‡ samodzielnie w dowolnym miejscu i wprowadzajÄ…
+                swoje wyniki po zakoĹ„czeniu okna czasowego.
               </p>
             )}
           </div>
@@ -168,7 +194,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
           {form.isVirtual && (
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Data rozpoczÄ™cia okna *</Label>
+                <HelpLabel
+                  htmlFor="startDate"
+                  description="Pierwszy dzien, od ktorego uczestnicy wydarzenia wirtualnego moga wykonywac aktywnosc i przesylac wynik."
+                >
+                  Data rozpoczÄ™cia okna *
+                </HelpLabel>
                 <Input
                   id="startDate"
                   type="date"
@@ -177,7 +208,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">Data zakoĹ„czenia okna *</Label>
+                <HelpLabel
+                  htmlFor="endDate"
+                  description="Ostatni dzien okna wirtualnego. Po tej dacie uczestnicy nie powinni juz dodawac nowych wynikow dla tego wydarzenia."
+                >
+                  Data zakoĹ„czenia okna *
+                </HelpLabel>
                 <Input
                   id="endDate"
                   type="date"
@@ -205,16 +241,22 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 <Label htmlFor="isPrivate" className="cursor-pointer font-medium">
                   Wydarzenie prywatne
                 </Label>
+                <FieldHelp description="Ukrywa wydarzenie z publicznych list. Dostep maja tylko osoby, ktore otrzymaja specjalny link z kodem dostepu." />
               </div>
             </div>
             {form.isPrivate && (
               <div className="space-y-3 pl-6">
                 <p className="text-sm text-muted-foreground">
-                  Prywatne wydarzenie nie bÄ™dzie widoczne publicznie. Uczestnicy mogÄ… doĹ‚Ä…czyÄ‡ tylko
-                  przez specjalny link.
+                  Prywatne wydarzenie nie bÄ™dzie widoczne publicznie. Uczestnicy mogÄ… doĹ‚Ä…czyÄ‡
+                  tylko przez specjalny link.
                 </p>
                 <div className="space-y-2">
-                  <Label htmlFor="accessCode">Kod dostÄ™pu</Label>
+                  <HelpLabel
+                    htmlFor="accessCode"
+                    description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejsc na strone wydarzenia mimo braku widocznosci publicznej."
+                  >
+                    Kod dostÄ™pu
+                  </HelpLabel>
                   <div className="flex gap-2">
                     <Input
                       id="accessCode"
@@ -259,7 +301,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
           {!form.isVirtual && (
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="location">Lokalizacja (miejsce startu) *</Label>
+                <HelpLabel
+                  htmlFor="location"
+                  description="Dokladne miejsce startu lub centrum wydarzenia, np. stadion, park, hala albo adres punktu zbiorczego."
+                >
+                  Lokalizacja (miejsce startu) *
+                </HelpLabel>
                 <Input
                   id="location"
                   value={form.location}
@@ -268,7 +315,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="city">Miasto *</Label>
+                <HelpLabel
+                  htmlFor="city"
+                  description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                >
+                  Miasto *
+                </HelpLabel>
                 <Input
                   id="city"
                   value={form.city}
@@ -280,18 +332,27 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="description">Opis wydarzenia</Label>
-            <Textarea
-              id="description"
+            <HelpLabel
+              htmlFor="description"
+              description="Sformatowany opis widoczny na stronie wydarzenia. Warto opisac trase, charakter zawodow, atrakcje i najwazniejsze informacje dla uczestnika."
+            >
+              Opis wydarzenia
+            </HelpLabel>
+            <RichTextEditor
               value={form.description}
-              onChange={(e) => form.setDescription(e.target.value)}
+              onChange={form.setDescription}
               placeholder="Opisz szczegĂłĹ‚y wydarzenia, trasÄ™, atrakcje..."
-              rows={4}
+              minHeight="140px"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">URL obrazka</Label>
+            <HelpLabel
+              htmlFor="imageUrl"
+              description="Adres glownego obrazka wydarzenia uzywanego w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
+            >
+              URL obrazka
+            </HelpLabel>
             <Input
               id="imageUrl"
               value={form.imageUrl}
@@ -300,16 +361,19 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="featured"
-              checked={form.featured}
-              onCheckedChange={(checked) => form.setFeatured(checked === true)}
-            />
-            <Label htmlFor="featured" className="cursor-pointer">
-              WyrĂłĹĽnij wydarzenie na stronie gĹ‚Ăłwnej
-            </Label>
-          </div>
+          {form.canManageFeatured && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="featured"
+                checked={form.featured}
+                onCheckedChange={(checked) => form.setFeatured(checked === true)}
+              />
+              <Label htmlFor="featured" className="cursor-pointer">
+                WyrĂłĹĽnij wydarzenie na stronie gĹ‚Ăłwnej
+              </Label>
+              <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
+            </div>
+          )}
 
           {/* Media Section */}
           <div className="mt-6 border-t pt-6">
@@ -319,7 +383,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             </h3>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-3">
-                <Label>Baner wydarzenia</Label>
+                <HelpLabel description="Pionowy lub duzy obraz wykorzystywany jako baner wizualny wydarzenia w miejscach, gdzie potrzebna jest mocniejsza ekspozycja.">
+                  Baner wydarzenia
+                </HelpLabel>
                 <p className="text-sm text-muted-foreground">
                   Pionowy obrazek w tle (zalecane 800x1200px)
                 </p>
@@ -340,7 +406,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 )}
               </div>
               <div className="space-y-3">
-                <Label>Logo organizatora</Label>
+                <HelpLabel description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow. Najlepiej uzyc kwadratowego pliku.">
+                  Logo organizatora
+                </HelpLabel>
                 <p className="text-sm text-muted-foreground">
                   Kwadratowe logo (zalecane 200x200px)
                 </p>
@@ -378,9 +446,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   >
                     <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
                   </Label>
+                  <FieldHelp description="Platnosci sa obslugiwane przez bramke administratora serwisu. Organizator nie musi recznie potwierdzac przelewow." />
                   <p className="mt-1 text-sm text-muted-foreground">
-                    PĹ‚atnoĹ›ci sÄ… przetwarzane automatycznie przez bramkÄ™ pĹ‚atniczÄ… administratora
-                    serwisu.
+                    PĹ‚atnoĹ›ci sÄ… przetwarzane automatycznie przez bramkÄ™ pĹ‚atniczÄ…
+                    administratora serwisu.
                   </p>
                 </div>
               </div>
@@ -395,14 +464,20 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   >
                     <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
                   </Label>
+                  <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status platnosci trzeba pozniej potwierdzac recznie." />
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Uczestnicy wpĹ‚acajÄ… na Twoje konto bankowe. Musisz rÄ™cznie potwierdzaÄ‡ otrzymane
-                    wpĹ‚aty.
+                    Uczestnicy wpĹ‚acajÄ… na Twoje konto bankowe. Musisz rÄ™cznie potwierdzaÄ‡
+                    otrzymane wpĹ‚aty.
                   </p>
                   {form.paymentConfigType === 'organizer_bank' && (
                     <div className="mt-4 space-y-4 border-t border-dashed pt-4">
                       <div className="space-y-2">
-                        <Label htmlFor="bankAccountNumber">Numer konta bankowego *</Label>
+                        <HelpLabel
+                          htmlFor="bankAccountNumber"
+                          description="Numer rachunku, na ktory uczestnicy beda wysylac oplaty startowe przy platnosci przelewem bankowym."
+                        >
+                          Numer konta bankowego *
+                        </HelpLabel>
                         <Input
                           id="bankAccountNumber"
                           value={form.bankAccountNumber}
@@ -414,7 +489,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="bankAccountHolder">WĹ‚aĹ›ciciel konta *</Label>
+                        <HelpLabel
+                          htmlFor="bankAccountHolder"
+                          description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji platnosci."
+                        >
+                          WĹ‚aĹ›ciciel konta *
+                        </HelpLabel>
                         <Input
                           id="bankAccountHolder"
                           value={form.bankAccountHolder}
@@ -423,7 +503,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="transferTitle">WzĂłr tytuĹ‚u przelewu</Label>
+                        <HelpLabel
+                          htmlFor="transferTitle"
+                          description="Szablon tytulu przelewu pokazywany uczestnikowi. Zmienne zostana podstawione danymi wydarzenia, dystansu i uczestnika."
+                        >
+                          WzĂłr tytuĹ‚u przelewu
+                        </HelpLabel>
                         <Input
                           id="transferTitle"
                           value={form.transferTitle}
@@ -452,7 +537,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             </p>
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label>Organizatorzy</Label>
+                <HelpLabel description="Sformatowana sekcja na stronie wydarzenia. Mozesz wpisac organizatorow, partnerow, sponsorow i dodac linki.">
+                  Organizatorzy
+                </HelpLabel>
                 <p className="text-sm text-muted-foreground">
                   MoĹĽesz wpisaÄ‡ wielu organizatorĂłw, sponsorĂłw z linkami do ich stron.
                 </p>
@@ -464,7 +551,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Regulamin</Label>
+                <HelpLabel description="Tresci regulaminowe lub linki do dokumentow, ktore uczestnik powinien przeczytac przed zapisem.">
+                  Regulamin
+                </HelpLabel>
                 <p className="text-sm text-muted-foreground">
                   Wpisz treĹ›Ä‡ regulaminu lub dodaj linki do plikĂłw PDF.
                 </p>
@@ -485,10 +574,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   <Label htmlFor="requireFinalAcceptance" className="cursor-pointer">
                     Wymagaj dodatkowej akceptacji przy rejestracji
                   </Label>
+                  <FieldHelp description="Dodaje do formularza zapisu dodatkowy checkbox z trescia, ktora uczestnik musi zaakceptowac przed wyslaniem rejestracji." />
                 </div>
                 {form.requireFinalAcceptance && (
                   <div className="space-y-2 pl-6">
-                    <Label>Tekst akceptacji</Label>
+                    <HelpLabel description="Tresci widoczna przy dodatkowym checkboxie akceptacji w formularzu rejestracji uczestnika.">
+                      Tekst akceptacji
+                    </HelpLabel>
                     <p className="text-sm text-muted-foreground">
                       Ten tekst pojawi siÄ™ jako checkbox, ktĂłry uczestnik musi zaakceptowaÄ‡ przy
                       rejestracji.
@@ -517,7 +609,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>WĹ‚Ä…cz widget do osadzenia</Label>
+              <div className="flex items-center gap-1.5">
+                <Label>WĹ‚Ä…cz widget do osadzenia</Label>
+                <FieldHelp description="Udostepnia osobny widok formularza zapisow, ktory mozna osadzic jako iframe na zewnetrznej stronie." />
+              </div>
               <p className="text-sm text-muted-foreground">
                 Partnerzy mogÄ… umieĹ›ciÄ‡ formularz zapisĂłw na swojej stronie
               </p>
@@ -528,7 +623,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             <div className="space-y-4 border-t pt-2">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Data rozpoczÄ™cia (opcjonalnie)</Label>
+                  <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow. Przed ta data widget moze byc nieaktywny.">
+                    Data rozpoczÄ™cia (opcjonalnie)
+                  </HelpLabel>
                   <Input
                     type="date"
                     value={form.embedStartDate}
@@ -536,7 +633,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Data zakoĹ„czenia (opcjonalnie)</Label>
+                  <HelpLabel description="Opcjonalny koniec dostepnosci formularza iframe. Pozwala zamknac zapisy w osadzonym widoku niezaleznie od publikacji strony.">
+                    Data zakoĹ„czenia (opcjonalnie)
+                  </HelpLabel>
                   <Input
                     type="date"
                     value={form.embedEndDate}
@@ -547,6 +646,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               {form.name && (
                 <div className="space-y-2 rounded-lg bg-muted/50 p-3">
                   <Label className="text-xs text-muted-foreground">Kod do osadzenia:</Label>
+                  <FieldHelp description="Gotowy kod HTML iframe do przekazania partnerowi lub wklejenia na inna strone." />
                   <code className="block break-all text-xs">
                     {`<iframe src="${window.location.origin}/events/${form.generateSlug(form.name)}/embed" width="100%" height="800" frameborder="0"></iframe>`}
                   </code>
@@ -577,18 +677,38 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               { key: 'collectInsurance' as const, label: 'Ubezpieczenie NNW' },
               { key: 'collectMerchandise' as const, label: 'GadĹĽety / merchandise' },
             ].map((field) => (
-              <label
+              <div
                 key={field.key}
                 className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-muted/50"
               >
                 <Checkbox
+                  id={field.key}
                   checked={form.formConfig[field.key]}
                   onCheckedChange={(checked) =>
                     form.setFormConfig({ ...form.formConfig, [field.key]: !!checked })
                   }
                 />
-                <span className="text-sm">{field.label}</span>
-              </label>
+                <Label htmlFor={field.key} className="cursor-pointer text-sm">
+                  {field.label}
+                </Label>
+                <FieldHelp
+                  description={
+                    {
+                      collectPhone:
+                        'Wlacza pole telefonu kontaktowego w formularzu zapisu uczestnika.',
+                      collectClub: 'Wlacza pole klubu, druzyny lub organizacji uczestnika.',
+                      collectBirthDate:
+                        'Wlacza pole daty urodzenia potrzebne m.in. do kategorii wiekowych.',
+                      collectTeam:
+                        'Pozwala uczestnikom podac informacje potrzebne do zapisu druzynowego.',
+                      collectInsurance:
+                        'Pokazuje uczestnikowi opcje zwiazane z ubezpieczeniem NNW, jesli sa skonfigurowane.',
+                      collectMerchandise:
+                        'Pokazuje uczestnikowi gadzety lub merchandise dostepne przy rejestracji.',
+                    }[field.key]
+                  }
+                />
+              </div>
             ))}
           </div>
         </CardContent>
@@ -603,7 +723,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>DomyĹ›lne sortowanie</Label>
+            <HelpLabel description="Ustala domyslny porzadek publicznej listy uczestnikow wydarzenia. Uzytkownik zobaczy liste wedlug tej preferencji.">
+              DomyĹ›lne sortowanie
+            </HelpLabel>
             <Select
               value={form.displayOptions.defaultSort}
               onValueChange={(v) =>
@@ -624,24 +746,32 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </SelectContent>
             </Select>
           </div>
-          <label className="flex cursor-pointer items-center gap-2">
+          <div className="flex cursor-pointer items-center gap-2">
             <Checkbox
+              id="uppercaseNames"
               checked={form.displayOptions.uppercaseNames}
               onCheckedChange={(checked) =>
                 form.setDisplayOptions({ ...form.displayOptions, uppercaseNames: !!checked })
               }
             />
-            <span className="text-sm">WymuĹ› wielkie litery w nazwiskach (np. Jan KOWALSKI)</span>
-          </label>
-          <label className="flex cursor-pointer items-center gap-2">
+            <Label htmlFor="uppercaseNames" className="cursor-pointer text-sm">
+              WymuĹ› wielkie litery w nazwiskach (np. Jan KOWALSKI)
+            </Label>
+            <FieldHelp description="Formatuje nazwiska na liscie uczestnikow wielkimi literami, aby ulatwic skanowanie list startowych." />
+          </div>
+          <div className="flex cursor-pointer items-center gap-2">
             <Checkbox
+              id="hideUnpaid"
               checked={form.displayOptions.hideUnpaid}
               onCheckedChange={(checked) =>
                 form.setDisplayOptions({ ...form.displayOptions, hideUnpaid: !!checked })
               }
             />
-            <span className="text-sm">Ukryj nieopĹ‚aconych uczestnikĂłw na liĹ›cie publicznej</span>
-          </label>
+            <Label htmlFor="hideUnpaid" className="cursor-pointer text-sm">
+              Ukryj nieopĹ‚aconych uczestnikĂłw na liĹ›cie publicznej
+            </Label>
+            <FieldHelp description="Nie pokazuje uczestnikow oczekujacych na platnosc na publicznej liscie startowej." />
+          </div>
         </CardContent>
       </Card>
 
@@ -658,4 +788,3 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
     </>
   );
 };
-

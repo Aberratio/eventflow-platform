@@ -28,8 +28,12 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: 'npm run dev',
+        command: 'npm run dev -- --host 127.0.0.1 --port 5173',
         port: 5173,
         reuseExistingServer: true,
+        env: {
+          ...process.env,
+          VITE_API_URL: '',
+        },
       },
 });

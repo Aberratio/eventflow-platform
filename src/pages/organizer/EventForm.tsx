@@ -1,14 +1,40 @@
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
+import { useState } from 'react';
 import { useEventFormState } from './hooks/useEventFormState';
 import { appLogger } from '@/lib/logger';
 import { EventFormStep1 } from './components/EventFormStep1';
 import { EventFormStep2 } from './components/EventFormStep2';
 import { EventFormStep3 } from './components/EventFormStep3';
+import { PrivacyChangeConfirmDialog } from './components/PrivacyChangeConfirmDialog';
 
 const EventForm = () => {
   const form = useEventFormState();
+  const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
+
+  const submitForm = () => {
+    appLogger.event(
+      form.isEditing ? 'event_update' : 'event_create',
+      form.isEditing
+        ? `Zaktualizowano wydarzenie «${form.name}»`
+        : `Utworzono wydarzenie «${form.name}»`,
+      {
+        targetType: 'event',
+        targetName: form.name,
+        metadata: { discipline: form.discipline },
+      },
+    );
+    form.handleSubmit();
+  };
+
+  const handleSaveClick = () => {
+    if (form.privacyChanged) {
+      setPrivacyDialogOpen(true);
+      return;
+    }
+    submitForm();
+  };
 
   return (
     <Layout>
@@ -56,20 +82,7 @@ const EventForm = () => {
             </Button>
           ) : (
             <Button
-              onClick={() => {
-                appLogger.event(
-                  form.isEditing ? 'event_update' : 'event_create',
-                  form.isEditing
-                    ? `Zaktualizowano wydarzenie «${form.name}»`
-                    : `Utworzono wydarzenie «${form.name}»`,
-                  {
-                    targetType: 'event',
-                    targetName: form.name,
-                    metadata: { discipline: form.discipline },
-                  },
-                );
-                form.handleSubmit();
-              }}
+              onClick={handleSaveClick}
               disabled={
                 form.isSaving || (!form.isEditing && form.selectedEventLimit?.available === 0)
               }
@@ -84,6 +97,13 @@ const EventForm = () => {
           )}
         </div>
       </div>
+      <PrivacyChangeConfirmDialog
+        open={privacyDialogOpen}
+        nextIsPrivate={form.isPrivate}
+        isConfirming={form.isSaving}
+        onOpenChange={setPrivacyDialogOpen}
+        onConfirm={submitForm}
+      />
     </Layout>
   );
 };

@@ -1,4 +1,4 @@
-import { getEventsByOrganizer, mockRegistrations } from '@/api';
+import { getEventsByOrganizer, getOrganizerEventLimit, mockRegistrations } from '@/api';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +29,10 @@ const getStatusBadge = (status: Event['status']) => {
       return <Badge variant="default">Aktywne</Badge>;
     case 'draft':
       return <Badge variant="secondary">Szkic</Badge>;
+    case 'awaiting_approval':
+      return <Badge variant="outline">Do sprawdzenia</Badge>;
+    case 'approved':
+      return <Badge variant="secondary">Zatwierdzone</Badge>;
     case 'past':
       return <Badge variant="secondary">Przeszłe</Badge>;
     case 'archived':
@@ -51,9 +55,17 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
+  const { data: eventLimitResponse } = useQuery({
+    queryKey: ['organizer-event-limit', user?.id],
+    queryFn: () => getOrganizerEventLimit(user?.id || ''),
+    enabled: Boolean(user?.id),
+  });
+
   const myEvents = (eventsResponse?.data ?? []).filter((event) => event.status !== 'deleted');
   const filteredEvents =
     statusFilter === 'all' ? myEvents : myEvents.filter((event) => event.status === statusFilter);
+  const eventLimit = eventLimitResponse?.data;
+  const canCreateEvent = !eventLimit || eventLimit.available > 0;
 
   const getParticipantCount = (eventId: string) => {
     return mockRegistrations.filter(
@@ -70,10 +82,29 @@ const OrganizerEventsPage = () => {
 
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Moje wydarzenia</h1>
-          <Button onClick={() => navigate('/organizer/events/new')}>
-            <Plus className="mr-2 h-4 w-4" /> Nowe wydarzenie
+          <Button onClick={() => navigate('/organizer/events/new')} disabled={!canCreateEvent}>
+            <Plus className="mr-2 h-4 w-4" /> {canCreateEvent ? 'Nowe wydarzenie' : 'Limit wyczerpany'}
           </Button>
         </div>
+
+        {eventLimit && (
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardContent className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium">
+                  Limit wydarzeń: wykorzystano {eventLimit.used} z {eventLimit.limit}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Do limitu liczą się szkice, aktywne, przeszłe i zarchiwizowane wydarzenia.
+                  Usunięte szkice bez zapisów nie są liczone.
+                </p>
+              </div>
+              <Badge variant={canCreateEvent ? 'secondary' : 'destructive'}>
+                {canCreateEvent ? `${eventLimit.available} dostępne` : 'Brak wolnych miejsc'}
+              </Badge>
+            </CardContent>
+          </Card>
+        )}
 
         <Tabs
           value={statusFilter}

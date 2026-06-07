@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -34,9 +35,12 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
           {/* Age Categories */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">
-                Kategorie wiekowe ({form.ageCategories.length})
-              </Label>
+              <div className="flex items-center gap-1.5">
+                <Label className="text-base font-medium">
+                  Kategorie wiekowe ({form.ageCategories.length})
+                </Label>
+                <FieldHelp description="Kategorie wiekowe grupuja uczestnikow wedlug rocznika i plci. Sa pozniej uzywane w zapisach, listach startowych i wynikach." />
+              </div>
               <Button
                 type="button"
                 variant="outline"
@@ -50,10 +54,22 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
             {form.ageCategories.length > 0 && (
               <div className="space-y-2">
                 <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_100px_100px_40px]">
-                  <span>Nazwa</span>
-                  <span>Płeć</span>
-                  <span>Rok od</span>
-                  <span>Rok do</span>
+                  <span className="flex items-center gap-1">
+                    Nazwa
+                    <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29 albo M40-49." />
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Płeć
+                    <FieldHelp description="Okresla, czy dana kategoria dotyczy kobiet czy mezczyzn." />
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Rok od
+                    <FieldHelp description="Najmlodszy rocznik kwalifikujacy sie do tej kategorii." />
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Rok do
+                    <FieldHelp description="Najstarszy rocznik kwalifikujacy sie do tej kategorii." />
+                  </span>
                   <span></span>
                 </div>
                 {form.ageCategories.map((cat, catIdx) => (
@@ -127,14 +143,23 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
 
           {/* Special Categories */}
           <div className="space-y-3 border-t pt-4">
-            <Label className="text-base font-medium">
-              Kategorie specjalne ({form.specialCategories.length})
-            </Label>
+            <div className="flex items-center gap-1.5">
+              <Label className="text-base font-medium">
+                Kategorie specjalne ({form.specialCategories.length})
+              </Label>
+              <FieldHelp description="Kategorie specjalne dodaja dodatkowe klasyfikacje niezalezne od wieku, np. mieszkancy miasta, sluzby mundurowe albo pracownicy firmy." />
+            </div>
             {form.specialCategories.length > 0 && (
               <div className="space-y-2">
                 <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_1fr_40px]">
-                  <span>Nazwa</span>
-                  <span>Opis (opcjonalnie)</span>
+                  <span className="flex items-center gap-1">
+                    Nazwa
+                    <FieldHelp description="Nazwa kategorii specjalnej widoczna dla uczestnikow i w klasyfikacjach." />
+                  </span>
+                  <span className="flex items-center gap-1">
+                    Opis (opcjonalnie)
+                    <FieldHelp description="Krotkie wyjasnienie warunkow przynaleznosci do kategorii specjalnej." />
+                  </span>
                   <span></span>
                 </div>
                 {form.specialCategories.map((cat, catIdx) => (
@@ -219,7 +244,9 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
-                <Label>Nazwa dystansu *</Label>
+                <HelpLabel description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint.">
+                  Nazwa dystansu *
+                </HelpLabel>
                 <Input
                   value={dist.name}
                   onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
@@ -227,7 +254,9 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Długość *</Label>
+                <HelpLabel description="Dlugosc dystansu wraz z jednostka. Dane sa pokazywane uczestnikom i pomagaja odroznic warianty zapisow.">
+                  Długość *
+                </HelpLabel>
                 <div className="flex gap-2">
                   <Input
                     type="number"
@@ -250,7 +279,9 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Cena (PLN) *</Label>
+                <HelpLabel description="Podstawowa oplata startowa za ten dystans w zlotowkach. Uzywana w koszyku, rejestracji i podsumowaniach platnosci.">
+                  Cena (PLN) *
+                </HelpLabel>
                 <Input
                   type="number"
                   value={dist.price}
@@ -259,7 +290,9 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Limit uczestników</Label>
+                <HelpLabel description="Maksymalna liczba zapisow na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
+                  Limit uczestników
+                </HelpLabel>
                 <Input
                   type="number"
                   value={dist.limit}
@@ -272,9 +305,12 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
             {/* Per-distance category toggles */}
             {form.allCategories.length > 0 && (
               <div className="space-y-2 border-t pt-4">
-                <Label className="text-sm text-muted-foreground">
-                  Kategorie w tym dystansie (odznacz, aby wyłączyć)
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <Label className="text-sm text-muted-foreground">
+                    Kategorie w tym dystansie (odznacz, aby wyłączyć)
+                  </Label>
+                  <FieldHelp description="Pozwala wlaczyc lub wylaczyc wybrane kategorie dla konkretnego dystansu, gdy nie wszystkie klasyfikacje maja zastosowanie." />
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {form.allCategories.map((cat) => {
                     const isDisabled = dist.disabledCategoryIds.includes(cat.id);
@@ -309,7 +345,12 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
               <CollapsibleContent className="space-y-4 pt-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label className="text-xs">URL mapy trasy</Label>
+                    <HelpLabel
+                      className="text-xs"
+                      description="Link do mapy trasy, ktora uczestnik moze otworzyc przed startem."
+                    >
+                      URL mapy trasy
+                    </HelpLabel>
                     <Input
                       value={dist.routeMapUrl}
                       onChange={(e) => form.updateDistance(index, 'routeMapUrl', e.target.value)}
@@ -318,7 +359,12 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">URL profilu przewyższeń</Label>
+                    <HelpLabel
+                      className="text-xs"
+                      description="Link do profilu przewyzszen, przydatny szczegolnie dla biegow gorskich, kolarskich i tras trailowych."
+                    >
+                      URL profilu przewyższeń
+                    </HelpLabel>
                     <Input
                       value={dist.routeElevationProfile}
                       onChange={(e) =>
@@ -329,7 +375,12 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs">URL pliku GPX</Label>
+                    <HelpLabel
+                      className="text-xs"
+                      description="Link do pliku GPX, ktory uczestnik moze pobrac do zegarka, nawigacji lub aplikacji treningowej."
+                    >
+                      URL pliku GPX
+                    </HelpLabel>
                     <Input
                       value={dist.routeGpxUrl}
                       onChange={(e) => form.updateDistance(index, 'routeGpxUrl', e.target.value)}
@@ -339,7 +390,10 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium">Dodatkowe pliki</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-xs font-medium">Dodatkowe pliki</Label>
+                    <FieldHelp description="Lista dodatkowych materialow dla trasy, np. mapa, profil przewyzszen, GPX albo zdjecie trasy." />
+                  </div>
                   {dist.routeFiles.map((file) => (
                     <div
                       key={file.id}

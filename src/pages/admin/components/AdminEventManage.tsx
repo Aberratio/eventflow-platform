@@ -6,7 +6,7 @@ import {
   mockUsers,
 } from '@/api';
 import { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,14 @@ import {
 export const AdminEventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const event = mockEvents.find((e) => e.id === id);
+  const requestedTab = searchParams.get('tab');
+  const defaultTab = ['overview', 'participants', 'results', 'settings', 'advanced'].includes(
+    requestedTab ?? '',
+  )
+    ? requestedTab!
+    : 'overview';
   const eventRegistrations = mockRegistrations.filter((r) => r.eventId === id);
 
   const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
@@ -84,7 +91,7 @@ export const AdminEventManage = () => {
           <p className="text-muted-foreground">Zarządzanie wydarzeniem (widok administratora)</p>
         </div>
 
-        <Tabs defaultValue="overview">
+        <Tabs defaultValue={defaultTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="overview">Przegląd</TabsTrigger>
             <TabsTrigger value="participants">Uczestnicy</TabsTrigger>

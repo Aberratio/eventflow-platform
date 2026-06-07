@@ -76,6 +76,11 @@ export interface RegistrationData {
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 63 }, (_, i) => currentYear - 18 - i);
+const mutedWarningCallout =
+  'border-warning/20 bg-warning/[0.06] text-foreground [&>svg]:text-warning/70';
+const mutedWarningDescription = 'text-muted-foreground';
+const mutedWarningAction =
+  'border-border bg-background/80 text-foreground hover:bg-accent hover:text-accent-foreground';
 const months = [
   { value: '01', label: 'Styczeń' },
   { value: '02', label: 'Luty' },
@@ -273,8 +278,19 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
             const isFull = spotsLeft !== null && spotsLeft <= 0;
             const mode = distance.priceTierMode || 'date';
             return (
-              <label
+              <div
                 key={distance.id}
+                role="button"
+                tabIndex={isFull ? -1 : 0}
+                onClick={() => {
+                  if (!isFull) form.setSelectedDistanceId(distance.id);
+                }}
+                onKeyDown={(event) => {
+                  if (!isFull && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    form.setSelectedDistanceId(distance.id);
+                  }
+                }}
                 className={`flex cursor-pointer items-start gap-4 rounded-lg border-2 p-4 transition-all ${form.selectedDistanceId === distance.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'} ${isFull ? 'cursor-not-allowed opacity-50' : ''}`}
               >
                 <RadioGroupItem value={distance.id} disabled={isFull} className="mt-1" />
@@ -351,7 +367,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                     </div>
                   )}
                 </div>
-              </label>
+              </div>
             );
           })}
         </div>
@@ -469,12 +485,12 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
             </AlertDescription>
           </Alert>
         ) : (
-          <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-            <UserCog className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800 dark:text-amber-200">
-              Uzupełnij swój profil
-            </AlertTitle>
-            <AlertDescription className="flex flex-col gap-2 text-amber-700 dark:text-amber-300 sm:flex-row sm:items-center sm:justify-between">
+          <Alert className={mutedWarningCallout}>
+            <UserCog className="h-4 w-4" />
+            <AlertTitle>Uzupełnij swój profil</AlertTitle>
+            <AlertDescription
+              className={`flex flex-col gap-2 ${mutedWarningDescription} sm:flex-row sm:items-center sm:justify-between`}
+            >
               <span>
                 Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.
               </span>
@@ -482,7 +498,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                 variant="outline"
                 size="sm"
                 asChild
-                className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+                className={mutedWarningAction}
               >
                 <Link to="/participant?tab=profile">Przejdź do profilu</Link>
               </Button>
@@ -588,12 +604,10 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                   </RadioGroup>
                 </div>
               ) : !userBirthYear ? (
-                <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                  <UserCog className="h-4 w-4 text-amber-600" />
-                  <AlertTitle className="text-amber-800 dark:text-amber-200">
-                    Podaj datę urodzenia
-                  </AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-300">
+                <Alert className={mutedWarningCallout}>
+                  <UserCog className="h-4 w-4" />
+                  <AlertTitle>Podaj datę urodzenia</AlertTitle>
+                  <AlertDescription className={mutedWarningDescription}>
                     Po wybraniu daty formularz pokaże pasujące kategorie wiekowe.
                   </AlertDescription>
                 </Alert>
