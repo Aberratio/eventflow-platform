@@ -1,14 +1,11 @@
-import { simulateDelay } from './client';
+import { getAdapter } from './provider';
 import type { ApiResponse } from './types';
-import { mockPartners } from './mock/partners.mock';
 import type { Partner } from '@/types';
 
 export async function getPartners(): Promise<ApiResponse<Partner[]>> {
-  await simulateDelay();
-  return { data: [...mockPartners], success: true };
+  return getAdapter().then((adapter) => adapter.getPartners());
 }
 
 export async function getFeaturedPartners(): Promise<ApiResponse<Partner[]>> {
-  await simulateDelay();
-  return { data: mockPartners.filter((p) => p.featured), success: true };
+  return getAdapter().then((adapter) => adapter.getFeaturedPartners());
 }

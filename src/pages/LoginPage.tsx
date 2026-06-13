@@ -38,7 +38,7 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   {
     role: 'participant',
     label: 'Uczestnik',
-    email: 'jan@example.com',
+    email: 'test.participant@zmierzymyczas.pl',
     password: 'demo1234',
     icon: User,
     color: 'bg-accent/10 text-accent-foreground border-accent/30',
@@ -46,7 +46,7 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   {
     role: 'organizer',
     label: 'Organizator',
-    email: 'marek@timing.pl',
+    email: 'test.organizer@zmierzymyczas.pl',
     password: 'demo1234',
     icon: Briefcase,
     color: 'bg-primary/10 text-primary border-primary/30',
@@ -54,7 +54,7 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   {
     role: 'moderator',
     label: 'Moderator',
-    email: 'monika@zmierzymyczas.pl',
+    email: 'test.moderator@zmierzymyczas.pl',
     password: 'demo1234',
     icon: UserCheck,
     color: 'bg-warning/10 text-warning-foreground border-warning/30',
@@ -62,7 +62,7 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   {
     role: 'admin',
     label: 'Administrator',
-    email: 'admin@zmierzymyczas.pl',
+    email: 'test.admin@zmierzymyczas.pl',
     password: 'demo1234',
     icon: Shield,
     color: 'bg-destructive/10 text-destructive border-destructive/30',
@@ -70,7 +70,7 @@ const MOCK_CREDENTIALS: MockCredential[] = [
   {
     role: 'superadmin',
     label: 'Super Admin',
-    email: 'superadmin@zmierzymyczas.pl',
+    email: 'test.superadmin@zmierzymyczas.pl',
     password: 'demo1234',
     icon: Crown,
     color: 'bg-destructive/10 text-destructive border-destructive/30',
@@ -82,6 +82,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [quickLoginRole, setQuickLoginRole] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -120,15 +121,28 @@ const LoginPage = () => {
     setIsLoading(false);
   };
 
+  const handleQuickLogin = async (cred: MockCredential) => {
+    setQuickLoginRole(cred.role);
+    form.setValue('email', cred.email);
+    form.setValue('password', cred.password);
+
+    const success = await loginWithCredentials(cred.email, cred.password);
+    if (success) {
+      toast({ title: 'Zalogowano pomyslnie', description: `Konto testowe: ${cred.label}` });
+    } else {
+      toast({
+        title: 'Blad logowania',
+        description: 'Nie udalo sie zalogowac na konto testowe.',
+        variant: 'destructive',
+      });
+    }
+    setQuickLoginRole(null);
+  };
+
   const handleCopy = (text: string, fieldId: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(fieldId);
     setTimeout(() => setCopiedField(null), 1500);
-  };
-
-  const handleFillCredentials = (cred: MockCredential) => {
-    form.setValue('email', cred.email);
-    form.setValue('password', cred.password);
   };
 
   return (
@@ -245,7 +259,8 @@ const LoginPage = () => {
                       key={cred.role}
                       credential={cred}
                       copiedField={copiedField}
-                      onFill={handleFillCredentials}
+                      isLoading={quickLoginRole !== null}
+                      onLogin={handleQuickLogin}
                       onCopy={handleCopy}
                     />
                   ))}

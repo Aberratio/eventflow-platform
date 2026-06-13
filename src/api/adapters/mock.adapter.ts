@@ -140,6 +140,7 @@ let emailTemplates: EmailTemplate[] = [...mockEmailTemplates];
 let emailLogs: EmailSendLog[] = [...mockEmailSendLogs];
 let nextTemplateId = 100;
 let shopProducts: ShopProduct[] = [...mockShopProducts];
+let partners: Partner[] = [...mockPartners];
 let shopCategories: ShopCategoryConfig[] = Object.entries({
   apparel: 'Odzież',
   footwear: 'Obuwie',
@@ -166,7 +167,9 @@ const hasEventEnded = (event: Event) =>
   (event.endDate || event.date).slice(0, 10) < new Date().toISOString().slice(0, 10);
 
 const hasRegistrations = (eventId: string) =>
-  mockRegistrations.some((registration) => registration.eventId === eventId && registration.status !== 'removed');
+  mockRegistrations.some(
+    (registration) => registration.eventId === eventId && registration.status !== 'removed',
+  );
 
 const toOrganizerEventLimit = (organizerId: string): OrganizerEventLimit => {
   const used = countOrganizerEvents(organizerId);
@@ -230,10 +233,7 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     const eventLimit = toOrganizerEventLimit(data.organizerId);
     if (eventLimit.used >= eventLimit.limit) {
-      return fail(
-        null as unknown as Event,
-        'Organizer has no available event slots',
-      );
+      return fail(null as unknown as Event, 'Organizer has no available event slots');
     }
     const newEvent: Event = {
       id: `e-${Date.now()}`,
@@ -380,7 +380,10 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     const used = countOrganizerEvents(organizerId);
     if (limit < used) {
-      return fail(toOrganizerEventLimit(organizerId), 'Event limit cannot be lower than current event count');
+      return fail(
+        toOrganizerEventLimit(organizerId),
+        'Event limit cannot be lower than current event count',
+      );
     }
     organizerEventLimits[organizerId] = limit;
     return ok(toOrganizerEventLimit(organizerId));
@@ -825,7 +828,10 @@ export const mockAdapter: ApiAdapter = {
     if (!filters?.includeArchived) filtered = filtered.filter((c) => c.status !== 'archived');
     if (filters?.status) filtered = filtered.filter((c) => c.status === filters.status);
     if (filters?.seriesId) filtered = filtered.filter((c) => c.seriesId === filters.seriesId);
-    if (filters?.search) filtered = filtered.filter((c) => c.name.toLowerCase().includes(filters.search!.toLowerCase()));
+    if (filters?.search)
+      filtered = filtered.filter((c) =>
+        c.name.toLowerCase().includes(filters.search!.toLowerCase()),
+      );
     return ok(filtered);
   },
 
@@ -843,7 +849,12 @@ export const mockAdapter: ApiAdapter = {
 
   async createChallenge(data) {
     await delay();
-    const challenge = { id: `challenge-${Date.now()}`, rewards: [], createdBy: 'mock', ...data } as Challenge;
+    const challenge = {
+      id: `challenge-${Date.now()}`,
+      rewards: [],
+      createdBy: 'mock',
+      ...data,
+    } as Challenge;
     mockChallenges.push(challenge);
     return ok(challenge);
   },
@@ -965,12 +976,51 @@ export const mockAdapter: ApiAdapter = {
 
   async getPartners() {
     await delay();
-    return ok([...mockPartners]);
+    return ok([...partners]);
   },
 
   async getFeaturedPartners() {
     await delay();
-    return ok(mockPartners.filter((p) => p.featured));
+    return ok(partners.filter((p) => p.featured));
+  },
+
+  async getPartnerById(id) {
+    await delay();
+    return ok(partners.find((p) => p.id === id) ?? null);
+  },
+
+  async createPartner(data) {
+    await delay();
+    const partner: Partner = {
+      id: data.id ?? `partner-${Date.now()}`,
+      name: data.name,
+      logoUrl: data.logoUrl,
+      logoDarkUrl: data.logoDarkUrl,
+      websiteUrl: data.websiteUrl,
+      featured: data.featured,
+    };
+    partners = [...partners, partner];
+    return ok(partner);
+  },
+
+  async updatePartner(id, data) {
+    await delay();
+    const partner = partners.find((p) => p.id === id);
+    if (!partner) return fail(null as unknown as Partner, 'Partner not found');
+    const updated = { ...partner, ...data };
+    partners = partners.map((p) => (p.id === id ? updated : p));
+    return ok(updated);
+  },
+
+  async deletePartner(id) {
+    await delay();
+    partners = partners.filter((p) => p.id !== id);
+    return ok(undefined as unknown as void);
+  },
+
+  async uploadPartnerLogo(file) {
+    await delay();
+    return ok({ url: URL.createObjectURL(file) });
   },
 
   // ── Insurance ──

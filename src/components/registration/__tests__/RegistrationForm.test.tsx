@@ -119,7 +119,7 @@ describe('RegistrationForm preview mode', () => {
     );
 
     expect(screen.getByText('Tryb testowy formularza')).toBeInTheDocument();
-    expect(screen.getAllByText('80 zł').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('80,00 zł').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /Zakończ testowo, bez płatności/i })).toBeEnabled();
     expect(screen.queryByRole('button', { name: /Płacę/i })).not.toBeInTheDocument();
 

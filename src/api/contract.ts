@@ -47,6 +47,8 @@ import type {
   UpdateChallengePayload,
   CreateInfoPagePayload,
   UpdateInfoPagePayload,
+  CreatePartnerPayload,
+  UpdatePartnerPayload,
 } from './payloads';
 import type {
   Event,
@@ -238,6 +240,11 @@ export interface ApiAdapter {
   // ── Partners ──
   getPartners(): Promise<ApiResponse<Partner[]>>;
   getFeaturedPartners(): Promise<ApiResponse<Partner[]>>;
+  getPartnerById(id: string): Promise<ApiResponse<Partner | null>>;
+  createPartner(data: CreatePartnerPayload): Promise<ApiResponse<Partner>>;
+  updatePartner(id: string, data: UpdatePartnerPayload): Promise<ApiResponse<Partner>>;
+  deletePartner(id: string): Promise<ApiResponse<void>>;
+  uploadPartnerLogo(file: File): Promise<ApiResponse<{ url: string }>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;

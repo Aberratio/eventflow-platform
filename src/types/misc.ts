@@ -2,6 +2,7 @@ export interface Partner {
   id: string;
   name: string;
   logoUrl: string;
+  logoDarkUrl?: string;
   websiteUrl?: string;
   featured: boolean;
 }

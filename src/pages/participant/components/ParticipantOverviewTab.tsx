@@ -1,5 +1,6 @@
-import { mockEvents } from '@/api';
+import { getEvents } from '@/api';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +23,16 @@ const ParticipantOverviewTab = ({
   personalRecords,
   unreadMessages,
 }: ParticipantOverviewTabProps) => {
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'participant-overview'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
+
   // Find the nearest upcoming event
   const nearestRegistration = upcomingRegistrations
     .map((reg) => {
-      const event = mockEvents.find((e) => e.id === reg.eventId);
+      const event = events.find((e) => e.id === reg.eventId);
       return { ...reg, event };
     })
     .filter((reg) => reg.event && new Date(reg.event.date) > new Date())

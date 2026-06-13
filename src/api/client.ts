@@ -1,6 +1,6 @@
 import type { ApiResponse } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const MOCK_DELAY_MIN = 150;
 const MOCK_DELAY_MAX = 300;
 

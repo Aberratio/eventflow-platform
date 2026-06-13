@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { AdminOverviewTab } from './components/AdminOverviewTab';
 import { UsersParticipantsTab } from './components/UsersParticipantsTab';
@@ -32,6 +32,7 @@ import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager'
 import { AdminOrdersTab } from './components/AdminOrdersTab';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Select,
   SelectContent,
@@ -92,12 +93,21 @@ const navGroups: NavGroup[] = [
 ];
 
 const allItems = navGroups.flatMap((g) => g.items);
+const allItemIds = new Set(allItems.map((item) => item.id));
+
+const getAdminSectionPath = (section: string) => `/admin/${section}`;
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState('overview');
+  const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const canManageAdmins = user?.role === 'superadmin';
+  const pathSection = location.pathname.split('/')[2] || 'overview';
+  const activeSection =
+    allItemIds.has(pathSection) && (pathSection !== 'admins' || canManageAdmins)
+      ? pathSection
+      : 'overview';
 
   const visibleNavGroups = navGroups
     .map((group) => ({
@@ -106,7 +116,8 @@ const AdminDashboard = () => {
     }))
     .filter((group) => group.items.length > 0);
 
-  const activeItem = allItems.find((i) => i.id === activeSection);
+  const activeItem = useMemo(() => allItems.find((i) => i.id === activeSection), [activeSection]);
+  const navigateToSection = (section: string) => navigate(getAdminSectionPath(section));
 
   const renderContent = () => {
     switch (activeSection) {
@@ -155,7 +166,7 @@ const AdminDashboard = () => {
 
         {isMobile ? (
           <>
-            <Select value={activeSection} onValueChange={setActiveSection}>
+            <Select value={activeSection} onValueChange={navigateToSection}>
               <SelectTrigger className="mb-6">
                 <SelectValue>
                   {activeItem && (
@@ -199,7 +210,7 @@ const AdminDashboard = () => {
                     {group.items.map((item) => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveSection(item.id)}
+                        onClick={() => navigateToSection(item.id)}
                         className={cn(
                           'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                           activeSection === item.id

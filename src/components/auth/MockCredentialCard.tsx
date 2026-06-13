@@ -16,14 +16,16 @@ export interface MockCredential {
 interface MockCredentialCardProps {
   credential: MockCredential;
   copiedField: string | null;
-  onFill: (cred: MockCredential) => void;
+  isLoading?: boolean;
+  onLogin: (cred: MockCredential) => void;
   onCopy: (text: string, fieldId: string) => void;
 }
 
 export const MockCredentialCard = ({
   credential,
   copiedField,
-  onFill,
+  isLoading = false,
+  onLogin,
   onCopy,
 }: MockCredentialCardProps) => {
   const Icon = credential.icon;
@@ -31,7 +33,9 @@ export const MockCredentialCard = ({
   return (
     <Card
       className={`border ${credential.color} cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md`}
-      onClick={() => onFill(credential)}
+      onClick={() => {
+        if (!isLoading) onLogin(credential);
+      }}
     >
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
@@ -46,8 +50,8 @@ export const MockCredentialCard = ({
               </code>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
                   onCopy(credential.email, `${credential.role}-email`);
                 }}
                 className="shrink-0 text-muted-foreground hover:text-foreground"
@@ -61,13 +65,13 @@ export const MockCredentialCard = ({
             </div>
             <div className="mt-1 flex items-center gap-2">
               <code className="rounded bg-background/80 px-2 py-0.5 font-mono text-xs">
-                demo1234
+                {credential.password}
               </code>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCopy('demo1234', `${credential.role}-pass`);
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onCopy(credential.password, `${credential.role}-pass`);
                 }}
                 className="shrink-0 text-muted-foreground hover:text-foreground"
               >
@@ -79,8 +83,8 @@ export const MockCredentialCard = ({
               </button>
             </div>
           </div>
-          <Button size="sm" variant="ghost" className="shrink-0 text-xs">
-            Użyj
+          <Button size="sm" variant="ghost" className="shrink-0 text-xs" disabled={isLoading}>
+            {isLoading ? '...' : 'Zaloguj'}
           </Button>
         </div>
       </CardContent>

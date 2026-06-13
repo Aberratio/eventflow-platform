@@ -1,5 +1,6 @@
-import { mockRegistrations, mockUsers } from '@/api';
+import { getUsers, mockRegistrations } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,10 +72,14 @@ export const UsersParticipantsTab = () => {
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('participant');
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'participants'],
+    queryFn: () => getUsers({ role: 'participant', pageSize: 1000 }),
+  });
 
   const isBlocked = (userId: string) => blockedUsers.has(userId);
 
-  const participants = mockUsers.filter((u) => u.role === 'participant');
+  const participants = usersResponse?.data ?? [];
   const canManageAdmins = currentUser?.role === 'superadmin';
 
   const filteredParticipants = participants.filter((user) => {

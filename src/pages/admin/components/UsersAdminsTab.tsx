@@ -1,5 +1,6 @@
-import { mockUsers } from '@/api';
+import { getUsers } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,9 +56,13 @@ export const UsersAdminsTab = () => {
     'admin',
   );
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', phone: '' });
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'admins'],
+    queryFn: () => getUsers({ pageSize: 1000 }),
+  });
 
   const admins = [
-    ...mockUsers
+    ...(usersResponse?.data ?? [])
       .filter((user) => user.role === 'admin' || user.role === 'superadmin')
       .map((user) => ({ ...user, role: roleOverrides[user.id] ?? user.role })),
     ...createdAdmins,

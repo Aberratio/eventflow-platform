@@ -2,7 +2,7 @@ import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { User } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const TOKEN_STORAGE_KEY = 'zmierzymy_czas_api_token';
 
 type QueryValue = string | number | boolean | null | undefined;
@@ -94,7 +94,9 @@ function json(method: string, data?: unknown): RequestInit {
 
 function resolveApiAssetUrl(url: string): string {
   if (!url.startsWith('/')) return url;
-  const apiOrigin = API_BASE_URL ? new URL(API_BASE_URL, window.location.origin).origin : window.location.origin;
+  const apiOrigin = API_BASE_URL
+    ? new URL(API_BASE_URL, window.location.origin).origin
+    : window.location.origin;
   return `${apiOrigin}${url}`;
 }
 
@@ -254,6 +256,18 @@ export const httpAdapter: ApiAdapter = {
 
   getPartners: () => request('/partners'),
   getFeaturedPartners: () => request('/partners/featured'),
+  getPartnerById: (id) => request(`/partners/${encodeURIComponent(id)}`),
+  createPartner: (data) => request('/partners', json('POST', data)),
+  updatePartner: (id, data) => request(`/partners/${encodeURIComponent(id)}`, json('PATCH', data)),
+  deletePartner: (id) => request(`/partners/${encodeURIComponent(id)}`, json('DELETE')),
+  uploadPartnerLogo: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return requestForm<{ url: string }>('/uploads/partner-logos', formData).then((response) => ({
+      ...response,
+      data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
+    }));
+  },
 
   getGlobalInsuranceSettings: () => request('/insurance/settings'),
   updateGlobalInsuranceSettings: (data) => request('/insurance/settings', json('PATCH', data)),

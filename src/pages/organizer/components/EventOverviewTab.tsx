@@ -1,18 +1,31 @@
 import { disciplineLabels } from '@/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Event, Registration } from '@/types';
-import { Users, Calendar, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
+import { Event, Registration } from '@/types';
+import {
+  Calendar,
+  Clock,
+  CreditCard,
+  ExternalLink,
+  Flag,
+  Globe2,
+  Mail,
+  MapPin,
+  PencilLine,
+  Phone,
+  Route,
+  ShieldCheck,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface EventOverviewTabProps {
   event: Event;
   registrations: Registration[];
 }
 
-export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps) => {
+export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
   const statusLabels: Record<Event['status'], string> = {
     draft: 'Szkic',
     awaiting_approval: 'Do sprawdzenia',
@@ -22,152 +35,193 @@ export const EventOverviewTab = ({ event, registrations }: EventOverviewTabProps
     archived: 'Zarchiwizowane',
     deleted: 'Usunięte',
   };
-  const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
-  const pendingRegistrations = registrations.filter((r) => r.status === 'pending');
+
+  const statusVariant = event.status === 'active' ? 'default' : 'secondary';
   const eventPageUrl =
     event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
-  const totalRevenue = confirmedRegistrations.reduce((acc, reg) => {
-    const distance = event.distances.find((d) => d.id === reg.distanceId);
-    return acc + (distance?.price || 0);
-  }, 0);
+  const dateLabel = event.isVirtual
+    ? [event.startDate, event.endDate].filter(Boolean).join(' - ') || event.date
+    : event.date;
+  const locationLabel = event.isVirtual
+    ? 'Wydarzenie wirtualne'
+    : `${event.location}, ${event.city}`;
+  const registrationMode =
+    event.registrationEmbed?.enabled && event.registrationEmbed.mode === 'external_embed'
+      ? 'Zapisy zewnętrzne'
+      : event.registrationStatus === 'closed'
+        ? 'Zapisy zamknięte'
+        : event.registrationStatus === 'none'
+          ? 'Bez zapisów'
+          : 'Zapisy otwarte';
+  const paymentLabel =
+    event.paymentConfig?.type === 'organizer_bank'
+      ? 'Przelew do organizatora'
+      : event.paymentConfig?.type === 'admin_gateway'
+        ? 'Bramka płatności'
+        : 'Nie skonfigurowano';
 
-  const registrationsByDistance = event.distances.map((d) => ({
-    distance: d,
-    count: registrations.filter((r) => r.distanceId === d.id).length,
-    percentage: d.limit
-      ? Math.round((registrations.filter((r) => r.distanceId === d.id).length / d.limit) * 100)
-      : 0,
-  }));
+  const overviewItems = [
+    {
+      icon: Calendar,
+      label: 'Termin',
+      value: dateLabel,
+    },
+    {
+      icon: MapPin,
+      label: event.isVirtual ? 'Tryb' : 'Miejsce',
+      value: locationLabel,
+    },
+    {
+      icon: Clock,
+      label: 'Koniec zapisów',
+      value: event.registrationDeadline || 'Nie ustawiono',
+    },
+    {
+      icon: Flag,
+      label: 'Dyscyplina',
+      value: disciplineLabels[event.discipline],
+    },
+    {
+      icon: ShieldCheck,
+      label: 'Status',
+      value: statusLabels[event.status],
+    },
+    {
+      icon: CreditCard,
+      label: 'Płatności',
+      value: paymentLabel,
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Users className="h-6 w-6 text-primary" />
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <Card>
+        <CardContent className="space-y-6 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={statusVariant}>{statusLabels[event.status]}</Badge>
+                <Badge variant="outline">{disciplineLabels[event.discipline]}</Badge>
+                {event.featured && <Badge variant="outline">Wyróżnione</Badge>}
+                {event.isPrivate && <Badge variant="outline">Prywatne</Badge>}
               </div>
               <div>
-                <div className="text-2xl font-bold">{confirmedRegistrations.length}</div>
-                <div className="text-sm text-muted-foreground">Potwierdzonych</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-warning/10 p-3">
-                <Users className="h-6 w-6 text-warning" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{pendingRegistrations.length}</div>
-                <div className="text-sm text-muted-foreground">Oczekujących</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-success/10 p-3">
-                <TrendingUp className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} PLN</div>
-                <div className="text-sm text-muted-foreground">Przychód</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Calendar className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{event.date}</div>
-                <div className="text-sm text-muted-foreground">Data wydarzenia</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Informacje o wydarzeniu</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge>{disciplineLabels[event.discipline]}</Badge>
-              <Badge variant={event.status === 'active' ? 'default' : 'secondary'}>
-                {statusLabels[event.status]}
-              </Badge>
-              {event.featured && <Badge variant="outline">Wyróżnione</Badge>}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {event.location}, {event.city}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Termin rejestracji: {event.registrationDeadline}</span>
+                <h2 className="text-xl font-semibold leading-tight">Najważniejsze informacje</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Komplet danych potrzebnych do szybkiej kontroli wydarzenia.
+                </p>
               </div>
             </div>
 
-            <RichTextDisplay html={event.description} className="text-muted-foreground" />
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button variant="outline" asChild>
+                <Link to={eventPageUrl}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Podgląd
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to={`/organizer/events/${event.id}?tab=settings`}>
+                  <PencilLine className="mr-2 h-4 w-4" />
+                  Edytuj
+                </Link>
+              </Button>
+            </div>
+          </div>
 
-            <Button variant="outline" asChild>
-              <Link to={eventPageUrl}>
-                <ExternalLink className="mr-2 h-4 w-4" /> Zobacz stronę wydarzenia
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Zapisy na dystanse</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {registrationsByDistance.map(({ distance, count, percentage }) => (
-                <div key={distance.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{distance.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {count} / {distance.limit || 'bez limitu'}
-                    </span>
+          <div className="grid gap-3 md:grid-cols-2">
+            {overviewItems.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex gap-3 rounded-md border bg-muted/20 p-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-background">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {label}
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${Math.min(percentage, 100)}%` }}
-                    />
+                  <div className="truncate text-sm font-medium">{value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <Globe2 className="h-4 w-4 text-primary" />
+                Rejestracja
+              </div>
+              <div className="text-sm text-muted-foreground">{registrationMode}</div>
+              {event.registrationEmbed?.externalUrl && (
+                <div className="mt-1 truncate text-sm">{event.registrationEmbed.externalUrl}</div>
+              )}
+            </div>
+
+            <div className="rounded-md border p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                <Mail className="h-4 w-4 text-primary" />
+                Kontakt organizatora
+              </div>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <div className="truncate">
+                  {event.organizerContact?.email || 'Brak adresu e-mail'}
+                </div>
+                {event.organizerContact?.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{event.organizerContact.phone}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>
-                      {distance.length} {distance.unit}
-                    </span>
-                    <span>{distance.price} PLN</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {event.description && (
+            <div className="rounded-md border p-4">
+              <div className="mb-2 text-sm font-semibold">Opis dla uczestników</div>
+              <RichTextDisplay
+                html={event.description}
+                className="line-clamp-4 text-sm text-muted-foreground"
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="space-y-4 p-5 sm:p-6">
+          <div>
+            <h2 className="text-lg font-semibold">Dystanse</h2>
+            <p className="text-sm text-muted-foreground">
+              Zakres, limity i ceny bez statystyk zapisów.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {event.distances.map((distance) => (
+              <div key={distance.id} className="rounded-md border p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">{distance.name}</div>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                      <Route className="h-4 w-4" />
+                      <span>
+                        {distance.length} {distance.unit}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-sm font-semibold">{distance.price} PLN</div>
+                    <div className="text-xs text-muted-foreground">
+                      limit: {distance.limit || 'bez limitu'}
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

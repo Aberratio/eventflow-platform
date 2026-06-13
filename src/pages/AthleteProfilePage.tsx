@@ -1,6 +1,7 @@
-import { mockResults, mockEvents, disciplineLabels } from '@/api';
+import { getEvents, mockResults, disciplineLabels } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,16 +18,21 @@ import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from 'lucide-react
 
 const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'athlete-profile'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
 
   const athleteResults = useMemo(() => {
     return mockResults
       .filter((r) => r.userId === userId)
       .sort((a, b) => {
-        const eventA = mockEvents.find((e) => e.id === a.eventId);
-        const eventB = mockEvents.find((e) => e.id === b.eventId);
+        const eventA = events.find((e) => e.id === a.eventId);
+        const eventB = events.find((e) => e.id === b.eventId);
         return new Date(eventB?.date || 0).getTime() - new Date(eventA?.date || 0).getTime();
       });
-  }, [userId]);
+  }, [events, userId]);
 
   const athleteName = athleteResults[0]?.userName || 'Nieznany zawodnik';
 
@@ -58,7 +64,7 @@ const AthleteProfilePage = () => {
   }, [athleteResults]);
 
   const getEventDetails = (eventId: string) => {
-    return mockEvents.find((e) => e.id === eventId);
+    return events.find((e) => e.id === eventId);
   };
 
   const getStatusBadge = (status: string) => {

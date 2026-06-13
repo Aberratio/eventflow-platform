@@ -1,4 +1,4 @@
-import { simulateDelay } from './client';
+import { httpAdapter } from './adapters/http.adapter';
 import type {
   ApiResponse,
   LoginCredentials,
@@ -6,54 +6,34 @@ import type {
   ResetPasswordPayload,
   ChangePasswordPayload,
 } from './types';
-import { mockUsers } from './mock/users.mock';
 import type { User, UserRole } from '@/types';
 
 export async function login(credentials: LoginCredentials): Promise<ApiResponse<User | null>> {
-  await simulateDelay();
-  const user = mockUsers.find((u) => u.email === credentials.email) ?? null;
-  return { data: user, success: !!user, message: user ? undefined : 'Invalid credentials' };
+  return httpAdapter.login(credentials);
 }
 
-/** Mock login by role (development convenience). */
 export async function loginByRole(role: UserRole): Promise<ApiResponse<User | null>> {
-  await simulateDelay();
-  const user = mockUsers.find((u) => u.role === role) ?? null;
+  const users = await httpAdapter.getUsers({ role, pageSize: 1 });
+  const user = users.data[0] ?? null;
   return { data: user, success: !!user };
 }
 
 export async function logout(): Promise<ApiResponse<void>> {
-  await simulateDelay();
-  return { data: undefined as unknown as void, success: true };
+  return httpAdapter.logout();
 }
 
 export async function getCurrentUser(): Promise<ApiResponse<User | null>> {
-  await simulateDelay();
-  return { data: null, success: true };
+  return httpAdapter.getCurrentUser();
 }
 
 export async function register(data: RegisterPayload): Promise<ApiResponse<User>> {
-  await simulateDelay();
-  const newUser: User = {
-    id: `u-${Date.now()}`,
-    name: data.name,
-    email: data.email,
-    role: data.role ?? 'participant',
-    isNewUser: true,
-  };
-  return { data: newUser, success: true };
+  return httpAdapter.register(data);
 }
 
 export async function resetPassword(_payload: ResetPasswordPayload): Promise<ApiResponse<void>> {
-  await simulateDelay();
-  return {
-    data: undefined as unknown as void,
-    success: true,
-    message: 'Password reset email sent',
-  };
+  return httpAdapter.resetPassword(_payload);
 }
 
 export async function changePassword(_payload: ChangePasswordPayload): Promise<ApiResponse<void>> {
-  await simulateDelay();
-  return { data: undefined as unknown as void, success: true, message: 'Password changed' };
+  return httpAdapter.changePassword(_payload);
 }

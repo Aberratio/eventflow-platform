@@ -107,8 +107,9 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const allDistancesFull =
     event.distances.length > 0 &&
     event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit);
-  const isDraftPreview = previewMode && Boolean(isUnpublished);
-  const isRegistrationOpen = isDraftPreview
+  const isPreview = previewMode;
+  const detailsUrl = getEditUrl(event, user);
+  const isRegistrationOpen = isPreview
     ? event.distances.length > 0 && !allDistancesFull
     : !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
   const hasExternalRegistration = isExternalRegistrationEvent(event);
@@ -144,7 +145,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
       return;
     }
 
-    if (isDraftPreview) {
+    if (isPreview) {
       navigate(`/events/${slug}/register/preview`);
       return;
     }
@@ -175,14 +176,18 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
 
   return (
     <Layout>
-      {isDraftPreview ? (
-        <PreviewBanner settingsUrl={`${getEditUrl(event, user)}?tab=settings`} />
+      {isPreview ? (
+        <PreviewBanner detailsUrl={detailsUrl} settingsUrl={`${detailsUrl}?tab=settings`} />
       ) : (
         isUnpublished && <DraftBanner event={event} user={user} />
       )}
       {isPrivateEvent && !isUnpublished && <PrivateBanner />}
 
-      <EventHeroBanner event={event} isPast={isPast} onBack={() => navigate(-1)} />
+      <EventHeroBanner
+        event={event}
+        isPast={isPast}
+        onBack={() => navigate(isPreview ? detailsUrl : -1)}
+      />
 
       <div className="container py-5 sm:py-8">
         <div className="grid gap-5 sm:gap-8 lg:grid-cols-3">
@@ -338,7 +343,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
             closedReason={registrationClosedReason}
             onRegister={handleRegister}
             onShare={handleShare}
-            previewMode={isDraftPreview}
+            previewMode={isPreview}
           />
         </div>
       </div>
@@ -365,23 +370,40 @@ const StatItem = ({
   </div>
 );
 
-const PreviewBanner = ({ settingsUrl }: { settingsUrl: string }) => (
+const PreviewBanner = ({
+  detailsUrl,
+  settingsUrl,
+}: {
+  detailsUrl: string;
+  settingsUrl: string;
+}) => (
   <div className="border-b border-primary/20 bg-primary/10 text-primary">
     <div className="container flex flex-col gap-2 py-2 text-sm font-medium sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <Eye className="h-4 w-4 shrink-0" />
         <span>
-          Tryb podglądu szkicu - widok uczestnika. Wydarzenie nie jest widoczne publicznie.
+          To jest tylko podgląd strony wydarzenia w widoku uczestnika. Dane nie są publikowane ani
+          zapisywane z tego ekranu; służą do sprawdzenia treści, formularza i wgranych materiałów.
         </span>
       </div>
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        className="h-8 w-fit border-primary/30 bg-background/80 text-foreground hover:bg-accent"
-      >
-        <Link to={settingsUrl}>Wróć do ustawień</Link>
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="h-8 w-fit border-primary/30 bg-background/80 text-foreground hover:bg-accent"
+        >
+          <Link to={detailsUrl}>Wróć do szczegółów</Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="h-8 w-fit border-primary/30 bg-background/80 text-foreground hover:bg-accent"
+        >
+          <Link to={settingsUrl}>Ustawienia</Link>
+        </Button>
+      </div>
     </div>
   </div>
 );

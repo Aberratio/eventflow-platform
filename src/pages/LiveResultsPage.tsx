@@ -1,5 +1,6 @@
-import { mockEvents } from '@/api';
+import { getLiveEvents } from '@/api';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,10 +11,11 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
 const LiveResultsPage = () => {
-  // Get events that are currently live (have liveResultsUrl and isLive flag or today's date)
-  const today = new Date().toISOString().split('T')[0];
-
-  const liveEvents = mockEvents.filter((e) => e.isLive || (e.liveResultsUrl && e.date === today));
+  const { data: liveEventsResponse } = useQuery({
+    queryKey: ['events', 'live'],
+    queryFn: getLiveEvents,
+  });
+  const liveEvents = liveEventsResponse?.data ?? [];
 
   return (
     <Layout>

@@ -1,5 +1,6 @@
-import { mockEvents } from '@/api';
+import { getEvents } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,11 @@ interface ParticipantMessagesTabProps {
 
 const ParticipantMessagesTab = ({ messages, onMarkAsRead }: ParticipantMessagesTabProps) => {
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'participant-messages'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
 
   // Group messages by event
   const groupedMessages = messages.reduce(
@@ -64,7 +70,7 @@ const ParticipantMessagesTab = ({ messages, onMarkAsRead }: ParticipantMessagesT
   return (
     <div className="space-y-6">
       {Object.entries(groupedMessages).map(([eventId, eventMessages]) => {
-        const event = eventId !== 'general' ? mockEvents.find((e) => e.id === eventId) : null;
+        const event = eventId !== 'general' ? events.find((e) => e.id === eventId) : null;
         const unreadCount = eventMessages.filter((m) => !m.read).length;
 
         return (

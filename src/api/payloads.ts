@@ -28,6 +28,7 @@ import type {
   ShopProduct,
   ShopCategoryConfig,
   Challenge,
+  Partner,
 } from '@/types';
 import type { CreateEmailTemplatePayload, EmailPreviewRequest } from '@/types/email';
 
@@ -227,6 +228,13 @@ export interface CreateInfoPagePayload {
 }
 
 export type UpdateInfoPagePayload = Partial<CreateInfoPagePayload>;
+
+export type CreatePartnerPayload = Omit<Partner, 'id'> & {
+  id?: string;
+  sortOrder?: number;
+};
+
+export type UpdatePartnerPayload = Partial<CreatePartnerPayload>;
 
 // ──────────────── Re-exports for convenience ────────────────
 

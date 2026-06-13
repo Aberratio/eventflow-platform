@@ -1,15 +1,29 @@
-import { mockEvents } from '@/api';
+import { getEventBySlug } from '@/api';
 import {
   ExternalRegistrationFrame,
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 
 const EventRegistrationEmbed = () => {
   const { slug } = useParams();
-  const event = mockEvents.find((e) => e.slug === slug);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: ['event', 'embed', slug],
+    queryFn: () => getEventBySlug(slug ?? ''),
+    enabled: Boolean(slug),
+  });
+  const event = eventResponse?.data;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <p className="text-muted-foreground">Ładowanie wydarzenia...</p>
+      </div>
+    );
+  }
 
   if (!event) {
     return (

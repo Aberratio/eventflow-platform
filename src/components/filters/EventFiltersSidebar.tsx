@@ -1,5 +1,6 @@
-import { mockEvents } from '@/api';
+import { getEvents } from '@/api';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -28,14 +29,19 @@ interface EventFiltersSidebarProps {
 }
 
 function useFilterOptions() {
-  const cities = useMemo(() => [...new Set(mockEvents.map((e) => e.city))].sort(), []);
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'filter-options'],
+    queryFn: () => getEvents({ pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
+  const cities = useMemo(() => [...new Set(events.map((e) => e.city))].sort(), [events]);
   const organizers = useMemo(() => {
     const m = new Map<string, string>();
-    mockEvents.forEach((e) => {
+    events.forEach((e) => {
       if (e.organizerId && e.organizerName) m.set(e.organizerId, e.organizerName);
     });
     return Array.from(m.entries()).map(([id, name]) => ({ id, name }));
-  }, []);
+  }, [events]);
   return { cities, organizers };
 }
 

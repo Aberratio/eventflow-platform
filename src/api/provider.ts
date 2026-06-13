@@ -1,7 +1,7 @@
 /**
  * API Provider — runtime adapter selection.
  *
- * By default uses the mock adapter. Call `setApiAdapter()` to swap.
+ * By default uses the HTTP adapter backed by the application API.
  *
  * Example (main.tsx):
  *   import { setApiAdapter } from '@/api/provider';
@@ -18,12 +18,11 @@ export function setApiAdapter(adapter: ApiAdapter): void {
   _adapter = adapter;
 }
 
-/** Get the active API adapter. Lazy-loads mock adapter if none set. */
+/** Get the active API adapter. Lazy-loads HTTP adapter if none set. */
 export async function getAdapter(): Promise<ApiAdapter> {
   if (!_adapter) {
-    // Lazy import to avoid bundling mock data in production when a real adapter is set
-    const { mockAdapter } = await import('./adapters/mock.adapter');
-    _adapter = mockAdapter;
+    const { httpAdapter } = await import('./adapters/http.adapter');
+    _adapter = httpAdapter;
   }
   return _adapter;
 }

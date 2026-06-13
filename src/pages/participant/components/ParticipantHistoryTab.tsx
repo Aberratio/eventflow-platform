@@ -1,5 +1,6 @@
-import { mockEvents, disciplineLabels } from '@/api';
+import { getEvents, disciplineLabels } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,10 +23,15 @@ interface ParticipantHistoryTabProps {
 const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabProps) => {
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'participant-history'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
 
   // Enrich results with event data
   const enrichedResults = results.map((result) => {
-    const event = mockEvents.find((e) => e.id === result.eventId);
+    const event = events.find((e) => e.id === result.eventId);
     const certificate = certificates.find((c) => c.eventId === result.eventId);
     return { ...result, event, certificate };
   });

@@ -44,7 +44,7 @@ const EventManage = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const requestedTab = searchParams.get('tab');
-  const defaultTab = [
+  const requestedDefaultTab = [
     'overview',
     'participants',
     'results',
@@ -64,6 +64,11 @@ const EventManage = () => {
   const event = eventResponse?.data ?? null;
   const [localStatus, setLocalStatus] = useState(event?.status);
   const visibleEvent = event && localStatus ? { ...event, status: localStatus } : event;
+  const isDraft = visibleEvent?.status === 'draft';
+  const defaultTab =
+    isDraft && ['participants', 'results'].includes(requestedDefaultTab)
+      ? 'overview'
+      : requestedDefaultTab;
   const registrations = mockRegistrations.filter((r) => r.eventId === id);
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
@@ -143,25 +148,31 @@ const EventManage = () => {
         </div>
 
         <Tabs defaultValue={defaultTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:inline-grid lg:w-auto">
+          <TabsList
+            className={`grid w-full ${isDraft ? 'grid-cols-4' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
+          >
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Przegląd</span>
             </TabsTrigger>
-            <TabsTrigger value="participants" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Uczestnicy</span>
-            </TabsTrigger>
-            <TabsTrigger value="results" className="flex items-center gap-2">
-              {visibleEvent.isVirtual ? (
-                <Globe className="h-4 w-4" />
-              ) : (
-                <Trophy className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">
-                {visibleEvent.isVirtual ? 'Weryfikacja' : 'Wyniki'}
-              </span>
-            </TabsTrigger>
+            {!isDraft && (
+              <TabsTrigger value="participants" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Uczestnicy</span>
+              </TabsTrigger>
+            )}
+            {!isDraft && (
+              <TabsTrigger value="results" className="flex items-center gap-2">
+                {visibleEvent.isVirtual ? (
+                  <Globe className="h-4 w-4" />
+                ) : (
+                  <Trophy className="h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">
+                  {visibleEvent.isVirtual ? 'Weryfikacja' : 'Wyniki'}
+                </span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="discounts" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Kody rabatowe</span>
@@ -180,17 +191,21 @@ const EventManage = () => {
             <EventOverviewTab event={visibleEvent} registrations={registrations} />
           </TabsContent>
 
-          <TabsContent value="participants">
-            <ParticipantsTab event={visibleEvent} registrations={registrations} />
-          </TabsContent>
+          {!isDraft && (
+            <TabsContent value="participants">
+              <ParticipantsTab event={visibleEvent} registrations={registrations} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="results">
-            {visibleEvent.isVirtual ? (
-              <VirtualResultsVerificationTab event={visibleEvent} />
-            ) : (
-              <ResultsTab event={visibleEvent} registrations={registrations} />
-            )}
-          </TabsContent>
+          {!isDraft && (
+            <TabsContent value="results">
+              {visibleEvent.isVirtual ? (
+                <VirtualResultsVerificationTab event={visibleEvent} />
+              ) : (
+                <ResultsTab event={visibleEvent} registrations={registrations} />
+              )}
+            </TabsContent>
+          )}
 
           <TabsContent value="discounts">
             <DiscountCodesEditor

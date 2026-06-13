@@ -1,5 +1,6 @@
-import { mockEvents, mockVirtualResultSubmissions } from '@/api';
+import { getEvents, mockVirtualResultSubmissions } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Ticket } from 'lucide-react';
@@ -15,10 +16,15 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string | undefined>(undefined);
+  const { data: eventsResponse } = useQuery({
+    queryKey: ['events', 'participant-registrations'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+  });
+  const events = eventsResponse?.data ?? [];
 
   const registrationsWithEvents = registrations
     .map((reg) => {
-      const event = mockEvents.find((e) => e.id === reg.eventId);
+      const event = events.find((e) => e.id === reg.eventId);
       // Find virtual submission for this registration
       const virtualSubmission = event?.isVirtual
         ? mockVirtualResultSubmissions.find(

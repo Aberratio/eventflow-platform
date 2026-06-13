@@ -1,5 +1,6 @@
-import { mockShopOrders, mockUsers } from '@/api';
+import { getUsers, mockShopOrders } from '@/api';
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -72,10 +73,15 @@ export const AdminOrdersTab = () => {
   const [dateTo, setDateTo] = useState('');
   const [sortField, setSortField] = useState<SortField>('createdAt');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'order-customers'],
+    queryFn: () => getUsers({ pageSize: 1000 }),
+  });
+  const users = usersResponse?.data ?? [];
 
   const getCustomerName = (userId: string) =>
-    mockUsers.find((u) => u.id === userId)?.name || 'Nieznany';
-  const getCustomerEmail = (userId: string) => mockUsers.find((u) => u.id === userId)?.email || '';
+    users.find((u) => u.id === userId)?.name || 'Nieznany';
+  const getCustomerEmail = (userId: string) => users.find((u) => u.id === userId)?.email || '';
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -116,7 +122,7 @@ export const AdminOrdersTab = () => {
     });
 
     return result;
-  }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir]);
+  }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir, users]);
 
   const prepareOrdersExport = () => {
     return filteredOrders.map((order) => ({

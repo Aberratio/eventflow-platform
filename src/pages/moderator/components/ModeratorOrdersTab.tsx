@@ -1,5 +1,6 @@
-import { mockShopOrders, mockUsers } from '@/api';
+import { getUsers, mockShopOrders } from '@/api';
 import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -70,20 +71,25 @@ export const ModeratorOrdersTab = () => {
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [orderNewStatus, setOrderNewStatus] = useState<ShopOrder['status']>('pending');
   const [orderTrackingNumber, setOrderTrackingNumber] = useState('');
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'moderator-order-customers'],
+    queryFn: () => getUsers({ pageSize: 1000 }),
+  });
+  const users = usersResponse?.data ?? [];
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      const user = mockUsers.find((u) => u.id === order.userId);
+      const user = users.find((u) => u.id === order.userId);
       const matchesSearch =
         order.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
         user?.name.toLowerCase().includes(orderSearch.toLowerCase());
       const matchesStatus = orderStatus === 'all' || order.status === orderStatus;
       return matchesSearch && matchesStatus;
     });
-  }, [orders, orderSearch, orderStatus]);
+  }, [orders, orderSearch, orderStatus, users]);
 
   const getCustomerName = (userId: string) => {
-    return mockUsers.find((u) => u.id === userId)?.name || 'Nieznany klient';
+    return users.find((u) => u.id === userId)?.name || 'Nieznany klient';
   };
 
   const handleViewOrder = (order: ShopOrder) => {

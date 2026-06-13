@@ -63,9 +63,18 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
               {event.merchandise.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-lg bg-muted/50 p-2"
+                  className="flex items-center justify-between gap-3 rounded-lg bg-muted/50 p-2"
                 >
-                  <span className="text-sm">{item.name}</span>
+                  <div className="flex min-w-0 items-center gap-3">
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="h-12 w-12 shrink-0 rounded-md object-cover"
+                      />
+                    )}
+                    <span className="truncate text-sm">{item.name}</span>
+                  </div>
                   <Badge variant="secondary">{item.price} zł</Badge>
                 </div>
               ))}

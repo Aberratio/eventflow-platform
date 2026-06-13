@@ -1,6 +1,7 @@
-import { mockShopOrders, mockShopProducts, mockUsers } from '@/api';
+import { getUserById, mockShopOrders, mockShopProducts } from '@/api';
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,7 +67,12 @@ export const AdminOrderEditPage = () => {
   const navigate = useNavigate();
 
   const originalOrder = mockShopOrders.find((o) => o.id === id);
-  const customer = originalOrder ? mockUsers.find((u) => u.id === originalOrder.userId) : null;
+  const { data: customerResponse } = useQuery({
+    queryKey: ['users', originalOrder?.userId],
+    queryFn: () => getUserById(originalOrder?.userId ?? ''),
+    enabled: Boolean(originalOrder?.userId),
+  });
+  const customer = customerResponse?.data ?? null;
 
   const [items, setItems] = useState(() => (originalOrder ? [...originalOrder.items] : []));
   const [status, setStatus] = useState<ShopOrder['status']>(

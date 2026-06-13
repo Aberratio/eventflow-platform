@@ -3,7 +3,6 @@
   getEventById,
   getOrganizerEventLimit,
   getOrganizers,
-  mockEvents,
   updateEvent,
 } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
@@ -61,9 +60,7 @@ export const useEventFormState = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const isEditing = Boolean(id);
-  const [existingEvent, setExistingEvent] = useState<Event | null>(
-    isEditing ? mockEvents.find((e) => e.id === id) ?? null : null,
-  );
+  const [existingEvent, setExistingEvent] = useState<Event | null>(null);
   const canChooseOrganizer =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
   const canManageFeatured = canChooseOrganizer;

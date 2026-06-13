@@ -1,6 +1,32 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
+import type { User, UserRole } from '@/types';
+
+const testUsers: User[] = [
+  { id: 'u-participant', name: 'Participant', email: 'jan@example.com', role: 'participant' },
+  { id: 'u-admin', name: 'Admin', email: 'admin@test.com', role: 'admin' },
+  { id: 'u-organizer', name: 'Organizer', email: 'organizer@test.com', role: 'organizer' },
+];
+
+vi.mock('@/api', () => ({
+  getCurrentUser: vi.fn(async () => ({ data: null, success: true })),
+  getUsers: vi.fn(async ({ role }: { role?: UserRole } = {}) => {
+    const data = role ? testUsers.filter((user) => user.role === role) : testUsers;
+    return {
+      data,
+      total: data.length,
+      page: 1,
+      pageSize: data.length,
+      totalPages: 1,
+    };
+  }),
+  login: vi.fn(async ({ email, password }: { email: string; password: string }) => {
+    const user = password === 'demo1234' ? testUsers.find((item) => item.email === email) : null;
+    return { data: user ?? null, success: Boolean(user) };
+  }),
+  logout: vi.fn(async () => ({ data: undefined, success: true })),
+}));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
@@ -17,9 +43,11 @@ describe('AuthContext', () => {
     expect(result.current.user).toBeNull();
   });
 
-  it('login sets user by role', () => {
+  it('login sets user by role', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login('participant'));
+    await act(async () => {
+      await result.current.login('participant');
+    });
     expect(result.current.isAuthenticated).toBe(true);
     expect(result.current.user?.role).toBe('participant');
   });
@@ -46,7 +74,9 @@ describe('AuthContext', () => {
 
   it('logout clears user and storage', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login('admin'));
+    await act(async () => {
+      await result.current.login('admin');
+    });
     expect(result.current.isAuthenticated).toBe(true);
 
     await act(async () => {
@@ -56,9 +86,11 @@ describe('AuthContext', () => {
     expect(localStorage.getItem('zmierzymyczas_auth')).toBeNull();
   });
 
-  it('persists session to localStorage', () => {
+  it('persists session to localStorage', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    act(() => result.current.login('organizer'));
+    await act(async () => {
+      await result.current.login('organizer');
+    });
     const stored = JSON.parse(localStorage.getItem('zmierzymyczas_auth')!);
     expect(stored.role).toBe('organizer');
   });

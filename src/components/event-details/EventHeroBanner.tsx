@@ -13,8 +13,10 @@ interface EventHeroBannerProps {
 }
 
 export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps) => {
+  const heroImageUrl = event.bannerUrl || event.imageUrl;
+
   const getBannerStyle = (): React.CSSProperties => {
-    if (!event.bannerCropArea) return {};
+    if (!event.bannerUrl || !event.bannerCropArea) return {};
     const { y, height } = event.bannerCropArea;
     return { objectPosition: `center ${y + height / 2}%` };
   };
@@ -42,11 +44,11 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
     </div>
   );
 
-  if (event.bannerUrl) {
+  if (heroImageUrl) {
     return (
       <div className="relative h-56 overflow-hidden bg-muted sm:h-64 md:h-80">
         <img
-          src={event.bannerUrl}
+          src={heroImageUrl}
           alt={event.name}
           className="absolute inset-0 h-full w-full object-cover"
           style={getBannerStyle()}
