@@ -172,6 +172,7 @@ export interface Event {
   city: string;
   description: string;
   imageUrl: string;
+  originalImageUrl?: string;
   seriesId?: string;
   distances: Distance[];
   organizerId: string;
@@ -200,13 +201,16 @@ export interface Event {
   routeGpxUrl?: string;
   routeElevationProfile?: string;
   bannerUrl?: string;
+  originalBannerUrl?: string;
   bannerCropArea?: BannerCropArea;
   organizerLogoUrl?: string;
+  originalOrganizerLogoUrl?: string;
   organizerLogoShape?: OrganizerLogoShape;
   isVirtual?: boolean;
   startDate?: string;
   endDate?: string;
   resultDocuments?: EventResultDocument[];
+  documents?: EventDocument[];
   paymentConfig?: PaymentConfig;
   organizersHtml?: string;
   rulesHtml?: string;
@@ -292,6 +296,32 @@ export interface EventResultDocument {
   uploadedAt: string;
   uploadedBy: string;
   description?: string;
+}
+
+export type EventDocumentType =
+  | 'regulamin'
+  | 'harmonogram'
+  | 'mapa'
+  | 'informacje'
+  | 'wyniki'
+  | 'inne';
+
+export const EVENT_DOCUMENT_TYPE_LABELS: Record<EventDocumentType, string> = {
+  regulamin: 'Regulamin',
+  harmonogram: 'Harmonogram',
+  mapa: 'Mapa trasy',
+  informacje: 'Informacje dodatkowe',
+  wyniki: 'Wyniki',
+  inne: 'Inne',
+};
+
+export interface EventDocument {
+  id: string;
+  name: string;
+  type: EventDocumentType;
+  fileUrl: string;
+  fileName: string;
+  mimeType: string;
 }
 
 export interface GlobalInsuranceSettings {

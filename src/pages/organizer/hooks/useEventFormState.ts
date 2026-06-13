@@ -4,6 +4,7 @@
   getOrganizerEventLimit,
   getOrganizers,
   updateEvent,
+  uploadEventDocument,
 } from '@/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
@@ -25,6 +26,8 @@ import {
   PriceTier,
   PriceTierMode,
   ParticipantCountType,
+  EventDocument,
+  EventDocumentType,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -156,6 +159,7 @@ export const useEventFormState = () => {
   const [city, setCity] = useState(existingEvent?.city || '');
   const [description, setDescription] = useState(existingEvent?.description || '');
   const [imageUrl, setImageUrl] = useState(existingEvent?.imageUrl || '');
+  const [originalImageUrl, setOriginalImageUrl] = useState(existingEvent?.originalImageUrl || '');
   const [featured, setFeatured] = useState(existingEvent?.featured || false);
 
   // Virtual event
@@ -169,10 +173,12 @@ export const useEventFormState = () => {
 
   // Media
   const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
+  const [originalBannerUrl, setOriginalBannerUrl] = useState(existingEvent?.originalBannerUrl || '');
   const [bannerCropArea, setBannerCropArea] = useState<BannerCropArea | undefined>(
     existingEvent?.bannerCropArea,
   );
   const [organizerLogoUrl, setOrganizerLogoUrl] = useState(existingEvent?.organizerLogoUrl || '');
+  const [originalOrganizerLogoUrl, setOriginalOrganizerLogoUrl] = useState(existingEvent?.originalOrganizerLogoUrl || '');
   const [organizerLogoShape, setOrganizerLogoShape] = useState<OrganizerLogoShape>(
     existingEvent?.organizerLogoShape || 'square',
   );
@@ -191,6 +197,10 @@ export const useEventFormState = () => {
   const [transferTitle, setTransferTitle] = useState(
     existingEvent?.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
   );
+
+  // Documents
+  const [documents, setDocuments] = useState<EventDocument[]>(existingEvent?.documents || []);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
 
   // Rich text
   const [organizersHtml, setOrganizersHtml] = useState(existingEvent?.organizersHtml || '');
@@ -282,6 +292,7 @@ export const useEventFormState = () => {
     setCity(existingEvent.city || '');
     setDescription(existingEvent.description || '');
     setImageUrl(existingEvent.imageUrl || '');
+    setOriginalImageUrl(existingEvent.originalImageUrl || '');
     setFeatured(existingEvent.featured || false);
     setIsVirtual(existingEvent.isVirtual || false);
     setStartDate(existingEvent.startDate || '');
@@ -289,8 +300,10 @@ export const useEventFormState = () => {
     setIsPrivate(existingEvent.isPrivate || false);
     setAccessCode(existingEvent.accessCode || '');
     setBannerUrl(existingEvent.bannerUrl || '');
+    setOriginalBannerUrl(existingEvent.originalBannerUrl || '');
     setBannerCropArea(existingEvent.bannerCropArea);
     setOrganizerLogoUrl(existingEvent.organizerLogoUrl || '');
+    setOriginalOrganizerLogoUrl(existingEvent.originalOrganizerLogoUrl || '');
     setOrganizerLogoShape(existingEvent.organizerLogoShape || 'square');
     setPaymentConfigType(existingEvent.paymentConfig?.type || 'admin_gateway');
     setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
@@ -298,6 +311,7 @@ export const useEventFormState = () => {
     setTransferTitle(
       existingEvent.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
     );
+    setDocuments(existingEvent.documents || []);
     setOrganizersHtml(existingEvent.organizersHtml || '');
     setRulesHtml(existingEvent.rulesHtml || '');
     setRequireFinalAcceptance(existingEvent.requireFinalAcceptance || false);
@@ -578,6 +592,33 @@ export const useEventFormState = () => {
       cats[catIndex] = { ...cats[catIndex], [field]: value };
       return cats;
     });
+  };
+
+  // Document handlers
+  const addDocumentFile = async (file: File, type: EventDocumentType, name: string) => {
+    setIsUploadingDocument(true);
+    try {
+      const response = await uploadEventDocument(file);
+      const doc: EventDocument = {
+        id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name: name || response.data.originalName,
+        type,
+        fileUrl: response.data.url,
+        fileName: response.data.originalName,
+        mimeType: response.data.mimeType,
+      };
+      setDocuments((prev) => [...prev, doc]);
+    } finally {
+      setIsUploadingDocument(false);
+    }
+  };
+
+  const removeDocument = (id: string) => {
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  const updateDocument = (id: string, field: keyof EventDocument, value: string) => {
+    setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
   };
 
   // Validation
@@ -911,6 +952,7 @@ export const useEventFormState = () => {
       city,
       description,
       imageUrl,
+      originalImageUrl: originalImageUrl || undefined,
       distances: distances.map((dist) => ({
         id: dist.id,
         name: dist.name,
@@ -945,8 +987,10 @@ export const useEventFormState = () => {
       organizerName: organizer?.companyName || organizer?.name || '',
       registrationDeadline,
       bannerUrl: bannerUrl || undefined,
+      originalBannerUrl: originalBannerUrl || undefined,
       bannerCropArea,
       organizerLogoUrl: organizerLogoUrl || undefined,
+      originalOrganizerLogoUrl: originalOrganizerLogoUrl || undefined,
       organizerLogoShape,
       isVirtual,
       startDate: startDate || undefined,
@@ -957,6 +1001,7 @@ export const useEventFormState = () => {
         bankAccountHolder: bankAccountHolder || undefined,
         transferTitle: transferTitle || undefined,
       },
+      documents,
       organizersHtml,
       rulesHtml,
       finalAcceptanceHtml,
@@ -1089,6 +1134,8 @@ export const useEventFormState = () => {
     setDescription,
     imageUrl,
     setImageUrl,
+    originalImageUrl,
+    setOriginalImageUrl,
     featured,
     setFeatured,
     isVirtual,
@@ -1103,10 +1150,14 @@ export const useEventFormState = () => {
     setAccessCode,
     bannerUrl,
     setBannerUrl,
+    originalBannerUrl,
+    setOriginalBannerUrl,
     bannerCropArea,
     setBannerCropArea,
     organizerLogoUrl,
     setOrganizerLogoUrl,
+    originalOrganizerLogoUrl,
+    setOriginalOrganizerLogoUrl,
     organizerLogoShape,
     setOrganizerLogoShape,
     showBannerCropper,
@@ -1119,6 +1170,11 @@ export const useEventFormState = () => {
     setBankAccountHolder,
     transferTitle,
     setTransferTitle,
+    documents,
+    isUploadingDocument,
+    addDocumentFile,
+    removeDocument,
+    updateDocument,
     organizersHtml,
     setOrganizersHtml,
     rulesHtml,

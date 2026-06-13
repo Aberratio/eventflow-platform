@@ -1,4 +1,5 @@
 ﻿import { disciplineLabels, uploadEventImage } from '@/api';
+import { EVENT_DOCUMENT_TYPE_LABELS, EventDocumentType } from '@/types';
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -41,6 +42,8 @@ import {
   RectangleHorizontal,
   RectangleVertical,
   Square,
+  Paperclip,
+  Loader2,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
@@ -58,6 +61,8 @@ interface EventImageUploadFieldProps {
   recommendedSize: string;
   value: string;
   onChange: (url: string) => void;
+  originalValue: string;
+  onOriginalChange: (url: string) => void;
   aspectRatio: number;
   outputWidth: number;
   cropTitle: string;
@@ -67,12 +72,39 @@ interface EventImageUploadFieldProps {
   previewImageClassName?: string;
 }
 
+const resizeToBlob = (file: File, maxWidth: number): Promise<Blob> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxWidth / img.naturalWidth);
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { reject(new Error('no-ctx')); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('toBlob-failed'))),
+        'image/jpeg',
+        0.92,
+      );
+    };
+    img.onerror = () => reject(new Error('img-load-failed'));
+    img.src = url;
+  });
+
 const EventImageUploadField = ({
   label,
   description,
   recommendedSize,
   value,
   onChange,
+  originalValue,
+  onOriginalChange,
   aspectRatio,
   outputWidth,
   cropTitle,
@@ -82,6 +114,7 @@ const EventImageUploadField = ({
   previewImageClassName = 'object-cover',
 }: EventImageUploadFieldProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const originalFileRef = useRef<File | null>(null);
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('event-image');
   const [showCropper, setShowCropper] = useState(false);
@@ -105,6 +138,7 @@ const EventImageUploadField = ({
     }
 
     if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
+    originalFileRef.current = file;
     setSelectedFileName(file.name.replace(/\.[^.]+$/, '') || 'event-image');
     setSelectedPreviewUrl(URL.createObjectURL(file));
     setShowCropper(true);
@@ -113,16 +147,18 @@ const EventImageUploadField = ({
   const handleRemove = () => {
     if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    originalFileRef.current = null;
     setSelectedPreviewUrl('');
     setShowCropper(false);
     onChange('');
+    onOriginalChange('');
   };
 
   const handleRecrop = () => {
-    if (!value) return;
+    if (!originalValue) return;
     if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
     setSelectedFileName('event-image');
-    setSelectedPreviewUrl(value);
+    setSelectedPreviewUrl(originalValue);
     setShowCropper(true);
   };
 
@@ -138,9 +174,23 @@ const EventImageUploadField = ({
 
     setIsUploading(true);
     try {
-      const file = new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' });
-      const response = await uploadEventImage(file);
-      onChange(response.data.url);
+      const originalFile = originalFileRef.current;
+      if (originalFile) {
+        const [croppedResponse, originalResponse] = await Promise.all([
+          uploadEventImage(new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' })),
+          resizeToBlob(originalFile, 3000).then((blob) =>
+            uploadEventImage(new File([blob], `${selectedFileName}-original.jpg`, { type: 'image/jpeg' })),
+          ),
+        ]);
+        onChange(croppedResponse.data.url);
+        onOriginalChange(originalResponse.data.url);
+        originalFileRef.current = null;
+      } else {
+        const response = await uploadEventImage(
+          new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' }),
+        );
+        onChange(response.data.url);
+      }
       toast({
         title: 'Obraz zapisany',
         description: 'Wgrano i sformatowano obraz wydarzenia.',
@@ -213,6 +263,154 @@ const EventImageUploadField = ({
           onCrop={handleUpload}
         />
       )}
+    </div>
+  );
+};
+
+const DOCUMENT_TYPES: EventDocumentType[] = [
+  'regulamin',
+  'harmonogram',
+  'mapa',
+  'informacje',
+  'wyniki',
+  'inne',
+];
+
+const ACCEPTED_DOCUMENT_TYPES =
+  '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp';
+
+const DocumentsUploadSection = ({ form }: { form: EventFormState }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingType, setPendingType] = useState<EventDocumentType>('regulamin');
+  const [pendingName, setPendingName] = useState('');
+  const [uploadError, setUploadError] = useState('');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';
+    if (!file) return;
+    setUploadError('');
+    try {
+      await form.addDocumentFile(file, pendingType, pendingName.trim());
+      setPendingName('');
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Błąd podczas wgrywania pliku.');
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <HelpLabel description="Wgraj pliki powiązane z wydarzeniem — regulamin, harmonogram, mapę trasy itp. Uczestnicy będą mogli je pobrać lub podejrzeć na stronie wydarzenia.">
+        Załączniki
+      </HelpLabel>
+
+      {form.documents.length > 0 && (
+        <div className="space-y-2">
+          {form.documents.map((doc) => (
+            <div
+              key={doc.id}
+              className="flex items-center gap-2 rounded-md border bg-muted/30 p-2"
+            >
+              <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 flex-1">
+                <Input
+                  value={doc.name}
+                  onChange={(e) => form.updateDocument(doc.id, 'name', e.target.value)}
+                  className="h-7 border-0 bg-transparent p-0 text-sm font-medium shadow-none focus-visible:ring-0"
+                  placeholder="Nazwa dokumentu"
+                />
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={doc.type}
+                    onValueChange={(v) =>
+                      form.updateDocument(doc.id, 'type', v as EventDocumentType)
+                    }
+                  >
+                    <SelectTrigger className="h-6 w-auto border-0 bg-transparent p-0 text-xs text-muted-foreground shadow-none focus:ring-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOCUMENT_TYPES.map((t) => (
+                        <SelectItem key={t} value={t} className="text-xs">
+                          {EVENT_DOCUMENT_TYPE_LABELS[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-xs text-muted-foreground">·</span>
+                  <span className="truncate text-xs text-muted-foreground">{doc.fileName}</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                onClick={() => form.removeDocument(doc.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div className="flex-1 space-y-1">
+          <Label className="text-xs text-muted-foreground">Nazwa (opcjonalna)</Label>
+          <Input
+            value={pendingName}
+            onChange={(e) => setPendingName(e.target.value)}
+            placeholder="np. Regulamin biegu 2025"
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Typ</Label>
+          <Select
+            value={pendingType}
+            onValueChange={(v) => setPendingType(v as EventDocumentType)}
+          >
+            <SelectTrigger className="h-8 w-40 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DOCUMENT_TYPES.map((t) => (
+                <SelectItem key={t} value={t} className="text-sm">
+                  {EVENT_DOCUMENT_TYPE_LABELS[t]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 shrink-0"
+          disabled={form.isUploadingDocument}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {form.isUploadingDocument ? (
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          {form.isUploadingDocument ? 'Wgrywanie…' : 'Wgraj plik'}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ACCEPTED_DOCUMENT_TYPES}
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+      {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
+      <p className="text-xs text-muted-foreground">
+        Obsługiwane formaty: PDF, DOC, DOCX, XLS, XLSX, TXT, JPG, PNG, WebP. Maks. 5 MB.
+      </p>
     </div>
   );
 };
@@ -857,6 +1055,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             recommendedSize="Zalecany format 16:9. Po wgraniu dopasujesz kadr przed zapisem."
             value={form.imageUrl}
             onChange={form.setImageUrl}
+            originalValue={form.originalImageUrl}
+            onOriginalChange={form.setOriginalImageUrl}
             aspectRatio={16 / 9}
             outputWidth={1200}
             cropTitle="Dopasuj glowny obraz wydarzenia"
@@ -901,6 +1101,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   form.setBannerUrl(url);
                   form.setBannerCropArea(undefined);
                 }}
+                originalValue={form.originalBannerUrl}
+                onOriginalChange={form.setOriginalBannerUrl}
                 aspectRatio={16 / 9}
                 outputWidth={1600}
                 cropTitle="Dopasuj baner wydarzenia"
@@ -954,6 +1156,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   recommendedSize="Wybierz typ logo powyzej, a po wgraniu dopasujesz kadr do wybranych proporcji."
                   value={form.organizerLogoUrl}
                   onChange={form.setOrganizerLogoUrl}
+                  originalValue={form.originalOrganizerLogoUrl}
+                  onOriginalChange={form.setOriginalOrganizerLogoUrl}
                   aspectRatio={logoShapeConfig.aspectRatio}
                   outputWidth={logoShapeConfig.outputWidth}
                   cropTitle="Dopasuj logo organizatora"
@@ -1108,6 +1312,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
           </p>
           <div className="space-y-6">
+              <DocumentsUploadSection form={form} />
               <div className="space-y-2">
                 <HelpLabel description="Sformatowana sekcja na stronie wydarzenia. Mozesz wpisac organizatorow, partnerow, sponsorow i dodac linki.">
                   Organizatorzy

@@ -130,6 +130,17 @@ export const httpAdapter: ApiAdapter = {
       data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
     }));
   },
+  uploadEventDocument: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return requestForm<{ url: string; originalName: string; mimeType: string }>(
+      '/uploads/event-documents',
+      formData,
+    ).then((response) => ({
+      ...response,
+      data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
+    }));
+  },
 
   getUsers: (filters) => paginated('/users', filters as Record<string, QueryValue>),
   getUserById: (id) => request(`/users/${encodeURIComponent(id)}`),

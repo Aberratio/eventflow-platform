@@ -71,6 +71,8 @@ export const updateOrganizerEventLimit: ApiAdapter['updateOrganizerEventLimit'] 
   ensureAdapter().then((a) => a.updateOrganizerEventLimit(...args));
 export const uploadEventImage: ApiAdapter['uploadEventImage'] = (...args) =>
   ensureAdapter().then((a) => a.uploadEventImage(...args));
+export const uploadEventDocument: ApiAdapter['uploadEventDocument'] = (...args) =>
+  ensureAdapter().then((a) => a.uploadEventDocument(...args));
 
 // Users
 export const getUsers: ApiAdapter['getUsers'] = (...args) =>
