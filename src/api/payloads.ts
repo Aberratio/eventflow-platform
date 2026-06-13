@@ -15,6 +15,7 @@ import type {
   InsuranceOption,
   GalleryAlbum,
   BannerCropArea,
+  OrganizerLogoShape,
   RegistrationEmbedConfig,
   RegistrationFormConfig,
   EventDisplayOptions,
@@ -59,6 +60,7 @@ export interface CreateEventPayload {
   bannerUrl?: string;
   bannerCropArea?: BannerCropArea;
   organizerLogoUrl?: string;
+  organizerLogoShape?: OrganizerLogoShape;
   isVirtual?: boolean;
   startDate?: string;
   endDate?: string;

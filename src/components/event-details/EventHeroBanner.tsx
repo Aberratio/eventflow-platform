@@ -2,7 +2,7 @@ import { disciplineLabels } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Event } from '@/types';
+import { Event, OrganizerLogoShape } from '@/types';
 import { ArrowLeft, Globe } from 'lucide-react';
 import { PageHero } from '@/components/ui/page-hero';
 
@@ -11,6 +11,21 @@ interface EventHeroBannerProps {
   isPast: boolean;
   onBack: () => void;
 }
+
+const getOrganizerLogoClassName = (shape: OrganizerLogoShape = 'square') => {
+  const base =
+    'rounded-lg border-2 border-background bg-background/90 object-contain p-1 shadow-lg';
+
+  switch (shape) {
+    case 'landscape':
+      return `${base} h-11 w-20 sm:h-14 sm:w-28 md:h-16 md:w-32`;
+    case 'portrait':
+      return `${base} h-16 w-12 sm:h-20 sm:w-[3.75rem] md:h-24 md:w-[4.5rem]`;
+    case 'square':
+    default:
+      return `${base} h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20`;
+  }
+};
 
 export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps) => {
   const heroImageUrl = event.bannerUrl || event.imageUrl;
@@ -59,7 +74,7 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
             <img
               src={event.organizerLogoUrl}
               alt={event.organizerName}
-              className="h-12 w-12 rounded-lg border-2 border-background object-cover shadow-lg sm:h-16 sm:w-16 md:h-20 md:w-20"
+              className={getOrganizerLogoClassName(event.organizerLogoShape)}
             />
           </div>
         )}

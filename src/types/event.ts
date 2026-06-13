@@ -160,6 +160,8 @@ export interface BannerCropArea {
   height: number;
 }
 
+export type OrganizerLogoShape = 'square' | 'portrait' | 'landscape';
+
 export interface Event {
   id: string;
   name: string;
@@ -200,6 +202,7 @@ export interface Event {
   bannerUrl?: string;
   bannerCropArea?: BannerCropArea;
   organizerLogoUrl?: string;
+  organizerLogoShape?: OrganizerLogoShape;
   isVirtual?: boolean;
   startDate?: string;
   endDate?: string;

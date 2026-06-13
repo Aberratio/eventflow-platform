@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ import {
   Users,
   Wallet,
   AlertTriangle,
+  Info,
 } from 'lucide-react';
 import type { EventFormState } from '../hooks/useEventFormState';
 import { applyDiscount } from '@/api';
@@ -33,6 +35,8 @@ interface EventFormStep2Props {
 }
 
 export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
+  const isEmbedRegistration = form.registrationMode === 'external_embed';
+
   const setTierPrice = (
     distanceIndex: number,
     tierId: string,
@@ -352,190 +356,212 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                   className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
                 >
                   <Wallet className="h-4 w-4" /> Konfiguracja płatności
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {dist.priceTiers.length} progów
-                  </Badge>
+                  {isEmbedRegistration ? (
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      po stronie organizatora
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      {dist.priceTiers.length} progów
+                    </Badge>
+                  )}
                   <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 pt-4">
-                <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-                  <div className="space-y-2">
-                    <HelpLabel
-                      className="text-xs"
-                      description="Okresla, czy aktywny prog zalezy od daty, czy od liczby zapisanych lub oplaconych uczestnikow."
-                    >
-                      Sposob naliczania
-                    </HelpLabel>
-                    <Select
-                      value={dist.priceTierMode}
-                      onValueChange={(value: PriceTierMode) => {
-                        form.updateDistance(index, 'priceTierMode', value);
-                        form.updateDistance(index, 'priceTiers', []);
-                      }}
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="date">
-                          <span className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5" /> Po dacie
-                          </span>
-                        </SelectItem>
-                        <SelectItem value="participants">
-                          <span className="flex items-center gap-2">
-                            <Users className="h-3.5 w-3.5" /> Po liczbie uczestnikow
-                          </span>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {dist.priceTierMode === 'participants' && (
-                    <div className="space-y-2">
-                      <HelpLabel
-                        className="text-xs"
-                        description="Dla progow uczestnikow mozesz liczyc wszystkie zapisy albo tylko osoby z potwierdzona oplata startowa."
-                      >
-                        Licznik uczestnikow
-                      </HelpLabel>
-                      <Select
-                        value={dist.participantCountType}
-                        onValueChange={(value: ParticipantCountType) =>
-                          form.updateDistance(index, 'participantCountType', value)
-                        }
-                      >
-                        <SelectTrigger className="h-9 max-w-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="registered">Zapisani</SelectItem>
-                          <SelectItem value="paid">Oplaceni</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-
-                <PriceTierPreview
-                  basePrice={Number(dist.price) || 0}
-                  tiers={dist.priceTiers}
-                  mode={dist.priceTierMode}
-                  participantCountType={dist.participantCountType}
-                />
-
-                {dist.priceTiers.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_150px_130px_1fr_40px]">
-                      <span>Nazwa</span>
-                      <span>{dist.priceTierMode === 'date' ? 'Obowiazuje do' : 'Limit'}</span>
-                      <span>Cena w progu</span>
-                      <span>Opis</span>
-                      <span></span>
-                    </div>
-                    {[...dist.priceTiers]
-                      .sort((a, b) =>
-                        dist.priceTierMode === 'date'
-                          ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
-                          : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
-                      )
-                      .map((tier) => {
-                        const tierPrice =
-                          tier.price ??
-                          applyDiscount(
-                            Number(dist.price) || 0,
-                            tier.discountType,
-                            tier.discountValue,
-                          );
-                        const basePrice = Number(dist.price) || 0;
-                        const priceWarning = tierPrice > basePrice;
-                        return (
-                          <div
-                            key={tier.id}
-                            className="grid grid-cols-1 items-center gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
+                {isEmbedRegistration ? (
+                  <Alert className="border-muted bg-muted/50">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Platnosci i progi poza systemem</AlertTitle>
+                    <AlertDescription>
+                      Dla zawodow typu embed nie konfigurujemy progow cenowych ani sposobu
+                      pobierania oplat. Te zasady ustala i obsluguje organizator lub zewnetrzny
+                      system poza panelem.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+                      <div className="space-y-2">
+                        <HelpLabel
+                          className="text-xs"
+                          description="Okresla, czy aktywny prog zalezy od daty, czy od liczby zapisanych lub oplaconych uczestnikow."
+                        >
+                          Sposob naliczania
+                        </HelpLabel>
+                        <Select
+                          value={dist.priceTierMode}
+                          onValueChange={(value: PriceTierMode) => {
+                            form.updateDistance(index, 'priceTierMode', value);
+                            form.updateDistance(index, 'priceTiers', []);
+                          }}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="date">
+                              <span className="flex items-center gap-2">
+                                <Calendar className="h-3.5 w-3.5" /> Po dacie
+                              </span>
+                            </SelectItem>
+                            <SelectItem value="participants">
+                              <span className="flex items-center gap-2">
+                                <Users className="h-3.5 w-3.5" /> Po liczbie uczestnikow
+                              </span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {dist.priceTierMode === 'participants' && (
+                        <div className="space-y-2">
+                          <HelpLabel
+                            className="text-xs"
+                            description="Dla progow uczestnikow mozesz liczyc wszystkie zapisy albo tylko osoby z potwierdzona oplata startowa."
                           >
-                            <Input
-                              value={tier.name}
-                              onChange={(e) =>
-                                form.updatePriceTier(index, tier.id, { name: e.target.value })
-                              }
-                              placeholder="np. Early Bird"
-                              className="h-9"
-                            />
-                            <Input
-                              type={dist.priceTierMode === 'date' ? 'date' : 'number'}
-                              value={
-                                dist.priceTierMode === 'date'
-                                  ? tier.endDate || ''
-                                  : tier.participantLimit || ''
-                              }
-                              onChange={(e) =>
-                                form.updatePriceTier(
-                                  index,
-                                  tier.id,
-                                  dist.priceTierMode === 'date'
-                                    ? { endDate: e.target.value }
-                                    : { participantLimit: parseInt(e.target.value) || 0 },
-                                )
-                              }
-                              placeholder={dist.priceTierMode === 'date' ? undefined : 'np. 100'}
-                              className="h-9"
-                            />
-                            <Input
-                              type="number"
-                              value={tierPrice}
-                              onChange={(e) =>
-                                setTierPrice(index, tier.id, dist.price, e.target.value)
-                              }
-                              placeholder="np. 120"
-                              className="h-9"
-                            />
-                            {priceWarning && (
-                              <p className="flex items-start gap-1.5 text-xs text-amber-700 md:col-start-3">
-                                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                                <span>
-                                  Cena progu jest wyzsza od ceny bazowej. To tylko ostrzezenie.
-                                </span>
-                              </p>
-                            )}
-                            <Input
-                              value={tier.description || ''}
-                              onChange={(e) =>
-                                form.updatePriceTier(index, tier.id, {
-                                  description: e.target.value,
-                                })
-                              }
-                              placeholder={
-                                dist.priceTierMode === 'date'
-                                  ? 'np. cena do konca maja'
-                                  : 'np. pierwsze 100 oplaconych'
-                              }
-                              className="h-9"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-full text-destructive hover:text-destructive md:w-9"
-                              onClick={() => form.removePriceTier(index, tier.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
+                            Licznik uczestnikow
+                          </HelpLabel>
+                          <Select
+                            value={dist.participantCountType}
+                            onValueChange={(value: ParticipantCountType) =>
+                              form.updateDistance(index, 'participantCountType', value)
+                            }
+                          >
+                            <SelectTrigger className="h-9 max-w-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="registered">Zapisani</SelectItem>
+                              <SelectItem value="paid">Oplaceni</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => form.addPriceTier(index)}
-                  className="w-full sm:w-auto"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Dodaj prog cenowy
-                </Button>
+                    <PriceTierPreview
+                      basePrice={Number(dist.price) || 0}
+                      tiers={dist.priceTiers}
+                      mode={dist.priceTierMode}
+                      participantCountType={dist.participantCountType}
+                    />
+
+                    {dist.priceTiers.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_150px_130px_1fr_40px]">
+                          <span>Nazwa</span>
+                          <span>{dist.priceTierMode === 'date' ? 'Obowiazuje do' : 'Limit'}</span>
+                          <span>Cena w progu</span>
+                          <span>Opis</span>
+                          <span></span>
+                        </div>
+                        {[...dist.priceTiers]
+                          .sort((a, b) =>
+                            dist.priceTierMode === 'date'
+                              ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
+                              : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
+                          )
+                          .map((tier) => {
+                            const tierPrice =
+                              tier.price ??
+                              applyDiscount(
+                                Number(dist.price) || 0,
+                                tier.discountType,
+                                tier.discountValue,
+                              );
+                            const basePrice = Number(dist.price) || 0;
+                            const priceWarning = tierPrice > basePrice;
+                            return (
+                              <div
+                                key={tier.id}
+                                className="grid grid-cols-1 items-center gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
+                              >
+                                <Input
+                                  value={tier.name}
+                                  onChange={(e) =>
+                                    form.updatePriceTier(index, tier.id, { name: e.target.value })
+                                  }
+                                  placeholder="np. Early Bird"
+                                  className="h-9"
+                                />
+                                <Input
+                                  type={dist.priceTierMode === 'date' ? 'date' : 'number'}
+                                  value={
+                                    dist.priceTierMode === 'date'
+                                      ? tier.endDate || ''
+                                      : tier.participantLimit || ''
+                                  }
+                                  onChange={(e) =>
+                                    form.updatePriceTier(
+                                      index,
+                                      tier.id,
+                                      dist.priceTierMode === 'date'
+                                        ? { endDate: e.target.value }
+                                        : { participantLimit: parseInt(e.target.value) || 0 },
+                                    )
+                                  }
+                                  placeholder={
+                                    dist.priceTierMode === 'date' ? undefined : 'np. 100'
+                                  }
+                                  className="h-9"
+                                />
+                                <Input
+                                  type="number"
+                                  value={tierPrice}
+                                  onChange={(e) =>
+                                    setTierPrice(index, tier.id, dist.price, e.target.value)
+                                  }
+                                  placeholder="np. 120"
+                                  className="h-9"
+                                />
+                                {priceWarning && (
+                                  <p className="flex items-start gap-1.5 text-xs text-amber-700 md:col-start-3">
+                                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                    <span>
+                                      Cena progu jest wyzsza od ceny bazowej. To tylko ostrzezenie.
+                                    </span>
+                                  </p>
+                                )}
+                                <Input
+                                  value={tier.description || ''}
+                                  onChange={(e) =>
+                                    form.updatePriceTier(index, tier.id, {
+                                      description: e.target.value,
+                                    })
+                                  }
+                                  placeholder={
+                                    dist.priceTierMode === 'date'
+                                      ? 'np. cena do konca maja'
+                                      : 'np. pierwsze 100 oplaconych'
+                                  }
+                                  className="h-9"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-9 w-full text-destructive hover:text-destructive md:w-9"
+                                  onClick={() => form.removePriceTier(index, tier.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => form.addPriceTier(index)}
+                      className="w-full sm:w-auto"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> Dodaj prog cenowy
+                    </Button>
+                  </>
+                )}
               </CollapsibleContent>
             </Collapsible>
 

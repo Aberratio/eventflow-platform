@@ -21,6 +21,7 @@ import {
   RegistrationFormConfig,
   EventDisplayOptions,
   OrganizerEventLimit,
+  OrganizerLogoShape,
   PriceTier,
   PriceTierMode,
   ParticipantCountType,
@@ -141,6 +142,9 @@ export const useEventFormState = () => {
     existingEvent?.bannerCropArea,
   );
   const [organizerLogoUrl, setOrganizerLogoUrl] = useState(existingEvent?.organizerLogoUrl || '');
+  const [organizerLogoShape, setOrganizerLogoShape] = useState<OrganizerLogoShape>(
+    existingEvent?.organizerLogoShape || 'square',
+  );
   const [showBannerCropper, setShowBannerCropper] = useState(false);
 
   // Payment
@@ -256,6 +260,7 @@ export const useEventFormState = () => {
     setBannerUrl(existingEvent.bannerUrl || '');
     setBannerCropArea(existingEvent.bannerCropArea);
     setOrganizerLogoUrl(existingEvent.organizerLogoUrl || '');
+    setOrganizerLogoShape(existingEvent.organizerLogoShape || 'square');
     setPaymentConfigType(existingEvent.paymentConfig?.type || 'admin_gateway');
     setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
     setBankAccountHolder(existingEvent.paymentConfig?.bankAccountHolder || '');
@@ -620,6 +625,7 @@ export const useEventFormState = () => {
       }
     }
     if (
+      registrationMode !== 'external_embed' &&
       paymentConfigType === 'organizer_bank' &&
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
     ) {
@@ -634,6 +640,8 @@ export const useEventFormState = () => {
   };
 
   const validateStep2 = (): boolean => {
+    const skipSystemPaymentConfig = registrationMode === 'external_embed';
+
     if (distances.length === 0) {
       toast({
         title: 'BĹ‚Ä…d',
@@ -675,6 +683,8 @@ export const useEventFormState = () => {
         });
         return false;
       }
+      if (skipSystemPaymentConfig) continue;
+
       for (const tier of dist.priceTiers) {
         const tierPrice = Number(tier.price ?? 0);
         const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
@@ -833,6 +843,7 @@ export const useEventFormState = () => {
       bannerUrl: bannerUrl || undefined,
       bannerCropArea,
       organizerLogoUrl: organizerLogoUrl || undefined,
+      organizerLogoShape,
       isVirtual,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
@@ -992,6 +1003,8 @@ export const useEventFormState = () => {
     setBannerCropArea,
     organizerLogoUrl,
     setOrganizerLogoUrl,
+    organizerLogoShape,
+    setOrganizerLogoShape,
     showBannerCropper,
     setShowBannerCropper,
     paymentConfigType,
