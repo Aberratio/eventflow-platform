@@ -90,6 +90,34 @@ const generateStandardAgeCategoriesForDate = (eventDate: string): AgeCategory[] 
   return categories;
 };
 
+export type SubStep =
+  | 'basic'
+  | 'media'
+  | 'payment'
+  | 'content'
+  | 'registration'
+  | 'categories'
+  | 'distances'
+  | 'summary';
+
+export interface StepNavItem {
+  id: SubStep;
+  label: string;
+  shortLabel: string;
+  mainStep: 1 | 2 | 3;
+}
+
+export const STEP_NAV_ITEMS: StepNavItem[] = [
+  { id: 'basic', label: 'Podstawowe informacje', shortLabel: 'Podstawowe', mainStep: 1 },
+  { id: 'media', label: 'Zdjęcia i media', shortLabel: 'Media', mainStep: 1 },
+  { id: 'payment', label: 'Płatności', shortLabel: 'Płatności', mainStep: 1 },
+  { id: 'content', label: 'Treści', shortLabel: 'Treści', mainStep: 1 },
+  { id: 'registration', label: 'Rejestracja', shortLabel: 'Rejestracja', mainStep: 1 },
+  { id: 'categories', label: 'Kategorie uczestników', shortLabel: 'Kategorie', mainStep: 2 },
+  { id: 'distances', label: 'Dystanse', shortLabel: 'Dystanse', mainStep: 2 },
+  { id: 'summary', label: 'Podsumowanie', shortLabel: 'Podsumowanie', mainStep: 3 },
+];
+
 export const useEventFormState = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -111,6 +139,9 @@ export const useEventFormState = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const [step, setStep] = useState(1);
+  const [subStep, setSubStep] = useState<SubStep>('basic');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingSubStep, setPendingSubStep] = useState<SubStep | null>(null);
 
   // Step 1 - Basic info
   const [name, setName] = useState(existingEvent?.name || '');
@@ -788,13 +819,86 @@ export const useEventFormState = () => {
     return true;
   };
 
-  const nextStep = () => {
-    if (step === 1 && !validateStep1()) return;
-    if (step === 2 && !validateStep2()) return;
-    setStep((prev) => prev + 1);
+  const currentNavItems = STEP_NAV_ITEMS.filter((item) => item.mainStep === step);
+  const currentSubStepIndex = currentNavItems.findIndex((item) => item.id === subStep);
+
+  const navigateToSubStep = (target: SubStep) => {
+    const targetItem = STEP_NAV_ITEMS.find((item) => item.id === target);
+    if (!targetItem) return;
+
+    if (hasUnsavedChanges) {
+      setPendingSubStep(target);
+      return;
+    }
+
+    if (targetItem.mainStep !== step) {
+      if (targetItem.mainStep > step) {
+        if (step === 1 && !validateStep1()) return;
+        if (step === 2 && !validateStep2()) return;
+      }
+      setStep(targetItem.mainStep);
+    }
+    setSubStep(target);
+    setHasUnsavedChanges(false);
   };
 
-  const prevStep = () => setStep((prev) => prev - 1);
+  const confirmNavigatePendingSubStep = () => {
+    if (!pendingSubStep) return;
+    const targetItem = STEP_NAV_ITEMS.find((item) => item.id === pendingSubStep);
+    if (targetItem && targetItem.mainStep !== step) {
+      setStep(targetItem.mainStep);
+    }
+    setSubStep(pendingSubStep);
+    setHasUnsavedChanges(false);
+    setPendingSubStep(null);
+  };
+
+  const cancelNavigatePendingSubStep = () => {
+    setPendingSubStep(null);
+  };
+
+  const nextStep = () => {
+    if (step === 1 && currentSubStepIndex < currentNavItems.length - 1) {
+      const next = currentNavItems[currentSubStepIndex + 1];
+      setSubStep(next.id);
+      setHasUnsavedChanges(false);
+      return;
+    }
+    if (step === 1 && !validateStep1()) return;
+    if (step === 2 && currentSubStepIndex < currentNavItems.length - 1) {
+      const next = currentNavItems[currentSubStepIndex + 1];
+      setSubStep(next.id);
+      setHasUnsavedChanges(false);
+      return;
+    }
+    if (step === 2 && !validateStep2()) return;
+    setStep((prev) => {
+      const next = prev + 1;
+      const firstInNext = STEP_NAV_ITEMS.find((item) => item.mainStep === next);
+      if (firstInNext) setSubStep(firstInNext.id);
+      return next;
+    });
+    setHasUnsavedChanges(false);
+  };
+
+  const prevStep = () => {
+    if (currentSubStepIndex > 0) {
+      const prev = currentNavItems[currentSubStepIndex - 1];
+      setSubStep(prev.id);
+      setHasUnsavedChanges(false);
+      return;
+    }
+    setStep((prev) => {
+      const next = prev - 1;
+      if (next >= 1) {
+        const itemsInPrev = STEP_NAV_ITEMS.filter((item) => item.mainStep === next);
+        const last = itemsInPrev[itemsInPrev.length - 1];
+        if (last) setSubStep(last.id);
+      }
+      return next;
+    });
+    setHasUnsavedChanges(false);
+  };
 
   const buildPayload = () => {
     const organizer = organizers.find((o) => o.id === selectedOrganizerId) || user;
@@ -1060,6 +1164,15 @@ export const useEventFormState = () => {
     allCategories,
 
     // Step 3
+    // Sub-step navigation
+    subStep,
+    setSubStep,
+    hasUnsavedChanges,
+    setHasUnsavedChanges,
+    pendingSubStep,
+    navigateToSubStep,
+    confirmNavigatePendingSubStep,
+    cancelNavigatePendingSubStep,
     // Actions
     nextStep,
     prevStep,

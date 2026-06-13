@@ -32,9 +32,10 @@ import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
 
 interface EventFormStep2Props {
   form: EventFormState;
+  activeSubStep?: string;
 }
 
-export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
+export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventFormStep2Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
 
   const setTierPrice = (
@@ -55,7 +56,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
   return (
     <div className="space-y-6">
       {/* EVENT-LEVEL CATEGORIES */}
-      <Card>
+      {activeSubStep === 'categories' && <Card>
         <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -238,9 +239,10 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card>}
 
       {/* DISTANCES */}
+      {activeSubStep === 'distances' && <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
         <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
@@ -718,6 +720,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
           </CardContent>
         </Card>
       ))}
+      </>}
     </div>
   );
 };

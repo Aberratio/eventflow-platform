@@ -49,6 +49,7 @@ import type { EventFormState } from '../hooks/useEventFormState';
 
 interface EventFormStep1Props {
   form: EventFormState;
+  activeSubStep?: string;
 }
 
 interface EventImageUploadFieldProps {
@@ -85,7 +86,6 @@ const EventImageUploadField = ({
   const [selectedFileName, setSelectedFileName] = useState('event-image');
   const [showCropper, setShowCropper] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isPreparingCrop, setIsPreparingCrop] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -118,30 +118,12 @@ const EventImageUploadField = ({
     onChange('');
   };
 
-  const handleRecrop = async () => {
+  const handleRecrop = () => {
     if (!value) return;
-
-    setIsPreparingCrop(true);
-    try {
-      const response = await fetch(value);
-      if (!response.ok) throw new Error('Image fetch failed');
-
-      const blob = await response.blob();
-      if (!blob.type.startsWith('image/')) throw new Error('Unsupported image type');
-
-      if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
-      setSelectedFileName('event-image');
-      setSelectedPreviewUrl(URL.createObjectURL(blob));
-      setShowCropper(true);
-    } catch {
-      toast({
-        title: 'Nie udalo sie otworzyc kadrowania',
-        description: 'Sprobuj ponownie wgrac obraz z pliku.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsPreparingCrop(false);
-    }
+    if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
+    setSelectedFileName('event-image');
+    setSelectedPreviewUrl(value);
+    setShowCropper(true);
   };
 
   const handleUpload = async (_crop: unknown, croppedBlob?: Blob) => {
@@ -179,7 +161,7 @@ const EventImageUploadField = ({
       <HelpLabel description={description}>{label}</HelpLabel>
       <p className="text-sm text-muted-foreground">{recommendedSize}</p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" asChild disabled={isUploading || isPreparingCrop}>
+        <Button type="button" variant="outline" asChild disabled={isUploading}>
           <label className="cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
             {value ? 'Zmien obraz' : 'Wgraj obraz'}
@@ -201,10 +183,10 @@ const EventImageUploadField = ({
               type="button"
               variant="outline"
               onClick={handleRecrop}
-              disabled={isUploading || isPreparingCrop}
+              disabled={isUploading}
             >
               <Crop className="mr-2 h-4 w-4" />
-              {isPreparingCrop ? 'Otwieranie...' : 'Zmien przyciecie'}
+              Zmien przyciecie
             </Button>
             <Button type="button" variant="outline" size="icon" onClick={handleRemove}>
               <Trash2 className="h-4 w-4" />
@@ -414,7 +396,7 @@ const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps)
   );
 };
 
-export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
+export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
   const [registrationTypeOpen, setRegistrationTypeOpen] = useState(false);
   const logoShapeConfig = getLogoShapeConfig(form.organizerLogoShape);
@@ -427,7 +409,8 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {/* ── registration: Typ zawodów ── */}
+      {activeSubStep === 'registration' && <Card>
         <Collapsible open={registrationTypeOpen} onOpenChange={setRegistrationTypeOpen}>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -563,9 +546,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             </CollapsibleContent>
           </CardContent>
         </Collapsible>
-      </Card>
+      </Card>}
 
-      <Card>
+      {/* ── basic: Podstawowe informacje ── */}
+      {activeSubStep === 'basic' && <Card>
         <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle>Podstawowe informacje</CardTitle>
         </CardHeader>
@@ -895,12 +879,18 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             </div>
           )}
 
-          {/* Media Section */}
-          <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
-              <Image className="h-5 w-5 shrink-0 text-primary" />
-              Media wydarzenia (opcjonalne)
-            </h3>
+        </CardContent>
+      </Card>}
+
+      {/* ── media: Zdjęcia i media ── */}
+      {activeSubStep === 'media' && <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5 text-primary" /> Zdjęcia i media
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+          <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <EventImageUploadField
                 label="Baner wydarzenia"
@@ -977,13 +967,18 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               <EventImagesPlacementPreview form={form} />
             </div>
           </div>
+        </CardContent>
+      </Card>}
 
-          {/* Payment Configuration */}
-          <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
-              <CreditCard className="h-5 w-5 shrink-0 text-primary" />
-              Konfiguracja pĹ‚atnoĹ›ci
-            </h3>
+      {/* ── payment: Płatności ── */}
+      {activeSubStep === 'payment' && <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" /> Płatności
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+          <div className="space-y-4">
             {isEmbedRegistration ? (
               <Alert className="border-muted bg-muted/50">
                 <Info className="h-4 w-4" />
@@ -1098,17 +1093,21 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </>
             )}
           </div>
+        </CardContent>
+      </Card>}
 
-          {/* Rich Text Fields */}
-          <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
-              <FileText className="h-5 w-5 shrink-0 text-primary" /> Dodatkowe informacje
-              (opcjonalne)
-            </h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Te pola pozwalajÄ… na formatowanie tekstu, dodawanie linkĂłw i list.
-            </p>
-            <div className="space-y-6">
+      {/* ── content: Treści ── */}
+      {activeSubStep === 'content' && <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" /> Treści
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+          <p className="text-sm text-muted-foreground">
+            Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
+          </p>
+          <div className="space-y-6">
               <div className="space-y-2">
                 <HelpLabel description="Sformatowana sekcja na stronie wydarzenia. Mozesz wpisac organizatorow, partnerow, sponsorow i dodac linki.">
                   Organizatorzy
@@ -1168,12 +1167,11 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 )}
               </div>
             </div>
-          </div>
         </CardContent>
-      </Card>
+      </Card>}
 
-      {/* Registration Form Config */}
-      {!isEmbedRegistration && (
+      {/* ── registration: Formularz i wyświetlanie ── */}
+      {activeSubStep === 'registration' && !isEmbedRegistration && (
         <Card>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -1232,7 +1230,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
       )}
 
       {/* Display Options */}
-      {!isEmbedRegistration && (
+      {activeSubStep === 'registration' && !isEmbedRegistration && (
         <Card>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-lg">

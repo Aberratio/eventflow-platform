@@ -225,6 +225,7 @@ export const ImageCropper = ({
               ref={imageRef}
               src={imageUrl}
               alt="Podgląd"
+              crossOrigin="anonymous"
               className="absolute max-w-none transition-transform duration-75"
               style={{
                 width: `${renderedImageSize.width}%`,
