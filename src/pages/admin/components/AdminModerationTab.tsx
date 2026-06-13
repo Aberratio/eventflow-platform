@@ -1,5 +1,6 @@
-import { approveEvent, disciplineLabels, mockEvents, rejectEvent } from '@/api';
-import { useState } from 'react';
+import { approveEvent, disciplineLabels, getEvents, rejectEvent } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,35 +20,45 @@ const statusLabels: Record<Event['status'], string> = {
 };
 
 export const AdminModerationTab = () => {
-  const [events, setEvents] = useState(mockEvents);
+  const queryClient = useQueryClient();
+  const { data: eventsResponse, isLoading } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'admin-moderation'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+  });
+  const events = eventsResponse?.data ?? [];
 
   const pendingEvents = events.filter((event) => event.status === 'awaiting_approval');
   const approvedEvents = events.filter((event) => event.status === 'approved');
 
-  const approve = async (event: Event) => {
-    try {
-      const response = await approveEvent(event.id);
-      setEvents((prev) =>
-        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
-      );
+  const approveMutation = useMutation({
+    mutationFn: (event: Event) => approveEvent(event.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
       toast.success('Wydarzenie zatwierdzone. Organizator moze je teraz opublikowac.');
-    } catch (error) {
+    },
+    onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
-    }
-  };
+    },
+  });
 
-  const reject = async (event: Event) => {
+  const rejectMutation = useMutation({
+    mutationFn: ({ event, reason }: { event: Event; reason: string }) =>
+      rejectEvent(event.id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
+      toast.success('Wydarzenie odeslane do poprawy.');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odrzucic wydarzenia');
+    },
+  });
+
+  const approve = (event: Event) => approveMutation.mutate(event);
+
+  const reject = (event: Event) => {
     const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
     if (!reason?.trim()) return;
-    try {
-      const response = await rejectEvent(event.id, reason.trim());
-      setEvents((prev) =>
-        prev.map((item) => (item.id === event.id ? { ...item, ...response.data } : item)),
-      );
-      toast.success('Wydarzenie odeslane do poprawy.');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odrzucic wydarzenia');
-    }
+    rejectMutation.mutate({ event, reason: reason.trim() });
   };
 
   const renderEvents = (items: Event[], emptyText: string) => {
@@ -115,6 +126,14 @@ export const AdminModerationTab = () => {
           organizator.
         </p>
       </div>
+
+      {isLoading && (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Ladowanie wydarzen...
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>

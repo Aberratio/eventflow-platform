@@ -1,11 +1,6 @@
-import {
-  mockSalesStats,
-  mockOnlineSessions,
-  mockEvents,
-  mockRegistrations,
-  mockShopOrders,
-  mockUsers,
-} from '@/api';
+import { mockSalesStats, mockOnlineSessions, getEvents, getUsers, mockRegistrations } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Calendar,
@@ -13,7 +8,6 @@ import {
   Shield,
   Settings,
   TrendingUp,
-  CheckCircle,
   DollarSign,
   Package,
   Clock,
@@ -21,45 +15,44 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { OnlineStaffCard } from './OnlineStaffCard';
 
 export const AdminOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter((e) => e.status === 'draft').length;
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'admin-overview'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+  });
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'admin-overview'],
+    queryFn: () => getUsers({ pageSize: 100 }),
+  });
+  const events = eventsResponse?.data ?? [];
+  const users = usersResponse?.data ?? [];
+  const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
 
   const stats = [
     {
       label: 'Wydarzeń',
-      value: mockEvents.length,
+      value: events.length,
       icon: Calendar,
       color: 'bg-primary/10 text-primary',
     },
     {
       label: 'Użytkowników',
-      value: mockUsers.length,
+      value: users.length,
       icon: Users,
       color: 'bg-primary/10 text-primary',
     },
     {
       label: 'Administratorów',
-      value: mockUsers.filter((u) => u.role === 'admin' || u.role === 'superadmin').length,
+      value: users.filter((u) => u.role === 'admin' || u.role === 'superadmin').length,
       icon: Shield,
       color: 'bg-destructive/10 text-destructive',
     },
     {
       label: 'Organizatorów',
-      value: mockUsers.filter((u) => u.role === 'organizer').length,
+      value: users.filter((u) => u.role === 'organizer').length,
       icon: Settings,
       color: 'bg-primary/10 text-primary',
     },
@@ -112,8 +105,6 @@ export const AdminOverviewTab = () => {
   };
 
   const totalRevenue = mockSalesStats.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0);
-  const totalOrders = mockShopOrders.length;
-
   const adminCount = mockOnlineSessions.filter(
     (s) => s.role === 'admin' || s.role === 'superadmin',
   ).length;
@@ -299,7 +290,7 @@ export const AdminOverviewTab = () => {
           <CardContent className="pt-6">
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
-              {mockEvents
+              {events
                 .filter((e) => e.status === 'active')
                 .slice(0, 5)
                 .map((event) => (

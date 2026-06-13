@@ -1,10 +1,7 @@
-import {
-  getOrganizerEventLimit,
-  mockEvents,
-  mockUsers,
-  updateOrganizerEventLimit,
-} from '@/api';
+import { getEvents, getOrganizerEventLimit, getUsers, updateOrganizerEventLimit } from '@/api';
 import { useEffect, useMemo, useState } from 'react';
+import { QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,12 +59,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import type { OrganizerEventLimit, User, UserRole } from '@/types';
+import type { Event, OrganizerEventLimit, User, UserRole } from '@/types';
 import { AddOrganizerDialog } from './AddOrganizerDialog';
 import { appLogger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 
-const statusLabels = {
+const statusLabels: Partial<Record<Event['status'], string>> = {
   draft: 'Szkic',
   active: 'Aktywne',
   past: 'Przeszłe',
@@ -92,9 +89,25 @@ export const UsersOrganizersTab = () => {
   const [limitDrafts, setLimitDrafts] = useState<Record<string, string>>({});
   const [savingLimitId, setSavingLimitId] = useState<string | null>(null);
 
-  const organizers = useMemo(() => mockUsers.filter((u) => u.role === 'organizer'), []);
-  const nonOrganizers = useMemo(() => mockUsers.filter((u) => u.role !== 'organizer'), []);
   const canManageAdmins = currentUser?.role === 'superadmin';
+  const { data: usersResponse, isLoading: usersLoading } = useQuery({
+    queryKey: ['users', 'admin-organizers'],
+    queryFn: () => getUsers({ pageSize: 100 }),
+  });
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'admin-organizer-events', currentUser?.role],
+    queryFn: () =>
+      getEvents({
+        includeUnpublished: true,
+        includePrivate: true,
+        includeDeleted: canManageAdmins,
+        pageSize: 100,
+      }),
+  });
+  const users = useMemo(() => usersResponse?.data ?? [], [usersResponse?.data]);
+  const events = useMemo(() => eventsResponse?.data ?? [], [eventsResponse?.data]);
+  const organizers = useMemo(() => users.filter((u) => u.role === 'organizer'), [users]);
+  const nonOrganizers = useMemo(() => users.filter((u) => u.role !== 'organizer'), [users]);
 
   useEffect(() => {
     organizers.forEach((organizer) => {
@@ -109,12 +122,12 @@ export const UsersOrganizersTab = () => {
     const matchesSearch =
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || statusFilter === 'active';
+    const matchesStatus = statusFilter === 'all' || (user.status ?? 'active') === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const getOrganizerEvents = (organizerId: string) =>
-    mockEvents.filter(
+    events.filter(
       (e) => e.organizerId === organizerId && (canManageAdmins || e.status !== 'deleted'),
     );
 
@@ -171,13 +184,19 @@ export const UsersOrganizersTab = () => {
       admin: 'Administrator',
       superadmin: 'Superadmin',
     };
-    appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${roleLabels[selectedRole]}`, {
-      targetType: 'user',
-      targetId: selectedUser.id,
-      targetName: selectedUser.name,
-      metadata: { oldRole: selectedUser.role, newRole: selectedRole },
-    });
-    toast.success(`Rola użytkownika ${selectedUser.name} została zmieniona na: ${roleLabels[selectedRole]}`);
+    appLogger.user(
+      'role_change',
+      `Zmieniono rolę użytkownika ${selectedUser.name} na ${roleLabels[selectedRole]}`,
+      {
+        targetType: 'user',
+        targetId: selectedUser.id,
+        targetName: selectedUser.name,
+        metadata: { oldRole: selectedUser.role, newRole: selectedRole },
+      },
+    );
+    toast.success(
+      `Rola użytkownika ${selectedUser.name} została zmieniona na: ${roleLabels[selectedRole]}`,
+    );
     setRoleDialogOpen(false);
     setSelectedUser(null);
   };
@@ -196,7 +215,9 @@ export const UsersOrganizersTab = () => {
   };
 
   const organizerEvents = selectedUser ? getOrganizerEvents(selectedUser.id) : [];
-  const currentEvents = organizerEvents.filter((e) => e.status !== 'archived' && e.status !== 'deleted');
+  const currentEvents = organizerEvents.filter(
+    (e) => e.status !== 'archived' && e.status !== 'deleted',
+  );
   const archivedEvents = organizerEvents.filter((e) => e.status === 'archived');
   const deletedEvents = organizerEvents.filter((e) => e.status === 'deleted');
 
@@ -253,7 +274,7 @@ export const UsersOrganizersTab = () => {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
-          {statusLabels[event.status]}
+          {statusLabels[event.status] ?? event.status}
         </Badge>
       </Link>
     ));
@@ -294,6 +315,9 @@ export const UsersOrganizersTab = () => {
       />
 
       <div className="overflow-x-auto rounded-lg border border-border/50">
+        {usersLoading && (
+          <div className="p-4 text-sm text-muted-foreground">Ladowanie organizatorow...</div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
@@ -315,14 +339,22 @@ export const UsersOrganizersTab = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {getOrganizerEvents(user.id).filter((event) => event.status !== 'deleted').length}
+                      {
+                        getOrganizerEvents(user.id).filter((event) => event.status !== 'deleted')
+                          .length
+                      }
                     </div>
                   </TableCell>
                   <TableCell>
-                    {limit ? `${limit.used}/${limit.limit} (${limit.available} dostępne)` : 'Ładowanie...'}
+                    {limit
+                      ? `${limit.used}/${limit.limit} (${limit.available} dostępne)`
+                      : 'Ładowanie...'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
+                    <Badge
+                      variant="outline"
+                      className="border-primary/20 bg-primary/10 text-primary"
+                    >
                       Aktywny
                     </Badge>
                   </TableCell>
@@ -367,7 +399,9 @@ export const UsersOrganizersTab = () => {
         </Table>
       </div>
 
-      <div className="text-sm text-muted-foreground">Znaleziono {filteredOrganizers.length} organizatorów</div>
+      <div className="text-sm text-muted-foreground">
+        Znaleziono {filteredOrganizers.length} organizatorów
+      </div>
 
       <UserViewEditDialog
         open={profileDialogOpen}
@@ -435,8 +469,9 @@ export const UsersOrganizersTab = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Zablokować organizatora?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz zablokować <span className="font-medium">{selectedUser?.name}</span>?
-              Organizator nie będzie mógł się zalogować ani zarządzać wydarzeniami.
+              Czy na pewno chcesz zablokować{' '}
+              <span className="font-medium">{selectedUser?.name}</span>? Organizator nie będzie mógł
+              się zalogować ani zarządzać wydarzeniami.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

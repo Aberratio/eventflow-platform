@@ -1,4 +1,6 @@
-import { mockEvents, disciplineLabels } from '@/api';
+import { disciplineLabels, getEvents } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -49,8 +51,19 @@ export const AdminEventsTab = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
   const canSeeDeleted = user?.role === 'superadmin';
+  const { data: eventsResponse, isLoading } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'admin-events', canSeeDeleted],
+    queryFn: () =>
+      getEvents({
+        includeUnpublished: true,
+        includePrivate: true,
+        includeDeleted: canSeeDeleted,
+        pageSize: 100,
+      }),
+  });
+  const events = eventsResponse?.data ?? [];
 
-  const filteredEvents = mockEvents.filter((event) => {
+  const filteredEvents = events.filter((event) => {
     if (event.status === 'deleted' && !canSeeDeleted) return false;
     const matchesSearch =
       event.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -108,6 +121,8 @@ export const AdminEventsTab = () => {
         </Button>
       </div>
 
+      {isLoading && <div className="text-sm text-muted-foreground">Ladowanie wydarzen...</div>}
+
       <div className="overflow-x-auto rounded-lg border border-border/50">
         <Table>
           <TableHeader>
@@ -151,7 +166,13 @@ export const AdminEventsTab = () => {
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
-                      <Link to={event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`}>
+                      <Link
+                        to={
+                          event.status === 'draft'
+                            ? `/events/${event.slug}/preview`
+                            : `/events/${event.slug}`
+                        }
+                      >
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -168,7 +189,9 @@ export const AdminEventsTab = () => {
         </Table>
       </div>
 
-      <div className="text-sm text-muted-foreground">Znaleziono {filteredEvents.length} wydarzeń</div>
+      <div className="text-sm text-muted-foreground">
+        Znaleziono {filteredEvents.length} wydarzeń
+      </div>
     </div>
   );
 };

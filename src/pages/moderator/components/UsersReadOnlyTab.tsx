@@ -1,5 +1,7 @@
-import { getOrganizerEventLimit, mockEvents, mockRegistrations, mockUsers } from '@/api';
+import { getEvents, getOrganizerEventLimit, getRegistrations, getUsers } from '@/api';
 import { useEffect, useMemo, useState } from 'react';
+import { QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +25,23 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
   const [search, setSearch] = useState('');
   const [eventLimits, setEventLimits] = useState<Record<string, OrganizerEventLimit>>({});
 
-  const users = useMemo(() => mockUsers.filter((u) => u.role === userType), [userType]);
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'moderator-readonly', userType],
+    queryFn: () => getUsers({ role: userType, pageSize: 100 }),
+  });
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'moderator-readonly'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+    enabled: userType === 'organizer',
+  });
+  const { data: registrationsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.registrations, 'moderator-readonly'],
+    queryFn: () => getRegistrations({ pageSize: 100 }),
+    enabled: userType === 'participant',
+  });
+  const users = useMemo(() => usersResponse?.data ?? [], [usersResponse]);
+  const events = eventsResponse?.data ?? [];
+  const registrations = registrationsResponse?.data ?? [];
 
   useEffect(() => {
     if (userType !== 'organizer') return;
@@ -42,11 +60,11 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
   });
 
   const getUserRegistrations = (userId: string) => {
-    return mockRegistrations.filter((r) => r.userId === userId).length;
+    return registrations.filter((r) => r.userId === userId).length;
   };
 
   const getOrganizerEvents = (organizerId: string) => {
-    return mockEvents.filter((e) => e.organizerId === organizerId && e.status !== 'deleted').length;
+    return events.filter((e) => e.organizerId === organizerId && e.status !== 'deleted').length;
   };
 
   const isParticipant = userType === 'participant';

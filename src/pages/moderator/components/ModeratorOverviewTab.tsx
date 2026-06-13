@@ -1,12 +1,24 @@
-import { mockEvents, mockRegistrations, mockUsers } from '@/api';
+import { getEvents, getUsers, mockRegistrations } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Users, Building2, TrendingUp, Clock, ShieldCheck } from 'lucide-react';
 
 export const ModeratorOverviewTab = () => {
-  const pendingModerationCount = mockEvents.filter((e) => e.status === 'draft').length;
-  const publishedEvents = mockEvents.filter((e) => e.status === 'active').length;
-  const participantCount = mockUsers.filter((u) => u.role === 'participant').length;
-  const organizerCount = mockUsers.filter((u) => u.role === 'organizer').length;
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'moderator-overview'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+  });
+  const { data: usersResponse } = useQuery({
+    queryKey: ['users', 'moderator-overview'],
+    queryFn: () => getUsers({ pageSize: 100 }),
+  });
+  const events = eventsResponse?.data ?? [];
+  const users = usersResponse?.data ?? [];
+  const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
+  const publishedEvents = events.filter((e) => e.status === 'active').length;
+  const participantCount = users.filter((u) => u.role === 'participant').length;
+  const organizerCount = users.filter((u) => u.role === 'organizer').length;
 
   const stats = [
     {
@@ -42,7 +54,7 @@ export const ModeratorOverviewTab = () => {
     },
     {
       label: 'Moderatorów',
-      value: mockUsers.filter((u) => u.role === 'moderator').length,
+      value: users.filter((u) => u.role === 'moderator').length,
       icon: ShieldCheck,
       color: 'bg-accent/10 text-accent-foreground',
     },
@@ -118,7 +130,7 @@ export const ModeratorOverviewTab = () => {
           <CardContent className="pt-6">
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
-              {mockEvents
+              {events
                 .filter((e) => e.status === 'active')
                 .slice(0, 5)
                 .map((event) => (

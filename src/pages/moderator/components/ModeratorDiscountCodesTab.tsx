@@ -1,5 +1,7 @@
-import { mockEvents, updateEvent } from '@/api';
+import { getEvents, updateEvent } from '@/api';
+import { QUERY_KEYS } from '@/constants';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -14,7 +16,11 @@ import { Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const ModeratorDiscountCodesTab = () => {
-  const publishedEvents = mockEvents.filter(
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'moderator-discount-codes'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+  });
+  const publishedEvents = (eventsResponse?.data ?? []).filter(
     (e) => e.status === 'active' || e.status === 'past' || e.status === 'archived',
   );
   const [selectedEventId, setSelectedEventId] = useState<string>('');

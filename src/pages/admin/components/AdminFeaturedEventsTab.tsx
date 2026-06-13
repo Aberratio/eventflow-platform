@@ -1,5 +1,7 @@
-import { mockEvents, disciplineLabels } from '@/api';
-import { useState } from 'react';
+import { disciplineLabels, getEvents, updateEvent } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,17 +16,26 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Event } from '@/types';
-import { Star, Search, GripVertical, Calendar, MapPin, Save } from 'lucide-react';
+import { Star, Search, GripVertical, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
 export const AdminFeaturedEventsTab = () => {
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const { data: eventsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.events, 'admin-featured'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
+  });
+  const [events, setEvents] = useState<Event[]>([]);
   const [search, setSearch] = useState('');
 
+  useEffect(() => {
+    setEvents(eventsResponse?.data ?? []);
+  }, [eventsResponse]);
+
   const publishedEvents = events.filter(
-    (e) => !e.isPrivate && (e.status === 'active' || e.status === 'past' || e.status === 'archived'),
+    (e) =>
+      !e.isPrivate && (e.status === 'active' || e.status === 'past' || e.status === 'archived'),
   );
   const featuredEvents = events.filter((e) => e.featured);
 
@@ -39,8 +50,13 @@ export const AdminFeaturedEventsTab = () => {
     setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, featured: !e.featured } : e)));
   };
 
-  const handleSave = () => {
-    toast.success('Polecane wydarzenia zostały zapisane');
+  const handleSave = async () => {
+    try {
+      await Promise.all(events.map((event) => updateEvent(event.id, { featured: event.featured })));
+      toast.success('Polecane wydarzenia zostały zapisane');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zapisac zmian');
+    }
   };
 
   return (

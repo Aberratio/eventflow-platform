@@ -6,7 +6,6 @@ import type {
   ShopCategory,
   AdminActionType,
   VirtualResultSubmissionStatus,
-  ChallengeEntryStatus,
 } from '@/types';
 
 /** Generic API response wrapper */
@@ -35,6 +34,8 @@ export interface ApiError {
 // ──────────────── Domain Filters ────────────────
 
 export interface EventFilters {
+  page?: number;
+  pageSize?: number;
   discipline?: SportDiscipline;
   city?: string;
   dateFrom?: string;
@@ -49,6 +50,8 @@ export interface EventFilters {
 }
 
 export interface UserFilters {
+  page?: number;
+  pageSize?: number;
   role?: UserRole;
   search?: string;
   status?: 'active' | 'blocked';

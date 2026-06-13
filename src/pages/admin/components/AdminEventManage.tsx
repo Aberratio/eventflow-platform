@@ -1,12 +1,14 @@
 import {
-  mockEvents,
+  getEventById,
+  getRegistrations,
+  getUsers,
   mockMerchandise,
   defaultPaymentMethods,
-  mockRegistrations,
-  mockUsers,
   updateEvent,
 } from '@/api';
-import { useState } from 'react';
+import { QUERY_KEYS } from '@/constants';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,14 +40,28 @@ export const AdminEventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const event = mockEvents.find((e) => e.id === id);
+  const { data: eventResponse, isLoading } = useQuery({
+    queryKey: id ? QUERY_KEYS.event(id) : ['events', 'missing'],
+    queryFn: () => getEventById(id ?? ''),
+    enabled: Boolean(id),
+  });
+  const { data: registrationsResponse } = useQuery({
+    queryKey: id ? [...QUERY_KEYS.registrationsByEvent(id), 'admin'] : ['registrations', 'missing'],
+    queryFn: () => getRegistrations({ eventId: id, pageSize: 100 }),
+    enabled: Boolean(id),
+  });
+  const { data: organizersResponse } = useQuery({
+    queryKey: ['users', 'admin-event-organizers'],
+    queryFn: () => getUsers({ role: 'organizer', pageSize: 100 }),
+  });
+  const event = eventResponse?.data ?? null;
   const requestedTab = searchParams.get('tab');
   const defaultTab = ['overview', 'participants', 'results', 'settings', 'advanced'].includes(
     requestedTab ?? '',
   )
     ? requestedTab!
     : 'overview';
-  const eventRegistrations = mockRegistrations.filter((r) => r.eventId === id);
+  const eventRegistrations = registrationsResponse?.data ?? [];
 
   const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
     event?.merchandise || mockMerchandise,
@@ -61,6 +77,27 @@ export const AdminEventManage = () => {
     event?.enableMerchandiseInRegistration || false,
   );
 
+  useEffect(() => {
+    if (!event) return;
+    setMerchandise(event.merchandise || mockMerchandise);
+    setPaymentMethods(event.paymentMethods || defaultPaymentMethods);
+    setLiveResultsUrl(event.liveResultsUrl || '');
+    setSelectedOrganizer(event.organizerId || '');
+    setDistances(event.distances || []);
+    setDiscountCodes(event.discountCodes || []);
+    setEnableMerchandise(event.enableMerchandiseInRegistration || false);
+  }, [event]);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-8">
+          <p className="text-muted-foreground">Ladowanie wydarzenia...</p>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!event) {
     return (
       <Layout>
@@ -74,7 +111,7 @@ export const AdminEventManage = () => {
     );
   }
 
-  const organizers = mockUsers.filter((u) => u.role === 'organizer');
+  const organizers = organizersResponse?.data ?? [];
 
   const handleSaveAdvanced = async () => {
     try {
