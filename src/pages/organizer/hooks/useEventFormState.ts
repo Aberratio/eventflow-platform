@@ -28,6 +28,10 @@ import {
   ParticipantCountType,
   EventDocument,
   EventDocumentType,
+  EventLogisticsInfo,
+  LogisticsField,
+  LogisticsLocation,
+  LogisticsFieldStatus,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -98,6 +102,7 @@ export type SubStep =
   | 'media'
   | 'payment'
   | 'content'
+  | 'logistics'
   | 'registration'
   | 'categories'
   | 'distances'
@@ -115,6 +120,7 @@ export const STEP_NAV_ITEMS: StepNavItem[] = [
   { id: 'media', label: 'Zdjęcia i media', shortLabel: 'Media', mainStep: 1 },
   { id: 'payment', label: 'Płatności', shortLabel: 'Płatności', mainStep: 1 },
   { id: 'content', label: 'Treści', shortLabel: 'Treści', mainStep: 1 },
+  { id: 'logistics', label: 'Logistyka zawodów', shortLabel: 'Logistyka', mainStep: 1 },
   { id: 'registration', label: 'Rejestracja', shortLabel: 'Rejestracja', mainStep: 1 },
   { id: 'categories', label: 'Kategorie uczestników', shortLabel: 'Kategorie', mainStep: 2 },
   { id: 'distances', label: 'Dystanse', shortLabel: 'Dystanse', mainStep: 2 },
@@ -234,6 +240,73 @@ export const useEventFormState = () => {
     existingEvent?.displayOptions || DEFAULT_DISPLAY_OPTIONS,
   );
 
+  // Logistics
+  const [logisticsInfo, setLogisticsInfo] = useState<EventLogisticsInfo>(
+    existingEvent?.logisticsInfo || {},
+  );
+
+  const updateLogisticsField = (
+    key: keyof EventLogisticsInfo,
+    updates: Partial<LogisticsField>,
+  ) => {
+    setLogisticsInfo((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] || {}), ...updates },
+    }));
+  };
+
+  const updateLogisticsFieldStatus = (
+    key: keyof EventLogisticsInfo,
+    status: LogisticsFieldStatus,
+  ) => {
+    setLogisticsInfo((prev) => ({
+      ...prev,
+      [key]: { ...(prev[key] || {}), status, ...(status !== 'yes' ? { infoHtml: undefined } : {}) },
+    }));
+  };
+
+  const addLogisticsLocation = (key: keyof EventLogisticsInfo) => {
+    setLogisticsInfo((prev) => ({
+      ...prev,
+      [key]: {
+        ...(prev[key] || {}),
+        status: prev[key]?.status ?? null,
+        locations: [
+          ...(prev[key]?.locations || []),
+          { id: `loc-${Date.now()}`, label: '', mapsUrl: '', address: '' },
+        ],
+      },
+    }));
+  };
+
+  const removeLogisticsLocation = (key: keyof EventLogisticsInfo, id: string) => {
+    setLogisticsInfo((prev) => ({
+      ...prev,
+      [key]: {
+        ...(prev[key] || {}),
+        status: prev[key]?.status ?? null,
+        locations: (prev[key]?.locations || []).filter((l) => l.id !== id),
+      },
+    }));
+  };
+
+  const updateLogisticsLocation = (
+    key: keyof EventLogisticsInfo,
+    id: string,
+    updates: Partial<LogisticsLocation>,
+  ) => {
+    setLogisticsInfo((prev) => ({
+      ...prev,
+      [key]: {
+        ...(prev[key] || {}),
+        status: prev[key]?.status ?? null,
+        locations: (prev[key]?.locations || []).map((l) =>
+          l.id === id ? { ...l, ...updates } : l,
+        ),
+      },
+    }));
+  };
+
   // Categories
   const getEventYear = () => getEventYearFromDate(date);
   const generateStandardAgeCategories = () => generateStandardAgeCategoriesForDate(date);
@@ -322,6 +395,7 @@ export const useEventFormState = () => {
     setEmbedEndDate(existingEvent.registrationEmbed?.endDate || '');
     setFormConfig(existingEvent.registrationFormConfig || DEFAULT_FORM_CONFIG);
     setDisplayOptions(existingEvent.displayOptions || DEFAULT_DISPLAY_OPTIONS);
+    setLogisticsInfo(existingEvent.logisticsInfo || {});
     setAgeCategories(
       existingEvent.distances?.[0]?.ageCategories?.length
         ? existingEvent.distances[0].ageCategories
@@ -1018,6 +1092,7 @@ export const useEventFormState = () => {
       },
       registrationFormConfig: formConfig,
       displayOptions,
+      logisticsInfo,
     };
     return canManageFeatured ? { ...payload, featured } : payload;
   };
@@ -1195,6 +1270,13 @@ export const useEventFormState = () => {
     setFormConfig,
     displayOptions,
     setDisplayOptions,
+    logisticsInfo,
+    setLogisticsInfo,
+    updateLogisticsField,
+    updateLogisticsFieldStatus,
+    addLogisticsLocation,
+    removeLogisticsLocation,
+    updateLogisticsLocation,
 
     // Step 2
     ageCategories,

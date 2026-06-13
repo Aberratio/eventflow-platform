@@ -221,6 +221,7 @@ export interface Event {
   registrationEmbed?: RegistrationEmbedConfig;
   registrationFormConfig?: RegistrationFormConfig;
   displayOptions?: EventDisplayOptions;
+  logisticsInfo?: EventLogisticsInfo;
 }
 
 export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';
@@ -322,6 +323,34 @@ export interface EventDocument {
   fileUrl: string;
   fileName: string;
   mimeType: string;
+}
+
+export type LogisticsFieldStatus = 'yes' | 'no' | null;
+
+export interface LogisticsLocation {
+  id: string;
+  label: string;
+  mapsUrl?: string;
+  address?: string;
+}
+
+export interface LogisticsField {
+  status: LogisticsFieldStatus;
+  infoHtml?: string;
+  locations?: LogisticsLocation[];
+}
+
+export interface EventLogisticsInfo {
+  parking?: LogisticsField;
+  changingRooms?: LogisticsField;
+  luggage?: LogisticsField;
+  toilets?: LogisticsField;
+  buffet?: LogisticsField;
+  meals?: LogisticsField;
+  medicalPoint?: LogisticsField;
+  showers?: LogisticsField;
+  merchandise?: LogisticsField;
+  baggage?: LogisticsField;
 }
 
 export interface GlobalInsuranceSettings {

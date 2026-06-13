@@ -1,5 +1,12 @@
 ﻿import { disciplineLabels, uploadEventImage } from '@/api';
-import { EVENT_DOCUMENT_TYPE_LABELS, EventDocumentType } from '@/types';
+import {
+  EVENT_DOCUMENT_TYPE_LABELS,
+  EventDocumentType,
+  EventLogisticsInfo,
+  SportDiscipline,
+  PaymentConfigType,
+  OrganizerLogoShape,
+} from '@/types';
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -18,7 +25,6 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { SportDiscipline, PaymentConfigType, OrganizerLogoShape } from '@/types';
 import {
   Image,
   Upload,
@@ -44,6 +50,19 @@ import {
   Square,
   Paperclip,
   Loader2,
+  ParkingSquare,
+  ShirtIcon,
+  Briefcase,
+  Toilet,
+  Coffee,
+  Utensils,
+  HeartPulse,
+  ShowerHead,
+  ShoppingBag,
+  Package,
+  Plus,
+  Link2,
+  ClipboardList,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
@@ -590,6 +609,291 @@ const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps)
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+type LogisticsFieldStatus = 'yes' | 'no' | null;
+type LogisticsKey = keyof EventLogisticsInfo;
+
+interface LogisticsLocation {
+  id: string;
+  label: string;
+  mapsUrl?: string;
+  address?: string;
+}
+
+interface LogisticsRowProps {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  locationLabel?: string;
+  status: LogisticsFieldStatus;
+  onStatusChange: (s: LogisticsFieldStatus) => void;
+  infoHtml: string | undefined;
+  onInfoChange: (html: string) => void;
+  locations?: LogisticsLocation[];
+  onAddLocation?: () => void;
+  onRemoveLocation?: (id: string) => void;
+  onUpdateLocation?: (id: string, updates: Partial<LogisticsLocation>) => void;
+}
+
+const LogisticsRow = ({
+  icon,
+  label,
+  description,
+  locationLabel = 'Lokalizację',
+  status,
+  onStatusChange,
+  infoHtml,
+  onInfoChange,
+  locations,
+  onAddLocation,
+  onRemoveLocation,
+  onUpdateLocation,
+}: LogisticsRowProps) => (
+  <div className="space-y-3 rounded-lg border bg-card p-4">
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 shrink-0 text-muted-foreground">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="text-sm font-medium">{label}</span>
+          <div className="flex items-center gap-1 rounded-full border bg-muted/50 p-0.5">
+            {(['yes', 'no', null] as LogisticsFieldStatus[]).map((val) => (
+              <button
+                key={String(val)}
+                type="button"
+                onClick={() => onStatusChange(val)}
+                className={`rounded-full px-3 py-0.5 text-xs font-medium transition-colors ${
+                  status === val
+                    ? 'bg-primary text-primary-foreground shadow'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {val === 'yes' ? 'Tak' : val === 'no' ? 'Nie' : 'Brak info'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+      </div>
+    </div>
+
+    {status === 'yes' && (
+      <div className="space-y-3 sm:pl-7">
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">
+            Dodatkowe informacje (opcjonalnie)
+          </Label>
+          <RichTextEditor
+            value={infoHtml || ''}
+            onChange={onInfoChange}
+            placeholder="Wpisz szczegółowe informacje dla uczestników..."
+            minHeight="80px"
+          />
+        </div>
+
+        {onAddLocation && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs text-muted-foreground">
+                Lokalizacje na mapie (opcjonalnie)
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onAddLocation}
+                className="h-7 gap-1 text-xs"
+              >
+                <Plus className="h-3 w-3" /> Dodaj {locationLabel.toLowerCase()}
+              </Button>
+            </div>
+            {(locations || []).map((loc, idx) => (
+              <div key={loc.id} className="space-y-2 rounded-md border bg-muted/30 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {locationLabel} {idx + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemoveLocation?.(loc.id)}
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Nazwa / opis</Label>
+                    <Input
+                      value={loc.label}
+                      onChange={(e) => onUpdateLocation?.(loc.id, { label: e.target.value })}
+                      placeholder={`np. ${locationLabel} przy stadionie`}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Link2 className="h-3 w-3" /> Link Google Maps
+                    </Label>
+                    <Input
+                      value={loc.mapsUrl || ''}
+                      onChange={(e) => onUpdateLocation?.(loc.id, { mapsUrl: e.target.value })}
+                      placeholder="https://maps.google.com/..."
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Adres (opcjonalnie)
+                  </Label>
+                  <Input
+                    value={loc.address || ''}
+                    onChange={(e) => onUpdateLocation?.(loc.id, { address: e.target.value })}
+                    placeholder="np. ul. Sportowa 1, 00-000 Warszawa"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+);
+
+const LOGISTICS_FIELDS: {
+  key: LogisticsKey;
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  locationLabel?: string;
+  withLocations?: boolean;
+}[] = [
+  {
+    key: 'parking',
+    icon: <ParkingSquare className="h-4 w-4" />,
+    label: 'Parkingi',
+    description: 'Czy w pobliżu startu/mety są parkingi dla uczestników?',
+    locationLabel: 'Parking',
+    withLocations: true,
+  },
+  {
+    key: 'changingRooms',
+    icon: <ShirtIcon className="h-4 w-4" />,
+    label: 'Szatnie',
+    description: 'Czy na miejscu są szatnie / miejsca do przebrania się?',
+    locationLabel: 'Szatnia',
+    withLocations: true,
+  },
+  {
+    key: 'luggage',
+    icon: <Briefcase className="h-4 w-4" />,
+    label: 'Przechowywanie bagażu / depozyty',
+    description: 'Czy dostępna jest możliwość zostawienia rzeczy?',
+  },
+  {
+    key: 'toilets',
+    icon: <Toilet className="h-4 w-4" />,
+    label: 'Toalety',
+    description: 'Czy na trasie / na starcie są toalety?',
+    locationLabel: 'Punkt toaletowy',
+    withLocations: true,
+  },
+  {
+    key: 'buffet',
+    icon: <Coffee className="h-4 w-4" />,
+    label: 'Bufet / napoje na punktach',
+    description: 'Czy na trasie są punkty z napojami lub przekąskami?',
+    locationLabel: 'Punkt odżywczy',
+    withLocations: true,
+  },
+  {
+    key: 'meals',
+    icon: <Utensils className="h-4 w-4" />,
+    label: 'Posiłki / catering',
+    description: 'Czy po zawodach lub na mecie serwowany jest posiłek?',
+  },
+  {
+    key: 'medicalPoint',
+    icon: <HeartPulse className="h-4 w-4" />,
+    label: 'Punkt medyczny',
+    description: 'Czy na miejscu jest obsługa medyczna lub ratownicza?',
+    locationLabel: 'Punkt medyczny',
+    withLocations: true,
+  },
+  {
+    key: 'showers',
+    icon: <ShowerHead className="h-4 w-4" />,
+    label: 'Prysznice',
+    description: 'Czy po zawodach dostępne są prysznice?',
+    locationLabel: 'Punkt z prysznicami',
+    withLocations: true,
+  },
+  {
+    key: 'merchandise',
+    icon: <ShoppingBag className="h-4 w-4" />,
+    label: 'Strefa gadżetów / merchandise',
+    description: 'Czy na miejscu dostępne są gadżety lub pamiątki z imprezy?',
+  },
+  {
+    key: 'baggage',
+    icon: <Package className="h-4 w-4" />,
+    label: 'Pakiety startowe',
+    description: 'Czy i kiedy wydawane są pakiety startowe (numer, koszulka itd.)?',
+    locationLabel: 'Punkt odbioru',
+    withLocations: true,
+  },
+];
+
+const LogisticsSection = ({ form }: { form: EventFormState }) => {
+  const info = form.logisticsInfo;
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2">
+            <ClipboardList className="h-5 w-5 text-primary" /> Logistyka zawodów
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
+          <p className="text-sm text-muted-foreground">
+            Zaznacz co będzie dostępne na zawodach. Uczestnicy zobaczą te informacje na stronie
+            wydarzenia. Wybierz <strong>Tak</strong> (dostępne), <strong>Nie</strong>{' '}
+            (niedostępne) lub <strong>Brak info</strong> (nie wyświetlaj).
+          </p>
+          {LOGISTICS_FIELDS.map((f) => (
+            <LogisticsRow
+              key={f.key}
+              fieldKey={f.key}
+              icon={f.icon}
+              label={f.label}
+              description={f.description}
+              locationLabel={f.locationLabel}
+              status={(info[f.key]?.status ?? null) as LogisticsFieldStatus}
+              onStatusChange={(s) => form.updateLogisticsFieldStatus(f.key, s)}
+              infoHtml={info[f.key]?.infoHtml}
+              onInfoChange={(html) => form.updateLogisticsField(f.key, { infoHtml: html })}
+              locations={f.withLocations ? (info[f.key]?.locations as LogisticsLocation[]) : undefined}
+              onAddLocation={f.withLocations ? () => form.addLogisticsLocation(f.key) : undefined}
+              onRemoveLocation={
+                f.withLocations ? (id) => form.removeLogisticsLocation(f.key, id) : undefined
+              }
+              onUpdateLocation={
+                f.withLocations
+                  ? (id, updates) => form.updateLogisticsLocation(f.key, id, updates)
+                  : undefined
+              }
+            />
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -1374,6 +1678,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             </div>
         </CardContent>
       </Card>}
+
+      {/* ── logistics: Logistyka zawodów ── */}
+      {activeSubStep === 'logistics' && <LogisticsSection form={form} />}
 
       {/* ── registration: Formularz i wyświetlanie ── */}
       {activeSubStep === 'registration' && !isEmbedRegistration && (
