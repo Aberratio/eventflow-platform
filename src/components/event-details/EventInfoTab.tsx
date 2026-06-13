@@ -1,8 +1,109 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Event } from '@/types';
-import { Mail, Phone, Globe, Shield, ShoppingBag } from 'lucide-react';
+import { Event, EventLogisticsInfo } from '@/types';
+import {
+  Mail,
+  Phone,
+  Globe,
+  Shield,
+  ShoppingBag,
+  ParkingSquare,
+  ShirtIcon,
+  Briefcase,
+  Toilet,
+  Coffee,
+  Utensils,
+  HeartPulse,
+  ShowerHead,
+  Package,
+  MapPin,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
+
+type LogisticsKey = keyof EventLogisticsInfo;
+
+const LOGISTICS_DISPLAY: {
+  key: LogisticsKey;
+  icon: React.ReactNode;
+  label: string;
+  locationLabel: string;
+}[] = [
+  { key: 'parking', icon: <ParkingSquare className="h-4 w-4" />, label: 'Parkingi', locationLabel: 'Parking' },
+  { key: 'changingRooms', icon: <ShirtIcon className="h-4 w-4" />, label: 'Szatnie', locationLabel: 'Szatnia' },
+  { key: 'luggage', icon: <Briefcase className="h-4 w-4" />, label: 'Depozyty bagażu', locationLabel: 'Depozyt' },
+  { key: 'toilets', icon: <Toilet className="h-4 w-4" />, label: 'Toalety', locationLabel: 'Punkt toaletowy' },
+  { key: 'buffet', icon: <Coffee className="h-4 w-4" />, label: 'Bufet / napoje', locationLabel: 'Punkt odżywczy' },
+  { key: 'meals', icon: <Utensils className="h-4 w-4" />, label: 'Posiłki / catering', locationLabel: 'Punkt' },
+  { key: 'medicalPoint', icon: <HeartPulse className="h-4 w-4" />, label: 'Punkt medyczny', locationLabel: 'Punkt medyczny' },
+  { key: 'showers', icon: <ShowerHead className="h-4 w-4" />, label: 'Prysznice', locationLabel: 'Prysznice' },
+  { key: 'merchandise', icon: <ShoppingBag className="h-4 w-4" />, label: 'Gadżety / merchandise', locationLabel: 'Strefa' },
+  { key: 'baggage', icon: <Package className="h-4 w-4" />, label: 'Pakiety startowe', locationLabel: 'Punkt odbioru' },
+];
+
+const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
+  const visible = LOGISTICS_DISPLAY.filter((f) => info[f.key]?.status === 'yes' || info[f.key]?.status === 'no');
+  if (visible.length === 0) return null;
+
+  return (
+    <div>
+      <h4 className="mb-3 font-semibold">Logistyka zawodów</h4>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {visible.map((f) => {
+          const field = info[f.key]!;
+          const isYes = field.status === 'yes';
+          return (
+            <div key={f.key} className="space-y-2 rounded-lg border bg-muted/30 p-3">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">{f.icon}</span>
+                <span className="text-sm font-medium">{f.label}</span>
+                {isYes ? (
+                  <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-green-600" />
+                ) : (
+                  <XCircle className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/60" />
+                )}
+              </div>
+
+              {isYes && field.infoHtml && (
+                <RichTextDisplay html={field.infoHtml} className="text-sm text-muted-foreground" />
+              )}
+
+              {isYes && field.locations && field.locations.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  {field.locations.map((loc, idx) => (
+                    <div key={loc.id} className="flex items-start gap-2 text-sm">
+                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <span className="font-medium">
+                          {loc.label || `${f.locationLabel} ${idx + 1}`}
+                        </span>
+                        {loc.address && (
+                          <p className="text-xs text-muted-foreground">{loc.address}</p>
+                        )}
+                        {loc.mapsUrl && (
+                          <a
+                            href={loc.mapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            Zobacz na mapie <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 interface EventInfoTabProps {
   event: Event;
@@ -29,6 +130,8 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
           <RichTextDisplay html={event.rulesHtml} />
         </div>
       )}
+
+      {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
 
       {!event.organizersHtml && (
         <div>
