@@ -1,9 +1,9 @@
 /* ============================================================
    DESIGN SYSTEM — TYPOGRAPHY
-   Importy fontów i klasy pomocnicze typograficzne.
+   Midnight Performance Glass — Inter font + utility classes.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* ── Klasy pomocnicze ─────────────────────────────────────── */
 
@@ -67,5 +67,5 @@
 .caption {
   font-size: 0.75rem;
   line-height: 1.4;
-  color: hsl(var(--muted-foreground));
+  color: #747d89;
 }

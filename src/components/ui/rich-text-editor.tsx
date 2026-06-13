@@ -81,7 +81,7 @@ export const RichTextEditor = ({
       attributes: {
         class: cn(
           'prose prose-sm dark:prose-invert max-w-none focus:outline-none',
-          'min-h-[120px] break-words p-3',
+          'min-h-[80px] break-words p-3',
         ),
         style: `min-height: ${minHeight}`,
       },
@@ -129,9 +129,9 @@ export const RichTextEditor = ({
   if (!editor) return null;
 
   return (
-    <div className={cn('overflow-hidden rounded-md border bg-background', className)}>
+    <div className={cn('overflow-hidden rounded-md border bg-black/10', className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b bg-muted/30 p-2">
+      <div className="flex flex-wrap items-center gap-0.5 border-b bg-white/[0.025] px-2 py-1">
         <ToolbarButton
           icon={Bold}
           active={editor.isActive('bold')}

@@ -10,9 +10,7 @@ export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="min-h-[calc(100vh-64px)] flex-1 bg-gradient-to-b from-secondary/40 via-background to-background">
-        {children}
-      </main>
+      <main className="min-h-[calc(100vh-64px)] flex-1 bg-background">{children}</main>
       <Footer />
     </div>
   );

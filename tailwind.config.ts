@@ -21,21 +21,22 @@ export default {
       colors: {
         /* === BRAND STATIC TOKENS === */
         brand: {
-          navy: '#1B5599' /* primary brand navy */,
-          'navy-light': '#3188EA' /* emphasis / glow */,
-          'navy-dark': '#144385' /* hover state */,
-          black: '#141414',
+          navy: 'hsl(var(--color-brand-navy) / <alpha-value>)' /* primary brand navy */,
+          'navy-light':
+            'hsl(var(--color-brand-navy-light) / <alpha-value>)' /* emphasis / glow */,
+          'navy-dark': 'hsl(var(--color-brand-navy-dark) / <alpha-value>)' /* hover state */,
+          black: 'hsl(var(--color-brand-black) / <alpha-value>)',
           gray: {
-            '50': '#F9F9F9',
-            '100': '#F0F0F0',
-            '200': '#E0E0E0',
-            '300': '#C4C4C4',
-            '400': '#9A9A9A',
-            '500': '#6E6E6E',
-            '600': '#4A4A4A',
-            '700': '#303030',
-            '800': '#1F1F1F',
-            '900': '#141414',
+            '50': 'hsl(var(--color-gray-50) / <alpha-value>)',
+            '100': 'hsl(var(--color-gray-100) / <alpha-value>)',
+            '200': 'hsl(var(--color-gray-200) / <alpha-value>)',
+            '300': 'hsl(var(--color-gray-300) / <alpha-value>)',
+            '400': 'hsl(var(--color-gray-400) / <alpha-value>)',
+            '500': 'hsl(var(--color-gray-500) / <alpha-value>)',
+            '600': 'hsl(var(--color-gray-600) / <alpha-value>)',
+            '700': 'hsl(var(--color-gray-700) / <alpha-value>)',
+            '800': 'hsl(var(--color-gray-800) / <alpha-value>)',
+            '900': 'hsl(var(--color-gray-900) / <alpha-value>)',
           },
         },
         /* === SEMANTIC TOKENS (CSS variables) === */
@@ -194,7 +195,7 @@ export default {
       },
       fontFamily: {
         sans: [
-          'Work Sans',
+          'Inter',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
@@ -203,7 +204,6 @@ export default {
           'Roboto',
           'Helvetica Neue',
           'Arial',
-          'Noto Sans',
           'sans-serif',
         ],
         serif: ['Lora', 'ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],

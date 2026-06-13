@@ -1,119 +1,138 @@
 /* ============================================================
-   DESIGN SYSTEM — BASE
-   Reset i style bazowe — dark enterprise theme.
+   DESIGN SYSTEM - BASE
+   Midnight Performance Glass - dark base styles.
    ============================================================ */
 
-*,
-*::before,
-*::after {
-  border-color: hsl(var(--border));
-  box-sizing: border-box;
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--glass-border, rgba(255, 255, 255, 0.1));
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--gradient-hero);
+    background-attachment: fixed;
+    color: hsl(var(--foreground));
+    font-family: 'Inter', 'Work Sans', ui-sans-serif, system-ui, sans-serif;
+    line-height: var(--lh-normal, 1.5);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--surface-overlay));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--glass-border-strong);
+    border-radius: 99px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: var(--lh-tight, 1.2);
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--primary-glow) / 0.7);
+    outline-offset: 2px;
+  }
+
+  a,
+  button {
+    transition: var(--transition-base, all 0.2s ease);
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-}
+@layer utilities {
+  .divider-gradient {
+    height: 1px;
+    background: var(--gradient-divider);
+  }
 
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Work Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: var(--lh-normal, 1.5);
-  min-height: 100vh;
-}
+  .section-gap {
+    padding-top: var(--section-gap, 5rem);
+    padding-bottom: var(--section-gap, 5rem);
+  }
 
-/* ── Scrollbar styling ──────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(0 0% 7%);
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(0 0% 22%);
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(0 0% 30%);
-}
+  .glass-panel {
+    background:
+      radial-gradient(circle at 85% 8%, rgba(255, 255, 255, 0.05), transparent 34%),
+      radial-gradient(circle at 8% 10%, rgba(38, 116, 217, 0.055), transparent 42%),
+      var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
 
-/* ── Selekcja tekstu ──────────────────────────────────── */
-::selection {
-  background: hsl(var(--primary) / 0.25);
-  color: hsl(var(--foreground));
-}
+  input[type='date']::-webkit-calendar-picker-indicator {
+    opacity: 0.62;
+    filter: invert(1) brightness(1.5) saturate(0);
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
 
-/* ── Nagłówki ─────────────────────────────────────────── */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: hsl(var(--foreground));
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: var(--lh-tight, 1.2);
-}
+  .card-hover {
+    transition: var(--transition-slow);
+  }
 
-/* ── Focus styles ─────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-}
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
 
-/* ── Smooth transitions for interactive elements ───────── */
-a,
-button {
-  transition: var(--transition-base, all 0.2s ease);
-}
+  .accent-bar {
+    border-left: 2px solid hsl(var(--primary));
+    padding-left: 0.75rem;
+  }
 
-/* ── Gradient divider utility ─────────────────────────── */
-.divider-gradient {
-  height: 1px;
-  background: var(--gradient-divider);
-}
+  .surface-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 
-/* ── Section spacing ──────────────────────────────────── */
-.section-gap {
-  padding-top: var(--section-gap, 5rem);
-  padding-bottom: var(--section-gap, 5rem);
-}
+  .surface-elevated {
+    background: hsl(var(--surface-elevated));
+    border: 1px solid var(--glass-border);
+  }
 
-/* ── Card hover effect ────────────────────────────────── */
-.card-hover {
-  transition: var(--transition-slow);
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
+  .row-hover {
+    transition: background-color 0.15s ease;
+  }
 
-/* ── Accent bar (left border marker) ─────────────── */
-.accent-bar {
-  border-left: 3px solid hsl(var(--primary));
-  padding-left: 0.75rem;
-}
-
-/* ── Surface utilities ───────────────────────────────── */
-.surface-card {
-  background: hsl(var(--card));
-  border: 1px solid hsl(var(--border) / 0.5);
-}
-
-.surface-elevated {
-  background: hsl(var(--surface-elevated));
-  border: 1px solid hsl(var(--border) / 0.5);
-}
-
-/* ── Row hover for tables/lists ──────────────────────── */
-.row-hover {
-  transition: background-color 0.15s ease;
-}
-.row-hover:hover {
-  background-color: hsl(var(--accent));
+  .row-hover:hover {
+    background-color: var(--glass-bg-hover);
+  }
 }

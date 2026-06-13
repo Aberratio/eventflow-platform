@@ -84,11 +84,15 @@ export const Header = () => {
   const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-[hsl(var(--header-border))] bg-[hsl(var(--header-bg)/0.90)] backdrop-blur-xl"
+    >
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="group flex items-center gap-2">
-          <Timer className="h-5 w-5 text-primary" />
-          <span className="text-lg font-bold tracking-tight text-foreground">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+            <Timer className="h-4 w-4 text-primary" />
+          </div>
+          <span className="text-base font-bold tracking-tight text-foreground">
             Zmierzymy<span className="text-primary">Czas</span>
           </span>
         </Link>
@@ -98,18 +102,18 @@ export const Header = () => {
           <DropdownMenu>
             <DropdownMenuTrigger
               className={cn(
-                'relative flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors hover:text-foreground',
+                'relative flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
                 isActive('/wydarzenia') ||
                   isActivePrefix('/wyniki') ||
                   isActivePrefix('/series') ||
                   isActivePrefix('/events') ||
                   isActivePrefix('/challenges')
-                  ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-primary'
+                  ? 'text-foreground'
                   : 'text-muted-foreground',
               )}
             >
               Wydarzenia
-              <ChevronDown className="h-3 w-3 opacity-60" />
+              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
               <DropdownMenuItem asChild>
@@ -140,23 +144,21 @@ export const Header = () => {
           <Link
             to="/sklep"
             className={cn(
-              'relative px-3 py-2 text-sm font-medium transition-colors hover:text-foreground',
-              isActive('/sklep') || isActive('/shop')
-                ? 'text-foreground after:absolute after:bottom-0 after:left-3 after:right-3 after:h-0.5 after:rounded-full after:bg-primary'
-                : 'text-muted-foreground',
+              'relative rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
+              isActive('/sklep') || isActive('/shop') ? 'text-foreground' : 'text-muted-foreground',
             )}
           >
             Sklep
           </Link>
 
-          <div className="mx-1 h-5 w-px bg-border" />
+          <div className="mx-1 h-4 w-px bg-border" />
 
           <Link
             to="/cart"
-            className="relative rounded-md p-2 transition-colors hover:bg-accent"
+            className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label="Koszyk"
           >
-            <ShoppingCart className="h-4 w-4 text-muted-foreground transition-colors hover:text-foreground" />
+            <ShoppingCart className="h-4 w-4" />
             {totalItems > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold leading-none text-primary-foreground">
                 {totalItems > 9 ? '9+' : totalItems}
@@ -171,10 +173,10 @@ export const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="ml-2 gap-2 text-muted-foreground hover:text-foreground"
+                  className="ml-1 gap-2 text-muted-foreground hover:text-foreground"
                 >
                   <User className="h-4 w-4" />
-                  <span className="max-w-[100px] truncate">{user?.name}</span>
+                  <span className="max-w-[100px] truncate text-foreground">{user?.name}</span>
                   <Badge
                     variant={roleBadgeVariants[user?.role || 'participant']}
                     className="text-xs"
@@ -281,7 +283,9 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border bg-background lg:hidden">
+        <div
+          className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden"
+        >
           <nav className="container flex flex-col gap-1 py-4">
             <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
               <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
@@ -339,7 +343,7 @@ export const Header = () => {
               {totalItems > 0 && <Badge variant="secondary">{totalItems}</Badge>}
             </Link>
 
-            <div className="my-2 border-t border-border" />
+            <div className="my-2 border-t border-border/60" />
 
             {isAuthenticated ? (
               <>

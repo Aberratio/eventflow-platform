@@ -41,16 +41,20 @@ const EventForm = () => {
 
   return (
     <Layout>
-      <div className="container max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <Button variant="ghost" onClick={() => form.navigate(-1)} className="-ml-2 mb-4 max-w-full">
+      <div className="container max-w-6xl px-4 py-7 sm:px-6 sm:py-9 lg:px-8">
+        <Button
+          variant="ghost"
+          onClick={() => form.navigate(-1)}
+          className="-ml-2 mb-5 h-8 max-w-full px-2 text-sm"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <h1 className="mb-6 text-2xl font-bold tracking-normal sm:text-3xl">
+        <h1 className="mb-6 text-2xl font-bold tracking-normal sm:text-[1.7rem]">
           {form.isEditing ? 'Edytuj wydarzenie' : 'Nowe wydarzenie'}
         </h1>
 
-        <div className="flex gap-8">
+        <div className="flex gap-8 lg:gap-9">
           {/* Left sticky sidebar */}
           <div className="hidden lg:block">
             <StepNavSidebar
@@ -71,7 +75,7 @@ const EventForm = () => {
             {form.step === 3 && <EventFormStep3 form={form} />}
 
             {/* Navigation buttons */}
-            <div className="mt-8 flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-0">
+            <div className="mt-5 flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-0">
               {form.step > 1 || form.subStep !== 'basic' ? (
                 <Button variant="outline" onClick={form.prevStep} className="w-full sm:w-auto">
                   <ArrowLeft className="mr-2 h-4 w-4" /> Wstecz

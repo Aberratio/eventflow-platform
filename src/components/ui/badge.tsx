@@ -4,18 +4,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring/60',
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+        default: 'border border-primary/40 bg-primary text-primary-foreground',
         secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'border border-[color:var(--glass-border)] bg-[var(--glass-bg-hover)] text-muted-foreground',
         destructive:
-          'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
-        outline: 'text-foreground border-border',
-        muted: 'border-transparent bg-muted text-muted-foreground',
-        accent: 'border-transparent bg-primary/10 text-primary',
+          'border border-destructive/30 bg-destructive/15 text-destructive',
+        outline: 'border border-[color:var(--glass-border-strong)] text-muted-foreground',
+        muted: 'border border-border/60 bg-[var(--glass-bg)] text-muted-foreground',
+        accent: 'border border-primary/25 bg-primary/10 text-[hsl(var(--primary-glow))]',
       },
     },
     defaultVariants: {

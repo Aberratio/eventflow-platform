@@ -508,13 +508,13 @@ const MainEventImagePlacementPreview = ({ form }: EventImagesPlacementPreviewPro
   const eventCity = form.isVirtual ? 'Wydarzenie wirtualne' : form.city || 'Miasto';
 
   return (
-    <div className="max-w-xl rounded-md border bg-card p-3">
+    <div className="max-w-xl rounded-md border bg-black/10 p-2.5">
       <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Image className="h-3.5 w-3.5" />
         Glowny obraz poza hero
       </div>
       <div className="flex gap-3">
-        <div className="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted">
+        <div className="h-14 w-20 shrink-0 overflow-hidden rounded bg-muted">
           {form.imageUrl ? (
             <img src={form.imageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -1052,10 +1052,10 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
 
       {/* ── basic: Podstawowe informacje ── */}
       {activeSubStep === 'basic' && <Card>
-        <CardHeader className="p-4 pb-3 sm:p-6">
-          <CardTitle>Podstawowe informacje</CardTitle>
+        <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
+          <CardTitle className="text-xl">Podstawowe informacje</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
           <div className="grid gap-4 md:grid-cols-2">
             {form.canChooseOrganizer && (
               <div className="space-y-2 md:col-span-2">
@@ -1166,7 +1166,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           </div>
 
           {/* Virtual event toggle */}
-          <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
             <div className="flex items-start gap-3">
               <Checkbox
                 id="isVirtual"
@@ -1232,7 +1232,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           )}
 
           {/* Private event toggle */}
-          <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
             <div className="flex items-start gap-3">
               <Checkbox
                 id="isPrivate"
@@ -1642,7 +1642,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   value={form.rulesHtml}
                   onChange={form.setRulesHtml}
                   placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
-                  minHeight="120px"
+              minHeight="72px"
                 />
               </div>
               <div className="space-y-4">
