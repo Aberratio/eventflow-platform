@@ -45,7 +45,37 @@ export const ImageCropper = ({
   const [position, setPosition] = useState({ x: 50, y: 50 }); // center position in %
   const [zoom, setZoom] = useState([100]); // zoom level 100-200%
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [isSaving, setIsSaving] = useState(false);
+
+  const zoomFactor = zoom[0] / 100;
+  const naturalAspect =
+    naturalSize.width > 0 && naturalSize.height > 0
+      ? naturalSize.width / naturalSize.height
+      : aspectRatio;
+  const baseImageSize =
+    naturalAspect > aspectRatio
+      ? { width: (naturalAspect / aspectRatio) * 100, height: 100 }
+      : { width: 100, height: (aspectRatio / naturalAspect) * 100 };
+  const renderedImageSize = {
+    width: baseImageSize.width * zoomFactor,
+    height: baseImageSize.height * zoomFactor,
+  };
+
+  const clampPosition = useCallback(
+    (nextPosition: { x: number; y: number }) => {
+      const minX = (50 / renderedImageSize.width) * 100;
+      const maxX = ((renderedImageSize.width - 50) / renderedImageSize.width) * 100;
+      const minY = (50 / renderedImageSize.height) * 100;
+      const maxY = ((renderedImageSize.height - 50) / renderedImageSize.height) * 100;
+
+      return {
+        x: Math.max(minX, Math.min(maxX, nextPosition.x)),
+        y: Math.max(minY, Math.min(maxY, nextPosition.y)),
+      };
+    },
+    [renderedImageSize.height, renderedImageSize.width],
+  );
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -53,8 +83,13 @@ export const ImageCropper = ({
       setPosition({ x: 50, y: 50 });
       setZoom([100]);
       setImageLoaded(false);
+      setNaturalSize({ width: 0, height: 0 });
     }
   }, [open]);
+
+  useEffect(() => {
+    setPosition((prev) => clampPosition(prev));
+  }, [clampPosition]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -71,15 +106,14 @@ export const ImageCropper = ({
 
       const deltaX = ((e.clientX - dragStart.x) / rect.width) * 100;
       const deltaY = ((e.clientY - dragStart.y) / rect.height) * 100;
+      const imageDeltaX = (deltaX / renderedImageSize.width) * 100;
+      const imageDeltaY = (deltaY / renderedImageSize.height) * 100;
 
-      setPosition((prev) => ({
-        x: Math.max(0, Math.min(100, prev.x - deltaX)),
-        y: Math.max(0, Math.min(100, prev.y - deltaY)),
-      }));
+      setPosition((prev) => clampPosition({ x: prev.x - imageDeltaX, y: prev.y - imageDeltaY }));
 
       setDragStart({ x: e.clientX, y: e.clientY });
     },
-    [isDragging, dragStart],
+    [clampPosition, isDragging, dragStart, renderedImageSize.height, renderedImageSize.width],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -87,23 +121,11 @@ export const ImageCropper = ({
   }, []);
 
   const getCropArea = (): CropArea => {
-    const image = imageRef.current;
-    const naturalAspect =
-      image && image.naturalWidth > 0 && image.naturalHeight > 0
-        ? image.naturalWidth / image.naturalHeight
-        : aspectRatio;
-    const zoomFactor = zoom[0] / 100;
-    let visibleWidth = 100 / zoomFactor;
-    let visibleHeight = 100 / zoomFactor;
-
-    if (naturalAspect > aspectRatio) {
-      visibleWidth = visibleHeight * (aspectRatio / naturalAspect);
-    } else {
-      visibleHeight = visibleWidth * (naturalAspect / aspectRatio);
-    }
-
-    const x = Math.max(0, position.x - visibleWidth / 2);
-    const y = Math.max(0, position.y - visibleHeight / 2);
+    const visibleWidth = (100 / renderedImageSize.width) * 100;
+    const visibleHeight = (100 / renderedImageSize.height) * 100;
+    const clampedPosition = clampPosition(position);
+    const x = Math.max(0, clampedPosition.x - visibleWidth / 2);
+    const y = Math.max(0, clampedPosition.y - visibleHeight / 2);
 
     return {
       x: Math.min(x, 100 - visibleWidth),
@@ -157,8 +179,6 @@ export const ImageCropper = ({
     }
   };
 
-  const zoomFactor = zoom[0] / 100;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -187,10 +207,11 @@ export const ImageCropper = ({
               const rect = containerRef.current.getBoundingClientRect();
               const deltaX = ((touch.clientX - dragStart.x) / rect.width) * 100;
               const deltaY = ((touch.clientY - dragStart.y) / rect.height) * 100;
-              setPosition((prev) => ({
-                x: Math.max(0, Math.min(100, prev.x - deltaX)),
-                y: Math.max(0, Math.min(100, prev.y - deltaY)),
-              }));
+              const imageDeltaX = (deltaX / renderedImageSize.width) * 100;
+              const imageDeltaY = (deltaY / renderedImageSize.height) * 100;
+              setPosition((prev) =>
+                clampPosition({ x: prev.x - imageDeltaX, y: prev.y - imageDeltaY }),
+              );
               setDragStart({ x: touch.clientX, y: touch.clientY });
             }}
             onTouchEnd={() => setIsDragging(false)}
@@ -204,16 +225,21 @@ export const ImageCropper = ({
               ref={imageRef}
               src={imageUrl}
               alt="Podgląd"
-              className="absolute transition-transform duration-75"
+              className="absolute max-w-none transition-transform duration-75"
               style={{
-                width: `${100 * zoomFactor}%`,
-                height: `${100 * zoomFactor}%`,
-                objectFit: 'cover',
-                left: `${50 - position.x * zoomFactor}%`,
-                top: `${50 - position.y * zoomFactor}%`,
+                width: `${renderedImageSize.width}%`,
+                height: `${renderedImageSize.height}%`,
+                left: `${50 - (position.x / 100) * renderedImageSize.width}%`,
+                top: `${50 - (position.y / 100) * renderedImageSize.height}%`,
                 opacity: imageLoaded ? 1 : 0,
               }}
-              onLoad={() => setImageLoaded(true)}
+              onLoad={(event) => {
+                setNaturalSize({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight,
+                });
+                setImageLoaded(true);
+              }}
               draggable={false}
             />
 

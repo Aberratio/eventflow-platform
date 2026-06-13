@@ -1,7 +1,7 @@
-﻿import { disciplineLabels } from '@/api';
-import { useEffect, useState } from 'react';
-import { uploadEventImage } from '@/api';
+﻿import { disciplineLabels, uploadEventImage } from '@/api';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ import { SportDiscipline, PaymentConfigType } from '@/types';
 import {
   Image,
   Upload,
-  X,
+  Trash2,
   Globe,
   CreditCard,
   Building2,
@@ -31,8 +31,11 @@ import {
   Settings2,
   Monitor,
   ExternalLink,
+  Calendar,
+  MapPin,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
+import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { EventFormState } from '../hooks/useEventFormState';
 
@@ -50,6 +53,7 @@ interface EventImageUploadFieldProps {
   outputWidth: number;
   cropTitle: string;
   toast: EventFormState['toast'];
+  showPreview?: boolean;
 }
 
 const EventImageUploadField = ({
@@ -62,7 +66,9 @@ const EventImageUploadField = ({
   outputWidth,
   cropTitle,
   toast,
+  showPreview = true,
 }: EventImageUploadFieldProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState('');
   const [selectedFileName, setSelectedFileName] = useState('event-image');
   const [showCropper, setShowCropper] = useState(false);
@@ -89,6 +95,14 @@ const EventImageUploadField = ({
     setSelectedFileName(file.name.replace(/\.[^.]+$/, '') || 'event-image');
     setSelectedPreviewUrl(URL.createObjectURL(file));
     setShowCropper(true);
+  };
+
+  const handleRemove = () => {
+    if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setSelectedPreviewUrl('');
+    setShowCropper(false);
+    onChange('');
   };
 
   const handleUpload = async (_crop: unknown, croppedBlob?: Blob) => {
@@ -131,20 +145,24 @@ const EventImageUploadField = ({
             <Upload className="mr-2 h-4 w-4" />
             {value ? 'Zmien obraz' : 'Wgraj obraz'}
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               className="sr-only"
-              onChange={(event) => handleFileChange(event.target.files?.[0])}
+              onChange={(event) => {
+                handleFileChange(event.target.files?.[0]);
+                event.currentTarget.value = '';
+              }}
             />
           </label>
         </Button>
         {value && (
-          <Button type="button" variant="outline" size="icon" onClick={() => onChange('')}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="outline" size="icon" onClick={handleRemove}>
+            <Trash2 className="h-4 w-4" />
           </Button>
         )}
       </div>
-      {value && (
+      {showPreview && value && (
         <div className="overflow-hidden rounded-md border bg-muted" style={{ aspectRatio }}>
           <img src={value} alt="" className="h-full w-full object-cover" />
         </div>
@@ -160,6 +178,126 @@ const EventImageUploadField = ({
           onCrop={handleUpload}
         />
       )}
+    </div>
+  );
+};
+
+interface EventImagesPlacementPreviewProps {
+  form: EventFormState;
+}
+
+const EmptyImagePreview = ({ label, className }: { label: string; className?: string }) => (
+  <div
+    className={`flex items-center justify-center bg-muted text-center text-xs text-muted-foreground ${className ?? ''}`}
+  >
+    {label}
+  </div>
+);
+
+const MainEventImagePlacementPreview = ({ form }: EventImagesPlacementPreviewProps) => {
+  const eventName = form.name || 'Nazwa wydarzenia';
+  const eventDate = form.date || 'Data wydarzenia';
+  const eventCity = form.isVirtual ? 'Wydarzenie wirtualne' : form.city || 'Miasto';
+
+  return (
+    <div className="max-w-xl rounded-md border bg-card p-3">
+      <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <Image className="h-3.5 w-3.5" />
+        Glowny obraz poza hero
+      </div>
+      <div className="flex gap-3">
+        <div className="h-16 w-24 shrink-0 overflow-hidden rounded bg-muted">
+          {form.imageUrl ? (
+            <img src={form.imageUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <EmptyImagePreview label="glowny obraz" className="h-full px-2" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="line-clamp-2 text-sm font-medium">{eventName}</div>
+          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              {eventDate}
+            </span>
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {eventCity}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps) => {
+  const heroImageUrl = form.bannerUrl || form.imageUrl;
+  const eventName = form.name || 'Nazwa wydarzenia';
+
+  return (
+    <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h4 className="text-sm font-semibold">Podglad umiejscowienia obrazow</h4>
+          <p className="text-xs text-muted-foreground">
+            Tak baner i logo beda laczone na publicznej stronie wydarzenia.
+          </p>
+        </div>
+        <Badge variant="outline" className="text-[10px]">
+          Podglad
+        </Badge>
+      </div>
+
+      <div className="overflow-hidden rounded-md border bg-background">
+        <div className="relative aspect-[16/7] overflow-hidden bg-muted">
+          {heroImageUrl ? (
+            <img
+              src={heroImageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <EmptyImagePreview
+              label="Hero strony wydarzenia: najpierw baner, a gdy go nie ma - glowny obraz"
+              className="absolute inset-0 px-4"
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-transparent" />
+          {form.organizerLogoUrl ? (
+            <img
+              src={form.organizerLogoUrl}
+              alt=""
+              className="absolute right-3 top-3 h-12 w-12 rounded-lg border-2 border-background object-cover shadow-md sm:h-14 sm:w-14"
+            />
+          ) : (
+            <div className="absolute right-3 top-3 flex h-12 w-12 items-center justify-center rounded-lg border-2 border-background bg-background/80 text-center text-[9px] leading-tight text-muted-foreground shadow-md sm:h-14 sm:w-14">
+              logo
+            </div>
+          )}
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              <Badge className="bg-background/85 text-[10px] backdrop-blur-sm">
+                <DisciplineIcon discipline={form.discipline} size="sm" className="mr-1 h-3 w-3" />
+                {disciplineLabels[form.discipline]}
+              </Badge>
+              {form.isVirtual && (
+                <Badge variant="outline" className="bg-background/80 text-[10px]">
+                  <Globe className="mr-1 h-3 w-3" />
+                  Wirtualne
+                </Badge>
+              )}
+            </div>
+            <div className="line-clamp-1 text-base font-bold sm:text-lg">{eventName}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Organizator:{' '}
+              {form.organizers.find((o) => o.id === form.selectedOrganizerId)?.companyName ||
+                form.organizers.find((o) => o.id === form.selectedOrganizerId)?.name ||
+                'organizator'}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -572,7 +710,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             outputWidth={1200}
             cropTitle="Dopasuj glowny obraz wydarzenia"
             toast={form.toast}
+            showPreview={false}
           />
+          <MainEventImagePlacementPreview form={form} />
 
           {form.canManageFeatured && (
             <div className="flex items-start gap-2">
@@ -620,6 +760,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 cropTitle="Dopasuj logo organizatora"
                 toast={form.toast}
               />
+            </div>
+            <div className="mt-6">
+              <EventImagesPlacementPreview form={form} />
             </div>
           </div>
 
