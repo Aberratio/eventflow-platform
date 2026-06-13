@@ -134,11 +134,9 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
                 <p className="mb-1 text-sm font-medium">Progi cenowe:</p>
                 <div className="space-y-1">
                   {distance.priceTiers.map((tier) => {
-                    const tierPrice = applyDiscount(
-                      distance.price,
-                      tier.discountType,
-                      tier.discountValue,
-                    );
+                    const tierPrice =
+                      tier.price ??
+                      applyDiscount(distance.price, tier.discountType, tier.discountValue);
                     const mode = distance.priceTierMode || 'date';
                     const isPastTier =
                       mode === 'date' && tier.endDate ? new Date(tier.endDate) < new Date() : false;
@@ -185,6 +183,13 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {distance.officePrice != null && (
+              <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-sm">
+                <span className="text-muted-foreground">Cena w biurze zawodów: </span>
+                <span className="font-semibold">{distance.officePrice} zł</span>
               </div>
             )}
           </div>

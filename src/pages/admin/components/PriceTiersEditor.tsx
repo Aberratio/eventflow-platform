@@ -10,6 +10,7 @@ import { Plus, DollarSign, Calendar, Users, AlertCircle } from 'lucide-react';
 import { Distance, PriceTier, PriceTierMode, ParticipantCountType, VipPrice } from '@/types';
 import { TierEditor } from './TierEditor';
 import { VipPricesSection } from './VipPricesSection';
+import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
 
 interface PriceTiersEditorProps {
   distances: Distance[];
@@ -288,6 +289,18 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                     )}
                   </div>
 
+                  <PriceTierPreview
+                    basePrice={distance.price}
+                    tiers={tiers}
+                    mode={mode}
+                    participantCountType={distance.participantCountType}
+                    currentCount={
+                      distance.participantCountType === 'paid'
+                        ? distance.paidCount || 0
+                        : distance.registeredCount
+                    }
+                  />
+
                   <Separator />
 
                   <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
@@ -333,6 +346,8 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                             tier.discountType,
                             tier.discountValue,
                           );
+                          const visiblePrice =
+                            tier.price != null ? Number(tier.price) : calculatedPrice;
                           const isPast =
                             mode === 'date' && tier.endDate && new Date(tier.endDate) < new Date();
                           const isOverLimit =
@@ -347,7 +362,12 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                               index={index}
                               mode={mode}
                               basePrice={distance.price}
-                              calculatedPrice={calculatedPrice}
+                              calculatedPrice={tier.price != null ? visiblePrice : calculatedPrice}
+                              priceWarning={
+                                visiblePrice > distance.price
+                                  ? 'Cena progu jest wyzsza od ceny bazowej. To dozwolone, ale zwykle dodatkowe ceny powinny byc nizsze.'
+                                  : undefined
+                              }
                               isPast={!!isPast}
                               isOverLimit={!!isOverLimit}
                               onUpdate={(updates) => updateTier(distance.id, tier.id, updates)}

@@ -32,7 +32,10 @@ export const getCurrentPrice = (
 
   if (mode === 'participants') {
     const countType = distance.participantCountType || 'registered';
-    const count = countType === 'paid' ? (context?.paidCount ?? 0) : distance.registeredCount;
+    const count =
+      countType === 'paid'
+        ? (context?.paidCount ?? distance.paidCount ?? 0)
+        : distance.registeredCount;
 
     const sortedTiers = [...distance.priceTiers]
       .filter((t) => t.participantLimit != null)
@@ -41,7 +44,10 @@ export const getCurrentPrice = (
     for (let i = 0; i < sortedTiers.length; i++) {
       const tier = sortedTiers[i];
       if (count < (tier.participantLimit ?? 0)) {
-        const price = applyDiscount(basePrice, tier.discountType, tier.discountValue);
+        const price =
+          tier.price != null
+            ? roundToCents(Number(tier.price))
+            : applyDiscount(basePrice, tier.discountType, tier.discountValue);
         const nextTier = sortedTiers[i + 1];
         return {
           price,
@@ -50,7 +56,10 @@ export const getCurrentPrice = (
           nextTier: nextTier
             ? {
                 name: nextTier.name,
-                price: applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
+                price:
+                  nextTier.price != null
+                    ? roundToCents(Number(nextTier.price))
+                    : applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
                 threshold: `od ${tier.participantLimit} uczestnika`,
               }
             : undefined,
@@ -71,7 +80,10 @@ export const getCurrentPrice = (
   for (let i = 0; i < sortedTiers.length; i++) {
     const tier = sortedTiers[i];
     if (new Date(tier.endDate!) >= now) {
-      const price = applyDiscount(basePrice, tier.discountType, tier.discountValue);
+      const price =
+        tier.price != null
+          ? roundToCents(Number(tier.price))
+          : applyDiscount(basePrice, tier.discountType, tier.discountValue);
       const nextTier = sortedTiers[i + 1];
       return {
         price,
@@ -80,7 +92,10 @@ export const getCurrentPrice = (
         nextTier: nextTier
           ? {
               name: nextTier.name,
-              price: applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
+              price:
+                nextTier.price != null
+                  ? roundToCents(Number(nextTier.price))
+                  : applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
               threshold: `od ${tier.endDate}`,
             }
           : undefined,

@@ -21,6 +21,9 @@ import {
   RegistrationFormConfig,
   EventDisplayOptions,
   OrganizerEventLimit,
+  PriceTier,
+  PriceTierMode,
+  ParticipantCountType,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -29,7 +32,11 @@ export interface DistanceFormData {
   length: string;
   unit: 'km' | 'm';
   price: string;
+  officePrice: string;
   limit: string;
+  priceTierMode: PriceTierMode;
+  participantCountType: ParticipantCountType;
+  priceTiers: PriceTier[];
   disabledCategoryIds: string[];
   routeMapUrl: string;
   routeElevationProfile: string;
@@ -51,6 +58,35 @@ const DEFAULT_DISPLAY_OPTIONS: EventDisplayOptions = {
   defaultSort: 'name',
   uppercaseNames: false,
   hideUnpaid: false,
+};
+
+const getEventYearFromDate = (eventDate: string) =>
+  eventDate
+    ? parseInt(eventDate.substring(0, 4)) || new Date().getFullYear()
+    : new Date().getFullYear();
+
+const generateStandardAgeCategoriesForDate = (eventDate: string): AgeCategory[] => {
+  const eventYear = getEventYearFromDate(eventDate);
+  const ranges = [
+    { label: '18-29', from: eventYear - 29, to: eventYear - 18 },
+    { label: '30-39', from: eventYear - 39, to: eventYear - 30 },
+    { label: '40-49', from: eventYear - 49, to: eventYear - 40 },
+    { label: '50-59', from: eventYear - 59, to: eventYear - 50 },
+    { label: '60+', from: eventYear - 100, to: eventYear - 60 },
+  ];
+  const categories: AgeCategory[] = [];
+  for (const gender of ['K', 'M'] as const) {
+    for (const range of ranges) {
+      categories.push({
+        id: `cat-${gender}-${range.label}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        name: `${gender}${range.label}`,
+        gender,
+        birthYearFrom: range.from,
+        birthYearTo: range.to,
+      });
+    }
+  }
+  return categories;
 };
 
 export const useEventFormState = () => {
@@ -154,35 +190,8 @@ export const useEventFormState = () => {
   );
 
   // Categories
-  const getEventYear = () => {
-    return date
-      ? parseInt(date.substring(0, 4)) || new Date().getFullYear()
-      : new Date().getFullYear();
-  };
-
-  const generateStandardAgeCategories = (): AgeCategory[] => {
-    const eventYear = getEventYear();
-    const ranges = [
-      { label: '18-29', from: eventYear - 29, to: eventYear - 18 },
-      { label: '30-39', from: eventYear - 39, to: eventYear - 30 },
-      { label: '40-49', from: eventYear - 49, to: eventYear - 40 },
-      { label: '50-59', from: eventYear - 59, to: eventYear - 50 },
-      { label: '60+', from: eventYear - 100, to: eventYear - 60 },
-    ];
-    const categories: AgeCategory[] = [];
-    for (const gender of ['K', 'M'] as const) {
-      for (const r of ranges) {
-        categories.push({
-          id: `cat-${gender}-${r.label}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          name: `${gender}${r.label}`,
-          gender,
-          birthYearFrom: r.from,
-          birthYearTo: r.to,
-        });
-      }
-    }
-    return categories;
-  };
+  const getEventYear = () => getEventYearFromDate(date);
+  const generateStandardAgeCategories = () => generateStandardAgeCategoriesForDate(date);
 
   const existingAgeCats = existingEvent?.distances?.[0]?.ageCategories;
   const existingSpecialCats = existingEvent?.distances?.[0]?.specialCategories;
@@ -204,7 +213,11 @@ export const useEventFormState = () => {
       length: d.length.toString(),
       unit: d.unit,
       price: d.price.toString(),
+      officePrice: d.officePrice?.toString() || '',
       limit: d.limit?.toString() || '',
+      priceTierMode: d.priceTierMode || 'date',
+      participantCountType: d.participantCountType || 'registered',
+      priceTiers: d.priceTiers || [],
       disabledCategoryIds: [],
       routeMapUrl: d.routeMapUrl || '',
       routeElevationProfile: d.routeElevationProfile || '',
@@ -262,7 +275,7 @@ export const useEventFormState = () => {
     setAgeCategories(
       existingEvent.distances?.[0]?.ageCategories?.length
         ? existingEvent.distances[0].ageCategories
-        : generateStandardAgeCategories(),
+        : generateStandardAgeCategoriesForDate(existingEvent.date || ''),
     );
     setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
     setDistances(
@@ -272,7 +285,11 @@ export const useEventFormState = () => {
         length: d.length.toString(),
         unit: d.unit,
         price: d.price.toString(),
+        officePrice: d.officePrice?.toString() || '',
         limit: d.limit?.toString() || '',
+        priceTierMode: d.priceTierMode || 'date',
+        participantCountType: d.participantCountType || 'registered',
+        priceTiers: d.priceTiers || [],
         disabledCategoryIds: [],
         routeMapUrl: d.routeMapUrl || '',
         routeElevationProfile: d.routeElevationProfile || '',
@@ -322,7 +339,11 @@ export const useEventFormState = () => {
         length: '',
         unit: 'km',
         price: '',
+        officePrice: '',
         limit: '',
+        priceTierMode: 'date',
+        participantCountType: 'registered',
+        priceTiers: [],
         disabledCategoryIds: [],
         routeMapUrl: '',
         routeElevationProfile: '',
@@ -339,11 +360,65 @@ export const useEventFormState = () => {
   const updateDistance = (
     index: number,
     field: keyof DistanceFormData,
-    value: string | string[] | DistanceRouteFile[],
+    value:
+      | string
+      | string[]
+      | DistanceRouteFile[]
+      | PriceTier[]
+      | PriceTierMode
+      | ParticipantCountType,
   ) => {
     setDistances((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const addPriceTier = (distIndex: number) => {
+    setDistances((prev) => {
+      const updated = [...prev];
+      const dist = updated[distIndex];
+      const mode = dist.priceTierMode || 'date';
+      updated[distIndex] = {
+        ...dist,
+        priceTiers: [
+          ...dist.priceTiers,
+          {
+            id: `pt-${Date.now()}`,
+            name: mode === 'date' ? 'Cena promocyjna' : 'Próg uczestników',
+            discountType: 'fixed',
+            discountValue: 0,
+            ...(mode === 'date' ? { endDate: '' } : { participantLimit: 100 }),
+          },
+        ],
+      };
+      return updated;
+    });
+  };
+
+  const updatePriceTier = (distIndex: number, tierId: string, updates: Partial<PriceTier>) => {
+    setDistances((prev) => {
+      const updated = [...prev];
+      const dist = updated[distIndex];
+      updated[distIndex] = {
+        ...dist,
+        priceTiers: dist.priceTiers.map((tier) =>
+          tier.id === tierId ? { ...tier, ...updates } : tier,
+        ),
+      };
+      return updated;
+    });
+  };
+
+  const removePriceTier = (distIndex: number, tierId: string) => {
+    setDistances((prev) => {
+      const updated = [...prev];
+      const dist = updated[distIndex];
+      updated[distIndex] = {
+        ...dist,
+        priceTiers: dist.priceTiers.filter((tier) => tier.id !== tierId),
+      };
       return updated;
     });
   };
@@ -498,7 +573,8 @@ export const useEventFormState = () => {
     if (isVirtual && startDate > endDate) {
       toast({
         title: 'BĹ‚Ä…d',
-        description: 'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
+        description:
+          'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
         variant: 'destructive',
       });
       return false;
@@ -591,6 +667,113 @@ export const useEventFormState = () => {
         });
         return false;
       }
+      if (dist.officePrice && Number(dist.officePrice) < 0) {
+        toast({
+          title: 'BĹ‚Ä…d',
+          description: 'Cena w biurze zawodow nie moze byc ujemna',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      for (const tier of dist.priceTiers) {
+        const tierPrice = Number(tier.price ?? 0);
+        const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
+        if (!tier.name.trim()) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Kazdy prog cenowy musi miec nazwe',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        if (hasExplicitPrice && tierPrice < 0) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Cena w progu nie moze byc ujemna',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        if (dist.priceTierMode === 'date' && !tier.endDate) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Podaj date koncowa dla kazdego progu cenowego',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        if (dist.priceTierMode === 'date' && tier.endDate) {
+          if (Number.isNaN(new Date(tier.endDate).getTime())) {
+            toast({
+              title: 'BĹ‚Ä…d',
+              description: 'Data koncowa progu cenowego jest nieprawidlowa',
+              variant: 'destructive',
+            });
+            return false;
+          }
+          if (registrationDeadline && tier.endDate > registrationDeadline) {
+            toast({
+              title: 'BĹ‚Ä…d',
+              description:
+                'Data koncowa progu cenowego nie moze byc pozniejsza niz termin rejestracji',
+              variant: 'destructive',
+            });
+            return false;
+          }
+        }
+        if (
+          dist.priceTierMode === 'participants' &&
+          (!tier.participantLimit || Number(tier.participantLimit) <= 0)
+        ) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego',
+            variant: 'destructive',
+          });
+          return false;
+        }
+        if (dist.priceTierMode === 'participants') {
+          const participantLimit = Number(tier.participantLimit);
+          if (!Number.isInteger(participantLimit)) {
+            toast({
+              title: 'BĹ‚Ä…d',
+              description: 'Limit uczestnikow w progu musi byc liczba calkowita',
+              variant: 'destructive',
+            });
+            return false;
+          }
+          if (dist.limit && participantLimit > Number(dist.limit)) {
+            toast({
+              title: 'BĹ‚Ä…d',
+              description: 'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
+              variant: 'destructive',
+            });
+            return false;
+          }
+        }
+      }
+      if (dist.priceTierMode === 'date') {
+        const dates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
+        if (new Set(dates).size !== dates.length) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Daty koncowe progow cenowych nie moga sie powtarzac',
+            variant: 'destructive',
+          });
+          return false;
+        }
+      }
+      if (dist.priceTierMode === 'participants') {
+        const participantLimits = dist.priceTiers.map((tier) => Number(tier.participantLimit));
+        if (new Set(participantLimits).size !== participantLimits.length) {
+          toast({
+            title: 'BĹ‚Ä…d',
+            description: 'Limity uczestnikow w progach cenowych nie moga sie powtarzac',
+            variant: 'destructive',
+          });
+          return false;
+        }
+      }
     }
     return true;
   };
@@ -620,7 +803,18 @@ export const useEventFormState = () => {
         length: Number(dist.length),
         unit: dist.unit,
         price: Number(dist.price),
+        officePrice: dist.officePrice ? Number(dist.officePrice) : undefined,
         limit: dist.limit ? Number(dist.limit) : undefined,
+        priceTierMode: dist.priceTierMode,
+        participantCountType: dist.participantCountType,
+        priceTiers: dist.priceTiers.map((tier) => ({
+          ...tier,
+          price: tier.price != null ? Number(tier.price) : undefined,
+          discountValue: Number(tier.discountValue),
+          participantLimit:
+            dist.priceTierMode === 'participants' ? Number(tier.participantLimit) : undefined,
+          endDate: dist.priceTierMode === 'date' ? tier.endDate : undefined,
+        })),
         registeredCount:
           existingEvent?.distances.find((d) => d.id === dist.id)?.registeredCount || 0,
         categories: allCategories
@@ -843,6 +1037,9 @@ export const useEventFormState = () => {
     addDistance,
     removeDistance,
     updateDistance,
+    addPriceTier,
+    updatePriceTier,
+    removePriceTier,
     addRouteFile,
     removeRouteFile,
     updateRouteFile,
@@ -860,5 +1057,3 @@ export const useEventFormState = () => {
 };
 
 export type EventFormState = ReturnType<typeof useEventFormState>;
-
-

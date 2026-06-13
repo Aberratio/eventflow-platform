@@ -464,6 +464,14 @@ const App = () => (
                       }
                     />
                     <Route
+                      path="/moderator/events/:id/edit"
+                      element={
+                        <Lazy fallback={<FormPageSkeleton />}>
+                          <EventForm />
+                        </Lazy>
+                      }
+                    />
+                    <Route
                       path="/moderator/events/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
@@ -508,6 +516,14 @@ const App = () => (
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
                           <AdminEventManage />
+                        </Lazy>
+                      }
+                    />
+                    <Route
+                      path="/admin/events/:id/edit"
+                      element={
+                        <Lazy fallback={<FormPageSkeleton />}>
+                          <EventForm />
                         </Lazy>
                       }
                     />

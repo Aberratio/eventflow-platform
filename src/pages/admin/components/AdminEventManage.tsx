@@ -113,7 +113,57 @@ export const AdminEventManage = () => {
 
   const organizers = organizersResponse?.data ?? [];
 
+  const validateAdvancedDistances = () => {
+    for (const distance of distances) {
+      const tiers = distance.priceTiers || [];
+      for (const tier of tiers) {
+        if (!tier.name.trim()) {
+          toast.error('Kazdy prog cenowy musi miec nazwe');
+          return false;
+        }
+        if (distance.priceTierMode === 'date') {
+          if (!tier.endDate || Number.isNaN(new Date(tier.endDate).getTime())) {
+            toast.error('Podaj prawidlowa date koncowa dla kazdego progu cenowego');
+            return false;
+          }
+          if (event.registrationDeadline && tier.endDate > event.registrationDeadline) {
+            toast.error('Data koncowa progu nie moze byc pozniejsza niz termin rejestracji');
+            return false;
+          }
+        }
+        if (distance.priceTierMode === 'participants') {
+          const participantLimit = Number(tier.participantLimit);
+          if (!participantLimit || participantLimit <= 0 || !Number.isInteger(participantLimit)) {
+            toast.error('Limit uczestnikow w progu musi byc dodatnia liczba calkowita');
+            return false;
+          }
+          if (distance.limit && participantLimit > distance.limit) {
+            toast.error('Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu');
+            return false;
+          }
+        }
+      }
+      if (distance.priceTierMode === 'date') {
+        const dates = tiers.map((tier) => tier.endDate).filter(Boolean);
+        if (new Set(dates).size !== dates.length) {
+          toast.error('Daty koncowe progow cenowych nie moga sie powtarzac');
+          return false;
+        }
+      }
+      if (distance.priceTierMode === 'participants') {
+        const participantLimits = tiers.map((tier) => Number(tier.participantLimit));
+        if (new Set(participantLimits).size !== participantLimits.length) {
+          toast.error('Limity uczestnikow w progach cenowych nie moga sie powtarzac');
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSaveAdvanced = async () => {
+    if (!validateAdvancedDistances()) return;
+
     try {
       await updateEvent(event.id, {
         organizerId: selectedOrganizer,

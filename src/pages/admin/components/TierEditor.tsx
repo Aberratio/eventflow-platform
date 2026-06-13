@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Trash2, ArrowRight } from 'lucide-react';
+import { Trash2, ArrowRight, AlertTriangle } from 'lucide-react';
 import { PriceTier, PriceTierMode, PriceTierDiscountType } from '@/types';
 
 interface TierEditorProps {
@@ -18,6 +18,7 @@ interface TierEditorProps {
   mode: PriceTierMode;
   basePrice: number;
   calculatedPrice: number;
+  priceWarning?: string;
   isPast: boolean;
   isOverLimit: boolean;
   onUpdate: (updates: Partial<PriceTier>) => void;
@@ -29,6 +30,7 @@ export const TierEditor = ({
   index,
   mode,
   calculatedPrice,
+  priceWarning,
   isPast,
   isOverLimit,
   onUpdate,
@@ -98,6 +100,12 @@ export const TierEditor = ({
                 ? `Dopłata ${tier.discountType === 'percent' ? `${Math.abs(tier.discountValue)}%` : `${Math.abs(tier.discountValue)} zł`}`
                 : 'Cena bazowa bez zmian'}
           </p>
+          {priceWarning && (
+            <p className="flex items-start gap-1.5 text-xs text-amber-700">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{priceWarning}</span>
+            </p>
+          )}
         </div>
         {mode === 'date' ? (
           <div className="space-y-2">

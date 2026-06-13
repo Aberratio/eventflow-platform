@@ -92,7 +92,9 @@ export interface Distance {
   specialCategories?: SpecialCategory[];
   limit?: number;
   registeredCount: number;
+  paidCount?: number;
   price: number;
+  officePrice?: number;
   priceTierMode?: PriceTierMode;
   participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
@@ -173,14 +175,7 @@ export interface Event {
   organizerId: string;
   organizerName: string;
   organizerContact?: OrganizerContact;
-  status:
-    | 'draft'
-    | 'awaiting_approval'
-    | 'approved'
-    | 'active'
-    | 'past'
-    | 'archived'
-    | 'deleted';
+  status: 'draft' | 'awaiting_approval' | 'approved' | 'active' | 'past' | 'archived' | 'deleted';
   rejectionReason?: string;
   submittedAt?: string;
   approvedAt?: string;

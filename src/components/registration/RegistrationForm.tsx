@@ -314,11 +314,9 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                     <div className="mt-3 space-y-1">
                       {distance.priceTiers.map((tier) => {
                         const isCurrentTier = tier.name === tierName;
-                        const tierPrice = applyDiscount(
-                          distance.price,
-                          tier.discountType,
-                          tier.discountValue,
-                        );
+                        const tierPrice =
+                          tier.price ??
+                          applyDiscount(distance.price, tier.discountType, tier.discountValue);
                         const isPast =
                           mode === 'date' && tier.endDate
                             ? new Date(tier.endDate) < new Date()

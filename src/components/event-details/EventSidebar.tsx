@@ -9,6 +9,7 @@ import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { getEditUrl } from '@/components/event-details';
 import { isExternalRegistrationEvent } from './ExternalRegistrationFrame';
+import { getCurrentPrice } from '@/api';
 
 interface EventSidebarProps {
   event: Event;
@@ -32,6 +33,9 @@ export const EventSidebar = ({
   previewMode = false,
 }: EventSidebarProps) => {
   const hasExternalRegistration = isExternalRegistrationEvent(event);
+  const lowestOnlinePrice = Math.min(
+    ...event.distances.map((distance) => getCurrentPrice(distance).price),
+  );
   const canEdit =
     !previewMode &&
     (user?.role === 'admin' ||
@@ -82,12 +86,10 @@ export const EventSidebar = ({
                 </div>
               ) : (
                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Ceny od{' '}
-                  <span className="text-lg font-bold text-primary">
-                    {Math.min(...event.distances.map((d) => d.price))} zł
-                  </span>
-                </p>
+                  <p className="text-sm text-muted-foreground">
+                    Ceny od{' '}
+                    <span className="text-lg font-bold text-primary">{lowestOnlinePrice} zł</span>
+                  </p>
                 </div>
               )}
               <Button
