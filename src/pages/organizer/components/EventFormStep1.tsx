@@ -74,7 +74,7 @@ interface EventImageUploadFieldProps {
 
 const resizeToBlob = (file: File, maxWidth: number): Promise<Blob> =>
   new Promise((resolve, reject) => {
-    const img = new Image();
+    const img = new window.Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
@@ -871,7 +871,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   form.setIsVirtual(checked === true);
                   if (checked) {
                     form.setLocation('Wydarzenie wirtualne');
-                    form.setCity('CaĹ‚y Ĺ›wiat');
+                    form.setCity('Cały świat');
                   } else {
                     form.setLocation('');
                     form.setCity('');
@@ -888,8 +888,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             </div>
             {form.isVirtual && (
               <p className="text-sm text-muted-foreground sm:pl-7">
-                Uczestnicy wykonujÄ… aktywnoĹ›Ä‡ samodzielnie w dowolnym miejscu i wprowadzajÄ…
-                swoje wyniki po zakoĹ„czeniu okna czasowego.
+                Uczestnicy wykonują aktywność samodzielnie w dowolnym miejscu i wprowadzają
+                swoje wyniki po zakończeniu okna czasowego.
               </p>
             )}
           </div>
@@ -901,7 +901,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   htmlFor="startDate"
                   description="Pierwszy dzien, od ktorego uczestnicy wydarzenia wirtualnego moga wykonywac aktywnosc i przesylac wynik."
                 >
-                  Data rozpoczÄ™cia okna *
+                  Data rozpoczęcia okna *
                 </HelpLabel>
                 <Input
                   id="startDate"
@@ -915,7 +915,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   htmlFor="endDate"
                   description="Ostatni dzien okna wirtualnego. Po tej dacie uczestnicy nie powinni juz dodawac nowych wynikow dla tego wydarzenia."
                 >
-                  Data zakoĹ„czenia okna *
+                  Data zakończenia okna *
                 </HelpLabel>
                 <Input
                   id="endDate"
@@ -950,7 +950,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             {form.isPrivate && (
               <div className="space-y-3 sm:pl-7">
                 <p className="text-sm text-muted-foreground">
-                  Prywatne wydarzenie nie bÄ™dzie widoczne publicznie. Uczestnicy mogÄ… doĹ‚Ä…czyÄ‡
+                  Prywatne wydarzenie nie będzie widoczne publicznie. Uczestnicy mogą dołączyć
                   tylko przez specjalny link.
                 </p>
                 <div className="space-y-2">
@@ -958,7 +958,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     htmlFor="accessCode"
                     description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejsc na strone wydarzenia mimo braku widocznosci publicznej."
                   >
-                    Kod dostÄ™pu
+                    Kod dostępu
                   </HelpLabel>
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
                     <Input
@@ -988,7 +988,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         form.toast({
                           title: 'Skopiowano',
                           description:
-                            'Link do prywatnego wydarzenia zostaĹ‚ skopiowany do schowka.',
+                            'Link do prywatnego wydarzenia został skopiowany do schowka.',
                         });
                       }}
                       title="Kopiuj link"
@@ -1044,7 +1044,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             <RichTextEditor
               value={form.description}
               onChange={form.setDescription}
-              placeholder="Opisz szczegĂłĹ‚y wydarzenia, trasÄ™, atrakcje..."
+              placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
               minHeight="140px"
             />
           </div>
@@ -1073,7 +1073,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 onCheckedChange={(checked) => form.setFeatured(checked === true)}
               />
               <Label htmlFor="featured" className="cursor-pointer leading-5">
-                WyrĂłĹĽnij wydarzenie na stronie gĹ‚Ăłwnej
+                Wyróżnij wydarzenie na stronie głównej
               </Label>
               <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
             </div>
@@ -1196,7 +1196,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             ) : (
               <>
                 <p className="mb-4 text-sm text-muted-foreground">
-                  Wybierz sposĂłb przyjmowania pĹ‚atnoĹ›ci od uczestnikĂłw
+                  Wybierz sposób przyjmowania płatności od uczestników
                 </p>
                 <RadioGroup
                   value={form.paymentConfigType}
@@ -1212,12 +1212,12 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         htmlFor="admin_gateway"
                         className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
                       >
-                        <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza
+                        <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza
                         (automatyczna)
                       </Label>
                       <FieldHelp description="Platnosci sa obslugiwane przez bramke administratora serwisu. Organizator nie musi recznie potwierdzac przelewow." />
                       <p className="mt-1 text-sm text-muted-foreground">
-                        PĹ‚atnoĹ›ci sÄ… przetwarzane automatycznie przez bramkÄ™ pĹ‚atniczÄ…
+                        Płatności są przetwarzane automatycznie przez bramkę płatniczą
                         administratora serwisu.
                       </p>
                     </div>
@@ -1231,12 +1231,12 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         htmlFor="organizer_bank"
                         className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
                       >
-                        <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
+                        <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
                       </Label>
                       <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status platnosci trzeba pozniej potwierdzac recznie." />
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Uczestnicy wpĹ‚acajÄ… na Twoje konto bankowe. Musisz rÄ™cznie potwierdzaÄ‡
-                        otrzymane wpĹ‚aty.
+                        Uczestnicy wpłacają na Twoje konto bankowe. Musisz ręcznie potwierdzać
+                        otrzymane wpłaty.
                       </p>
                       {form.paymentConfigType === 'organizer_bank' && (
                         <div className="mt-4 space-y-4 border-t border-dashed pt-4">
@@ -1254,7 +1254,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                               placeholder="PL 00 0000 0000 0000 0000 0000 0000"
                             />
                             <p className="text-xs text-muted-foreground">
-                              Podaj peĹ‚ny numer konta w formacie IBAN
+                              Podaj pełny numer konta w formacie IBAN
                             </p>
                           </div>
                           <div className="space-y-2">
@@ -1262,13 +1262,13 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                               htmlFor="bankAccountHolder"
                               description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji platnosci."
                             >
-                              WĹ‚aĹ›ciciel konta *
+                              Właściciel konta *
                             </HelpLabel>
                             <Input
                               id="bankAccountHolder"
                               value={form.bankAccountHolder}
                               onChange={(e) => form.setBankAccountHolder(e.target.value)}
-                              placeholder="Nazwa firmy lub ImiÄ™ Nazwisko"
+                              placeholder="Nazwa firmy lub Imię Nazwisko"
                             />
                           </div>
                           <div className="space-y-2">
@@ -1276,16 +1276,16 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                               htmlFor="transferTitle"
                               description="Szablon tytulu przelewu pokazywany uczestnikowi. Zmienne zostana podstawione danymi wydarzenia, dystansu i uczestnika."
                             >
-                              WzĂłr tytuĹ‚u przelewu
+                              Wzór tytułu przelewu
                             </HelpLabel>
                             <Input
                               id="transferTitle"
                               value={form.transferTitle}
                               onChange={(e) => form.setTransferTitle(e.target.value)}
-                              placeholder="OpĹ‚ata za {eventName} - {participantName}"
+                              placeholder="Opłata za {eventName} - {participantName}"
                             />
                             <p className="text-xs text-muted-foreground">
-                              DostÄ™pne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
+                              Dostępne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
                               {'{distanceName}'}
                             </p>
                           </div>
@@ -1318,7 +1318,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   Organizatorzy
                 </HelpLabel>
                 <p className="text-sm text-muted-foreground">
-                  MoĹĽesz wpisaÄ‡ wielu organizatorĂłw, sponsorĂłw z linkami do ich stron.
+                  Możesz wpisać wielu organizatorów, sponsorów z linkami do ich stron.
                 </p>
                 <RichTextEditor
                   value={form.organizersHtml}
@@ -1332,12 +1332,12 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   Regulamin
                 </HelpLabel>
                 <p className="text-sm text-muted-foreground">
-                  Wpisz treĹ›Ä‡ regulaminu lub dodaj linki do plikĂłw PDF.
+                  Wpisz treść regulaminu lub dodaj linki do plików PDF.
                 </p>
                 <RichTextEditor
                   value={form.rulesHtml}
                   onChange={form.setRulesHtml}
-                  placeholder="Wpisz regulamin lub dodaj linki do dokumentĂłw..."
+                  placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
                   minHeight="120px"
                 />
               </div>
@@ -1359,13 +1359,13 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       Tekst akceptacji
                     </HelpLabel>
                     <p className="text-sm text-muted-foreground">
-                      Ten tekst pojawi siÄ™ jako checkbox, ktĂłry uczestnik musi zaakceptowaÄ‡ przy
+                      Ten tekst pojawi się jako checkbox, który uczestnik musi zaakceptować przy
                       rejestracji.
                     </p>
                     <RichTextEditor
                       value={form.finalAcceptanceHtml}
                       onChange={form.setFinalAcceptanceHtml}
-                      placeholder="OĹ›wiadczam, ĹĽe zapoznaĹ‚em siÄ™ z regulaminem..."
+                      placeholder="Oświadczam, że zapoznałem się z regulaminem..."
                       minHeight="100px"
                     />
                   </div>
@@ -1385,16 +1385,16 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           </CardHeader>
           <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
             <p className="text-sm text-muted-foreground">
-              Wybierz, ktĂłre pola bÄ™dÄ… widoczne w formularzu rejestracji dla uczestnikĂłw.
+              Wybierz, które pola będą widoczne w formularzu rejestracji dla uczestników.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
                 { key: 'collectPhone' as const, label: 'Telefon kontaktowy' },
                 { key: 'collectClub' as const, label: 'Klub / organizacja' },
                 { key: 'collectBirthDate' as const, label: 'Data urodzenia' },
-                { key: 'collectTeam' as const, label: 'Zapis druĹĽynowy' },
+                { key: 'collectTeam' as const, label: 'Zapis drużynowy' },
                 { key: 'collectInsurance' as const, label: 'Ubezpieczenie NNW' },
-                { key: 'collectMerchandise' as const, label: 'GadĹĽety / merchandise' },
+                { key: 'collectMerchandise' as const, label: 'Gadżety / merchandise' },
               ].map((field) => (
                 <div
                   key={field.key}
@@ -1439,13 +1439,13 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
         <Card>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Monitor className="h-5 w-5 text-primary" /> Opcje wyĹ›wietlania listy uczestnikĂłw
+              <Monitor className="h-5 w-5 text-primary" /> Opcje wyświetlania listy uczestników
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
             <div className="space-y-2">
               <HelpLabel description="Ustala domyslny porzadek publicznej listy uczestnikow wydarzenia. Uzytkownik zobaczy liste wedlug tej preferencji.">
-                DomyĹ›lne sortowanie
+                Domyślne sortowanie
               </HelpLabel>
               <Select
                 value={form.displayOptions.defaultSort}
@@ -1476,7 +1476,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 }
               />
               <Label htmlFor="uppercaseNames" className="cursor-pointer text-sm leading-5">
-                WymuĹ› wielkie litery w nazwiskach (np. Jan KOWALSKI)
+                Wymuś wielkie litery w nazwiskach (np. Jan KOWALSKI)
               </Label>
               <FieldHelp description="Formatuje nazwiska na liscie uczestnikow wielkimi literami, aby ulatwic skanowanie list startowych." />
             </div>
@@ -1489,7 +1489,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 }
               />
               <Label htmlFor="hideUnpaid" className="cursor-pointer text-sm leading-5">
-                Ukryj nieopĹ‚aconych uczestnikĂłw na liĹ›cie publicznej
+                Ukryj nieopłaconych uczestników na liście publicznej
               </Label>
               <FieldHelp description="Nie pokazuje uczestnikow oczekujacych na platnosc na publicznej liscie startowej." />
             </div>

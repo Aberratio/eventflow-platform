@@ -116,7 +116,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           <div className="container py-6">
             <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              WrĂłÄ‡ do wydarzenia
+              Wróć do wydarzenia
             </Button>
             <h1 className="text-2xl font-bold md:text-3xl">{event.name}</h1>
           </div>

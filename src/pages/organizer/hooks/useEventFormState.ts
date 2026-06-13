@@ -195,7 +195,7 @@ export const useEventFormState = () => {
     existingEvent?.paymentConfig?.bankAccountHolder || '',
   );
   const [transferTitle, setTransferTitle] = useState(
-    existingEvent?.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
+    existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
   );
 
   // Documents
@@ -309,7 +309,7 @@ export const useEventFormState = () => {
     setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
     setBankAccountHolder(existingEvent.paymentConfig?.bankAccountHolder || '');
     setTransferTitle(
-      existingEvent.paymentConfig?.transferTitle || 'OpĹ‚ata za {eventName} - {participantName}',
+      existingEvent.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
     );
     setDocuments(existingEvent.documents || []);
     setOrganizersHtml(existingEvent.organizersHtml || '');
@@ -625,15 +625,15 @@ export const useEventFormState = () => {
   const validateStep1 = (): boolean => {
     if (!name || !date || !registrationDeadline) {
       toast({
-        title: 'BĹ‚Ä…d',
-        description: 'WypeĹ‚nij wszystkie wymagane pola',
+        title: 'Błąd',
+        description: 'Wypełnij wszystkie wymagane pola',
         variant: 'destructive',
       });
       return false;
     }
     if (registrationDeadline > date) {
       toast({
-        title: 'BĹ‚Ä…d',
+        title: 'Błąd',
         description: 'Termin rejestracji nie moze byc pozniejszy niz data wydarzenia',
         variant: 'destructive',
       });
@@ -641,15 +641,15 @@ export const useEventFormState = () => {
     }
     if (!isVirtual && (!location || !city)) {
       toast({
-        title: 'BĹ‚Ä…d',
-        description: 'WypeĹ‚nij lokalizacjÄ™ i miasto',
+        title: 'Błąd',
+        description: 'Wypełnij lokalizację i miasto',
         variant: 'destructive',
       });
       return false;
     }
     if (isVirtual && startDate > endDate) {
       toast({
-        title: 'BĹ‚Ä…d',
+        title: 'Błąd',
         description:
           'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
         variant: 'destructive',
@@ -658,7 +658,7 @@ export const useEventFormState = () => {
     }
     if (isPrivate && !accessCode.trim()) {
       toast({
-        title: 'BĹ‚Ä…d',
+        title: 'Błąd',
         description: 'Podaj kod dostepu dla wydarzenia prywatnego',
         variant: 'destructive',
       });
@@ -666,8 +666,8 @@ export const useEventFormState = () => {
     }
     if (isVirtual && (!startDate || !endDate)) {
       toast({
-        title: 'BĹ‚Ä…d',
-        description: 'WypeĹ‚nij daty rozpoczÄ™cia i zakoĹ„czenia okna wirtualnego',
+        title: 'Błąd',
+        description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego',
         variant: 'destructive',
       });
       return false;
@@ -676,7 +676,7 @@ export const useEventFormState = () => {
       const trimmedUrl = externalRegistrationUrl.trim();
       if (!trimmedUrl) {
         toast({
-          title: 'BĹ‚Ä…d',
+          title: 'Błąd',
           description: 'Podaj link do zewnetrznego formularza zapisow.',
           variant: 'destructive',
         });
@@ -689,7 +689,7 @@ export const useEventFormState = () => {
         }
       } catch {
         toast({
-          title: 'BĹ‚Ä…d',
+          title: 'Błąd',
           description: 'Link do zewnetrznego formularza musi byc pelnym adresem http lub https.',
           variant: 'destructive',
         });
@@ -702,8 +702,8 @@ export const useEventFormState = () => {
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
     ) {
       toast({
-        title: 'BĹ‚Ä…d',
-        description: 'Podaj numer konta i wĹ‚aĹ›ciciela dla pĹ‚atnoĹ›ci przelewem bankowym',
+        title: 'Błąd',
+        description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym',
         variant: 'destructive',
       });
       return false;
@@ -716,7 +716,7 @@ export const useEventFormState = () => {
 
     if (distances.length === 0) {
       toast({
-        title: 'BĹ‚Ä…d',
+        title: 'Błąd',
         description: 'Dodaj przynajmniej jeden dystans',
         variant: 'destructive',
       });
@@ -725,15 +725,15 @@ export const useEventFormState = () => {
     for (const dist of distances) {
       if (!dist.name || !dist.length || !dist.price) {
         toast({
-          title: 'BĹ‚Ä…d',
-          description: 'WypeĹ‚nij wszystkie pola dystansĂłw',
+          title: 'Błąd',
+          description: 'Wypełnij wszystkie pola dystansów',
           variant: 'destructive',
         });
         return false;
       }
       if (Number(dist.length) <= 0 || Number(dist.price) < 0) {
         toast({
-          title: 'BĹ‚Ä…d',
+          title: 'Błąd',
           description: 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna',
           variant: 'destructive',
         });
@@ -741,7 +741,7 @@ export const useEventFormState = () => {
       }
       if (dist.limit && Number(dist.limit) <= 0) {
         toast({
-          title: 'BĹ‚Ä…d',
+          title: 'Błąd',
           description: 'Limit uczestnikow musi byc dodatni albo pusty',
           variant: 'destructive',
         });
@@ -749,7 +749,7 @@ export const useEventFormState = () => {
       }
       if (dist.officePrice && Number(dist.officePrice) < 0) {
         toast({
-          title: 'BĹ‚Ä…d',
+          title: 'Błąd',
           description: 'Cena w biurze zawodow nie moze byc ujemna',
           variant: 'destructive',
         });
@@ -762,7 +762,7 @@ export const useEventFormState = () => {
         const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
         if (!tier.name.trim()) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Kazdy prog cenowy musi miec nazwe',
             variant: 'destructive',
           });
@@ -770,7 +770,7 @@ export const useEventFormState = () => {
         }
         if (hasExplicitPrice && tierPrice < 0) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Cena w progu nie moze byc ujemna',
             variant: 'destructive',
           });
@@ -778,7 +778,7 @@ export const useEventFormState = () => {
         }
         if (dist.priceTierMode === 'date' && !tier.endDate) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Podaj date koncowa dla kazdego progu cenowego',
             variant: 'destructive',
           });
@@ -787,7 +787,7 @@ export const useEventFormState = () => {
         if (dist.priceTierMode === 'date' && tier.endDate) {
           if (Number.isNaN(new Date(tier.endDate).getTime())) {
             toast({
-              title: 'BĹ‚Ä…d',
+              title: 'Błąd',
               description: 'Data koncowa progu cenowego jest nieprawidlowa',
               variant: 'destructive',
             });
@@ -795,7 +795,7 @@ export const useEventFormState = () => {
           }
           if (registrationDeadline && tier.endDate > registrationDeadline) {
             toast({
-              title: 'BĹ‚Ä…d',
+              title: 'Błąd',
               description:
                 'Data koncowa progu cenowego nie moze byc pozniejsza niz termin rejestracji',
               variant: 'destructive',
@@ -808,7 +808,7 @@ export const useEventFormState = () => {
           (!tier.participantLimit || Number(tier.participantLimit) <= 0)
         ) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego',
             variant: 'destructive',
           });
@@ -818,7 +818,7 @@ export const useEventFormState = () => {
           const participantLimit = Number(tier.participantLimit);
           if (!Number.isInteger(participantLimit)) {
             toast({
-              title: 'BĹ‚Ä…d',
+              title: 'Błąd',
               description: 'Limit uczestnikow w progu musi byc liczba calkowita',
               variant: 'destructive',
             });
@@ -826,7 +826,7 @@ export const useEventFormState = () => {
           }
           if (dist.limit && participantLimit > Number(dist.limit)) {
             toast({
-              title: 'BĹ‚Ä…d',
+              title: 'Błąd',
               description: 'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
               variant: 'destructive',
             });
@@ -838,7 +838,7 @@ export const useEventFormState = () => {
         const dates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
         if (new Set(dates).size !== dates.length) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Daty koncowe progow cenowych nie moga sie powtarzac',
             variant: 'destructive',
           });
@@ -849,7 +849,7 @@ export const useEventFormState = () => {
         const participantLimits = dist.priceTiers.map((tier) => Number(tier.participantLimit));
         if (new Set(participantLimits).size !== participantLimits.length) {
           toast({
-            title: 'BĹ‚Ä…d',
+            title: 'Błąd',
             description: 'Limity uczestnikow w progach cenowych nie moga sie powtarzac',
             variant: 'destructive',
           });
@@ -1027,7 +1027,7 @@ export const useEventFormState = () => {
   const handleSubmit = async () => {
     if (!selectedOrganizerId) {
       toast({
-        title: 'BĹ‚Ä…d',
+        title: 'Błąd',
         description: 'Wybierz organizatora wydarzenia',
         variant: 'destructive',
       });
@@ -1073,8 +1073,8 @@ export const useEventFormState = () => {
       navigate(isEditing ? `/organizer/events/${saved.id}` : '/organizer/events');
     } catch (error) {
       toast({
-        title: 'Nie udaĹ‚o siÄ™ zapisaÄ‡ wydarzenia',
-        description: error instanceof Error ? error.message : 'SprĂłbuj ponownie.',
+        title: 'Nie udało się zapisać wydarzenia',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {

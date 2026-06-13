@@ -16,7 +16,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
       <Card>
         <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Eye className="h-5 w-5 shrink-0" /> PodglÄ…d wydarzenia
+            <Eye className="h-5 w-5 shrink-0" /> Podgląd wydarzenia
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
@@ -67,15 +67,15 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Metoda pĹ‚atnoĹ›ci</p>
+              <p className="text-sm text-muted-foreground">Metoda płatności</p>
               <p className="flex flex-wrap items-center gap-2 font-medium">
                 {form.paymentConfigType === 'admin_gateway' ? (
                   <>
-                    <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
+                    <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza (automatyczna)
                   </>
                 ) : (
                   <>
-                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
+                    <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
                   </>
                 )}
               </p>
@@ -97,7 +97,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               {form.allCategories.map((cat) => (
                 <Badge key={cat.id} variant={cat.type === 'special' ? 'outline' : 'secondary'}>
                   {cat.name}
-                  {cat.type === 'special' ? ' â…' : ''}
+                  {cat.type === 'special' ? ' ★' : ''}
                 </Badge>
               ))}
             </div>
@@ -121,7 +121,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
               </Badge>
             )}
             {form.canManageFeatured && form.featured && (
-              <Badge variant="default">â­ WyrĂłĹĽnione wydarzenie</Badge>
+              <Badge variant="default">⭐ Wyróżnione wydarzenie</Badge>
             )}
           </div>
         </CardContent>
