@@ -1,4 +1,5 @@
-import type { PriceTier, PriceTierDiscountType, Event, Registration, Distance } from '@/types';
+import type { PriceTierDiscountType, Event, Registration, Distance } from '@/types';
+import { roundToCents, formatDiscountBadge } from '@/lib/discountValue';
 
 /** Calculate price after applying a discount to a base price. */
 export const applyDiscount = (
@@ -7,9 +8,9 @@ export const applyDiscount = (
   discountValue: number,
 ): number => {
   if (discountType === 'percent') {
-    return Math.round(basePrice * (1 - discountValue / 100));
+    return roundToCents(basePrice * (1 - Number(discountValue) / 100));
   }
-  return Math.max(0, basePrice - discountValue);
+  return roundToCents(Math.max(0, basePrice - Number(discountValue)));
 };
 
 /** Get the current active price tier for a distance. */
@@ -130,7 +131,7 @@ export const validateDiscountCode = (
     message:
       discountCode.discountType === 'percent'
         ? `Zniżka ${discountCode.discountValue}%`
-        : `Zniżka ${discountCode.discountValue} zł`,
+        : `Zniżka ${formatDiscountBadge(discountCode.discountValue, discountCode.discountType)}`,
   };
 };
 

@@ -134,9 +134,12 @@ export const useEventFormState = () => {
     existingEvent?.finalAcceptanceHtml || '',
   );
 
-  // Embed
-  const [embedEnabled, setEmbedEnabled] = useState(
-    existingEvent?.registrationEmbed?.enabled || false,
+  // Registration mode
+  const [registrationMode, setRegistrationMode] = useState<'internal' | 'external_embed'>(
+    existingEvent?.registrationEmbed?.mode || 'internal',
+  );
+  const [externalRegistrationUrl, setExternalRegistrationUrl] = useState(
+    existingEvent?.registrationEmbed?.externalUrl || '',
   );
   const [embedStartDate, setEmbedStartDate] = useState(
     existingEvent?.registrationEmbed?.startDate || '',
@@ -253,7 +256,8 @@ export const useEventFormState = () => {
     setRulesHtml(existingEvent.rulesHtml || '');
     setRequireFinalAcceptance(existingEvent.requireFinalAcceptance || false);
     setFinalAcceptanceHtml(existingEvent.finalAcceptanceHtml || '');
-    setEmbedEnabled(existingEvent.registrationEmbed?.enabled || false);
+    setRegistrationMode(existingEvent.registrationEmbed?.mode || 'internal');
+    setExternalRegistrationUrl(existingEvent.registrationEmbed?.externalUrl || '');
     setEmbedStartDate(existingEvent.registrationEmbed?.startDate || '');
     setEmbedEndDate(existingEvent.registrationEmbed?.endDate || '');
     setFormConfig(existingEvent.registrationFormConfig || DEFAULT_FORM_CONFIG);
@@ -518,6 +522,30 @@ export const useEventFormState = () => {
       });
       return false;
     }
+    if (registrationMode === 'external_embed') {
+      const trimmedUrl = externalRegistrationUrl.trim();
+      if (!trimmedUrl) {
+        toast({
+          title: 'BĹ‚Ä…d',
+          description: 'Podaj link do zewnetrznego formularza zapisow.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      try {
+        const parsedUrl = new URL(trimmedUrl);
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+          throw new Error('Unsupported protocol');
+        }
+      } catch {
+        toast({
+          title: 'BĹ‚Ä…d',
+          description: 'Link do zewnetrznego formularza musi byc pelnym adresem http lub https.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+    }
     if (
       paymentConfigType === 'organizer_bank' &&
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
@@ -630,7 +658,10 @@ export const useEventFormState = () => {
       isPrivate,
       accessCode: accessCode || undefined,
       registrationEmbed: {
-        enabled: embedEnabled,
+        enabled: registrationMode === 'external_embed',
+        mode: registrationMode,
+        externalUrl:
+          registrationMode === 'external_embed' ? externalRegistrationUrl.trim() : undefined,
         startDate: embedStartDate || undefined,
         endDate: embedEndDate || undefined,
       },
@@ -788,8 +819,10 @@ export const useEventFormState = () => {
     setRequireFinalAcceptance,
     finalAcceptanceHtml,
     setFinalAcceptanceHtml,
-    embedEnabled,
-    setEmbedEnabled,
+    registrationMode,
+    setRegistrationMode,
+    externalRegistrationUrl,
+    setExternalRegistrationUrl,
     embedStartDate,
     setEmbedStartDate,
     embedEndDate,

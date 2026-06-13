@@ -4,6 +4,7 @@ import {
   defaultPaymentMethods,
   mockRegistrations,
   mockUsers,
+  updateEvent,
 } from '@/api';
 import { useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -75,8 +76,21 @@ export const AdminEventManage = () => {
 
   const organizers = mockUsers.filter((u) => u.role === 'organizer');
 
-  const handleSaveAdvanced = () => {
-    toast.success('Ustawienia zaawansowane zostały zapisane');
+  const handleSaveAdvanced = async () => {
+    try {
+      await updateEvent(event.id, {
+        organizerId: selectedOrganizer,
+        distances,
+        discountCodes,
+        merchandise,
+        paymentMethods,
+        liveResultsUrl,
+        enableMerchandiseInRegistration: enableMerchandise,
+      });
+      toast.success('Ustawienia zaawansowane zostały zapisane');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać zmian');
+    }
   };
 
   return (

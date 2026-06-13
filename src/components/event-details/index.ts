@@ -6,6 +6,11 @@ export { EventSidebar } from './EventSidebar';
 export { EventInfoTab } from './EventInfoTab';
 export { EventDistancesTab } from './EventDistancesTab';
 export { EventStartListTab } from './EventStartListTab';
+export {
+  ExternalRegistrationFrame,
+  isExternalRegistrationActive,
+  isExternalRegistrationEvent,
+} from './ExternalRegistrationFrame';
 
 import type { Event, User } from '@/types';
 

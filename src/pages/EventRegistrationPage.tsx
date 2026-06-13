@@ -1,4 +1,4 @@
-import { disciplineLabels, getEventBySlug } from '@/api';
+import { createRegistration, disciplineLabels, getEventBySlug } from '@/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -13,6 +13,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
+import { formatMoney } from '@/lib/discountValue';
+import {
+  ExternalRegistrationFrame,
+  isExternalRegistrationActive,
+  isExternalRegistrationEvent,
+} from '@/components/event-details';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -25,6 +31,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   const [previewRegistrationData, setPreviewRegistrationData] = useState<RegistrationData | null>(
     null,
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event-by-slug', slug],
@@ -53,6 +60,8 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     : !!event && !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
 
   useEffect(() => {
+    if (isLoading) return;
+    if (event && isExternalRegistrationEvent(event)) return;
     if (!previewMode && !isAuthenticated) {
       toast({
         title: 'Wymagane logowanie',
@@ -60,9 +69,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       });
       navigate('/login');
     }
-  }, [isAuthenticated, navigate, previewMode]);
+  }, [event, isAuthenticated, isLoading, navigate, previewMode]);
 
   useEffect(() => {
+    if (event && isExternalRegistrationEvent(event)) return;
     if (event && !previewMode && !isRegistrationOpen) {
       toast({
         title: 'Zapisy zamknięte',
@@ -96,6 +106,36 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     );
   }
 
+  if (isExternalRegistrationEvent(event)) {
+    const externalRegistrationActive = isExternalRegistrationActive(event);
+    const active = isRegistrationOpen && externalRegistrationActive;
+
+    return (
+      <Layout>
+        <div className="border-b bg-muted/30">
+          <div className="container py-6">
+            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              WrĂłÄ‡ do wydarzenia
+            </Button>
+            <h1 className="text-2xl font-bold md:text-3xl">{event.name}</h1>
+          </div>
+        </div>
+        <div className="container py-8">
+          <ExternalRegistrationFrame
+            event={event}
+            active={active}
+            closedReason={
+              externalRegistrationActive
+                ? 'Zapisy na to wydarzenie są zamknięte.'
+                : 'Zewnętrzny formularz zapisów nie jest teraz aktywny.'
+            }
+          />
+        </div>
+      </Layout>
+    );
+  }
+
   if (previewRegistrationData) {
     return (
       <Layout>
@@ -120,7 +160,9 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                   </p>
                   <p>
                     Kwota testowego koszyka:{' '}
-                    <span className="font-medium">{previewRegistrationData.totalAmount} zł</span>
+                    <span className="font-medium">
+                      {formatMoney(previewRegistrationData.totalAmount)}
+                    </span>
                   </p>
                 </div>
                 <Button onClick={() => navigate(`/events/${slug}/preview`)}>
@@ -138,9 +180,38 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     return null;
   }
 
-  const handleComplete = (data: RegistrationData) => {
+  const handleComplete = async (data: RegistrationData) => {
     if (isPreviewAvailable) {
       setPreviewRegistrationData(data);
+      return;
+    }
+    if (!user || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await createRegistration({
+        eventId: event.id,
+        eventName: event.name,
+        userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
+        distanceId: data.distanceId,
+        distanceName: data.distanceName,
+        category: data.category,
+        teamName: data.teamName,
+        discountCode: data.discountCode,
+        discountAmount: data.discountAmount,
+        pricePaid: Math.max(0, data.price - (data.discountAmount ?? 0)),
+        totalAmount: data.totalAmount,
+        merchandiseOrders: data.merchandiseOrders,
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zapisać rejestracji',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
       return;
     }
 

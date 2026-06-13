@@ -38,22 +38,22 @@ const EventForm = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl py-8">
-        <Button variant="ghost" onClick={() => form.navigate(-1)} className="mb-4">
+      <div className="container max-w-5xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <Button variant="ghost" onClick={() => form.navigate(-1)} className="-ml-2 mb-4 max-w-full">
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <h1 className="mb-2 text-3xl font-bold">
+        <h1 className="mb-2 text-2xl font-bold tracking-normal sm:text-3xl">
           {form.isEditing ? 'Edytuj wydarzenie' : 'Nowe wydarzenie'}
         </h1>
-        <p className="mb-8 text-muted-foreground">
+        <p className="mb-6 text-sm text-muted-foreground sm:mb-8 sm:text-base">
           {form.step === 1 && 'Krok 1 z 3: Podstawowe informacje'}
           {form.step === 2 && 'Krok 2 z 3: Kategorie i dystanse'}
           {form.step === 3 && 'Krok 3 z 3: Podsumowanie i publikacja'}
         </p>
 
         {/* Progress bar */}
-        <div className="mb-8 flex gap-2">
+        <div className="mb-6 flex gap-2 sm:mb-8" aria-label={`Krok ${form.step} z 3`}>
           {[1, 2, 3].map((s) => (
             <div
               key={s}
@@ -67,17 +67,17 @@ const EventForm = () => {
         {form.step === 3 && <EventFormStep3 form={form} />}
 
         {/* Navigation buttons */}
-        <div className="mt-8 flex justify-between">
+        <div className="mt-8 flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-0">
           {form.step > 1 ? (
-            <Button variant="outline" onClick={form.prevStep}>
+            <Button variant="outline" onClick={form.prevStep} className="w-full sm:w-auto">
               <ArrowLeft className="mr-2 h-4 w-4" /> Wstecz
             </Button>
           ) : (
-            <div />
+            <div className="hidden sm:block" />
           )}
 
           {form.step < 3 ? (
-            <Button onClick={form.nextStep}>
+            <Button onClick={form.nextStep} className="w-full sm:w-auto">
               Dalej <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
@@ -86,6 +86,7 @@ const EventForm = () => {
               disabled={
                 form.isSaving || (!form.isEditing && form.selectedEventLimit?.available === 0)
               }
+              className="w-full sm:w-auto"
             >
               <Save className="mr-2 h-4 w-4" />
               {form.isSaving

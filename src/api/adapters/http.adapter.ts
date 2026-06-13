@@ -38,10 +38,45 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
         'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
       event_delete_forbidden:
         'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
-      event_archive_before_start:
-        'Archiwizować można tylko wydarzenia, które już się zakończyły.',
+      event_archive_before_start: 'Archiwizować można tylko wydarzenia, które już się zakończyły.',
+      discount_code_invalid: 'Nieprawidłowy kod rabatowy.',
+      discount_code_inactive: 'Kod rabatowy jest nieaktywny.',
+      discount_code_not_started: 'Kod rabatowy nie jest jeszcze aktywny.',
+      discount_code_expired: 'Kod rabatowy wygasł.',
+      discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
+      discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
+      registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
     };
-    throw new Error(messages[code] ?? payload?.error?.message ?? payload?.message ?? `API error ${response.status}`);
+    throw new Error(
+      messages[code] ??
+        payload?.error?.message ??
+        payload?.message ??
+        `API error ${response.status}`,
+    );
+  }
+  return payload as ApiResponse<T>;
+}
+
+async function requestForm<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const code = payload?.error?.code;
+    const messages: Record<string, string> = {
+      file_too_large: 'Obraz jest za duzy.',
+      unsupported_file_type: 'Dozwolone sa tylko obrazy JPG, PNG i WebP.',
+      upload_dir_unavailable: 'Katalog uploadu na serwerze jest niedostepny.',
+      upload_failed: 'Nie udalo sie wgrac pliku.',
+    };
+    throw new Error(messages[code] ?? payload?.error?.message ?? `API error ${response.status}`);
   }
   return payload as ApiResponse<T>;
 }
@@ -55,6 +90,12 @@ async function paginated<T>(
 
 function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
+}
+
+function resolveApiAssetUrl(url: string): string {
+  if (!url.startsWith('/')) return url;
+  const apiOrigin = API_BASE_URL ? new URL(API_BASE_URL, window.location.origin).origin : window.location.origin;
+  return `${apiOrigin}${url}`;
 }
 
 export const httpAdapter: ApiAdapter = {
@@ -78,10 +119,15 @@ export const httpAdapter: ApiAdapter = {
   getOrganizerEventLimit: (organizerId) =>
     request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`),
   updateOrganizerEventLimit: (organizerId, limit) =>
-    request(
-      `/organizers/${encodeURIComponent(organizerId)}/event-limit`,
-      json('PATCH', { limit }),
-    ),
+    request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`, json('PATCH', { limit })),
+  uploadEventImage: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return requestForm<{ url: string }>('/uploads/event-images', formData).then((response) => ({
+      ...response,
+      data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
+    }));
+  },
 
   getUsers: (filters) => paginated('/users', filters as Record<string, QueryValue>),
   getUserById: (id) => request(`/users/${encodeURIComponent(id)}`),
@@ -164,8 +210,7 @@ export const httpAdapter: ApiAdapter = {
   updateProduct: (id, data) =>
     request(`/shop/products/${encodeURIComponent(id)}`, json('PATCH', data)),
   deleteProduct: (id) => request(`/shop/products/${encodeURIComponent(id)}`, json('DELETE')),
-  getShopCategories: (includeArchived) =>
-    request(`/shop/categories${query({ includeArchived })}`),
+  getShopCategories: (includeArchived) => request(`/shop/categories${query({ includeArchived })}`),
   createShopCategory: (data) => request('/shop/categories', json('POST', data)),
   updateShopCategory: (id, data) =>
     request(`/shop/categories/${encodeURIComponent(id)}`, json('PATCH', data)),

@@ -1,4 +1,6 @@
 ﻿import { disciplineLabels } from '@/api';
+import { useEffect, useState } from 'react';
+import { uploadEventImage } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +14,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SportDiscipline, PaymentConfigType } from '@/types';
 import {
   Image,
-  Crop,
+  Upload,
+  X,
   Globe,
   CreditCard,
   Building2,
@@ -28,6 +30,7 @@ import {
   Code,
   Settings2,
   Monitor,
+  ExternalLink,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
@@ -37,23 +40,240 @@ interface EventFormStep1Props {
   form: EventFormState;
 }
 
+interface EventImageUploadFieldProps {
+  label: string;
+  description: string;
+  recommendedSize: string;
+  value: string;
+  onChange: (url: string) => void;
+  aspectRatio: number;
+  outputWidth: number;
+  cropTitle: string;
+  toast: EventFormState['toast'];
+}
+
+const EventImageUploadField = ({
+  label,
+  description,
+  recommendedSize,
+  value,
+  onChange,
+  aspectRatio,
+  outputWidth,
+  cropTitle,
+  toast,
+}: EventImageUploadFieldProps) => {
+  const [selectedPreviewUrl, setSelectedPreviewUrl] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('event-image');
+  const [showCropper, setShowCropper] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
+    };
+  }, [selectedPreviewUrl]);
+
+  const handleFileChange = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Nieprawidlowy plik',
+        description: 'Wybierz plik obrazu.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (selectedPreviewUrl.startsWith('blob:')) URL.revokeObjectURL(selectedPreviewUrl);
+    setSelectedFileName(file.name.replace(/\.[^.]+$/, '') || 'event-image');
+    setSelectedPreviewUrl(URL.createObjectURL(file));
+    setShowCropper(true);
+  };
+
+  const handleUpload = async (_crop: unknown, croppedBlob?: Blob) => {
+    if (!croppedBlob) {
+      toast({
+        title: 'Nie udalo sie przyciac obrazu',
+        description: 'Sprobuj wybrac plik ponownie.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const file = new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' });
+      const response = await uploadEventImage(file);
+      onChange(response.data.url);
+      toast({
+        title: 'Obraz zapisany',
+        description: 'Wgrano i sformatowano obraz wydarzenia.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udalo sie wgrac obrazu',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <HelpLabel description={description}>{label}</HelpLabel>
+      <p className="text-sm text-muted-foreground">{recommendedSize}</p>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" asChild disabled={isUploading}>
+          <label className="cursor-pointer">
+            <Upload className="mr-2 h-4 w-4" />
+            {value ? 'Zmien obraz' : 'Wgraj obraz'}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(event) => handleFileChange(event.target.files?.[0])}
+            />
+          </label>
+        </Button>
+        {value && (
+          <Button type="button" variant="outline" size="icon" onClick={() => onChange('')}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+      {value && (
+        <div className="overflow-hidden rounded-md border bg-muted" style={{ aspectRatio }}>
+          <img src={value} alt="" className="h-full w-full object-cover" />
+        </div>
+      )}
+      {selectedPreviewUrl && (
+        <ImageCropper
+          imageUrl={selectedPreviewUrl}
+          open={showCropper}
+          onOpenChange={setShowCropper}
+          aspectRatio={aspectRatio}
+          outputWidth={outputWidth}
+          title={cropTitle}
+          onCrop={handleUpload}
+        />
+      )}
+    </div>
+  );
+};
+
 export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
   return (
-    <>
+    <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Code className="h-5 w-5 text-primary" /> Typ zapisów
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+          <RadioGroup
+            value={form.registrationMode}
+            onValueChange={(value) =>
+              form.setRegistrationMode(value as 'internal' | 'external_embed')
+            }
+            className="grid gap-3 md:grid-cols-2"
+          >
+            <div
+              className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'internal' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+            >
+              <RadioGroupItem value="internal" id="registration_internal" className="mt-1" />
+              <div className="min-w-0 flex-1">
+                <Label
+                  htmlFor="registration_internal"
+                  className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                >
+                  <Settings2 className="h-4 w-4 text-primary" /> Formularz Zmierzymy Czas
+                </Label>
+                <FieldHelp description="Zapisy sa obslugiwane przez formularz i platnosci w systemie Zmierzymy Czas." />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Uczestnik zapisuje się bezpośrednio w biurze zawodów.
+                </p>
+              </div>
+            </div>
+            <div
+              className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'external_embed' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+            >
+              <RadioGroupItem value="external_embed" id="registration_external" className="mt-1" />
+              <div className="min-w-0 flex-1">
+                <Label
+                  htmlFor="registration_external"
+                  className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                >
+                  <ExternalLink className="h-4 w-4 text-primary" /> Zewnętrzny formularz embed
+                </Label>
+                <FieldHelp description="Na stronie wydarzenia pokazujemy ramke Zmierzymy Czas, a w srodku osadzamy formularz zapisow z podanego linku." />
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Zapisy prowadzi zewnętrzny system, widoczny u nas w osadzonej ramce.
+                </p>
+              </div>
+            </div>
+          </RadioGroup>
+
+          {form.registrationMode === 'external_embed' && (
+            <div className="space-y-4 border-t pt-4">
+              <div className="space-y-2">
+                <HelpLabel
+                  htmlFor="externalRegistrationUrl"
+                  description="Pelny adres strony lub formularza zapisow, ktory ma zostac osadzony w widoku wydarzenia."
+                >
+                  Link do zewnętrznego formularza *
+                </HelpLabel>
+                <Input
+                  id="externalRegistrationUrl"
+                  value={form.externalRegistrationUrl}
+                  onChange={(e) => form.setExternalRegistrationUrl(e.target.value)}
+                  placeholder="https://partner.pl/zapisy/nazwa-wydarzenia"
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                    Data rozpoczęcia (opcjonalnie)
+                  </HelpLabel>
+                  <Input
+                    type="date"
+                    value={form.embedStartDate}
+                    onChange={(e) => form.setEmbedStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <HelpLabel description="Opcjonalny koniec dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                    Data zakończenia (opcjonalnie)
+                  </HelpLabel>
+                  <Input
+                    type="date"
+                    value={form.embedEndDate}
+                    onChange={(e) => form.setEmbedEndDate(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle>Podstawowe informacje</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <HelpLabel
-                htmlFor="organizer"
-                description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
-              >
-                Organizator *
-              </HelpLabel>
-              {form.canChooseOrganizer ? (
+            {form.canChooseOrganizer && (
+              <div className="space-y-2 md:col-span-2">
+                <HelpLabel
+                  htmlFor="organizer"
+                  description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
+                >
+                  Organizator *
+                </HelpLabel>
                 <Select
                   value={form.selectedOrganizerId}
                   onValueChange={form.setSelectedOrganizerId}
@@ -69,13 +289,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                     ))}
                   </SelectContent>
                 </Select>
-              ) : (
-                <Input
-                  id="organizer"
-                  value={form.user?.companyName || form.user?.name || ''}
-                  disabled
-                />
-              )}
+              </div>
+            )}
+            <div className="md:col-span-2">
               <p
                 className={
                   form.selectedEventLimit && form.selectedEventLimit.available <= 0
@@ -160,7 +376,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
           {/* Virtual event toggle */}
           <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-start gap-3">
               <Checkbox
                 id="isVirtual"
                 checked={form.isVirtual}
@@ -175,8 +391,8 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   }
                 }}
               />
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary" />
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Globe className="h-4 w-4 shrink-0 text-primary" />
                 <Label htmlFor="isVirtual" className="cursor-pointer font-medium">
                   Wydarzenie wirtualne
                 </Label>
@@ -184,7 +400,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </div>
             </div>
             {form.isVirtual && (
-              <p className="pl-6 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground sm:pl-7">
                 Uczestnicy wykonujÄ… aktywnoĹ›Ä‡ samodzielnie w dowolnym miejscu i wprowadzajÄ…
                 swoje wyniki po zakoĹ„czeniu okna czasowego.
               </p>
@@ -226,7 +442,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
           {/* Private event toggle */}
           <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-start gap-3">
               <Checkbox
                 id="isPrivate"
                 checked={form.isPrivate}
@@ -236,8 +452,8 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   if (val && !form.accessCode) form.setAccessCode(form.generateAccessCode());
                 }}
               />
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-primary" />
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Lock className="h-4 w-4 shrink-0 text-primary" />
                 <Label htmlFor="isPrivate" className="cursor-pointer font-medium">
                   Wydarzenie prywatne
                 </Label>
@@ -245,7 +461,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </div>
             </div>
             {form.isPrivate && (
-              <div className="space-y-3 pl-6">
+              <div className="space-y-3 sm:pl-7">
                 <p className="text-sm text-muted-foreground">
                   Prywatne wydarzenie nie bÄ™dzie widoczne publicznie. Uczestnicy mogÄ… doĹ‚Ä…czyÄ‡
                   tylko przez specjalny link.
@@ -257,13 +473,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                   >
                     Kod dostÄ™pu
                   </HelpLabel>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
                     <Input
                       id="accessCode"
                       value={form.accessCode}
                       onChange={(e) => form.setAccessCode(e.target.value)}
                       placeholder="np. abc123xyz"
-                      className="font-mono"
+                      className="min-w-0 font-mono"
                     />
                     <Button
                       type="button"
@@ -346,29 +562,26 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             />
           </div>
 
-          <div className="space-y-2">
-            <HelpLabel
-              htmlFor="imageUrl"
-              description="Adres glownego obrazka wydarzenia uzywanego w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
-            >
-              URL obrazka
-            </HelpLabel>
-            <Input
-              id="imageUrl"
-              value={form.imageUrl}
-              onChange={(e) => form.setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
+          <EventImageUploadField
+            label="Glowny obraz wydarzenia"
+            description="Obraz uzywany w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
+            recommendedSize="Zalecany format 16:9. Po wgraniu dopasujesz kadr przed zapisem."
+            value={form.imageUrl}
+            onChange={form.setImageUrl}
+            aspectRatio={16 / 9}
+            outputWidth={1200}
+            cropTitle="Dopasuj glowny obraz wydarzenia"
+            toast={form.toast}
+          />
 
           {form.canManageFeatured && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start gap-2">
               <Checkbox
                 id="featured"
                 checked={form.featured}
                 onCheckedChange={(checked) => form.setFeatured(checked === true)}
               />
-              <Label htmlFor="featured" className="cursor-pointer">
+              <Label htmlFor="featured" className="cursor-pointer leading-5">
                 WyrĂłĹĽnij wydarzenie na stronie gĹ‚Ăłwnej
               </Label>
               <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
@@ -377,54 +590,43 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
           {/* Media Section */}
           <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <Image className="h-5 w-5 text-primary" />
+            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
+              <Image className="h-5 w-5 shrink-0 text-primary" />
               Media wydarzenia (opcjonalne)
             </h3>
             <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <HelpLabel description="Pionowy lub duzy obraz wykorzystywany jako baner wizualny wydarzenia w miejscach, gdzie potrzebna jest mocniejsza ekspozycja.">
-                  Baner wydarzenia
-                </HelpLabel>
-                <p className="text-sm text-muted-foreground">
-                  Pionowy obrazek w tle (zalecane 800x1200px)
-                </p>
-                <Input
-                  placeholder="URL banera"
-                  value={form.bannerUrl}
-                  onChange={(e) => form.setBannerUrl(e.target.value)}
-                />
-                {form.bannerUrl && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => form.setShowBannerCropper(true)}
-                  >
-                    <Crop className="mr-2 h-4 w-4" /> Przytnij baner
-                  </Button>
-                )}
-              </div>
-              <div className="space-y-3">
-                <HelpLabel description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow. Najlepiej uzyc kwadratowego pliku.">
-                  Logo organizatora
-                </HelpLabel>
-                <p className="text-sm text-muted-foreground">
-                  Kwadratowe logo (zalecane 200x200px)
-                </p>
-                <Input
-                  placeholder="URL logo"
-                  value={form.organizerLogoUrl}
-                  onChange={(e) => form.setOrganizerLogoUrl(e.target.value)}
-                />
-              </div>
+              <EventImageUploadField
+                label="Baner wydarzenia"
+                description="Obraz wykorzystywany jako baner wizualny wydarzenia w miejscach, gdzie potrzebna jest mocniejsza ekspozycja."
+                recommendedSize="Zalecany format 16:9, minimum 1200px szerokosci."
+                value={form.bannerUrl}
+                onChange={(url) => {
+                  form.setBannerUrl(url);
+                  form.setBannerCropArea(undefined);
+                }}
+                aspectRatio={16 / 9}
+                outputWidth={1600}
+                cropTitle="Dopasuj baner wydarzenia"
+                toast={form.toast}
+              />
+              <EventImageUploadField
+                label="Logo organizatora"
+                description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow."
+                recommendedSize="Zalecany format kwadratowy, minimum 400x400px."
+                value={form.organizerLogoUrl}
+                onChange={form.setOrganizerLogoUrl}
+                aspectRatio={1}
+                outputWidth={600}
+                cropTitle="Dopasuj logo organizatora"
+                toast={form.toast}
+              />
             </div>
           </div>
 
           {/* Payment Configuration */}
           <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <CreditCard className="h-5 w-5 text-primary" />
+            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
+              <CreditCard className="h-5 w-5 shrink-0 text-primary" />
               Konfiguracja pĹ‚atnoĹ›ci
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">
@@ -439,10 +641,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'admin_gateway' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
               >
                 <RadioGroupItem value="admin_gateway" id="admin_gateway" className="mt-1" />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <Label
                     htmlFor="admin_gateway"
-                    className="flex cursor-pointer items-center gap-2 font-medium"
+                    className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
                   >
                     <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
                   </Label>
@@ -457,10 +659,10 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'organizer_bank' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
               >
                 <RadioGroupItem value="organizer_bank" id="organizer_bank" className="mt-1" />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <Label
                     htmlFor="organizer_bank"
-                    className="flex cursor-pointer items-center gap-2 font-medium"
+                    className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
                   >
                     <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (rÄ™czny)
                   </Label>
@@ -529,8 +731,9 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
           {/* Rich Text Fields */}
           <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-              <FileText className="h-5 w-5 text-primary" /> Dodatkowe informacje (opcjonalne)
+            <h3 className="mb-4 flex items-center gap-2 text-base font-semibold sm:text-lg">
+              <FileText className="h-5 w-5 shrink-0 text-primary" /> Dodatkowe informacje
+              (opcjonalne)
             </h3>
             <p className="mb-4 text-sm text-muted-foreground">
               Te pola pozwalajÄ… na formatowanie tekstu, dodawanie linkĂłw i list.
@@ -565,19 +768,19 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 />
               </div>
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-start gap-3">
                   <Checkbox
                     id="requireFinalAcceptance"
                     checked={form.requireFinalAcceptance}
                     onCheckedChange={(checked) => form.setRequireFinalAcceptance(checked === true)}
                   />
-                  <Label htmlFor="requireFinalAcceptance" className="cursor-pointer">
+                  <Label htmlFor="requireFinalAcceptance" className="cursor-pointer leading-5">
                     Wymagaj dodatkowej akceptacji przy rejestracji
                   </Label>
                   <FieldHelp description="Dodaje do formularza zapisu dodatkowy checkbox z trescia, ktora uczestnik musi zaakceptowac przed wyslaniem rejestracji." />
                 </div>
                 {form.requireFinalAcceptance && (
-                  <div className="space-y-2 pl-6">
+                  <div className="space-y-2 sm:pl-7">
                     <HelpLabel description="Tresci widoczna przy dodatkowym checkboxie akceptacji w formularzu rejestracji uczestnika.">
                       Tekst akceptacji
                     </HelpLabel>
@@ -599,72 +802,14 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
         </CardContent>
       </Card>
 
-      {/* Registration Embed Config */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Code className="h-5 w-5 text-primary" /> Zapisy przez iframe (embed)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <Label>WĹ‚Ä…cz widget do osadzenia</Label>
-                <FieldHelp description="Udostepnia osobny widok formularza zapisow, ktory mozna osadzic jako iframe na zewnetrznej stronie." />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Partnerzy mogÄ… umieĹ›ciÄ‡ formularz zapisĂłw na swojej stronie
-              </p>
-            </div>
-            <Switch checked={form.embedEnabled} onCheckedChange={form.setEmbedEnabled} />
-          </div>
-          {form.embedEnabled && (
-            <div className="space-y-4 border-t pt-2">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow. Przed ta data widget moze byc nieaktywny.">
-                    Data rozpoczÄ™cia (opcjonalnie)
-                  </HelpLabel>
-                  <Input
-                    type="date"
-                    value={form.embedStartDate}
-                    onChange={(e) => form.setEmbedStartDate(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <HelpLabel description="Opcjonalny koniec dostepnosci formularza iframe. Pozwala zamknac zapisy w osadzonym widoku niezaleznie od publikacji strony.">
-                    Data zakoĹ„czenia (opcjonalnie)
-                  </HelpLabel>
-                  <Input
-                    type="date"
-                    value={form.embedEndDate}
-                    onChange={(e) => form.setEmbedEndDate(e.target.value)}
-                  />
-                </div>
-              </div>
-              {form.name && (
-                <div className="space-y-2 rounded-lg bg-muted/50 p-3">
-                  <Label className="text-xs text-muted-foreground">Kod do osadzenia:</Label>
-                  <FieldHelp description="Gotowy kod HTML iframe do przekazania partnerowi lub wklejenia na inna strone." />
-                  <code className="block break-all text-xs">
-                    {`<iframe src="${window.location.origin}/events/${form.generateSlug(form.name)}/embed" width="100%" height="800" frameborder="0"></iframe>`}
-                  </code>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Registration Form Config */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Settings2 className="h-5 w-5 text-primary" /> Konfiguracja formularza rejestracji
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <p className="text-sm text-muted-foreground">
             Wybierz, ktĂłre pola bÄ™dÄ… widoczne w formularzu rejestracji dla uczestnikĂłw.
           </p>
@@ -679,7 +824,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
             ].map((field) => (
               <div
                 key={field.key}
-                className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-muted/50"
+                className="flex cursor-pointer items-start gap-2 rounded-md p-2 hover:bg-muted/50"
               >
                 <Checkbox
                   id={field.key}
@@ -688,7 +833,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                     form.setFormConfig({ ...form.formConfig, [field.key]: !!checked })
                   }
                 />
-                <Label htmlFor={field.key} className="cursor-pointer text-sm">
+                <Label htmlFor={field.key} className="cursor-pointer text-sm leading-5">
                   {field.label}
                 </Label>
                 <FieldHelp
@@ -716,12 +861,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
 
       {/* Display Options */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Monitor className="h-5 w-5 text-primary" /> Opcje wyĹ›wietlania listy uczestnikĂłw
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <div className="space-y-2">
             <HelpLabel description="Ustala domyslny porzadek publicznej listy uczestnikow wydarzenia. Uzytkownik zobaczy liste wedlug tej preferencji.">
               DomyĹ›lne sortowanie
@@ -735,7 +880,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 })
               }
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -746,7 +891,7 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex cursor-pointer items-center gap-2">
+          <div className="flex cursor-pointer items-start gap-2">
             <Checkbox
               id="uppercaseNames"
               checked={form.displayOptions.uppercaseNames}
@@ -754,12 +899,12 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 form.setDisplayOptions({ ...form.displayOptions, uppercaseNames: !!checked })
               }
             />
-            <Label htmlFor="uppercaseNames" className="cursor-pointer text-sm">
+            <Label htmlFor="uppercaseNames" className="cursor-pointer text-sm leading-5">
               WymuĹ› wielkie litery w nazwiskach (np. Jan KOWALSKI)
             </Label>
             <FieldHelp description="Formatuje nazwiska na liscie uczestnikow wielkimi literami, aby ulatwic skanowanie list startowych." />
           </div>
-          <div className="flex cursor-pointer items-center gap-2">
+          <div className="flex cursor-pointer items-start gap-2">
             <Checkbox
               id="hideUnpaid"
               checked={form.displayOptions.hideUnpaid}
@@ -767,24 +912,13 @@ export const EventFormStep1 = ({ form }: EventFormStep1Props) => {
                 form.setDisplayOptions({ ...form.displayOptions, hideUnpaid: !!checked })
               }
             />
-            <Label htmlFor="hideUnpaid" className="cursor-pointer text-sm">
+            <Label htmlFor="hideUnpaid" className="cursor-pointer text-sm leading-5">
               Ukryj nieopĹ‚aconych uczestnikĂłw na liĹ›cie publicznej
             </Label>
             <FieldHelp description="Nie pokazuje uczestnikow oczekujacych na platnosc na publicznej liscie startowej." />
           </div>
         </CardContent>
       </Card>
-
-      {form.bannerUrl && (
-        <ImageCropper
-          imageUrl={form.bannerUrl}
-          open={form.showBannerCropper}
-          onOpenChange={form.setShowBannerCropper}
-          aspectRatio={16 / 9}
-          title="Przytnij baner wydarzenia"
-          onCrop={(crop) => form.setBannerCropArea(crop)}
-        />
-      )}
-    </>
+    </div>
   );
 };

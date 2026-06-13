@@ -22,7 +22,10 @@ import {
   EventInfoTab,
   EventDistancesTab,
   EventStartListTab,
+  ExternalRegistrationFrame,
   getEditUrl,
+  isExternalRegistrationActive,
+  isExternalRegistrationEvent,
 } from '@/components/event-details';
 
 interface EventDetailsPageProps {
@@ -108,6 +111,13 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const isRegistrationOpen = isDraftPreview
     ? event.distances.length > 0 && !allDistancesFull
     : !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+  const hasExternalRegistration = isExternalRegistrationEvent(event);
+  const externalRegistrationActive = hasExternalRegistration
+    ? isExternalRegistrationActive(event)
+    : false;
+  const canUseRegistration = hasExternalRegistration
+    ? isRegistrationOpen && externalRegistrationActive
+    : isRegistrationOpen;
 
   const getClosedReason = (): string | null => {
     if (isPast) return 'Zawody już się odbyły';
@@ -129,6 +139,11 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
 
   const handleRegister = () => {
+    if (hasExternalRegistration) {
+      document.getElementById('zapisy')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
     if (isDraftPreview) {
       navigate(`/events/${slug}/register/preview`);
       return;
@@ -152,6 +167,11 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
       description: 'Link do wydarzenia został skopiowany do schowka.',
     });
   };
+
+  const registrationClosedReason =
+    hasExternalRegistration && !externalRegistrationActive
+      ? 'Zewnętrzny formularz zapisów nie jest teraz aktywny'
+      : getClosedReason();
 
   return (
     <Layout>
@@ -222,6 +242,14 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                 )}
               </CardContent>
             </Card>
+
+            {hasExternalRegistration && (
+              <ExternalRegistrationFrame
+                event={event}
+                active={canUseRegistration}
+                closedReason={registrationClosedReason}
+              />
+            )}
 
             {/* Tabs */}
             <Tabs defaultValue={defaultTab}>
@@ -306,8 +334,8 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
             event={event}
             user={user}
             userRegistration={userRegistration}
-            isRegistrationOpen={isRegistrationOpen}
-            closedReason={getClosedReason()}
+            isRegistrationOpen={canUseRegistration}
+            closedReason={registrationClosedReason}
             onRegister={handleRegister}
             onShare={handleShare}
             previewMode={isDraftPreview}

@@ -388,6 +388,11 @@ export const mockAdapter: ApiAdapter = {
 
   // ── Users ──
 
+  async uploadEventImage(file) {
+    await delay();
+    return ok({ url: URL.createObjectURL(file) });
+  },
+
   async getUsers(filters) {
     await delay();
     let filtered = [...mockUsers];

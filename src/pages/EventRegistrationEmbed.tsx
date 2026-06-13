@@ -1,10 +1,11 @@
 import { mockEvents } from '@/api';
-import { useParams, Link } from 'react-router-dom';
+import {
+  ExternalRegistrationFrame,
+  isExternalRegistrationActive,
+  isExternalRegistrationEvent,
+} from '@/components/event-details';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, ExternalLink } from 'lucide-react';
-import { format } from 'date-fns';
-import { pl } from 'date-fns/locale';
+import { Link, useParams } from 'react-router-dom';
 
 const EventRegistrationEmbed = () => {
   const { slug } = useParams();
@@ -18,93 +19,27 @@ const EventRegistrationEmbed = () => {
     );
   }
 
-  const isEmbedActive = () => {
-    if (!event.registrationEmbed?.enabled) return true; // no config = always active
-    const now = new Date();
-    if (event.registrationEmbed.startDate && new Date(event.registrationEmbed.startDate) > now)
-      return false;
-    if (event.registrationEmbed.endDate && new Date(event.registrationEmbed.endDate) < now)
-      return false;
-    return true;
-  };
-
-  const active = isEmbedActive();
-  const registrationOpen =
-    event.registrationStatus !== 'closed' && new Date(event.registrationDeadline) >= new Date();
+  if (!isExternalRegistrationEvent(event)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="max-w-md space-y-4 text-center">
+          <p className="text-lg font-semibold">To wydarzenie używa formularza Zmierzymy Czas.</p>
+          <Button asChild>
+            <Link to={`/events/${event.slug}/register`}>Przejdź do zapisów</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Branded header */}
-        <div className="space-y-1 text-center">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Zmierzymy Czas
-          </p>
-        </div>
-
-        {/* Event card */}
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-          {event.imageUrl && (
-            <div className="h-40 overflow-hidden">
-              <img src={event.imageUrl} alt={event.name} className="h-full w-full object-cover" />
-            </div>
-          )}
-          <div className="space-y-4 p-5">
-            <h2 className="text-xl font-bold text-foreground">{event.name}</h2>
-
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                <span>{format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {event.location}, {event.city}
-                </span>
-              </div>
-            </div>
-
-            {/* Distances preview */}
-            <div className="flex flex-wrap gap-2">
-              {event.distances.map((d) => (
-                <Badge key={d.id} variant="secondary" className="text-xs">
-                  {d.name} — {d.price} zł
-                </Badge>
-              ))}
-            </div>
-
-            {/* CTA */}
-            {active && registrationOpen ? (
-              <Button asChild className="w-full" size="lg">
-                <a
-                  href={`/events/${event.slug}/register`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Zapisz się
-                </a>
-              </Button>
-            ) : (
-              <Button disabled className="w-full" size="lg">
-                {!registrationOpen ? 'Zapisy zamknięte' : 'Zapisy niedostępne'}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Rejestracja przez{' '}
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
-          >
-            ZmierzymyCzas.pl
-          </a>
-        </p>
+    <div className="min-h-screen bg-background p-4 sm:p-6">
+      <div className="mx-auto max-w-6xl">
+        <ExternalRegistrationFrame
+          event={event}
+          active={isExternalRegistrationActive(event)}
+          closedReason="Zewnętrzny formularz zapisów nie jest teraz aktywny."
+        />
       </div>
     </div>
   );

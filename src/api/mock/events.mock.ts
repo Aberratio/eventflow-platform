@@ -2998,6 +2998,13 @@ export const mockEvents: Event[] = [
     paymentConfig: {
       type: 'admin_gateway',
     },
+    registrationEmbed: {
+      enabled: true,
+      mode: 'external_embed',
+      externalUrl: 'https://example.com',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+    },
     enableMerchandiseInRegistration: true,
     merchandise: [
       {

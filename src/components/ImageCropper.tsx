@@ -22,7 +22,9 @@ interface ImageCropperProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   aspectRatio?: number; // e.g., 16/9, 3/4
-  onCrop: (cropArea: CropArea) => void;
+  outputWidth?: number;
+  outputHeight?: number;
+  onCrop: (cropArea: CropArea, croppedBlob?: Blob) => void | Promise<void>;
   title?: string;
 }
 
@@ -31,15 +33,19 @@ export const ImageCropper = ({
   open,
   onOpenChange,
   aspectRatio = 16 / 9,
+  outputWidth = 1200,
+  outputHeight,
   onCrop,
   title = 'Przytnij obraz',
 }: ImageCropperProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 50, y: 50 }); // center position in %
   const [zoom, setZoom] = useState([100]); // zoom level 100-200%
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -80,22 +86,75 @@ export const ImageCropper = ({
     setIsDragging(false);
   }, []);
 
-  const handleSave = () => {
-    // Calculate crop area based on position and zoom
+  const getCropArea = (): CropArea => {
+    const image = imageRef.current;
+    const naturalAspect =
+      image && image.naturalWidth > 0 && image.naturalHeight > 0
+        ? image.naturalWidth / image.naturalHeight
+        : aspectRatio;
     const zoomFactor = zoom[0] / 100;
-    const visibleWidth = 100 / zoomFactor;
-    const visibleHeight = 100 / zoomFactor;
+    let visibleWidth = 100 / zoomFactor;
+    let visibleHeight = 100 / zoomFactor;
+
+    if (naturalAspect > aspectRatio) {
+      visibleWidth = visibleHeight * (aspectRatio / naturalAspect);
+    } else {
+      visibleHeight = visibleWidth * (naturalAspect / aspectRatio);
+    }
 
     const x = Math.max(0, position.x - visibleWidth / 2);
     const y = Math.max(0, position.y - visibleHeight / 2);
 
-    onCrop({
+    return {
       x: Math.min(x, 100 - visibleWidth),
       y: Math.min(y, 100 - visibleHeight),
       width: visibleWidth,
       height: visibleHeight,
-    });
-    onOpenChange(false);
+    };
+  };
+
+  const createCroppedBlob = (cropArea: CropArea): Promise<Blob | undefined> => {
+    const image = imageRef.current;
+    if (!image || image.naturalWidth === 0 || image.naturalHeight === 0) {
+      return Promise.resolve(undefined);
+    }
+
+    const canvas = document.createElement('canvas');
+    const targetWidth = outputWidth;
+    const targetHeight = outputHeight ?? Math.round(outputWidth / aspectRatio);
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const context = canvas.getContext('2d');
+    if (!context) return Promise.resolve(undefined);
+
+    context.drawImage(
+      image,
+      (cropArea.x / 100) * image.naturalWidth,
+      (cropArea.y / 100) * image.naturalHeight,
+      (cropArea.width / 100) * image.naturalWidth,
+      (cropArea.height / 100) * image.naturalHeight,
+      0,
+      0,
+      targetWidth,
+      targetHeight,
+    );
+
+    return new Promise((resolve) =>
+      canvas.toBlob((blob) => resolve(blob ?? undefined), 'image/jpeg', 0.9),
+    );
+  };
+
+  const handleSave = async () => {
+    const cropArea = getCropArea();
+    setIsSaving(true);
+    try {
+      const croppedBlob = await createCroppedBlob(cropArea);
+      await onCrop(cropArea, croppedBlob);
+      onOpenChange(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const zoomFactor = zoom[0] / 100;
@@ -142,6 +201,7 @@ export const ImageCropper = ({
               </div>
             )}
             <img
+              ref={imageRef}
               src={imageUrl}
               alt="Podgląd"
               className="absolute transition-transform duration-75"
@@ -185,7 +245,9 @@ export const ImageCropper = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Anuluj
           </Button>
-          <Button onClick={handleSave}>Zapisz przycięcie</Button>
+          <Button onClick={handleSave} disabled={isSaving || !imageLoaded}>
+            {isSaving ? 'Zapisywanie...' : 'Zapisz przyciecie'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

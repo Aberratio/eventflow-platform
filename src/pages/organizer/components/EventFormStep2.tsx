@@ -24,18 +24,18 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
     <div className="space-y-6">
       {/* EVENT-LEVEL CATEGORIES */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
           <p className="text-sm text-muted-foreground">
             Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz wyłączyć
             wybrane kategorie.
           </p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
           {/* Age Categories */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-1.5">
                 <Label className="text-base font-medium">
                   Kategorie wiekowe ({form.ageCategories.length})
                 </Label>
@@ -46,6 +46,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 variant="outline"
                 size="sm"
                 onClick={form.applyStandardTemplate}
+                className="w-full sm:w-auto"
               >
                 <ListPlus className="mr-2 h-4 w-4" /> Załaduj szablon standardowy
               </Button>
@@ -75,7 +76,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 {form.ageCategories.map((cat, catIdx) => (
                   <div
                     key={cat.id}
-                    className="grid grid-cols-2 items-center gap-2 md:grid-cols-[1fr_80px_100px_100px_40px]"
+                    className="grid grid-cols-[minmax(0,1fr)_88px] items-center gap-2 md:grid-cols-[1fr_80px_100px_100px_40px]"
                   >
                     <Input
                       value={cat.name}
@@ -121,7 +122,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-destructive hover:text-destructive"
+                      className="h-9 w-full text-destructive hover:text-destructive md:w-9"
                       onClick={() => form.removeAgeCategory(catIdx)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -135,7 +136,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
               variant="ghost"
               size="sm"
               onClick={form.addAgeCategory}
-              className="text-primary"
+              className="w-full text-primary sm:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię wiekową
             </Button>
@@ -165,13 +166,13 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 {form.specialCategories.map((cat, catIdx) => (
                   <div
                     key={cat.id}
-                    className="grid grid-cols-1 items-center gap-2 md:grid-cols-[1fr_1fr_40px]"
+                    className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] md:grid-cols-[1fr_1fr_40px]"
                   >
                     <Input
                       value={cat.name}
                       onChange={(e) => form.updateSpecialCategory(catIdx, 'name', e.target.value)}
                       placeholder="np. Mieszkaniec Warszawy"
-                      className="h-9"
+                      className="h-9 sm:col-span-2 md:col-span-1"
                     />
                     <Input
                       value={cat.description || ''}
@@ -185,7 +186,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-9 w-9 text-destructive hover:text-destructive"
+                      className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
                       onClick={() => form.removeSpecialCategory(catIdx)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -199,7 +200,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
               variant="ghost"
               size="sm"
               onClick={form.addSpecialCategory}
-              className="text-primary"
+              className="w-full text-primary sm:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
             </Button>
@@ -208,18 +209,18 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
       </Card>
 
       {/* DISTANCES */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
-        <Button onClick={form.addDistance} variant="outline">
+        <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
         </Button>
       </div>
 
       {form.distances.length === 0 && (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="p-6 py-10 text-center text-muted-foreground sm:py-12">
             <p>Nie dodano jeszcze żadnych dystansów.</p>
-            <Button onClick={form.addDistance} className="mt-4">
+            <Button onClick={form.addDistance} className="mt-4 w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" /> Dodaj pierwszy dystans
             </Button>
           </CardContent>
@@ -228,21 +229,23 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
 
       {form.distances.map((dist, index) => (
         <Card key={dist.id}>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">{dist.name || `Dystans ${index + 1}`}</CardTitle>
+          <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="min-w-0 break-words text-lg">
+                {dist.name || `Dystans ${index + 1}`}
+              </CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => form.removeDistance(index)}
-                className="text-destructive hover:text-destructive"
+                className="shrink-0 text-destructive hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-4">
+          <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <HelpLabel description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint.">
                   Nazwa dystansu *
@@ -257,7 +260,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                 <HelpLabel description="Dlugosc dystansu wraz z jednostka. Dane sa pokazywane uczestnikom i pomagaja odroznic warianty zapisow.">
                   Długość *
                 </HelpLabel>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-2">
                   <Input
                     type="number"
                     value={dist.length}
@@ -339,7 +342,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                   className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
                 >
                   <Map className="h-4 w-4" /> Trasa i mapy
-                  <ChevronDown className="ml-auto h-4 w-4 transition-transform [[data-state=open]_&]:rotate-180" />
+                  <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 pt-4">
@@ -397,7 +400,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                   {dist.routeFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="grid grid-cols-[1fr_1fr_100px_32px] items-center gap-2"
+                      className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_1fr_100px_32px]"
                     >
                       <Input
                         value={file.name}
@@ -405,7 +408,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                           form.updateRouteFile(index, file.id, 'name', e.target.value)
                         }
                         placeholder="Nazwa pliku"
-                        className="h-9"
+                        className="h-9 min-w-0"
                       />
                       <Input
                         value={file.url}
@@ -413,13 +416,13 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                           form.updateRouteFile(index, file.id, 'url', e.target.value)
                         }
                         placeholder="URL"
-                        className="h-9"
+                        className="h-9 min-w-0"
                       />
                       <Select
                         value={file.type}
                         onValueChange={(v) => form.updateRouteFile(index, file.id, 'type', v)}
                       >
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-9 sm:w-[120px] lg:w-auto">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -433,7 +436,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-destructive hover:text-destructive"
+                        className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
                         onClick={() => form.removeRouteFile(index, file.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -445,7 +448,7 @@ export const EventFormStep2 = ({ form }: EventFormStep2Props) => {
                     variant="ghost"
                     size="sm"
                     onClick={() => form.addRouteFile(index)}
-                    className="text-primary"
+                    className="w-full text-primary sm:w-auto"
                   >
                     <Plus className="mr-2 h-4 w-4" /> Dodaj plik
                   </Button>

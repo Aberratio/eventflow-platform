@@ -22,6 +22,7 @@ import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig } from '@/types';
 import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
 import { useEffect, useRef } from 'react';
+import { formatMoney } from '@/lib/discountValue';
 
 interface RegistrationSuccessState {
   registrationData: RegistrationData;
@@ -146,20 +147,24 @@ const RegistrationSuccessPage = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span>Opłata startowa ({registrationData.distanceName})</span>
-                    <span className="font-medium">{registrationData.price} zł</span>
+                    <span className="font-medium">{formatMoney(registrationData.price)}</span>
                   </div>
 
                   {registrationData.discountAmount && registrationData.discountAmount > 0 && (
                     <div className="flex justify-between text-primary">
                       <span>Rabat ({registrationData.discountCode})</span>
-                      <span className="font-medium">-{registrationData.discountAmount} zł</span>
+                      <span className="font-medium">
+                        -{formatMoney(registrationData.discountAmount)}
+                      </span>
                     </div>
                   )}
 
                   {registrationData.insurancePrice && registrationData.insurancePrice > 0 && (
                     <div className="flex justify-between">
                       <span>Ubezpieczenie NNW</span>
-                      <span className="font-medium">{registrationData.insurancePrice} zł</span>
+                      <span className="font-medium">
+                        {formatMoney(registrationData.insurancePrice)}
+                      </span>
                     </div>
                   )}
 
@@ -175,7 +180,7 @@ const RegistrationSuccessPage = () => {
                         )}
                         {order.quantity > 1 && ` x${order.quantity}`}
                       </span>
-                      <span className="font-medium">{order.price} zł</span>
+                      <span className="font-medium">{formatMoney(order.price)}</span>
                     </div>
                   ))}
                 </div>
@@ -184,7 +189,7 @@ const RegistrationSuccessPage = () => {
 
                 <div className="flex justify-between text-lg font-semibold">
                   <span>{isBankTransfer ? 'Do zapłaty' : 'Razem zapłacono'}</span>
-                  <span>{registrationData.totalAmount} zł</span>
+                  <span>{formatMoney(registrationData.totalAmount)}</span>
                 </div>
 
                 {!isBankTransfer && (

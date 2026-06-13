@@ -20,25 +20,16 @@ import type {
   EventDisplayOptions,
   PaymentConfig,
   UserRole,
-  PaymentDetails,
   MerchandiseOrder,
-  GlobalInsuranceSettings,
-  GoogleCalendarSettings,
-  Event,
   Registration,
-  Result,
   ShopOrder,
-  InfoPage,
   InfoPageSection,
   EventSeries,
   ShopProduct,
   ShopCategoryConfig,
   Challenge,
 } from '@/types';
-import type {
-  CreateEmailTemplatePayload,
-  EmailPreviewRequest,
-} from '@/types/email';
+import type { CreateEmailTemplatePayload, EmailPreviewRequest } from '@/types/email';
 
 // ──────────────── Events ────────────────
 
@@ -60,6 +51,7 @@ export interface CreateEventPayload {
   paymentMethods?: PaymentMethod[];
   merchandise?: EventMerchandise[];
   discountCodes?: DiscountCode[];
+  liveResultsUrl?: string;
   enableMerchandiseInRegistration?: boolean;
   insuranceOption?: InsuranceOption;
   galleryAlbums?: GalleryAlbum[];
@@ -141,11 +133,23 @@ export interface CreateRegistrationPayload {
   teamName?: string;
   teamId?: string;
   discountCode?: string;
+  discountAmount?: number;
+  pricePaid?: number;
+  totalAmount?: number;
   merchandiseOrders?: MerchandiseOrder[];
 }
 
 export type UpdateRegistrationPayload = Partial<
-  Pick<Registration, 'status' | 'bibNumber' | 'teamName' | 'teamId' | 'pricePaid' | 'paymentDetails'>
+  Pick<
+    Registration,
+    | 'status'
+    | 'bibNumber'
+    | 'teamName'
+    | 'teamId'
+    | 'pricePaid'
+    | 'discountAmount'
+    | 'paymentDetails'
+  >
 >;
 
 // ──────────────── Results ────────────────

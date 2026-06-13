@@ -1,4 +1,4 @@
-import { mockEvents } from '@/api';
+import { mockEvents, updateEvent } from '@/api';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -11,6 +11,7 @@ import {
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
 import { DiscountCode } from '@/types';
 import { Tag } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const ModeratorDiscountCodesTab = () => {
   const publishedEvents = mockEvents.filter(
@@ -24,6 +25,16 @@ export const ModeratorDiscountCodesTab = () => {
     setSelectedEventId(eventId);
     const event = publishedEvents.find((e) => e.id === eventId);
     setDiscountCodes(event?.discountCodes || []);
+  };
+
+  const handleDiscountCodesChange = (codes: DiscountCode[]) => {
+    if (!selectedEvent) return;
+    setDiscountCodes(codes);
+    updateEvent(selectedEvent.id, { discountCodes: codes })
+      .then(() => toast.success('Kody rabatowe zapisane'))
+      .catch((error) =>
+        toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów'),
+      );
   };
 
   return (
@@ -57,7 +68,7 @@ export const ModeratorDiscountCodesTab = () => {
         <DiscountCodesEditor
           discountCodes={discountCodes}
           distances={selectedEvent.distances}
-          onChange={setDiscountCodes}
+          onChange={handleDiscountCodesChange}
         />
       )}
     </div>

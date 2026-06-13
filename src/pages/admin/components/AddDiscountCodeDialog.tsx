@@ -18,9 +18,15 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Plus, RefreshCw } from 'lucide-react';
 import { DiscountCode, Distance } from '@/types';
 import { toast } from 'sonner';
+import {
+  formatDiscountValue,
+  formatMoney,
+  isDiscountInputAllowed,
+  parseDiscountValueInput,
+} from '@/lib/discountValue';
 
 const generateRandomCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -43,6 +49,7 @@ export const AddDiscountCodeDialog = ({
   onAdd,
 }: AddDiscountCodeDialogProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [discountValueInput, setDiscountValueInput] = useState('10');
   const [newCode, setNewCode] = useState<Partial<DiscountCode>>({
     code: '',
     discountType: 'percent',
@@ -66,11 +73,22 @@ export const AddDiscountCodeDialog = ({
       return;
     }
 
+    const discountType = newCode.discountType || 'percent';
+    const parsedDiscount = parseDiscountValueInput(discountValueInput, discountType);
+    if (!parsedDiscount || parsedDiscount.value <= 0) {
+      toast.error(
+        discountType === 'fixed'
+          ? 'Podaj kwotę rabatu, np. 25,50'
+          : 'Podaj wartość rabatu w procentach',
+      );
+      return;
+    }
+
     const code: DiscountCode = {
       id: `dc-${Date.now()}`,
       code: newCode.code.toUpperCase(),
-      discountType: newCode.discountType || 'percent',
-      discountValue: newCode.discountValue || 10,
+      discountType,
+      discountValue: parsedDiscount.value,
       validFrom: newCode.validFrom || undefined,
       validTo: newCode.validTo || undefined,
       maxUses: newCode.maxUses || undefined,
@@ -81,6 +99,7 @@ export const AddDiscountCodeDialog = ({
 
     onAdd(code);
     setDialogOpen(false);
+    setDiscountValueInput('10');
     setNewCode({
       code: '',
       discountType: 'percent',
@@ -94,6 +113,35 @@ export const AddDiscountCodeDialog = ({
     });
     toast.success('Kod rabatowy dodany');
   };
+
+  const handleDiscountTypeChange = (discountType: 'percent' | 'fixed') => {
+    setDiscountValueInput(formatDiscountValue(newCode.discountValue ?? 10, discountType));
+    setNewCode((prev) => ({ ...prev, discountType }));
+  };
+
+  const handleDiscountValueChange = (value: string) => {
+    const discountType = newCode.discountType || 'percent';
+    if (!isDiscountInputAllowed(value, discountType)) return;
+
+    const parsed = parseDiscountValueInput(value, discountType);
+    setDiscountValueInput(value);
+    setNewCode((prev) => ({ ...prev, discountValue: parsed?.value ?? 0 }));
+  };
+
+  const handleDiscountValueBlur = () => {
+    const discountType = newCode.discountType || 'percent';
+    const parsed = parseDiscountValueInput(discountValueInput, discountType);
+    if (parsed) setDiscountValueInput(formatDiscountValue(parsed.value, discountType));
+  };
+
+  const affectedDistances =
+    newCode.distanceIds && newCode.distanceIds.length > 0
+      ? distances.filter((distance) => newCode.distanceIds?.includes(distance.id))
+      : distances;
+  const overDiscountedDistances =
+    newCode.discountType === 'fixed'
+      ? affectedDistances.filter((distance) => (newCode.discountValue ?? 0) > distance.price)
+      : [];
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -130,15 +178,10 @@ export const AddDiscountCodeDialog = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Typ zniżki</Label>
-              <Select
-                value={newCode.discountType}
-                onValueChange={(v: 'percent' | 'fixed') =>
-                  setNewCode((prev) => ({ ...prev, discountType: v }))
-                }
-              >
+              <Select value={newCode.discountType} onValueChange={handleDiscountTypeChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -149,15 +192,39 @@ export const AddDiscountCodeDialog = ({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Wartość</Label>
-              <Input
-                type="number"
-                value={newCode.discountValue || ''}
-                onChange={(e) =>
-                  setNewCode((prev) => ({ ...prev, discountValue: parseInt(e.target.value) || 0 }))
-                }
-                placeholder={newCode.discountType === 'percent' ? '10' : '50'}
-              />
+              <Label>Wartość {newCode.discountType === 'fixed' ? '(PLN)' : '(%)'}</Label>
+              <div className="relative">
+                <Input
+                  type="text"
+                  inputMode={newCode.discountType === 'fixed' ? 'decimal' : 'numeric'}
+                  value={discountValueInput}
+                  onChange={(e) => handleDiscountValueChange(e.target.value)}
+                  onBlur={handleDiscountValueBlur}
+                  placeholder={newCode.discountType === 'percent' ? '10' : '50,00'}
+                  aria-describedby="discount-value-help"
+                  className="pr-12"
+                />
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                  {newCode.discountType === 'fixed' ? 'zł' : '%'}
+                </span>
+              </div>
+              <p id="discount-value-help" className="text-xs text-muted-foreground">
+                {newCode.discountType === 'fixed'
+                  ? 'Możesz wpisać np. 25,50 albo 25.50.'
+                  : 'Wpisz pełną liczbę procent.'}
+              </p>
+              {overDiscountedDistances.length > 0 && (
+                <div className="flex gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs text-warning">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    Rabat jest wyższy niż cena:{' '}
+                    {overDiscountedDistances
+                      .map((distance) => `${distance.name} (${formatMoney(distance.price)})`)
+                      .join(', ')}
+                    . Uczestnik zapłaci 0,00 zł za te zawody.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

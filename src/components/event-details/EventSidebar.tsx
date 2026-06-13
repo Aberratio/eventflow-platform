@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { getEditUrl } from '@/components/event-details';
+import { isExternalRegistrationEvent } from './ExternalRegistrationFrame';
 
 interface EventSidebarProps {
   event: Event;
@@ -30,6 +31,7 @@ export const EventSidebar = ({
   onShare,
   previewMode = false,
 }: EventSidebarProps) => {
+  const hasExternalRegistration = isExternalRegistrationEvent(event);
   const canEdit =
     !previewMode &&
     (user?.role === 'admin' ||
@@ -71,14 +73,23 @@ export const EventSidebar = ({
             </div>
           ) : (
             <>
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
+              {hasExternalRegistration ? (
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                  <p className="text-sm font-medium">Zapisy w zewnętrznym formularzu</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Formularz jest osadzony w sekcji zapisów na tej stronie.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-lg bg-muted/50 p-3 text-center">
                 <p className="text-sm text-muted-foreground">
                   Ceny od{' '}
                   <span className="text-lg font-bold text-primary">
                     {Math.min(...event.distances.map((d) => d.price))} zł
                   </span>
                 </p>
-              </div>
+                </div>
+              )}
               <Button
                 onClick={onRegister}
                 className="w-full"

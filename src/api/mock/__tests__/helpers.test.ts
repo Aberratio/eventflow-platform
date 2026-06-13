@@ -6,7 +6,7 @@ import {
   validateTeamName,
   getExistingTeamsForEvent,
 } from '@/api/mock/helpers';
-import type { Distance, Event, Registration } from '@/types';
+import type { DiscountCode, Distance, Event, Registration } from '@/types';
 
 describe('applyDiscount', () => {
   it('applies percent discount correctly', () => {
@@ -16,6 +16,10 @@ describe('applyDiscount', () => {
 
   it('applies fixed discount correctly', () => {
     expect(applyDiscount(100, 'fixed', 30)).toBe(70);
+  });
+
+  it('keeps grosze for fixed amount discounts', () => {
+    expect(applyDiscount(80, 'fixed', 25.5)).toBe(54.5);
   });
 
   it('does not go below zero for fixed discount', () => {
@@ -75,7 +79,7 @@ describe('getCurrentPrice', () => {
 });
 
 describe('validateDiscountCode', () => {
-  const makeEvent = (codes: any[]): Event =>
+  const makeEvent = (codes: Partial<DiscountCode>[]): Event =>
     ({
       discountCodes: codes,
     }) as unknown as Event;
@@ -145,6 +149,51 @@ describe('validateDiscountCode', () => {
     ]);
     const result = validateDiscountCode('USED', event);
     expect(result.valid).toBe(false);
+  });
+
+  it('rejects code that is not active yet', () => {
+    const event = makeEvent([
+      {
+        code: 'FUTURE',
+        active: true,
+        discountType: 'fixed',
+        discountValue: 10,
+        validFrom: new Date(Date.now() + 86400000).toISOString(),
+      },
+    ]);
+    const result = validateDiscountCode('FUTURE', event);
+    expect(result.valid).toBe(false);
+    expect(result.message).toBe('Kod rabatowy jeszcze nie jest aktywny');
+  });
+
+  it('rejects code assigned to a different distance', () => {
+    const event = makeEvent([
+      {
+        code: 'ONLY5K',
+        active: true,
+        discountType: 'fixed',
+        discountValue: 10,
+        distanceIds: ['d-5k'],
+      },
+    ]);
+    const result = validateDiscountCode('ONLY5K', event, 'd-10k');
+    expect(result.valid).toBe(false);
+    expect(result.message).toBe('Kod rabatowy nie dotyczy wybranego dystansu');
+  });
+
+  it('accepts code assigned to selected distance', () => {
+    const event = makeEvent([
+      {
+        code: 'ONLY5K',
+        active: true,
+        discountType: 'fixed',
+        discountValue: 10.5,
+        distanceIds: ['d-5k'],
+      },
+    ]);
+    const result = validateDiscountCode('ONLY5K', event, 'd-5k');
+    expect(result.valid).toBe(true);
+    expect(result.discount).toEqual({ type: 'fixed', value: 10.5 });
   });
 });
 

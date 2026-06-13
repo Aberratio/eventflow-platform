@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { useRegistrationForm } from '@/hooks/useRegistrationForm';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -179,6 +179,35 @@ describe('useRegistrationForm', () => {
       result.current.setSelectedDistanceId('d1');
     });
     expect(result.current.totalAmount).toBe(80);
+  });
+
+  it('caps fixed discount at distance price and never returns negative total', () => {
+    const eventWithDiscount = {
+      ...mockEvent,
+      discountCodes: [
+        {
+          id: 'dc-free',
+          code: 'FREE200',
+          discountType: 'fixed',
+          discountValue: 200,
+          usedCount: 0,
+          active: true,
+        },
+      ],
+    } as Event;
+
+    const { result } = renderHook(() => useRegistrationForm(eventWithDiscount), { wrapper });
+
+    act(() => {
+      result.current.setSelectedDistanceId('d1');
+      result.current.setDiscountCode('FREE200');
+    });
+    act(() => {
+      result.current.handleApplyDiscount();
+    });
+
+    expect(result.current.discountAmount).toBe(80);
+    expect(result.current.totalAmount).toBe(0);
   });
 
   it('activeSteps includes dynamic steps based on config', () => {

@@ -8,10 +8,10 @@ import {
   mockRegistrations,
 } from '@/api';
 import { useState, useMemo, useEffect } from 'react';
-import { Event, EventMerchandise, MerchandiseOrder, VipPrice } from '@/types';
+import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
+import { roundToCents } from '@/lib/discountValue';
 
 const currentYear = new Date().getFullYear();
 
@@ -134,11 +134,13 @@ export const useRegistrationForm = (event: Event) => {
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
     if (appliedDiscount.type === 'percent')
-      return Math.round(distancePrice * (appliedDiscount.value / 100));
-    return Math.min(appliedDiscount.value, distancePrice);
+      return roundToCents(distancePrice * (Number(appliedDiscount.value) / 100));
+    return roundToCents(Math.min(Number(appliedDiscount.value), distancePrice));
   }, [appliedDiscount, distancePrice]);
 
-  const totalAmount = distancePrice - discountAmount + merchandiseTotal + insurancePrice;
+  const totalAmount = roundToCents(
+    distancePrice - discountAmount + merchandiseTotal + insurancePrice,
+  );
 
   useEffect(() => {
     if (!selectedDistance) return;

@@ -53,6 +53,7 @@ export const getLiveEvents: ApiAdapter['getLiveEvents'] = (...args) => ensureAda
 export const getEventsByOrganizer: ApiAdapter['getEventsByOrganizer'] = (...args) => ensureAdapter().then((a) => a.getEventsByOrganizer(...args));
 export const getOrganizerEventLimit: ApiAdapter['getOrganizerEventLimit'] = (...args) => ensureAdapter().then((a) => a.getOrganizerEventLimit(...args));
 export const updateOrganizerEventLimit: ApiAdapter['updateOrganizerEventLimit'] = (...args) => ensureAdapter().then((a) => a.updateOrganizerEventLimit(...args));
+export const uploadEventImage: ApiAdapter['uploadEventImage'] = (...args) => ensureAdapter().then((a) => a.uploadEventImage(...args));
 
 // Users
 export const getUsers: ApiAdapter['getUsers'] = (...args) => ensureAdapter().then((a) => a.getUsers(...args));

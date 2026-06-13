@@ -121,6 +121,8 @@ export interface InsuranceOption {
 
 export interface RegistrationEmbedConfig {
   enabled: boolean;
+  mode?: 'internal' | 'external_embed';
+  externalUrl?: string;
   startDate?: string;
   endDate?: string;
 }

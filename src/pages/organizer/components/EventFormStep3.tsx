@@ -14,16 +14,16 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" /> PodglÄ…d wydarzenia
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Eye className="h-5 w-5 shrink-0" /> PodglÄ…d wydarzenia
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="text-sm text-muted-foreground">Nazwa</p>
-              <p className="font-medium">{form.name}</p>
+              <p className="break-words font-medium">{form.name}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Dyscyplina</p>
@@ -62,11 +62,13 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
             )}
             <div>
               <p className="text-sm text-muted-foreground">Slug URL</p>
-              <p className="font-medium text-primary">/events/{form.generateSlug(form.name)}</p>
+              <p className="break-all font-medium text-primary">
+                /events/{form.generateSlug(form.name)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Metoda pĹ‚atnoĹ›ci</p>
-              <p className="flex items-center gap-2 font-medium">
+              <p className="flex flex-wrap items-center gap-2 font-medium">
                 {form.paymentConfigType === 'admin_gateway' ? (
                   <>
                     <CreditCard className="h-4 w-4 text-primary" /> Bramka pĹ‚atnicza (automatyczna)
@@ -83,7 +85,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
           {form.description && (
             <div>
               <p className="text-sm text-muted-foreground">Opis</p>
-              <RichTextDisplay html={form.description} className="font-medium" />
+              <RichTextDisplay html={form.description} className="break-words font-medium" />
             </div>
           )}
 
@@ -126,17 +128,17 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-1.5">
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex flex-wrap items-center gap-1.5 text-lg sm:text-xl">
             Status po zapisie
             <FieldHelp description="Organizator tworzy szkic. Publikacja jest dostepna dopiero po sprawdzeniu i zatwierdzeniu przez admina lub moderatora." />
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <Badge variant="secondary">Szkic</Badge>
           <p className="text-sm text-muted-foreground">
-            Wydarzenie będzie widoczne tylko w panelu organizatora. Po zapisaniu możesz oddać je
-            do sprawdzenia w ustawieniach wydarzenia.
+            Wydarzenie będzie widoczne tylko w panelu organizatora. Po zapisaniu możesz oddać je do
+            sprawdzenia w ustawieniach wydarzenia.
           </p>
         </CardContent>
       </Card>

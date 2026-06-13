@@ -121,6 +121,7 @@ export interface ApiAdapter {
     organizerId: string,
     limit: number,
   ): Promise<ApiResponse<OrganizerEventLimit>>;
+  uploadEventImage(file: File): Promise<ApiResponse<{ url: string }>>;
 
   // ── Users ──
   getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>>;

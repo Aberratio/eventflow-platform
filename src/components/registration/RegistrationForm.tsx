@@ -50,6 +50,7 @@ import { toast } from '@/hooks/use-toast';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { useRegistrationForm } from '@/hooks/useRegistrationForm';
 import { appLogger } from '@/lib/logger';
+import { formatMoney } from '@/lib/discountValue';
 
 interface RegistrationFormProps {
   event: Event;
@@ -246,7 +247,7 @@ export const RegistrationForm = ({
               ? 'Zakończ testowo, bez płatności'
               : event.paymentConfig?.type === 'organizer_bank'
                 ? 'Zapisz się'
-                : `Płacę ${form.totalAmount} zł`}
+                : `Płacę ${formatMoney(form.totalAmount)}`}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
@@ -494,12 +495,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
               <span>
                 Dodaj datę urodzenia i płeć w profilu, aby automatycznie uzupełniać formularze.
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className={mutedWarningAction}
-              >
+              <Button variant="outline" size="sm" asChild className={mutedWarningAction}>
                 <Link to="/participant?tab=profile">Przejdź do profilu</Link>
               </Button>
             </AlertDescription>
@@ -945,7 +941,9 @@ const DiscountStep = ({ event, form }: { event: Event; form: FormHook }) => (
               Usuń
             </Button>
           </div>
-          <p className="mt-1 text-sm text-success">Oszczędzasz {form.discountAmount} zł</p>
+          <p className="mt-1 text-sm text-success">
+            Oszczędzasz {formatMoney(form.discountAmount)}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -1012,7 +1010,7 @@ const SummaryStep = ({
                 ({selectedDistance.length} {selectedDistance.unit})
               </span>
             </div>
-            <span>{form.distancePrice} zł</span>
+            <span>{formatMoney(form.distancePrice)}</span>
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>Kategoria: {form.selectedCategory}</span>
@@ -1031,7 +1029,7 @@ const SummaryStep = ({
                 <span className="flex items-center gap-2">
                   <Shield className="h-4 w-4" /> Ubezpieczenie NNW
                 </span>
-                <span>{form.insurancePrice} zł</span>
+                <span>{formatMoney(form.insurancePrice)}</span>
               </div>
             </>
           )}
@@ -1048,7 +1046,7 @@ const SummaryStep = ({
                       {order.color && `, ${order.color}`}
                       {order.quantity > 1 && ` x${order.quantity}`}
                     </span>
-                    <span>{order.price} zł</span>
+                    <span>{formatMoney(order.price)}</span>
                   </div>
                 ))}
               </div>
@@ -1059,14 +1057,14 @@ const SummaryStep = ({
               <Separator />
               <div className="flex justify-between text-success">
                 <span>Rabat ({form.discountCode})</span>
-                <span>-{form.discountAmount} zł</span>
+                <span>-{formatMoney(form.discountAmount)}</span>
               </div>
             </>
           )}
           <Separator />
           <div className="flex justify-between text-xl font-bold">
             <span>Do zapłaty</span>
-            <span className="text-primary">{form.totalAmount} zł</span>
+            <span className="text-primary">{formatMoney(form.totalAmount)}</span>
           </div>
         </div>
         {!previewMode && event.paymentConfig?.type === 'organizer_bank' && (

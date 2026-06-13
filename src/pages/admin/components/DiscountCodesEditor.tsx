@@ -19,6 +19,7 @@ import { EditDiscountCodeDialog } from './EditDiscountCodeDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { formatDiscountBadge } from '@/lib/discountValue';
 
 interface DiscountCodesEditorProps {
   discountCodes: DiscountCode[];
@@ -57,14 +58,14 @@ export const DiscountCodesEditor = ({
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = (discountValue?: number) => {
     if (!editingCode) return;
     const updated = discountCodes.map((dc) =>
       dc.id === editingCode.id
         ? {
             ...dc,
             discountType: editingCode.discountType || dc.discountType,
-            discountValue: editingCode.discountValue ?? dc.discountValue,
+            discountValue: discountValue ?? editingCode.discountValue ?? dc.discountValue,
             validFrom: editingCode.validFrom || undefined,
             validTo: editingCode.validTo || undefined,
             maxUses: editingCode.maxUses || undefined,
@@ -135,9 +136,7 @@ export const DiscountCodesEditor = ({
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
-                          {code.discountType === 'percent'
-                            ? `${code.discountValue}%`
-                            : `${code.discountValue} zł`}
+                          {formatDiscountBadge(code.discountValue, code.discountType)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">

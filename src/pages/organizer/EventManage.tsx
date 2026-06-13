@@ -1,6 +1,6 @@
-import { getEventById, mockRegistrations } from '@/api';
+import { getEventById, mockRegistrations, updateEvent } from '@/api';
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
 import { DiscountCode } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const statusLabels = {
   draft: 'Szkic',
@@ -39,6 +40,7 @@ const statusLabels = {
 const EventManage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const requestedTab = searchParams.get('tab');
@@ -72,6 +74,19 @@ const EventManage = () => {
       setLocalStatus(event.status);
     }
   }, [event]);
+
+  const handleDiscountCodesChange = (codes: DiscountCode[]) => {
+    if (!visibleEvent) return;
+    setDiscountCodes(codes);
+    updateEvent(visibleEvent.id, { discountCodes: codes })
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['event', visibleEvent.id] });
+        toast.success('Kody rabatowe zapisane');
+      })
+      .catch((error) => {
+        toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów');
+      });
+  };
 
   const canManage =
     user?.role === 'admin' ||
@@ -181,7 +196,7 @@ const EventManage = () => {
             <DiscountCodesEditor
               discountCodes={discountCodes}
               distances={visibleEvent.distances}
-              onChange={setDiscountCodes}
+              onChange={handleDiscountCodesChange}
             />
           </TabsContent>
 
