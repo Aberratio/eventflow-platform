@@ -232,7 +232,23 @@ const App = () => (
                       }
                     />
                     <Route
+                      path="/events/:slug/:tab"
+                      element={
+                        <Lazy fallback={<EventDetailsSkeleton />}>
+                          <EventDetailsPage />
+                        </Lazy>
+                      }
+                    />
+                    <Route
                       path="/events/:slug/preview"
+                      element={
+                        <Lazy fallback={<EventDetailsSkeleton />}>
+                          <EventDetailsPage previewMode />
+                        </Lazy>
+                      }
+                    />
+                    <Route
+                      path="/events/:slug/preview/:tab"
                       element={
                         <Lazy fallback={<EventDetailsSkeleton />}>
                           <EventDetailsPage previewMode />

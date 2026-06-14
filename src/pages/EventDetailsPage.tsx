@@ -4,7 +4,6 @@ import {
   getRegistrationsByEvent,
   getResultsByEvent,
 } from '@/api';
-import { useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -39,13 +38,16 @@ interface EventDetailsPageProps {
 }
 
 const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
-  const { slug } = useParams();
+  const { slug, tab } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isAuthenticated } = useAuth();
 
-  const defaultTab = searchParams.get('tab') || 'info';
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  const activeTab = tab || searchParams.get('tab') || 'info';
+  const setActiveTab = (value: string) => {
+    const base = previewMode ? `/events/${slug}/preview` : `/events/${slug}`;
+    navigate(`${base}/${value}`, { replace: true });
+  };
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event-by-slug', slug],
     queryFn: () => getEventBySlug(slug || ''),
@@ -409,6 +411,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                   onRegister={handleRegister}
                   onShare={handleShare}
                   previewMode={isPreview}
+                  hideRegistrationCard={activeTab === 'startlist'}
                 />
               </div>
             </Tabs>
