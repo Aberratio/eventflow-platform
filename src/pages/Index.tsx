@@ -96,17 +96,33 @@ const byDateAsc = (a: Event, b: Event) => eventDate(a).getTime() - eventDate(b).
 
 const byDateDesc = (a: Event, b: Event) => eventDate(b).getTime() - eventDate(a).getTime();
 
-const SectionTitle = ({ title }: { title: string }) => (
-  <div className="mb-5 flex items-center gap-3">
-    <span className="h-px w-4 bg-primary" />
+const SectionTitle = ({
+  title,
+  linkTo,
+  linkLabel,
+}: {
+  title: string;
+  linkTo?: string;
+  linkLabel?: string;
+}) => (
+  <div className="mb-6 flex items-center justify-between gap-4">
     <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">{title}</h2>
+    {linkTo && linkLabel && (
+      <Link
+        to={linkTo}
+        className="flex items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70"
+      >
+        {linkLabel}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+    )}
   </div>
 );
 
 const EventMeta = ({ event, compact = false }: { event: Event; compact?: boolean }) => (
   <div
     className={cn(
-      'flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground',
+      'flex flex-wrap items-center gap-x-4 gap-y-1 text-white/50',
       compact ? 'text-xs' : 'text-sm',
     )}
   >
@@ -127,38 +143,51 @@ const FeaturedCard = ({ event }: { event: Event }) => {
   return (
     <Link
       to={`/events/${event.slug}`}
-      className="group overflow-hidden rounded-lg border border-white/15 bg-white/[0.035] transition hover:border-primary/50 hover:bg-white/[0.055]"
+      className="group overflow-hidden rounded-lg border border-white/10 bg-white/[0.025] transition hover:border-white/20 hover:bg-white/[0.04]"
     >
       <div className="relative h-36 overflow-hidden md:h-40">
         <img
           src={eventImage(event)}
           alt=""
-          className="h-full w-full object-cover opacity-80 transition duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/35 to-transparent" />
-        <div className="absolute left-3 top-3 rounded-md border border-white/15 bg-[#080d15]/85 px-3 py-2 text-center shadow-lg">
-          <div className="text-xl font-semibold leading-none text-white">{tile.day}</div>
-          <div className="mt-1 text-[10px] font-bold text-white/75">{tile.month}</div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/40 to-transparent" />
+        <div className="absolute left-3 top-3 rounded border border-white/12 bg-[#080d15]/90 px-2.5 py-1.5 text-center">
+          <div className="text-lg font-semibold leading-none text-white">{tile.day}</div>
+          <div className="mt-0.5 text-[9px] font-bold uppercase text-white/55">{tile.month}</div>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="line-clamp-1 text-base font-semibold text-white">{event.name}</h3>
+      <div className="p-4 pt-3.5">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-white">{event.name}</h3>
         <div className="mt-2">
           <EventMeta event={event} compact />
         </div>
-        <Badge
-          variant="outline"
-          className="mt-3 border-white/15 bg-white/5 text-[11px] text-white/70"
-        >
-          {disciplineLabels[event.discipline]}
-        </Badge>
-        <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-sm text-white/80">
-          Zobacz wydarzenie
-          <ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" />
+        <div className="mt-3 flex items-center justify-between border-t border-white/8 pt-3">
+          <Badge
+            variant="outline"
+            className="border-white/12 bg-transparent text-[11px] text-white/50"
+          >
+            {disciplineLabels[event.discipline]}
+          </Badge>
+          <ChevronRight className="h-3.5 w-3.5 text-white/30 transition group-hover:translate-x-0.5 group-hover:text-white/55" />
         </div>
       </div>
     </Link>
   );
+};
+
+/* ─── Najważniejsze teraz ─────────────────────────────────────────────────── */
+
+const variantLine: Record<string, string> = {
+  live: 'bg-primary',
+  closing: 'bg-amber-400',
+  done: 'bg-white/25',
+};
+
+const variantIcon: Record<string, string> = {
+  live: 'text-primary',
+  closing: 'text-amber-400',
+  done: 'text-white/45',
 };
 
 const StatusList = ({
@@ -172,55 +201,48 @@ const StatusList = ({
   events: Event[];
   variant: 'live' | 'closing' | 'done';
 }) => (
-  <div className="border-white/12 rounded-lg border bg-white/[0.03]">
-    <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-      <div className="flex items-center gap-2 text-sm font-semibold text-white">
-        <span
-          className={cn(
-            'flex h-5 w-5 items-center justify-center rounded-full',
-            variant === 'live' && 'bg-primary/15 text-primary',
-            variant === 'closing' && 'bg-amber-500/15 text-amber-400',
-            variant === 'done' && 'bg-emerald-500/15 text-emerald-400',
-          )}
-        >
+  <div className="flex flex-col rounded-lg border border-white/10 bg-white/[0.025]">
+    {/* header */}
+    <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+      <div className="flex items-center gap-2.5">
+        <span className={cn('h-4 w-0.5 rounded-full', variantLine[variant])} />
+        <span className={cn('flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest', variantIcon[variant])}>
           {icon}
+          {title}
         </span>
-        {title}
       </div>
-      <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/65">
-        {events.length}
-      </span>
+      <span className="text-xs tabular-nums text-white/30">{events.length}</span>
     </div>
-    <div className="divide-y divide-white/10">
+
+    {/* rows */}
+    <div className="flex flex-col divide-y divide-white/8">
       {events.length === 0 ? (
-        <div className="px-4 py-5 text-sm text-muted-foreground">
-          Brak wydarzen w tej kategorii.
-        </div>
+        <div className="px-4 py-5 text-sm text-white/30">Brak wydarzen w tej kategorii.</div>
       ) : (
         events.slice(0, 3).map((event) => (
           <Link
             key={event.id}
             to={`/events/${event.slug}${variant === 'done' ? '?tab=results' : ''}`}
-            className="group flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/[0.035]"
+            className="group flex items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03]"
           >
-            <div className="flex min-w-0 items-center gap-3">
-              <DisciplineIcon discipline={event.discipline} size="sm" />
-              <div className="min-w-0">
-                <div className="line-clamp-1 text-sm font-medium text-white">{event.name}</div>
-                <div className="line-clamp-1 text-xs text-muted-foreground">
-                  {event.city} <span className="mx-1">-</span>{' '}
-                  {variant === 'closing'
-                    ? deadlineText(event).replace('Do konca zapisow: ', 'za ')
-                    : shortDate(eventDate(event))}
-                </div>
+            <DisciplineIcon discipline={event.discipline} size="sm" />
+            <div className="min-w-0 flex-1">
+              <div className="line-clamp-2 text-sm font-medium leading-snug text-white">
+                {event.name}
+              </div>
+              <div className="mt-0.5 text-xs text-white/40">
+                {event.city}
+                {variant === 'closing'
+                  ? ` · ${deadlineText(event).replace('Do konca zapisow: ', 'za ')}`
+                  : ` · ${shortDate(eventDate(event))}`}
               </div>
             </div>
-            {variant === 'done' && (
-              <span className="hidden rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400 sm:block">
-                Wyniki dostepne
-              </span>
-            )}
-            <ChevronRight className="h-4 w-4 shrink-0 text-white/45 transition group-hover:translate-x-1 group-hover:text-white" />
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {variant === 'done' && (
+                <span className="hidden text-xs text-white/40 sm:block">Wyniki dostepne</span>
+              )}
+              <ChevronRight className="h-3.5 w-3.5 text-white/20 transition group-hover:translate-x-0.5 group-hover:text-white/50" />
+            </div>
           </Link>
         ))
       )}
@@ -228,9 +250,22 @@ const StatusList = ({
   </div>
 );
 
+/* ─── Nadchodzące wydarzenia ──────────────────────────────────────────────── */
+
+const TableHeader = () => (
+  <div className="hidden grid-cols-[80px_1fr_160px_140px_160px_24px] items-center gap-4 border-b border-white/8 px-4 py-2.5 md:grid">
+    {['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Status', ''].map((label) => (
+      <span key={label} className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
+        {label}
+      </span>
+    ))}
+  </div>
+);
+
 const UpcomingTable = ({ events }: { events: Event[] }) => (
-  <div className="border-white/12 overflow-hidden rounded-lg border bg-white/[0.03]">
-    <div className="divide-y divide-white/10">
+  <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]">
+    <TableHeader />
+    <div className="divide-y divide-white/8">
       {events.slice(0, 5).map((event) => {
         const tile = dateTile(eventDate(event));
         const open = registrationLabel(event) === 'Zapisy otwarte';
@@ -239,33 +274,53 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
           <Link
             key={event.id}
             to={`/events/${event.slug}`}
-            className="group grid grid-cols-[64px_1fr] items-center gap-3 px-4 py-3 transition hover:bg-white/[0.035] md:grid-cols-[76px_1.4fr_180px_160px_160px_24px]"
+            className="group grid grid-cols-[64px_1fr] items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03] md:grid-cols-[80px_1fr_160px_140px_160px_24px] md:gap-4"
           >
-            <div className="border-white/12 flex h-12 w-12 flex-col items-center justify-center rounded-md border bg-[#080d15]">
-              <span className="text-base font-semibold leading-none text-white">{tile.day}</span>
-              <span className="mt-1 text-[10px] font-bold text-white/65">{tile.month}</span>
+            {/* date tile */}
+            <div className="flex h-11 w-11 flex-col items-center justify-center rounded border border-white/10 bg-[#0a0f1a]">
+              <span className="text-sm font-semibold leading-none text-white">{tile.day}</span>
+              <span className="mt-0.5 text-[9px] font-bold uppercase text-white/45">{tile.month}</span>
             </div>
+
+            {/* name */}
             <div className="min-w-0">
-              <div className="line-clamp-1 font-medium text-white">{event.name}</div>
-              <div className="mt-1 text-xs text-muted-foreground md:hidden">
-                {event.city} - {disciplineLabels[event.discipline]} - {registrationLabel(event)}
+              <div className="line-clamp-1 text-sm font-medium text-white">{event.name}</div>
+              <div className="mt-0.5 text-xs text-white/40 md:hidden">
+                {event.city} · {disciplineLabels[event.discipline]} ·{' '}
+                <span className={open ? 'text-emerald-400/80' : 'text-white/30'}>
+                  {registrationLabel(event)}
+                </span>
               </div>
             </div>
+
+            {/* discipline */}
             <div className="hidden md:block">
-              <Badge variant="outline" className="border-white/15 text-white/65">
+              <Badge
+                variant="outline"
+                className="border-white/10 bg-transparent text-[11px] text-white/45"
+              >
                 {disciplineLabels[event.discipline]}
               </Badge>
             </div>
-            <div className="hidden text-sm text-muted-foreground md:block">{event.city}</div>
+
+            {/* city */}
+            <div className="hidden text-sm text-white/50 md:block">{event.city}</div>
+
+            {/* status */}
             <div
               className={cn(
-                'hidden text-sm font-medium md:block',
-                open ? 'text-emerald-400' : 'text-white/45',
+                'hidden text-sm md:block',
+                open ? 'text-emerald-400' : 'text-white/30',
               )}
             >
-              {registrationLabel(event)}
+              <span className="flex items-center gap-1.5">
+                {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+                {registrationLabel(event)}
+              </span>
             </div>
-            <ChevronRight className="hidden h-4 w-4 text-white/50 transition group-hover:translate-x-1 group-hover:text-white md:block" />
+
+            {/* chevron */}
+            <ChevronRight className="hidden h-4 w-4 text-white/20 transition group-hover:translate-x-0.5 group-hover:text-white/50 md:block" />
           </Link>
         );
       })}
@@ -273,26 +328,31 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
   </div>
 );
 
+/* ─── Partnerzy ───────────────────────────────────────────────────────────── */
+
 const PartnersStrip = ({ partners }: { partners: Partner[] }) => {
   const featured = partners.filter((partner) => partner.featured).slice(0, 6);
   if (featured.length === 0) return null;
 
   return (
-    <div className="border-t border-white/10 pt-7">
-      <div className="mb-5 text-center text-xs text-muted-foreground">Nasi partnerzy</div>
-      <div className="grid grid-cols-2 items-center gap-6 md:grid-cols-6">
+    <div className="border-t border-white/8 pt-10">
+      <p className="mb-8 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white/25">
+        Nasi partnerzy
+      </p>
+      <div className="grid grid-cols-3 items-center gap-8 md:grid-cols-6">
         {featured.map((partner) => (
           <a
             key={partner.id}
             href={partner.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-12 items-center justify-center opacity-45 grayscale transition hover:opacity-85 hover:grayscale-0"
+            className="flex h-10 items-center justify-center opacity-40 grayscale transition duration-200 hover:opacity-[0.82] hover:-translate-y-0.5"
+            style={{ filter: 'grayscale(1)' }}
           >
             <img
               src={partner.logoUrl}
               alt={partner.name}
-              className="max-h-10 max-w-full object-contain"
+              className="max-h-8 max-w-full object-contain"
             />
           </a>
         ))}
@@ -300,6 +360,8 @@ const PartnersStrip = ({ partners }: { partners: Partner[] }) => {
     </div>
   );
 };
+
+/* ─── Page ────────────────────────────────────────────────────────────────── */
 
 const Index = () => {
   const { data: eventsData } = useQuery({
@@ -355,23 +417,26 @@ const Index = () => {
   return (
     <Layout>
       <div className="min-h-screen bg-[#070b12] text-white">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(37,99,235,0.18),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(14,165,233,0.08),transparent_24%)]" />
-        <div className="relative mx-auto w-full max-w-[1040px] px-4 py-10 sm:px-6 lg:px-8">
-          <section className="grid gap-8 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)] lg:items-center lg:py-8">
+        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(37,99,235,0.10),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(14,165,233,0.04),transparent_24%)]" />
+
+        <div className="relative mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+
+          {/* ── Hero ─────────────────────────────────────────────────────── */}
+          <section className="grid gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)] lg:items-center lg:py-16">
             <div>
-              <div className="mb-6 flex items-center gap-3">
-                <span className="h-px w-4 bg-primary" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-primary">
+              <div className="mb-5 flex items-center gap-2.5">
+                <span className="h-px w-3 bg-primary" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/80">
                   Platforma sportowa
                 </span>
               </div>
-              <h1 className="max-w-xl text-4xl font-bold leading-[1.04] tracking-tight text-white md:text-6xl">
+              <h1 className="max-w-xl text-4xl font-bold leading-[1.06] tracking-tight text-white md:text-5xl">
                 Znajdz wydarzenie. Zapisz sie. Sprawdz wyniki.
               </h1>
-              <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground">
+              <p className="mt-5 max-w-md text-base leading-7 text-white/45">
                 Biegi, kolarstwo, triathlon i wiecej. Jedna platforma, wszystkie sportowe emocje.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg" className="gap-2">
                   <Link to="/wydarzenia">
                     <CalendarDays className="h-4 w-4" />
@@ -383,7 +448,7 @@ const Index = () => {
                   asChild
                   size="lg"
                   variant="secondary"
-                  className="gap-2 border border-white/10 bg-white/10 text-white hover:bg-white/15"
+                  className="gap-2 border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.10]"
                 >
                   <Link to="/wyniki">
                     <Trophy className="h-4 w-4" />
@@ -392,31 +457,19 @@ const Index = () => {
                 </Button>
               </div>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="mt-7 grid gap-3 sm:grid-cols-3">
                 {[
-                  {
-                    icon: <Radio className="h-4 w-4" />,
-                    title: 'Trwaja teraz',
-                    value: view.counts.active,
-                  },
-                  {
-                    icon: <Clock3 className="h-4 w-4" />,
-                    title: 'Koncza sie zapisy',
-                    value: view.counts.closing,
-                  },
-                  {
-                    icon: <CalendarDays className="h-4 w-4" />,
-                    title: 'Najblizsze starty',
-                    value: view.counts.upcoming,
-                  },
+                  { icon: <Radio className="h-3.5 w-3.5" />, title: 'Trwaja teraz', value: view.counts.active },
+                  { icon: <Clock3 className="h-3.5 w-3.5" />, title: 'Koncza sie zapisy', value: view.counts.closing },
+                  { icon: <CalendarDays className="h-3.5 w-3.5" />, title: 'Najblizsze starty', value: view.counts.upcoming },
                 ].map((item) => (
                   <div
                     key={item.title}
-                    className="border-white/12 rounded-lg border bg-white/[0.035] px-5 py-4"
+                    className="rounded-lg border border-white/8 bg-white/[0.025] px-4 py-3.5"
                   >
-                    <div className="mb-2 text-primary">{item.icon}</div>
-                    <div className="text-sm font-semibold text-white">{item.title}</div>
-                    <div className="text-xs text-muted-foreground">{item.value} wydarzen</div>
+                    <div className="mb-1.5 text-primary/70">{item.icon}</div>
+                    <div className="text-sm font-medium text-white">{item.title}</div>
+                    <div className="text-xs text-white/35">{item.value} wydarzen</div>
                   </div>
                 ))}
               </div>
@@ -425,38 +478,38 @@ const Index = () => {
             {hero && (
               <Link
                 to={`/events/${hero.slug}`}
-                className="group w-full max-w-[460px] overflow-hidden rounded-lg border border-white/15 bg-white/[0.035] shadow-2xl shadow-black/30 lg:justify-self-end"
+                className="group w-full max-w-[440px] overflow-hidden rounded-xl border border-white/10 bg-white/[0.025] shadow-2xl shadow-black/40 lg:justify-self-end"
               >
-                <div className="relative min-h-[440px]">
+                <div className="relative min-h-[400px]">
                   <img
                     src={eventImage(hero)}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover opacity-75 transition duration-500 group-hover:scale-[1.03]"
+                    className="absolute inset-0 h-full w-full object-cover opacity-65 transition duration-500 group-hover:scale-[1.02]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/35 to-transparent" />
-                  <div className="absolute left-5 top-5 rounded-full border border-white/15 bg-[#080d15]/80 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/75">
-                    Wyroznione wydarzenie
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/40 to-transparent" />
+                  <div className="absolute left-4 top-4 rounded border border-white/10 bg-[#080d15]/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/55">
+                    Wyroznione
                   </div>
-                  <div className="absolute inset-x-0 bottom-0 p-5 md:p-7">
-                    <h2 className="text-3xl font-bold tracking-tight text-white">{hero.name}</h2>
-                    <div className="mt-4">
+                  <div className="absolute inset-x-0 bottom-0 p-5">
+                    <h2 className="text-2xl font-bold tracking-tight text-white">{hero.name}</h2>
+                    <div className="mt-3">
                       <EventMeta event={hero} />
                     </div>
                     <Badge
                       variant="outline"
-                      className="mt-4 border-white/15 bg-white/5 text-white/75"
+                      className="mt-3 border-white/12 bg-transparent text-white/55"
                     >
                       {disciplineLabels[hero.discipline]}
                     </Badge>
-                    <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4 text-sm">
-                      <span className="font-medium text-emerald-400">
+                    <div className="mt-4 flex items-center justify-between border-t border-white/8 pt-3.5 text-sm">
+                      <span className={registrationLabel(hero) === 'Zapisy otwarte' ? 'text-emerald-400' : 'text-white/40'}>
                         {registrationLabel(hero)}
                       </span>
-                      <span className="text-muted-foreground">{deadlineText(hero)}</span>
+                      <span className="text-white/35">{deadlineText(hero)}</span>
                     </div>
-                    <div className="mt-4 flex h-12 items-center justify-center rounded-md border border-white/15 bg-white/[0.035] font-medium text-white transition group-hover:border-primary/50 group-hover:bg-primary/15">
+                    <div className="mt-4 flex h-11 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-sm font-medium text-white transition group-hover:border-white/20 group-hover:bg-white/[0.07]">
                       Zobacz wydarzenie
-                      <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
+                      <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
                     </div>
                   </div>
                 </div>
@@ -464,30 +517,20 @@ const Index = () => {
             )}
           </section>
 
-          <section className="mt-10">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <SectionTitle title="Wyroznione wydarzenia" />
-              <Button
-                asChild
-                variant="ghost"
-                className="hidden gap-2 text-muted-foreground hover:text-white sm:flex"
-              >
-                <Link to="/wydarzenia">
-                  Zobacz wszystkie
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
+          {/* ── Wyróżnione wydarzenia ─────────────────────────────────────── */}
+          <section className="mt-4">
+            <SectionTitle title="Wyroznione wydarzenia" linkTo="/wydarzenia" linkLabel="Zobacz wszystkie" />
+            <div className="grid gap-4 md:grid-cols-3">
               {view.featured.map((event) => (
                 <FeaturedCard key={event.id} event={event} />
               ))}
             </div>
           </section>
 
-          <section className="mt-8">
+          {/* ── Najważniejsze teraz ───────────────────────────────────────── */}
+          <section className="mt-16">
             <SectionTitle title="Najwazniejsze teraz" />
-            <div className="grid gap-5 lg:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-3">
               <StatusList
                 title="Trwajace teraz"
                 icon={<Radio className="h-3 w-3" />}
@@ -509,48 +552,48 @@ const Index = () => {
             </div>
           </section>
 
-          <section className="mt-8">
-            <div className="mb-5 flex items-center justify-between gap-4">
-              <SectionTitle title="Nadchodzace wydarzenia" />
-              <Button
-                asChild
-                variant="ghost"
-                className="hidden gap-2 text-muted-foreground hover:text-white sm:flex"
-              >
-                <Link to="/wydarzenia">
-                  Zobacz wszystkie wydarzenia
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+          {/* ── Nadchodzące wydarzenia ────────────────────────────────────── */}
+          <section className="mt-16">
+            <SectionTitle
+              title="Nadchodzace wydarzenia"
+              linkTo="/wydarzenia"
+              linkLabel="Zobacz wszystkie wydarzenia"
+            />
             <UpcomingTable events={view.upcoming} />
           </section>
 
-          <section className="border-white/12 mt-6 rounded-lg border bg-white/[0.035] px-5 py-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          {/* ── CTA organizatorzy ─────────────────────────────────────────── */}
+          <section className="mt-16">
+            <div className="flex flex-col gap-4 rounded-xl border border-white/8 bg-white/[0.02] px-5 py-5 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/15 text-primary">
-                  <Flag className="h-7 w-7" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/50">
+                  <Flag className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">Organizujesz wydarzenie?</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <h2 className="text-base font-semibold text-white">Organizujesz wydarzenie?</h2>
+                  <p className="mt-0.5 text-sm text-white/40">
                     Stworz zapisy, zbieraj platnosci i publikuj wyniki w jednym miejscu.
                   </p>
                 </div>
               </div>
-              <Button asChild className="gap-2 md:min-w-56">
+              <Button
+                asChild
+                variant="outline"
+                className="shrink-0 border-white/15 bg-transparent text-white/80 hover:bg-white/[0.06] hover:text-white md:min-w-48"
+              >
                 <Link to="/organizer">
                   Dla organizatorow
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Link>
               </Button>
             </div>
           </section>
 
-          <section className="mt-8 pb-2">
+          {/* ── Partnerzy ─────────────────────────────────────────────────── */}
+          <section className="mt-16 pb-4">
             <PartnersStrip partners={partners} />
           </section>
+
         </div>
       </div>
     </Layout>

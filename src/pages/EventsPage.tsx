@@ -92,7 +92,7 @@ const statusMeta: Record<EventStatusKey, { label: string; tone: string; icon: Re
     },
   };
 
-const sectionMeta: Record<EventSectionKey, { title: string; colorClass: string }> = {
+const _sectionMeta: Record<EventSectionKey, { title: string; colorClass: string }> = {
   live: { title: 'Trwa teraz', colorClass: 'bg-blue-400' },
   ending: { title: 'Kończą się zapisy (w najbliższym czasie)', colorClass: 'bg-amber-400' },
   upcoming: { title: 'Najbliższe wydarzenia', colorClass: 'bg-emerald-400' },
@@ -126,7 +126,7 @@ const getEventStatusKey = (event: Event): EventStatusKey => {
   return 'closed';
 };
 
-const getSectionKey = (event: Event): EventSectionKey => {
+const _getSectionKey = (event: Event): EventSectionKey => {
   const status = getEventStatusKey(event);
   if (status === 'live') return 'live';
   if (status === 'ending') return 'ending';
@@ -534,6 +534,7 @@ const EventsPage = () => {
   }, [filters, visibleEvents]);
 
   const eventMonthGroups = useMemo(() => groupEventsByMonth(filteredEvents), [filteredEvents]);
+  const mobilePastEvents: Event[] = [];
 
   const selectedDiscipline = filters.disciplines.length === 1 ? filters.disciplines[0] : 'all';
 
@@ -869,10 +870,9 @@ const EventsPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <EventSection section="live" events={groupedEvents.live} />
-                    <EventSection section="ending" events={groupedEvents.ending} />
-                    <EventSection section="upcoming" events={groupedEvents.upcoming} />
-                    <EventSection section="past" events={groupedEvents.past} />
+                    {eventMonthGroups.map((group) => (
+                      <EventSection key={group.key} title={group.title} events={group.events} />
+                    ))}
                   </div>
                 )}
 
