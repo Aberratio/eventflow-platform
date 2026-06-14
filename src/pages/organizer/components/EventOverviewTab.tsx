@@ -121,7 +121,7 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
                 </Link>
               </Button>
               <Button asChild>
-                <Link to={`/organizer/events/${event.id}?tab=settings`}>
+                <Link to={`/organizer/events/${event.id}/settings`}>
                   <PencilLine className="mr-2 h-4 w-4" />
                   Edytuj
                 </Link>

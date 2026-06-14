@@ -37,11 +37,33 @@ async function loginAsParticipant(page: Page) {
 }
 
 async function openOrganizerSettings(page: Page, eventId: string) {
-  await page.goto(`/organizer/events/${eventId}?tab=settings`);
+  await page.goto(`/organizer/events/${eventId}/settings`);
   await expect(page.getByText('Status wydarzenia')).toBeVisible();
 }
 
 test.describe('Event workflow - organizer', () => {
+  test('event management tabs use addressable routes', async ({ page }) => {
+    await loginAsOrganizer(page);
+
+    await page.goto('/organizer/events/e2e-approved/participants');
+    await expect(page).toHaveURL(/\/organizer\/events\/e2e-approved\/participants$/);
+    await expect(page.getByRole('tab', { name: /Uczestnicy/i })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+
+    await page.reload();
+    await expect(page).toHaveURL(/\/organizer\/events\/e2e-approved\/participants$/);
+    await expect(page.getByRole('tab', { name: /Uczestnicy/i })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+
+    await page.goto('/organizer/events/e2e-approved?tab=settings');
+    await expect(page).toHaveURL(/\/organizer\/events\/e2e-approved\/settings$/);
+    await expect(page.getByText('Status wydarzenia')).toBeVisible();
+  });
+
   test('validates and creates a draft event', async ({ page }) => {
     await loginAsOrganizer(page);
     await page.goto('/organizer/events/new');
@@ -63,7 +85,10 @@ test.describe('Event workflow - organizer', () => {
     await page.getByRole('button', { name: /Dalej/i }).click();
     await expect(page.locator('body')).toContainText('Dodaj przynajmniej jeden dystans');
 
-    await page.getByRole('button', { name: /Dodaj pierwszy dystans|Dodaj dystans/i }).first().click();
+    await page
+      .getByRole('button', { name: /Dodaj pierwszy dystans|Dodaj dystans/i })
+      .first()
+      .click();
     await page.getByPlaceholder('np. Maraton').fill('5K');
     await page.getByPlaceholder('42.195').fill('5');
     await page.getByPlaceholder('150').fill('-1');
@@ -75,7 +100,11 @@ test.describe('Event workflow - organizer', () => {
     await page.getByRole('button', { name: /Dalej/i }).click();
     await expect(page.getByText(/Status po zapisie/i)).toBeVisible();
 
-    await page.locator('button').filter({ hasText: /wydarzenie/i }).last().click();
+    await page
+      .locator('button')
+      .filter({ hasText: /wydarzenie/i })
+      .last()
+      .click();
     await expect(page).toHaveURL(/\/organizer\/events$/);
     await expect(page.getByText(/Szkic/i).first()).toBeVisible();
   });
@@ -101,7 +130,10 @@ test.describe('Event workflow - moderation', () => {
     await loginAsModerator(page);
     await page.getByRole('button', { name: /^Moderacja$/i }).click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeVisible();
-    await page.getByRole('button', { name: /Zatwierdz/i }).first().click();
+    await page
+      .getByRole('button', { name: /Zatwierdz/i })
+      .first()
+      .click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeHidden();
   });
 
@@ -113,7 +145,10 @@ test.describe('Event workflow - moderation', () => {
       expect(dialog.message()).toMatch(/powod|poprawy/i);
       await dialog.accept('Brakuje regulaminu i mapy trasy');
     });
-    await page.getByRole('button', { name: /Odeslij/i }).first().click();
+    await page
+      .getByRole('button', { name: /Odeslij/i })
+      .first()
+      .click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeHidden();
   });
 

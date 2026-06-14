@@ -192,15 +192,15 @@ export const BibNumberAssignment = ({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="space-y-3 p-6 pb-4">
+      <CardHeader className="space-y-3 border-b border-border/70 p-6">
         <CardTitle className="text-xl">Nadawanie numerów startowych</CardTitle>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Nadaj numery startowe opłaconym uczestnikom w kilku prostych krokach.
         </p>
       </CardHeader>
-      <CardContent className="space-y-6 px-6 pb-6">
+      <CardContent className="space-y-6 p-6">
         {/* Settings row */}
-        <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Sortowanie</Label>
             <Select
@@ -235,9 +235,12 @@ export const BibNumberAssignment = ({
         {/* Distance selection */}
         <div className="space-y-3">
           <Label>Uwzględnij dystanse</Label>
-          <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {distanceStats.map((distance) => (
-              <div key={distance.id} className="flex items-center gap-3">
+              <div
+                key={distance.id}
+                className="flex items-center gap-3 rounded-lg border border-border/70 bg-background/20 p-3"
+              >
                 <Checkbox
                   id={`distance-${distance.id}`}
                   checked={selectedDistances.has(distance.id)}
@@ -274,11 +277,11 @@ export const BibNumberAssignment = ({
         )}
 
         {/* Action buttons */}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             onClick={handleAssignBibNumbers}
             disabled={eligibleCount === 0 || selectedDistances.size === 0}
-            className="w-full"
+            className="flex-1"
           >
             <Hash className="mr-2 h-4 w-4" />
             Nadaj numery startowe ({eligibleCount})
@@ -287,7 +290,7 @@ export const BibNumberAssignment = ({
             variant="outline"
             onClick={() => setConfirmDeleteOpen(true)}
             disabled={totalWithNumber === 0 || selectedDistances.size === 0}
-            className="w-full border-destructive/70 text-destructive hover:border-destructive hover:text-destructive"
+            className="flex-1 border-destructive/70 text-destructive hover:border-destructive hover:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Usuń wszystkie numery ({totalWithNumber})

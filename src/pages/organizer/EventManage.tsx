@@ -1,7 +1,7 @@
 import { getEventById, getRegistrationsByEvent, updateEvent } from '@/api';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,20 @@ import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager'
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
+const eventManageTabs = [
+  'overview',
+  'participants',
+  'results',
+  'discounts',
+  'emails',
+  'settings',
+] as const;
+
+type EventManageTab = (typeof eventManageTabs)[number];
+
+const isEventManageTab = (value: string | null | undefined): value is EventManageTab =>
+  eventManageTabs.includes(value as EventManageTab);
+
 const statusLabels = {
   draft: 'Szkic',
   awaiting_approval: 'Do sprawdzenia',
@@ -38,22 +52,21 @@ const statusLabels = {
 } as const;
 
 const EventManage = () => {
-  const { id } = useParams();
+  const { id, tab } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const requestedTab = searchParams.get('tab');
-  const requestedDefaultTab = [
-    'overview',
-    'participants',
-    'results',
-    'discounts',
-    'emails',
-    'settings',
-  ].includes(requestedTab ?? '')
-    ? requestedTab!
-    : 'overview';
+  const legacyRequestedTab = searchParams.get('tab');
+  const requestedTab = isEventManageTab(tab)
+    ? tab
+    : isEventManageTab(legacyRequestedTab)
+      ? legacyRequestedTab
+      : 'overview';
+  const sectionBasePath = location.pathname.startsWith('/moderator/')
+    ? `/moderator/events/${id}`
+    : `/organizer/events/${id}`;
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -64,11 +77,10 @@ const EventManage = () => {
   const event = eventResponse?.data ?? null;
   const [localStatus, setLocalStatus] = useState(event?.status);
   const visibleEvent = event && localStatus ? { ...event, status: localStatus } : event;
+  const hasVisibleEvent = Boolean(event);
   const isDraft = visibleEvent?.status === 'draft';
-  const defaultTab =
-    isDraft && ['participants', 'results'].includes(requestedDefaultTab)
-      ? 'overview'
-      : requestedDefaultTab;
+  const activeTab: EventManageTab =
+    isDraft && ['participants', 'results'].includes(requestedTab) ? 'overview' : requestedTab;
 
   const { data: registrationsResponse } = useQuery({
     queryKey: ['event-registrations', id],
@@ -85,6 +97,20 @@ const EventManage = () => {
       setLocalStatus(event.status);
     }
   }, [event]);
+
+  useEffect(() => {
+    if (!hasVisibleEvent || !id) return;
+
+    const shouldRedirect =
+      !tab ||
+      !isEventManageTab(tab) ||
+      Boolean(legacyRequestedTab) ||
+      (isDraft && ['participants', 'results'].includes(tab));
+
+    if (shouldRedirect) {
+      navigate(`${sectionBasePath}/${activeTab}`, { replace: true });
+    }
+  }, [activeTab, hasVisibleEvent, id, isDraft, legacyRequestedTab, navigate, sectionBasePath, tab]);
 
   const handleDiscountCodesChange = (codes: DiscountCode[]) => {
     if (!visibleEvent) return;
@@ -160,7 +186,15 @@ const EventManage = () => {
           </p>
         </div>
 
-        <Tabs defaultValue={defaultTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            if (isEventManageTab(value)) {
+              navigate(`${sectionBasePath}/${value}`);
+            }
+          }}
+          className="space-y-6"
+        >
           <TabsList
             className={`grid h-auto w-full rounded-lg border border-border/80 bg-muted/20 p-0 ${isDraft ? 'grid-cols-4' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
           >

@@ -80,7 +80,8 @@ const OrganizerEventsPage = () => {
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Moje wydarzenia</h1>
           <Button onClick={() => navigate('/organizer/events/new')} disabled={!canCreateEvent}>
-            <Plus className="mr-2 h-4 w-4" /> {canCreateEvent ? 'Nowe wydarzenie' : 'Limit wyczerpany'}
+            <Plus className="mr-2 h-4 w-4" />{' '}
+            {canCreateEvent ? 'Nowe wydarzenie' : 'Limit wyczerpany'}
           </Button>
         </div>
 
@@ -159,7 +160,7 @@ const OrganizerEventsPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => navigate(`/organizer/events/${event.id}`)}
+                      onClick={() => navigate(`/organizer/events/${event.id}/overview`)}
                     >
                       <Settings className="mr-2 h-4 w-4" />
                       Zarządzaj

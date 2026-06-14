@@ -156,6 +156,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   };
 
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
+  const manageSettingsUrl =
+    user?.role === 'admin' || user?.role === 'superadmin'
+      ? `/admin/events/${event.id}?tab=settings`
+      : user?.role === 'moderator'
+        ? `/moderator/events/${event.id}/settings`
+        : `/organizer/events/${event.id}/settings`;
 
   const userRegistration = isAuthenticated
     ? (eventRegistrations.find((r) => r.userId === user?.id) ?? null)
@@ -201,7 +207,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   return (
     <Layout>
       {isPreview ? (
-        <PreviewBanner detailsUrl={detailsUrl} settingsUrl={`${detailsUrl}?tab=settings`} />
+        <PreviewBanner detailsUrl={detailsUrl} settingsUrl={manageSettingsUrl} />
       ) : (
         isUnpublished && <DraftBanner event={event} user={user} />
       )}
@@ -215,198 +221,197 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
 
       <div className="relative -mt-28 bg-[radial-gradient(circle_at_15%_12%,rgba(38,116,217,0.14),transparent_30%),radial-gradient(circle_at_82%_32%,rgba(245,158,11,0.08),transparent_24%)] pb-10">
         <div className="container py-5 sm:py-8">
-          <div className="grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
-            {/* Main Content */}
-            <div className="space-y-5 sm:space-y-8">
-              {/* Stats Strip */}
-              <Card className="border-white/10 bg-white/[0.045] shadow-[0_22px_70px_rgba(0,0,0,0.34)]">
-                <CardContent className="pt-5 sm:pt-6">
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-                    <StatItem
-                      icon={<Calendar className="h-5 w-5 text-warning" />}
-                      label={event.isVirtual ? 'Okno startowe' : 'Data'}
-                      value={
-                        event.isVirtual && event.startDate && event.endDate
-                          ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
-                          : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })
-                      }
-                    />
-                    <StatItem
-                      icon={
-                        event.isVirtual ? (
-                          <Globe className="h-5 w-5 text-warning" />
-                        ) : (
-                          <MapPin className="h-5 w-5 text-warning" />
-                        )
-                      }
-                      label={event.isVirtual ? 'Zasięg' : 'Miejsce'}
-                      value={event.isVirtual ? 'Cały świat' : event.city}
-                    />
-                    <StatItem
-                      icon={<Users className="h-5 w-5 text-warning" />}
-                      label="Zapisanych"
-                      value={totalParticipants.toLocaleString()}
-                    />
-                    <StatItem
-                      icon={<Clock className="h-5 w-5 text-warning" />}
-                      label="Zapisy do"
-                      value={format(new Date(event.registrationDeadline), 'd MMM yyyy', {
-                        locale: pl,
-                      })}
-                    />
-                  </div>
+          <div className="space-y-5 sm:space-y-8">
+            {/* Stats Strip */}
+            <Card className="border-white/10 bg-white/[0.045] shadow-[0_22px_70px_rgba(0,0,0,0.34)]">
+              <CardContent className="pt-5 sm:pt-6">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+                  <StatItem
+                    icon={<Calendar className="h-5 w-5 text-warning" />}
+                    label={event.isVirtual ? 'Okno startowe' : 'Data'}
+                    value={
+                      event.isVirtual && event.startDate && event.endDate
+                        ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMM', { locale: pl })}`
+                        : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })
+                    }
+                  />
+                  <StatItem
+                    icon={
+                      event.isVirtual ? (
+                        <Globe className="h-5 w-5 text-warning" />
+                      ) : (
+                        <MapPin className="h-5 w-5 text-warning" />
+                      )
+                    }
+                    label={event.isVirtual ? 'Zasięg' : 'Miejsce'}
+                    value={event.isVirtual ? 'Cały świat' : event.city}
+                  />
+                  <StatItem
+                    icon={<Users className="h-5 w-5 text-warning" />}
+                    label="Zapisanych"
+                    value={totalParticipants.toLocaleString()}
+                  />
+                  <StatItem
+                    icon={<Clock className="h-5 w-5 text-warning" />}
+                    label="Zapisy do"
+                    value={format(new Date(event.registrationDeadline), 'd MMM yyyy', {
+                      locale: pl,
+                    })}
+                  />
+                </div>
 
-                  {event.isVirtual && (
-                    <div className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
-                      <div className="flex items-start gap-3">
-                        <Globe className="mt-0.5 h-5 w-5 text-primary" />
-                        <div>
-                          <p className="text-sm font-medium">Wydarzenie wirtualne</p>
-                          <p className="text-sm text-muted-foreground">
-                            Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a
-                            następnie wprowadź swój wynik w panelu uczestnika.
-                          </p>
-                        </div>
+                {event.isVirtual && (
+                  <div className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
+                    <div className="flex items-start gap-3">
+                      <Globe className="mt-0.5 h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Wydarzenie wirtualne</p>
+                        <p className="text-sm text-muted-foreground">
+                          Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a następnie
+                          wprowadź swój wynik w panelu uczestnika.
+                        </p>
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-              {hasExternalRegistration && (
-                <ExternalRegistrationFrame
-                  event={event}
-                  active={canUseRegistration}
-                  closedReason={registrationClosedReason}
-                />
-              )}
+            {hasExternalRegistration && (
+              <ExternalRegistrationFrame
+                event={event}
+                active={canUseRegistration}
+                closedReason={registrationClosedReason}
+              />
+            )}
 
-              {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-lg border border-white/5 bg-white/[0.035] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
-                  <TabsTrigger
-                    value="info"
-                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                  >
-                    Informacje
-                  </TabsTrigger>
-                  {event.routeMapUrl && (
-                    <TabsTrigger
-                      value="route"
-                      className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                    >
-                      <Route className="mr-1 h-4 w-4" />
-                      Trasa
-                    </TabsTrigger>
-                  )}
-                  {event.galleryAlbums && event.galleryAlbums.length > 0 && (
-                    <TabsTrigger
-                      value="gallery"
-                      className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                    >
-                      <Images className="mr-1 h-4 w-4" />
-                      Galeria
-                    </TabsTrigger>
-                  )}
-                  <TabsTrigger
-                    value="distances"
-                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                  >
-                    Dystanse
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="startlist"
-                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                  >
-                    Lista startowa
-                  </TabsTrigger>
-                  {showLiveResultsTab && (
-                    <TabsTrigger
-                      value="live"
-                      className="text-destructive data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-                    >
-                      <Radio className="mr-1 h-4 w-4" />
-                      Na żywo
-                    </TabsTrigger>
-                  )}
-                  {isPast && (
-                    <TabsTrigger
-                      value="results"
-                      className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                    >
-                      Wyniki
-                    </TabsTrigger>
-                  )}
-                </TabsList>
-
-                <TabsContent value="info" className="mt-6">
-                  <EventInfoTab event={event} />
-                </TabsContent>
-
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-lg border border-white/5 bg-white/[0.035] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
+                <TabsTrigger
+                  value="info"
+                  className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                >
+                  Informacje
+                </TabsTrigger>
                 {event.routeMapUrl && (
-                  <TabsContent value="route" className="mt-6">
-                    <RouteMap
-                      mapUrl={event.routeMapUrl}
-                      elevationProfileUrl={event.routeElevationProfile}
-                      gpxUrl={event.routeGpxUrl}
-                      distanceInfo={
-                        event.distances.length > 0
-                          ? {
-                              length: event.distances[0].length,
-                              unit: event.distances[0].unit,
-                              elevation: '+4500m',
-                            }
-                          : undefined
-                      }
+                  <TabsTrigger
+                    value="route"
+                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                  >
+                    <Route className="mr-1 h-4 w-4" />
+                    Trasa
+                  </TabsTrigger>
+                )}
+                {event.galleryAlbums && event.galleryAlbums.length > 0 && (
+                  <TabsTrigger
+                    value="gallery"
+                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                  >
+                    <Images className="mr-1 h-4 w-4" />
+                    Galeria
+                  </TabsTrigger>
+                )}
+                <TabsTrigger
+                  value="distances"
+                  className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                >
+                  Dystanse
+                </TabsTrigger>
+                <TabsTrigger
+                  value="startlist"
+                  className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                >
+                  Lista startowa
+                </TabsTrigger>
+                {showLiveResultsTab && (
+                  <TabsTrigger
+                    value="live"
+                    className="text-destructive data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  >
+                    <Radio className="mr-1 h-4 w-4" />
+                    Na żywo
+                  </TabsTrigger>
+                )}
+                {isPast && (
+                  <TabsTrigger
+                    value="results"
+                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                  >
+                    Wyniki
+                  </TabsTrigger>
+                )}
+              </TabsList>
+
+              <div className="mt-6 grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
+                <div className="min-w-0">
+                  <TabsContent value="info" className="mt-0">
+                    <EventInfoTab event={event} />
+                  </TabsContent>
+
+                  {event.routeMapUrl && (
+                    <TabsContent value="route" className="mt-0">
+                      <RouteMap
+                        mapUrl={event.routeMapUrl}
+                        elevationProfileUrl={event.routeElevationProfile}
+                        gpxUrl={event.routeGpxUrl}
+                        distanceInfo={
+                          event.distances.length > 0
+                            ? {
+                                length: event.distances[0].length,
+                                unit: event.distances[0].unit,
+                                elevation: '+4500m',
+                              }
+                            : undefined
+                        }
+                      />
+                    </TabsContent>
+                  )}
+
+                  {event.galleryAlbums && event.galleryAlbums.length > 0 && (
+                    <TabsContent value="gallery" className="mt-0">
+                      <GalleryAlbumsList albums={event.galleryAlbums} />
+                    </TabsContent>
+                  )}
+
+                  <TabsContent value="distances" className="mt-0">
+                    <EventDistancesTab event={event} />
+                  </TabsContent>
+
+                  <TabsContent value="startlist" className="mt-0">
+                    <EventStartListTab
+                      event={event}
+                      registrations={startListRegistrations}
+                      overrideShowAll={isPreview ? true : undefined}
+                      sidebarEnabled={activeTab === 'startlist'}
                     />
                   </TabsContent>
-                )}
 
-                {event.galleryAlbums && event.galleryAlbums.length > 0 && (
-                  <TabsContent value="gallery" className="mt-6">
-                    <GalleryAlbumsList albums={event.galleryAlbums} />
-                  </TabsContent>
-                )}
+                  {showLiveResultsTab && (
+                    <TabsContent value="live" className="mt-0">
+                      <LiveResultsEmbed url={event.liveResultsUrl} eventName={event.name} />
+                    </TabsContent>
+                  )}
 
-                <TabsContent value="distances" className="mt-6">
-                  <EventDistancesTab event={event} />
-                </TabsContent>
+                  {isPast && (
+                    <TabsContent value="results" className="mt-0 space-y-6">
+                      <ResultsSection event={event} eventResults={eventResults} />
+                    </TabsContent>
+                  )}
+                </div>
 
-                <TabsContent value="startlist" className="mt-6">
-                  <EventStartListTab
-                    event={event}
-                    registrations={startListRegistrations}
-                    overrideShowAll={isPreview ? true : undefined}
-                    sidebarEnabled={activeTab === 'startlist'}
-                  />
-                </TabsContent>
-
-                {showLiveResultsTab && (
-                  <TabsContent value="live" className="mt-6">
-                    <LiveResultsEmbed url={event.liveResultsUrl} eventName={event.name} />
-                  </TabsContent>
-                )}
-
-                {isPast && (
-                  <TabsContent value="results" className="mt-6 space-y-6">
-                    <ResultsSection event={event} eventResults={eventResults} />
-                  </TabsContent>
-                )}
-              </Tabs>
-            </div>
-
-            {/* Sidebar */}
-            <EventSidebar
-              event={event}
-              user={user}
-              userRegistration={userRegistration}
-              isRegistrationOpen={canUseRegistration}
-              closedReason={registrationClosedReason}
-              onRegister={handleRegister}
-              onShare={handleShare}
-              previewMode={isPreview}
-              hideRegistrationCard={activeTab === 'startlist'}
-            />
+                <EventSidebar
+                  event={event}
+                  user={user}
+                  userRegistration={userRegistration}
+                  isRegistrationOpen={canUseRegistration}
+                  closedReason={registrationClosedReason}
+                  onRegister={handleRegister}
+                  onShare={handleShare}
+                  previewMode={isPreview}
+                />
+              </div>
+            </Tabs>
           </div>
         </div>
       </div>

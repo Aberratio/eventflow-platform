@@ -46,7 +46,7 @@ export const EventSidebar = ({
       (user?.role === 'organizer' && event.organizerId === user?.id));
 
   return (
-    <div className="space-y-6 lg:pt-[5.35rem]">
+    <div className="space-y-6">
       {!hideRegistrationCard && (
         <Card className="sticky top-20 overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
           <GradientDivider />

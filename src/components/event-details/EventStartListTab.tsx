@@ -44,7 +44,8 @@ interface EventStartListTabProps {
   sidebarEnabled?: boolean;
 }
 
-type RegistrationStatusFilter = 'pending' | 'confirmed';
+type RegistrationStatusFilter = 'pending' | 'confirmed' | 'cancelled';
+type GenderFilter = 'all' | 'K' | 'M';
 
 const statusLabels: Record<Registration['status'], string> = {
   pending: 'Oczekujący',
@@ -63,6 +64,8 @@ const statusClasses: Record<Registration['status'], string> = {
 const panelClass =
   'rounded-lg border border-white/10 bg-white/[0.035] shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-xl';
 
+const ALL_ACTIVE_STATUSES: RegistrationStatusFilter[] = ['pending', 'confirmed'];
+
 export const EventStartListTab = ({
   event,
   registrations,
@@ -75,20 +78,21 @@ export const EventStartListTab = ({
   const [distanceFilter, setDistanceFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [packageFilter, setPackageFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>('all');
   const [clubQuery, setClubQuery] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState('20');
+  const [currentPage, setCurrentPage] = useState(1);
   const [sidebarSlot, setSidebarSlot] = useState<HTMLElement | null>(null);
-  const [activeStatuses, setActiveStatuses] = useState<RegistrationStatusFilter[]>([
-    'pending',
-    'confirmed',
-  ]);
+  const [activeStatuses, setActiveStatuses] = useState<RegistrationStatusFilter[]>(
+    ALL_ACTIVE_STATUSES,
+  );
 
   useEffect(() => {
     setSidebarSlot(document.getElementById('event-start-list-sidebar-slot'));
   }, []);
 
   const visibleRegistrations = useMemo(
-    () => registrations.filter((r) => r.status !== 'removed' && r.status !== 'cancelled'),
+    () => registrations.filter((r) => r.status !== 'removed'),
     [registrations],
   );
 
@@ -126,49 +130,120 @@ export const EventStartListTab = ({
     [sorted],
   );
 
-  const filtered = sorted.filter((reg) => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const normalizedClub = clubQuery.trim().toLowerCase();
-    const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
-    const teamName = reg.teamName || '';
+  const filtered = useMemo(() => {
+    return sorted.filter((reg) => {
+      const normalizedQuery = query.trim().toLowerCase();
+      const normalizedClub = clubQuery.trim().toLowerCase();
+      const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
+      const teamName = reg.teamName || '';
 
-    return (
-      (!normalizedQuery ||
+      const matchesQuery =
+        !normalizedQuery ||
         reg.userName.toLowerCase().includes(normalizedQuery) ||
         reg.bibNumber?.toLowerCase().includes(normalizedQuery) ||
-        teamName.toLowerCase().includes(normalizedQuery)) &&
-      (distanceFilter === 'all' || reg.distanceName === distanceFilter) &&
-      (categoryFilter === 'all' || reg.category === categoryFilter) &&
-      (packageFilter === 'all' || packageName === packageFilter) &&
-      (!normalizedClub || teamName.toLowerCase().includes(normalizedClub)) &&
-      activeStatuses.includes(reg.status as RegistrationStatusFilter)
-    );
-  });
+        teamName.toLowerCase().includes(normalizedQuery);
+
+      const matchesDistance = distanceFilter === 'all' || reg.distanceName === distanceFilter;
+      const matchesCategory = categoryFilter === 'all' || reg.category === categoryFilter;
+      const matchesPackage = packageFilter === 'all' || packageName === packageFilter;
+      const matchesClub = !normalizedClub || teamName.toLowerCase().includes(normalizedClub);
+      const matchesStatus = activeStatuses.includes(reg.status as RegistrationStatusFilter);
+
+      const matchesGender =
+        genderFilter === 'all' ||
+        reg.category?.toUpperCase().startsWith(genderFilter) ||
+        reg.userName?.toUpperCase().startsWith(genderFilter);
+
+      return (
+        matchesQuery &&
+        matchesDistance &&
+        matchesCategory &&
+        matchesPackage &&
+        matchesClub &&
+        matchesStatus &&
+        matchesGender
+      );
+    });
+  }, [
+    sorted,
+    query,
+    clubQuery,
+    distanceFilter,
+    categoryFilter,
+    packageFilter,
+    activeStatuses,
+    genderFilter,
+  ]);
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, distanceFilter, categoryFilter, packageFilter, clubQuery, activeStatuses, genderFilter]);
 
   const pendingCount = visibleRegistrations.filter((r) => r.status === 'pending').length;
   const confirmedCount = visibleRegistrations.filter((r) => r.status === 'confirmed').length;
   const cancelledCount = registrations.filter((r) => r.status === 'cancelled').length;
   const removedCount = registrations.filter((r) => r.status === 'removed').length;
   const maxParticipants = event.distances.reduce((sum, distance) => sum + (distance.limit ?? 0), 0);
+
   const pageSize = Number(rowsPerPage);
-  const totalPages = Math.ceil(filtered.length / pageSize);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const showPagination = totalPages > 1;
-  const pageItems = filtered.slice(0, pageSize);
+  const pageItems = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const resetFilters = () => {
     setQuery('');
     setDistanceFilter('all');
     setCategoryFilter('all');
     setPackageFilter('all');
+    setGenderFilter('all');
     setClubQuery('');
-    setActiveStatuses(['pending', 'confirmed']);
+    setActiveStatuses(ALL_ACTIVE_STATUSES);
   };
 
   const toggleStatus = (status: RegistrationStatusFilter) => {
-    setActiveStatuses((current) =>
-      current.includes(status) ? current.filter((item) => item !== status) : [...current, status],
-    );
+    setActiveStatuses((current) => {
+      if (current.includes(status)) {
+        const next = current.filter((s) => s !== status);
+        // Prevent deselecting all — keep at least one active
+        return next.length > 0 ? next : current;
+      }
+      return [...current, status];
+    });
   };
+
+  const allStatusesSelected =
+    activeStatuses.length === ALL_ACTIVE_STATUSES.length &&
+    ALL_ACTIVE_STATUSES.every((s) => activeStatuses.includes(s));
+
+  const handleAllStatuses = () => {
+    setActiveStatuses(ALL_ACTIVE_STATUSES);
+  };
+
+  const genderLabels: { value: GenderFilter; label: string }[] = [
+    { value: 'all', label: 'Wszyscy' },
+    { value: 'K', label: 'Kobiety' },
+    { value: 'M', label: 'Mężczyźni' },
+  ];
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const visiblePageNumbers = useMemo(() => {
+    const pages: number[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (safePage <= 4) {
+      pages.push(1, 2, 3, 4, 5, -1, totalPages);
+    } else if (safePage >= totalPages - 3) {
+      pages.push(1, -1, totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(1, -1, safePage - 1, safePage, safePage + 1, -2, totalPages);
+    }
+    return pages;
+  }, [totalPages, safePage]);
 
   return (
     <>
@@ -248,74 +323,99 @@ export const EventStartListTab = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pageItems.map((reg) => {
-                  const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
-                  return (
-                    <TableRow key={reg.id} className="border-white/10 hover:bg-white/[0.035]">
-                      <TableCell className="font-mono text-sm text-foreground">
-                        {reg.bibNumber || '-'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-xs font-semibold text-rose-100">
-                            {reg.userName
-                              .split(' ')
-                              .map((part) => part[0])
-                              .join('')
-                              .slice(0, 2)
-                              .toUpperCase()}
-                          </div>
-                          <div>
-                            <Link
-                              to={`/athlete/${reg.userId}`}
-                              className="font-medium transition-colors hover:text-primary hover:underline"
-                            >
-                              {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
-                            </Link>
-                            <p className="text-xs text-muted-foreground">
-                              {reg.teamName || 'Klub niepodany'}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm text-foreground">{reg.distanceName}</p>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm text-foreground">{reg.category}</p>
-                      </TableCell>
-                      {showAll && (
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`rounded-md px-2 py-0.5 text-xs ${statusClasses[reg.status]}`}
-                          >
-                            {statusLabels[reg.status]}
-                          </Badge>
+                {pageItems.length > 0 ? (
+                  pageItems.map((reg) => {
+                    const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
+                    return (
+                      <TableRow key={reg.id} className="border-white/10 hover:bg-white/[0.035]">
+                        <TableCell className="font-mono text-sm text-foreground">
+                          {reg.bibNumber || '-'}
                         </TableCell>
-                      )}
-                      <TableCell>
-                        <span className="inline-flex items-center gap-2 text-sm text-foreground">
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          {packageName}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-xs font-semibold text-rose-100">
+                              {reg.userName
+                                .split(' ')
+                                .map((part) => part[0])
+                                .join('')
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <div>
+                              <Link
+                                to={`/athlete/${reg.userId}`}
+                                className="font-medium transition-colors hover:text-primary hover:underline"
+                              >
+                                {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
+                              </Link>
+                              <p className="text-xs text-muted-foreground">
+                                {reg.teamName || 'Klub niepodany'}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-sm text-foreground">{reg.distanceName}</p>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-sm text-foreground">{reg.category}</p>
+                        </TableCell>
+                        {showAll && (
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={`rounded-md px-2 py-0.5 text-xs ${statusClasses[reg.status]}`}
+                            >
+                              {statusLabels[reg.status]}
+                            </Badge>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <span className="inline-flex items-center gap-2 text-sm text-foreground">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            {packageName}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={showAll ? 6 : 5}>
+                      <div className="flex min-h-[420px] items-center justify-center">
+                        <div className="max-w-xs text-center">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-muted-foreground">
+                            <Users className="h-8 w-8" />
+                          </div>
+                          {filtered.length === 0 && sorted.length > 0 ? (
+                            <>
+                              <h3 className="mt-5 text-lg font-semibold">Brak wyników</h3>
+                              <p className="mt-2 text-sm text-muted-foreground">
+                                Żaden uczestnik nie pasuje do wybranych filtrów.
+                              </p>
+                              <Button
+                                variant="outline"
+                                className="mt-4 border-white/10"
+                                onClick={resetFilters}
+                              >
+                                Wyczyść filtry
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <h3 className="mt-5 text-lg font-semibold">Więcej uczestników wkrótce!</h3>
+                              <p className="mt-2 text-sm text-muted-foreground">
+                                Lista startowa będzie widoczna gdy zapisze się więcej osób.
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
-          </div>
-          <div className="flex min-h-[420px] items-center justify-center border-t border-white/10">
-            <div className="max-w-xs text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-muted-foreground">
-                <Users className="h-8 w-8" />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold">Więcej uczestników wkrótce!</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Lista startowa będzie widoczna gdy zapisze się więcej osób.
-              </p>
-            </div>
           </div>
         </div>
 
@@ -323,7 +423,13 @@ export const EventStartListTab = ({
           <div className="mt-5 flex flex-col gap-4 border-t border-white/10 pt-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
               <span>Wierszy na stronę:</span>
-              <Select value={rowsPerPage} onValueChange={setRowsPerPage}>
+              <Select
+                value={rowsPerPage}
+                onValueChange={(v) => {
+                  setRowsPerPage(v);
+                  setCurrentPage(1);
+                }}
+              >
                 <SelectTrigger className="h-9 w-20 border-white/10 bg-white/[0.035]">
                   <SelectValue />
                 </SelectTrigger>
@@ -335,34 +441,45 @@ export const EventStartListTab = ({
               </Select>
             </div>
             <div className="flex items-center justify-center gap-1">
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-muted-foreground"
+                onClick={() => goToPage(safePage - 1)}
+                disabled={safePage === 1}
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1).map(
-                (page) => (
+              {visiblePageNumbers.map((page, index) =>
+                page < 0 ? (
+                  <span key={`ellipsis-${index}`} className="px-2">
+                    ...
+                  </span>
+                ) : (
                   <Button
                     key={page}
-                    variant={page === 1 ? 'default' : 'ghost'}
+                    variant={page === safePage ? 'default' : 'ghost'}
                     size="icon"
                     className="h-9 w-9"
+                    onClick={() => goToPage(page)}
                   >
                     {page}
                   </Button>
                 ),
               )}
-              {totalPages > 6 && <span className="px-2">...</span>}
-              {totalPages > 5 && (
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  {totalPages}
-                </Button>
-              )}
-              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-muted-foreground"
+                onClick={() => goToPage(safePage + 1)}
+                disabled={safePage === totalPages}
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             <span>
-              {filtered.length
-                ? `1-${Math.min(filtered.length, pageSize)} z ${filtered.length}`
+              {filtered.length > 0
+                ? `${(safePage - 1) * pageSize + 1}–${Math.min(safePage * pageSize, filtered.length)} z ${filtered.length}`
                 : '0 z 0'}
             </span>
           </div>
@@ -402,43 +519,49 @@ export const EventStartListTab = ({
                 <div>
                   <p className="mb-2 text-xs font-medium text-foreground">Płeć</p>
                   <div className="grid grid-cols-3 overflow-hidden rounded-md border border-white/10">
-                    {['Wszyscy', 'Kobiety', 'Mężczyźni'].map((item, index) => (
+                    {genderLabels.map((item, index) => (
                       <button
-                        key={item}
+                        key={item.value}
                         type="button"
+                        onClick={() => setGenderFilter(item.value)}
                         className={`h-9 text-xs transition-colors ${
-                          index === 0
+                          genderFilter === item.value
                             ? 'bg-primary/15 text-primary'
-                            : 'border-l border-white/10 text-muted-foreground hover:bg-white/[0.05]'
+                            : `${index > 0 ? 'border-l border-white/10' : ''} text-muted-foreground hover:bg-white/[0.05]`
                         }`}
                       >
-                        {item}
+                        {item.label}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div>
-                  <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
-                  <div className="space-y-2">
-                    <StatusCheckbox
-                      label="Wszyscy"
-                      checked={activeStatuses.length === 2}
-                      onClick={resetFilters}
-                    />
-                    <StatusCheckbox
-                      label="Oczekujący"
-                      checked={activeStatuses.includes('pending')}
-                      onClick={() => toggleStatus('pending')}
-                    />
-                    <StatusCheckbox
-                      label="Potwierdzony"
-                      checked={activeStatuses.includes('confirmed')}
-                      onClick={() => toggleStatus('confirmed')}
-                    />
-                    <StatusCheckbox label="Na liście rezerwowej" checked={false} />
-                    <StatusCheckbox label="Zrezygnowany" checked={false} />
+                {showAll && (
+                  <div>
+                    <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
+                    <div className="space-y-2">
+                      <StatusCheckbox
+                        label="Wszyscy"
+                        checked={allStatusesSelected}
+                        onClick={handleAllStatuses}
+                      />
+                      <StatusCheckbox
+                        label="Oczekujący"
+                        checked={activeStatuses.includes('pending')}
+                        onClick={() => toggleStatus('pending')}
+                      />
+                      <StatusCheckbox
+                        label="Potwierdzony"
+                        checked={activeStatuses.includes('confirmed')}
+                        onClick={() => toggleStatus('confirmed')}
+                      />
+                      <StatusCheckbox
+                        label="Zrezygnowany"
+                        checked={activeStatuses.includes('cancelled')}
+                        onClick={() => toggleStatus('cancelled')}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 <FilterSelect
                   label="Pakiet"
                   value={packageFilter}
@@ -455,9 +578,9 @@ export const EventStartListTab = ({
                     className="h-10 border-white/10 bg-black/10"
                   />
                 </div>
-                <Button className="h-11 w-full rounded-lg">
+                <Button className="h-11 w-full rounded-lg" onClick={resetFilters} variant="outline">
                   <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Zastosuj filtry
+                  Wyczyść filtry
                 </Button>
               </div>
             </section>

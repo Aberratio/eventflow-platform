@@ -130,7 +130,7 @@ export const ModeratorModerationTab = () => {
                     </a>
                   </Button>
                   <Button variant="outline" size="default" asChild className="gap-2">
-                    <a href={`/moderator/events/${event.id}`}>
+                    <a href={`/moderator/events/${event.id}/overview`}>
                       <FileText className="h-4 w-4" />
                       Zarzadzaj
                     </a>

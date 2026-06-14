@@ -10,7 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Event, OrganizerEventLimit } from '@/types';
-import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays, Archive } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  TrendingUp,
+  Plus,
+  LayoutDashboard,
+  CalendarDays,
+  Archive,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListContainer, ListRow } from '@/components/lists';
@@ -53,7 +61,9 @@ const OrganizerDashboard = () => {
 
   const myEvents = eventsResponse?.data ?? [];
   const eventLimit = eventLimitResponse?.data ?? EMPTY_EVENT_LIMIT;
-  const visibleEvents = myEvents.filter((event) => event.status !== 'archived' && event.status !== 'deleted');
+  const visibleEvents = myEvents.filter(
+    (event) => event.status !== 'archived' && event.status !== 'deleted',
+  );
   const archivedEvents = myEvents.filter((event) => event.status === 'archived');
   const totalParticipants = myEvents.reduce(
     (acc, e) => acc + e.distances.reduce((a, d) => a + d.registeredCount, 0),
@@ -92,7 +102,7 @@ const OrganizerDashboard = () => {
               badge={getStatusBadge(event)}
               action={
                 <Button variant="outline" size="sm" asChild>
-                  <Link to={`/organizer/events/${event.id}`}>Zarządzaj</Link>
+                  <Link to={`/organizer/events/${event.id}/overview`}>Zarządzaj</Link>
                 </Button>
               }
             />
@@ -207,7 +217,10 @@ const OrganizerDashboard = () => {
                 <CardTitle>Ostatnie wydarzenia</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                {renderEventList(visibleEvents.slice(0, 5), 'Nie masz jeszcze żadnych wydarzeń w panelu.')}
+                {renderEventList(
+                  visibleEvents.slice(0, 5),
+                  'Nie masz jeszcze żadnych wydarzeń w panelu.',
+                )}
               </CardContent>
             </Card>
           </TabsContent>

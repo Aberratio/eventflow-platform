@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -72,7 +73,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PaymentDetailsPanel } from './PaymentDetailsPanel';
-import { BankPaymentSummary } from './BankPaymentSummary';
 import { useParticipantsActions } from '../hooks/useParticipantsActions';
 
 interface ParticipantsTabProps {
@@ -360,323 +360,330 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
         </Card>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b border-border/70 px-6 py-5">
-            <CardTitle>Lista uczestników</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                {viewMode === 'active' ? 'Uczestnicy' : 'Usunięci uczestnicy'} (
-                {filteredRegistrations.length})
-              </h2>
-            </div>
+      <Tabs defaultValue="list" className="space-y-5">
+        <TabsList className="h-auto rounded-lg border border-border/80 bg-muted/20 p-0">
+          <TabsTrigger value="list" className="h-[46px] px-6">
+            <Users className="mr-2 h-4 w-4" />
+            Lista uczestników
+          </TabsTrigger>
+          <TabsTrigger value="numbers" className="h-[46px] px-6">
+            <Hash className="mr-2 h-4 w-4" />
+            Nadawanie numerów
+          </TabsTrigger>
+        </TabsList>
 
-            <div className="flex flex-wrap gap-0 border-b border-border/70 pb-4">
-              <div className="inline-flex overflow-hidden rounded-lg border border-border/80 bg-background/30">
-                <Button
-                  variant={viewMode === 'active' ? 'default' : 'outline'}
-                  size="sm"
-                  className="rounded-none border-0 px-5"
-                  onClick={() => {
-                    setViewMode('active');
-                    setSelectedIds(new Set());
-                  }}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Aktywni ({activeCount})
-                </Button>
-                <Button
-                  variant={viewMode === 'removed' ? 'default' : 'outline'}
-                  size="sm"
-                  className="rounded-none border-0 px-5"
-                  onClick={() => {
-                    setViewMode('removed');
-                    setSelectedIds(new Set());
-                  }}
-                >
-                  <UserMinus className="mr-2 h-4 w-4" />
-                  Usunięci ({removedCount})
-                </Button>
+        <TabsContent value="list" className="mt-0">
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-border/70 px-6 py-5">
+              <CardTitle>Lista uczestników</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 p-6">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight">
+                  {viewMode === 'active' ? 'Uczestnicy' : 'Usunięci uczestnicy'} (
+                  {filteredRegistrations.length})
+                </h2>
               </div>
-            </div>
 
-            <div className="flex flex-col gap-4 lg:flex-row">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Szukaj po imieniu, email, numerze lub drużynie..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex flex-wrap gap-0 border-b border-border/70 pb-4">
+                <div className="inline-flex overflow-hidden rounded-lg border border-border/80 bg-background/30">
+                  <Button
+                    variant={viewMode === 'active' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-none border-0 px-5"
+                    onClick={() => {
+                      setViewMode('active');
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Aktywni ({activeCount})
+                  </Button>
+                  <Button
+                    variant={viewMode === 'removed' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-none border-0 px-5"
+                    onClick={() => {
+                      setViewMode('removed');
+                      setSelectedIds(new Set());
+                    }}
+                  >
+                    <UserMinus className="mr-2 h-4 w-4" />
+                    Usunięci ({removedCount})
+                  </Button>
+                </div>
               </div>
-              <Select value={distanceFilter} onValueChange={setDistanceFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Dystans" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Wszystkie dystanse</SelectItem>
-                  {event.distances.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {viewMode === 'active' && (
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+
+              <div className="flex flex-col gap-4 lg:flex-row">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Szukaj po imieniu, email, numerze lub drużynie..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={distanceFilter} onValueChange={setDistanceFilter}>
                   <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder="Dystans" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Wszystkie statusy</SelectItem>
-                    <SelectItem value="confirmed">Potwierdzony</SelectItem>
-                    <SelectItem value="pending">Oczekujący</SelectItem>
-                    <SelectItem value="cancelled">Anulowany</SelectItem>
+                    <SelectItem value="all">Wszystkie dystanse</SelectItem>
+                    {event.distances.map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              )}
-            </div>
+                {viewMode === 'active' && (
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Wszystkie statusy</SelectItem>
+                      <SelectItem value="confirmed">Potwierdzony</SelectItem>
+                      <SelectItem value="pending">Oczekujący</SelectItem>
+                      <SelectItem value="cancelled">Anulowany</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
 
-            {viewMode === 'active' && (
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="inline-flex h-10 items-center gap-2 rounded-md border border-[color:var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm font-semibold">
-                  <Checkbox
-                    checked={
-                      filteredRegistrations.length > 0 &&
-                      selectedIds.size === filteredRegistrations.length
-                    }
-                    onCheckedChange={toggleSelectAll}
-                  />
-                  <span>
-                    {selectedIds.size > 0
-                      ? `Zaznaczono: ${selectedIds.size}`
-                      : 'Zaznacz wszystkich'}
-                  </span>
+              {viewMode === 'active' && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex h-10 items-center gap-2 rounded-md border border-[color:var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm font-semibold">
+                    <Checkbox
+                      checked={
+                        filteredRegistrations.length > 0 &&
+                        selectedIds.size === filteredRegistrations.length
+                      }
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <span>
+                      {selectedIds.size > 0
+                        ? `Zaznaczono: ${selectedIds.size}`
+                        : 'Zaznacz wszystkich'}
+                    </span>
+                  </div>
+                  <div className="flex-1" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDeleteSelectedDialogOpen(true)}
+                    disabled={selectedIds.size === 0}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Usuń zaznaczonych
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDeleteUnpaidDialogOpen(true)}
+                    disabled={unpaidCount === 0}
+                  >
+                    <UserMinus className="mr-2 h-4 w-4" />
+                    Usuń nieopłaconych ({unpaidCount})
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Download className="mr-2 h-4 w-4" />
+                        Eksport
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleExportCSV(filteredRegistrations)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Pobierz CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExportPDF(filteredRegistrations)}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Drukuj PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Wiadomość
+                  </Button>
                 </div>
-                <div className="flex-1" />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDeleteSelectedDialogOpen(true)}
-                  disabled={selectedIds.size === 0}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Usuń zaznaczonych
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDeleteUnpaidDialogOpen(true)}
-                  disabled={unpaidCount === 0}
-                >
-                  <UserMinus className="mr-2 h-4 w-4" />
-                  Usuń nieopłaconych ({unpaidCount})
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Download className="mr-2 h-4 w-4" />
-                      Eksport
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => handleExportCSV(filteredRegistrations)}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Pobierz CSV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleExportPDF(filteredRegistrations)}>
-                      <Printer className="mr-2 h-4 w-4" />
-                      Drukuj PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>
-                  <Mail className="mr-2 h-4 w-4" />
-                  Wiadomość
-                </Button>
-              </div>
-            )}
+              )}
 
-            {filteredRegistrations.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border/80 py-10 text-center text-muted-foreground">
-                {viewMode === 'active'
-                  ? 'Brak uczestników spełniających kryteria wyszukiwania.'
-                  : 'Brak usuniętych uczestników.'}
-              </div>
-            ) : (
-              <div className="overflow-hidden rounded-lg border border-border/70">
-                <Table>
-                  <TableHeader className="border-t-0 bg-muted/30 [&_tr]:border-border/70">
-                    <TableRow className="hover:bg-transparent">
-                      {viewMode === 'active' && <TableHead className="w-[50px]" />}
-                      <TableHead>Numer</TableHead>
-                      <TableHead>Uczestnik</TableHead>
-                      <TableHead>Dystans</TableHead>
-                      <TableHead>Kategoria</TableHead>
-                      <TableHead>Status</TableHead>
-                      {requiresManualPayment && viewMode === 'active' && (
-                        <TableHead>Płatność</TableHead>
-                      )}
-                      <TableHead>
-                        {viewMode === 'removed' ? 'Data usunięcia' : 'Data zapisu'}
-                      </TableHead>
-                      <TableHead className="text-right">Akcje</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRegistrations.map((reg) => (
-                      <TableRow key={reg.id} className="even:bg-transparent hover:bg-muted/20">
-                        {viewMode === 'active' && (
-                          <TableCell>
-                            <Checkbox
-                              checked={selectedIds.has(reg.id)}
-                              onCheckedChange={() => toggleSelect(reg.id)}
-                            />
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <span className="font-mono font-medium">{reg.bibNumber || '-'}</span>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <Link
-                              to={`/athlete/${reg.userId}`}
-                              className="font-medium transition-colors hover:text-primary hover:underline"
-                            >
-                              {event.displayOptions?.uppercaseNames
-                                ? reg.userName.toUpperCase()
-                                : reg.userName}
-                            </Link>
-                            <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
-                            {reg.teamName && (
-                              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                                <Users className="h-3 w-3" />
-                                {reg.teamName}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{reg.distanceName}</TableCell>
-                        <TableCell>{reg.category}</TableCell>
-                        <TableCell>
-                          <StatusBadge status={reg.status} />
-                        </TableCell>
+              {filteredRegistrations.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border/80 py-10 text-center text-muted-foreground">
+                  {viewMode === 'active'
+                    ? 'Brak uczestników spełniających kryteria wyszukiwania.'
+                    : 'Brak usuniętych uczestników.'}
+                </div>
+              ) : (
+                <div className="overflow-hidden rounded-lg border border-border/70">
+                  <Table>
+                    <TableHeader className="border-t-0 bg-muted/30 [&_tr]:border-border/70">
+                      <TableRow className="hover:bg-transparent">
+                        {viewMode === 'active' && <TableHead className="w-[50px]" />}
+                        <TableHead>Numer</TableHead>
+                        <TableHead>Uczestnik</TableHead>
+                        <TableHead>Dystans</TableHead>
+                        <TableHead>Kategoria</TableHead>
+                        <TableHead>Status</TableHead>
                         {requiresManualPayment && viewMode === 'active' && (
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto px-2 py-1"
-                              onClick={() => setPaymentPanelRegistration(reg)}
-                            >
-                              <PaymentBadge reg={reg} />
-                              {!getPaymentStatus(reg) && (
-                                <Badge variant="outline" className="text-muted-foreground">
-                                  <CreditCard className="mr-1 h-3 w-3" />
-                                  Sprawdź
-                                </Badge>
-                              )}
-                            </Button>
-                          </TableCell>
+                          <TableHead>Płatność</TableHead>
                         )}
-                        <TableCell className="text-muted-foreground">
-                          {viewMode === 'removed' && reg.removedAt
-                            ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
-                            : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            {viewMode === 'removed' ? (
+                        <TableHead>
+                          {viewMode === 'removed' ? 'Data usunięcia' : 'Data zapisu'}
+                        </TableHead>
+                        <TableHead className="text-right">Akcje</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRegistrations.map((reg) => (
+                        <TableRow key={reg.id} className="even:bg-transparent hover:bg-muted/20">
+                          {viewMode === 'active' && (
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedIds.has(reg.id)}
+                                onCheckedChange={() => toggleSelect(reg.id)}
+                              />
+                            </TableCell>
+                          )}
+                          <TableCell>
+                            <span className="font-mono font-medium">{reg.bibNumber || '-'}</span>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <Link
+                                to={`/athlete/${reg.userId}`}
+                                className="font-medium transition-colors hover:text-primary hover:underline"
+                              >
+                                {event.displayOptions?.uppercaseNames
+                                  ? reg.userName.toUpperCase()
+                                  : reg.userName}
+                              </Link>
+                              <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
+                              {reg.teamName && (
+                                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Users className="h-3 w-3" />
+                                  {reg.teamName}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-medium">{reg.distanceName}</TableCell>
+                          <TableCell>{reg.category}</TableCell>
+                          <TableCell>
+                            <StatusBadge status={reg.status} />
+                          </TableCell>
+                          {requiresManualPayment && viewMode === 'active' && (
+                            <TableCell>
                               <Button
                                 variant="ghost"
-                                size="icon"
-                                title="Przywróć"
-                                onClick={() => handleRestoreParticipant(reg)}
+                                size="sm"
+                                className="h-auto px-2 py-1"
+                                onClick={() => setPaymentPanelRegistration(reg)}
                               >
-                                <RotateCcw className="h-4 w-4 text-primary" />
+                                <PaymentBadge reg={reg} />
+                                {!getPaymentStatus(reg) && (
+                                  <Badge variant="outline" className="text-muted-foreground">
+                                    <CreditCard className="mr-1 h-3 w-3" />
+                                    Sprawdź
+                                  </Badge>
+                                )}
                               </Button>
-                            ) : (
-                              <>
-                                {requiresManualPayment && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="Szczegóły płatności"
-                                    onClick={() => setPaymentPanelRegistration(reg)}
-                                  >
-                                    <CreditCard className="h-4 w-4" />
-                                  </Button>
-                                )}
+                            </TableCell>
+                          )}
+                          <TableCell className="text-muted-foreground">
+                            {viewMode === 'removed' && reg.removedAt
+                              ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
+                              : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {viewMode === 'removed' ? (
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Przypisz numer startowy"
-                                  onClick={() => {
-                                    setSelectedParticipant(reg);
-                                    setBibNumber(reg.bibNumber || '');
-                                    setBibDialogOpen(true);
-                                  }}
+                                  title="Przywróć"
+                                  onClick={() => handleRestoreParticipant(reg)}
                                 >
-                                  <Hash className="h-4 w-4" />
+                                  <RotateCcw className="h-4 w-4 text-primary" />
                                 </Button>
-                                {reg.status !== 'confirmed' && (
+                              ) : (
+                                <>
+                                  {requiresManualPayment && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Szczegóły płatności"
+                                      onClick={() => setPaymentPanelRegistration(reg)}
+                                    >
+                                      <CreditCard className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    title="Potwierdź"
-                                    onClick={() => handleStatusChange(reg, 'confirmed')}
+                                    title="Przypisz numer startowy"
+                                    onClick={() => {
+                                      setSelectedParticipant(reg);
+                                      setBibNumber(reg.bibNumber || '');
+                                      setBibDialogOpen(true);
+                                    }}
                                   >
-                                    <UserCheck className="h-4 w-4 text-primary" />
+                                    <Hash className="h-4 w-4" />
                                   </Button>
-                                )}
-                                {reg.status !== 'cancelled' && (
+                                  {reg.status !== 'confirmed' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Potwierdź"
+                                      onClick={() => handleStatusChange(reg, 'confirmed')}
+                                    >
+                                      <UserCheck className="h-4 w-4 text-primary" />
+                                    </Button>
+                                  )}
+                                  {reg.status !== 'cancelled' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Anuluj"
+                                      onClick={() => handleStatusChange(reg, 'cancelled')}
+                                    >
+                                      <UserX className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  )}
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    title="Anuluj"
-                                    onClick={() => handleStatusChange(reg, 'cancelled')}
+                                    title="Usuń"
+                                    onClick={() => handleRemoveParticipant(reg)}
                                   >
-                                    <UserX className="h-4 w-4 text-destructive" />
+                                    <Trash2 className="h-4 w-4 text-muted-foreground" />
                                   </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  title="Usuń"
-                                  onClick={() => handleRemoveParticipant(reg)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <aside className="space-y-5">
-          {viewMode === 'active' && (
-            <BibNumberAssignment
-              event={event}
-              registrations={localRegistrations}
-              onRegistrationsChange={setLocalRegistrations}
-            />
-          )}
-
-          {requiresManualPayment && viewMode === 'active' && (
-            <BankPaymentSummary event={event} registrations={localRegistrations} />
-          )}
-        </aside>
-      </div>
+        <TabsContent value="numbers" className="mt-0">
+          <BibNumberAssignment
+            event={event}
+            registrations={localRegistrations}
+            onRegistrationsChange={setLocalRegistrations}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Bib Number Dialog */}
       <Dialog open={bibDialogOpen} onOpenChange={setBibDialogOpen}>
