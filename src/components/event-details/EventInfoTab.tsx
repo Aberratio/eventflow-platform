@@ -1,4 +1,4 @@
-import { Event, EventLogisticsInfo } from '@/types';
+import { Event, EventLogisticsInfo, EventDocumentType, EVENT_DOCUMENT_TYPE_LABELS } from '@/types';
 import {
   Mail,
   Phone,
@@ -26,9 +26,13 @@ import {
   Clock,
   Users,
   FileText,
+  Download,
+  AlertCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
+import { format } from 'date-fns';
+import { pl } from 'date-fns/locale';
 
 type LogisticsKey = keyof EventLogisticsInfo;
 
@@ -38,93 +42,21 @@ const LOGISTICS_DISPLAY: {
   label: string;
   locationLabel: string;
 }[] = [
-  {
-    key: 'parking',
-    icon: <ParkingSquare className="h-4 w-4" />,
-    label: 'Parkingi',
-    locationLabel: 'Parking',
-  },
-  {
-    key: 'changingRooms',
-    icon: <ShirtIcon className="h-4 w-4" />,
-    label: 'Szatnie',
-    locationLabel: 'Szatnia',
-  },
-  {
-    key: 'luggage',
-    icon: <Briefcase className="h-4 w-4" />,
-    label: 'Depozyty bagażu',
-    locationLabel: 'Depozyt',
-  },
-  {
-    key: 'toilets',
-    icon: <Toilet className="h-4 w-4" />,
-    label: 'Toalety',
-    locationLabel: 'Punkt toaletowy',
-  },
-  {
-    key: 'buffet',
-    icon: <Coffee className="h-4 w-4" />,
-    label: 'Bufet / napoje',
-    locationLabel: 'Punkt odżywczy',
-  },
-  {
-    key: 'meals',
-    icon: <Utensils className="h-4 w-4" />,
-    label: 'Posiłki / catering',
-    locationLabel: 'Punkt',
-  },
-  {
-    key: 'medicalPoint',
-    icon: <HeartPulse className="h-4 w-4" />,
-    label: 'Punkt medyczny',
-    locationLabel: 'Punkt medyczny',
-  },
-  {
-    key: 'showers',
-    icon: <ShowerHead className="h-4 w-4" />,
-    label: 'Prysznice',
-    locationLabel: 'Prysznice',
-  },
-  {
-    key: 'merchandise',
-    icon: <ShoppingBag className="h-4 w-4" />,
-    label: 'Gadżety / merchandise',
-    locationLabel: 'Strefa',
-  },
-  {
-    key: 'baggage',
-    icon: <Package className="h-4 w-4" />,
-    label: 'Pakiety startowe',
-    locationLabel: 'Punkt odbioru',
-  },
-  {
-    key: 'raceOffice',
-    icon: <ClipboardList className="h-4 w-4" />,
-    label: 'Biuro zawodów',
-    locationLabel: 'Termin biura',
-  },
-  {
-    key: 'timeMeasurement',
-    icon: <Timer className="h-4 w-4" />,
-    label: 'Pomiar czasu',
-    locationLabel: 'Punkt',
-  },
-  {
-    key: 'awardsClassifications',
-    icon: <Trophy className="h-4 w-4" />,
-    label: 'Nagrody i klasyfikacje',
-    locationLabel: 'Punkt',
-  },
-  {
-    key: 'additionalInfo',
-    icon: <Info className="h-4 w-4" />,
-    label: 'Dodatkowe informacje',
-    locationLabel: 'Punkt',
-  },
+  { key: 'parking', icon: <ParkingSquare className="h-4 w-4" />, label: 'Parkingi', locationLabel: 'Parking' },
+  { key: 'changingRooms', icon: <ShirtIcon className="h-4 w-4" />, label: 'Szatnie', locationLabel: 'Szatnia' },
+  { key: 'luggage', icon: <Briefcase className="h-4 w-4" />, label: 'Depozyty bagażu', locationLabel: 'Depozyt' },
+  { key: 'toilets', icon: <Toilet className="h-4 w-4" />, label: 'Toalety', locationLabel: 'Punkt toaletowy' },
+  { key: 'buffet', icon: <Coffee className="h-4 w-4" />, label: 'Bufet / napoje', locationLabel: 'Punkt odżywczy' },
+  { key: 'meals', icon: <Utensils className="h-4 w-4" />, label: 'Posiłki / catering', locationLabel: 'Punkt' },
+  { key: 'medicalPoint', icon: <HeartPulse className="h-4 w-4" />, label: 'Punkt medyczny', locationLabel: 'Punkt medyczny' },
+  { key: 'showers', icon: <ShowerHead className="h-4 w-4" />, label: 'Prysznice', locationLabel: 'Prysznice' },
+  { key: 'merchandise', icon: <ShoppingBag className="h-4 w-4" />, label: 'Gadżety / merchandise', locationLabel: 'Strefa' },
+  { key: 'timeMeasurement', icon: <Timer className="h-4 w-4" />, label: 'Pomiar czasu', locationLabel: 'Punkt' },
+  { key: 'awardsClassifications', icon: <Trophy className="h-4 w-4" />, label: 'Nagrody i klasyfikacje', locationLabel: 'Punkt' },
+  { key: 'additionalInfo', icon: <Info className="h-4 w-4" />, label: 'Dodatkowe informacje', locationLabel: 'Punkt' },
 ];
 
-type InfoSectionTone = 'amber' | 'sky' | 'emerald' | 'violet' | 'rose' | 'slate';
+type InfoSectionTone = 'amber' | 'sky' | 'emerald' | 'violet' | 'rose' | 'slate' | 'indigo' | 'orange';
 
 const INFO_SECTION_TONES: Record<InfoSectionTone, string> = {
   amber: 'border-l-amber-400 shadow-[inset_3px_0_0_rgba(251,191,36,0.95)]',
@@ -133,6 +65,8 @@ const INFO_SECTION_TONES: Record<InfoSectionTone, string> = {
   violet: 'border-l-violet-500 shadow-[inset_3px_0_0_rgba(139,92,246,0.95)]',
   rose: 'border-l-rose-500 shadow-[inset_3px_0_0_rgba(244,63,94,0.95)]',
   slate: 'border-l-slate-400 shadow-[inset_3px_0_0_rgba(148,163,184,0.95)]',
+  indigo: 'border-l-indigo-500 shadow-[inset_3px_0_0_rgba(99,102,241,0.95)]',
+  orange: 'border-l-orange-400 shadow-[inset_3px_0_0_rgba(251,146,60,0.95)]',
 };
 
 const InfoSection = ({
@@ -161,6 +95,67 @@ const InfoSection = ({
   </section>
 );
 
+const LocationDetail = ({
+  label,
+  locationLabel,
+  locations,
+}: {
+  label: string;
+  locationLabel: string;
+  locations: NonNullable<EventLogisticsInfo[LogisticsKey]>['locations'];
+}) => {
+  if (!locations || locations.length === 0) return null;
+  return (
+    <div className="space-y-1.5 pt-1">
+      {locations.map((loc, idx) => (
+        <div key={loc.id} className="flex items-start gap-2 text-sm">
+          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <div className="min-w-0">
+            <span className="font-medium">{loc.label || `${locationLabel} ${idx + 1}`}</span>
+            {loc.address && <p className="text-xs text-foreground/65">{loc.address}</p>}
+            {(loc.date || loc.openFrom || loc.openTo) && (
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground/65">
+                {loc.date && (
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {loc.date}
+                  </span>
+                )}
+                {(loc.openFrom || loc.openTo) && (
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {[loc.openFrom, loc.openTo].filter(Boolean).join(' – ')}
+                  </span>
+                )}
+              </div>
+            )}
+            {loc.note && <p className="mt-1 text-xs text-foreground/65">{loc.note}</p>}
+            {loc.mapsUrl && (
+              <a
+                href={loc.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Zobacz na mapie <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DOCUMENT_TYPE_ICONS: Record<EventDocumentType, React.ReactNode> = {
+  regulamin: <FileText className="h-4 w-4" />,
+  harmonogram: <Calendar className="h-4 w-4" />,
+  mapa: <MapPin className="h-4 w-4" />,
+  informacje: <Info className="h-4 w-4" />,
+  wyniki: <Trophy className="h-4 w-4" />,
+  inne: <FileText className="h-4 w-4" />,
+};
+
 const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
   const visible = LOGISTICS_DISPLAY.filter(
     (f) => info[f.key]?.status === 'yes' || info[f.key]?.status === 'no',
@@ -168,11 +163,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
   if (visible.length === 0) return null;
 
   return (
-    <InfoSection
-      title="Logistyka zawodów"
-      icon={<ClipboardList className="h-4 w-4" />}
-      tone="emerald"
-    >
+    <InfoSection title="Logistyka zawodów" icon={<ClipboardList className="h-4 w-4" />} tone="emerald">
       <div className="grid gap-2 sm:grid-cols-2">
         {visible.map((f) => {
           const field = info[f.key]!;
@@ -191,56 +182,15 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
                   <XCircle className="ml-auto h-4 w-4 shrink-0 text-muted-foreground/60" />
                 )}
               </div>
-
               {isYes && field.infoHtml && (
                 <RichTextDisplay html={field.infoHtml} className="text-sm text-foreground/70" />
               )}
-
-              {isYes && field.locations && field.locations.length > 0 && (
-                <div className="space-y-1.5 pt-1">
-                  {field.locations.map((loc, idx) => (
-                    <div key={loc.id} className="flex items-start gap-2 text-sm">
-                      <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                      <div className="min-w-0">
-                        <span className="font-medium">
-                          {loc.label || `${f.locationLabel} ${idx + 1}`}
-                        </span>
-                        {loc.address && (
-                          <p className="text-xs text-foreground/65">{loc.address}</p>
-                        )}
-                        {(loc.date || loc.openFrom || loc.openTo) && (
-                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground/65">
-                            {loc.date && (
-                              <span className="inline-flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {loc.date}
-                              </span>
-                            )}
-                            {(loc.openFrom || loc.openTo) && (
-                              <span className="inline-flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {[loc.openFrom, loc.openTo].filter(Boolean).join(' - ')}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {loc.note && (
-                          <p className="mt-1 text-xs text-foreground/65">{loc.note}</p>
-                        )}
-                        {loc.mapsUrl && (
-                          <a
-                            href={loc.mapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                          >
-                            Zobacz na mapie <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {isYes && (
+                <LocationDetail
+                  label={f.label}
+                  locationLabel={f.locationLabel}
+                  locations={field.locations}
+                />
               )}
             </div>
           );
@@ -254,104 +204,329 @@ interface EventInfoTabProps {
   event: Event;
 }
 
-export const EventInfoTab = ({ event }: EventInfoTabProps) => (
-  <div className="space-y-6">
-    <InfoSection title="O wydarzeniu" icon={<Info className="h-4 w-4" />} tone="amber">
-      <RichTextDisplay html={event.description} className="text-foreground/75" />
-    </InfoSection>
+export const EventInfoTab = ({ event }: EventInfoTabProps) => {
+  const raceOffice = event.logisticsInfo?.raceOffice;
+  const baggage = event.logisticsInfo?.baggage;
 
-    {event.organizersHtml && (
-      <InfoSection title="Organizatorzy" icon={<Users className="h-4 w-4" />} tone="sky">
-        <RichTextDisplay html={event.organizersHtml} />
-      </InfoSection>
-    )}
+  const scheduleDoc = event.documents?.find((d) => d.type === 'harmonogram');
+  const rulesDoc = event.documents?.find((d) => d.type === 'regulamin');
+  const otherDocs = event.documents?.filter(
+    (d) => d.type !== 'harmonogram' && d.type !== 'regulamin',
+  ) ?? [];
 
-    {event.rulesHtml && (
-      <InfoSection title="Regulamin" icon={<FileText className="h-4 w-4" />} tone="slate">
-        <RichTextDisplay html={event.rulesHtml} />
-      </InfoSection>
-    )}
+  const hasRulesContent = event.rulesHtml || rulesDoc;
+  const hasDocuments = event.documents && event.documents.length > 0;
 
-    {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
+  const totalLimit = event.distances.reduce<number | null>((acc, d) => {
+    if (d.limit == null) return acc;
+    return (acc ?? 0) + d.limit;
+  }, null);
 
-    {!event.organizersHtml && (
-      <InfoSection title="Lokalizacja" icon={<MapPin className="h-4 w-4" />} tone="sky">
-        <p className="text-foreground/75">
-          {event.location}, {event.city}
-        </p>
-      </InfoSection>
-    )}
+  const totalRegistered = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
 
-    {event.insuranceOption?.enabled && (
-      <InfoSection title="Ubezpieczenie NNW" icon={<Shield className="h-4 w-4" />} tone="rose">
-        <p className="text-sm text-foreground/75">
-          Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
-        </p>
-      </InfoSection>
-    )}
-
-    {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
+  return (
+    <div className="space-y-6">
+      {/* ── Najważniejsze przed startem ──────────────────────── */}
       <InfoSection
-        title="Gadżety dostępne przy rejestracji"
-        icon={<ShoppingBag className="h-4 w-4" />}
-        tone="violet"
+        title="Najważniejsze przed startem"
+        icon={<AlertCircle className="h-4 w-4" />}
+        tone="amber"
       >
-        <div className="grid gap-2 sm:grid-cols-2">
-          {event.merchandise.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="h-12 w-12 shrink-0 rounded-md object-cover"
-                  />
-                )}
-                <span className="truncate text-sm">{item.name}</span>
-              </div>
-              <Badge variant="secondary">{item.price} zł</Badge>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {/* Data i godzina */}
+          <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+            <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+                {event.isVirtual ? 'Okno startowe' : 'Data startu'}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold">
+                {event.isVirtual && event.startDate && event.endDate
+                  ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} – ${format(new Date(event.endDate), 'd MMM yyyy', { locale: pl })}`
+                  : format(new Date(event.date), 'd MMMM yyyy', { locale: pl })}
+              </p>
             </div>
-          ))}
+          </div>
+
+          {/* Lokalizacja */}
+          {!event.isVirtual && (
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+                  Miejsce startu
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">{event.location}</p>
+                <p className="text-xs text-foreground/60">{event.city}</p>
+                {raceOffice?.status === 'yes' && raceOffice.locations && raceOffice.locations.length > 0 && raceOffice.locations[0].mapsUrl && (
+                  <a
+                    href={raceOffice.locations[0].mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    Otwórz mapę <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Zapisy do */}
+          <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+                Zapisy do
+              </p>
+              <p className="mt-0.5 text-sm font-semibold">
+                {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+              </p>
+            </div>
+          </div>
+
+          {/* Limit uczestników */}
+          {totalLimit != null && (
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
+              <Users className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+                  Limit uczestników
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">
+                  {totalRegistered.toLocaleString()} / {totalLimit.toLocaleString()} miejsc
+                </p>
+                {event.distances.length > 1 && (
+                  <div className="mt-1 space-y-0.5">
+                    {event.distances
+                      .filter((d) => d.limit != null)
+                      .map((d) => (
+                        <p key={d.id} className="text-xs text-foreground/60">
+                          {d.name}: {d.registeredCount} / {d.limit}
+                        </p>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Harmonogram (dokument) */}
+          {scheduleDoc && (
+            <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3 sm:col-span-2">
+              <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
+                  Harmonogram
+                </p>
+                <a
+                  href={scheduleDoc.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  {scheduleDoc.name}
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </InfoSection>
-    )}
 
-    <InfoSection title="Organizator" icon={<Globe className="h-4 w-4" />} tone="slate">
-      {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
-      {event.organizerContact && (
-        <div className="space-y-2">
-          <a
-            href={`mailto:${event.organizerContact.email}`}
-            className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
-          >
-            <Mail className="h-4 w-4" />
-            {event.organizerContact.email}
-          </a>
-          {event.organizerContact.phone && (
-            <a
-              href={`tel:${event.organizerContact.phone}`}
-              className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
-            >
-              <Phone className="h-4 w-4" />
-              {event.organizerContact.phone}
-            </a>
-          )}
-          {event.organizerContact.website && (
-            <a
-              href={event.organizerContact.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
-            >
-              <Globe className="h-4 w-4" />
-              {event.organizerContact.website.replace('https://', '')}
-            </a>
-          )}
-        </div>
+      {/* ── O wydarzeniu ─────────────────────────────────────── */}
+      <InfoSection title="O wydarzeniu" icon={<Info className="h-4 w-4" />} tone="sky">
+        <RichTextDisplay html={event.description} className="text-foreground/75" />
+      </InfoSection>
+
+      {/* ── Biuro zawodów i pakiety startowe ─────────────────── */}
+      {(raceOffice?.status === 'yes' || baggage?.status === 'yes') && (
+        <InfoSection
+          title="Biuro zawodów i pakiety startowe"
+          icon={<Package className="h-4 w-4" />}
+          tone="orange"
+        >
+          <div className="space-y-4">
+            {raceOffice?.status === 'yes' && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-foreground/80">Biuro zawodów</p>
+                {raceOffice.infoHtml && (
+                  <RichTextDisplay html={raceOffice.infoHtml} className="mb-2 text-sm text-foreground/70" />
+                )}
+                <LocationDetail
+                  label="Biuro zawodów"
+                  locationLabel="Termin biura"
+                  locations={raceOffice.locations}
+                />
+              </div>
+            )}
+            {baggage?.status === 'yes' && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-foreground/80">Odbiór pakietów startowych</p>
+                {baggage.infoHtml && (
+                  <RichTextDisplay html={baggage.infoHtml} className="mb-2 text-sm text-foreground/70" />
+                )}
+                <LocationDetail
+                  label="Pakiety startowe"
+                  locationLabel="Punkt odbioru"
+                  locations={baggage.locations}
+                />
+              </div>
+            )}
+          </div>
+        </InfoSection>
       )}
-    </InfoSection>
-  </div>
+
+      {/* ── Regulamin i dokumenty ────────────────────────────── */}
+      {hasRulesContent && (
+        <InfoSection
+          title="Regulamin i dokumenty"
+          icon={<FileText className="h-4 w-4" />}
+          tone="slate"
+        >
+          <div className="space-y-4">
+            {event.rulesHtml && (
+              <RichTextDisplay html={event.rulesHtml} />
+            )}
+            {(rulesDoc || otherDocs.length > 0) && (
+              <div className={event.rulesHtml ? 'border-t border-white/10 pt-4' : ''}>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-foreground/50">
+                  Pliki do pobrania
+                </p>
+                <div className="space-y-1.5">
+                  {rulesDoc && (
+                    <DocumentRow doc={rulesDoc} />
+                  )}
+                  {otherDocs.map((doc) => (
+                    <DocumentRow key={doc.id} doc={doc} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </InfoSection>
+      )}
+
+      {/* Dokumenty bez regulaminu gdy nie ma rulesHtml */}
+      {!hasRulesContent && hasDocuments && (
+        <InfoSection
+          title="Dokumenty"
+          icon={<FileText className="h-4 w-4" />}
+          tone="slate"
+        >
+          <div className="space-y-1.5">
+            {event.documents!.map((doc) => (
+              <DocumentRow key={doc.id} doc={doc} />
+            ))}
+          </div>
+        </InfoSection>
+      )}
+
+      {/* ── Logistyka zawodów ────────────────────────────────── */}
+      {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
+
+      {/* ── Organizatorzy ────────────────────────────────────── */}
+      {event.organizersHtml && (
+        <InfoSection title="Organizatorzy" icon={<Users className="h-4 w-4" />} tone="sky">
+          <RichTextDisplay html={event.organizersHtml} />
+        </InfoSection>
+      )}
+
+      {/* ── Ubezpieczenie NNW ────────────────────────────────── */}
+      {event.insuranceOption?.enabled && (
+        <InfoSection title="Ubezpieczenie NNW" icon={<Shield className="h-4 w-4" />} tone="rose">
+          <p className="text-sm text-foreground/75">
+            Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
+          </p>
+        </InfoSection>
+      )}
+
+      {/* ── Gadżety przy rejestracji ─────────────────────────── */}
+      {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
+        <InfoSection
+          title="Gadżety dostępne przy rejestracji"
+          icon={<ShoppingBag className="h-4 w-4" />}
+          tone="violet"
+        >
+          <div className="grid gap-2 sm:grid-cols-2">
+            {event.merchandise.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  {item.imageUrl && (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="h-12 w-12 shrink-0 rounded-md object-cover"
+                    />
+                  )}
+                  <span className="truncate text-sm">{item.name}</span>
+                </div>
+                <Badge variant="secondary">{item.price} zł</Badge>
+              </div>
+            ))}
+          </div>
+        </InfoSection>
+      )}
+
+      {/* ── Kontakt ──────────────────────────────────────────── */}
+      <InfoSection title="Kontakt z organizatorem" icon={<Globe className="h-4 w-4" />} tone="indigo">
+        {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
+        {event.organizerContact && (
+          <div className="space-y-2">
+            <a
+              href={`mailto:${event.organizerContact.email}`}
+              className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+            >
+              <Mail className="h-4 w-4" />
+              {event.organizerContact.email}
+            </a>
+            {event.organizerContact.phone && (
+              <a
+                href={`tel:${event.organizerContact.phone}`}
+                className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+              >
+                <Phone className="h-4 w-4" />
+                {event.organizerContact.phone}
+              </a>
+            )}
+            {event.organizerContact.website && (
+              <a
+                href={event.organizerContact.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+              >
+                <Globe className="h-4 w-4" />
+                {event.organizerContact.website.replace('https://', '')}
+              </a>
+            )}
+          </div>
+        )}
+        {!event.organizerContact && (
+          <p className="text-sm text-foreground/60">{event.organizerName}</p>
+        )}
+      </InfoSection>
+    </div>
+  );
+};
+
+const DocumentRow = ({ doc }: { doc: NonNullable<Event['documents']>[number] }) => (
+  <a
+    href={doc.fileUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-2.5 transition-colors hover:bg-white/[0.06]"
+  >
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+      {DOCUMENT_TYPE_ICONS[doc.type]}
+    </span>
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-sm font-medium">{doc.name}</p>
+      <p className="text-xs text-foreground/50">{EVENT_DOCUMENT_TYPE_LABELS[doc.type]}</p>
+    </div>
+    <Download className="h-4 w-4 shrink-0 text-foreground/40" />
+  </a>
 );

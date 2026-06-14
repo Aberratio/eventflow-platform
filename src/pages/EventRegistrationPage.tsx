@@ -51,13 +51,24 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   const isPast = event ? new Date(event.date) < new Date() : false;
   const deadlinePassed = event ? new Date(event.registrationDeadline) < new Date() : false;
   const isClosedByOrganizer = event?.registrationStatus === 'closed';
+  const registrationStartDate = event?.registrationEmbed?.startDate
+    ? new Date(event.registrationEmbed.startDate)
+    : null;
+  const registrationNotStarted =
+    event?.registrationStatus === 'none' ||
+    (registrationStartDate !== null && registrationStartDate > new Date());
   const allDistancesFull = event
     ? event.distances.length > 0 &&
       event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit)
     : false;
   const isRegistrationOpen = isPreviewAvailable
     ? !!event && event.distances.length > 0 && !allDistancesFull
-    : !!event && !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+    : !!event &&
+      !isPast &&
+      !deadlinePassed &&
+      !isClosedByOrganizer &&
+      !registrationNotStarted &&
+      !allDistancesFull;
 
   useEffect(() => {
     if (isLoading) return;
@@ -204,6 +215,26 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         pricePaid: Math.max(0, data.price - (data.discountAmount ?? 0)),
         totalAmount: data.totalAmount,
         merchandiseOrders: data.merchandiseOrders,
+        paymentDetails: {
+          startFeePaid: event.paymentConfig?.type !== 'organizer_bank',
+          startFeePaidAt:
+            event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
+          startFeeAmount: Math.max(0, data.price - (data.discountAmount ?? 0)),
+          insurancePaid: event.paymentConfig?.type !== 'organizer_bank',
+          insurancePaidAt:
+            event.paymentConfig?.type !== 'organizer_bank' && data.insurancePrice
+              ? new Date().toISOString()
+              : undefined,
+          insuranceAmount: data.insurancePrice,
+          merchandisePayments: data.merchandiseOrders.map((order) => ({
+            merchandiseId: order.merchandiseId,
+            merchandiseName: order.merchandiseName,
+            paid: event.paymentConfig?.type !== 'organizer_bank',
+            paidAt:
+              event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
+            amount: order.price,
+          })),
+        },
       });
     } catch (error) {
       toast({

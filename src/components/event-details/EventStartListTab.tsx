@@ -26,10 +26,10 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Circle,
   Clock3,
   Download,
-  Filter,
   Search,
   SlidersHorizontal,
   Users,
@@ -86,6 +86,7 @@ export const EventStartListTab = ({
   const [activeStatuses, setActiveStatuses] = useState<RegistrationStatusFilter[]>(
     ALL_ACTIVE_STATUSES,
   );
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   useEffect(() => {
     setSidebarSlot(document.getElementById('event-start-list-sidebar-slot'));
@@ -175,7 +176,6 @@ export const EventStartListTab = ({
     genderFilter,
   ]);
 
-  // Reset to page 1 whenever filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [query, distanceFilter, categoryFilter, packageFilter, clubQuery, activeStatuses, genderFilter]);
@@ -206,7 +206,6 @@ export const EventStartListTab = ({
     setActiveStatuses((current) => {
       if (current.includes(status)) {
         const next = current.filter((s) => s !== status);
-        // Prevent deselecting all — keep at least one active
         return next.length > 0 ? next : current;
       }
       return [...current, status];
@@ -245,9 +244,28 @@ export const EventStartListTab = ({
     return pages;
   }, [totalPages, safePage]);
 
+  const hasActiveFilters =
+    query !== '' ||
+    distanceFilter !== 'all' ||
+    categoryFilter !== 'all' ||
+    packageFilter !== 'all' ||
+    genderFilter !== 'all' ||
+    clubQuery !== '' ||
+    !allStatusesSelected;
+
+  /** Inline stats strip — shown above the table when sidebar is not available */
+  const statsStrip = !sidebarEnabled && (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <MiniStat icon={<Users className="h-4 w-4" />} label="Zapisanych" value={visibleRegistrations.length} tone="emerald" />
+      <MiniStat icon={<CheckCircle2 className="h-4 w-4" />} label="Potwierdzonych" value={confirmedCount} tone="emerald" />
+      <MiniStat icon={<Clock3 className="h-4 w-4" />} label="Oczekujących" value={pendingCount} tone="warning" />
+      <MiniStat icon={<XCircle className="h-4 w-4" />} label="Zrezygnowanych" value={cancelledCount + removedCount} tone="destructive" />
+    </div>
+  );
+
   return (
     <>
-      <section className={`${panelClass} min-h-[820px] p-5`}>
+      <section className={`${panelClass} p-5`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">Lista startowa</h2>
@@ -264,12 +282,14 @@ export const EventStartListTab = ({
           </Button>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_7.5rem_14rem]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {statsStrip && <div className="mt-4">{statsStrip}</div>}
+
+        <div className="mt-5 flex gap-3">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50" />
             <Input
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Szukaj uczestnika..."
               className="h-11 border-white/10 bg-black/10 pl-10"
             />
@@ -278,46 +298,125 @@ export const EventStartListTab = ({
             variant="outline"
             className="h-11 justify-between border-white/10 bg-white/[0.035] hover:bg-white/[0.07]"
           >
-            <span className="inline-flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              Filtry
+            <span className="flex items-center gap-2">
+              <ArrowDownUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Sortuj</span>
             </span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="outline"
-            className="h-11 justify-between border-white/10 bg-white/[0.035] text-muted-foreground hover:bg-white/[0.07]"
-          >
-            <span>
-              Sortuj: <span className="text-foreground">Numer startowy</span>
-            </span>
-            <ArrowDownUp className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Inline advanced filters — only shown when sidebar panel is not available */}
+        {!sidebarEnabled && (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => setFiltersExpanded((v) => !v)}
+              className="flex items-center gap-1.5 text-sm text-foreground/65 hover:text-foreground"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Filtry zaawansowane
+              {hasActiveFilters && (
+                <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                  !
+                </span>
+              )}
+              {filtersExpanded ? (
+                <ChevronUp className="ml-1 h-3.5 w-3.5" />
+              ) : (
+                <ChevronDown className="ml-1 h-3.5 w-3.5" />
+              )}
+            </button>
+
+            {filtersExpanded && (
+              <div className="mt-3 grid gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 sm:grid-cols-2">
+                <FilterSelect
+                  label="Dystans"
+                  value={distanceFilter}
+                  onValueChange={setDistanceFilter}
+                  placeholder="Wszystkie dystanse"
+                  options={distanceOptions}
+                />
+                <FilterSelect
+                  label="Kategoria"
+                  value={categoryFilter}
+                  onValueChange={setCategoryFilter}
+                  placeholder="Wszystkie kategorie"
+                  options={categoryOptions}
+                />
+                <div>
+                  <p className="mb-2 text-xs font-medium text-foreground">Płeć</p>
+                  <div className="grid grid-cols-3 overflow-hidden rounded-md border border-white/10">
+                    {genderLabels.map((item, index) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => setGenderFilter(item.value)}
+                        className={`h-9 text-xs transition-colors ${
+                          genderFilter === item.value
+                            ? 'bg-primary/15 text-primary'
+                            : `${index > 0 ? 'border-l border-white/10' : ''} text-foreground/60 hover:bg-white/[0.05]`
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-medium text-foreground">Szukaj po klubie</p>
+                  <Input
+                    value={clubQuery}
+                    onChange={(e) => setClubQuery(e.target.value)}
+                    placeholder="Wpisz nazwę klubu..."
+                    className="h-10 border-white/10 bg-black/10"
+                  />
+                </div>
+                {showAll && (
+                  <div>
+                    <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
+                    <div className="space-y-2">
+                      <StatusCheckbox label="Wszyscy" checked={allStatusesSelected} onClick={handleAllStatuses} />
+                      <StatusCheckbox label="Oczekujący" checked={activeStatuses.includes('pending')} onClick={() => toggleStatus('pending')} />
+                      <StatusCheckbox label="Potwierdzony" checked={activeStatuses.includes('confirmed')} onClick={() => toggleStatus('confirmed')} />
+                      <StatusCheckbox label="Zrezygnowany" checked={activeStatuses.includes('cancelled')} onClick={() => toggleStatus('cancelled')} />
+                    </div>
+                  </div>
+                )}
+                {hasActiveFilters && (
+                  <div className="sm:col-span-2">
+                    <Button variant="outline" size="sm" className="border-white/10" onClick={resetFilters}>
+                      Wyczyść filtry
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-5 overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-white/[0.04]">
                 <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableHead className="min-w-24 text-xs font-medium text-muted-foreground">
+                  <TableHead className="min-w-24 text-xs font-medium text-foreground/60">
                     Nr startowy <ArrowDownUp className="ml-1 inline h-3 w-3" />
                   </TableHead>
-                  <TableHead className="min-w-48 text-xs font-medium text-muted-foreground">
+                  <TableHead className="min-w-48 text-xs font-medium text-foreground/60">
                     Uczestnik <ArrowDownUp className="ml-1 inline h-3 w-3" />
                   </TableHead>
-                  <TableHead className="min-w-36 text-xs font-medium text-muted-foreground">
+                  <TableHead className="min-w-36 text-xs font-medium text-foreground/60">
                     Dystans <ArrowDownUp className="ml-1 inline h-3 w-3" />
                   </TableHead>
-                  <TableHead className="min-w-40 text-xs font-medium text-muted-foreground">
+                  <TableHead className="min-w-40 text-xs font-medium text-foreground/60">
                     Kategoria <ArrowDownUp className="ml-1 inline h-3 w-3" />
                   </TableHead>
                   {showAll && (
-                    <TableHead className="min-w-28 text-xs font-medium text-muted-foreground">
+                    <TableHead className="min-w-28 text-xs font-medium text-foreground/60">
                       Status <ArrowDownUp className="ml-1 inline h-3 w-3" />
                     </TableHead>
                   )}
-                  <TableHead className="min-w-28 text-xs font-medium text-muted-foreground">
+                  <TableHead className="min-w-28 text-xs font-medium text-foreground/60">
                     Pakiet <ArrowDownUp className="ml-1 inline h-3 w-3" />
                   </TableHead>
                 </TableRow>
@@ -348,7 +447,7 @@ export const EventStartListTab = ({
                               >
                                 {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
                               </Link>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-foreground/55">
                                 {reg.teamName || 'Klub niepodany'}
                               </p>
                             </div>
@@ -382,15 +481,15 @@ export const EventStartListTab = ({
                 ) : (
                   <TableRow>
                     <TableCell colSpan={showAll ? 6 : 5}>
-                      <div className="flex min-h-[420px] items-center justify-center">
+                      <div className="flex min-h-[200px] items-center justify-center py-10">
                         <div className="max-w-xs text-center">
-                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-muted-foreground">
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-foreground/40">
                             <Users className="h-8 w-8" />
                           </div>
                           {filtered.length === 0 && sorted.length > 0 ? (
                             <>
                               <h3 className="mt-5 text-lg font-semibold">Brak wyników</h3>
-                              <p className="mt-2 text-sm text-muted-foreground">
+                              <p className="mt-2 text-sm text-foreground/65">
                                 Żaden uczestnik nie pasuje do wybranych filtrów.
                               </p>
                               <Button
@@ -404,7 +503,7 @@ export const EventStartListTab = ({
                           ) : (
                             <>
                               <h3 className="mt-5 text-lg font-semibold">Więcej uczestników wkrótce!</h3>
-                              <p className="mt-2 text-sm text-muted-foreground">
+                              <p className="mt-2 text-sm text-foreground/65">
                                 Lista startowa będzie widoczna gdy zapisze się więcej osób.
                               </p>
                             </>
@@ -420,7 +519,7 @@ export const EventStartListTab = ({
         </div>
 
         {showPagination && (
-          <div className="mt-5 flex flex-col gap-4 border-t border-white/10 pt-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <div className="mt-5 flex flex-col gap-4 border-t border-white/10 pt-4 text-sm text-foreground/60 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
               <span>Wierszy na stronę:</span>
               <Select
@@ -444,7 +543,7 @@ export const EventStartListTab = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-muted-foreground"
+                className="h-9 w-9 text-foreground/60"
                 onClick={() => goToPage(safePage - 1)}
                 disabled={safePage === 1}
               >
@@ -470,7 +569,7 @@ export const EventStartListTab = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-muted-foreground"
+                className="h-9 w-9 text-foreground/60"
                 onClick={() => goToPage(safePage + 1)}
                 disabled={safePage === totalPages}
               >
@@ -491,140 +590,117 @@ export const EventStartListTab = ({
         createPortal(
           <>
             <section className={`${panelClass} p-5`}>
-              <div className="mb-5 flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Filtry</h3>
+              <div className="mb-4 flex items-center justify-between">
                 <button
                   type="button"
-                  className="text-xs text-primary hover:underline"
-                  onClick={resetFilters}
+                  onClick={() => setFiltersExpanded((v) => !v)}
+                  className="flex items-center gap-2 text-base font-semibold"
                 >
-                  Wyczyść wszystko
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filtry
+                  {hasActiveFilters && (
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                      !
+                    </span>
+                  )}
+                  {filtersExpanded ? (
+                    <ChevronUp className="ml-auto h-4 w-4 text-foreground/50" />
+                  ) : (
+                    <ChevronDown className="ml-auto h-4 w-4 text-foreground/50" />
+                  )}
                 </button>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={resetFilters}
+                  >
+                    Wyczyść
+                  </button>
+                )}
               </div>
-              <div className="space-y-5">
-                <FilterSelect
-                  label="Dystans"
-                  value={distanceFilter}
-                  onValueChange={setDistanceFilter}
-                  placeholder="Wszystkie dystanse"
-                  options={distanceOptions}
-                />
-                <FilterSelect
-                  label="Kategoria"
-                  value={categoryFilter}
-                  onValueChange={setCategoryFilter}
-                  placeholder="Wszystkie kategorie"
-                  options={categoryOptions}
-                />
-                <div>
-                  <p className="mb-2 text-xs font-medium text-foreground">Płeć</p>
-                  <div className="grid grid-cols-3 overflow-hidden rounded-md border border-white/10">
-                    {genderLabels.map((item, index) => (
-                      <button
-                        key={item.value}
-                        type="button"
-                        onClick={() => setGenderFilter(item.value)}
-                        className={`h-9 text-xs transition-colors ${
-                          genderFilter === item.value
-                            ? 'bg-primary/15 text-primary'
-                            : `${index > 0 ? 'border-l border-white/10' : ''} text-muted-foreground hover:bg-white/[0.05]`
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {showAll && (
+
+              {filtersExpanded && (
+                <div className="space-y-5">
+                  <FilterSelect
+                    label="Dystans"
+                    value={distanceFilter}
+                    onValueChange={setDistanceFilter}
+                    placeholder="Wszystkie dystanse"
+                    options={distanceOptions}
+                  />
+                  <FilterSelect
+                    label="Kategoria"
+                    value={categoryFilter}
+                    onValueChange={setCategoryFilter}
+                    placeholder="Wszystkie kategorie"
+                    options={categoryOptions}
+                  />
                   <div>
-                    <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
-                    <div className="space-y-2">
-                      <StatusCheckbox
-                        label="Wszyscy"
-                        checked={allStatusesSelected}
-                        onClick={handleAllStatuses}
-                      />
-                      <StatusCheckbox
-                        label="Oczekujący"
-                        checked={activeStatuses.includes('pending')}
-                        onClick={() => toggleStatus('pending')}
-                      />
-                      <StatusCheckbox
-                        label="Potwierdzony"
-                        checked={activeStatuses.includes('confirmed')}
-                        onClick={() => toggleStatus('confirmed')}
-                      />
-                      <StatusCheckbox
-                        label="Zrezygnowany"
-                        checked={activeStatuses.includes('cancelled')}
-                        onClick={() => toggleStatus('cancelled')}
-                      />
+                    <p className="mb-2 text-xs font-medium text-foreground">Płeć</p>
+                    <div className="grid grid-cols-3 overflow-hidden rounded-md border border-white/10">
+                      {genderLabels.map((item, index) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => setGenderFilter(item.value)}
+                          className={`h-9 text-xs transition-colors ${
+                            genderFilter === item.value
+                              ? 'bg-primary/15 text-primary'
+                              : `${index > 0 ? 'border-l border-white/10' : ''} text-foreground/60 hover:bg-white/[0.05]`
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                )}
-                <FilterSelect
-                  label="Pakiet"
-                  value={packageFilter}
-                  onValueChange={setPackageFilter}
-                  placeholder="Wszystkie pakiety"
-                  options={packageOptions}
-                />
-                <div>
-                  <p className="mb-2 text-xs font-medium text-foreground">Szukaj po klubie</p>
-                  <Input
-                    value={clubQuery}
-                    onChange={(event) => setClubQuery(event.target.value)}
-                    placeholder="Wpisz nazwę klubu..."
-                    className="h-10 border-white/10 bg-black/10"
+                  {showAll && (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
+                      <div className="space-y-2">
+                        <StatusCheckbox label="Wszyscy" checked={allStatusesSelected} onClick={handleAllStatuses} />
+                        <StatusCheckbox label="Oczekujący" checked={activeStatuses.includes('pending')} onClick={() => toggleStatus('pending')} />
+                        <StatusCheckbox label="Potwierdzony" checked={activeStatuses.includes('confirmed')} onClick={() => toggleStatus('confirmed')} />
+                        <StatusCheckbox label="Zrezygnowany" checked={activeStatuses.includes('cancelled')} onClick={() => toggleStatus('cancelled')} />
+                      </div>
+                    </div>
+                  )}
+                  <FilterSelect
+                    label="Pakiet"
+                    value={packageFilter}
+                    onValueChange={setPackageFilter}
+                    placeholder="Wszystkie pakiety"
+                    options={packageOptions}
                   />
+                  <div>
+                    <p className="mb-2 text-xs font-medium text-foreground">Szukaj po klubie</p>
+                    <Input
+                      value={clubQuery}
+                      onChange={(e) => setClubQuery(e.target.value)}
+                      placeholder="Wpisz nazwę klubu..."
+                      className="h-10 border-white/10 bg-black/10"
+                    />
+                  </div>
                 </div>
-                <Button className="h-11 w-full rounded-lg" onClick={resetFilters} variant="outline">
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Wyczyść filtry
-                </Button>
-              </div>
+              )}
             </section>
 
             <section className={`${panelClass} p-5`}>
-              <h3 className="text-lg font-semibold">Statystyki listy startowej</h3>
-              <div className="mt-5 space-y-3">
-                <StatRow
-                  icon={<Users className="h-4 w-4" />}
-                  label="Zapisanych"
-                  value={visibleRegistrations.length}
-                  tone="emerald"
-                />
-                <StatRow
-                  icon={<CheckCircle2 className="h-4 w-4" />}
-                  label="Potwierdzonych"
-                  value={confirmedCount}
-                  tone="emerald"
-                />
-                <StatRow
-                  icon={<Clock3 className="h-4 w-4" />}
-                  label="Oczekujących"
-                  value={pendingCount}
-                  tone="warning"
-                />
-                <StatRow
-                  icon={<Circle className="h-4 w-4" />}
-                  label="Na liście rezerwowej"
-                  value={0}
-                  tone="violet"
-                />
-                <StatRow
-                  icon={<XCircle className="h-4 w-4" />}
-                  label="Zrezygnowanych"
-                  value={cancelledCount + removedCount}
-                  tone="destructive"
-                />
+              <h3 className="text-base font-semibold">Statystyki</h3>
+              <div className="mt-4 space-y-3">
+                <StatRow icon={<Users className="h-4 w-4" />} label="Zapisanych" value={visibleRegistrations.length} tone="emerald" />
+                <StatRow icon={<CheckCircle2 className="h-4 w-4" />} label="Potwierdzonych" value={confirmedCount} tone="emerald" />
+                <StatRow icon={<Clock3 className="h-4 w-4" />} label="Oczekujących" value={pendingCount} tone="warning" />
+                <StatRow icon={<Circle className="h-4 w-4" />} label="Lista rezerwowa" value={0} tone="violet" />
+                <StatRow icon={<XCircle className="h-4 w-4" />} label="Zrezygnowanych" value={cancelledCount + removedCount} tone="destructive" />
               </div>
-              <div className="mt-6 flex items-end justify-between border-t border-white/10 pt-5">
-                <p className="max-w-32 text-sm text-muted-foreground">
-                  Maksymalna liczba uczestników
-                </p>
-                <p className="text-2xl font-bold">{maxParticipants || '—'}</p>
-              </div>
+              {maxParticipants > 0 && (
+                <div className="mt-5 flex items-end justify-between border-t border-white/10 pt-4">
+                  <p className="max-w-32 text-sm text-foreground/65">Limit uczestników</p>
+                  <p className="text-2xl font-bold">{maxParticipants}</p>
+                </div>
+              )}
             </section>
           </>,
           sidebarSlot,
@@ -673,7 +749,7 @@ const StatusCheckbox = ({
   checked: boolean;
   onClick?: () => void;
 }) => (
-  <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+  <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground/70">
     <Checkbox checked={checked} onCheckedChange={onClick} />
     {label}
   </label>
@@ -699,13 +775,42 @@ const StatRow = ({
 
   return (
     <div className="flex items-center justify-between gap-3 text-sm">
-      <div className="flex items-center gap-3 text-muted-foreground">
+      <div className="flex items-center gap-3 text-foreground/65">
         <span className={`flex h-8 w-8 items-center justify-center rounded-md ${toneClass}`}>
           {icon}
         </span>
         {label}
       </div>
       <span className="font-semibold text-foreground">{value}</span>
+    </div>
+  );
+};
+
+const MiniStat = ({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  tone: 'emerald' | 'warning' | 'violet' | 'destructive';
+}) => {
+  const toneClass = {
+    emerald: 'text-emerald-400',
+    warning: 'text-warning',
+    violet: 'text-violet-400',
+    destructive: 'text-destructive',
+  }[tone];
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2.5">
+      <span className={`shrink-0 ${toneClass}`}>{icon}</span>
+      <div>
+        <p className="text-[11px] text-foreground/55">{label}</p>
+        <p className="text-lg font-bold leading-tight">{value}</p>
+      </div>
     </div>
   );
 };

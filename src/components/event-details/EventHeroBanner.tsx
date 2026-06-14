@@ -1,15 +1,14 @@
 import { disciplineLabels } from '@/api';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Event, OrganizerLogoShape } from '@/types';
-import { ArrowLeft, Globe } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Globe } from 'lucide-react';
 import { PageHero } from '@/components/ui/page-hero';
+import { Link } from 'react-router-dom';
 
 interface EventHeroBannerProps {
   event: Event;
   isPast: boolean;
-  onBack: () => void;
 }
 
 const getOrganizerLogoClassName = (shape: OrganizerLogoShape = 'square') => {
@@ -27,7 +26,21 @@ const getOrganizerLogoClassName = (shape: OrganizerLogoShape = 'square') => {
   }
 };
 
-export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps) => {
+const Breadcrumb = ({ eventName }: { eventName: string }) => (
+  <nav className="mb-5 flex items-center gap-1.5 text-sm sm:mb-6">
+    <Link
+      to="/events"
+      className="flex items-center gap-1 text-foreground/60 transition-colors hover:text-foreground"
+    >
+      <ArrowLeft className="h-3.5 w-3.5" />
+      Wydarzenia
+    </Link>
+    <ChevronRight className="h-3.5 w-3.5 text-foreground/30" />
+    <span className="max-w-[18rem] truncate text-foreground/80 sm:max-w-sm">{eventName}</span>
+  </nav>
+);
+
+export const EventHeroBanner = ({ event, isPast }: EventHeroBannerProps) => {
   const heroImageUrl = event.bannerUrl || event.imageUrl;
 
   const getBannerStyle = (): React.CSSProperties => {
@@ -64,7 +77,7 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
 
   if (heroImageUrl) {
     return (
-      <div className="relative min-h-[420px] overflow-hidden bg-[#05080d] sm:min-h-[480px] md:min-h-[540px]">
+      <div className="relative min-h-[320px] overflow-hidden bg-[#05080d] sm:min-h-[360px] md:min-h-[420px]">
         <img
           src={heroImageUrl}
           alt={event.name}
@@ -83,21 +96,13 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 top-0 flex items-end">
-          <div className="container pb-32 sm:pb-36">
-            <Button
-              variant="outline"
-              size="sm"
-              className="mb-8 border-white/15 bg-white/[0.04] text-foreground backdrop-blur-md hover:bg-white/[0.09] sm:mb-9"
-              onClick={onBack}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Wróć
-            </Button>
+          <div className="container pb-28 sm:pb-32">
+            <Breadcrumb eventName={event.name} />
             {badges}
             <h1 className="max-w-4xl text-3xl font-bold text-foreground drop-shadow-2xl sm:text-4xl md:text-5xl">
               {event.name}
             </h1>
-            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+            <p className="mt-3 text-sm text-foreground/65 sm:text-base">
               Organizator: {event.organizerName}
             </p>
           </div>
@@ -107,19 +112,11 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
   }
 
   return (
-    <PageHero className="min-h-[420px] bg-[radial-gradient(circle_at_70%_20%,rgba(38,116,217,0.2),transparent_34%),linear-gradient(180deg,#0b1119,#05080d)]">
-      <Button
-        variant="outline"
-        size="sm"
-        className="mb-8 border-white/15 bg-white/[0.04] text-foreground backdrop-blur-md hover:bg-white/[0.09]"
-        onClick={onBack}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Wróć
-      </Button>
+    <PageHero className="min-h-[320px] bg-[radial-gradient(circle_at_70%_20%,rgba(38,116,217,0.2),transparent_34%),linear-gradient(180deg,#0b1119,#05080d)] sm:min-h-[360px] md:min-h-[420px]">
+      <Breadcrumb eventName={event.name} />
       {badges}
       <h1 className="max-w-4xl text-3xl font-bold sm:text-4xl md:text-5xl">{event.name}</h1>
-      <p className="mt-3 text-sm text-muted-foreground">Organizator: {event.organizerName}</p>
+      <p className="mt-3 text-sm text-foreground/65">Organizator: {event.organizerName}</p>
     </PageHero>
   );
 };

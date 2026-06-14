@@ -145,6 +145,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const isPast = new Date(event.date) < new Date();
   const deadlinePassed = new Date(event.registrationDeadline) < new Date();
   const isClosedByOrganizer = event.registrationStatus === 'closed';
+  const registrationStartDate = event.registrationEmbed?.startDate
+    ? new Date(event.registrationEmbed.startDate)
+    : null;
+  const registrationNotStarted =
+    event.registrationStatus === 'none' ||
+    (registrationStartDate !== null && registrationStartDate > new Date());
   const allDistancesFull =
     event.distances.length > 0 &&
     event.distances.every((d) => d.limit != null && d.registeredCount >= d.limit);
@@ -152,7 +158,11 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const detailsUrl = getEditUrl(event, user);
   const isRegistrationOpen = isPreview
     ? event.distances.length > 0 && !allDistancesFull
-    : !isPast && !deadlinePassed && !isClosedByOrganizer && !allDistancesFull;
+    : !isPast &&
+      !deadlinePassed &&
+      !isClosedByOrganizer &&
+      !registrationNotStarted &&
+      !allDistancesFull;
   const hasExternalRegistration = isExternalRegistrationEvent(event);
   const externalRegistrationActive = hasExternalRegistration
     ? isExternalRegistrationActive(event)
@@ -172,6 +182,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
         label: 'Zapisy zamknięte',
         icon: XCircle,
         cls: 'border-destructive/30 bg-destructive/10 text-destructive',
+      };
+    if (registrationNotStarted)
+      return {
+        label: 'Zapisy wkrótce',
+        icon: Clock,
+        cls: 'border-primary/30 bg-primary/10 text-primary',
       };
     if (allDistancesFull)
       return {
@@ -205,6 +221,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     if (deadlinePassed)
       return `Termin zapisów minął (${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })})`;
     if (isClosedByOrganizer) return 'Zapisy zamknięte przez organizatora';
+    if (registrationNotStarted) return 'Zapisy jeszcze nieaktywne';
     if (allDistancesFull) return 'Wszystkie miejsca zajęte';
     return null;
   };
@@ -267,11 +284,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
       )}
       {isPrivateEvent && !isUnpublished && <PrivateBanner />}
 
-      <EventHeroBanner
-        event={event}
-        isPast={isPast}
-        onBack={() => navigate(isPreview ? detailsUrl : -1)}
-      />
+      <EventHeroBanner event={event} isPast={isPast} />
 
       <div className="relative -mt-28 bg-[radial-gradient(circle_at_15%_12%,rgba(38,116,217,0.14),transparent_30%),radial-gradient(circle_at_82%_32%,rgba(245,158,11,0.08),transparent_24%)] pb-10">
         <div className="container py-5 sm:py-8">
