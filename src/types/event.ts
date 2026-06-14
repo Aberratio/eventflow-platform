@@ -112,6 +112,24 @@ export interface OrganizerContact {
   website?: string;
 }
 
+export interface OrganizerContactEntry {
+  id: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface EventSponsor {
+  id: string;
+  name: string;
+  url?: string;
+  logoUrl?: string;
+}
+
+export interface OrganizerInfo {
+  contacts: OrganizerContactEntry[];
+  sponsors: EventSponsor[];
+}
+
 export interface InsuranceOption {
   id: string;
   name: string;
@@ -181,6 +199,7 @@ export interface Event {
   organizerId: string;
   organizerName: string;
   organizerContact?: OrganizerContact;
+  organizerInfo?: OrganizerInfo;
   status: 'draft' | 'awaiting_approval' | 'approved' | 'active' | 'past' | 'archived' | 'deleted';
   rejectionReason?: string;
   submittedAt?: string;

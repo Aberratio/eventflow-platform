@@ -461,9 +461,19 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
           (cat) => cat.gender == null || cat.gender === userGender,
         ) || null
       : null;
-  const autoCategory =
-    matchedCategory ??
-    (categoriesMatchingBirthYear.length === 1 ? categoriesMatchingBirthYear[0] : null);
+  const singleFallbackCategory =
+    categoriesMatchingBirthYear.length === 1 ? categoriesMatchingBirthYear[0] : null;
+  const singleFallbackGenderOk =
+    singleFallbackCategory == null ||
+    singleFallbackCategory.gender == null ||
+    singleFallbackCategory.gender === userGender;
+  const autoCategory = matchedCategory ?? (singleFallbackGenderOk ? singleFallbackCategory : null);
+  const genderMismatch =
+    !autoCategory &&
+    userBirthYear !== null &&
+    userGender != null &&
+    categoriesMatchingBirthYear.length > 0 &&
+    categoriesMatchingBirthYear.every((cat) => cat.gender != null && cat.gender !== userGender);
 
   useEffect(() => {
     if (autoCategory && form.selectedCategory !== autoCategory.name) {
@@ -585,6 +595,22 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                     </p>
                   )}
                 </div>
+              ) : genderMismatch ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Nie możesz zapisać się na to wydarzenie</AlertTitle>
+                  <AlertDescription className="space-y-1">
+                    <p>
+                      Twój profil nie pasuje do żadnej z dostępnych kategorii tego dystansu. Aby
+                      wziąć udział, możesz:
+                    </p>
+                    <ul className="ml-4 list-disc space-y-0.5">
+                      <li>zmienić dane (płeć, rok urodzenia) w swoim profilu, jeśli zawierają błąd,</li>
+                      <li>zalogować się na właściwe konto — zapisy możliwe tylko z własnego profilu,</li>
+                      <li>skontaktować się z organizatorem, jeśli uważasz, że to pomyłka.</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
               ) : userBirthYear && categoriesMatchingBirthYear.length > 0 ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">

@@ -89,9 +89,11 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-sm font-medium">{cat.name}</span>
-                              <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                                {cat.gender === 'K' ? 'Kobiety' : 'Mężczyźni'}
-                              </Badge>
+                              {cat.gender && (
+                                <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                                  {cat.gender === 'K' ? 'Kobiety' : 'Mężczyźni'}
+                                </Badge>
+                              )}
                             </div>
                             <p className="mt-1 text-xs text-foreground/60">
                               Roczniki {cat.birthYearFrom}–{cat.birthYearTo}

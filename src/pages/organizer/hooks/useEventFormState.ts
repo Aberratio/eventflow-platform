@@ -32,6 +32,8 @@ import {
   LogisticsField,
   LogisticsLocation,
   LogisticsFieldStatus,
+  OrganizerContactEntry,
+  EventSponsor,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -106,6 +108,7 @@ export type SubStep =
   | 'content'
   | 'logistics'
   | 'registration'
+  | 'organizer'
   | 'categories'
   | 'distances'
   | 'summary';
@@ -126,6 +129,7 @@ export const STEP_NAV_ITEMS: StepNavItem[] = [
   { id: 'content', label: 'Treści', shortLabel: 'Treści', mainStep: 1 },
   { id: 'logistics', label: 'Logistyka zawodów', shortLabel: 'Logistyka', mainStep: 1 },
   { id: 'registration', label: 'Rejestracja', shortLabel: 'Rejestracja', mainStep: 1 },
+  { id: 'organizer', label: 'Organizator i sponsorzy', shortLabel: 'Organizator', mainStep: 1 },
   { id: 'categories', label: 'Kategorie uczestników', shortLabel: 'Kategorie', mainStep: 2 },
   { id: 'distances', label: 'Dystanse', shortLabel: 'Dystanse', mainStep: 2 },
   { id: 'summary', label: 'Podsumowanie', shortLabel: 'Podsumowanie', mainStep: 3 },
@@ -268,6 +272,16 @@ export const useEventFormState = () => {
     existingEvent?.logisticsInfo || {},
   );
 
+  // Organizer contacts
+  const [organizerContacts, setOrganizerContacts] = useState<OrganizerContactEntry[]>(
+    existingEvent?.organizerInfo?.contacts || [],
+  );
+
+  // Sponsors
+  const [sponsors, setSponsors] = useState<EventSponsor[]>(
+    existingEvent?.organizerInfo?.sponsors || [],
+  );
+
   const updateLogisticsField = (
     key: keyof EventLogisticsInfo,
     updates: Partial<LogisticsField>,
@@ -328,6 +342,32 @@ export const useEventFormState = () => {
         ),
       },
     }));
+  };
+
+  // Organizer contacts handlers
+  const addOrganizerContact = () => {
+    setOrganizerContacts((prev) => [...prev, { id: `contact-${Date.now()}`, email: '', phone: '' }]);
+  };
+
+  const removeOrganizerContact = (id: string) => {
+    setOrganizerContacts((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const updateOrganizerContact = (id: string, updates: Partial<OrganizerContactEntry>) => {
+    setOrganizerContacts((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+  };
+
+  // Sponsor handlers
+  const addSponsor = () => {
+    setSponsors((prev) => [...prev, { id: `sponsor-${Date.now()}`, name: '', url: '', logoUrl: '' }]);
+  };
+
+  const removeSponsor = (id: string) => {
+    setSponsors((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const updateSponsor = (id: string, updates: Partial<EventSponsor>) => {
+    setSponsors((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
   };
 
   // Categories
@@ -429,6 +469,8 @@ export const useEventFormState = () => {
       );
     }
     setLogisticsInfo(existingEvent.logisticsInfo || {});
+    setOrganizerContacts(existingEvent.organizerInfo?.contacts || []);
+    setSponsors(existingEvent.organizerInfo?.sponsors || []);
     const loadedAgeCats = existingEvent.distances?.[0]?.ageCategories;
     const hasLoadedCats = Array.isArray(loadedAgeCats) && loadedAgeCats.length > 0;
     setCategoriesEnabled(hasLoadedCats);
@@ -1097,6 +1139,10 @@ export const useEventFormState = () => {
       registrationFormConfig: formConfig,
       displayOptions,
       logisticsInfo,
+      organizerInfo: {
+        contacts: organizerContacts.filter((c) => c.email?.trim() || c.phone?.trim()),
+        sponsors: sponsors.filter((s) => s.name.trim()),
+      },
     };
     return canManageFeatured ? { ...payload, featured } : payload;
   };
@@ -1288,6 +1334,16 @@ export const useEventFormState = () => {
     addLogisticsLocation,
     removeLogisticsLocation,
     updateLogisticsLocation,
+    organizerContacts,
+    setOrganizerContacts,
+    addOrganizerContact,
+    removeOrganizerContact,
+    updateOrganizerContact,
+    sponsors,
+    setSponsors,
+    addSponsor,
+    removeSponsor,
+    updateSponsor,
 
     // Step 2
     categoriesEnabled,
