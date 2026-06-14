@@ -1,4 +1,4 @@
-import { Event, EventLogisticsInfo, EventDocumentType, EVENT_DOCUMENT_TYPE_LABELS } from '@/types';
+import { Event, EventLogisticsInfo, EventDocumentType, EVENT_DOCUMENT_TYPE_LABELS, EventSponsor } from '@/types';
 import {
   Mail,
   Phone,
@@ -28,6 +28,8 @@ import {
   FileText,
   Download,
   AlertCircle,
+  Link2,
+  Building2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
@@ -486,9 +488,42 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => {
       )}
 
       {/* ── Kontakt ──────────────────────────────────────────── */}
-      <InfoSection title="Kontakt z organizatorem" icon={<Globe className="h-4 w-4" />} tone="indigo">
+      <InfoSection title="Kontakt z organizatorem" icon={<Mail className="h-4 w-4" />} tone="indigo">
         {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
-        {event.organizerContact && (
+
+        {/* New multi-contact list */}
+        {event.organizerInfo?.contacts && event.organizerInfo.contacts.length > 0 ? (
+          <div className="space-y-4">
+            {event.organizerInfo.contacts.map((contact, idx) => (
+              <div key={idx} className="space-y-1.5">
+                {contact.name && (
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/50">
+                    {contact.name}
+                  </p>
+                )}
+                {contact.email && (
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                  >
+                    <Mail className="h-4 w-4" />
+                    {contact.email}
+                  </a>
+                )}
+                {contact.phone && (
+                  <a
+                    href={`tel:${contact.phone}`}
+                    className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                  >
+                    <Phone className="h-4 w-4" />
+                    {contact.phone}
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : event.organizerContact ? (
+          /* Legacy single contact fallback */
           <div className="space-y-2">
             <a
               href={`mailto:${event.organizerContact.email}`}
@@ -518,13 +553,48 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => {
               </a>
             )}
           </div>
-        )}
-        {!event.organizerContact && (
+        ) : (
           <p className="text-sm text-foreground/60">{event.organizerName}</p>
         )}
       </InfoSection>
+
+      {/* ── Sponsorzy ────────────────────────────────────────── */}
+      {event.organizerInfo?.sponsors && event.organizerInfo.sponsors.length > 0 && (
+        <InfoSection title="Sponsorzy i partnerzy" icon={<Link2 className="h-4 w-4" />} tone="violet">
+          <div className="flex flex-wrap gap-3">
+            {event.organizerInfo.sponsors.map((sponsor, idx) => (
+              <SponsorBadge key={idx} sponsor={sponsor} />
+            ))}
+          </div>
+        </InfoSection>
+      )}
     </div>
   );
+};
+
+const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
+  const inner = (
+    <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2 transition-colors hover:bg-white/[0.06]">
+      {sponsor.logoUrl && (
+        <img
+          src={sponsor.logoUrl}
+          alt={sponsor.name}
+          className="h-6 w-auto max-w-[60px] object-contain opacity-90"
+        />
+      )}
+      <span className="text-sm font-medium text-foreground/80">{sponsor.name}</span>
+      {sponsor.url && <Link2 className="h-3.5 w-3.5 shrink-0 text-foreground/40" />}
+    </div>
+  );
+
+  if (sponsor.url) {
+    return (
+      <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
+        {inner}
+      </a>
+    );
+  }
+  return inner;
 };
 
 const DocumentRow = ({ doc }: { doc: NonNullable<Event['documents']>[number] }) => (

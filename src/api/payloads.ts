@@ -67,7 +67,6 @@ export interface CreateEventPayload {
   startDate?: string;
   endDate?: string;
   paymentConfig?: PaymentConfig;
-  organizersHtml?: string;
   rulesHtml?: string;
   finalAcceptanceHtml?: string;
   requireFinalAcceptance?: boolean;

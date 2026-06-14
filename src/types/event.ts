@@ -114,6 +114,7 @@ export interface OrganizerContact {
 
 export interface OrganizerContactEntry {
   id: string;
+  name?: string;
   email?: string;
   phone?: string;
 }
@@ -123,6 +124,7 @@ export interface EventSponsor {
   name: string;
   url?: string;
   logoUrl?: string;
+  logoOriginalUrl?: string;
 }
 
 export interface OrganizerInfo {

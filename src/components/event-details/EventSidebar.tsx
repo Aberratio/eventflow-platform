@@ -616,31 +616,63 @@ export const EventSidebar = ({
 
       <div id="event-start-list-sidebar-slot" className="space-y-5" />
 
-      {event.organizerContact && (
+      {(event.organizerInfo?.contacts?.length || event.organizerContact) && (
         <Card className="border-white/10 bg-white/[0.035]">
           <CardHeader>
             <CardTitle className="text-base">Kontakt z organizatorem</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm font-medium">{event.organizerName}</p>
-            <div className="space-y-2">
-              <a
-                href={`mailto:${event.organizerContact.email}`}
-                className="flex items-center gap-2 text-sm text-primary hover:underline"
-              >
-                <Mail className="h-4 w-4" />
-                Napisz do organizatora
-              </a>
-              {event.organizerContact.phone && (
+            {event.organizerInfo?.contacts && event.organizerInfo.contacts.length > 0 ? (
+              <div className="space-y-2">
+                {event.organizerInfo.contacts.map((contact, idx) => (
+                  <div key={idx} className="space-y-1">
+                    {contact.name && (
+                      <p className="text-xs font-semibold uppercase tracking-wide text-foreground/50">
+                        {contact.name}
+                      </p>
+                    )}
+                    {contact.email && (
+                      <a
+                        href={`mailto:${contact.email}`}
+                        className="flex items-center gap-2 text-sm text-primary hover:underline"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {contact.email}
+                      </a>
+                    )}
+                    {contact.phone && (
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {contact.phone}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : event.organizerContact ? (
+              <div className="space-y-2">
                 <a
-                  href={`tel:${event.organizerContact.phone}`}
-                  className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                  href={`mailto:${event.organizerContact.email}`}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
                 >
-                  <Phone className="h-4 w-4" />
-                  {event.organizerContact.phone}
+                  <Mail className="h-4 w-4" />
+                  Napisz do organizatora
                 </a>
-              )}
-            </div>
+                {event.organizerContact.phone && (
+                  <a
+                    href={`tel:${event.organizerContact.phone}`}
+                    className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                  >
+                    <Phone className="h-4 w-4" />
+                    {event.organizerContact.phone}
+                  </a>
+                )}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       )}

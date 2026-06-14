@@ -1,3 +1,4 @@
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -296,43 +297,66 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
       {/* DISTANCES */}
       {activeSubStep === 'distances' && <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
-        <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
-        </Button>
+        <h2 className="text-xl font-semibold">Dystanse ({form.noDistances ? '–' : form.distances.length})</h2>
+        {!form.noDistances && (
+          <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
+            <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
+          </Button>
+        )}
       </div>
 
       <Card>
-        <CardContent className="space-y-3 p-4 sm:p-5">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium">Popularne szablony dystansów</p>
-              <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
+        <CardContent className="p-4 sm:p-5">
+          <label className="flex cursor-pointer items-start gap-3">
+            <Checkbox
+              checked={form.noDistances}
+              onCheckedChange={(checked) => form.setNoDistances(Boolean(checked))}
+              className="mt-0.5"
+            />
+            <div>
+              <p className="text-sm font-medium">Brak dystansów</p>
+              <p className="text-xs text-muted-foreground">
+                Zaznacz, jeśli zawody nie są rozgrywane na wyznaczony dystans (np. orientacja
+                sportowa, triathlon z dowolną trasą, zawody punktowe).
+              </p>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
-              wariantów.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {DISTANCE_TEMPLATES.map((template) => (
-              <Button
-                key={`${template.name}-${template.length}-${template.unit}`}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => form.addDistanceFromTemplate(template)}
-                className="h-8"
-              >
-                <ListPlus className="mr-1.5 h-3.5 w-3.5" />
-                {template.name}
-              </Button>
-            ))}
-          </div>
+          </label>
         </CardContent>
       </Card>
 
-      {form.distances.length === 0 && (
+      {!form.noDistances && (
+        <Card>
+          <CardContent className="space-y-3 p-4 sm:p-5">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-medium">Popularne szablony dystansów</p>
+                <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
+                wariantów.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {DISTANCE_TEMPLATES.map((template) => (
+                <Button
+                  key={`${template.name}-${template.length}-${template.unit}`}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => form.addDistanceFromTemplate(template)}
+                  className="h-8"
+                >
+                  <ListPlus className="mr-1.5 h-3.5 w-3.5" />
+                  {template.name}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!form.noDistances && form.distances.length === 0 && (
         <Card>
           <CardContent className="p-6 py-10 text-center text-muted-foreground sm:py-12">
             <p>Nie dodano jeszcze żadnych dystansów.</p>
@@ -343,7 +367,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
         </Card>
       )}
 
-      {form.distances.map((dist, index) => (
+      {!form.noDistances && form.distances.map((dist, index) => (
         <Card key={dist.id}>
           <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
             <div className="flex items-start justify-between gap-3">

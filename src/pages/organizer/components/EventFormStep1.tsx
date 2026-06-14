@@ -83,6 +83,7 @@ import { ImageCropper } from '@/components/ImageCropper';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { EventFormState } from '../hooks/useEventFormState';
+import { EventFormOrganizerSection } from './EventFormOrganizerSection';
 
 interface EventFormStep1Props {
   form: EventFormState;
@@ -555,7 +556,7 @@ const MainEventImagePlacementPreview = ({ form }: EventImagesPlacementPreviewPro
 };
 
 const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps) => {
-  const heroImageUrl = form.bannerUrl || form.imageUrl;
+  const heroImageUrl = form.bannerUrl;
   const eventName = form.name || 'Nazwa wydarzenia';
   const logoShape = getLogoShapeConfig(form.organizerLogoShape);
 
@@ -583,7 +584,7 @@ const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps)
             />
           ) : (
             <EmptyImagePreview
-              label="Hero strony wydarzenia: najpierw baner, a gdy go nie ma - glowny obraz"
+              label="Baner strony wydarzenia (brak — dodaj poniżej)"
               className="absolute inset-0 px-4"
             />
           )}
@@ -1639,9 +1640,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <EventImageUploadField
-                label="Baner wydarzenia"
-                description="Obraz wykorzystywany jako baner wizualny wydarzenia w miejscach, gdzie potrzebna jest mocniejsza ekspozycja."
-                recommendedSize="Zalecany format 16:9, minimum 1200px szerokosci."
+                label="Baner wydarzenia (zdjęcie w tle)"
+                description="Widoczny jako duże zdjęcie w tle na stronie wydarzenia. Najlepiej sprawdza się dynamiczne, marketingowe zdjęcie z atmosferą zawodów — np. tłum startujących, meta, krajobraz trasy z poprzedniej edycji. Przyciąga uwagę i buduje wizerunek imprezy. Główny obraz wydarzenia nie jest tu używany jako zastępstwo — jeśli nie dodasz baneru, tło pozostanie puste."
+                recommendedSize="Zalecany format 16:9, minimum 1200 px szerokości."
                 value={form.bannerUrl}
                 onChange={(url) => {
                   form.setBannerUrl(url);
@@ -1860,20 +1861,6 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           <div className="space-y-6">
               <DocumentsUploadSection form={form} />
               <div className="space-y-2">
-                <HelpLabel description="Sformatowana sekcja na stronie wydarzenia. Mozesz wpisac organizatorow, partnerow, sponsorow i dodac linki.">
-                  Organizatorzy
-                </HelpLabel>
-                <p className="text-sm text-muted-foreground">
-                  Możesz wpisać wielu organizatorów, sponsorów z linkami do ich stron.
-                </p>
-                <RichTextEditor
-                  value={form.organizersHtml}
-                  onChange={form.setOrganizersHtml}
-                  placeholder="Wpisz informacje o organizatorach..."
-                  minHeight="100px"
-                />
-              </div>
-              <div className="space-y-2">
                 <HelpLabel description="Tresci regulaminowe lub linki do dokumentow, ktore uczestnik powinien przeczytac przed zapisem.">
                   Regulamin
                 </HelpLabel>
@@ -2054,6 +2041,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           </CardContent>
         </Card>
       )}
+
+      {/* ── organizer: Organizator i sponsorzy ── */}
+      {activeSubStep === 'organizer' && <EventFormOrganizerSection form={form} />}
     </div>
   );
 };

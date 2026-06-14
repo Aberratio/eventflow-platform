@@ -272,10 +272,14 @@ export const useEventFormState = () => {
     existingEvent?.logisticsInfo || {},
   );
 
-  // Organizer contacts
-  const [organizerContacts, setOrganizerContacts] = useState<OrganizerContactEntry[]>(
-    existingEvent?.organizerInfo?.contacts || [],
-  );
+  // Organizer contacts — pre-filled from profile for new events
+  const [organizerContacts, setOrganizerContacts] = useState<OrganizerContactEntry[]>(() => {
+    if (existingEvent?.organizerInfo?.contacts) return existingEvent.organizerInfo.contacts;
+    if (!isEditing && (user?.email || user?.phone)) {
+      return [{ id: `contact-${Date.now()}`, email: user.email || '', phone: user.phone || undefined }];
+    }
+    return [];
+  });
 
   // Sponsors
   const [sponsors, setSponsors] = useState<EventSponsor[]>(
@@ -390,6 +394,7 @@ export const useEventFormState = () => {
   );
 
   // Distances
+  const [noDistances, setNoDistances] = useState(existingEvent?.distances.length === 0);
   const [distances, setDistances] = useState<DistanceFormData[]>(
     existingEvent?.distances.map((d) => ({
       id: d.id,
@@ -476,6 +481,7 @@ export const useEventFormState = () => {
     setCategoriesEnabled(hasLoadedCats);
     setAgeCategories(Array.isArray(loadedAgeCats) ? loadedAgeCats : generateStandardAgeCategoriesForDate(existingEvent.date || ''));
     setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
+    setNoDistances(existingEvent.distances.length === 0);
     setDistances(
       existingEvent.distances.map((d) => ({
         id: d.id,
@@ -851,10 +857,10 @@ export const useEventFormState = () => {
 
     const skipSystemPaymentConfig = registrationMode === 'external_embed';
 
-    if (distances.length === 0) {
+    if (!noDistances && distances.length === 0) {
       addError('distances', 'Dodaj przynajmniej jeden dystans');
     }
-    for (const dist of distances) {
+    for (const dist of noDistances ? [] : distances) {
       if (!dist.name || !dist.length || !dist.price) {
         addError('distances', 'Wypełnij wszystkie pola dystansów');
       }
@@ -1122,7 +1128,6 @@ export const useEventFormState = () => {
         transferTitle: transferTitle || undefined,
       },
       documents,
-      organizersHtml,
       rulesHtml,
       finalAcceptanceHtml,
       requireFinalAcceptance,
@@ -1357,6 +1362,8 @@ export const useEventFormState = () => {
     addSpecialCategory,
     removeSpecialCategory,
     updateSpecialCategory,
+    noDistances,
+    setNoDistances,
     distances,
     addDistance,
     addDistanceFromTemplate,
