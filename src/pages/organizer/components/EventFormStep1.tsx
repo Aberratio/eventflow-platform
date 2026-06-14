@@ -1517,34 +1517,65 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           </div>
 
           {!form.isVirtual && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <HelpLabel
-                  htmlFor="location"
-                  description="Dokladne miejsce startu lub centrum wydarzenia, np. stadion, park, hala albo adres punktu zbiorczego."
-                >
-                  Lokalizacja (miejsce startu) *
-                </HelpLabel>
-                <Input
-                  id="location"
-                  value={form.location}
-                  onChange={(e) => form.setLocation(e.target.value)}
-                  placeholder="np. Stadion Narodowy"
-                />
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <HelpLabel
+                    htmlFor="location"
+                    description="Dokladne miejsce startu lub centrum wydarzenia, np. stadion, park, hala albo adres punktu zbiorczego."
+                  >
+                    Lokalizacja (miejsce startu) *
+                  </HelpLabel>
+                  <Input
+                    id="location"
+                    value={form.location}
+                    onChange={(e) => form.setLocation(e.target.value)}
+                    placeholder="np. Stadion Narodowy"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <HelpLabel
+                    htmlFor="city"
+                    description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                  >
+                    Miasto *
+                  </HelpLabel>
+                  <Input
+                    id="city"
+                    value={form.city}
+                    onChange={(e) => form.setCity(e.target.value)}
+                    placeholder="np. Warszawa"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <HelpLabel
-                  htmlFor="city"
-                  description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                  htmlFor="locationMapsUrl"
+                  description="Link do pinezki w Google Maps, który pojawi się przy lokalizacji i ułatwi uczestnikom nawigację do miejsca startu. Skopiuj go z maps.google.com → Udostępnij → Kopiuj link."
                 >
-                  Miasto *
+                  Link do Google Maps (opcjonalnie)
                 </HelpLabel>
-                <Input
-                  id="city"
-                  value={form.city}
-                  onChange={(e) => form.setCity(e.target.value)}
-                  placeholder="np. Warszawa"
-                />
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="locationMapsUrl"
+                    value={form.locationMapsUrl}
+                    onChange={(e) => form.setLocationMapsUrl(e.target.value)}
+                    placeholder="https://maps.google.com/..."
+                    className="pl-9"
+                  />
+                </div>
+                {form.locationMapsUrl && (
+                  <a
+                    href={form.locationMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Sprawdź link w nowej karcie
+                  </a>
+                )}
               </div>
             </div>
           )}

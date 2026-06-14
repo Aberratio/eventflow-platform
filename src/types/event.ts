@@ -171,6 +171,7 @@ export interface Event {
   discipline: SportDiscipline;
   date: string;
   location: string;
+  locationMapsUrl?: string;
   city: string;
   description: string;
   imageUrl: string;

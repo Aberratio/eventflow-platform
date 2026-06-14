@@ -258,14 +258,15 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => {
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">{event.location}</p>
                 <p className="text-xs text-foreground/60">{event.city}</p>
-                {raceOffice?.status === 'yes' && raceOffice.locations && raceOffice.locations.length > 0 && raceOffice.locations[0].mapsUrl && (
+                {(event.locationMapsUrl || (raceOffice?.status === 'yes' && raceOffice.locations && raceOffice.locations.length > 0 && raceOffice.locations[0].mapsUrl)) && (
                   <a
-                    href={raceOffice.locations[0].mapsUrl}
+                    href={event.locationMapsUrl || raceOffice!.locations![0].mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                    className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
-                    Otwórz mapę <ExternalLink className="h-3 w-3" />
+                    <MapPin className="h-3 w-3" />
+                    Otwórz w Google Maps <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
               </div>

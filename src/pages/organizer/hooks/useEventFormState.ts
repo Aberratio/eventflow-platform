@@ -174,6 +174,7 @@ export const useEventFormState = () => {
     existingEvent?.registrationUntilEventStart || false,
   );
   const [location, setLocation] = useState(existingEvent?.location || '');
+  const [locationMapsUrl, setLocationMapsUrl] = useState(existingEvent?.locationMapsUrl || '');
   const [city, setCity] = useState(existingEvent?.city || '');
   const [description, setDescription] = useState(existingEvent?.description || '');
   const [imageUrl, setImageUrl] = useState(existingEvent?.imageUrl || '');
@@ -1020,6 +1021,7 @@ export const useEventFormState = () => {
       discipline: (disciplines[0] ?? 'running') as SportDiscipline,
       date,
       location,
+      locationMapsUrl: locationMapsUrl || undefined,
       city,
       description,
       imageUrl,
@@ -1210,6 +1212,8 @@ export const useEventFormState = () => {
     setRegistrationUntilEventStart,
     location,
     setLocation,
+    locationMapsUrl,
+    setLocationMapsUrl,
     city,
     setCity,
     description,
