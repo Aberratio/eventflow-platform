@@ -591,10 +591,12 @@ const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps)
           )}
           <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
             <div className="mb-2 flex flex-wrap gap-1.5">
-              <Badge className="bg-background/85 text-[10px] backdrop-blur-sm">
-                <DisciplineIcon discipline={form.discipline} size="sm" className="mr-1 h-3 w-3" />
-                {disciplineLabels[form.discipline]}
-              </Badge>
+              {form.disciplines.map((d) => (
+                <Badge key={d} className="bg-background/85 text-[10px] backdrop-blur-sm">
+                  <DisciplineIcon discipline={d} size="sm" className="mr-1 h-3 w-3" />
+                  {disciplineLabels[d]}
+                </Badge>
+              ))}
               {form.isVirtual && (
                 <Badge variant="outline" className="bg-background/80 text-[10px]">
                   <Globe className="mr-1 h-3 w-3" />
@@ -1198,26 +1200,42 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             </div>
             <div className="space-y-2">
               <HelpLabel
-                htmlFor="discipline"
-                description="Okresla typ sportu. Wplywa na ikony, filtry wydarzen i sposob prezentacji wydarzenia w serwisie."
+                description="Określa typy sportów. Wpływa na ikony, filtry wydarzeń i sposób prezentacji wydarzenia w serwisie. Można wybrać kilka."
               >
                 Dyscyplina *
               </HelpLabel>
-              <Select
-                value={form.discipline}
-                onValueChange={(v: SportDiscipline) => form.setDiscipline(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(disciplineLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.entries(disciplineLabels) as [SportDiscipline, string][]).map(([key, label]) => {
+                  const checked = form.disciplines.includes(key);
+                  return (
+                    <div
+                      key={key}
+                      className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 transition-colors ${checked ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                      onClick={() => {
+                        const next = checked
+                          ? form.disciplines.filter((d) => d !== key)
+                          : [...form.disciplines, key];
+                        if (next.length > 0) form.setDisciplines(next);
+                      }}
+                    >
+                      <Checkbox
+                        id={`discipline-${key}`}
+                        checked={checked}
+                        onCheckedChange={(c) => {
+                          const next = c
+                            ? [...form.disciplines, key]
+                            : form.disciplines.filter((d) => d !== key);
+                          if (next.length > 0) form.setDisciplines(next);
+                        }}
+                      />
+                      <DisciplineIcon discipline={key} size="sm" className="h-4 w-4 shrink-0" />
+                      <Label htmlFor={`discipline-${key}`} className="cursor-pointer text-sm">
+                        {label}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

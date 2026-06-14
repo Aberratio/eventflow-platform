@@ -27,7 +27,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Dyscyplina</p>
-              <p className="font-medium">{disciplineLabels[form.discipline]}</p>
+              <p className="font-medium">{form.disciplines.map((d) => disciplineLabels[d]).join(', ')}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Data</p>

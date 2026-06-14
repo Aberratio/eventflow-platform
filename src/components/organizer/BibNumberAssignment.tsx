@@ -186,25 +186,21 @@ export const BibNumberAssignment = ({
     });
   };
 
-  const totalWithoutNumber = distanceStats
-    .filter((d) => selectedDistances.has(d.id))
-    .reduce((sum, d) => sum + d.withoutNumber, 0);
-
   const totalWithNumber = distanceStats
     .filter((d) => selectedDistances.has(d.id))
     .reduce((sum, d) => sum + d.withNumber, 0);
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Hash className="h-5 w-5" />
-          Nadawanie numerów startowych
-        </CardTitle>
+    <Card className="overflow-hidden">
+      <CardHeader className="space-y-3 p-6 pb-4">
+        <CardTitle className="text-xl">Nadawanie numerów startowych</CardTitle>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Nadaj numery startowe opłaconym uczestnikom w kilku prostych krokach.
+        </p>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-6 pb-6">
         {/* Settings row */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Sortowanie</Label>
             <Select
@@ -249,14 +245,16 @@ export const BibNumberAssignment = ({
                 />
                 <Label
                   htmlFor={`distance-${distance.id}`}
-                  className="flex flex-1 cursor-pointer items-center gap-2"
+                  className="flex min-w-0 flex-1 cursor-pointer items-center gap-2"
                 >
-                  <span>{distance.name}</span>
-                  <Badge variant="outline" className="ml-auto">
+                  <span className="truncate">{distance.name}</span>
+                  <Badge variant="outline" className="ml-auto shrink-0">
                     {distance.withoutNumber} bez numeru
                   </Badge>
                   {distance.withNumber > 0 && (
-                    <Badge variant="secondary">{distance.withNumber} z numerem</Badge>
+                    <Badge variant="secondary" className="shrink-0">
+                      {distance.withNumber} z numerem
+                    </Badge>
                   )}
                 </Label>
               </div>
@@ -266,8 +264,8 @@ export const BibNumberAssignment = ({
 
         {/* Summary */}
         {eligibleCount > 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 p-3">
+            <AlertCircle className="h-4 w-4 text-warning" />
             <span className="text-sm">
               Do przydzielenia: <strong>{eligibleCount}</strong>{' '}
               {eligibleCount === 1 ? 'uczestnik' : 'uczestników'}
@@ -276,20 +274,20 @@ export const BibNumberAssignment = ({
         )}
 
         {/* Action buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="space-y-3">
           <Button
             onClick={handleAssignBibNumbers}
             disabled={eligibleCount === 0 || selectedDistances.size === 0}
-            className="flex-1"
+            className="w-full"
           >
             <Hash className="mr-2 h-4 w-4" />
-            Nadaj numery startowe! ({eligibleCount})
+            Nadaj numery startowe ({eligibleCount})
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
             onClick={() => setConfirmDeleteOpen(true)}
             disabled={totalWithNumber === 0 || selectedDistances.size === 0}
-            className="flex-1"
+            className="w-full border-destructive/70 text-destructive hover:border-destructive hover:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Usuń wszystkie numery ({totalWithNumber})

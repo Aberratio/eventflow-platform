@@ -160,8 +160,8 @@ export const useEventFormState = () => {
 
   // Step 1 - Basic info
   const [name, setName] = useState(existingEvent?.name || '');
-  const [discipline, setDiscipline] = useState<SportDiscipline>(
-    existingEvent?.discipline || 'running',
+  const [disciplines, setDisciplines] = useState<SportDiscipline[]>(
+    existingEvent?.discipline ? [existingEvent.discipline] : ['running'],
   );
   const [date, setDate] = useState(existingEvent?.date || '');
   const [registrationDeadline, setRegistrationDeadline] = useState(
@@ -378,7 +378,7 @@ export const useEventFormState = () => {
 
     setSelectedOrganizerId(existingEvent.organizerId);
     setName(existingEvent.name || '');
-    setDiscipline(existingEvent.discipline || 'running');
+    setDisciplines(existingEvent.discipline ? [existingEvent.discipline] : ['running']);
     setDate(existingEvent.date || '');
     setRegistrationDeadline(existingEvent.registrationDeadline || '');
     setLocation(existingEvent.location || '');
@@ -1011,7 +1011,7 @@ export const useEventFormState = () => {
     const payload = {
       name,
       slug: generateSlug(name),
-      discipline,
+      discipline: (disciplines[0] ?? 'running') as SportDiscipline,
       date,
       location,
       city,
@@ -1190,8 +1190,8 @@ export const useEventFormState = () => {
     // Step 1
     name,
     setName,
-    discipline,
-    setDiscipline,
+    disciplines,
+    setDisciplines,
     date,
     setDate,
     registrationDeadline,

@@ -24,7 +24,7 @@ const EventForm = () => {
       {
         targetType: 'event',
         targetName: form.name,
-        metadata: { discipline: form.discipline },
+        metadata: { discipline: form.disciplines[0] ?? 'running' },
       },
     );
     form.handleSubmit();

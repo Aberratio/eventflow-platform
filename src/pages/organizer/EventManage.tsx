@@ -132,21 +132,28 @@ const EventManage = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+      <div className="container max-w-[1500px] py-8">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="mb-6 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-3xl font-bold">{visibleEvent.name}</h1>
-              <Badge variant={visibleEvent.status === 'active' ? 'default' : 'outline'}>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{visibleEvent.name}</h1>
+              <Badge
+                variant={visibleEvent.status === 'active' ? 'default' : 'outline'}
+                className="rounded-md px-2.5 py-1"
+              >
                 {statusLabels[visibleEvent.status]}
               </Badge>
             </div>
           </div>
-          <p className="text-muted-foreground">
+          <p className="mt-2 text-lg text-muted-foreground">
             {visibleEvent.isVirtual
               ? 'Wydarzenie wirtualne - cały świat'
               : `${visibleEvent.city} - ${visibleEvent.date}`}
@@ -155,20 +162,23 @@ const EventManage = () => {
 
         <Tabs defaultValue={defaultTab} className="space-y-6">
           <TabsList
-            className={`grid w-full ${isDraft ? 'grid-cols-4' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
+            className={`grid h-auto w-full rounded-lg border border-border/80 bg-muted/20 p-0 ${isDraft ? 'grid-cols-4' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
           >
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TabsTrigger value="overview" className="flex h-[52px] items-center gap-2 px-7 py-4">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Przegląd</span>
             </TabsTrigger>
             {!isDraft && (
-              <TabsTrigger value="participants" className="flex items-center gap-2">
+              <TabsTrigger
+                value="participants"
+                className="flex h-[52px] items-center gap-2 px-7 py-4"
+              >
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Uczestnicy</span>
               </TabsTrigger>
             )}
             {!isDraft && (
-              <TabsTrigger value="results" className="flex items-center gap-2">
+              <TabsTrigger value="results" className="flex h-[52px] items-center gap-2 px-7 py-4">
                 {visibleEvent.isVirtual ? (
                   <Globe className="h-4 w-4" />
                 ) : (
@@ -179,15 +189,15 @@ const EventManage = () => {
                 </span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="discounts" className="flex items-center gap-2">
+            <TabsTrigger value="discounts" className="flex h-[52px] items-center gap-2 px-7 py-4">
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Kody rabatowe</span>
             </TabsTrigger>
-            <TabsTrigger value="emails" className="flex items-center gap-2">
+            <TabsTrigger value="emails" className="flex h-[52px] items-center gap-2 px-7 py-4">
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emaile</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className="flex h-[52px] items-center gap-2 px-7 py-4">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Ustawienia</span>
             </TabsTrigger>

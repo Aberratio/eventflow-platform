@@ -251,20 +251,42 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     [localRegistrations],
   );
 
+  const participantStats = useMemo(() => {
+    return localRegistrations.reduce(
+      (acc, reg) => {
+        if (reg.status === 'removed') return acc;
+
+        if (!reg.bibNumber) acc.withoutNumber += 1;
+
+        const details = reg.paymentDetails;
+        const startFee = details?.startFeeAmount || reg.pricePaid || 0;
+        const insurance = details?.insuranceAmount || 0;
+        const merchandise =
+          details?.merchandisePayments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+        const paidMerchandise =
+          details?.merchandisePayments?.reduce(
+            (sum, payment) => sum + (payment.paid ? payment.amount : 0),
+            0,
+          ) || 0;
+
+        acc.expected += startFee + insurance + merchandise;
+        if (details?.startFeePaid) acc.collected += startFee;
+        if (details?.insurancePaid) acc.collected += insurance;
+        acc.collected += paidMerchandise;
+
+        if (getPaymentStatus(reg) === 'full') acc.paid += 1;
+
+        return acc;
+      },
+      { paid: 0, withoutNumber: 0, collected: 0, expected: 0 },
+    );
+  }, [localRegistrations]);
+
+  const pendingPaymentCount = Math.max(activeCount - participantStats.paid, 0);
+  const remainingAmount = Math.max(participantStats.expected - participantStats.collected, 0);
+
   return (
     <div className="space-y-6">
-      {viewMode === 'active' && (
-        <BibNumberAssignment
-          event={event}
-          registrations={localRegistrations}
-          onRegistrationsChange={setLocalRegistrations}
-        />
-      )}
-
-      {requiresManualPayment && viewMode === 'active' && (
-        <BankPaymentSummary event={event} registrations={localRegistrations} />
-      )}
-
       {paymentPanelRegistration && (
         <PaymentDetailsPanel
           registration={paymentPanelRegistration}
@@ -274,16 +296,89 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
         />
       )}
 
-      {/* Filters & Bulk Actions */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 border-b pb-4">
-              <span className="text-sm font-medium">Widok:</span>
-              <div className="flex gap-2">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
+              <Check className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Opłaconych</div>
+              <div className="text-3xl font-bold leading-tight">{participantStats.paid}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Oczekujących</div>
+              <div className="text-3xl font-bold leading-tight">{pendingPaymentCount}</div>
+            </div>
+          </div>
+        </Card>
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Zebrano</div>
+              <div className="text-3xl font-bold leading-tight">
+                {participantStats.collected.toLocaleString('pl-PL')} zł
+              </div>
+            </div>
+          </div>
+        </Card>
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning">
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Pozostało</div>
+              <div className="text-3xl font-bold leading-tight">
+                {remainingAmount.toLocaleString('pl-PL')} zł
+              </div>
+            </div>
+          </div>
+        </Card>
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/[0.03] text-muted-foreground">
+              <Hash className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-3xl font-bold leading-tight">
+                {participantStats.withoutNumber}
+              </div>
+              <div className="text-sm text-muted-foreground">bez numeru</div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-border/70 px-6 py-5">
+            <CardTitle>Lista uczestników</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 p-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">
+                {viewMode === 'active' ? 'Uczestnicy' : 'Usunięci uczestnicy'} (
+                {filteredRegistrations.length})
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap gap-0 border-b border-border/70 pb-4">
+              <div className="inline-flex overflow-hidden rounded-lg border border-border/80 bg-background/30">
                 <Button
                   variant={viewMode === 'active' ? 'default' : 'outline'}
                   size="sm"
+                  className="rounded-none border-0 px-5"
                   onClick={() => {
                     setViewMode('active');
                     setSelectedIds(new Set());
@@ -295,6 +390,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                 <Button
                   variant={viewMode === 'removed' ? 'default' : 'outline'}
                   size="sm"
+                  className="rounded-none border-0 px-5"
                   onClick={() => {
                     setViewMode('removed');
                     setSelectedIds(new Set());
@@ -345,8 +441,8 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             </div>
 
             {viewMode === 'active' && (
-              <div className="flex flex-wrap items-center gap-3 border-t pt-2">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex h-10 items-center gap-2 rounded-md border border-[color:var(--glass-border)] bg-[var(--glass-bg)] px-3 text-sm font-semibold">
                   <Checkbox
                     checked={
                       filteredRegistrations.length > 0 &&
@@ -354,7 +450,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                     }
                     onCheckedChange={toggleSelectAll}
                   />
-                  <span className="text-sm text-muted-foreground">
+                  <span>
                     {selectedIds.size > 0
                       ? `Zaznaczono: ${selectedIds.size}`
                       : 'Zaznacz wszystkich'}
@@ -403,181 +499,184 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                 </Button>
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {viewMode === 'active' ? 'Uczestnicy' : 'Usunięci uczestnicy'} (
-            {filteredRegistrations.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredRegistrations.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              {viewMode === 'active'
-                ? 'Brak uczestników spełniających kryteria wyszukiwania.'
-                : 'Brak usuniętych uczestników.'}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {viewMode === 'active' && <TableHead className="w-[50px]" />}
-                    <TableHead>Numer</TableHead>
-                    <TableHead>Uczestnik</TableHead>
-                    <TableHead>Dystans</TableHead>
-                    <TableHead>Kategoria</TableHead>
-                    <TableHead>Status</TableHead>
-                    {requiresManualPayment && viewMode === 'active' && (
-                      <TableHead>Płatność</TableHead>
-                    )}
-                    <TableHead>
-                      {viewMode === 'removed' ? 'Data usunięcia' : 'Data zapisu'}
-                    </TableHead>
-                    <TableHead className="text-right">Akcje</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRegistrations.map((reg) => (
-                    <TableRow key={reg.id}>
-                      {viewMode === 'active' && (
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedIds.has(reg.id)}
-                            onCheckedChange={() => toggleSelect(reg.id)}
-                          />
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <span className="font-mono font-medium">{reg.bibNumber || '-'}</span>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <Link
-                            to={`/athlete/${reg.userId}`}
-                            className="font-medium transition-colors hover:text-primary hover:underline"
-                          >
-                            {event.displayOptions?.uppercaseNames
-                              ? reg.userName.toUpperCase()
-                              : reg.userName}
-                          </Link>
-                          <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
-                          {reg.teamName && (
-                            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                              <Users className="h-3 w-3" />
-                              {reg.teamName}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{reg.distanceName}</TableCell>
-                      <TableCell>{reg.category}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={reg.status} />
-                      </TableCell>
+            {filteredRegistrations.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border/80 py-10 text-center text-muted-foreground">
+                {viewMode === 'active'
+                  ? 'Brak uczestników spełniających kryteria wyszukiwania.'
+                  : 'Brak usuniętych uczestników.'}
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-lg border border-border/70">
+                <Table>
+                  <TableHeader className="border-t-0 bg-muted/30 [&_tr]:border-border/70">
+                    <TableRow className="hover:bg-transparent">
+                      {viewMode === 'active' && <TableHead className="w-[50px]" />}
+                      <TableHead>Numer</TableHead>
+                      <TableHead>Uczestnik</TableHead>
+                      <TableHead>Dystans</TableHead>
+                      <TableHead>Kategoria</TableHead>
+                      <TableHead>Status</TableHead>
                       {requiresManualPayment && viewMode === 'active' && (
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto px-2 py-1"
-                            onClick={() => setPaymentPanelRegistration(reg)}
-                          >
-                            <PaymentBadge reg={reg} />
-                            {!getPaymentStatus(reg) && (
-                              <Badge variant="outline" className="text-muted-foreground">
-                                <CreditCard className="mr-1 h-3 w-3" />
-                                Sprawdź
-                              </Badge>
-                            )}
-                          </Button>
-                        </TableCell>
+                        <TableHead>Płatność</TableHead>
                       )}
-                      <TableCell className="text-muted-foreground">
-                        {viewMode === 'removed' && reg.removedAt
-                          ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
-                          : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          {viewMode === 'removed' ? (
+                      <TableHead>
+                        {viewMode === 'removed' ? 'Data usunięcia' : 'Data zapisu'}
+                      </TableHead>
+                      <TableHead className="text-right">Akcje</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRegistrations.map((reg) => (
+                      <TableRow key={reg.id} className="even:bg-transparent hover:bg-muted/20">
+                        {viewMode === 'active' && (
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedIds.has(reg.id)}
+                              onCheckedChange={() => toggleSelect(reg.id)}
+                            />
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <span className="font-mono font-medium">{reg.bibNumber || '-'}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <Link
+                              to={`/athlete/${reg.userId}`}
+                              className="font-medium transition-colors hover:text-primary hover:underline"
+                            >
+                              {event.displayOptions?.uppercaseNames
+                                ? reg.userName.toUpperCase()
+                                : reg.userName}
+                            </Link>
+                            <div className="text-sm text-muted-foreground">{reg.userEmail}</div>
+                            {reg.teamName && (
+                              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                                <Users className="h-3 w-3" />
+                                {reg.teamName}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">{reg.distanceName}</TableCell>
+                        <TableCell>{reg.category}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={reg.status} />
+                        </TableCell>
+                        {requiresManualPayment && viewMode === 'active' && (
+                          <TableCell>
                             <Button
                               variant="ghost"
-                              size="icon"
-                              title="Przywróć"
-                              onClick={() => handleRestoreParticipant(reg)}
+                              size="sm"
+                              className="h-auto px-2 py-1"
+                              onClick={() => setPaymentPanelRegistration(reg)}
                             >
-                              <RotateCcw className="h-4 w-4 text-primary" />
+                              <PaymentBadge reg={reg} />
+                              {!getPaymentStatus(reg) && (
+                                <Badge variant="outline" className="text-muted-foreground">
+                                  <CreditCard className="mr-1 h-3 w-3" />
+                                  Sprawdź
+                                </Badge>
+                              )}
                             </Button>
-                          ) : (
-                            <>
-                              {requiresManualPayment && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  title="Szczegóły płatności"
-                                  onClick={() => setPaymentPanelRegistration(reg)}
-                                >
-                                  <CreditCard className="h-4 w-4" />
-                                </Button>
-                              )}
+                          </TableCell>
+                        )}
+                        <TableCell className="text-muted-foreground">
+                          {viewMode === 'removed' && reg.removedAt
+                            ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
+                            : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            {viewMode === 'removed' ? (
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                title="Przypisz numer startowy"
-                                onClick={() => {
-                                  setSelectedParticipant(reg);
-                                  setBibNumber(reg.bibNumber || '');
-                                  setBibDialogOpen(true);
-                                }}
+                                title="Przywróć"
+                                onClick={() => handleRestoreParticipant(reg)}
                               >
-                                <Hash className="h-4 w-4" />
+                                <RotateCcw className="h-4 w-4 text-primary" />
                               </Button>
-                              {reg.status !== 'confirmed' && (
+                            ) : (
+                              <>
+                                {requiresManualPayment && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Szczegóły płatności"
+                                    onClick={() => setPaymentPanelRegistration(reg)}
+                                  >
+                                    <CreditCard className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Potwierdź"
-                                  onClick={() => handleStatusChange(reg, 'confirmed')}
+                                  title="Przypisz numer startowy"
+                                  onClick={() => {
+                                    setSelectedParticipant(reg);
+                                    setBibNumber(reg.bibNumber || '');
+                                    setBibDialogOpen(true);
+                                  }}
                                 >
-                                  <UserCheck className="h-4 w-4 text-primary" />
+                                  <Hash className="h-4 w-4" />
                                 </Button>
-                              )}
-                              {reg.status !== 'cancelled' && (
+                                {reg.status !== 'confirmed' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Potwierdź"
+                                    onClick={() => handleStatusChange(reg, 'confirmed')}
+                                  >
+                                    <UserCheck className="h-4 w-4 text-primary" />
+                                  </Button>
+                                )}
+                                {reg.status !== 'cancelled' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Anuluj"
+                                    onClick={() => handleStatusChange(reg, 'cancelled')}
+                                  >
+                                    <UserX className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Anuluj"
-                                  onClick={() => handleStatusChange(reg, 'cancelled')}
+                                  title="Usuń"
+                                  onClick={() => handleRemoveParticipant(reg)}
                                 >
-                                  <UserX className="h-4 w-4 text-destructive" />
+                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
                                 </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                title="Usuń"
-                                onClick={() => handleRemoveParticipant(reg)}
-                              >
-                                <Trash2 className="h-4 w-4 text-muted-foreground" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <aside className="space-y-5">
+          {viewMode === 'active' && (
+            <BibNumberAssignment
+              event={event}
+              registrations={localRegistrations}
+              onRegistrationsChange={setLocalRegistrations}
+            />
           )}
-        </CardContent>
-      </Card>
+
+          {requiresManualPayment && viewMode === 'active' && (
+            <BankPaymentSummary event={event} registrations={localRegistrations} />
+          )}
+        </aside>
+      </div>
 
       {/* Bib Number Dialog */}
       <Dialog open={bibDialogOpen} onOpenChange={setBibDialogOpen}>
