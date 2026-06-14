@@ -27,8 +27,20 @@ import {
   Wallet,
   AlertTriangle,
   Info,
+  AlertCircle,
 } from 'lucide-react';
-import type { EventFormState } from '../hooks/useEventFormState';
+import type { EventFormState, SubStep } from '../hooks/useEventFormState';
+
+const FieldError = ({ message }: { message?: string }) =>
+  message ? (
+    <p className="flex items-center gap-1 text-xs text-destructive">
+      <AlertCircle className="h-3 w-3 shrink-0" />
+      {message}
+    </p>
+  ) : null;
+
+const inputError = (hasError: boolean) =>
+  hasError ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20' : '';
 import { applyDiscount } from '@/api';
 import type { ParticipantCountType, PriceTierMode } from '@/types';
 import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
@@ -51,6 +63,8 @@ const DISTANCE_TEMPLATES = [
 
 export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventFormStep2Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
+  const showValidation = form.shownValidationSubSteps.includes(activeSubStep as SubStep);
+  const fe = showValidation ? form.fieldValidationErrors : {};
 
   const setTierPrice = (
     distanceIndex: number,
@@ -297,66 +311,43 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
       {/* DISTANCES */}
       {activeSubStep === 'distances' && <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold">Dystanse ({form.noDistances ? '–' : form.distances.length})</h2>
-        {!form.noDistances && (
-          <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
-          </Button>
-        )}
+        <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
+        <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
+          <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
+        </Button>
       </div>
 
       <Card>
-        <CardContent className="p-4 sm:p-5">
-          <label className="flex cursor-pointer items-start gap-3">
-            <Checkbox
-              checked={form.noDistances}
-              onCheckedChange={(checked) => form.setNoDistances(Boolean(checked))}
-              className="mt-0.5"
-            />
-            <div>
-              <p className="text-sm font-medium">Brak dystansów</p>
-              <p className="text-xs text-muted-foreground">
-                Zaznacz, jeśli zawody nie są rozgrywane na wyznaczony dystans (np. orientacja
-                sportowa, triathlon z dowolną trasą, zawody punktowe).
-              </p>
+        <CardContent className="space-y-3 p-4 sm:p-5">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium">Popularne szablony dystansów</p>
+              <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
             </div>
-          </label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
+              wariantów.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DISTANCE_TEMPLATES.map((template) => (
+              <Button
+                key={`${template.name}-${template.length}-${template.unit}`}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => form.addDistanceFromTemplate(template)}
+                className="h-8"
+              >
+                <ListPlus className="mr-1.5 h-3.5 w-3.5" />
+                {template.name}
+              </Button>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      {!form.noDistances && (
-        <Card>
-          <CardContent className="space-y-3 p-4 sm:p-5">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-medium">Popularne szablony dystansów</p>
-                <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
-                wariantów.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {DISTANCE_TEMPLATES.map((template) => (
-                <Button
-                  key={`${template.name}-${template.length}-${template.unit}`}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => form.addDistanceFromTemplate(template)}
-                  className="h-8"
-                >
-                  <ListPlus className="mr-1.5 h-3.5 w-3.5" />
-                  {template.name}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!form.noDistances && form.distances.length === 0 && (
+      {form.distances.length === 0 && (
         <Card>
           <CardContent className="p-6 py-10 text-center text-muted-foreground sm:py-12">
             <p>Nie dodano jeszcze żadnych dystansów.</p>
@@ -367,7 +358,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
         </Card>
       )}
 
-      {!form.noDistances && form.distances.map((dist, index) => (
+      {form.distances.map((dist, index) => (
         <Card key={dist.id}>
           <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
             <div className="flex items-start justify-between gap-3">
@@ -394,32 +385,57 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   value={dist.name}
                   onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
                   placeholder="np. Maraton"
+                  className={inputError(!!fe[`distance_${index}_name`])}
                 />
+                <FieldError message={fe[`distance_${index}_name`]} />
               </div>
               <div className="space-y-2">
-                <HelpLabel description="Dlugosc dystansu wraz z jednostka. Dane sa pokazywane uczestnikom i pomagaja odroznic warianty zapisow.">
-                  Długość *
+                <HelpLabel description="Dlugosc dystansu wraz z jednostka. Zostaw puste, jezeli zawody nie sa rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
+                  Długość
                 </HelpLabel>
-                <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-2">
-                  <Input
-                    type="number"
-                    value={dist.length}
-                    onChange={(e) => form.updateDistance(index, 'length', e.target.value)}
-                    placeholder="42.195"
-                  />
-                  <Select
-                    value={dist.unit}
-                    onValueChange={(v: 'km' | 'm') => form.updateDistance(index, 'unit', v)}
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="km">km</SelectItem>
-                      <SelectItem value="m">m</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {dist.noLength ? (
+                  <div className="flex h-9 items-center">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                      <Checkbox
+                        checked
+                        onCheckedChange={() => form.updateDistance(index, 'noLength', false)}
+                      />
+                      Brak dystansu
+                    </label>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-2">
+                    <Input
+                      type="number"
+                      value={dist.length}
+                      onChange={(e) => form.updateDistance(index, 'length', e.target.value)}
+                      placeholder="42.195"
+                      className={inputError(!!fe[`distance_${index}_length`])}
+                    />
+                    <Select
+                      value={dist.unit}
+                      onValueChange={(v: 'km' | 'm') => form.updateDistance(index, 'unit', v)}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="km">km</SelectItem>
+                        <SelectItem value="m">m</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {!dist.noLength && <FieldError message={fe[`distance_${index}_length`]} />}
+                {!dist.noLength && (
+                  <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={false}
+                      onCheckedChange={() => form.updateDistance(index, 'noLength', true)}
+                    />
+                    Brak dystansu (zawody bez określonej długości)
+                  </label>
+                )}
               </div>
               <div className="space-y-2">
                 <HelpLabel description="Podstawowa oplata startowa za ten dystans w zlotowkach. Uzywana w koszyku, rejestracji i podsumowaniach platnosci.">
@@ -430,7 +446,9 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   value={dist.price}
                   onChange={(e) => form.updateDistance(index, 'price', e.target.value)}
                   placeholder="150"
+                  className={inputError(!!fe[`distance_${index}_price`])}
                 />
+                <FieldError message={fe[`distance_${index}_price`]} />
               </div>
               <div className="space-y-2">
                 <HelpLabel description="Cena pobierana przy zapisie na miejscu, w biurze zawodow. Nie zmienia ceny online, ale jest widoczna w podgladzie wydarzenia.">
@@ -441,7 +459,9 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   value={dist.officePrice}
                   onChange={(e) => form.updateDistance(index, 'officePrice', e.target.value)}
                   placeholder="180"
+                  className={inputError(!!fe[`distance_${index}_officePrice`])}
                 />
+                <FieldError message={fe[`distance_${index}_officePrice`]} />
               </div>
               <div className="space-y-2">
                 <HelpLabel description="Maksymalna liczba zapisow na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
@@ -452,7 +472,9 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   value={dist.limit}
                   onChange={(e) => form.updateDistance(index, 'limit', e.target.value)}
                   placeholder="500"
+                  className={inputError(!!fe[`distance_${index}_limit`])}
                 />
+                <FieldError message={fe[`distance_${index}_limit`]} />
               </div>
             </div>
 
@@ -582,6 +604,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                               : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
                           )
                           .map((tier) => {
+                            const j = dist.priceTiers.findIndex((t) => t.id === tier.id);
                             const tierPrice =
                               tier.price ??
                               applyDiscount(
@@ -591,19 +614,26 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                               );
                             const basePrice = Number(dist.price) || 0;
                             const priceWarning = tierPrice > basePrice;
+                            const tierNameError = fe[`distance_${index}_tier_${j}_name`];
+                            const tierDateError = fe[`distance_${index}_tier_${j}_endDate`];
+                            const tierLimitError = fe[`distance_${index}_tier_${j}_participantLimit`];
                             return (
                               <div
                                 key={tier.id}
-                                className="grid grid-cols-1 items-center gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
+                                className="grid grid-cols-1 items-start gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
                               >
+                                <div className="space-y-1">
                                 <Input
                                   value={tier.name}
                                   onChange={(e) =>
                                     form.updatePriceTier(index, tier.id, { name: e.target.value })
                                   }
                                   placeholder="np. Early Bird"
-                                  className="h-9"
+                                  className={`h-9 ${inputError(!!tierNameError)}`}
                                 />
+                                <FieldError message={tierNameError} />
+                                </div>
+                                <div className="space-y-1">
                                 <Input
                                   type={dist.priceTierMode === 'date' ? 'date' : 'number'}
                                   value={
@@ -623,8 +653,10 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                                   placeholder={
                                     dist.priceTierMode === 'date' ? undefined : 'np. 100'
                                   }
-                                  className="h-9"
+                                  className={`h-9 ${inputError(!!(tierDateError || tierLimitError))}`}
                                 />
+                                <FieldError message={tierDateError || tierLimitError} />
+                                </div>
                                 <Input
                                   type="number"
                                   value={tierPrice}

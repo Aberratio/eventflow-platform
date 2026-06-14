@@ -48,12 +48,14 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
 
           {distanceInfo && (
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Długość:</span>
-                <span className="font-semibold">
-                  {distanceInfo.length} {distanceInfo.unit}
-                </span>
-              </div>
+              {distanceInfo.length != null && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Długość:</span>
+                  <span className="font-semibold">
+                    {distanceInfo.length} {distanceInfo.unit}
+                  </span>
+                </div>
+              )}
               {distanceInfo.elevation && (
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Przewyższenie:</span>

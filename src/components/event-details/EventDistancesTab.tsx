@@ -55,9 +55,11 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
           <div className="flex-1 space-y-3">
             <div>
               <h4 className="text-lg font-semibold">{distance.name}</h4>
-              <div className="text-2xl font-bold text-primary">
-                {formatLength(distance.length, distance.unit)}
-              </div>
+              {distance.length != null && (
+                <div className="text-2xl font-bold text-primary">
+                  {formatLength(distance.length, distance.unit)}
+                </div>
+              )}
             </div>
 
             {distance.infoHtml && (

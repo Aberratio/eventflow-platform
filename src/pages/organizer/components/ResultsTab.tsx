@@ -165,7 +165,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
               <SelectContent>
                 {event.distances.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
-                    {d.name} ({d.length} {d.unit})
+                    {d.name}{d.length != null ? ` (${d.length} ${d.unit})` : ''}
                   </SelectItem>
                 ))}
               </SelectContent>

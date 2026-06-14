@@ -59,7 +59,7 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Map className="h-5 w-5 text-primary" />
-              Trasa — {distance.name} ({distance.length} {distance.unit})
+              Trasa — {distance.name}{distance.length != null ? ` (${distance.length} ${distance.unit})` : ''}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">

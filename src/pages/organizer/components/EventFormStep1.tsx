@@ -78,12 +78,24 @@ import {
   ClipboardList,
   Timer,
   Trophy,
+  AlertCircle,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import type { EventFormState } from '../hooks/useEventFormState';
+import type { EventFormState, SubStep } from '../hooks/useEventFormState';
 import { EventFormOrganizerSection } from './EventFormOrganizerSection';
+
+const FieldError = ({ message }: { message?: string }) =>
+  message ? (
+    <p className="flex items-center gap-1 text-xs text-destructive">
+      <AlertCircle className="h-3 w-3 shrink-0" />
+      {message}
+    </p>
+  ) : null;
+
+const inputError = (hasError: boolean) =>
+  hasError ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20' : '';
 
 interface EventFormStep1Props {
   form: EventFormState;
@@ -1085,6 +1097,8 @@ const DisciplineMultiSelect = ({
 
 export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
+  const showValidation = form.shownValidationSubSteps.includes(activeSubStep as SubStep);
+  const fe = showValidation ? form.fieldValidationErrors : {};
   const [registrationTypeOpen, setRegistrationTypeOpen] = useState(false);
   const logoShapeConfig = getLogoShapeConfig(form.organizerLogoShape);
   const registrationTypeLabel = isEmbedRegistration
@@ -1204,7 +1218,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       value={form.externalRegistrationUrl}
                       onChange={(e) => form.setExternalRegistrationUrl(e.target.value)}
                       placeholder="https://partner.pl/zapisy/nazwa-wydarzenia"
+                      className={inputError(!!fe['externalRegistrationUrl'])}
                     />
+                    <FieldError message={fe['externalRegistrationUrl']} />
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
@@ -1292,7 +1308,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 value={form.name}
                 onChange={(e) => form.setName(e.target.value)}
                 placeholder="np. Warsaw Marathon 2025"
+                className={inputError(!!fe['name'])}
               />
+              <FieldError message={fe['name']} />
             </div>
             <DisciplineMultiSelect
               selected={form.disciplines}
@@ -1312,7 +1330,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               type="date"
               value={form.date}
               onChange={(e) => form.setDate(e.target.value)}
+              className={inputError(!!fe['date'])}
             />
+            <FieldError message={fe['date']} />
           </div>
 
           <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
@@ -1345,8 +1365,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   value={form.registrationUntilEventStart ? form.date : form.registrationDeadline}
                   onChange={(e) => form.setRegistrationDeadline(e.target.value)}
                   disabled={form.registrationUntilEventStart}
-                  className={form.registrationUntilEventStart ? 'opacity-40' : ''}
+                  className={form.registrationUntilEventStart ? 'opacity-40' : inputError(!!fe['registrationDeadline'])}
                 />
+                <FieldError message={fe['registrationDeadline']} />
               </div>
             </div>
 
@@ -1424,7 +1445,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   type="date"
                   value={form.startDate}
                   onChange={(e) => form.setStartDate(e.target.value)}
+                  className={inputError(!!fe['startDate'])}
                 />
+                <FieldError message={fe['startDate']} />
               </div>
               <div className="space-y-2">
                 <HelpLabel
@@ -1438,7 +1461,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   type="date"
                   value={form.endDate}
                   onChange={(e) => form.setEndDate(e.target.value)}
+                  className={inputError(!!fe['endDate'])}
                 />
+                <FieldError message={fe['endDate']} />
               </div>
             </div>
           )}
@@ -1476,13 +1501,14 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   >
                     Kod dostępu
                   </HelpLabel>
+                  <div className="space-y-1">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
                     <Input
                       id="accessCode"
                       value={form.accessCode}
                       onChange={(e) => form.setAccessCode(e.target.value)}
                       placeholder="np. abc123xyz"
-                      className="min-w-0 font-mono"
+                      className={`min-w-0 font-mono ${inputError(!!fe['accessCode'])}`}
                     />
                     <Button
                       type="button"
@@ -1512,6 +1538,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+                  <FieldError message={fe['accessCode']} />
+                  </div>
                 </div>
               </div>
             )}
@@ -1532,7 +1560,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     value={form.location}
                     onChange={(e) => form.setLocation(e.target.value)}
                     placeholder="np. Stadion Narodowy"
+                    className={inputError(!!fe['location'])}
                   />
+                  <FieldError message={fe['location']} />
                 </div>
                 <div className="space-y-2">
                   <HelpLabel
@@ -1546,7 +1576,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     value={form.city}
                     onChange={(e) => form.setCity(e.target.value)}
                     placeholder="np. Warszawa"
+                    className={inputError(!!fe['city'])}
                   />
+                  <FieldError message={fe['city']} />
                 </div>
               </div>
               <div className="space-y-2">
@@ -1799,7 +1831,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                               value={form.bankAccountNumber}
                               onChange={(e) => form.setBankAccountNumber(e.target.value)}
                               placeholder="PL 00 0000 0000 0000 0000 0000 0000"
+                              className={inputError(!!fe['bankAccountNumber'])}
                             />
+                            <FieldError message={fe['bankAccountNumber']} />
                             <p className="text-xs text-muted-foreground">
                               Podaj pełny numer konta w formacie IBAN
                             </p>
@@ -1816,7 +1850,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                               value={form.bankAccountHolder}
                               onChange={(e) => form.setBankAccountHolder(e.target.value)}
                               placeholder="Nazwa firmy lub Imię Nazwisko"
+                              className={inputError(!!fe['bankAccountHolder'])}
                             />
+                            <FieldError message={fe['bankAccountHolder']} />
                           </div>
                           <div className="space-y-2">
                             <HelpLabel

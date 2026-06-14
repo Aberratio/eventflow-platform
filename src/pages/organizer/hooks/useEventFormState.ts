@@ -39,6 +39,7 @@ import {
 export interface DistanceFormData {
   id: string;
   name: string;
+  noLength: boolean;
   length: string;
   unit: 'km' | 'm';
   price: string;
@@ -159,6 +160,7 @@ export const useEventFormState = () => {
   const [subStep, setSubStep] = useState<SubStep>('basic');
   const [visitedSubSteps, setVisitedSubSteps] = useState<SubStep[]>(['basic']);
   const [revisitedSubSteps, setRevisitedSubSteps] = useState<SubStep[]>([]);
+  const [shownValidationSubSteps, setShownValidationSubSteps] = useState<SubStep[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingSubStep, setPendingSubStep] = useState<SubStep | null>(null);
 
@@ -394,12 +396,12 @@ export const useEventFormState = () => {
   );
 
   // Distances
-  const [noDistances, setNoDistances] = useState(existingEvent?.distances.length === 0);
   const [distances, setDistances] = useState<DistanceFormData[]>(
     existingEvent?.distances.map((d) => ({
       id: d.id,
       name: d.name,
-      length: d.length.toString(),
+      noLength: !d.length,
+      length: d.length?.toString() ?? '',
       unit: d.unit,
       price: d.price.toString(),
       officePrice: d.officePrice?.toString() || '',
@@ -481,12 +483,12 @@ export const useEventFormState = () => {
     setCategoriesEnabled(hasLoadedCats);
     setAgeCategories(Array.isArray(loadedAgeCats) ? loadedAgeCats : generateStandardAgeCategoriesForDate(existingEvent.date || ''));
     setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
-    setNoDistances(existingEvent.distances.length === 0);
     setDistances(
       existingEvent.distances.map((d) => ({
         id: d.id,
         name: d.name,
-        length: d.length.toString(),
+        noLength: !d.length,
+        length: d.length?.toString() ?? '',
         unit: d.unit,
         price: d.price.toString(),
         officePrice: d.officePrice?.toString() || '',
@@ -541,6 +543,7 @@ export const useEventFormState = () => {
       {
         id: `dist-${Date.now()}`,
         name: '',
+        noLength: false,
         length: '',
         unit: 'km',
         price: '',
@@ -567,6 +570,7 @@ export const useEventFormState = () => {
       {
         id: `dist-${Date.now()}`,
         name: template.name,
+        noLength: false,
         length: template.length,
         unit: template.unit,
         price: '',
@@ -594,6 +598,7 @@ export const useEventFormState = () => {
     field: keyof DistanceFormData,
     value:
       | string
+      | boolean
       | string[]
       | DistanceRouteFile[]
       | PriceTier[]
@@ -857,14 +862,14 @@ export const useEventFormState = () => {
 
     const skipSystemPaymentConfig = registrationMode === 'external_embed';
 
-    if (!noDistances && distances.length === 0) {
+    if (distances.length === 0) {
       addError('distances', 'Dodaj przynajmniej jeden dystans');
     }
-    for (const dist of noDistances ? [] : distances) {
-      if (!dist.name || !dist.length || !dist.price) {
+    for (const dist of distances) {
+      if (!dist.name || (!dist.noLength && !dist.length) || !dist.price) {
         addError('distances', 'Wypełnij wszystkie pola dystansów');
       }
-      if (Number(dist.length) <= 0 || Number(dist.price) < 0) {
+      if ((!dist.noLength && Number(dist.length) <= 0) || Number(dist.price) < 0) {
         addError('distances', 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna');
       }
       if (dist.limit && Number(dist.limit) <= 0) {
@@ -934,7 +939,79 @@ export const useEventFormState = () => {
     return errors;
   };
 
+  const getFieldValidationErrors = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    if (!name) errors['name'] = 'Nazwa wydarzenia jest wymagana';
+    if (!date) errors['date'] = 'Data wydarzenia jest wymagana';
+    if (!registrationDeadline) errors['registrationDeadline'] = 'Termin zamknięcia zapisów jest wymagany';
+    if (registrationDeadline && date && registrationDeadline > date) {
+      errors['registrationDeadline'] = 'Termin rejestracji nie może być późniejszy niż data wydarzenia';
+    }
+    if (!isVirtual && !location) errors['location'] = 'Lokalizacja jest wymagana';
+    if (!isVirtual && !city) errors['city'] = 'Miasto jest wymagane';
+    if (isVirtual && !startDate) errors['startDate'] = 'Data rozpoczęcia okna jest wymagana';
+    if (isVirtual && !endDate) errors['endDate'] = 'Data zakończenia okna jest wymagana';
+    if (isVirtual && startDate && endDate && startDate > endDate) {
+      errors['startDate'] = 'Data rozpoczęcia nie może być późniejsza niż data zakończenia';
+    }
+    if (isPrivate && !accessCode.trim()) errors['accessCode'] = 'Kod dostępu jest wymagany';
+
+    if (registrationMode === 'external_embed') {
+      const trimmedUrl = externalRegistrationUrl.trim();
+      if (!trimmedUrl) {
+        errors['externalRegistrationUrl'] = 'Podaj link do zewnętrznego formularza zapisów';
+      } else {
+        try {
+          const parsedUrl = new URL(trimmedUrl);
+          if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error();
+        } catch {
+          errors['externalRegistrationUrl'] = 'Link musi być pełnym adresem http lub https';
+        }
+      }
+    }
+
+    if (
+      registrationMode !== 'external_embed' &&
+      paymentConfigType === 'organizer_bank'
+    ) {
+      if (!bankAccountNumber.trim()) errors['bankAccountNumber'] = 'Numer konta jest wymagany';
+      if (!bankAccountHolder.trim()) errors['bankAccountHolder'] = 'Właściciel konta jest wymagany';
+    }
+
+    for (const [i, dist] of distances.entries()) {
+      if (!dist.name) errors[`distance_${i}_name`] = 'Nazwa dystansu jest wymagana';
+      if (!dist.noLength && !dist.length) errors[`distance_${i}_length`] = 'Długość dystansu jest wymagana';
+      else if (!dist.noLength && Number(dist.length) <= 0) errors[`distance_${i}_length`] = 'Długość musi być większa od 0';
+      if (!dist.price && dist.price !== 0) errors[`distance_${i}_price`] = 'Cena jest wymagana';
+      else if (Number(dist.price) < 0) errors[`distance_${i}_price`] = 'Cena nie może być ujemna';
+      if (dist.limit && Number(dist.limit) <= 0) {
+        errors[`distance_${i}_limit`] = 'Limit uczestników musi być dodatni albo pusty';
+      }
+      if (dist.officePrice && Number(dist.officePrice) < 0) {
+        errors[`distance_${i}_officePrice`] = 'Cena biurowa nie może być ujemna';
+      }
+      if (registrationMode !== 'external_embed') {
+        for (const [j, tier] of dist.priceTiers.entries()) {
+          if (!tier.name.trim()) errors[`distance_${i}_tier_${j}_name`] = 'Nazwa progu jest wymagana';
+          if (dist.priceTierMode === 'date' && !tier.endDate) {
+            errors[`distance_${i}_tier_${j}_endDate`] = 'Data końcowa progu jest wymagana';
+          }
+          if (
+            dist.priceTierMode === 'participants' &&
+            (!tier.participantLimit || Number(tier.participantLimit) <= 0)
+          ) {
+            errors[`distance_${i}_tier_${j}_participantLimit`] = 'Podaj dodatni limit uczestników';
+          }
+        }
+      }
+    }
+
+    return errors;
+  };
+
   const sectionValidationErrors = getSectionValidationErrors();
+  const fieldValidationErrors = getFieldValidationErrors();
   const getFirstValidationError = () =>
     STEP_NAV_ITEMS.flatMap((item) => sectionValidationErrors[item.id] ?? [])[0];
 
@@ -967,6 +1044,11 @@ export const useEventFormState = () => {
 
   const currentNavItems = STEP_NAV_ITEMS.filter((item) => item.mainStep === step);
   const currentSubStepIndex = currentNavItems.findIndex((item) => item.id === subStep);
+
+  const markValidationShown = (s: SubStep) => {
+    setShownValidationSubSteps((prev) => (prev.includes(s) ? prev : [...prev, s]));
+  };
+
   const visitSubStep = (item: SubStep) => {
     if (visitedSubSteps.includes(item)) {
       setRevisitedSubSteps((current) => Array.from(new Set([...current, item])));
@@ -987,6 +1069,7 @@ export const useEventFormState = () => {
       return;
     }
 
+    markValidationShown(subStep);
     if (targetItem.mainStep !== step) {
       setStep(targetItem.mainStep);
     }
@@ -1012,6 +1095,7 @@ export const useEventFormState = () => {
   };
 
   const nextStep = () => {
+    markValidationShown(subStep);
     if (step === 1 && currentSubStepIndex < currentNavItems.length - 1) {
       const next = currentNavItems[currentSubStepIndex + 1];
       visitSubStep(next.id);
@@ -1039,6 +1123,7 @@ export const useEventFormState = () => {
   };
 
   const prevStep = () => {
+    markValidationShown(subStep);
     if (currentSubStepIndex > 0) {
       const prev = currentNavItems[currentSubStepIndex - 1];
       visitSubStep(prev.id);
@@ -1077,7 +1162,7 @@ export const useEventFormState = () => {
       distances: distances.map((dist) => ({
         id: dist.id,
         name: dist.name,
-        length: Number(dist.length),
+        length: dist.noLength ? undefined : Number(dist.length),
         unit: dist.unit,
         price: Number(dist.price),
         officePrice: dist.officePrice ? Number(dist.officePrice) : undefined,
@@ -1155,6 +1240,7 @@ export const useEventFormState = () => {
   const selectedEventLimit = eventLimit;
 
   const handleSubmit = async () => {
+    setShownValidationSubSteps(STEP_NAV_ITEMS.map((item) => item.id));
     if (!selectedOrganizerId) {
       toast({
         title: 'Błąd',
@@ -1362,8 +1448,6 @@ export const useEventFormState = () => {
     addSpecialCategory,
     removeSpecialCategory,
     updateSpecialCategory,
-    noDistances,
-    setNoDistances,
     distances,
     addDistance,
     addDistanceFromTemplate,
@@ -1384,7 +1468,9 @@ export const useEventFormState = () => {
     setSubStep,
     visitedSubSteps,
     revisitedSubSteps,
+    shownValidationSubSteps,
     sectionValidationErrors,
+    fieldValidationErrors,
     hasUnsavedChanges,
     setHasUnsavedChanges,
     pendingSubStep,

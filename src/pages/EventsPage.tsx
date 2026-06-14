@@ -508,6 +508,7 @@ const EventsPage = () => {
       .filter((event) => {
         if (filters.distanceRanges.length === 0) return true;
         return event.distances.some((distance) => {
+          if (!distance.length) return false;
           const distanceKm = distance.unit === 'km' ? distance.length : distance.length / 1000;
           return filters.distanceRanges.some((rangeId) => {
             const range = distanceRangeOptions.find((item) => item.id === rangeId);

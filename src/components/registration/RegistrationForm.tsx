@@ -301,7 +301,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                     <div>
                       <h4 className="font-semibold">{distance.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {distance.length} {distance.unit}
+                        {distance.length != null ? `${distance.length} ${distance.unit}` : ''}
                       </p>
                     </div>
                     <div className="text-right">
@@ -1063,9 +1063,11 @@ const SummaryStep = ({
           <div className="flex justify-between">
             <div>
               <span className="font-medium">{selectedDistance.name}</span>
-              <span className="ml-2 text-muted-foreground">
-                ({selectedDistance.length} {selectedDistance.unit})
-              </span>
+              {selectedDistance.length != null && (
+                <span className="ml-2 text-muted-foreground">
+                  ({selectedDistance.length} {selectedDistance.unit})
+                </span>
+              )}
             </div>
             <span>{formatMoney(form.distancePrice)}</span>
           </div>

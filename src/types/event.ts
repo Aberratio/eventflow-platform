@@ -85,7 +85,7 @@ export interface DistanceRouteFile {
 export interface Distance {
   id: string;
   name: string;
-  length: number;
+  length: number | null;
   unit: 'km' | 'm';
   categories: string[];
   ageCategories?: AgeCategory[];

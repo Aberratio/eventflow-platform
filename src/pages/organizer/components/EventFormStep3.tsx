@@ -108,7 +108,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
             <div className="flex flex-wrap gap-2">
               {form.distances.map((dist) => (
                 <Badge key={dist.id} variant="secondary">
-                  {dist.name} - {dist.length} {dist.unit} ({dist.price} PLN)
+                  {dist.name}{!dist.noLength && dist.length ? ` - ${dist.length} ${dist.unit}` : ''} ({dist.price} PLN)
                 </Badge>
               ))}
             </div>

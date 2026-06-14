@@ -203,12 +203,14 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">{distance.name}</div>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                      <Route className="h-4 w-4" />
-                      <span>
-                        {distance.length} {distance.unit}
-                      </span>
-                    </div>
+                    {distance.length != null && (
+                      <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                        <Route className="h-4 w-4" />
+                        <span>
+                          {distance.length} {distance.unit}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
                     <div className="text-sm font-semibold">{distance.price} PLN</div>

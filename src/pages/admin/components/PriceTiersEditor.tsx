@@ -218,9 +218,11 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
               >
                 <div className="flex items-center gap-3">
                   <span className="font-semibold">{distance.name}</span>
-                  <span className="text-muted-foreground">
-                    ({distance.length} {distance.unit})
-                  </span>
+                  {distance.length != null && (
+                    <span className="text-muted-foreground">
+                      ({distance.length} {distance.unit})
+                    </span>
+                  )}
                   <Badge variant="secondary">{tiers.length} progów</Badge>
                   {mode === 'participants' && (
                     <Badge variant="outline" className="text-xs">

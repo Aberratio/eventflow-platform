@@ -136,7 +136,7 @@ export const VirtualResultsSubmissionDialog = ({
               <SelectContent>
                 {event.distances.map((distance) => (
                   <SelectItem key={distance.id} value={distance.id}>
-                    {distance.name} ({distance.length} {distance.unit})
+                    {distance.name}{distance.length != null ? ` (${distance.length} ${distance.unit})` : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
