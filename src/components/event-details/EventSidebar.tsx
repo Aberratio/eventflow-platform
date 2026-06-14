@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GradientDivider } from '@/components/ui/gradient-divider';
 import { Event, Registration, User } from '@/types';
-import { Share2, Pencil, Mail, Phone } from 'lucide-react';
+import { Share2, Pencil, Mail, Phone, Users, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -38,6 +38,12 @@ export const EventSidebar = ({
   const lowestOnlinePrice = Math.min(
     ...event.distances.map((distance) => getCurrentPrice(distance).price),
   );
+
+  const totalSpots = event.distances.reduce((acc, d) => acc + (d.limit ?? 0), 0);
+  const totalRegistered = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
+  const hasAnyLimit = event.distances.some((d) => d.limit != null);
+  const remainingSpots = hasAnyLimit ? totalSpots - totalRegistered : null;
+
   const canEdit =
     !previewMode &&
     (user?.role === 'admin' ||
@@ -63,13 +69,13 @@ export const EventSidebar = ({
             {userRegistration ? (
               <div className="space-y-3">
                 <div className="rounded-lg border border-primary/10 bg-gradient-to-br from-primary/5 to-warning/5 p-4">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs uppercase tracking-wide text-foreground/60">
                     Twój dystans
                   </div>
                   <div className="mt-0.5 font-semibold">{userRegistration.distanceName}</div>
                   {userRegistration.bibNumber && (
                     <>
-                      <div className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
+                      <div className="mt-3 text-xs uppercase tracking-wide text-foreground/60">
                         Numer startowy
                       </div>
                       <div className="mt-0.5 text-3xl font-bold text-primary">
@@ -87,16 +93,51 @@ export const EventSidebar = ({
                 {hasExternalRegistration ? (
                   <div className="rounded-lg border border-white/10 bg-white/[0.035] p-3 text-center">
                     <p className="text-sm font-medium">Zapisy w zewnętrznym formularzu</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-foreground/65">
                       Formularz jest osadzony w sekcji zapisów na tej stronie.
                     </p>
                   </div>
                 ) : (
-                  <div className="rounded-lg bg-transparent p-3 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Ceny od{' '}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-foreground/65">Cena od</span>
                       <span className="text-lg font-bold text-primary">{lowestOnlinePrice} zł</span>
-                    </p>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-foreground/65">Dystanse</span>
+                      <span className="font-medium">
+                        {event.distances.length}{' '}
+                        {event.distances.length === 1 ? 'dostępny' : 'dostępnych'}
+                      </span>
+                    </div>
+                    {remainingSpots !== null && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1.5 text-foreground/65">
+                          <Users className="h-3.5 w-3.5" />
+                          Miejsca
+                        </span>
+                        <span
+                          className={`font-medium ${remainingSpots <= 10 ? 'text-warning' : ''}`}
+                        >
+                          Pozostało {remainingSpots}
+                        </span>
+                      </div>
+                    )}
+                    {!hasAnyLimit && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1.5 text-foreground/65">
+                          <Users className="h-3.5 w-3.5" />
+                          Miejsca
+                        </span>
+                        <span className="font-medium">Brak limitu</span>
+                      </div>
+                    )}
+                    {isRegistrationOpen && (
+                      <div className="flex items-center gap-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1.5 text-xs text-emerald-400">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                        Zapisy otwarte
+                      </div>
+                    )}
                   </div>
                 )}
                 <Button
@@ -105,14 +146,23 @@ export const EventSidebar = ({
                   size="lg"
                   disabled={!isRegistrationOpen}
                 >
-                  {previewMode ? 'Przetestuj formularz' : 'Zapisz się teraz'}
+                  {previewMode ? 'Przetestuj formularz' : 'Rozpocznij zapis'}
                 </Button>
                 {isRegistrationOpen ? (
-                  <p className="text-center text-xs text-muted-foreground">
-                    {previewMode
-                      ? 'Symulator nie utworzy prawdziwego zapisu ani płatności.'
-                      : `Zapisy do ${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}`}
-                  </p>
+                  <div className="space-y-1.5">
+                    <p className="flex items-center justify-center gap-1.5 text-center text-xs text-foreground/60">
+                      <Clock className="h-3 w-3" />
+                      {previewMode
+                        ? 'Symulator nie utworzy prawdziwego zapisu ani płatności.'
+                        : `Zapisy do ${format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}`}
+                    </p>
+                    {!previewMode && !hasExternalRegistration && (
+                      <p className="flex items-center justify-center gap-1 text-center text-xs text-foreground/55">
+                        <ChevronRight className="h-3 w-3" />
+                        W następnym kroku wybierzesz kategorię i pakiet
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-center text-sm font-medium text-destructive">{closedReason}</p>
                 )}
@@ -168,7 +218,7 @@ export const EventSidebar = ({
               {event.organizerContact.phone && (
                 <a
                   href={`tel:${event.organizerContact.phone}`}
-                  className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
                 >
                   <Phone className="h-4 w-4" />
                   {event.organizerContact.phone}

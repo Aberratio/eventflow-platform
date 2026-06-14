@@ -10,7 +10,20 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Users, Clock, Globe, Radio, Images, Route, Eye } from 'lucide-react';
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  Globe,
+  Radio,
+  Images,
+  Route,
+  Eye,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -148,6 +161,45 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     ? isRegistrationOpen && externalRegistrationActive
     : isRegistrationOpen;
 
+  const daysUntilDeadline = Math.ceil(
+    (new Date(event.registrationDeadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+
+  const getRegistrationStatusBadge = () => {
+    if (isPast) return null;
+    if (isClosedByOrganizer)
+      return {
+        label: 'Zapisy zamknięte',
+        icon: XCircle,
+        cls: 'border-destructive/30 bg-destructive/10 text-destructive',
+      };
+    if (allDistancesFull)
+      return {
+        label: 'Wszystkie miejsca zajęte',
+        icon: XCircle,
+        cls: 'border-destructive/30 bg-destructive/10 text-destructive',
+      };
+    if (deadlinePassed)
+      return {
+        label: 'Zapisy zakończone',
+        icon: XCircle,
+        cls: 'border-destructive/30 bg-destructive/10 text-destructive',
+      };
+    if (daysUntilDeadline <= 3)
+      return {
+        label: `Zapisy kończą się za ${daysUntilDeadline} ${daysUntilDeadline === 1 ? 'dzień' : 'dni'}`,
+        icon: AlertCircle,
+        cls: 'border-warning/30 bg-warning/10 text-warning',
+      };
+    return {
+      label: 'Zapisy otwarte',
+      icon: CheckCircle2,
+      cls: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+    };
+  };
+
+  const registrationStatusBadge = getRegistrationStatusBadge();
+
   const getClosedReason = (): string | null => {
     if (isPast) return 'Zawody już się odbyły';
     if (deadlinePassed)
@@ -262,13 +314,24 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                   />
                 </div>
 
+                {registrationStatusBadge && (
+                  <div className="mt-4">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium ${registrationStatusBadge.cls}`}
+                    >
+                      <registrationStatusBadge.icon className="h-4 w-4 shrink-0" />
+                      {registrationStatusBadge.label}
+                    </span>
+                  </div>
+                )}
+
                 {event.isVirtual && (
                   <div className="mt-4 rounded-lg border border-primary/20 bg-primary/10 p-4">
                     <div className="flex items-start gap-3">
                       <Globe className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm font-medium">Wydarzenie wirtualne</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-foreground/70">
                           Wykonaj aktywność samodzielnie w dowolnym miejscu na świecie, a następnie
                           wprowadź swój wynik w panelu uczestnika.
                         </p>
@@ -289,7 +352,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-lg border border-white/5 bg-white/[0.035] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
+              <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-lg border border-white/5 bg-white/[0.035] p-1.5 shadow-[0_18px_45px_rgba(0,0,0,0.18)] [&_button[data-state=inactive]]:text-foreground/60">
                 <TabsTrigger
                   value="info"
                   className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
@@ -437,7 +500,7 @@ const StatItem = ({
       {icon}
     </div>
     <div>
-      <div className="text-sm leading-tight text-muted-foreground">{label}</div>
+      <div className="text-sm leading-tight text-foreground/65">{label}</div>
       <div className="mt-0.5 font-semibold leading-tight text-foreground">{value}</div>
     </div>
   </div>

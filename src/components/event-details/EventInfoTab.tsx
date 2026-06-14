@@ -183,7 +183,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
               className="space-y-2 rounded-lg border border-white/10 bg-white/[0.035] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
             >
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground/80">{f.icon}</span>
+                <span className="text-foreground/60">{f.icon}</span>
                 <span className="text-sm font-medium">{f.label}</span>
                 {isYes ? (
                   <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-green-600" />
@@ -193,7 +193,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
               </div>
 
               {isYes && field.infoHtml && (
-                <RichTextDisplay html={field.infoHtml} className="text-sm text-muted-foreground" />
+                <RichTextDisplay html={field.infoHtml} className="text-sm text-foreground/70" />
               )}
 
               {isYes && field.locations && field.locations.length > 0 && (
@@ -206,10 +206,10 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
                           {loc.label || `${f.locationLabel} ${idx + 1}`}
                         </span>
                         {loc.address && (
-                          <p className="text-xs text-muted-foreground">{loc.address}</p>
+                          <p className="text-xs text-foreground/65">{loc.address}</p>
                         )}
                         {(loc.date || loc.openFrom || loc.openTo) && (
-                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-foreground/65">
                             {loc.date && (
                               <span className="inline-flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
@@ -225,7 +225,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
                           </div>
                         )}
                         {loc.note && (
-                          <p className="mt-1 text-xs text-muted-foreground">{loc.note}</p>
+                          <p className="mt-1 text-xs text-foreground/65">{loc.note}</p>
                         )}
                         {loc.mapsUrl && (
                           <a
@@ -257,7 +257,7 @@ interface EventInfoTabProps {
 export const EventInfoTab = ({ event }: EventInfoTabProps) => (
   <div className="space-y-6">
     <InfoSection title="O wydarzeniu" icon={<Info className="h-4 w-4" />} tone="amber">
-      <RichTextDisplay html={event.description} className="text-muted-foreground" />
+      <RichTextDisplay html={event.description} className="text-foreground/75" />
     </InfoSection>
 
     {event.organizersHtml && (
@@ -276,7 +276,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
 
     {!event.organizersHtml && (
       <InfoSection title="Lokalizacja" icon={<MapPin className="h-4 w-4" />} tone="sky">
-        <p className="text-muted-foreground">
+        <p className="text-foreground/75">
           {event.location}, {event.city}
         </p>
       </InfoSection>
@@ -284,7 +284,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
 
     {event.insuranceOption?.enabled && (
       <InfoSection title="Ubezpieczenie NNW" icon={<Shield className="h-4 w-4" />} tone="rose">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-foreground/75">
           Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
         </p>
       </InfoSection>
@@ -325,7 +325,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
         <div className="space-y-2">
           <a
             href={`mailto:${event.organizerContact.email}`}
-            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
           >
             <Mail className="h-4 w-4" />
             {event.organizerContact.email}
@@ -333,7 +333,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
           {event.organizerContact.phone && (
             <a
               href={`tel:${event.organizerContact.phone}`}
-              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
             >
               <Phone className="h-4 w-4" />
               {event.organizerContact.phone}
@@ -344,7 +344,7 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => (
               href={event.organizerContact.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
             >
               <Globe className="h-4 w-4" />
               {event.organizerContact.website.replace('https://', '')}
