@@ -1,4 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { Event, EventLogisticsInfo } from '@/types';
 import {
   Mail,
@@ -25,6 +24,8 @@ import {
   Info,
   Calendar,
   Clock,
+  Users,
+  FileText,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
@@ -123,6 +124,43 @@ const LOGISTICS_DISPLAY: {
   },
 ];
 
+type InfoSectionTone = 'amber' | 'sky' | 'emerald' | 'violet' | 'rose' | 'slate';
+
+const INFO_SECTION_TONES: Record<InfoSectionTone, string> = {
+  amber: 'border-l-amber-400 shadow-[inset_3px_0_0_rgba(251,191,36,0.95)]',
+  sky: 'border-l-sky-500 shadow-[inset_3px_0_0_rgba(14,165,233,0.95)]',
+  emerald: 'border-l-emerald-500 shadow-[inset_3px_0_0_rgba(16,185,129,0.95)]',
+  violet: 'border-l-violet-500 shadow-[inset_3px_0_0_rgba(139,92,246,0.95)]',
+  rose: 'border-l-rose-500 shadow-[inset_3px_0_0_rgba(244,63,94,0.95)]',
+  slate: 'border-l-slate-400 shadow-[inset_3px_0_0_rgba(148,163,184,0.95)]',
+};
+
+const InfoSection = ({
+  title,
+  icon,
+  tone,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  tone: InfoSectionTone;
+  children: React.ReactNode;
+}) => (
+  <section
+    className={`overflow-hidden rounded-lg border border-white/10 bg-white/[0.035] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:p-5 ${INFO_SECTION_TONES[tone]}`}
+  >
+    <div className="mb-4 flex items-center gap-2.5 border-b border-white/10 pb-4">
+      {icon && (
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary shadow-[0_0_18px_rgba(38,116,217,0.16)] ring-1 ring-primary/20">
+          {icon}
+        </span>
+      )}
+      <h3 className="text-base font-semibold leading-none text-foreground">{title}</h3>
+    </div>
+    <div>{children}</div>
+  </section>
+);
+
 const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
   const visible = LOGISTICS_DISPLAY.filter(
     (f) => info[f.key]?.status === 'yes' || info[f.key]?.status === 'no',
@@ -130,16 +168,22 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
   if (visible.length === 0) return null;
 
   return (
-    <div>
-      <h4 className="mb-3 font-semibold">Logistyka zawodów</h4>
+    <InfoSection
+      title="Logistyka zawodów"
+      icon={<ClipboardList className="h-4 w-4" />}
+      tone="emerald"
+    >
       <div className="grid gap-2 sm:grid-cols-2">
         {visible.map((f) => {
           const field = info[f.key]!;
           const isYes = field.status === 'yes';
           return (
-            <div key={f.key} className="space-y-2 rounded-lg border bg-muted/30 p-3">
+            <div
+              key={f.key}
+              className="space-y-2 rounded-lg border border-white/10 bg-white/[0.035] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+            >
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">{f.icon}</span>
+                <span className="text-muted-foreground/80">{f.icon}</span>
                 <span className="text-sm font-medium">{f.label}</span>
                 {isYes ? (
                   <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-green-600" />
@@ -202,7 +246,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
           );
         })}
       </div>
-    </div>
+    </InfoSection>
   );
 };
 
@@ -211,116 +255,103 @@ interface EventInfoTabProps {
 }
 
 export const EventInfoTab = ({ event }: EventInfoTabProps) => (
-  <Card>
-    <CardContent className="space-y-6 pt-6">
-      <div>
-        <h3 className="mb-4 font-semibold">O wydarzeniu</h3>
-        <RichTextDisplay html={event.description} className="text-muted-foreground" />
-      </div>
+  <div className="space-y-6">
+    <InfoSection title="O wydarzeniu" icon={<Info className="h-4 w-4" />} tone="amber">
+      <RichTextDisplay html={event.description} className="text-muted-foreground" />
+    </InfoSection>
 
-      {event.organizersHtml && (
-        <div>
-          <h4 className="mb-3 font-semibold">Organizatorzy</h4>
-          <RichTextDisplay html={event.organizersHtml} />
-        </div>
-      )}
+    {event.organizersHtml && (
+      <InfoSection title="Organizatorzy" icon={<Users className="h-4 w-4" />} tone="sky">
+        <RichTextDisplay html={event.organizersHtml} />
+      </InfoSection>
+    )}
 
-      {event.rulesHtml && (
-        <div>
-          <h4 className="mb-3 font-semibold">Regulamin</h4>
-          <RichTextDisplay html={event.rulesHtml} />
-        </div>
-      )}
+    {event.rulesHtml && (
+      <InfoSection title="Regulamin" icon={<FileText className="h-4 w-4" />} tone="slate">
+        <RichTextDisplay html={event.rulesHtml} />
+      </InfoSection>
+    )}
 
-      {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
+    {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
 
-      {!event.organizersHtml && (
-        <div>
-          <h4 className="mb-2 font-semibold">Lokalizacja</h4>
-          <p className="text-muted-foreground">
-            {event.location}, {event.city}
-          </p>
-        </div>
-      )}
+    {!event.organizersHtml && (
+      <InfoSection title="Lokalizacja" icon={<MapPin className="h-4 w-4" />} tone="sky">
+        <p className="text-muted-foreground">
+          {event.location}, {event.city}
+        </p>
+      </InfoSection>
+    )}
 
-      {event.insuranceOption?.enabled && (
-        <div>
-          <h4 className="mb-2 flex items-center gap-2 font-semibold">
-            <Shield className="h-4 w-4 text-primary" />
-            Ubezpieczenie NNW
-          </h4>
-          <p className="text-sm text-muted-foreground">
-            Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
-          </p>
-        </div>
-      )}
+    {event.insuranceOption?.enabled && (
+      <InfoSection title="Ubezpieczenie NNW" icon={<Shield className="h-4 w-4" />} tone="rose">
+        <p className="text-sm text-muted-foreground">
+          Ubezpieczenie NNW jest dostępne do wykupienia podczas rejestracji na zawody.
+        </p>
+      </InfoSection>
+    )}
 
-      {event.enableMerchandiseInRegistration &&
-        event.merchandise &&
-        event.merchandise.length > 0 && (
-          <div>
-            <h4 className="mb-3 flex items-center gap-2 font-semibold">
-              <ShoppingBag className="h-4 w-4 text-primary" />
-              Gadżety dostępne przy rejestracji
-            </h4>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {event.merchandise.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-muted/50 p-2"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="h-12 w-12 shrink-0 rounded-md object-cover"
-                      />
-                    )}
-                    <span className="truncate text-sm">{item.name}</span>
-                  </div>
-                  <Badge variant="secondary">{item.price} zł</Badge>
-                </div>
-              ))}
+    {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
+      <InfoSection
+        title="Gadżety dostępne przy rejestracji"
+        icon={<ShoppingBag className="h-4 w-4" />}
+        tone="violet"
+      >
+        <div className="grid gap-2 sm:grid-cols-2">
+          {event.merchandise.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="h-12 w-12 shrink-0 rounded-md object-cover"
+                  />
+                )}
+                <span className="truncate text-sm">{item.name}</span>
+              </div>
+              <Badge variant="secondary">{item.price} zł</Badge>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
+      </InfoSection>
+    )}
 
-      <div>
-        <h4 className="mb-3 font-semibold">Organizator</h4>
-        {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
-        {event.organizerContact && (
-          <div className="space-y-2">
+    <InfoSection title="Organizator" icon={<Globe className="h-4 w-4" />} tone="slate">
+      {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
+      {event.organizerContact && (
+        <div className="space-y-2">
+          <a
+            href={`mailto:${event.organizerContact.email}`}
+            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Mail className="h-4 w-4" />
+            {event.organizerContact.email}
+          </a>
+          {event.organizerContact.phone && (
             <a
-              href={`mailto:${event.organizerContact.email}`}
+              href={`tel:${event.organizerContact.phone}`}
               className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              <Mail className="h-4 w-4" />
-              {event.organizerContact.email}
+              <Phone className="h-4 w-4" />
+              {event.organizerContact.phone}
             </a>
-            {event.organizerContact.phone && (
-              <a
-                href={`tel:${event.organizerContact.phone}`}
-                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Phone className="h-4 w-4" />
-                {event.organizerContact.phone}
-              </a>
-            )}
-            {event.organizerContact.website && (
-              <a
-                href={event.organizerContact.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Globe className="h-4 w-4" />
-                {event.organizerContact.website.replace('https://', '')}
-              </a>
-            )}
-          </div>
-        )}
-      </div>
-    </CardContent>
-  </Card>
+          )}
+          {event.organizerContact.website && (
+            <a
+              href={event.organizerContact.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Globe className="h-4 w-4" />
+              {event.organizerContact.website.replace('https://', '')}
+            </a>
+          )}
+        </div>
+      )}
+    </InfoSection>
+  </div>
 );

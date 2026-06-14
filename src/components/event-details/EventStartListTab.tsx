@@ -20,11 +20,10 @@ interface EventStartListTabProps {
 export const EventStartListTab = ({ event, registrations, overrideShowAll }: EventStartListTabProps) => {
   const showAll = overrideShowAll ?? event.displayOptions?.showParticipants === 'all';
 
-  const visibleRegistrations = registrations.filter((r) => {
-    if (r.status === 'removed' || r.status === 'cancelled') return false;
-    if (!showAll && r.status !== 'confirmed') return false;
-    return true;
-  });
+  // Serwer już odfiltrował wg showParticipants — tu tylko usuwamy techniczne statusy
+  const visibleRegistrations = registrations.filter(
+    (r) => r.status !== 'removed' && r.status !== 'cancelled',
+  );
 
   const uppercaseNames = event.displayOptions?.uppercaseNames ?? false;
 

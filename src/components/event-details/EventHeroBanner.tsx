@@ -37,22 +37,25 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
   };
 
   const badges = (
-    <div className="mb-2 flex flex-wrap gap-1.5 sm:mb-3 sm:gap-2">
-      <Badge className="flex items-center gap-1.5 bg-background/80 text-xs backdrop-blur-sm sm:text-sm">
+    <div className="mb-4 flex flex-wrap gap-1.5 sm:mb-5 sm:gap-2">
+      <Badge className="flex items-center gap-1.5 rounded-md border border-primary/60 bg-background/70 px-3 py-1.5 text-xs text-foreground shadow-[0_0_20px_rgba(38,116,217,0.18)] backdrop-blur-md sm:text-sm">
         <DisciplineIcon discipline={event.discipline} size="sm" className="text-current" />
         {disciplineLabels[event.discipline]}
       </Badge>
       {event.isVirtual && (
         <Badge
           variant="outline"
-          className="border-primary/30 bg-primary/10 text-xs text-primary backdrop-blur-sm sm:text-sm"
+          className="rounded-md border-primary/50 bg-primary/10 px-3 py-1.5 text-xs text-primary backdrop-blur-md sm:text-sm"
         >
           <Globe className="mr-1 h-3 w-3" />
           Wirtualny
         </Badge>
       )}
       {isPast && (
-        <Badge variant="secondary" className="bg-background/80 text-xs backdrop-blur-sm sm:text-sm">
+        <Badge
+          variant="secondary"
+          className="rounded-md bg-background/70 px-3 py-1.5 text-xs backdrop-blur-md sm:text-sm"
+        >
           Zakończone
         </Badge>
       )}
@@ -61,14 +64,15 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
 
   if (heroImageUrl) {
     return (
-      <div className="relative h-56 overflow-hidden bg-muted sm:h-64 md:h-80">
+      <div className="relative min-h-[420px] overflow-hidden bg-[#05080d] sm:min-h-[480px] md:min-h-[540px]">
         <img
           src={heroImageUrl}
           alt={event.name}
           className="absolute inset-0 h-full w-full object-cover"
           style={getBannerStyle()}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,12,0.96)_0%,rgba(3,7,12,0.72)_38%,rgba(3,7,12,0.24)_72%),linear-gradient(180deg,rgba(3,7,12,0.24)_0%,rgba(3,7,12,0.48)_42%,hsl(var(--background))_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
         {event.organizerLogoUrl && (
           <div className="absolute right-3 top-3 sm:right-4 sm:top-4 md:right-6 md:top-6">
             <img
@@ -78,22 +82,22 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
             />
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0">
-          <div className="container pb-4 sm:pb-6">
+        <div className="absolute inset-x-0 bottom-0 top-0 flex items-end">
+          <div className="container pb-32 sm:pb-36">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="mb-3 bg-background/20 backdrop-blur-sm hover:bg-background/40 sm:mb-4"
+              className="mb-8 border-white/15 bg-white/[0.04] text-foreground backdrop-blur-md hover:bg-white/[0.09] sm:mb-9"
               onClick={onBack}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Wróć
             </Button>
             {badges}
-            <h1 className="text-2xl font-bold text-foreground drop-shadow-md sm:text-3xl md:text-4xl">
+            <h1 className="max-w-4xl text-3xl font-bold text-foreground drop-shadow-2xl sm:text-4xl md:text-5xl">
               {event.name}
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
               Organizator: {event.organizerName}
             </p>
           </div>
@@ -103,14 +107,19 @@ export const EventHeroBanner = ({ event, isPast, onBack }: EventHeroBannerProps)
   }
 
   return (
-    <PageHero>
-      <Button variant="ghost" size="sm" className="mb-3 sm:mb-4" onClick={onBack}>
+    <PageHero className="min-h-[420px] bg-[radial-gradient(circle_at_70%_20%,rgba(38,116,217,0.2),transparent_34%),linear-gradient(180deg,#0b1119,#05080d)]">
+      <Button
+        variant="outline"
+        size="sm"
+        className="mb-8 border-white/15 bg-white/[0.04] text-foreground backdrop-blur-md hover:bg-white/[0.09]"
+        onClick={onBack}
+      >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Wróć
       </Button>
       {badges}
-      <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{event.name}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Organizator: {event.organizerName}</p>
+      <h1 className="max-w-4xl text-3xl font-bold sm:text-4xl md:text-5xl">{event.name}</h1>
+      <p className="mt-3 text-sm text-muted-foreground">Organizator: {event.organizerName}</p>
     </PageHero>
   );
 };
