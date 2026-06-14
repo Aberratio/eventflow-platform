@@ -3,16 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Search,
-  SlidersHorizontal,
-  X,
-  PersonStanding,
   Bike,
-  Waves,
+  Globe,
   Medal,
   Monitor,
-  Globe,
+  PersonStanding,
+  Search,
+  SlidersHorizontal,
   Tag,
+  Waves,
+  X,
 } from 'lucide-react';
 import { SportDiscipline } from '@/types';
 import { distanceRangeOptions, EventFiltersState } from '@/hooks/useEventFilters';
@@ -26,6 +26,15 @@ const disciplineIcons: Record<SportDiscipline, React.ElementType> = {
   multisport: Medal,
 };
 
+const statusOptions = [
+  { id: 'live', label: 'Trwa teraz', color: 'bg-blue-400' },
+  { id: 'open', label: 'Zapisy otwarte', color: 'bg-emerald-400' },
+  { id: 'ending', label: 'Kończą się zapisy', color: 'bg-amber-400' },
+  { id: 'closed', label: 'Zapisy zamknięte', color: 'bg-slate-400' },
+  { id: 'past', label: 'Zakończone / wyniki', color: 'bg-violet-400' },
+  { id: 'cancelled', label: 'Odwołane', color: 'bg-red-400' },
+];
+
 interface FiltersContentProps {
   filters: EventFiltersState;
   updateFilter: <K extends keyof EventFiltersState>(key: K, value: EventFiltersState[K]) => void;
@@ -38,6 +47,7 @@ interface FiltersContentProps {
   cities: string[];
   organizers: { id: string; name: string }[];
   filteredCount: number;
+  statusCounts?: Record<string, number>;
   onApply?: () => void;
   showApplyButton?: boolean;
   showHeader?: boolean;
@@ -52,6 +62,7 @@ export const FiltersContent = ({
   cities,
   organizers,
   filteredCount,
+  statusCounts,
   onApply,
   showApplyButton = false,
   showHeader = false,
@@ -59,16 +70,16 @@ export const FiltersContent = ({
   return (
     <div className="flex h-full flex-col">
       {showHeader && (
-        <div className="mb-3 flex items-center justify-between border-b border-border pb-3">
-          <h2 className="flex items-center gap-2 font-semibold">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-semibold text-foreground">
             <SlidersHorizontal className="h-4 w-4" />
             Filtry
           </h2>
           {hasActiveFilters && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="h-8 text-xs text-muted-foreground hover:text-foreground"
+              className="h-8 border-white/10 bg-white/[0.03] text-xs text-muted-foreground hover:text-foreground"
               onClick={clearFilters}
             >
               <X className="mr-1 h-3 w-3" />
@@ -81,15 +92,15 @@ export const FiltersContent = ({
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Szukaj..."
+          placeholder="Szukaj wydarzeń..."
           value={filters.search}
-          onChange={(e) => updateFilter('search', e.target.value)}
-          className="pl-10"
+          onChange={(event) => updateFilter('search', event.target.value)}
+          className="h-10 border-white/10 bg-background/50 pl-10"
         />
       </div>
 
       <ScrollArea className="-mx-1 flex-1 px-1">
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-white/[0.08]">
           <FilterSection title="Dyscyplina">
             {(Object.keys(disciplineLabels) as SportDiscipline[]).map((discipline) => (
               <CheckboxItem
@@ -101,6 +112,9 @@ export const FiltersContent = ({
                 icon={disciplineIcons[discipline]}
               />
             ))}
+            <button className="text-xs font-medium text-primary" type="button">
+              Pokaż więcej
+            </button>
           </FilterSection>
 
           <FilterSection title="Typ wydarzenia">
@@ -121,30 +135,17 @@ export const FiltersContent = ({
           </FilterSection>
 
           <FilterSection title="Status">
-            <CheckboxItem
-              id="status-open"
-              label="Zapisy otwarte"
-              checked={filters.statuses.includes('open')}
-              onCheckedChange={() => toggleArrayFilter('statuses', 'open')}
-            />
-            <CheckboxItem
-              id="status-closed"
-              label="Zapisy zamknięte"
-              checked={filters.statuses.includes('closed')}
-              onCheckedChange={() => toggleArrayFilter('statuses', 'closed')}
-            />
-            <CheckboxItem
-              id="status-none"
-              label="Brak zapisów"
-              checked={filters.statuses.includes('none')}
-              onCheckedChange={() => toggleArrayFilter('statuses', 'none')}
-            />
-            <CheckboxItem
-              id="status-past"
-              label="Zakończone"
-              checked={filters.statuses.includes('past')}
-              onCheckedChange={() => toggleArrayFilter('statuses', 'past')}
-            />
+            {statusOptions.map((status) => (
+              <CheckboxItem
+                key={status.id}
+                id={`status-${status.id}`}
+                label={status.label}
+                checked={filters.statuses.includes(status.id)}
+                onCheckedChange={() => toggleArrayFilter('statuses', status.id)}
+                dotClassName={status.color}
+                count={statusCounts?.[status.id]}
+              />
+            ))}
           </FilterSection>
 
           <FilterSection title="Seria" defaultOpen={false}>
@@ -203,7 +204,7 @@ export const FiltersContent = ({
             ))}
           </FilterSection>
 
-          <FilterSection title="Promocje" defaultOpen={false}>
+          <FilterSection title="Przedział dat" defaultOpen={false}>
             <CheckboxItem
               id="early-bird"
               label="Tylko z aktywną zniżką"
@@ -216,7 +217,7 @@ export const FiltersContent = ({
       </ScrollArea>
 
       {showApplyButton && onApply && (
-        <div className="mt-4 border-t border-border pt-4">
+        <div className="mt-4 border-t border-white/[0.08] pt-4">
           <Button className="w-full" onClick={onApply}>
             Pokaż wyniki ({filteredCount})
           </Button>

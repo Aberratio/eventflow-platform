@@ -1,5 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, ShoppingCart, User, LogIn } from 'lucide-react';
+import {
+  BarChart3,
+  Calendar,
+  ClipboardList,
+  Heart,
+  Home,
+  LogIn,
+  Search,
+  ShoppingCart,
+  User,
+} from 'lucide-react';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCartSafe } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
@@ -11,6 +21,8 @@ export const BottomNav = () => {
 
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const user = auth?.user ?? null;
+  const isEventsPage =
+    location.pathname === '/wydarzenia' || location.pathname.startsWith('/events');
 
   const getDashboardLink = () => {
     if (!user) return '/login';
@@ -29,42 +41,80 @@ export const BottomNav = () => {
     }
   };
 
-  const navItems = [
-    {
-      icon: Home,
-      label: 'Start',
-      href: '/',
-      active: location.pathname === '/',
-    },
-    {
-      icon: Calendar,
-      label: 'Wydarzenia',
-      href: '/wydarzenia',
-      active: location.pathname === '/wydarzenia' || location.pathname.startsWith('/events'),
-    },
-    {
-      icon: ShoppingCart,
-      label: 'Koszyk',
-      href: '/cart',
-      active: location.pathname === '/cart',
-      badge: totalItems > 0 ? totalItems : undefined,
-    },
-    {
-      icon: isAuthenticated ? User : LogIn,
-      label: isAuthenticated ? 'Panel' : 'Zaloguj',
-      href: isAuthenticated ? getDashboardLink() : '/login',
-      active: isAuthenticated
-        ? location.pathname.startsWith('/participant') ||
-          location.pathname.startsWith('/organizer') ||
-          location.pathname.startsWith('/moderator') ||
-          location.pathname.startsWith('/admin')
-        : location.pathname === '/login',
-    },
-  ];
+  const navItems = isEventsPage
+    ? [
+        {
+          icon: Calendar,
+          label: 'Wydarzenia',
+          href: '/wydarzenia',
+          active: true,
+        },
+        {
+          icon: Search,
+          label: 'Szukaj',
+          href: '/wydarzenia',
+          active: false,
+        },
+        {
+          icon: Heart,
+          label: 'Ulubione',
+          href: '/participant',
+          active: false,
+        },
+        {
+          icon: ClipboardList,
+          label: 'Moje zapisy',
+          href: '/participant?tab=registrations',
+          active: false,
+        },
+        {
+          icon: BarChart3,
+          label: 'Wyniki',
+          href: '/wyniki/live',
+          active: false,
+        },
+      ]
+    : [
+        {
+          icon: Home,
+          label: 'Start',
+          href: '/',
+          active: location.pathname === '/',
+        },
+        {
+          icon: Calendar,
+          label: 'Wydarzenia',
+          href: '/wydarzenia',
+          active: location.pathname === '/wydarzenia' || location.pathname.startsWith('/events'),
+        },
+        {
+          icon: ShoppingCart,
+          label: 'Koszyk',
+          href: '/cart',
+          active: location.pathname === '/cart',
+          badge: totalItems > 0 ? totalItems : undefined,
+        },
+        {
+          icon: isAuthenticated ? User : LogIn,
+          label: isAuthenticated ? 'Panel' : 'Zaloguj',
+          href: isAuthenticated ? getDashboardLink() : '/login',
+          active: isAuthenticated
+            ? location.pathname.startsWith('/participant') ||
+              location.pathname.startsWith('/organizer') ||
+              location.pathname.startsWith('/moderator') ||
+              location.pathname.startsWith('/admin')
+            : location.pathname === '/login',
+        },
+      ];
 
   return (
-    <nav className="safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
-      <div className="flex h-16 items-center justify-around">
+    <nav
+      className={cn(
+        'safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl lg:hidden',
+        isEventsPage ? 'border-white/10 bg-[#070b10]/95' : 'border-border bg-background',
+      )}
+    >
+      <div className={cn('flex items-center justify-around', isEventsPage ? 'h-20' : 'h-16')}>
         {navItems.map((item) => (
           <Link
             key={item.href}

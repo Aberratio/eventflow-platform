@@ -14,6 +14,7 @@ import {
 import { SlidersHorizontal, X } from 'lucide-react';
 import { EventFiltersState } from '@/hooks/useEventFilters';
 import { FiltersContent } from './FiltersContent';
+import { cn } from '@/lib/utils';
 
 interface EventFiltersSidebarProps {
   filters: EventFiltersState;
@@ -26,6 +27,8 @@ interface EventFiltersSidebarProps {
   hasActiveFilters: boolean;
   activeFiltersCount: number;
   filteredCount: number;
+  statusCounts?: Record<string, number>;
+  triggerMode?: 'default' | 'icon';
 }
 
 function useFilterOptions() {
@@ -33,7 +36,7 @@ function useFilterOptions() {
     queryKey: ['events', 'filter-options'],
     queryFn: () => getEvents({ pageSize: 1000 }),
   });
-  const events = eventsResponse?.data ?? [];
+  const events = useMemo(() => eventsResponse?.data ?? [], [eventsResponse?.data]);
   const cities = useMemo(() => [...new Set(events.map((e) => e.city))].sort(), [events]);
   const organizers = useMemo(() => {
     const m = new Map<string, string>();
@@ -52,11 +55,12 @@ export const EventFiltersSidebar = ({
   clearFilters,
   hasActiveFilters,
   filteredCount,
+  statusCounts,
 }: EventFiltersSidebarProps) => {
   const { cities, organizers } = useFilterOptions();
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-card/50 p-4 lg:flex">
+    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 shrink-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#081019]/70 p-5 backdrop-blur-xl lg:flex">
       <FiltersContent
         filters={filters}
         updateFilter={updateFilter}
@@ -66,6 +70,7 @@ export const EventFiltersSidebar = ({
         cities={cities}
         organizers={organizers}
         filteredCount={filteredCount}
+        statusCounts={statusCounts}
         showHeader
       />
     </aside>
@@ -80,19 +85,34 @@ export const EventFiltersDrawerTrigger = ({
   hasActiveFilters,
   activeFiltersCount,
   filteredCount,
+  statusCounts,
+  triggerMode = 'default',
 }: EventFiltersSidebarProps) => {
   const { cities, organizers } = useFilterOptions();
 
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="outline" size="sm" className="shrink-0 lg:hidden">
-          <SlidersHorizontal className="mr-2 h-4 w-4" />
-          Filtry
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-              {activeFiltersCount}
-            </span>
+        <Button
+          variant="outline"
+          size={triggerMode === 'icon' ? 'icon' : 'sm'}
+          className={cn(
+            'shrink-0 lg:hidden',
+            triggerMode === 'icon'
+              ? 'h-16 w-full rounded-xl border-white/10 bg-white/[0.03] text-foreground hover:bg-white/[0.055] sm:h-[68px]'
+              : '',
+          )}
+        >
+          <SlidersHorizontal className={cn('h-5 w-5', triggerMode !== 'icon' && 'mr-2 h-4 w-4')} />
+          {triggerMode !== 'icon' && (
+            <>
+              Filtry
+              {activeFiltersCount > 0 && (
+                <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </>
           )}
         </Button>
       </DrawerTrigger>
@@ -126,6 +146,7 @@ export const EventFiltersDrawerTrigger = ({
             cities={cities}
             organizers={organizers}
             filteredCount={filteredCount}
+            statusCounts={statusCounts}
             showApplyButton
             onApply={() =>
               document.querySelector<HTMLButtonElement>('[data-drawer-close]')?.click()

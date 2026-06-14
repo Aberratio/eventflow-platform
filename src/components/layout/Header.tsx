@@ -82,10 +82,15 @@ export const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
   const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
+  const hideOnEventsMobile =
+    location.pathname === '/wydarzenia' || location.pathname.startsWith('/events');
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b border-[hsl(var(--header-border))] bg-[hsl(var(--header-bg)/0.90)] backdrop-blur-xl"
+      className={cn(
+        'sticky top-0 z-50 w-full border-b border-[hsl(var(--header-border))] bg-[hsl(var(--header-bg)/0.90)] backdrop-blur-xl',
+        hideOnEventsMobile && 'hidden lg:block',
+      )}
     >
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="group flex items-center gap-2">
@@ -283,9 +288,7 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div
-          className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden"
-        >
+        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden">
           <nav className="container flex flex-col gap-1 py-4">
             <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
               <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
