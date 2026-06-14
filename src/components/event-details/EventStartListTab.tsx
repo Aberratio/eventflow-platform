@@ -7,20 +7,44 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Registration } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { Event, Registration } from '@/types';
 import { Link } from 'react-router-dom';
 
 interface EventStartListTabProps {
+  event: Event;
   registrations: Registration[];
 }
 
-export const EventStartListTab = ({ registrations }: EventStartListTabProps) => {
-  const confirmedRegistrations = registrations.filter((r) => r.status === 'confirmed');
+export const EventStartListTab = ({ event, registrations }: EventStartListTabProps) => {
+  const showAll = event.displayOptions?.showParticipants === 'all';
+
+  const visibleRegistrations = registrations.filter((r) => {
+    if (r.status === 'removed' || r.status === 'cancelled') return false;
+    if (!showAll && r.status !== 'confirmed') return false;
+    return true;
+  });
+
+  const uppercaseNames = event.displayOptions?.uppercaseNames ?? false;
+
+  const sorted = [...visibleRegistrations].sort((a, b) => {
+    const sortKey = event.displayOptions?.defaultSort || 'name';
+    switch (sortKey) {
+      case 'bib':
+        return (a.bibNumber || '').localeCompare(b.bibNumber || '', undefined, { numeric: true });
+      case 'date':
+        return new Date(a.registeredAt).getTime() - new Date(b.registeredAt).getTime();
+      case 'distance':
+        return a.distanceName.localeCompare(b.distanceName);
+      default:
+        return a.userName.localeCompare(b.userName);
+    }
+  });
 
   return (
     <Card>
       <CardContent className="pt-6">
-        {confirmedRegistrations.length > 0 ? (
+        {sorted.length > 0 ? (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -29,10 +53,11 @@ export const EventStartListTab = ({ registrations }: EventStartListTabProps) => 
                   <TableHead>Uczestnik</TableHead>
                   <TableHead>Dystans</TableHead>
                   <TableHead>Kategoria</TableHead>
+                  {showAll && <TableHead>Status</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {confirmedRegistrations.map((reg) => (
+                {sorted.map((reg) => (
                   <TableRow key={reg.id}>
                     <TableCell className="font-mono">{reg.bibNumber || '-'}</TableCell>
                     <TableCell>
@@ -40,11 +65,22 @@ export const EventStartListTab = ({ registrations }: EventStartListTabProps) => 
                         to={`/athlete/${reg.userId}`}
                         className="font-medium transition-colors hover:text-primary hover:underline"
                       >
-                        {reg.userName}
+                        {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
                       </Link>
                     </TableCell>
                     <TableCell>{reg.distanceName}</TableCell>
                     <TableCell>{reg.category}</TableCell>
+                    {showAll && (
+                      <TableCell>
+                        {reg.status === 'confirmed' ? (
+                          <Badge className="bg-primary/10 text-primary">Opłacony</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            Oczekujący
+                          </Badge>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

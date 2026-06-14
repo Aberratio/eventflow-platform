@@ -174,7 +174,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     const result = localRegistrations.filter((reg) => {
       if (viewMode === 'active' && reg.status === 'removed') return false;
       if (viewMode === 'removed' && reg.status !== 'removed') return false;
-      if (event.displayOptions?.hideUnpaid && reg.status === 'pending') return false;
 
       const matchesSearch =
         reg.userName.toLowerCase().includes(search.toLowerCase()) ||

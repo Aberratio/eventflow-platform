@@ -95,6 +95,8 @@ export const getParticipants: ApiAdapter['getParticipants'] = (...args) =>
   ensureAdapter().then((a) => a.getParticipants(...args));
 export const getOrganizers: ApiAdapter['getOrganizers'] = (...args) =>
   ensureAdapter().then((a) => a.getOrganizers(...args));
+export const uploadAvatar: ApiAdapter['uploadAvatar'] = (...args) =>
+  ensureAdapter().then((a) => a.uploadAvatar(...args));
 
 // Auth
 export const login: ApiAdapter['login'] = (...args) =>

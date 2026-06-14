@@ -42,6 +42,7 @@ export interface DistanceFormData {
   price: string;
   officePrice: string;
   limit: string;
+  infoHtml: string;
   priceTierMode: PriceTierMode;
   participantCountType: ParticipantCountType;
   priceTiers: PriceTier[];
@@ -66,6 +67,7 @@ const DEFAULT_DISPLAY_OPTIONS: EventDisplayOptions = {
   defaultSort: 'name',
   uppercaseNames: false,
   hideUnpaid: false,
+  showParticipants: 'paid_only',
 };
 
 const getEventYearFromDate = (eventDate: string) =>
@@ -115,6 +117,8 @@ export interface StepNavItem {
   mainStep: 1 | 2 | 3;
 }
 
+export type SectionValidationErrors = Partial<Record<SubStep, string[]>>;
+
 export const STEP_NAV_ITEMS: StepNavItem[] = [
   { id: 'basic', label: 'Podstawowe informacje', shortLabel: 'Podstawowe', mainStep: 1 },
   { id: 'media', label: 'Zdjęcia i media', shortLabel: 'Media', mainStep: 1 },
@@ -149,6 +153,8 @@ export const useEventFormState = () => {
 
   const [step, setStep] = useState(1);
   const [subStep, setSubStep] = useState<SubStep>('basic');
+  const [visitedSubSteps, setVisitedSubSteps] = useState<SubStep[]>(['basic']);
+  const [revisitedSubSteps, setRevisitedSubSteps] = useState<SubStep[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingSubStep, setPendingSubStep] = useState<SubStep | null>(null);
 
@@ -179,12 +185,16 @@ export const useEventFormState = () => {
 
   // Media
   const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
-  const [originalBannerUrl, setOriginalBannerUrl] = useState(existingEvent?.originalBannerUrl || '');
+  const [originalBannerUrl, setOriginalBannerUrl] = useState(
+    existingEvent?.originalBannerUrl || '',
+  );
   const [bannerCropArea, setBannerCropArea] = useState<BannerCropArea | undefined>(
     existingEvent?.bannerCropArea,
   );
   const [organizerLogoUrl, setOrganizerLogoUrl] = useState(existingEvent?.organizerLogoUrl || '');
-  const [originalOrganizerLogoUrl, setOriginalOrganizerLogoUrl] = useState(existingEvent?.originalOrganizerLogoUrl || '');
+  const [originalOrganizerLogoUrl, setOriginalOrganizerLogoUrl] = useState(
+    existingEvent?.originalOrganizerLogoUrl || '',
+  );
   const [organizerLogoShape, setOrganizerLogoShape] = useState<OrganizerLogoShape>(
     existingEvent?.organizerLogoShape || 'square',
   );
@@ -236,9 +246,15 @@ export const useEventFormState = () => {
   );
 
   // Display options
-  const [displayOptions, setDisplayOptions] = useState<EventDisplayOptions>(
-    existingEvent?.displayOptions || DEFAULT_DISPLAY_OPTIONS,
-  );
+  const [displayOptions, setDisplayOptions] = useState<EventDisplayOptions>(() => {
+    const opts = existingEvent?.displayOptions;
+    if (!opts) return DEFAULT_DISPLAY_OPTIONS;
+    return {
+      ...DEFAULT_DISPLAY_OPTIONS,
+      ...opts,
+      showParticipants: opts.showParticipants ?? (opts.hideUnpaid ? 'paid_only' : 'all'),
+    };
+  });
 
   // Logistics
   const [logisticsInfo, setLogisticsInfo] = useState<EventLogisticsInfo>(
@@ -314,10 +330,13 @@ export const useEventFormState = () => {
   const existingAgeCats = existingEvent?.distances?.[0]?.ageCategories;
   const existingSpecialCats = existingEvent?.distances?.[0]?.specialCategories;
 
+  const [categoriesEnabled, setCategoriesEnabled] = useState<boolean>(
+    existingAgeCats === undefined
+      ? true
+      : Array.isArray(existingAgeCats) && existingAgeCats.length > 0,
+  );
   const [ageCategories, setAgeCategories] = useState<AgeCategory[]>(
-    existingAgeCats && existingAgeCats.length > 0
-      ? existingAgeCats
-      : generateStandardAgeCategories(),
+    Array.isArray(existingAgeCats) ? existingAgeCats : generateStandardAgeCategories(),
   );
   const [specialCategories, setSpecialCategories] = useState<SpecialCategory[]>(
     existingSpecialCats || [],
@@ -333,6 +352,7 @@ export const useEventFormState = () => {
       price: d.price.toString(),
       officePrice: d.officePrice?.toString() || '',
       limit: d.limit?.toString() || '',
+      infoHtml: d.infoHtml || '',
       priceTierMode: d.priceTierMode || 'date',
       participantCountType: d.participantCountType || 'registered',
       priceTiers: d.priceTiers || [],
@@ -394,13 +414,18 @@ export const useEventFormState = () => {
     setEmbedStartDate(existingEvent.registrationEmbed?.startDate || '');
     setEmbedEndDate(existingEvent.registrationEmbed?.endDate || '');
     setFormConfig(existingEvent.registrationFormConfig || DEFAULT_FORM_CONFIG);
-    setDisplayOptions(existingEvent.displayOptions || DEFAULT_DISPLAY_OPTIONS);
+    {
+      const opts = existingEvent.displayOptions;
+      setDisplayOptions(opts
+        ? { ...DEFAULT_DISPLAY_OPTIONS, ...opts, showParticipants: opts.showParticipants ?? (opts.hideUnpaid ? 'paid_only' : 'all') }
+        : DEFAULT_DISPLAY_OPTIONS
+      );
+    }
     setLogisticsInfo(existingEvent.logisticsInfo || {});
-    setAgeCategories(
-      existingEvent.distances?.[0]?.ageCategories?.length
-        ? existingEvent.distances[0].ageCategories
-        : generateStandardAgeCategoriesForDate(existingEvent.date || ''),
-    );
+    const loadedAgeCats = existingEvent.distances?.[0]?.ageCategories;
+    const hasLoadedCats = Array.isArray(loadedAgeCats) && loadedAgeCats.length > 0;
+    setCategoriesEnabled(hasLoadedCats);
+    setAgeCategories(Array.isArray(loadedAgeCats) ? loadedAgeCats : generateStandardAgeCategoriesForDate(existingEvent.date || ''));
     setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
     setDistances(
       existingEvent.distances.map((d) => ({
@@ -411,6 +436,7 @@ export const useEventFormState = () => {
         price: d.price.toString(),
         officePrice: d.officePrice?.toString() || '',
         limit: d.limit?.toString() || '',
+        infoHtml: d.infoHtml || '',
         priceTierMode: d.priceTierMode || 'date',
         participantCountType: d.participantCountType || 'registered',
         priceTiers: d.priceTiers || [],
@@ -465,6 +491,33 @@ export const useEventFormState = () => {
         price: '',
         officePrice: '',
         limit: '',
+        infoHtml: '',
+        priceTierMode: 'date',
+        participantCountType: 'registered',
+        priceTiers: [],
+        disabledCategoryIds: [],
+        routeMapUrl: '',
+        routeElevationProfile: '',
+        routeGpxUrl: '',
+        routeFiles: [],
+      },
+    ]);
+  };
+
+  const addDistanceFromTemplate = (
+    template: Pick<DistanceFormData, 'name' | 'length' | 'unit'>,
+  ) => {
+    setDistances((prev) => [
+      ...prev,
+      {
+        id: `dist-${Date.now()}`,
+        name: template.name,
+        length: template.length,
+        unit: template.unit,
+        price: '',
+        officePrice: '',
+        limit: '',
+        infoHtml: '',
         priceTierMode: 'date',
         participantCountType: 'registered',
         priceTiers: [],
@@ -604,15 +657,14 @@ export const useEventFormState = () => {
 
   // Category handlers
   const addAgeCategory = () => {
-    const eventYear = getEventYear();
     setAgeCategories((prev) => [
       ...prev,
       {
         id: `cat-${Date.now()}`,
         name: '',
-        gender: 'M',
-        birthYearFrom: eventYear - 39,
-        birthYearTo: eventYear - 30,
+        gender: null,
+        birthYearFrom: undefined,
+        birthYearTo: undefined,
       },
     ]);
   };
@@ -631,7 +683,7 @@ export const useEventFormState = () => {
   const updateAgeCategory = (
     catIndex: number,
     field: keyof AgeCategory,
-    value: string | number,
+    value: string | number | null,
   ) => {
     setAgeCategories((prev) => {
       const cats = [...prev];
@@ -695,79 +747,49 @@ export const useEventFormState = () => {
     setDocuments((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
   };
 
-  // Validation
-  const validateStep1 = (): boolean => {
+  const getSectionValidationErrors = (): SectionValidationErrors => {
+    const errors: SectionValidationErrors = {};
+    const addError = (section: SubStep, message: string) => {
+      errors[section] = [...(errors[section] ?? []), message];
+    };
+
     if (!name || !date || !registrationDeadline) {
-      toast({
-        title: 'Błąd',
-        description: 'Wypełnij wszystkie wymagane pola',
-        variant: 'destructive',
-      });
-      return false;
+      addError('basic', 'Wypełnij wszystkie wymagane pola');
     }
-    if (registrationDeadline > date) {
-      toast({
-        title: 'Błąd',
-        description: 'Termin rejestracji nie moze byc pozniejszy niz data wydarzenia',
-        variant: 'destructive',
-      });
-      return false;
+    if (registrationDeadline && date && registrationDeadline > date) {
+      addError('basic', 'Termin rejestracji nie moze byc pozniejszy niz data wydarzenia');
     }
     if (!isVirtual && (!location || !city)) {
-      toast({
-        title: 'Błąd',
-        description: 'Wypełnij lokalizację i miasto',
-        variant: 'destructive',
-      });
-      return false;
+      addError('basic', 'Wypełnij lokalizację i miasto');
     }
-    if (isVirtual && startDate > endDate) {
-      toast({
-        title: 'Błąd',
-        description:
-          'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
-        variant: 'destructive',
-      });
-      return false;
+    if (isVirtual && startDate && endDate && startDate > endDate) {
+      addError(
+        'basic',
+        'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
+      );
     }
     if (isPrivate && !accessCode.trim()) {
-      toast({
-        title: 'Błąd',
-        description: 'Podaj kod dostepu dla wydarzenia prywatnego',
-        variant: 'destructive',
-      });
-      return false;
+      addError('basic', 'Podaj kod dostepu dla wydarzenia prywatnego');
     }
     if (isVirtual && (!startDate || !endDate)) {
-      toast({
-        title: 'Błąd',
-        description: 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego',
-        variant: 'destructive',
-      });
-      return false;
+      addError('basic', 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego');
     }
     if (registrationMode === 'external_embed') {
       const trimmedUrl = externalRegistrationUrl.trim();
       if (!trimmedUrl) {
-        toast({
-          title: 'Błąd',
-          description: 'Podaj link do zewnetrznego formularza zapisow.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-      try {
-        const parsedUrl = new URL(trimmedUrl);
-        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-          throw new Error('Unsupported protocol');
+        addError('registration', 'Podaj link do zewnetrznego formularza zapisow.');
+      } else {
+        try {
+          const parsedUrl = new URL(trimmedUrl);
+          if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            throw new Error('Unsupported protocol');
+          }
+        } catch {
+          addError(
+            'registration',
+            'Link do zewnetrznego formularza musi byc pelnym adresem http lub https.',
+          );
         }
-      } catch {
-        toast({
-          title: 'Błąd',
-          description: 'Link do zewnetrznego formularza musi byc pelnym adresem http lub https.',
-          variant: 'destructive',
-        });
-        return false;
       }
     }
     if (
@@ -775,9 +797,99 @@ export const useEventFormState = () => {
       paymentConfigType === 'organizer_bank' &&
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
     ) {
+      addError('payment', 'Podaj numer konta i właściciela dla płatności przelewem bankowym');
+    }
+
+    const skipSystemPaymentConfig = registrationMode === 'external_embed';
+
+    if (distances.length === 0) {
+      addError('distances', 'Dodaj przynajmniej jeden dystans');
+    }
+    for (const dist of distances) {
+      if (!dist.name || !dist.length || !dist.price) {
+        addError('distances', 'Wypełnij wszystkie pola dystansów');
+      }
+      if (Number(dist.length) <= 0 || Number(dist.price) < 0) {
+        addError('distances', 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna');
+      }
+      if (dist.limit && Number(dist.limit) <= 0) {
+        addError('distances', 'Limit uczestnikow musi byc dodatni albo pusty');
+      }
+      if (dist.officePrice && Number(dist.officePrice) < 0) {
+        addError('distances', 'Cena w biurze zawodow nie moze byc ujemna');
+      }
+      if (skipSystemPaymentConfig) continue;
+
+      for (const tier of dist.priceTiers) {
+        const tierPrice = Number(tier.price ?? 0);
+        const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
+        if (!tier.name.trim()) {
+          addError('distances', 'Kazdy prog cenowy musi miec nazwe');
+        }
+        if (hasExplicitPrice && tierPrice < 0) {
+          addError('distances', 'Cena w progu nie moze byc ujemna');
+        }
+        if (dist.priceTierMode === 'date' && !tier.endDate) {
+          addError('distances', 'Podaj date koncowa dla kazdego progu cenowego');
+        }
+        if (dist.priceTierMode === 'date' && tier.endDate) {
+          if (Number.isNaN(new Date(tier.endDate).getTime())) {
+            addError('distances', 'Data koncowa progu cenowego jest nieprawidlowa');
+          }
+          if (registrationDeadline && tier.endDate > registrationDeadline) {
+            addError(
+              'distances',
+              'Data koncowa progu cenowego nie moze byc pozniejsza niz termin rejestracji',
+            );
+          }
+        }
+        if (
+          dist.priceTierMode === 'participants' &&
+          (!tier.participantLimit || Number(tier.participantLimit) <= 0)
+        ) {
+          addError('distances', 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego');
+        }
+        if (dist.priceTierMode === 'participants') {
+          const participantLimit = Number(tier.participantLimit);
+          if (!Number.isInteger(participantLimit)) {
+            addError('distances', 'Limit uczestnikow w progu musi byc liczba calkowita');
+          }
+          if (dist.limit && participantLimit > Number(dist.limit)) {
+            addError(
+              'distances',
+              'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
+            );
+          }
+        }
+      }
+      if (dist.priceTierMode === 'date') {
+        const dates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
+        if (new Set(dates).size !== dates.length) {
+          addError('distances', 'Daty koncowe progow cenowych nie moga sie powtarzac');
+        }
+      }
+      if (dist.priceTierMode === 'participants') {
+        const participantLimits = dist.priceTiers.map((tier) => Number(tier.participantLimit));
+        if (new Set(participantLimits).size !== participantLimits.length) {
+          addError('distances', 'Limity uczestnikow w progach cenowych nie moga sie powtarzac');
+        }
+      }
+    }
+
+    return errors;
+  };
+
+  const sectionValidationErrors = getSectionValidationErrors();
+  const getFirstValidationError = () =>
+    STEP_NAV_ITEMS.flatMap((item) => sectionValidationErrors[item.id] ?? [])[0];
+
+  // Validation
+  const validateStep1 = (): boolean => {
+    const message = getFirstValidationError();
+    if (message) {
       toast({
         title: 'Błąd',
-        description: 'Podaj numer konta i właściciela dla płatności przelewem bankowym',
+        description: message,
         variant: 'destructive',
       });
       return false;
@@ -786,160 +898,34 @@ export const useEventFormState = () => {
   };
 
   const validateStep2 = (): boolean => {
-    const skipSystemPaymentConfig = registrationMode === 'external_embed';
-
-    if (distances.length === 0) {
+    const message = getFirstValidationError();
+    if (message) {
       toast({
         title: 'Błąd',
-        description: 'Dodaj przynajmniej jeden dystans',
+        description: message,
         variant: 'destructive',
       });
       return false;
-    }
-    for (const dist of distances) {
-      if (!dist.name || !dist.length || !dist.price) {
-        toast({
-          title: 'Błąd',
-          description: 'Wypełnij wszystkie pola dystansów',
-          variant: 'destructive',
-        });
-        return false;
-      }
-      if (Number(dist.length) <= 0 || Number(dist.price) < 0) {
-        toast({
-          title: 'Błąd',
-          description: 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna',
-          variant: 'destructive',
-        });
-        return false;
-      }
-      if (dist.limit && Number(dist.limit) <= 0) {
-        toast({
-          title: 'Błąd',
-          description: 'Limit uczestnikow musi byc dodatni albo pusty',
-          variant: 'destructive',
-        });
-        return false;
-      }
-      if (dist.officePrice && Number(dist.officePrice) < 0) {
-        toast({
-          title: 'Błąd',
-          description: 'Cena w biurze zawodow nie moze byc ujemna',
-          variant: 'destructive',
-        });
-        return false;
-      }
-      if (skipSystemPaymentConfig) continue;
-
-      for (const tier of dist.priceTiers) {
-        const tierPrice = Number(tier.price ?? 0);
-        const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
-        if (!tier.name.trim()) {
-          toast({
-            title: 'Błąd',
-            description: 'Kazdy prog cenowy musi miec nazwe',
-            variant: 'destructive',
-          });
-          return false;
-        }
-        if (hasExplicitPrice && tierPrice < 0) {
-          toast({
-            title: 'Błąd',
-            description: 'Cena w progu nie moze byc ujemna',
-            variant: 'destructive',
-          });
-          return false;
-        }
-        if (dist.priceTierMode === 'date' && !tier.endDate) {
-          toast({
-            title: 'Błąd',
-            description: 'Podaj date koncowa dla kazdego progu cenowego',
-            variant: 'destructive',
-          });
-          return false;
-        }
-        if (dist.priceTierMode === 'date' && tier.endDate) {
-          if (Number.isNaN(new Date(tier.endDate).getTime())) {
-            toast({
-              title: 'Błąd',
-              description: 'Data koncowa progu cenowego jest nieprawidlowa',
-              variant: 'destructive',
-            });
-            return false;
-          }
-          if (registrationDeadline && tier.endDate > registrationDeadline) {
-            toast({
-              title: 'Błąd',
-              description:
-                'Data koncowa progu cenowego nie moze byc pozniejsza niz termin rejestracji',
-              variant: 'destructive',
-            });
-            return false;
-          }
-        }
-        if (
-          dist.priceTierMode === 'participants' &&
-          (!tier.participantLimit || Number(tier.participantLimit) <= 0)
-        ) {
-          toast({
-            title: 'Błąd',
-            description: 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego',
-            variant: 'destructive',
-          });
-          return false;
-        }
-        if (dist.priceTierMode === 'participants') {
-          const participantLimit = Number(tier.participantLimit);
-          if (!Number.isInteger(participantLimit)) {
-            toast({
-              title: 'Błąd',
-              description: 'Limit uczestnikow w progu musi byc liczba calkowita',
-              variant: 'destructive',
-            });
-            return false;
-          }
-          if (dist.limit && participantLimit > Number(dist.limit)) {
-            toast({
-              title: 'Błąd',
-              description: 'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
-              variant: 'destructive',
-            });
-            return false;
-          }
-        }
-      }
-      if (dist.priceTierMode === 'date') {
-        const dates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
-        if (new Set(dates).size !== dates.length) {
-          toast({
-            title: 'Błąd',
-            description: 'Daty koncowe progow cenowych nie moga sie powtarzac',
-            variant: 'destructive',
-          });
-          return false;
-        }
-      }
-      if (dist.priceTierMode === 'participants') {
-        const participantLimits = dist.priceTiers.map((tier) => Number(tier.participantLimit));
-        if (new Set(participantLimits).size !== participantLimits.length) {
-          toast({
-            title: 'Błąd',
-            description: 'Limity uczestnikow w progach cenowych nie moga sie powtarzac',
-            variant: 'destructive',
-          });
-          return false;
-        }
-      }
     }
     return true;
   };
 
   const currentNavItems = STEP_NAV_ITEMS.filter((item) => item.mainStep === step);
   const currentSubStepIndex = currentNavItems.findIndex((item) => item.id === subStep);
+  const visitSubStep = (item: SubStep) => {
+    if (visitedSubSteps.includes(item)) {
+      setRevisitedSubSteps((current) => Array.from(new Set([...current, item])));
+    }
+
+    setVisitedSubSteps((prev) => {
+      return prev.includes(item) ? prev : [...prev, item];
+    });
+  };
 
   const navigateToSubStep = (target: SubStep) => {
     const targetItem = STEP_NAV_ITEMS.find((item) => item.id === target);
     if (!targetItem) return;
+    if (target === subStep) return;
 
     if (hasUnsavedChanges) {
       setPendingSubStep(target);
@@ -947,12 +933,9 @@ export const useEventFormState = () => {
     }
 
     if (targetItem.mainStep !== step) {
-      if (targetItem.mainStep > step) {
-        if (step === 1 && !validateStep1()) return;
-        if (step === 2 && !validateStep2()) return;
-      }
       setStep(targetItem.mainStep);
     }
+    visitSubStep(target);
     setSubStep(target);
     setHasUnsavedChanges(false);
   };
@@ -963,6 +946,7 @@ export const useEventFormState = () => {
     if (targetItem && targetItem.mainStep !== step) {
       setStep(targetItem.mainStep);
     }
+    visitSubStep(pendingSubStep);
     setSubStep(pendingSubStep);
     setHasUnsavedChanges(false);
     setPendingSubStep(null);
@@ -975,22 +959,25 @@ export const useEventFormState = () => {
   const nextStep = () => {
     if (step === 1 && currentSubStepIndex < currentNavItems.length - 1) {
       const next = currentNavItems[currentSubStepIndex + 1];
+      visitSubStep(next.id);
       setSubStep(next.id);
       setHasUnsavedChanges(false);
       return;
     }
-    if (step === 1 && !validateStep1()) return;
     if (step === 2 && currentSubStepIndex < currentNavItems.length - 1) {
       const next = currentNavItems[currentSubStepIndex + 1];
+      visitSubStep(next.id);
       setSubStep(next.id);
       setHasUnsavedChanges(false);
       return;
     }
-    if (step === 2 && !validateStep2()) return;
     setStep((prev) => {
       const next = prev + 1;
       const firstInNext = STEP_NAV_ITEMS.find((item) => item.mainStep === next);
-      if (firstInNext) setSubStep(firstInNext.id);
+      if (firstInNext) {
+        visitSubStep(firstInNext.id);
+        setSubStep(firstInNext.id);
+      }
       return next;
     });
     setHasUnsavedChanges(false);
@@ -999,6 +986,7 @@ export const useEventFormState = () => {
   const prevStep = () => {
     if (currentSubStepIndex > 0) {
       const prev = currentNavItems[currentSubStepIndex - 1];
+      visitSubStep(prev.id);
       setSubStep(prev.id);
       setHasUnsavedChanges(false);
       return;
@@ -1008,7 +996,10 @@ export const useEventFormState = () => {
       if (next >= 1) {
         const itemsInPrev = STEP_NAV_ITEMS.filter((item) => item.mainStep === next);
         const last = itemsInPrev[itemsInPrev.length - 1];
-        if (last) setSubStep(last.id);
+        if (last) {
+          visitSubStep(last.id);
+          setSubStep(last.id);
+        }
       }
       return next;
     });
@@ -1034,6 +1025,7 @@ export const useEventFormState = () => {
         unit: dist.unit,
         price: Number(dist.price),
         officePrice: dist.officePrice ? Number(dist.officePrice) : undefined,
+        infoHtml: dist.infoHtml || undefined,
         limit: dist.limit ? Number(dist.limit) : undefined,
         priceTierMode: dist.priceTierMode,
         participantCountType: dist.participantCountType,
@@ -1047,11 +1039,13 @@ export const useEventFormState = () => {
         })),
         registeredCount:
           existingEvent?.distances.find((d) => d.id === dist.id)?.registeredCount || 0,
-        categories: allCategories
-          .filter((cat) => !dist.disabledCategoryIds.includes(cat.id))
-          .map((cat) => cat.name),
-        ageCategories,
-        specialCategories,
+        categories: categoriesEnabled
+          ? allCategories
+              .filter((cat) => !dist.disabledCategoryIds.includes(cat.id))
+              .map((cat) => cat.name)
+          : [],
+        ageCategories: categoriesEnabled ? ageCategories : [],
+        specialCategories: categoriesEnabled ? specialCategories : [],
         routeMapUrl: dist.routeMapUrl || undefined,
         routeElevationProfile: dist.routeElevationProfile || undefined,
         routeGpxUrl: dist.routeGpxUrl || undefined,
@@ -1116,6 +1110,7 @@ export const useEventFormState = () => {
       });
       return;
     }
+    if (!validateStep1() || !validateStep2()) return;
 
     setIsSaving(true);
     try {
@@ -1279,6 +1274,8 @@ export const useEventFormState = () => {
     updateLogisticsLocation,
 
     // Step 2
+    categoriesEnabled,
+    setCategoriesEnabled,
     ageCategories,
     addAgeCategory,
     removeAgeCategory,
@@ -1290,6 +1287,7 @@ export const useEventFormState = () => {
     updateSpecialCategory,
     distances,
     addDistance,
+    addDistanceFromTemplate,
     removeDistance,
     updateDistance,
     addPriceTier,
@@ -1305,6 +1303,9 @@ export const useEventFormState = () => {
     // Sub-step navigation
     subStep,
     setSubStep,
+    visitedSubSteps,
+    revisitedSubSteps,
+    sectionValidationErrors,
     hasUnsavedChanges,
     setHasUnsavedChanges,
     pendingSubStep,

@@ -1,4 +1,4 @@
-import { getEventById, mockRegistrations, updateEvent } from '@/api';
+import { getEventById, getRegistrationsByEvent, updateEvent } from '@/api';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -69,7 +69,13 @@ const EventManage = () => {
     isDraft && ['participants', 'results'].includes(requestedDefaultTab)
       ? 'overview'
       : requestedDefaultTab;
-  const registrations = mockRegistrations.filter((r) => r.eventId === id);
+
+  const { data: registrationsResponse } = useQuery({
+    queryKey: ['event-registrations', id],
+    queryFn: () => getRegistrationsByEvent(id!),
+    enabled: Boolean(id),
+  });
+  const registrations = registrationsResponse?.data ?? [];
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 

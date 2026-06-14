@@ -42,6 +42,7 @@ import {
   Monitor,
   ExternalLink,
   Calendar,
+  Clock,
   MapPin,
   Info,
   ChevronDown,
@@ -63,6 +64,8 @@ import {
   Plus,
   Link2,
   ClipboardList,
+  Timer,
+  Trophy,
 } from 'lucide-react';
 import { ImageCropper } from '@/components/ImageCropper';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
@@ -621,6 +624,10 @@ interface LogisticsLocation {
   label: string;
   mapsUrl?: string;
   address?: string;
+  date?: string;
+  openFrom?: string;
+  openTo?: string;
+  note?: string;
 }
 
 interface LogisticsRowProps {
@@ -636,6 +643,7 @@ interface LogisticsRowProps {
   onAddLocation?: () => void;
   onRemoveLocation?: (id: string) => void;
   onUpdateLocation?: (id: string, updates: Partial<LogisticsLocation>) => void;
+  locationMode?: 'standard' | 'office';
 }
 
 const LogisticsRow = ({
@@ -651,6 +659,7 @@ const LogisticsRow = ({
   onAddLocation,
   onRemoveLocation,
   onUpdateLocation,
+  locationMode = 'standard',
 }: LogisticsRowProps) => (
   <div className="space-y-3 rounded-lg border bg-card p-4">
     <div className="flex items-start gap-3">
@@ -725,6 +734,43 @@ const LogisticsRow = ({
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
+                {locationMode === 'office' && (
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> Data
+                      </Label>
+                      <Input
+                        type="date"
+                        value={loc.date || ''}
+                        onChange={(e) => onUpdateLocation?.(loc.id, { date: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Od
+                      </Label>
+                      <Input
+                        type="time"
+                        value={loc.openFrom || ''}
+                        onChange={(e) => onUpdateLocation?.(loc.id, { openFrom: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Do
+                      </Label>
+                      <Input
+                        type="time"
+                        value={loc.openTo || ''}
+                        onChange={(e) => onUpdateLocation?.(loc.id, { openTo: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label className="text-xs">Nazwa / opis</Label>
@@ -758,6 +804,17 @@ const LogisticsRow = ({
                     className="h-8 text-sm"
                   />
                 </div>
+                {locationMode === 'office' && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Uwagi do godzin / miejsca (opcjonalnie)</Label>
+                    <Input
+                      value={loc.note || ''}
+                      onChange={(e) => onUpdateLocation?.(loc.id, { note: e.target.value })}
+                      placeholder="np. tylko odbiór pakietów dla dystansu 10 km"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -774,6 +831,7 @@ const LOGISTICS_FIELDS: {
   description: string;
   locationLabel?: string;
   withLocations?: boolean;
+  locationMode?: 'standard' | 'office';
 }[] = [
   {
     key: 'parking',
@@ -849,6 +907,34 @@ const LOGISTICS_FIELDS: {
     locationLabel: 'Punkt odbioru',
     withLocations: true,
   },
+  {
+    key: 'raceOffice',
+    icon: <ClipboardList className="h-4 w-4" />,
+    label: 'Biuro zawodów',
+    description:
+      'Podaj dni, godziny i miejsca działania biura zawodów. Możesz dodać kilka punktów lub dni.',
+    locationLabel: 'Termin biura',
+    withLocations: true,
+    locationMode: 'office',
+  },
+  {
+    key: 'timeMeasurement',
+    icon: <Timer className="h-4 w-4" />,
+    label: 'Pomiar czasu',
+    description: 'Informacje o sposobie pomiaru czasu, chipach, numerach lub wynikach live.',
+  },
+  {
+    key: 'awardsClassifications',
+    icon: <Trophy className="h-4 w-4" />,
+    label: 'Nagrody i klasyfikacje',
+    description: 'Informacje o klasyfikacjach, dekoracjach, nagrodach i kategoriach nagradzanych.',
+  },
+  {
+    key: 'additionalInfo',
+    icon: <Info className="h-4 w-4" />,
+    label: 'Dodatkowe informacje',
+    description: 'Pozostałe informacje organizacyjne, które uczestnik powinien znać przed startem.',
+  },
 ];
 
 const LogisticsSection = ({ form }: { form: EventFormState }) => {
@@ -882,6 +968,7 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
               onInfoChange={(html) => form.updateLogisticsField(f.key, { infoHtml: html })}
               locations={f.withLocations ? (info[f.key]?.locations as LogisticsLocation[]) : undefined}
               onAddLocation={f.withLocations ? () => form.addLogisticsLocation(f.key) : undefined}
+              locationMode={f.locationMode}
               onRemoveLocation={
                 f.withLocations ? (id) => form.removeLogisticsLocation(f.key, id) : undefined
               }
@@ -1590,7 +1677,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                             />
                             <p className="text-xs text-muted-foreground">
                               Dostępne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
-                              {'{distanceName}'}
+                              {'{distanceName}'}, {'{birthDate}'}
                             </p>
                           </div>
                         </div>
@@ -1787,18 +1874,27 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               </Label>
               <FieldHelp description="Formatuje nazwiska na liscie uczestnikow wielkimi literami, aby ulatwic skanowanie list startowych." />
             </div>
-            <div className="flex cursor-pointer items-start gap-2">
-              <Checkbox
-                id="hideUnpaid"
-                checked={form.displayOptions.hideUnpaid}
-                onCheckedChange={(checked) =>
-                  form.setDisplayOptions({ ...form.displayOptions, hideUnpaid: !!checked })
+            <div className="space-y-2">
+              <HelpLabel description="Decyduje, którzy zawodnicy są widoczni na publicznej liście startowej. W panelu organizatora zawsze widoczni są wszyscy.">
+                Publiczna lista startowa – kto jest widoczny
+              </HelpLabel>
+              <Select
+                value={form.displayOptions.showParticipants ?? 'paid_only'}
+                onValueChange={(v) =>
+                  form.setDisplayOptions({
+                    ...form.displayOptions,
+                    showParticipants: v as 'all' | 'paid_only',
+                  })
                 }
-              />
-              <Label htmlFor="hideUnpaid" className="cursor-pointer text-sm leading-5">
-                Ukryj nieopłaconych uczestników na liście publicznej
-              </Label>
-              <FieldHelp description="Nie pokazuje uczestnikow oczekujacych na platnosc na publicznej liscie startowej." />
+              >
+                <SelectTrigger className="w-full sm:w-72">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid_only">Tylko opłaceni zawodnicy</SelectItem>
+                  <SelectItem value="all">Wszyscy zapisani (też nieopłaceni)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>

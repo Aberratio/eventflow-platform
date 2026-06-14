@@ -158,6 +158,14 @@ export const httpAdapter: ApiAdapter = {
     request(`/users/${encodeURIComponent(id)}/status`, json('PATCH', { status })),
   getParticipants: () => request('/participants'),
   getOrganizers: () => request('/organizers'),
+  uploadAvatar: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return requestForm<{ url: string }>('/uploads/avatars', formData).then((response) => ({
+      ...response,
+      data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
+    }));
+  },
 
   async login(credentials) {
     const raw = await request<{ user: User; token: string }>(

@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
   Select,
   SelectContent,
@@ -35,6 +37,17 @@ interface EventFormStep2Props {
   activeSubStep?: string;
 }
 
+const DISTANCE_TEMPLATES = [
+  { name: '5 km', length: '5', unit: 'km' as const },
+  { name: '10 km', length: '10', unit: 'km' as const },
+  { name: 'Półmaraton', length: '21.097', unit: 'km' as const },
+  { name: 'Maraton', length: '42.195', unit: 'km' as const },
+  { name: 'Nordic Walking 5 km', length: '5', unit: 'km' as const },
+  { name: 'Bieg dzieci 200 m', length: '200', unit: 'm' as const },
+  { name: 'Bieg dzieci 1 km', length: '1', unit: 'km' as const },
+  { name: 'Trasa rowerowa 20 km', length: '20', unit: 'km' as const },
+];
+
 export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventFormStep2Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
 
@@ -58,21 +71,48 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
       {/* EVENT-LEVEL CATEGORIES */}
       {activeSubStep === 'categories' && <Card>
         <CardHeader className="p-4 pb-3 sm:p-6">
-          <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz wyłączyć
-            wybrane kategorie.
-          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz
+                wyłączyć wybrane kategorie.
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2.5 rounded-lg border px-3 py-2">
+              <Switch
+                id="categories-enabled"
+                checked={form.categoriesEnabled}
+                onCheckedChange={form.setCategoriesEnabled}
+              />
+              <Label htmlFor="categories-enabled" className="cursor-pointer text-sm font-medium">
+                {form.categoriesEnabled ? 'Kategorie włączone' : 'Brak kategorii'}
+              </Label>
+              <FieldHelp description="Wyłącz, jeśli wydarzenie nie ma podziału na kategorie. Zdefiniowane kategorie zostaną zapamiętane, ale nie zostaną zapisane do bazy danych." />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
-          {/* Age Categories */}
+          {!form.categoriesEnabled && (
+            <Alert className="border-muted bg-muted/50">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Brak kategorii</AlertTitle>
+              <AlertDescription>
+                Wydarzenie nie będzie miało podziału na kategorie. Uczestnicy nie będą wybierać
+                kategorii podczas rejestracji.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {form.categoriesEnabled && <>
+          {/* Base Categories */}
           <div className="space-y-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-1.5">
                 <Label className="text-base font-medium">
-                  Kategorie wiekowe ({form.ageCategories.length})
+                  Kategorie podstawowe ({form.ageCategories.length})
                 </Label>
-                <FieldHelp description="Kategorie wiekowe grupuja uczestnikow wedlug rocznika i plci. Sa pozniej uzywane w zapisach, listach startowych i wynikach." />
+                <FieldHelp description="Kategorie grupujące uczestników, np. według wieku, płci lub typu open (W Open, M Open). Używane w zapisach, listach startowych i wynikach." />
               </div>
               <Button
                 type="button"
@@ -90,19 +130,19 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                 <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_100px_100px_40px]">
                   <span className="flex items-center gap-1">
                     Nazwa
-                    <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29 albo M40-49." />
+                    <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29, M40-49 albo W Open." />
                   </span>
                   <span className="flex items-center gap-1">
                     Płeć
-                    <FieldHelp description="Okresla, czy dana kategoria dotyczy kobiet czy mezczyzn." />
+                    <FieldHelp description="Opcjonalne. Określa, czy kategoria dotyczy kobiet (K) lub mężczyzn (M). Zostaw puste dla kategorii Open." />
                   </span>
                   <span className="flex items-center gap-1">
                     Rok od
-                    <FieldHelp description="Najmlodszy rocznik kwalifikujacy sie do tej kategorii." />
+                    <FieldHelp description="Opcjonalne. Najstarszy rocznik kwalifikujący się do tej kategorii (puste = brak limitu)." />
                   </span>
                   <span className="flex items-center gap-1">
                     Rok do
-                    <FieldHelp description="Najstarszy rocznik kwalifikujacy sie do tej kategorii." />
+                    <FieldHelp description="Opcjonalne. Najmłodszy rocznik kwalifikujący się do tej kategorii (puste = brak limitu)." />
                   </span>
                   <span></span>
                 </div>
@@ -114,41 +154,52 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <Input
                       value={cat.name}
                       onChange={(e) => form.updateAgeCategory(catIdx, 'name', e.target.value)}
-                      placeholder="np. K18-29"
+                      placeholder="np. W Open, M40-49"
                       className="h-9"
                     />
                     <Select
-                      value={cat.gender}
-                      onValueChange={(v: 'K' | 'M') => form.updateAgeCategory(catIdx, 'gender', v)}
+                      value={cat.gender ?? '__none__'}
+                      onValueChange={(v) =>
+                        form.updateAgeCategory(
+                          catIdx,
+                          'gender',
+                          v === '__none__' ? null : (v as 'K' | 'M'),
+                        )
+                      }
                     >
                       <SelectTrigger className="h-9">
-                        <SelectValue />
+                        <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="__none__">—</SelectItem>
                         <SelectItem value="K">K</SelectItem>
                         <SelectItem value="M">M</SelectItem>
                       </SelectContent>
                     </Select>
                     <Input
                       type="number"
-                      value={cat.birthYearFrom}
+                      value={cat.birthYearFrom ?? ''}
                       onChange={(e) =>
                         form.updateAgeCategory(
                           catIdx,
                           'birthYearFrom',
-                          parseInt(e.target.value) || 0,
+                          e.target.value === '' ? null : parseInt(e.target.value) || 0,
                         )
                       }
-                      placeholder="1990"
+                      placeholder="—"
                       className="h-9"
                     />
                     <Input
                       type="number"
-                      value={cat.birthYearTo}
+                      value={cat.birthYearTo ?? ''}
                       onChange={(e) =>
-                        form.updateAgeCategory(catIdx, 'birthYearTo', parseInt(e.target.value) || 0)
+                        form.updateAgeCategory(
+                          catIdx,
+                          'birthYearTo',
+                          e.target.value === '' ? null : parseInt(e.target.value) || 0,
+                        )
                       }
-                      placeholder="2000"
+                      placeholder="—"
                       className="h-9"
                     />
                     <Button
@@ -171,7 +222,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
               onClick={form.addAgeCategory}
               className="w-full text-primary sm:w-auto"
             >
-              <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię wiekową
+              <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię
             </Button>
           </div>
 
@@ -238,6 +289,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
               <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
             </Button>
           </div>
+          </>}
         </CardContent>
       </Card>}
 
@@ -249,6 +301,36 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
           <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
         </Button>
       </div>
+
+      <Card>
+        <CardContent className="space-y-3 p-4 sm:p-5">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium">Popularne szablony dystansów</p>
+              <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
+              wariantów.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DISTANCE_TEMPLATES.map((template) => (
+              <Button
+                key={`${template.name}-${template.length}-${template.unit}`}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => form.addDistanceFromTemplate(template)}
+                className="h-8"
+              >
+                <ListPlus className="mr-1.5 h-3.5 w-3.5" />
+                {template.name}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {form.distances.length === 0 && (
         <Card>
@@ -348,6 +430,18 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   placeholder="500"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <HelpLabel description="Opcjonalny opis widoczny przy dystansie, np. limit wieku, charakter trasy, przewyższenia, wymagany sprzęt albo ważne zasady dla tego wariantu.">
+                Dodatkowe informacje o dystansie
+              </HelpLabel>
+              <RichTextEditor
+                value={dist.infoHtml}
+                onChange={(html) => form.updateDistance(index, 'infoHtml', html)}
+                placeholder="Wpisz informacje widoczne dla uczestników przy tym dystansie..."
+                minHeight="90px"
+              />
             </div>
 
             <Collapsible>

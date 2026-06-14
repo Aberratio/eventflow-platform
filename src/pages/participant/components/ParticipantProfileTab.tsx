@@ -4,6 +4,7 @@ import { ProfileForm } from '@/components/profile/ProfileForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -11,17 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Link } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Link, Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { SosContact } from '@/types';
 
 const ParticipantProfileTab = () => {
-  const { user } = useAuth();
+  const { user, updateCurrentUser } = useAuth();
+
   const [participantData, setParticipantData] = useState({
-    birthYear: user?.birthYear || '',
+    birthDate: user?.birthDate || '',
+    birthYear: user?.birthYear?.toString() || '',
     gender: user?.gender || '',
     club: user?.club || '',
   });
+
+  const [sosContacts, setSosContacts] = useState<SosContact[]>(user?.sosContacts ?? []);
+  const [saving, setSaving] = useState(false);
 
   if (!user) return null;
 
@@ -29,20 +35,53 @@ const ParticipantProfileTab = () => {
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(publicProfileUrl);
-    toast({
-      title: 'Skopiowano link',
-      description: 'Link do profilu został skopiowany do schowka.',
-    });
+    toast({ title: 'Skopiowano link', description: 'Link do profilu został skopiowany do schowka.' });
   };
 
-  // Generate year options (1940 - current year - 10)
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1940 - 9 }, (_, i) => currentYear - 10 - i);
+  const addSosContact = () => {
+    setSosContacts([...sosContacts, { name: '', phone: '', relation: '' }]);
+  };
+
+  const removeSosContact = (index: number) => {
+    setSosContacts(sosContacts.filter((_, i) => i !== index));
+  };
+
+  const updateSosContact = (index: number, field: keyof SosContact, value: string) => {
+    const updated = sosContacts.map((c, i) => (i === index ? { ...c, [field]: value } : c));
+    setSosContacts(updated);
+  };
+
+  const handleSaveParticipant = async () => {
+    setSaving(true);
+    try {
+      const birthYearFromDate = participantData.birthDate
+        ? new Date(participantData.birthDate).getFullYear()
+        : participantData.birthYear
+          ? parseInt(participantData.birthYear)
+          : undefined;
+
+      const validContacts = sosContacts.filter((c) => c.name.trim() && c.phone.trim());
+
+      await updateCurrentUser({
+        birthDate: participantData.birthDate || undefined,
+        birthYear: birthYearFromDate,
+        gender: (participantData.gender as 'M' | 'K') || undefined,
+        club: participantData.club || undefined,
+        sosContacts: validContacts.length ? validContacts : undefined,
+      });
+
+      toast({ title: 'Zapisano dane zawodnika' });
+    } catch {
+      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="max-w-2xl">
       <ProfileForm user={user}>
-        {/* Participant-specific fields */}
+        {/* Dane zawodnika */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Dane zawodnika</CardTitle>
@@ -50,26 +89,19 @@ const ParticipantProfileTab = () => {
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="birthYear">Rok urodzenia</Label>
-                <Select
-                  value={participantData.birthYear?.toString()}
-                  onValueChange={(value) =>
-                    setParticipantData({ ...participantData, birthYear: value })
-                  }
-                >
-                  <SelectTrigger id="birthYear">
-                    <SelectValue placeholder="Wybierz rok" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {years.map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="birthDate">Data urodzenia</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={participantData.birthDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const year = val ? new Date(val).getFullYear().toString() : '';
+                    setParticipantData({ ...participantData, birthDate: val, birthYear: year });
+                  }}
+                />
                 <p className="text-xs text-muted-foreground">
-                  Potrzebny do przypisania kategorii wiekowej
+                  Potrzebna do przypisania kategorii wiekowej
                 </p>
               </div>
 
@@ -102,10 +134,109 @@ const ParticipantProfileTab = () => {
                 placeholder="np. KB Gliwice"
               />
             </div>
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSaveParticipant}
+                disabled={saving}
+              >
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Zapisz dane zawodnika
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Public Profile Link */}
+        {/* Kontakty SOS */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Kontakty alarmowe (SOS)</CardTitle>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSosContact}
+                disabled={sosContacts.length >= 3}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Dodaj
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {sosContacts.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Dodaj osobę kontaktową na wypadek sytuacji awaryjnej podczas zawodów.
+              </p>
+            )}
+            {sosContacts.map((contact, index) => (
+              <div key={index} className="rounded-lg border p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Kontakt {index + 1}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
+                    onClick={() => removeSosContact(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor={`sos-name-${index}`}>Imię i nazwisko</Label>
+                    <Input
+                      id={`sos-name-${index}`}
+                      value={contact.name}
+                      onChange={(e) => updateSosContact(index, 'name', e.target.value)}
+                      placeholder="Anna Kowalska"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor={`sos-phone-${index}`}>Telefon</Label>
+                    <Input
+                      id={`sos-phone-${index}`}
+                      type="tel"
+                      value={contact.phone}
+                      onChange={(e) => updateSosContact(index, 'phone', e.target.value)}
+                      placeholder="+48 123 456 789"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor={`sos-relation-${index}`}>Relacja (opcjonalne)</Label>
+                  <Input
+                    id={`sos-relation-${index}`}
+                    value={contact.relation || ''}
+                    onChange={(e) => updateSosContact(index, 'relation', e.target.value)}
+                    placeholder="np. Mama, Mąż, Przyjaciel"
+                  />
+                </div>
+              </div>
+            ))}
+            {sosContacts.length > 0 && (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSaveParticipant}
+                  disabled={saving}
+                >
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Zapisz kontakty SOS
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Profil publiczny */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Profil publiczny</CardTitle>

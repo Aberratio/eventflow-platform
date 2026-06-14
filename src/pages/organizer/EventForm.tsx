@@ -38,6 +38,9 @@ const EventForm = () => {
     submitForm();
   };
 
+  const completedSubSteps = form.visitedSubSteps.filter(
+    (item) => (form.sectionValidationErrors[item]?.length ?? 0) === 0,
+  );
 
   return (
     <Layout>
@@ -60,18 +63,17 @@ const EventForm = () => {
             <StepNavSidebar
               currentStep={form.step}
               currentSubStep={form.subStep}
+              validationErrors={form.sectionValidationErrors}
+              completedSubSteps={completedSubSteps}
+              revisitedSubSteps={form.revisitedSubSteps}
               onNavigate={form.navigateToSubStep}
             />
           </div>
 
           {/* Main content */}
           <div className="min-w-0 flex-1">
-            {form.step === 1 && (
-              <EventFormStep1 form={form} activeSubStep={form.subStep} />
-            )}
-            {form.step === 2 && (
-              <EventFormStep2 form={form} activeSubStep={form.subStep} />
-            )}
+            {form.step === 1 && <EventFormStep1 form={form} activeSubStep={form.subStep} />}
+            {form.step === 2 && <EventFormStep2 form={form} activeSubStep={form.subStep} />}
             {form.step === 3 && <EventFormStep3 form={form} />}
 
             {/* Navigation buttons */}
@@ -86,7 +88,7 @@ const EventForm = () => {
 
               {form.step < 3 ? (
                 <Button onClick={form.nextStep} className="w-full sm:w-auto">
-                  Dalej <ArrowRight className="ml-2 h-4 w-4" />
+                  Zapisz i przejdź dalej <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
                 <Button

@@ -1,4 +1,4 @@
-import { getEventsByOrganizer, getOrganizerEventLimit, mockRegistrations } from '@/api';
+import { getEventsByOrganizer, getOrganizerEventLimit } from '@/api';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -67,11 +67,8 @@ const OrganizerEventsPage = () => {
   const eventLimit = eventLimitResponse?.data;
   const canCreateEvent = !eventLimit || eventLimit.available > 0;
 
-  const getParticipantCount = (eventId: string) => {
-    return mockRegistrations.filter(
-      (r) => r.eventId === eventId && r.status !== 'cancelled' && r.status !== 'removed',
-    ).length;
-  };
+  const getParticipantCount = (event: Event) =>
+    event.distances.reduce((sum, d) => sum + d.registeredCount, 0);
 
   return (
     <Layout>
@@ -135,7 +132,7 @@ const OrganizerEventsPage = () => {
         ) : (
           <div className="space-y-3">
             {filteredEvents.map((event) => {
-              const participantCount = getParticipantCount(event.id);
+              const participantCount = getParticipantCount(event);
               return (
                 <Card key={event.id} className="transition-shadow hover:shadow-md">
                   <CardContent className="flex items-center gap-4 py-4">

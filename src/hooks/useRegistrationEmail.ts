@@ -18,12 +18,14 @@ export const useRegistrationEmail = () => {
     template: string | undefined,
     eventName: string,
     distanceName: string,
+    birthDate?: string,
   ): string => {
     const baseTemplate = template || '{eventName} - {participantName}';
     return baseTemplate
       .replace('{eventName}', eventName)
       .replace('{participantName}', user?.name || 'Uczestnik')
-      .replace('{distanceName}', distanceName);
+      .replace('{distanceName}', distanceName)
+      .replace('{birthDate}', birthDate || '');
   };
 
   const formatPrice = (amount: number): string => {
@@ -85,6 +87,7 @@ export const useRegistrationEmail = () => {
                 paymentConfig.transferTitle,
                 eventName,
                 registrationData.distanceName || '',
+                registrationData.birthDate,
               ),
               amount: formatPrice(registrationData.totalAmount),
               instructions: [

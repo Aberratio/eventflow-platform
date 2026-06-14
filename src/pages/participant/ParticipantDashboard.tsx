@@ -1,13 +1,14 @@
 import {
-  mockRegistrations,
-  mockCertificates,
-  mockMessages,
-  mockPersonalRecords,
-  mockResults,
-  mockShopOrders,
-  mockTickets,
+  getRegistrationsByUser,
+  getResultsByUser,
+  getPersonalRecords,
+  getMessages,
+  getTickets,
+  getCertificates,
+  getOrders,
 } from '@/api';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -44,15 +45,51 @@ const ParticipantDashboard = () => {
     if (tab) setActiveTab(tab);
   }, [searchParams]);
 
-  const userRegistrations = mockRegistrations.filter((r) => r.userId === user?.id);
+  const { data: registrationsResp } = useQuery({
+    queryKey: ['registrations-by-user', user?.id],
+    queryFn: () => getRegistrationsByUser(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: resultsResp } = useQuery({
+    queryKey: ['results-by-user', user?.id],
+    queryFn: () => getResultsByUser(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: recordsResp } = useQuery({
+    queryKey: ['personal-records', user?.id],
+    queryFn: () => getPersonalRecords(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: messagesResp } = useQuery({
+    queryKey: ['messages', user?.id],
+    queryFn: () => getMessages(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: ticketsResp } = useQuery({
+    queryKey: ['tickets', user?.id],
+    queryFn: () => getTickets(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: certificatesResp } = useQuery({
+    queryKey: ['certificates', user?.id],
+    queryFn: () => getCertificates(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: ordersResp } = useQuery({
+    queryKey: ['orders', user?.id],
+    queryFn: () => getOrders(user?.id),
+    enabled: Boolean(user?.id),
+  });
+
+  const userRegistrations = registrationsResp?.data ?? [];
   const upcomingRegistrations = userRegistrations.filter((r) => r.status !== 'removed');
-  const userResults = mockResults.filter((r) => r.userId === user?.id);
-  const userCertificates = mockCertificates.filter((c) => (c as any).userId === user?.id);
-  const unreadMessages = mockMessages.filter((m) => !m.read);
-  const userMessages = mockMessages.filter((m) => (m as any).recipientId === user?.id || true);
-  const userRecords = mockPersonalRecords.filter((r) => (r as any).userId === user?.id);
-  const userOrders = mockShopOrders.filter((o) => o.userId === user?.id);
-  const userTickets = mockTickets.filter((t) => (t as any).userId === user?.id);
+  const userResults = resultsResp?.data ?? [];
+  const userCertificates = certificatesResp?.data ?? [];
+  const userMessages = messagesResp?.data ?? [];
+  const unreadMessages = userMessages.filter((m) => !m.read);
+  const userRecords = recordsResp?.data ?? [];
+  const userOrders = ordersResp?.data ?? [];
+  const userTickets = ticketsResp?.data ?? [];
 
   const tabs = [
     { id: 'overview', label: 'Przegląd', icon: LayoutDashboard },
@@ -104,7 +141,7 @@ const ParticipantDashboard = () => {
             <ParticipantOverviewTab
               upcomingRegistrations={upcomingRegistrations}
               results={userResults}
-              personalRecords={mockPersonalRecords}
+              personalRecords={userRecords}
               unreadMessages={unreadMessages}
             />
           </TabsContent>
@@ -122,7 +159,7 @@ const ParticipantDashboard = () => {
           </TabsContent>
 
           <TabsContent value="records" className="mt-0">
-            <ParticipantRecordsTab personalRecords={mockPersonalRecords} results={userResults} />
+            <ParticipantRecordsTab personalRecords={userRecords} results={userResults} />
           </TabsContent>
 
           <TabsContent value="challenges" className="mt-0">

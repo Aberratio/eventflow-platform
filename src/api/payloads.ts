@@ -21,6 +21,8 @@ import type {
   EventDisplayOptions,
   PaymentConfig,
   UserRole,
+  UserAddress,
+  SosContact,
   MerchandiseOrder,
   Registration,
   ShopOrder,
@@ -86,12 +88,15 @@ export interface CreateUserPayload {
   role: UserRole;
   phone?: string;
   birthYear?: number;
+  birthDate?: string;
   gender?: 'M' | 'K';
   club?: string;
   companyName?: string;
   nip?: string;
   website?: string;
   description?: string;
+  address?: UserAddress;
+  sosContacts?: SosContact[];
 }
 
 export type UpdateUserPayload = Partial<CreateUserPayload> & {

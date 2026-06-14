@@ -1,5 +1,18 @@
 export type UserRole = 'participant' | 'organizer' | 'moderator' | 'admin' | 'superadmin';
 
+export interface UserAddress {
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+export interface SosContact {
+  name: string;
+  phone: string;
+  relation?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -8,12 +21,15 @@ export interface User {
   avatar?: string;
   phone?: string;
   birthYear?: number;
+  birthDate?: string;
   gender?: 'M' | 'K';
   club?: string;
   companyName?: string;
   nip?: string;
   website?: string;
   description?: string;
+  address?: UserAddress;
+  sosContacts?: SosContact[];
   isNewUser?: boolean;
   status?: 'active' | 'blocked';
   eventLimit?: number;

@@ -1,4 +1,4 @@
-import { getUsers, mockRegistrations } from '@/api';
+import { getUsers } from '@/api';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -93,9 +93,7 @@ export const UsersParticipantsTab = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const getUserRegistrations = (userId: string) => {
-    return mockRegistrations.filter((r) => r.userId === userId).length;
-  };
+  const getUserRegistrations = (_userId: string) => 0;
 
   const openAction = (user: User, action: 'profile' | 'role' | 'reset' | 'block' | 'delete') => {
     setSelectedUser(user);

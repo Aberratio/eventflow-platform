@@ -1,4 +1,4 @@
-import { getEvents, getUsers, mockRegistrations } from '@/api';
+import { getEvents, getUsers, getRegistrations } from '@/api';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,8 +13,13 @@ export const ModeratorOverviewTab = () => {
     queryKey: ['users', 'moderator-overview'],
     queryFn: () => getUsers({ pageSize: 100 }),
   });
+  const { data: registrationsResponse } = useQuery({
+    queryKey: ['registrations', 'moderator-overview'],
+    queryFn: () => getRegistrations({ pageSize: 1000 }),
+  });
   const events = eventsResponse?.data ?? [];
   const users = usersResponse?.data ?? [];
+  const registrations = registrationsResponse?.data ?? [];
   const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
   const publishedEvents = events.filter((e) => e.status === 'active').length;
   const participantCount = users.filter((u) => u.role === 'participant').length;
@@ -48,7 +53,7 @@ export const ModeratorOverviewTab = () => {
     },
     {
       label: 'Rejestracji',
-      value: mockRegistrations.length,
+      value: registrations.length,
       icon: TrendingUp,
       color: 'bg-primary/10 text-primary',
     },
@@ -110,7 +115,7 @@ export const ModeratorOverviewTab = () => {
           <CardContent className="pt-6">
             <h3 className="mb-4 font-semibold">Ostatnie rejestracje</h3>
             <div className="space-y-3">
-              {mockRegistrations.slice(0, 5).map((reg) => (
+              {registrations.slice(0, 5).map((reg) => (
                 <div
                   key={reg.id}
                   className="flex items-center justify-between rounded-lg border p-3"

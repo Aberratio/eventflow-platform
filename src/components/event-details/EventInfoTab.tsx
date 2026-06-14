@@ -19,6 +19,12 @@ import {
   ExternalLink,
   CheckCircle2,
   XCircle,
+  ClipboardList,
+  Timer,
+  Trophy,
+  Info,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
@@ -31,20 +37,96 @@ const LOGISTICS_DISPLAY: {
   label: string;
   locationLabel: string;
 }[] = [
-  { key: 'parking', icon: <ParkingSquare className="h-4 w-4" />, label: 'Parkingi', locationLabel: 'Parking' },
-  { key: 'changingRooms', icon: <ShirtIcon className="h-4 w-4" />, label: 'Szatnie', locationLabel: 'Szatnia' },
-  { key: 'luggage', icon: <Briefcase className="h-4 w-4" />, label: 'Depozyty bagażu', locationLabel: 'Depozyt' },
-  { key: 'toilets', icon: <Toilet className="h-4 w-4" />, label: 'Toalety', locationLabel: 'Punkt toaletowy' },
-  { key: 'buffet', icon: <Coffee className="h-4 w-4" />, label: 'Bufet / napoje', locationLabel: 'Punkt odżywczy' },
-  { key: 'meals', icon: <Utensils className="h-4 w-4" />, label: 'Posiłki / catering', locationLabel: 'Punkt' },
-  { key: 'medicalPoint', icon: <HeartPulse className="h-4 w-4" />, label: 'Punkt medyczny', locationLabel: 'Punkt medyczny' },
-  { key: 'showers', icon: <ShowerHead className="h-4 w-4" />, label: 'Prysznice', locationLabel: 'Prysznice' },
-  { key: 'merchandise', icon: <ShoppingBag className="h-4 w-4" />, label: 'Gadżety / merchandise', locationLabel: 'Strefa' },
-  { key: 'baggage', icon: <Package className="h-4 w-4" />, label: 'Pakiety startowe', locationLabel: 'Punkt odbioru' },
+  {
+    key: 'parking',
+    icon: <ParkingSquare className="h-4 w-4" />,
+    label: 'Parkingi',
+    locationLabel: 'Parking',
+  },
+  {
+    key: 'changingRooms',
+    icon: <ShirtIcon className="h-4 w-4" />,
+    label: 'Szatnie',
+    locationLabel: 'Szatnia',
+  },
+  {
+    key: 'luggage',
+    icon: <Briefcase className="h-4 w-4" />,
+    label: 'Depozyty bagażu',
+    locationLabel: 'Depozyt',
+  },
+  {
+    key: 'toilets',
+    icon: <Toilet className="h-4 w-4" />,
+    label: 'Toalety',
+    locationLabel: 'Punkt toaletowy',
+  },
+  {
+    key: 'buffet',
+    icon: <Coffee className="h-4 w-4" />,
+    label: 'Bufet / napoje',
+    locationLabel: 'Punkt odżywczy',
+  },
+  {
+    key: 'meals',
+    icon: <Utensils className="h-4 w-4" />,
+    label: 'Posiłki / catering',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'medicalPoint',
+    icon: <HeartPulse className="h-4 w-4" />,
+    label: 'Punkt medyczny',
+    locationLabel: 'Punkt medyczny',
+  },
+  {
+    key: 'showers',
+    icon: <ShowerHead className="h-4 w-4" />,
+    label: 'Prysznice',
+    locationLabel: 'Prysznice',
+  },
+  {
+    key: 'merchandise',
+    icon: <ShoppingBag className="h-4 w-4" />,
+    label: 'Gadżety / merchandise',
+    locationLabel: 'Strefa',
+  },
+  {
+    key: 'baggage',
+    icon: <Package className="h-4 w-4" />,
+    label: 'Pakiety startowe',
+    locationLabel: 'Punkt odbioru',
+  },
+  {
+    key: 'raceOffice',
+    icon: <ClipboardList className="h-4 w-4" />,
+    label: 'Biuro zawodów',
+    locationLabel: 'Termin biura',
+  },
+  {
+    key: 'timeMeasurement',
+    icon: <Timer className="h-4 w-4" />,
+    label: 'Pomiar czasu',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'awardsClassifications',
+    icon: <Trophy className="h-4 w-4" />,
+    label: 'Nagrody i klasyfikacje',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'additionalInfo',
+    icon: <Info className="h-4 w-4" />,
+    label: 'Dodatkowe informacje',
+    locationLabel: 'Punkt',
+  },
 ];
 
 const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
-  const visible = LOGISTICS_DISPLAY.filter((f) => info[f.key]?.status === 'yes' || info[f.key]?.status === 'no');
+  const visible = LOGISTICS_DISPLAY.filter(
+    (f) => info[f.key]?.status === 'yes' || info[f.key]?.status === 'no',
+  );
   if (visible.length === 0) return null;
 
   return (
@@ -81,6 +163,25 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
                         </span>
                         {loc.address && (
                           <p className="text-xs text-muted-foreground">{loc.address}</p>
+                        )}
+                        {(loc.date || loc.openFrom || loc.openTo) && (
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                            {loc.date && (
+                              <span className="inline-flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {loc.date}
+                              </span>
+                            )}
+                            {(loc.openFrom || loc.openTo) && (
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {[loc.openFrom, loc.openTo].filter(Boolean).join(' - ')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {loc.note && (
+                          <p className="mt-1 text-xs text-muted-foreground">{loc.note}</p>
                         )}
                         {loc.mapsUrl && (
                           <a

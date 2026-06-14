@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 
 interface EventDistancesTabProps {
   event: Event;
@@ -43,6 +44,10 @@ const DistanceCard = ({ distance }: { distance: Distance }) => {
                 {distance.length} {distance.unit}
               </div>
             </div>
+
+            {distance.infoHtml && (
+              <RichTextDisplay html={distance.infoHtml} className="text-sm text-muted-foreground" />
+            )}
 
             {categoryCount > 0 && (
               <div className="rounded-lg border border-border/70 bg-muted/20 p-3">

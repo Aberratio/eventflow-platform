@@ -464,6 +464,11 @@ export const mockAdapter: ApiAdapter = {
     return ok(mockUsers.filter((u) => u.role === 'organizer'));
   },
 
+  async uploadAvatar(file) {
+    await delay();
+    return ok({ url: URL.createObjectURL(file) });
+  },
+
   // ── Auth ──
 
   async login(credentials) {

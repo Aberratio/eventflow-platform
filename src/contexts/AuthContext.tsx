@@ -1,6 +1,7 @@
-import { getCurrentUser, getUsers, login as apiLogin, logout as apiLogout } from '@/api';
+import { getCurrentUser, getUsers, login as apiLogin, logout as apiLogout, updateUser as apiUpdateUser } from '@/api';
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, UserRole } from '@/types';
+import { UpdateUserPayload } from '@/api/payloads';
 import { STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
 
@@ -10,6 +11,7 @@ interface AuthContextType {
   login: (role: UserRole) => Promise<void>;
   loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  updateCurrentUser: (data: UpdateUserPayload) => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,9 +96,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     getStorage()?.removeItem(AUTH_STORAGE_KEY);
   };
 
+  const updateCurrentUser = async (data: UpdateUserPayload): Promise<User | null> => {
+    if (!user) return null;
+    const response = await apiUpdateUser(user.id, data);
+    if (!response.data) return null;
+    setUser(response.data);
+    getStorage()?.setItem(AUTH_STORAGE_KEY, JSON.stringify(response.data));
+    return response.data;
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, login, loginWithCredentials, logout }}
+      value={{ user, isAuthenticated: !!user, login, loginWithCredentials, logout, updateCurrentUser }}
     >
       {children}
     </AuthContext.Provider>

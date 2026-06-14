@@ -62,9 +62,9 @@ export interface MerchandiseOrder {
 export interface AgeCategory {
   id: string;
   name: string;
-  gender: 'K' | 'M';
-  birthYearFrom: number;
-  birthYearTo: number;
+  gender?: 'K' | 'M' | null;
+  birthYearFrom?: number;
+  birthYearTo?: number;
 }
 
 export interface SpecialCategory {
@@ -95,6 +95,7 @@ export interface Distance {
   paidCount?: number;
   price: number;
   officePrice?: number;
+  infoHtml?: string;
   priceTierMode?: PriceTierMode;
   participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
@@ -150,7 +151,8 @@ export interface RegistrationFormConfig {
 export interface EventDisplayOptions {
   defaultSort: 'name' | 'bib' | 'date' | 'distance';
   uppercaseNames: boolean;
-  hideUnpaid: boolean;
+  hideUnpaid: boolean; // @deprecated - use showParticipants
+  showParticipants: 'all' | 'paid_only';
 }
 
 export interface BannerCropArea {
@@ -332,6 +334,10 @@ export interface LogisticsLocation {
   label: string;
   mapsUrl?: string;
   address?: string;
+  date?: string;
+  openFrom?: string;
+  openTo?: string;
+  note?: string;
 }
 
 export interface LogisticsField {
@@ -351,6 +357,10 @@ export interface EventLogisticsInfo {
   showers?: LogisticsField;
   merchandise?: LogisticsField;
   baggage?: LogisticsField;
+  timeMeasurement?: LogisticsField;
+  awardsClassifications?: LogisticsField;
+  additionalInfo?: LogisticsField;
+  raceOffice?: LogisticsField;
 }
 
 export interface GlobalInsuranceSettings {

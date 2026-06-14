@@ -145,6 +145,9 @@ export const useRegistrationForm = (event: Event) => {
   useEffect(() => {
     if (!selectedDistance) return;
 
+    const hasAgeCategories = (selectedDistance.ageCategories?.length ?? 0) > 0;
+    if (hasAgeCategories) return;
+
     const regularCategories = selectedDistance.categories ?? [];
     const selectedBaseCategory = selectedCategory.split(',')[0]?.trim() ?? '';
 
@@ -240,8 +243,14 @@ export const useRegistrationForm = (event: Event) => {
         if (dist?.limit != null && dist.registeredCount >= dist.limit) return false;
         return true;
       }
-      case 2:
-        return !!selectedCategory && !!birthYear && !!birthMonth && !!birthDay;
+      case 2: {
+        if (!birthYear || !birthMonth || !birthDay) return false;
+        const dist = event.distances.find((d) => d.id === selectedDistanceId);
+        const hasAgeCats = (dist?.ageCategories?.length ?? 0) > 0;
+        const hasRegularCats = (dist?.categories?.length ?? 0) > 0;
+        if (!hasAgeCats && !hasRegularCats) return true;
+        return !!selectedCategory;
+      }
       case 25:
         if (!wantsTeam) return true;
         if (teamMode === 'create') return teamName.trim().length >= 3 && !teamNameError;
@@ -269,10 +278,14 @@ export const useRegistrationForm = (event: Event) => {
 
   const buildSubmitData = (): RegistrationData | null => {
     if (!agreedToTerms || !selectedDistance) return null;
+    const birthDate =
+      birthYear && birthMonth && birthDay ? `${birthYear}-${birthMonth}-${birthDay}` : undefined;
+
     return {
       distanceId: selectedDistanceId,
       distanceName: selectedDistance.name,
       category: selectedCategory,
+      birthDate,
       price: distancePrice,
       discountCode: appliedDiscount ? discountCode : undefined,
       discountAmount: discountAmount > 0 ? discountAmount : undefined,

@@ -1,4 +1,4 @@
-import { mockSalesStats, mockOnlineSessions, getEvents, getUsers, mockRegistrations } from '@/api';
+import { getSalesStats, getOnlineSessions, getEvents, getUsers, getRegistrations } from '@/api';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +27,24 @@ export const AdminOverviewTab = () => {
     queryKey: ['users', 'admin-overview'],
     queryFn: () => getUsers({ pageSize: 100 }),
   });
+  const { data: salesStatsResponse } = useQuery({
+    queryKey: ['sales-stats'],
+    queryFn: () => getSalesStats(),
+  });
+  const { data: onlineSessionsResponse } = useQuery({
+    queryKey: ['online-sessions'],
+    queryFn: () => getOnlineSessions(),
+  });
+  const { data: registrationsResponse } = useQuery({
+    queryKey: ['registrations', 'admin-overview'],
+    queryFn: () => getRegistrations({ pageSize: 1000 }),
+  });
+
   const events = eventsResponse?.data ?? [];
   const users = usersResponse?.data ?? [];
+  const salesStats = salesStatsResponse?.data;
+  const onlineSessions = onlineSessionsResponse?.data ?? [];
+  const registrations = registrationsResponse?.data ?? [];
   const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
 
   const stats = [
@@ -58,7 +74,7 @@ export const AdminOverviewTab = () => {
     },
     {
       label: 'Rejestracji',
-      value: mockRegistrations.length,
+      value: registrations.length,
       icon: TrendingUp,
       color: 'bg-primary/10 text-primary',
     },
@@ -104,11 +120,11 @@ export const AdminOverviewTab = () => {
     },
   };
 
-  const totalRevenue = mockSalesStats.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0);
-  const adminCount = mockOnlineSessions.filter(
+  const totalRevenue = salesStats?.monthlyRevenue.reduce((sum, m) => sum + m.revenue, 0) ?? 0;
+  const adminCount = onlineSessions.filter(
     (s) => s.role === 'admin' || s.role === 'superadmin',
   ).length;
-  const moderatorCount = mockOnlineSessions.filter((s) => s.role === 'moderator').length;
+  const moderatorCount = onlineSessions.filter((s) => s.role === 'moderator').length;
 
   return (
     <div className="space-y-6">
@@ -122,7 +138,7 @@ export const AdminOverviewTab = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {mockOnlineSessions.map((session) => (
+            {onlineSessions.map((session) => (
               <OnlineStaffCard key={session.userId} session={session} />
             ))}
           </div>
@@ -169,7 +185,7 @@ export const AdminOverviewTab = () => {
         <CardContent>
           <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
             <BarChart
-              data={mockSalesStats.monthlyRevenue}
+              data={salesStats?.monthlyRevenue ?? []}
               margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -206,7 +222,7 @@ export const AdminOverviewTab = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockSalesStats.topProducts.map((product, index) => (
+              {(salesStats?.topProducts ?? []).map((product, index) => (
                 <div key={product.id} className="flex items-center gap-4">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                     {index + 1}
@@ -235,7 +251,7 @@ export const AdminOverviewTab = () => {
             <ChartContainer config={pieChartConfig} className="h-[250px] w-full">
               <PieChart>
                 <Pie
-                  data={mockSalesStats.ordersByStatus}
+                  data={salesStats?.ordersByStatus ?? []}
                   dataKey="count"
                   nameKey="status"
                   cx="50%"
@@ -244,7 +260,7 @@ export const AdminOverviewTab = () => {
                   label={({ status, count }) => `${status}: ${count}`}
                   labelLine={false}
                 >
-                  {mockSalesStats.ordersByStatus.map((entry, index) => (
+                  {(salesStats?.ordersByStatus ?? []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>
@@ -252,7 +268,7 @@ export const AdminOverviewTab = () => {
               </PieChart>
             </ChartContainer>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {mockSalesStats.ordersByStatus.map((item) => (
+              {(salesStats?.ordersByStatus ?? []).map((item) => (
                 <div key={item.status} className="flex items-center gap-2 text-sm">
                   <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
                   <span className="text-muted-foreground">{item.status}:</span>
@@ -270,7 +286,7 @@ export const AdminOverviewTab = () => {
           <CardContent className="pt-6">
             <h3 className="mb-4 font-semibold">Ostatnie rejestracje</h3>
             <div className="space-y-3">
-              {mockRegistrations.slice(0, 5).map((reg) => (
+              {registrations.slice(0, 5).map((reg) => (
                 <div
                   key={reg.id}
                   className="flex items-center justify-between rounded-lg border p-3"

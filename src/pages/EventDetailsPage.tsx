@@ -1,4 +1,4 @@
-import { getEventBySlug, mockRegistrations, mockResults } from '@/api';
+import { getEventBySlug, getRegistrationsByEvent, getResultsByEvent } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -46,6 +46,20 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   });
   const event = eventResponse?.data ?? null;
 
+  const { data: registrationsResponse } = useQuery({
+    queryKey: ['event-registrations', event?.id],
+    queryFn: () => getRegistrationsByEvent(event!.id),
+    enabled: Boolean(event?.id),
+  });
+  const eventRegistrations = registrationsResponse?.data ?? [];
+
+  const { data: resultsResponse } = useQuery({
+    queryKey: ['event-results', event?.id],
+    queryFn: () => getResultsByEvent(event!.id),
+    enabled: Boolean(event?.id),
+  });
+  const eventResults = resultsResponse?.data ?? [];
+
   const isUnpublished = event && event.status === 'draft';
   const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
   const canViewDraft =
@@ -62,7 +76,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
     if (
       isAuthenticated &&
-      mockRegistrations.some((r) => r.eventId === event.id && r.userId === user?.id)
+      eventRegistrations.some((r) => r.userId === user?.id)
     )
       return true;
     if (accessCodeFromUrl && accessCodeFromUrl === event.accessCode) {
@@ -129,12 +143,10 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     return null;
   };
 
-  const eventResults = mockResults.filter((r) => r.eventId === event.id);
-  const eventRegistrations = mockRegistrations.filter((r) => r.eventId === event.id);
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
 
   const userRegistration = isAuthenticated
-    ? (mockRegistrations.find((r) => r.eventId === event.id && r.userId === user?.id) ?? null)
+    ? (eventRegistrations.find((r) => r.userId === user?.id) ?? null)
     : null;
 
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
@@ -317,7 +329,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
               </TabsContent>
 
               <TabsContent value="startlist" className="mt-6">
-                <EventStartListTab registrations={eventRegistrations} />
+                <EventStartListTab event={event} registrations={eventRegistrations} />
               </TabsContent>
 
               {showLiveResultsTab && (

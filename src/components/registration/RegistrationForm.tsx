@@ -63,6 +63,7 @@ export interface RegistrationData {
   distanceId: string;
   distanceName: string;
   category: string;
+  birthDate?: string;
   price: number;
   discountCode?: string;
   discountAmount?: number;
@@ -448,13 +449,17 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
   const userGender = form.user?.gender;
   const userBirthYear = form.birthYear ? parseInt(form.birthYear) : null;
   const categoriesMatchingBirthYear = userBirthYear
-    ? ageCategories.filter(
-        (cat) => userBirthYear >= cat.birthYearFrom && userBirthYear <= cat.birthYearTo,
-      )
+    ? ageCategories.filter((cat) => {
+        const fromOk = cat.birthYearFrom == null || userBirthYear >= cat.birthYearFrom;
+        const toOk = cat.birthYearTo == null || userBirthYear <= cat.birthYearTo;
+        return fromOk && toOk;
+      })
     : [];
   const matchedCategory =
     userGender && userBirthYear
-      ? categoriesMatchingBirthYear.find((cat) => cat.gender === userGender) || null
+      ? categoriesMatchingBirthYear.find(
+          (cat) => cat.gender == null || cat.gender === userGender,
+        ) || null
       : null;
   const autoCategory =
     matchedCategory ??
@@ -559,7 +564,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
         <Separator />
 
         <div className="space-y-3">
-          <Label className="text-base font-medium">Kategoria wiekowa</Label>
+          <Label className="text-base font-medium">Kategoria</Label>
           {ageCategories.length > 0 ? (
             <>
               {autoCategory ? (
@@ -568,10 +573,17 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                     Automatycznie przypisana kategoria:
                   </p>
                   <p className="text-lg font-semibold">{autoCategory.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Płeć: {autoCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'} • Roczniki:{' '}
-                    {autoCategory.birthYearFrom}–{autoCategory.birthYearTo}
-                  </p>
+                  {(autoCategory.gender || autoCategory.birthYearFrom) && (
+                    <p className="text-xs text-muted-foreground">
+                      {autoCategory.gender
+                        ? `Płeć: ${autoCategory.gender === 'K' ? 'Kobieta' : 'Mężczyzna'}`
+                        : ''}
+                      {autoCategory.gender && autoCategory.birthYearFrom ? ' • ' : ''}
+                      {autoCategory.birthYearFrom
+                        ? `Roczniki: ${autoCategory.birthYearFrom}–${autoCategory.birthYearTo}`
+                        : ''}
+                    </p>
+                  )}
                 </div>
               ) : userBirthYear && categoriesMatchingBirthYear.length > 0 ? (
                 <div className="space-y-3">
@@ -590,7 +602,10 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                         >
                           <RadioGroupItem value={category.name} />
                           <span className="font-medium">
-                            {category.name} ({category.gender === 'K' ? 'kobiety' : 'mężczyźni'})
+                            {category.name}
+                            {category.gender
+                              ? ` (${category.gender === 'K' ? 'kobiety' : 'mężczyźni'})`
+                              : ''}
                           </span>
                         </label>
                       ))}
@@ -598,19 +613,37 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                   </RadioGroup>
                 </div>
               ) : !userBirthYear ? (
-                <Alert className={mutedWarningCallout}>
-                  <UserCog className="h-4 w-4" />
-                  <AlertTitle>Podaj datę urodzenia</AlertTitle>
-                  <AlertDescription className={mutedWarningDescription}>
-                    Po wybraniu daty formularz pokaże pasujące kategorie wiekowe.
-                  </AlertDescription>
-                </Alert>
+                <div className="space-y-3">
+                  <Alert className={mutedWarningCallout}>
+                    <UserCog className="h-4 w-4" />
+                    <AlertTitle>Podaj datę urodzenia</AlertTitle>
+                    <AlertDescription className={mutedWarningDescription}>
+                      Po wybraniu daty formularz pokaże pasujące kategorie.
+                    </AlertDescription>
+                  </Alert>
+                  <RadioGroup
+                    value={form.selectedCategory}
+                    onValueChange={form.setSelectedCategory}
+                  >
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {ageCategories.map((category) => (
+                        <label
+                          key={category.id}
+                          className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 p-3 transition-all ${form.selectedCategory === category.name ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                        >
+                          <RadioGroupItem value={category.name} />
+                          <span className="font-medium">{category.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                </div>
               ) : (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Brak pasującej kategorii</AlertTitle>
                   <AlertDescription>
-                    Nie znaleziono kategorii wiekowej dla rocznika {userBirthYear}.
+                    Nie znaleziono kategorii dla rocznika {userBirthYear}.
                   </AlertDescription>
                 </Alert>
               )}
@@ -655,7 +688,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                   </div>
                 )}
             </>
-          ) : (
+          ) : selectedDistance.categories.length > 0 ? (
             <RadioGroup value={form.selectedCategory} onValueChange={form.setSelectedCategory}>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {selectedDistance.categories.map((category) => (
@@ -669,7 +702,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                 ))}
               </div>
             </RadioGroup>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>
@@ -1070,6 +1103,11 @@ const SummaryStep = ({
             event={event}
             user={form.user}
             selectedDistance={selectedDistance}
+            birthDate={
+              form.birthYear && form.birthMonth && form.birthDay
+                ? `${form.birthYear}-${form.birthMonth}-${form.birthDay}`
+                : undefined
+            }
             totalAmount={form.totalAmount}
           />
         )}
@@ -1115,6 +1153,7 @@ interface BankTransferDetailsProps {
   event: Event;
   user: { name?: string } | null;
   selectedDistance?: { name: string };
+  birthDate?: string;
   totalAmount: number;
 }
 
@@ -1122,6 +1161,7 @@ const BankTransferDetails = ({
   event,
   user,
   selectedDistance,
+  birthDate,
   totalAmount,
 }: BankTransferDetailsProps) => {
   const generateTransferTitle = () => {
@@ -1129,7 +1169,8 @@ const BankTransferDetails = ({
     return event.paymentConfig.transferTitle
       .replace('{eventName}', event.name)
       .replace('{participantName}', user?.name || 'Uczestnik')
-      .replace('{distanceName}', selectedDistance?.name || '');
+      .replace('{distanceName}', selectedDistance?.name || '')
+      .replace('{birthDate}', birthDate || '');
   };
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {

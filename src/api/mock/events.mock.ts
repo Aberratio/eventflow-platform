@@ -552,6 +552,7 @@ export const mockEvents: Event[] = [
       defaultSort: 'distance',
       uppercaseNames: true,
       hideUnpaid: false,
+      showParticipants: 'paid_only',
     },
   },
   // City Trail Łódź - medium options - LIVE EVENT

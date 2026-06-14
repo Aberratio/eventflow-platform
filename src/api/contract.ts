@@ -139,6 +139,7 @@ export interface ApiAdapter {
   updateUserStatus(id: string, status: 'active' | 'blocked'): Promise<ApiResponse<User>>;
   getParticipants(): Promise<ApiResponse<User[]>>;
   getOrganizers(): Promise<ApiResponse<User[]>>;
+  uploadAvatar(file: File): Promise<ApiResponse<{ url: string }>>;
 
   // ── Auth ──
   login(credentials: LoginCredentials): Promise<ApiResponse<User | null>>;

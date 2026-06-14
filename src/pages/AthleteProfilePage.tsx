@@ -1,4 +1,4 @@
-import { getEvents, mockResults, disciplineLabels } from '@/api';
+import { getEvents, getResultsByUser, disciplineLabels } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -24,15 +24,21 @@ const AthleteProfilePage = () => {
   });
   const events = eventsResponse?.data ?? [];
 
+  const { data: resultsResponse } = useQuery({
+    queryKey: ['results-by-user', userId],
+    queryFn: () => getResultsByUser(userId!),
+    enabled: Boolean(userId),
+  });
+  const userResults = resultsResponse?.data ?? [];
+
   const athleteResults = useMemo(() => {
-    return mockResults
-      .filter((r) => r.userId === userId)
+    return userResults
       .sort((a, b) => {
         const eventA = events.find((e) => e.id === a.eventId);
         const eventB = events.find((e) => e.id === b.eventId);
         return new Date(eventB?.date || 0).getTime() - new Date(eventA?.date || 0).getTime();
       });
-  }, [events, userId]);
+  }, [events, userResults]);
 
   const athleteName = athleteResults[0]?.userName || 'Nieznany zawodnik';
 

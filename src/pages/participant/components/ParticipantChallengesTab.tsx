@@ -1,5 +1,6 @@
-import { mockChallengeParticipations, mockChallenges } from '@/api';
+import { getChallengeParticipations, getChallenges } from '@/api';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +10,18 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const ParticipantChallengesTab = () => {
   const { user } = useAuth();
-  const myParticipations = mockChallengeParticipations.filter((p) => p.userId === user?.id);
+
+  const { data: participationsResp } = useQuery({
+    queryKey: ['challenge-participations', user?.id],
+    queryFn: () => getChallengeParticipations(undefined, user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const { data: challengesResp } = useQuery({
+    queryKey: ['challenges'],
+    queryFn: () => getChallenges(),
+  });
+  const myParticipations = participationsResp?.data ?? [];
+  const allChallenges = challengesResp?.data ?? [];
 
   if (myParticipations.length === 0) {
     return (
@@ -34,7 +46,7 @@ const ParticipantChallengesTab = () => {
       </div>
 
       {myParticipations.map((participation) => {
-        const challenge = mockChallenges.find((c) => c.id === participation.challengeId);
+        const challenge = allChallenges.find((c) => c.id === participation.challengeId);
         if (!challenge) return null;
 
         const progressPercent = (participation.completedCount / challenge.rule.minCompleted) * 100;

@@ -1,5 +1,6 @@
-import { mockResults, mockTeamResults, mockResultDocuments } from '@/api';
-import { useState } from 'react';
+import { getResultsByEvent, getTeamResults, getResultDocuments } from '@/api';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,16 +41,32 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
-  const eventResults = mockResults.filter(
-    (r) => r.eventId === event.id && r.distanceId === selectedDistance,
-  );
+  const { data: resultsResp } = useQuery({
+    queryKey: ['event-results', event.id],
+    queryFn: () => getResultsByEvent(event.id),
+  });
+  const { data: teamResultsResp } = useQuery({
+    queryKey: ['event-team-results', event.id],
+    queryFn: () => getTeamResults(event.id),
+  });
+  const { data: documentsResp } = useQuery({
+    queryKey: ['event-result-documents', event.id],
+    queryFn: () => getResultDocuments(event.id),
+  });
+
+  const allApiResults = resultsResp?.data ?? [];
+  const eventResults = allApiResults.filter((r) => r.distanceId === selectedDistance);
   const [localResults, setLocalResults] = useState<LocalResult[]>([]);
-  const [localTeamResults, setLocalTeamResults] = useState<TeamResult[]>(
-    mockTeamResults.filter((t) => t.eventId === event.id),
-  );
-  const [localDocuments, setLocalDocuments] = useState<EventResultDocument[]>(
-    mockResultDocuments.filter((d) => d.eventId === event.id),
-  );
+  const [localTeamResults, setLocalTeamResults] = useState<TeamResult[]>([]);
+  const [localDocuments, setLocalDocuments] = useState<EventResultDocument[]>([]);
+
+  useEffect(() => {
+    if (teamResultsResp?.data) setLocalTeamResults(teamResultsResp.data);
+  }, [teamResultsResp?.data]);
+
+  useEffect(() => {
+    if (documentsResp?.data) setLocalDocuments(documentsResp.data);
+  }, [documentsResp?.data]);
 
   const allResults: LocalResult[] = [
     ...eventResults.map((r) => ({
@@ -63,7 +80,6 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   ];
 
   const selectedDistanceData = event.distances.find((d) => d.id === selectedDistance);
-  const allEventResults = mockResults.filter((r) => r.eventId === event.id);
 
   const handleAddResult = (result: LocalResult) => setLocalResults([...localResults, result]);
   const handleDeleteResult = (bibNumber: string) => {
@@ -199,7 +215,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         <TabsContent value="teams">
           <TeamResultsManager
             event={event}
-            individualResults={allEventResults}
+            individualResults={allApiResults}
             teamResults={localTeamResults}
             onAddTeamResult={handleAddTeamResult}
             onDeleteTeamResult={handleDeleteTeamResult}

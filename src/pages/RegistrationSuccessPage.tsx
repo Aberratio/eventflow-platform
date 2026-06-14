@@ -75,7 +75,8 @@ const RegistrationSuccessPage = () => {
     return state.paymentConfig.transferTitle
       .replace('{eventName}', state.eventName)
       .replace('{participantName}', user?.name || 'Uczestnik')
-      .replace('{distanceName}', state.registrationData.distanceName);
+      .replace('{distanceName}', state.registrationData.distanceName)
+      .replace('{birthDate}', state.registrationData.birthDate || '');
   };
 
   // No state - user accessed page directly
