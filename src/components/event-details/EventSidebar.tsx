@@ -115,17 +115,20 @@ const copyToClipboard = (value: string) => {
 };
 
 const hasFutureRegistrationStart = (event: Event): boolean => {
-  const startDate = event.registrationEmbed?.startDate;
+  const startDate = event.registrationOpenDate || event.registrationEmbed?.startDate;
   return Boolean(startDate && new Date(startDate) > new Date());
 };
 
 const formatRegistrationStart = (event: Event): string | null => {
-  const startDate = event.registrationEmbed?.startDate;
+  const startDate = event.registrationOpenDate || event.registrationEmbed?.startDate;
   if (!startDate) return null;
   return format(new Date(startDate), 'd MMMM yyyy', { locale: pl });
 };
 
 const formatDeadline = (event: Event): string => {
+  if (event.registrationUntilEventStart) {
+    return `Zapisy do dnia startu (${format(new Date(event.date), 'd MMMM', { locale: pl })})`;
+  }
   const deadline = new Date(event.registrationDeadline);
   const now = new Date();
   const sameDay = deadline.toDateString() === now.toDateString();

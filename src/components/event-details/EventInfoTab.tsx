@@ -272,15 +272,28 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => {
             </div>
           )}
 
-          {/* Zapisy do */}
+          {/* Terminy rejestracji */}
           <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <div>
+            <div className="min-w-0 space-y-1">
               <p className="text-xs font-medium uppercase tracking-wide text-foreground/50">
-                Zapisy do
+                Terminy rejestracji
               </p>
-              <p className="mt-0.5 text-sm font-semibold">
-                {format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+              {event.registrationOpenDate && (
+                <p className="mt-0.5 text-sm">
+                  <span className="text-foreground/55">Otwarcie: </span>
+                  <span className="font-semibold">
+                    {format(new Date(event.registrationOpenDate), 'd MMMM yyyy', { locale: pl })}
+                  </span>
+                </p>
+              )}
+              <p className="text-sm">
+                <span className="text-foreground/55">Zamknięcie: </span>
+                <span className="font-semibold">
+                  {event.registrationUntilEventStart
+                    ? `dzień startu (${format(new Date(event.date), 'd MMMM yyyy', { locale: pl })})`
+                    : format(new Date(event.registrationDeadline), 'd MMMM yyyy', { locale: pl })}
+                </span>
               </p>
             </div>
           </div>

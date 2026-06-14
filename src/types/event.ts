@@ -189,6 +189,8 @@ export interface Event {
   publishedBy?: string;
   createdBy?: string;
   registrationDeadline: string;
+  registrationOpenDate?: string;
+  registrationUntilEventStart?: boolean;
   featured: boolean;
   liveResultsUrl?: string;
   isLive?: boolean;

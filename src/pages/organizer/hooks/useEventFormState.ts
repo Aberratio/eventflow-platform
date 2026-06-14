@@ -167,6 +167,12 @@ export const useEventFormState = () => {
   const [registrationDeadline, setRegistrationDeadline] = useState(
     existingEvent?.registrationDeadline || '',
   );
+  const [registrationOpenDate, setRegistrationOpenDate] = useState(
+    existingEvent?.registrationOpenDate || '',
+  );
+  const [registrationUntilEventStart, setRegistrationUntilEventStart] = useState(
+    existingEvent?.registrationUntilEventStart || false,
+  );
   const [location, setLocation] = useState(existingEvent?.location || '');
   const [city, setCity] = useState(existingEvent?.city || '');
   const [description, setDescription] = useState(existingEvent?.description || '');
@@ -1054,6 +1060,8 @@ export const useEventFormState = () => {
       organizerId: selectedOrganizerId,
       organizerName: organizer?.companyName || organizer?.name || '',
       registrationDeadline,
+      registrationOpenDate: registrationOpenDate || undefined,
+      registrationUntilEventStart,
       bannerUrl: bannerUrl || undefined,
       originalBannerUrl: originalBannerUrl || undefined,
       bannerCropArea,
@@ -1196,6 +1204,10 @@ export const useEventFormState = () => {
     setDate,
     registrationDeadline,
     setRegistrationDeadline,
+    registrationOpenDate,
+    setRegistrationOpenDate,
+    registrationUntilEventStart,
+    setRegistrationUntilEventStart,
     location,
     setLocation,
     city,

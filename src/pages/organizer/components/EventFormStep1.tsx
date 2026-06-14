@@ -25,6 +25,15 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import {
   Image,
   Upload,
@@ -46,6 +55,9 @@ import {
   MapPin,
   Info,
   ChevronDown,
+  ChevronsUpDown,
+  Check,
+  X,
   RectangleHorizontal,
   RectangleVertical,
   Square,
@@ -987,6 +999,89 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
   );
 };
 
+const DisciplineMultiSelect = ({
+  selected,
+  onChange,
+}: {
+  selected: SportDiscipline[];
+  onChange: (v: SportDiscipline[]) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const allEntries = Object.entries(disciplineLabels) as [SportDiscipline, string][];
+
+  const toggle = (key: SportDiscipline) => {
+    const next = selected.includes(key)
+      ? selected.filter((d) => d !== key)
+      : [...selected, key];
+    if (next.length > 0) onChange(next);
+  };
+
+  return (
+    <div className="space-y-2">
+      <HelpLabel description="Określa typy sportów. Wpływa na ikony, filtry wydarzeń i sposób prezentacji wydarzenia w serwisie. Można wybrać kilka.">
+        Dyscyplina *
+      </HelpLabel>
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="h-auto min-h-10 w-full justify-between border-input bg-background px-3 py-2 text-left font-normal hover:bg-background"
+          >
+            <span className="flex min-w-0 flex-wrap gap-1">
+              {selected.length === 0 ? (
+                <span className="text-muted-foreground">Wybierz dyscypliny…</span>
+              ) : (
+                selected.map((key) => (
+                  <span
+                    key={key}
+                    className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                  >
+                    <DisciplineIcon discipline={key} size="sm" className="h-3 w-3 shrink-0" />
+                    {disciplineLabels[key]}
+                    <button
+                      type="button"
+                      className="ml-0.5 shrink-0 rounded-sm opacity-60 hover:opacity-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggle(key);
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))
+              )}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Szukaj dyscypliny…" />
+            <CommandList>
+              <CommandEmpty>Brak wyników.</CommandEmpty>
+              <CommandGroup>
+                {allEntries.map(([key, label]) => (
+                  <CommandItem key={key} value={label} onSelect={() => toggle(key)}>
+                    <Check
+                      className={`mr-2 h-4 w-4 ${selected.includes(key) ? 'opacity-100' : 'opacity-0'}`}
+                    />
+                    <DisciplineIcon discipline={key} size="sm" className="mr-2 h-4 w-4 shrink-0" />
+                    {label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+};
+
 export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
   const [registrationTypeOpen, setRegistrationTypeOpen] = useState(false);
@@ -1198,75 +1293,86 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 placeholder="np. Warsaw Marathon 2025"
               />
             </div>
-            <div className="space-y-2">
-              <HelpLabel
-                description="Określa typy sportów. Wpływa na ikony, filtry wydarzeń i sposób prezentacji wydarzenia w serwisie. Można wybrać kilka."
-              >
-                Dyscyplina *
-              </HelpLabel>
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.entries(disciplineLabels) as [SportDiscipline, string][]).map(([key, label]) => {
-                  const checked = form.disciplines.includes(key);
-                  return (
-                    <div
-                      key={key}
-                      className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 transition-colors ${checked ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
-                      onClick={() => {
-                        const next = checked
-                          ? form.disciplines.filter((d) => d !== key)
-                          : [...form.disciplines, key];
-                        if (next.length > 0) form.setDisciplines(next);
-                      }}
-                    >
-                      <Checkbox
-                        id={`discipline-${key}`}
-                        checked={checked}
-                        onCheckedChange={(c) => {
-                          const next = c
-                            ? [...form.disciplines, key]
-                            : form.disciplines.filter((d) => d !== key);
-                          if (next.length > 0) form.setDisciplines(next);
-                        }}
-                      />
-                      <DisciplineIcon discipline={key} size="sm" className="h-4 w-4 shrink-0" />
-                      <Label htmlFor={`discipline-${key}`} className="cursor-pointer text-sm">
-                        {label}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <DisciplineMultiSelect
+              selected={form.disciplines}
+              onChange={form.setDisciplines}
+            />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <HelpLabel
-                htmlFor="date"
-                description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
-              >
-                Data wydarzenia *
-              </HelpLabel>
-              <Input
-                id="date"
-                type="date"
-                value={form.date}
-                onChange={(e) => form.setDate(e.target.value)}
-              />
+          <div className="space-y-2">
+            <HelpLabel
+              htmlFor="date"
+              description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
+            >
+              Data wydarzenia *
+            </HelpLabel>
+            <Input
+              id="date"
+              type="date"
+              value={form.date}
+              onChange={(e) => form.setDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
+            <HelpLabel
+              description="Określ kiedy otwierają i zamykają się zapisy. Data otwarcia jest opcjonalna — jeśli jej nie podasz, zapisy będą aktywne od razu po opublikowaniu wydarzenia."
+            >
+              Terminy rejestracji
+            </HelpLabel>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="reg-open-date" className="text-sm text-muted-foreground">
+                  Otwarcie zapisów (opcjonalne)
+                </Label>
+                <Input
+                  id="reg-open-date"
+                  type="date"
+                  value={form.registrationOpenDate}
+                  onChange={(e) => form.setRegistrationOpenDate(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="deadline" className="text-sm text-muted-foreground">
+                  Zamknięcie zapisów *
+                </Label>
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={form.registrationUntilEventStart ? form.date : form.registrationDeadline}
+                  onChange={(e) => form.setRegistrationDeadline(e.target.value)}
+                  disabled={form.registrationUntilEventStart}
+                  className={form.registrationUntilEventStart ? 'opacity-40' : ''}
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <HelpLabel
-                htmlFor="deadline"
-                description="Ostatni dzien, w ktorym uczestnicy moga zapisac sie na wydarzenie, jesli zapisy sa otwarte."
-              >
-                Termin rejestracji *
-              </HelpLabel>
-              <Input
-                id="deadline"
-                type="date"
-                value={form.registrationDeadline}
-                onChange={(e) => form.setRegistrationDeadline(e.target.value)}
+
+            <div
+              className="flex cursor-pointer items-center gap-2 pt-0.5"
+              onClick={() => {
+                const next = !form.registrationUntilEventStart;
+                form.setRegistrationUntilEventStart(next);
+                if (next && form.date) {
+                  form.setRegistrationDeadline(form.date);
+                }
+              }}
+            >
+              <Checkbox
+                id="reg-until-start"
+                checked={form.registrationUntilEventStart}
+                onCheckedChange={(c) => {
+                  const next = c === true;
+                  form.setRegistrationUntilEventStart(next);
+                  if (next && form.date) {
+                    form.setRegistrationDeadline(form.date);
+                  }
+                }}
               />
+              <Label htmlFor="reg-until-start" className="cursor-pointer text-sm">
+                Zapisy otwarte aż do dnia rozpoczęcia zawodów
+              </Label>
             </div>
           </div>
 
