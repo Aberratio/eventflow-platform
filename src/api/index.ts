@@ -119,6 +119,8 @@ export const getRegistrations: ApiAdapter['getRegistrations'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrations(...args));
 export const getRegistrationsByEvent: ApiAdapter['getRegistrationsByEvent'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrationsByEvent(...args));
+export const getPublicStartList: ApiAdapter['getPublicStartList'] = (...args) =>
+  ensureAdapter().then((a) => a.getPublicStartList(...args));
 export const getRegistrationsByUser: ApiAdapter['getRegistrationsByUser'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrationsByUser(...args));
 export const createRegistration: ApiAdapter['createRegistration'] = (...args) =>

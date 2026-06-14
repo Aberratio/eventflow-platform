@@ -14,10 +14,11 @@ import { Link } from 'react-router-dom';
 interface EventStartListTabProps {
   event: Event;
   registrations: Registration[];
+  overrideShowAll?: boolean;
 }
 
-export const EventStartListTab = ({ event, registrations }: EventStartListTabProps) => {
-  const showAll = event.displayOptions?.showParticipants === 'all';
+export const EventStartListTab = ({ event, registrations, overrideShowAll }: EventStartListTabProps) => {
+  const showAll = overrideShowAll ?? event.displayOptions?.showParticipants === 'all';
 
   const visibleRegistrations = registrations.filter((r) => {
     if (r.status === 'removed' || r.status === 'cancelled') return false;

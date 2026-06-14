@@ -153,6 +153,7 @@ export interface ApiAdapter {
   // ── Registrations ──
   getRegistrations(filters?: RegistrationFilters): Promise<PaginatedResponse<Registration>>;
   getRegistrationsByEvent(eventId: string): Promise<ApiResponse<Registration[]>>;
+  getPublicStartList(eventId: string): Promise<ApiResponse<Registration[]>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;
   updateRegistration(

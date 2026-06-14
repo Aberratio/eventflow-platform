@@ -188,6 +188,8 @@ export const httpAdapter: ApiAdapter = {
   getRegistrations: (filters) => paginated('/registrations', filters as Record<string, QueryValue>),
   getRegistrationsByEvent: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/registrations`),
+  getPublicStartList: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getRegistrationsByUser: (userId) => request(`/users/${encodeURIComponent(userId)}/registrations`),
   createRegistration: (data) => request('/registrations', json('POST', data)),
   updateRegistration: (id, data) =>

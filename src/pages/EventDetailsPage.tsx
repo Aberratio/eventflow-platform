@@ -1,4 +1,4 @@
-import { getEventBySlug, getRegistrationsByEvent, getResultsByEvent } from '@/api';
+import { getEventBySlug, getPublicStartList, getRegistrationsByEvent, getResultsByEvent } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -49,9 +49,18 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const { data: registrationsResponse } = useQuery({
     queryKey: ['event-registrations', event?.id],
     queryFn: () => getRegistrationsByEvent(event!.id),
-    enabled: Boolean(event?.id),
+    enabled: Boolean(event?.id) && isAuthenticated,
   });
   const eventRegistrations = registrationsResponse?.data ?? [];
+
+  const { data: startListResponse } = useQuery({
+    queryKey: ['event-start-list', event?.id],
+    queryFn: () => getPublicStartList(event!.id),
+    enabled: Boolean(event?.id) && !previewMode,
+  });
+  const startListRegistrations = previewMode
+    ? eventRegistrations.filter((r) => r.status !== 'removed' && r.status !== 'cancelled')
+    : (startListResponse?.data ?? []);
 
   const { data: resultsResponse } = useQuery({
     queryKey: ['event-results', event?.id],
@@ -329,7 +338,11 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
               </TabsContent>
 
               <TabsContent value="startlist" className="mt-6">
-                <EventStartListTab event={event} registrations={eventRegistrations} />
+                <EventStartListTab
+                  event={event}
+                  registrations={startListRegistrations}
+                  overrideShowAll={isPreview ? true : undefined}
+                />
               </TabsContent>
 
               {showLiveResultsTab && (

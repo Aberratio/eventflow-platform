@@ -6,13 +6,12 @@
  */
 
 import type { ApiAdapter } from '../contract';
+import { httpAdapter } from './http.adapter';
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { SalesStats } from '@/types/admin';
 import type {
-  Event,
   User,
   UserRole,
-  Registration,
   Result,
   PersonalRecord,
   TeamResult,
@@ -23,7 +22,6 @@ import type {
   DeliveryMethod,
   ShopPaymentMethod,
   ShopOrder,
-  OrganizerEventLimit,
   Challenge,
   ChallengeParticipation,
   ChallengeEntry,
@@ -81,9 +79,7 @@ import type {
 } from '../payloads';
 
 // ── Mock data imports ──
-import { mockEvents } from '../mock/events.mock';
 import { mockUsers } from '../mock/users.mock';
-import { mockRegistrations } from '../mock/registrations.mock';
 import {
   mockResults,
   mockPersonalRecords,
@@ -150,256 +146,42 @@ let shopCategories: ShopCategoryConfig[] = Object.entries({
   services: 'Usługi',
 }).map(([id, name], index) => ({ id, name, sortOrder: index, status: 'active' }));
 
-const organizerEventLimits: Record<string, number> = {
-  o1: 100,
-  o2: 8,
-  o3: 7,
-  'u-organizer': 11,
-  'u-organizer-2': 11,
-  'u-organizer-3': 11,
-};
-
-const countOrganizerEvents = (organizerId: string) =>
-  mockEvents.filter((event) => event.organizerId === organizerId && event.status !== 'deleted')
-    .length;
-
-const hasEventEnded = (event: Event) =>
-  (event.endDate || event.date).slice(0, 10) < new Date().toISOString().slice(0, 10);
-
-const hasRegistrations = (eventId: string) =>
-  mockRegistrations.some(
-    (registration) => registration.eventId === eventId && registration.status !== 'removed',
-  );
-
-const toOrganizerEventLimit = (organizerId: string): OrganizerEventLimit => {
-  const used = countOrganizerEvents(organizerId);
-  const limit = organizerEventLimits[organizerId] ?? Math.max(used, 0);
-  return {
-    limit,
-    used,
-    available: Math.max(0, limit - used),
-  };
-};
-
-const publicEventStatuses: Event['status'][] = ['active', 'past', 'archived'];
-
 // ─────────────────────────────────────────────────────────
 // Mock Adapter Implementation
 // ─────────────────────────────────────────────────────────
 
 export const mockAdapter: ApiAdapter = {
-  // ── Events ──
+  // ── Events — delegated to HTTP adapter ──
 
-  async getEvents(filters) {
-    await delay();
-    let filtered = [...mockEvents];
-    if (!filters?.includeUnpublished) {
-      filtered = filtered.filter((e) => publicEventStatuses.includes(e.status));
-    } else if (!filters.includeDeleted) {
-      filtered = filtered.filter((e) => e.status !== 'deleted');
-    }
-    if (!filters?.includePrivate) filtered = filtered.filter((e) => !e.isPrivate);
-    if (filters?.discipline) filtered = filtered.filter((e) => e.discipline === filters.discipline);
-    if (filters?.city)
-      filtered = filtered.filter((e) => e.city.toLowerCase().includes(filters.city!.toLowerCase()));
-    if (filters?.status) filtered = filtered.filter((e) => e.status === filters.status);
-    if (filters?.seriesId) filtered = filtered.filter((e) => e.seriesId === filters.seriesId);
-    if (filters?.registrationStatus)
-      filtered = filtered.filter((e) => e.registrationStatus === filters.registrationStatus);
-    if (filters?.dateFrom) filtered = filtered.filter((e) => e.date >= filters.dateFrom!);
-    if (filters?.dateTo) filtered = filtered.filter((e) => e.date <= filters.dateTo!);
-    if (filters?.search) {
-      const q = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (e) => e.name.toLowerCase().includes(q) || e.city.toLowerCase().includes(q),
-      );
-    }
-    return paginated(filtered);
-  },
+  getEvents: (...args) => httpAdapter.getEvents(...args),
+  getEventBySlug: (...args) => httpAdapter.getEventBySlug(...args),
+  getEventById: (...args) => httpAdapter.getEventById(...args),
+  createEvent: (...args) => httpAdapter.createEvent(...args),
+  updateEvent: (...args) => httpAdapter.updateEvent(...args),
+  deleteEvent: (...args) => httpAdapter.deleteEvent(...args),
+  updateEventStatus: (...args) => httpAdapter.updateEventStatus(...args),
+  submitEvent: (...args) => httpAdapter.submitEvent(...args),
+  approveEvent: (...args) => httpAdapter.approveEvent(...args),
+  rejectEvent: (...args) => httpAdapter.rejectEvent(...args),
+  publishEvent: (...args) => httpAdapter.publishEvent(...args),
+  getFeaturedEvents: (...args) => httpAdapter.getFeaturedEvents(...args),
+  getLiveEvents: (...args) => httpAdapter.getLiveEvents(...args),
+  getEventsByOrganizer: (...args) => httpAdapter.getEventsByOrganizer(...args),
+  getOrganizerEventLimit: (...args) => httpAdapter.getOrganizerEventLimit(...args),
+  updateOrganizerEventLimit: (...args) => httpAdapter.updateOrganizerEventLimit(...args),
+  uploadEventImage: (...args) => httpAdapter.uploadEventImage(...args),
+  uploadEventDocument: (...args) => httpAdapter.uploadEventDocument(...args),
 
-  async getEventBySlug(slug) {
-    await delay();
-    const event = mockEvents.find((e) => e.slug === slug) ?? null;
-    return event ? ok(event) : fail(null, 'Event not found');
-  },
+  // ── Registrations — delegated to HTTP adapter ──
 
-  async getEventById(id) {
-    await delay();
-    const event = mockEvents.find((e) => e.id === id) ?? null;
-    return event ? ok(event) : fail(null, 'Event not found');
-  },
-
-  async createEvent(data) {
-    await delay();
-    const eventLimit = toOrganizerEventLimit(data.organizerId);
-    if (eventLimit.used >= eventLimit.limit) {
-      return fail(null as unknown as Event, 'Organizer has no available event slots');
-    }
-    const newEvent: Event = {
-      id: `e-${Date.now()}`,
-      status: 'draft',
-      featured: false,
-      ...data,
-    } as Event;
-    mockEvents.push(newEvent);
-    return ok(newEvent);
-  },
-
-  async updateEvent(id, data) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event) return fail(null as unknown as Event, 'Event not found');
-    const updated = { ...event, ...data } as Event;
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async deleteEvent(id) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    if (eventIndex === -1) return fail(undefined as unknown as void, 'Event not found');
-    const event = mockEvents[eventIndex];
-    if (
-      ['past', 'archived', 'deleted'].includes(event.status) ||
-      event.date.slice(0, 10) < new Date().toISOString().slice(0, 10) ||
-      hasRegistrations(event.id)
-    ) {
-      return fail(
-        undefined as unknown as void,
-        'Usunac mozna tylko nadchodzace wydarzenie bez zapisow',
-      );
-    }
-    mockEvents[eventIndex] = { ...mockEvents[eventIndex], status: 'deleted' };
-    return ok(undefined as unknown as void);
-  },
-
-  async updateEventStatus(id, status, reason) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event) return fail(null as unknown as Event, 'Event not found');
-    if (status === 'archived' && !hasEventEnded(event)) {
-      return fail(
-        null as unknown as Event,
-        'Archiwizować można tylko wydarzenia, które już się zakończyły',
-      );
-    }
-    if (!['draft', 'past', 'archived'].includes(status)) {
-      return fail(
-        null as unknown as Event,
-        'Uzyj akcji oddania do sprawdzenia, zatwierdzenia, odrzucenia lub publikacji',
-      );
-    }
-    const updated = { ...event, status, rejectionReason: reason };
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async submitEvent(id) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event || event.status !== 'draft') {
-      return fail(null as unknown as Event, 'Event cannot be submitted in its current status');
-    }
-    const updated = {
-      ...event,
-      status: 'awaiting_approval' as const,
-      rejectionReason: undefined,
-      submittedAt: new Date().toISOString(),
-    };
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async approveEvent(id) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event) return fail(null as unknown as Event, 'Event not found');
-    if (event.status !== 'awaiting_approval') {
-      return fail(null as unknown as Event, 'Event cannot be approved in its current status');
-    }
-    const updated = {
-      ...event,
-      status: 'approved' as const,
-      rejectionReason: undefined,
-      approvedAt: new Date().toISOString(),
-    };
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async rejectEvent(id, reason) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event || event.status !== 'awaiting_approval') {
-      return fail(null as unknown as Event, 'Event cannot be rejected in its current status');
-    }
-    const updated = { ...event, status: 'draft' as const, rejectionReason: reason };
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async publishEvent(id) {
-    await delay();
-    const eventIndex = mockEvents.findIndex((e) => e.id === id);
-    const event = mockEvents[eventIndex];
-    if (!event) return fail(null as unknown as Event, 'Event not found');
-    if (event.status !== 'approved') {
-      return fail(null as unknown as Event, 'Event cannot be published in its current status');
-    }
-    const updated = { ...event, status: 'active', publishedAt: new Date().toISOString() };
-    mockEvents[eventIndex] = updated;
-    return ok(updated);
-  },
-
-  async getFeaturedEvents() {
-    await delay();
-    return ok(mockEvents.filter((e) => e.featured));
-  },
-
-  async getLiveEvents() {
-    await delay();
-    return ok(mockEvents.filter((e) => e.isLive));
-  },
-
-  async getEventsByOrganizer(organizerId) {
-    await delay();
-    return ok(mockEvents.filter((e) => e.organizerId === organizerId));
-  },
-
-  async getOrganizerEventLimit(organizerId) {
-    await delay();
-    return ok(toOrganizerEventLimit(organizerId));
-  },
-
-  async updateOrganizerEventLimit(organizerId, limit) {
-    await delay();
-    const used = countOrganizerEvents(organizerId);
-    if (limit < used) {
-      return fail(
-        toOrganizerEventLimit(organizerId),
-        'Event limit cannot be lower than current event count',
-      );
-    }
-    organizerEventLimits[organizerId] = limit;
-    return ok(toOrganizerEventLimit(organizerId));
-  },
-
-  // ── Users ──
-
-  async uploadEventImage(file) {
-    await delay();
-    return ok({ url: URL.createObjectURL(file) });
-  },
-
-  async uploadEventDocument(file) {
-    await delay();
-    return ok({ url: URL.createObjectURL(file), originalName: file.name, mimeType: file.type });
-  },
+  getRegistrations: (...args) => httpAdapter.getRegistrations(...args),
+  getRegistrationsByEvent: (...args) => httpAdapter.getRegistrationsByEvent(...args),
+  getPublicStartList: (...args) => httpAdapter.getPublicStartList(...args),
+  getRegistrationsByUser: (...args) => httpAdapter.getRegistrationsByUser(...args),
+  createRegistration: (...args) => httpAdapter.createRegistration(...args),
+  updateRegistration: (...args) => httpAdapter.updateRegistration(...args),
+  cancelRegistration: (...args) => httpAdapter.cancelRegistration(...args),
+  updatePaymentDetails: (...args) => httpAdapter.updatePaymentDetails(...args),
 
   async getUsers(filters) {
     await delay();
@@ -513,59 +295,6 @@ export const mockAdapter: ApiAdapter = {
   async changePassword(_payload) {
     await delay();
     return ok(undefined as unknown as void, 'Password changed');
-  },
-
-  // ── Registrations ──
-
-  async getRegistrations(filters) {
-    await delay();
-    let filtered = [...mockRegistrations];
-    if (filters?.eventId) filtered = filtered.filter((r) => r.eventId === filters.eventId);
-    if (filters?.userId) filtered = filtered.filter((r) => r.userId === filters.userId);
-    if (filters?.status) filtered = filtered.filter((r) => r.status === filters.status);
-    if (filters?.search) {
-      const q = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (r) => r.userName.toLowerCase().includes(q) || r.userEmail.toLowerCase().includes(q),
-      );
-    }
-    return paginated(filtered);
-  },
-
-  async getRegistrationsByEvent(eventId) {
-    await delay();
-    return ok(mockRegistrations.filter((r) => r.eventId === eventId));
-  },
-
-  async getRegistrationsByUser(userId) {
-    await delay();
-    return ok(mockRegistrations.filter((r) => r.userId === userId));
-  },
-
-  async createRegistration(data) {
-    await delay();
-    const reg: Registration = {
-      id: `reg-${Date.now()}`,
-      registeredAt: new Date().toISOString(),
-      status: 'pending',
-      ...data,
-    } as Registration;
-    return ok(reg);
-  },
-
-  async updateRegistration(id, data) {
-    await delay();
-    const reg = mockRegistrations.find((r) => r.id === id);
-    if (!reg) return fail(null as unknown as Registration, 'Registration not found');
-    return ok({ ...reg, ...data } as Registration);
-  },
-
-  async cancelRegistration(id) {
-    return this.updateRegistration(id, { status: 'cancelled' });
-  },
-
-  async updatePaymentDetails(id, paymentDetails) {
-    return this.updateRegistration(id, { paymentDetails });
   },
 
   // ── Results ──
