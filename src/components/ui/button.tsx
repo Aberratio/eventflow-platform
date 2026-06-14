@@ -16,14 +16,14 @@ const buttonVariants = cva(
         outline:
           'border border-[color:var(--glass-border)] bg-[var(--glass-bg)] text-foreground hover:border-[color:var(--glass-border-strong)] hover:bg-[var(--glass-bg-hover)] active:scale-[0.98] backdrop-blur-sm',
         secondary:
-          'border border-[color:var(--glass-border)] bg-[var(--glass-bg-hover)] text-foreground hover:bg-white/10 active:scale-[0.98]',
+          'bg-[#1A1D22] text-[#E7E9ED] border border-white/[0.08] font-medium hover:bg-[#23272E] hover:border-white/[0.12] hover:text-white active:bg-[#15171B] active:border-white/[0.06] active:scale-[0.98] disabled:bg-[#13161A] disabled:border-white/[0.05] disabled:text-[#707780]',
         ghost: 'text-muted-foreground hover:bg-[var(--glass-bg-hover)] hover:text-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-9 px-4 py-2 text-sm',
         sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-10 rounded-md px-6',
+        lg: 'h-12 rounded-xl px-7 text-sm',
         icon: 'h-9 w-9',
       },
     },

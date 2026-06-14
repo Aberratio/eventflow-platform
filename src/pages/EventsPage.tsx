@@ -188,6 +188,34 @@ const getMobileStatusClass = (event: Event) => {
   return 'text-emerald-300';
 };
 
+const getMonthAccentClass = (events: Event[]) => {
+  const status = events[0] ? getEventStatusKey(events[0]) : 'open';
+  if (status === 'live') return 'bg-blue-400';
+  if (status === 'ending') return 'bg-amber-400';
+  if (status === 'past') return 'bg-violet-400';
+  if (status === 'cancelled') return 'bg-red-400';
+  if (status === 'closed') return 'bg-slate-400';
+  return 'bg-emerald-400';
+};
+
+const groupEventsByMonth = (events: Event[]): EventMonthGroup[] => {
+  const groups = new Map<string, EventMonthGroup>();
+
+  events.forEach((event) => {
+    const date = new Date(event.date);
+    const key = format(date, 'yyyy-MM');
+    const title = format(date, 'LLLL yyyy', { locale: pl }).toUpperCase();
+
+    if (!groups.has(key)) {
+      groups.set(key, { key, title, events: [] });
+    }
+
+    groups.get(key)!.events.push(event);
+  });
+
+  return Array.from(groups.values()).sort((a, b) => a.key.localeCompare(b.key));
+};
+
 const EventRow = ({ event }: { event: Event }) => {
   const status = getEventStatusKey(event);
   const StatusIcon = statusMeta[status].icon;
@@ -269,16 +297,14 @@ const EventRow = ({ event }: { event: Event }) => {
   );
 };
 
-const EventSection = ({ section, events }: { section: EventSectionKey; events: Event[] }) => {
+const EventSection = ({ title, events }: { title: string; events: Event[] }) => {
   if (events.length === 0) return null;
 
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-3">
-        <span className={cn('h-4 w-0.5 rounded-full', sectionMeta[section].colorClass)} />
-        <h2 className="text-sm font-bold uppercase text-muted-foreground">
-          {sectionMeta[section].title}
-        </h2>
+        <span className={cn('h-4 w-0.5 rounded-full', getMonthAccentClass(events))} />
+        <h2 className="text-sm font-bold uppercase text-muted-foreground">{title}</h2>
       </div>
       <div className="overflow-hidden rounded-lg border border-white/[0.09] bg-[hsl(var(--surface-elevated)/0.55)] shadow-xl shadow-black/20">
         {events.map((event) => (
@@ -507,37 +533,7 @@ const EventsPage = () => {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [filters, visibleEvents]);
 
-  const groupedEvents = useMemo(() => {
-    return filteredEvents.reduce(
-      (acc, event) => {
-        acc[getSectionKey(event)].push(event);
-        return acc;
-      },
-      { live: [], ending: [], upcoming: [], past: [] } as Record<EventSectionKey, Event[]>,
-    );
-  }, [filteredEvents]);
-
-  const mobileEventGroups = useMemo(() => {
-    const groups: Record<string, Event[]> = {};
-    filteredEvents
-      .filter((event) => getEventStatusKey(event) !== 'past')
-      .forEach((event) => {
-        const key = format(new Date(event.date), 'LLLL yyyy', { locale: pl }).toUpperCase();
-        if (!groups[key]) groups[key] = [];
-        groups[key].push(event);
-      });
-
-    return Object.entries(groups).sort(([a], [b]) => {
-      const parsedA = parse(a.toLowerCase(), 'LLLL yyyy', new Date(), { locale: pl });
-      const parsedB = parse(b.toLowerCase(), 'LLLL yyyy', new Date(), { locale: pl });
-      return parsedA.getTime() - parsedB.getTime();
-    });
-  }, [filteredEvents]);
-
-  const mobilePastEvents = useMemo(
-    () => filteredEvents.filter((event) => getEventStatusKey(event) === 'past').slice(0, 6),
-    [filteredEvents],
-  );
+  const eventMonthGroups = useMemo(() => groupEventsByMonth(filteredEvents), [filteredEvents]);
 
   const selectedDiscipline = filters.disciplines.length === 1 ? filters.disciplines[0] : 'all';
 
@@ -711,8 +707,8 @@ const EventsPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {mobileEventGroups.map(([month, events]) => (
-                      <MobileEventGroup key={month} title={month} events={events} />
+                    {eventMonthGroups.map((group) => (
+                      <MobileEventGroup key={group.key} title={group.title} events={group.events} />
                     ))}
                     <MobileEventGroup
                       title="Zakończone — wyniki dostępne"
