@@ -2,6 +2,7 @@ import React from 'react';
 import { Controller, Control, UseFormRegister } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { DateInput, TimeInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { EmailTriggerType, EmailTemplateScope } from '@/types/email';
@@ -86,11 +87,31 @@ export const EmailTriggerSection: React.FC<EmailTriggerSectionProps> = ({
             <div className="flex gap-3">
               <div className="flex-1 space-y-1.5">
                 <Label className="text-xs">Data</Label>
-                <Input type="date" className="h-8" {...register('scheduledDate')} />
+                <Controller
+                  name="scheduledDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DateInput
+                      className="h-8"
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                    />
+                  )}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Godzina</Label>
-                <Input type="time" className="h-8 w-28" {...register('scheduledTime')} />
+                <Controller
+                  name="scheduledTime"
+                  control={control}
+                  render={({ field }) => (
+                    <TimeInput
+                      className="h-8 w-32"
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                    />
+                  )}
+                />
               </div>
             </div>
           )}

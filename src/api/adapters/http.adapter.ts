@@ -7,8 +7,65 @@ import { resolveApiAssetUrl } from '@/lib/utils';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const TOKEN_STORAGE_KEY = STORAGE_KEYS.API_TOKEN;
 const MOCK_TOKEN_PREFIX = 'mock-user:';
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type QueryValue = string | number | boolean | null | undefined;
+
+const API_ERROR_MESSAGES: Record<string, string> = {
+  unauthorized: 'Twoja sesja wygasła. Zaloguj się ponownie.',
+  forbidden: 'Nie masz uprawnień do wykonania tej operacji.',
+  event_limit_exceeded:
+    'Limit wydarzeń został wyczerpany. Skontaktuj się z administratorem, aby zwiększyć limit.',
+  event_limit_below_usage:
+    'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
+  event_delete_forbidden:
+    'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
+  event_archive_before_start: 'Archiwizować można tylko wydarzenia, które już się zakończyły.',
+  discount_code_invalid: 'Nieprawidłowy kod rabatowy.',
+  discount_code_inactive: 'Kod rabatowy jest nieaktywny.',
+  discount_code_not_started: 'Kod rabatowy nie jest jeszcze aktywny.',
+  discount_code_expired: 'Kod rabatowy wygasł.',
+  discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
+  discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
+  registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
+  validation_error: 'Sprawdź poprawność danych i spróbuj ponownie.',
+  file_too_large: 'Plik jest za duży. Maksymalny rozmiar to 5 MB.',
+  unsupported_file_type: 'Nieobsługiwany format pliku. Dozwolone są JPG, PNG i WebP.',
+  invalid_image_dimensions: 'Nie udało się odczytać wymiarów obrazu. Wybierz inny plik.',
+  image_dimensions_too_large:
+    'Obraz ma zbyt dużą rozdzielczość. Zmniejsz go i spróbuj ponownie.',
+  upload_dir_unavailable: 'Nie można teraz zapisać pliku na serwerze.',
+  upload_failed: 'Nie udało się wgrać pliku. Spróbuj ponownie.',
+};
+
+function apiErrorMessage(payload: unknown, fallback: string): string {
+  const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
+  const code = errorPayload?.error?.code;
+  return (
+    (code ? API_ERROR_MESSAGES[code] : undefined) ??
+    errorPayload?.error?.message ??
+    errorPayload?.message ??
+    fallback
+  );
+}
+
+function isAllowedImageFile(file: File): boolean {
+  const type = file.type.toLowerCase();
+  return ALLOWED_IMAGE_TYPES.has(type) || (type === '' && /\.(jpe?g|png|webp)$/i.test(file.name));
+}
+
+function validateImageFile(file: File): void {
+  if (!isAllowedImageFile(file)) {
+    throw new Error('Nieobsługiwany format obrazu. Wgraj plik JPG, PNG albo WebP.');
+  }
+  if (file.size <= 0) {
+    throw new Error('Wybrany plik jest pusty. Wybierz inny obraz.');
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error('Obraz jest za duży. Maksymalny rozmiar pliku to 5 MB.');
+  }
+}
 
 function query(params?: Record<string, QueryValue>): string {
   if (!params) return '';
@@ -61,12 +118,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
       registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
     };
-    throw new Error(
-      messages[code] ??
-        payload?.error?.message ??
-        payload?.message ??
-        `API error ${response.status}`,
-    );
+    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
   }
   return payload as ApiResponse<T>;
 }
@@ -97,7 +149,7 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
       upload_dir_unavailable: 'Katalog uploadu na serwerze jest niedostepny.',
       upload_failed: 'Nie udalo sie wgrac pliku.',
     };
-    throw new Error(messages[code] ?? payload?.error?.message ?? `API error ${response.status}`);
+    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
   }
   return payload as ApiResponse<T>;
 }
@@ -137,6 +189,7 @@ export const httpAdapter: ApiAdapter = {
   updateOrganizerEventLimit: (organizerId, limit) =>
     request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`, json('PATCH', { limit })),
   uploadEventImage: (file) => {
+    validateImageFile(file);
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/event-images', formData).then((response) => ({
@@ -166,6 +219,7 @@ export const httpAdapter: ApiAdapter = {
   deleteEventBackground: (id) =>
     request(`/event-backgrounds/${encodeURIComponent(id)}`, json('DELETE')),
   uploadEventBackground: (file) => {
+    validateImageFile(file);
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/event-backgrounds', formData).then(
@@ -193,6 +247,7 @@ export const httpAdapter: ApiAdapter = {
   getParticipants: () => request('/participants'),
   getOrganizers: () => request('/organizers'),
   uploadAvatar: (file) => {
+    validateImageFile(file);
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/avatars', formData).then((response) => ({
@@ -318,6 +373,7 @@ export const httpAdapter: ApiAdapter = {
   updatePartner: (id, data) => request(`/partners/${encodeURIComponent(id)}`, json('PATCH', data)),
   deletePartner: (id) => request(`/partners/${encodeURIComponent(id)}`, json('DELETE')),
   uploadPartnerLogo: (file) => {
+    validateImageFile(file);
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/partner-logos', formData).then((response) => ({

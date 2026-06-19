@@ -153,6 +153,24 @@ let shopCategories: ShopCategoryConfig[] = Object.entries({
 }).map(([id, name], index) => ({ id, name, sortOrder: index, status: 'active' }));
 
 const MOCK_TOKEN_PREFIX = 'mock-user:';
+const MOCK_EVENT_LIMITS_KEY = 'mock-event-limits';
+
+function getMockEventLimitsStore(): Record<string, number> {
+  try {
+    const raw = window.localStorage.getItem(MOCK_EVENT_LIMITS_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, number>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function setMockEventLimit(organizerId: string, limit: number): void {
+  const store = getMockEventLimitsStore();
+  store[organizerId] = limit;
+  window.localStorage.setItem(MOCK_EVENT_LIMITS_KEY, JSON.stringify(store));
+  const organizer = mockUsers.find((user) => user.id === organizerId);
+  if (organizer) organizer.eventLimit = limit;
+}
 
 function issueMockToken(user: User): string {
   return `${MOCK_TOKEN_PREFIX}${user.id}`;
@@ -177,14 +195,14 @@ function clearMockToken(): void {
 }
 
 function getMockOrganizerEventLimit(organizerId: string): OrganizerEventLimit {
+  const store = getMockEventLimitsStore();
   const organizer = mockUsers.find((user) => user.id === organizerId);
-  const limit = organizer?.eventLimit ?? 0;
+  const limit = store[organizerId] ?? organizer?.eventLimit ?? 0;
   const used = mockEvents.filter(
     (event) => event.organizerId === organizerId && event.status !== 'deleted',
   ).length;
 
   return {
-    total: limit,
     limit,
     used,
     available: Math.max(0, limit - used),
@@ -328,10 +346,7 @@ export const mockAdapter: ApiAdapter = {
   },
   async updateOrganizerEventLimit(organizerId, limit) {
     await delay();
-    const organizer = mockUsers.find((user) => user.id === organizerId);
-    if (organizer) {
-      organizer.eventLimit = limit;
-    }
+    setMockEventLimit(organizerId, limit);
     return ok(getMockOrganizerEventLimit(organizerId));
   },
   uploadEventImage: (...args) => httpAdapter.uploadEventImage(...args),

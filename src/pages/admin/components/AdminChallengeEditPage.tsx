@@ -14,9 +14,16 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Save, Trophy } from 'lucide-react';
 import { Challenge } from '@/types';
@@ -172,20 +179,36 @@ export const AdminChallengeEditPage = () => {
               </div>
               <div>
                 <Label>Slug</Label>
-                <Input value={form.slug ?? ''} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+                <Input
+                  value={form.slug ?? ''}
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                />
               </div>
               <div className="md:col-span-2">
                 <Label>Opis</Label>
-                <Textarea value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <Textarea
+                  value={form.description ?? ''}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
               </div>
               <div className="md:col-span-2">
                 <Label>URL obrazka</Label>
-                <Input value={form.imageUrl ?? ''} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+                <Input
+                  value={form.imageUrl ?? ''}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                />
               </div>
               <div>
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(status) => setForm({ ...form, status: status as Challenge['status'] })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.status}
+                  onValueChange={(status) =>
+                    setForm({ ...form, status: status as Challenge['status'] })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="upcoming">Nadchodzące</SelectItem>
                     <SelectItem value="active">Aktywne</SelectItem>
@@ -196,54 +219,114 @@ export const AdminChallengeEditPage = () => {
               </div>
               <div>
                 <Label>Seria</Label>
-                <Select value={form.seriesId || 'none'} onValueChange={(value) => value === 'none' ? setForm({ ...form, seriesId: '' }) : loadEventsFromSeries(value)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={form.seriesId || 'none'}
+                  onValueChange={(value) =>
+                    value === 'none'
+                      ? setForm({ ...form, seriesId: '' })
+                      : loadEventsFromSeries(value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Brak</SelectItem>
                     {series.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>Data startu</Label>
-                <Input type="date" value={form.startDate ?? ''} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+                <DateInput
+                  value={form.startDate ?? ''}
+                  onValueChange={(startDate) => setForm({ ...form, startDate })}
+                />
               </div>
               <div>
                 <Label>Data końca</Label>
-                <Input type="date" value={form.endDate ?? ''} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+                <DateInput
+                  value={form.endDate ?? ''}
+                  onValueChange={(endDate) => setForm({ ...form, endDate })}
+                />
               </div>
               <div>
                 <Label>Minimum wydarzeń</Label>
-                <Input type="number" min={1} value={form.rule?.minCompleted ?? 1} onChange={(e) => setForm({ ...form, rule: { ...form.rule, minCompleted: Number(e.target.value) || 1 } })} />
+                <Input
+                  type="number"
+                  min={1}
+                  value={form.rule?.minCompleted ?? 1}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      rule: { ...form.rule, minCompleted: Number(e.target.value) || 1 },
+                    })
+                  }
+                />
               </div>
               <div>
                 <Label>Limit czasu</Label>
-                <Input value={form.rule?.maxTime ?? ''} onChange={(e) => setForm({ ...form, rule: { ...form.rule, minCompleted: form.rule?.minCompleted ?? 1, maxTime: e.target.value } })} placeholder="HH:MM:SS" />
+                <Input
+                  value={form.rule?.maxTime ?? ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      rule: {
+                        ...form.rule,
+                        minCompleted: form.rule?.minCompleted ?? 1,
+                        maxTime: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="HH:MM:SS"
+                />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Wydarzenia</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Wydarzenia</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-2">
               {events.map((event) => (
-                <label key={event.id} className="flex items-center gap-2 rounded border p-2 text-sm">
-                  <Checkbox checked={selectedEventIds.has(event.id)} onCheckedChange={() => toggleEvent(event.id)} />
-                  <span>{event.name} · {event.date}</span>
+                <label
+                  key={event.id}
+                  className="flex items-center gap-2 rounded border p-2 text-sm"
+                >
+                  <Checkbox
+                    checked={selectedEventIds.has(event.id)}
+                    onCheckedChange={() => toggleEvent(event.id)}
+                  />
+                  <span>
+                    {event.name} · {event.date}
+                  </span>
                 </label>
               ))}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Produkty / nagrody</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Produkty / nagrody</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-2">
               {products.map((product) => (
-                <label key={product.id} className="flex items-center gap-2 rounded border p-2 text-sm">
-                  <Checkbox checked={selectedProductIds.has(product.id)} onCheckedChange={() => toggleProduct(product.id)} />
-                  <span>{product.name} · {product.price} zł</span>
+                <label
+                  key={product.id}
+                  className="flex items-center gap-2 rounded border p-2 text-sm"
+                >
+                  <Checkbox
+                    checked={selectedProductIds.has(product.id)}
+                    onCheckedChange={() => toggleProduct(product.id)}
+                  />
+                  <span>
+                    {product.name} · {product.price} zł
+                  </span>
                 </label>
               ))}
             </CardContent>

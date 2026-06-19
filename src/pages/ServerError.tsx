@@ -45,8 +45,9 @@ const ServerError = () => {
       <div className="mb-14 flex flex-col gap-3 sm:flex-row">
         <Button
           onClick={() => window.location.reload()}
+          variant="primary"
           size="lg"
-          className="gap-2 bg-primary px-8 text-white hover:bg-primary/90"
+          className="gap-2 px-8"
         >
           <RefreshCw className="h-4 w-4" />
           Spróbuj ponownie

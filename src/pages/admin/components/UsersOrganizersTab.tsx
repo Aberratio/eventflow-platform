@@ -241,12 +241,16 @@ export const UsersOrganizersTab = () => {
               type="number"
               min={limit?.used ?? 0}
               value={limitDrafts[organizer.id] ?? ''}
+              disabled={!limit}
               onChange={(event) =>
                 setLimitDrafts((prev) => ({ ...prev, [organizer.id]: event.target.value }))
               }
             />
           </div>
-          <Button onClick={() => saveLimit(organizer.id)} disabled={savingLimitId === organizer.id}>
+          <Button
+            onClick={() => saveLimit(organizer.id)}
+            disabled={!limit || savingLimitId === organizer.id}
+          >
             <Save className="mr-2 h-4 w-4" />
             {savingLimitId === organizer.id ? 'Zapis...' : 'Zapisz'}
           </Button>

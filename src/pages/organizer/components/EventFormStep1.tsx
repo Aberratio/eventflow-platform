@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DateInput, TimeInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
@@ -97,7 +98,9 @@ const FieldError = ({ message }: { message?: string }) =>
   ) : null;
 
 const inputError = (hasError: boolean) =>
-  hasError ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20' : '';
+  hasError
+    ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20'
+    : '';
 
 interface EventFormStep1Props {
   form: EventFormState;
@@ -134,7 +137,10 @@ const resizeToBlob = (file: File, maxWidth: number): Promise<Blob> =>
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext('2d');
-      if (!ctx) { reject(new Error('no-ctx')); return; }
+      if (!ctx) {
+        reject(new Error('no-ctx'));
+        return;
+      }
       ctx.drawImage(img, 0, 0, w, h);
       canvas.toBlob(
         (blob) => (blob ? resolve(blob) : reject(new Error('toBlob-failed'))),
@@ -226,9 +232,13 @@ const EventImageUploadField = ({
       const originalFile = originalFileRef.current;
       if (originalFile) {
         const [croppedResponse, originalResponse] = await Promise.all([
-          uploadEventImage(new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' })),
+          uploadEventImage(
+            new File([croppedBlob], `${selectedFileName}.jpg`, { type: 'image/jpeg' }),
+          ),
           resizeToBlob(originalFile, 3000).then((blob) =>
-            uploadEventImage(new File([blob], `${selectedFileName}-original.jpg`, { type: 'image/jpeg' })),
+            uploadEventImage(
+              new File([blob], `${selectedFileName}-original.jpg`, { type: 'image/jpeg' }),
+            ),
           ),
         ]);
         onChange(croppedResponse.data.url);
@@ -278,12 +288,7 @@ const EventImageUploadField = ({
         </Button>
         {value && (
           <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleRecrop}
-              disabled={isUploading}
-            >
+            <Button type="button" variant="outline" onClick={handleRecrop} disabled={isUploading}>
               <Crop className="mr-2 h-4 w-4" />
               Zmien przyciecie
             </Button>
@@ -325,8 +330,7 @@ const DOCUMENT_TYPES: EventDocumentType[] = [
   'inne',
 ];
 
-const ACCEPTED_DOCUMENT_TYPES =
-  '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp';
+const ACCEPTED_DOCUMENT_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp';
 
 const DocumentsUploadSection = ({ form }: { form: EventFormState }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -357,10 +361,7 @@ const DocumentsUploadSection = ({ form }: { form: EventFormState }) => {
       {form.documents.length > 0 && (
         <div className="space-y-2">
           {form.documents.map((doc) => (
-            <div
-              key={doc.id}
-              className="flex items-center gap-2 rounded-md border bg-muted/30 p-2"
-            >
+            <div key={doc.id} className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
               <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <Input
@@ -417,10 +418,7 @@ const DocumentsUploadSection = ({ form }: { form: EventFormState }) => {
         </div>
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">Typ</Label>
-          <Select
-            value={pendingType}
-            onValueChange={(v) => setPendingType(v as EventDocumentType)}
-          >
+          <Select value={pendingType} onValueChange={(v) => setPendingType(v as EventDocumentType)}>
             <SelectTrigger className="h-8 w-40 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -766,35 +764,32 @@ const LogisticsRow = ({
                 {locationMode === 'office' && (
                   <div className="grid gap-2 sm:grid-cols-3">
                     <div className="space-y-1">
-                      <Label className="text-xs flex items-center gap-1">
+                      <Label className="flex items-center gap-1 text-xs">
                         <Calendar className="h-3 w-3" /> Data
                       </Label>
-                      <Input
-                        type="date"
+                      <DateInput
                         value={loc.date || ''}
-                        onChange={(e) => onUpdateLocation?.(loc.id, { date: e.target.value })}
+                        onValueChange={(date) => onUpdateLocation?.(loc.id, { date })}
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs flex items-center gap-1">
+                      <Label className="flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3" /> Od
                       </Label>
-                      <Input
-                        type="time"
+                      <TimeInput
                         value={loc.openFrom || ''}
-                        onChange={(e) => onUpdateLocation?.(loc.id, { openFrom: e.target.value })}
+                        onValueChange={(openFrom) => onUpdateLocation?.(loc.id, { openFrom })}
                         className="h-8 text-sm"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs flex items-center gap-1">
+                      <Label className="flex items-center gap-1 text-xs">
                         <Clock className="h-3 w-3" /> Do
                       </Label>
-                      <Input
-                        type="time"
+                      <TimeInput
                         value={loc.openTo || ''}
-                        onChange={(e) => onUpdateLocation?.(loc.id, { openTo: e.target.value })}
+                        onValueChange={(openTo) => onUpdateLocation?.(loc.id, { openTo })}
                         className="h-8 text-sm"
                       />
                     </div>
@@ -811,7 +806,7 @@ const LogisticsRow = ({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs flex items-center gap-1">
+                    <Label className="flex items-center gap-1 text-xs">
                       <Link2 className="h-3 w-3" /> Link Google Maps
                     </Label>
                     <Input
@@ -823,7 +818,7 @@ const LogisticsRow = ({
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs flex items-center gap-1">
+                  <Label className="flex items-center gap-1 text-xs">
                     <MapPin className="h-3 w-3" /> Adres (opcjonalnie)
                   </Label>
                   <Input
@@ -980,8 +975,8 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
         <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
           <p className="text-sm text-muted-foreground">
             Zaznacz co będzie dostępne na zawodach. Uczestnicy zobaczą te informacje na stronie
-            wydarzenia. Wybierz <strong>Tak</strong> (dostępne), <strong>Nie</strong>{' '}
-            (niedostępne) lub <strong>Brak info</strong> (nie wyświetlaj).
+            wydarzenia. Wybierz <strong>Tak</strong> (dostępne), <strong>Nie</strong> (niedostępne)
+            lub <strong>Brak info</strong> (nie wyświetlaj).
           </p>
           {LOGISTICS_FIELDS.map((f) => (
             <LogisticsRow
@@ -995,7 +990,9 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
               onStatusChange={(s) => form.updateLogisticsFieldStatus(f.key, s)}
               infoHtml={info[f.key]?.infoHtml}
               onInfoChange={(html) => form.updateLogisticsField(f.key, { infoHtml: html })}
-              locations={f.withLocations ? (info[f.key]?.locations as LogisticsLocation[]) : undefined}
+              locations={
+                f.withLocations ? (info[f.key]?.locations as LogisticsLocation[]) : undefined
+              }
               onAddLocation={f.withLocations ? () => form.addLogisticsLocation(f.key) : undefined}
               locationMode={f.locationMode}
               onRemoveLocation={
@@ -1025,9 +1022,7 @@ const DisciplineMultiSelect = ({
   const allEntries = Object.entries(disciplineLabels) as [SportDiscipline, string][];
 
   const toggle = (key: SportDiscipline) => {
-    const next = selected.includes(key)
-      ? selected.filter((d) => d !== key)
-      : [...selected, key];
+    const next = selected.includes(key) ? selected.filter((d) => d !== key) : [...selected, key];
     if (next.length > 0) onChange(next);
   };
 
@@ -1154,9 +1149,7 @@ const EventBackgroundPicker = ({
           </button>
         ))}
       </div>
-      {!value && (
-        <p className="text-xs text-destructive">Wybierz tło strony wydarzenia.</p>
-      )}
+      {!value && <p className="text-xs text-destructive">Wybierz tło strony wydarzenia.</p>}
     </div>
   );
 };
@@ -1177,795 +1170,799 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
   return (
     <div className="space-y-6">
       {/* ── registration: Typ zawodów ── */}
-      {activeSubStep === 'registration' && <Card>
-        <Collapsible open={registrationTypeOpen} onOpenChange={setRegistrationTypeOpen}>
-          <CardHeader className="p-4 pb-3 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Code className="h-5 w-5 text-primary" /> Typ zawodow
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="group flex w-full items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-left transition-colors hover:bg-muted/50"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
-                    <span>{registrationTypeSummary}</span>
-                    <Badge
-                      variant={isEmbedRegistration ? 'outline' : 'secondary'}
-                      className="text-[10px]"
-                    >
-                      {registrationTypeLabel}
-                    </Badge>
-                  </div>
-                </div>
-                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-              </button>
-            </CollapsibleTrigger>
-
-            <CollapsibleContent className="space-y-4">
-              <RadioGroup
-                value={form.registrationMode}
-                onValueChange={(value) =>
-                  form.setRegistrationMode(value as 'internal' | 'external_embed')
-                }
-                className="grid gap-3 md:grid-cols-2"
-              >
-                <div
-                  className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'internal' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+      {activeSubStep === 'registration' && (
+        <Card>
+          <Collapsible open={registrationTypeOpen} onOpenChange={setRegistrationTypeOpen}>
+            <CardHeader className="p-4 pb-3 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Code className="h-5 w-5 text-primary" /> Typ zawodow
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="group flex w-full items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 text-left transition-colors hover:bg-muted/50"
                 >
-                  <RadioGroupItem value="internal" id="registration_internal" className="mt-1" />
                   <div className="min-w-0 flex-1">
-                    <Label
-                      htmlFor="registration_internal"
-                      className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
-                    >
-                      <Settings2 className="h-4 w-4 text-primary" /> Formularz Zmierzymy Czas
-                      <Badge variant="secondary" className="text-[10px]">
-                        najczestszy wybor
+                    <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                      <span>{registrationTypeSummary}</span>
+                      <Badge
+                        variant={isEmbedRegistration ? 'outline' : 'secondary'}
+                        className="text-[10px]"
+                      >
+                        {registrationTypeLabel}
                       </Badge>
-                    </Label>
-                    <FieldHelp description="Zapisy sa obslugiwane przez formularz i platnosci w systemie Zmierzymy Czas." />
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Uczestnik zapisuje sie bezposrednio w biurze zawodow.
-                    </p>
+                    </div>
                   </div>
-                </div>
-                <div
-                  className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'external_embed' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </button>
+              </CollapsibleTrigger>
+
+              <CollapsibleContent className="space-y-4">
+                <RadioGroup
+                  value={form.registrationMode}
+                  onValueChange={(value) =>
+                    form.setRegistrationMode(value as 'internal' | 'external_embed')
+                  }
+                  className="grid gap-3 md:grid-cols-2"
                 >
-                  <RadioGroupItem
-                    value="external_embed"
-                    id="registration_external"
-                    className="mt-1"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <Label
-                      htmlFor="registration_external"
-                      className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
-                    >
-                      <ExternalLink className="h-4 w-4 text-primary" /> Zewnetrzny formularz embed
-                    </Label>
-                    <FieldHelp description="Na stronie wydarzenia pokazujemy ramke Zmierzymy Czas, a w srodku osadzamy formularz zapisow z podanego linku." />
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Zmierzymy Czas nie dostarcza formularza zapisow w tym wariancie. Zapisy,
-                      platnosci i lista uczestnikow sa w calosci po stronie organizatora lub
-                      zewnetrznego systemu.
-                    </p>
+                  <div
+                    className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'internal' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                  >
+                    <RadioGroupItem value="internal" id="registration_internal" className="mt-1" />
+                    <div className="min-w-0 flex-1">
+                      <Label
+                        htmlFor="registration_internal"
+                        className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                      >
+                        <Settings2 className="h-4 w-4 text-primary" /> Formularz Zmierzymy Czas
+                        <Badge variant="secondary" className="text-[10px]">
+                          najczestszy wybor
+                        </Badge>
+                      </Label>
+                      <FieldHelp description="Zapisy sa obslugiwane przez formularz i platnosci w systemie Zmierzymy Czas." />
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Uczestnik zapisuje sie bezposrednio w biurze zawodow.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </RadioGroup>
-
-              {isEmbedRegistration && (
-                <Alert className="border-primary/30 bg-primary/5">
-                  <Info className="h-4 w-4" />
-                  <AlertTitle>Embed: zapisy sa po stronie organizatora</AlertTitle>
-                  <AlertDescription>
-                    Dla zawodow typu embed nie pokazujemy konfiguracji formularza rejestracji, pol
-                    platnosci ani opcji publicznej listy uczestnikow. Zmierzymy Czas pokazuje tylko
-                    osadzony formularz z podanego linku.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {form.registrationMode === 'external_embed' && (
-                <div className="space-y-4 border-t pt-4">
-                  <div className="space-y-2">
-                    <HelpLabel
-                      htmlFor="externalRegistrationUrl"
-                      description="Pelny adres strony lub formularza zapisow, ktory ma zostac osadzony w widoku wydarzenia."
-                    >
-                      Link do zewnętrznego formularza *
-                    </HelpLabel>
-                    <Input
-                      id="externalRegistrationUrl"
-                      value={form.externalRegistrationUrl}
-                      onChange={(e) => form.setExternalRegistrationUrl(e.target.value)}
-                      placeholder="https://partner.pl/zapisy/nazwa-wydarzenia"
-                      className={inputError(!!fe['externalRegistrationUrl'])}
+                  <div
+                    className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.registrationMode === 'external_embed' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                  >
+                    <RadioGroupItem
+                      value="external_embed"
+                      id="registration_external"
+                      className="mt-1"
                     />
-                    <FieldError message={fe['externalRegistrationUrl']} />
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
-                        Data rozpoczęcia (opcjonalnie)
-                      </HelpLabel>
-                      <Input
-                        type="date"
-                        value={form.embedStartDate}
-                        onChange={(e) => form.setEmbedStartDate(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <HelpLabel description="Opcjonalny koniec dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
-                        Data zakończenia (opcjonalnie)
-                      </HelpLabel>
-                      <Input
-                        type="date"
-                        value={form.embedEndDate}
-                        onChange={(e) => form.setEmbedEndDate(e.target.value)}
-                      />
+                    <div className="min-w-0 flex-1">
+                      <Label
+                        htmlFor="registration_external"
+                        className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                      >
+                        <ExternalLink className="h-4 w-4 text-primary" /> Zewnetrzny formularz embed
+                      </Label>
+                      <FieldHelp description="Na stronie wydarzenia pokazujemy ramke Zmierzymy Czas, a w srodku osadzamy formularz zapisow z podanego linku." />
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Zmierzymy Czas nie dostarcza formularza zapisow w tym wariancie. Zapisy,
+                        platnosci i lista uczestnikow sa w calosci po stronie organizatora lub
+                        zewnetrznego systemu.
+                      </p>
                     </div>
                   </div>
-                </div>
-              )}
-            </CollapsibleContent>
-          </CardContent>
-        </Collapsible>
-      </Card>}
+                </RadioGroup>
+
+                {isEmbedRegistration && (
+                  <Alert className="border-primary/30 bg-primary/5">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Embed: zapisy sa po stronie organizatora</AlertTitle>
+                    <AlertDescription>
+                      Dla zawodow typu embed nie pokazujemy konfiguracji formularza rejestracji, pol
+                      platnosci ani opcji publicznej listy uczestnikow. Zmierzymy Czas pokazuje
+                      tylko osadzony formularz z podanego linku.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {form.registrationMode === 'external_embed' && (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <HelpLabel
+                        htmlFor="externalRegistrationUrl"
+                        description="Pelny adres strony lub formularza zapisow, ktory ma zostac osadzony w widoku wydarzenia."
+                      >
+                        Link do zewnętrznego formularza *
+                      </HelpLabel>
+                      <Input
+                        id="externalRegistrationUrl"
+                        value={form.externalRegistrationUrl}
+                        onChange={(e) => form.setExternalRegistrationUrl(e.target.value)}
+                        placeholder="https://partner.pl/zapisy/nazwa-wydarzenia"
+                        className={inputError(!!fe['externalRegistrationUrl'])}
+                      />
+                      <FieldError message={fe['externalRegistrationUrl']} />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                          Data rozpoczęcia (opcjonalnie)
+                        </HelpLabel>
+                        <Input
+                          type="date"
+                          value={form.embedStartDate}
+                          onChange={(e) => form.setEmbedStartDate(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Opcjonalny koniec dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                          Data zakończenia (opcjonalnie)
+                        </HelpLabel>
+                        <Input
+                          type="date"
+                          value={form.embedEndDate}
+                          onChange={(e) => form.setEmbedEndDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </CardContent>
+          </Collapsible>
+        </Card>
+      )}
 
       {/* ── basic: Podstawowe informacje ── */}
-      {activeSubStep === 'basic' && <Card>
-        <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
-          <CardTitle className="text-xl">Podstawowe informacje</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
-          <div className="grid gap-4 md:grid-cols-2">
-            {form.canChooseOrganizer && (
-              <div className="space-y-2 md:col-span-2">
-                <HelpLabel
-                  htmlFor="organizer"
-                  description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
+      {activeSubStep === 'basic' && (
+        <Card>
+          <CardHeader className="p-4 pb-2 sm:p-5 sm:pb-2">
+            <CardTitle className="text-xl">Podstawowe informacje</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
+            <div className="grid gap-4 md:grid-cols-2">
+              {form.canChooseOrganizer && (
+                <div className="space-y-2 md:col-span-2">
+                  <HelpLabel
+                    htmlFor="organizer"
+                    description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
+                  >
+                    Organizator *
+                  </HelpLabel>
+                  <Select
+                    value={form.selectedOrganizerId}
+                    onValueChange={form.setSelectedOrganizerId}
+                  >
+                    <SelectTrigger id="organizer">
+                      <SelectValue placeholder="Wybierz organizatora" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {form.organizers.map((organizer) => (
+                        <SelectItem key={organizer.id} value={organizer.id}>
+                          {organizer.companyName || organizer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="md:col-span-2">
+                <p
+                  className={
+                    form.selectedEventLimit && form.selectedEventLimit.available <= 0
+                      ? 'text-sm text-destructive'
+                      : 'text-sm text-muted-foreground'
+                  }
                 >
-                  Organizator *
-                </HelpLabel>
-                <Select
-                  value={form.selectedOrganizerId}
-                  onValueChange={form.setSelectedOrganizerId}
-                >
-                  <SelectTrigger id="organizer">
-                    <SelectValue placeholder="Wybierz organizatora" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {form.organizers.map((organizer) => (
-                      <SelectItem key={organizer.id} value={organizer.id}>
-                        {organizer.companyName || organizer.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  {form.selectedEventLimit
+                    ? `Limit wydarzeń: wykorzystano ${form.selectedEventLimit.used} z ${form.selectedEventLimit.limit}. Dostępne: ${form.selectedEventLimit.available}.`
+                    : 'Ładowanie limitu wydarzeń...'}
+                </p>
               </div>
-            )}
-            <div className="md:col-span-2">
-              <p
-                className={
-                  form.selectedEventLimit && form.selectedEventLimit.available <= 0
-                    ? 'text-sm text-destructive'
-                    : 'text-sm text-muted-foreground'
-                }
-              >
-                {form.selectedEventLimit
-                  ? `Limit wydarzeń: wykorzystano ${form.selectedEventLimit.used} z ${form.selectedEventLimit.limit}. Dostępne: ${form.selectedEventLimit.available}.`
-                  : 'Ładowanie limitu wydarzeń...'}
-              </p>
+              <div className="space-y-2">
+                <HelpLabel
+                  htmlFor="name"
+                  description="Publiczna nazwa wydarzenia widoczna na listach, stronie szczegolow, w rejestracji i komunikacji z uczestnikami."
+                >
+                  Nazwa wydarzenia *
+                </HelpLabel>
+                <Input
+                  id="name"
+                  value={form.name}
+                  onChange={(e) => form.setName(e.target.value)}
+                  placeholder="np. Warsaw Marathon 2025"
+                  className={inputError(!!fe['name'])}
+                />
+                <FieldError message={fe['name']} />
+              </div>
+              <DisciplineMultiSelect selected={form.disciplines} onChange={form.setDisciplines} />
             </div>
+
             <div className="space-y-2">
               <HelpLabel
-                htmlFor="name"
-                description="Publiczna nazwa wydarzenia widoczna na listach, stronie szczegolow, w rejestracji i komunikacji z uczestnikami."
+                htmlFor="date"
+                description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
               >
-                Nazwa wydarzenia *
+                Data wydarzenia *
               </HelpLabel>
               <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => form.setName(e.target.value)}
-                placeholder="np. Warsaw Marathon 2025"
-                className={inputError(!!fe['name'])}
+                id="date"
+                type="date"
+                value={form.date}
+                onChange={(e) => form.setDate(e.target.value)}
+                className={inputError(!!fe['date'])}
               />
-              <FieldError message={fe['name']} />
-            </div>
-            <DisciplineMultiSelect
-              selected={form.disciplines}
-              onChange={form.setDisciplines}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <HelpLabel
-              htmlFor="date"
-              description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
-            >
-              Data wydarzenia *
-            </HelpLabel>
-            <Input
-              id="date"
-              type="date"
-              value={form.date}
-              onChange={(e) => form.setDate(e.target.value)}
-              className={inputError(!!fe['date'])}
-            />
-            <FieldError message={fe['date']} />
-          </div>
-
-          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
-            <HelpLabel
-              description="Określ kiedy otwierają i zamykają się zapisy. Data otwarcia jest opcjonalna — jeśli jej nie podasz, zapisy będą aktywne od razu po opublikowaniu wydarzenia."
-            >
-              Terminy rejestracji
-            </HelpLabel>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="reg-open-date" className="text-sm text-muted-foreground">
-                  Otwarcie zapisów (opcjonalne)
-                </Label>
-                <Input
-                  id="reg-open-date"
-                  type="date"
-                  value={form.registrationOpenDate}
-                  onChange={(e) => form.setRegistrationOpenDate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="deadline" className="text-sm text-muted-foreground">
-                  Zamknięcie zapisów *
-                </Label>
-                <Input
-                  id="deadline"
-                  type="date"
-                  value={form.registrationUntilEventStart ? form.date : form.registrationDeadline}
-                  onChange={(e) => form.setRegistrationDeadline(e.target.value)}
-                  disabled={form.registrationUntilEventStart}
-                  className={form.registrationUntilEventStart ? 'opacity-40' : inputError(!!fe['registrationDeadline'])}
-                />
-                <FieldError message={fe['registrationDeadline']} />
-              </div>
+              <FieldError message={fe['date']} />
             </div>
 
-            <div
-              className="flex cursor-pointer items-center gap-2 pt-0.5"
-              onClick={() => {
-                const next = !form.registrationUntilEventStart;
-                form.setRegistrationUntilEventStart(next);
-                if (next && form.date) {
-                  form.setRegistrationDeadline(form.date);
-                }
-              }}
-            >
-              <Checkbox
-                id="reg-until-start"
-                checked={form.registrationUntilEventStart}
-                onCheckedChange={(c) => {
-                  const next = c === true;
+            <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
+              <HelpLabel description="Określ kiedy otwierają i zamykają się zapisy. Data otwarcia jest opcjonalna — jeśli jej nie podasz, zapisy będą aktywne od razu po opublikowaniu wydarzenia.">
+                Terminy rejestracji
+              </HelpLabel>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-open-date" className="text-sm text-muted-foreground">
+                    Otwarcie zapisów (opcjonalne)
+                  </Label>
+                  <Input
+                    id="reg-open-date"
+                    type="date"
+                    value={form.registrationOpenDate}
+                    onChange={(e) => form.setRegistrationOpenDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="deadline" className="text-sm text-muted-foreground">
+                    Zamknięcie zapisów *
+                  </Label>
+                  <Input
+                    id="deadline"
+                    type="date"
+                    value={form.registrationUntilEventStart ? form.date : form.registrationDeadline}
+                    onChange={(e) => form.setRegistrationDeadline(e.target.value)}
+                    disabled={form.registrationUntilEventStart}
+                    className={
+                      form.registrationUntilEventStart
+                        ? 'opacity-40'
+                        : inputError(!!fe['registrationDeadline'])
+                    }
+                  />
+                  <FieldError message={fe['registrationDeadline']} />
+                </div>
+              </div>
+
+              <div
+                className="flex cursor-pointer items-center gap-2 pt-0.5"
+                onClick={() => {
+                  const next = !form.registrationUntilEventStart;
                   form.setRegistrationUntilEventStart(next);
                   if (next && form.date) {
                     form.setRegistrationDeadline(form.date);
                   }
                 }}
-              />
-              <Label htmlFor="reg-until-start" className="cursor-pointer text-sm">
-                Zapisy otwarte aż do dnia rozpoczęcia zawodów
-              </Label>
-            </div>
-          </div>
-
-          {/* Virtual event toggle */}
-          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="isVirtual"
-                checked={form.isVirtual}
-                onCheckedChange={(checked) => {
-                  form.setIsVirtual(checked === true);
-                  if (checked) {
-                    form.setLocation('Wydarzenie wirtualne');
-                    form.setCity('Cały świat');
-                  } else {
-                    form.setLocation('');
-                    form.setCity('');
-                  }
-                }}
-              />
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Globe className="h-4 w-4 shrink-0 text-primary" />
-                <Label htmlFor="isVirtual" className="cursor-pointer font-medium">
-                  Wydarzenie wirtualne
-                </Label>
-                <FieldHelp description="Wlaczenie tej opcji oznacza, ze uczestnik realizuje aktywnosc samodzielnie poza jedna fizyczna lokalizacja i moze podac wynik w okreslonym oknie." />
-              </div>
-            </div>
-            {form.isVirtual && (
-              <p className="text-sm text-muted-foreground sm:pl-7">
-                Uczestnicy wykonują aktywność samodzielnie w dowolnym miejscu i wprowadzają
-                swoje wyniki po zakończeniu okna czasowego.
-              </p>
-            )}
-          </div>
-
-          {form.isVirtual && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <HelpLabel
-                  htmlFor="startDate"
-                  description="Pierwszy dzien, od ktorego uczestnicy wydarzenia wirtualnego moga wykonywac aktywnosc i przesylac wynik."
-                >
-                  Data rozpoczęcia okna *
-                </HelpLabel>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={form.startDate}
-                  onChange={(e) => form.setStartDate(e.target.value)}
-                  className={inputError(!!fe['startDate'])}
+              >
+                <Checkbox
+                  id="reg-until-start"
+                  checked={form.registrationUntilEventStart}
+                  onCheckedChange={(c) => {
+                    const next = c === true;
+                    form.setRegistrationUntilEventStart(next);
+                    if (next && form.date) {
+                      form.setRegistrationDeadline(form.date);
+                    }
+                  }}
                 />
-                <FieldError message={fe['startDate']} />
-              </div>
-              <div className="space-y-2">
-                <HelpLabel
-                  htmlFor="endDate"
-                  description="Ostatni dzien okna wirtualnego. Po tej dacie uczestnicy nie powinni juz dodawac nowych wynikow dla tego wydarzenia."
-                >
-                  Data zakończenia okna *
-                </HelpLabel>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => form.setEndDate(e.target.value)}
-                  className={inputError(!!fe['endDate'])}
-                />
-                <FieldError message={fe['endDate']} />
-              </div>
-            </div>
-          )}
-
-          {/* Private event toggle */}
-          <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="isPrivate"
-                checked={form.isPrivate}
-                onCheckedChange={(checked) => {
-                  const val = checked === true;
-                  form.setIsPrivate(val);
-                  if (val && !form.accessCode) form.setAccessCode(form.generateAccessCode());
-                }}
-              />
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Lock className="h-4 w-4 shrink-0 text-primary" />
-                <Label htmlFor="isPrivate" className="cursor-pointer font-medium">
-                  Wydarzenie prywatne
+                <Label htmlFor="reg-until-start" className="cursor-pointer text-sm">
+                  Zapisy otwarte aż do dnia rozpoczęcia zawodów
                 </Label>
-                <FieldHelp description="Ukrywa wydarzenie z publicznych list. Dostep maja tylko osoby, ktore otrzymaja specjalny link z kodem dostepu." />
               </div>
             </div>
-            {form.isPrivate && (
-              <div className="space-y-3 sm:pl-7">
-                <p className="text-sm text-muted-foreground">
-                  Prywatne wydarzenie nie będzie widoczne publicznie. Uczestnicy mogą dołączyć
-                  tylko przez specjalny link.
-                </p>
-                <div className="space-y-2">
-                  <HelpLabel
-                    htmlFor="accessCode"
-                    description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejsc na strone wydarzenia mimo braku widocznosci publicznej."
-                  >
-                    Kod dostępu
-                  </HelpLabel>
-                  <div className="space-y-1">
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
-                    <Input
-                      id="accessCode"
-                      value={form.accessCode}
-                      onChange={(e) => form.setAccessCode(e.target.value)}
-                      placeholder="np. abc123xyz"
-                      className={`min-w-0 font-mono ${inputError(!!fe['accessCode'])}`}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => form.setAccessCode(form.generateAccessCode())}
-                      title="Wygeneruj nowy kod"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        const slug = form.name ? form.generateSlug(form.name) : 'wydarzenie';
-                        const url = `${window.location.origin}/events/${slug}?access=${form.accessCode}`;
-                        navigator.clipboard.writeText(url);
-                        form.toast({
-                          title: 'Skopiowano',
-                          description:
-                            'Link do prywatnego wydarzenia został skopiowany do schowka.',
-                        });
-                      }}
-                      title="Kopiuj link"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FieldError message={fe['accessCode']} />
-                  </div>
+
+            {/* Virtual event toggle */}
+            <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="isVirtual"
+                  checked={form.isVirtual}
+                  onCheckedChange={(checked) => {
+                    form.setIsVirtual(checked === true);
+                    if (checked) {
+                      form.setLocation('Wydarzenie wirtualne');
+                      form.setCity('Cały świat');
+                    } else {
+                      form.setLocation('');
+                      form.setCity('');
+                    }
+                  }}
+                />
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <Globe className="h-4 w-4 shrink-0 text-primary" />
+                  <Label htmlFor="isVirtual" className="cursor-pointer font-medium">
+                    Wydarzenie wirtualne
+                  </Label>
+                  <FieldHelp description="Wlaczenie tej opcji oznacza, ze uczestnik realizuje aktywnosc samodzielnie poza jedna fizyczna lokalizacja i moze podac wynik w okreslonym oknie." />
                 </div>
               </div>
-            )}
-          </div>
+              {form.isVirtual && (
+                <p className="text-sm text-muted-foreground sm:pl-7">
+                  Uczestnicy wykonują aktywność samodzielnie w dowolnym miejscu i wprowadzają swoje
+                  wyniki po zakończeniu okna czasowego.
+                </p>
+              )}
+            </div>
 
-          {!form.isVirtual && (
-            <div className="space-y-4">
+            {form.isVirtual && (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <HelpLabel
-                    htmlFor="location"
-                    description="Dokladne miejsce startu lub centrum wydarzenia, np. stadion, park, hala albo adres punktu zbiorczego."
+                    htmlFor="startDate"
+                    description="Pierwszy dzien, od ktorego uczestnicy wydarzenia wirtualnego moga wykonywac aktywnosc i przesylac wynik."
                   >
-                    Lokalizacja (miejsce startu) *
+                    Data rozpoczęcia okna *
                   </HelpLabel>
-                  <Input
-                    id="location"
-                    value={form.location}
-                    onChange={(e) => form.setLocation(e.target.value)}
-                    placeholder="np. Stadion Narodowy"
-                    className={inputError(!!fe['location'])}
+                  <DateInput
+                    id="startDate"
+                    value={form.startDate}
+                    onValueChange={form.setStartDate}
+                    className={inputError(!!fe['startDate'])}
+                    aria-invalid={!!fe['startDate']}
                   />
-                  <FieldError message={fe['location']} />
+                  <FieldError message={fe['startDate']} />
                 </div>
                 <div className="space-y-2">
                   <HelpLabel
-                    htmlFor="city"
-                    description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                    htmlFor="endDate"
+                    description="Ostatni dzien okna wirtualnego. Po tej dacie uczestnicy nie powinni juz dodawac nowych wynikow dla tego wydarzenia."
                   >
-                    Miasto *
+                    Data zakończenia okna *
                   </HelpLabel>
-                  <Input
-                    id="city"
-                    value={form.city}
-                    onChange={(e) => form.setCity(e.target.value)}
-                    placeholder="np. Warszawa"
-                    className={inputError(!!fe['city'])}
+                  <DateInput
+                    id="endDate"
+                    value={form.endDate}
+                    onValueChange={form.setEndDate}
+                    className={inputError(!!fe['endDate'])}
+                    aria-invalid={!!fe['endDate']}
                   />
-                  <FieldError message={fe['city']} />
+                  <FieldError message={fe['endDate']} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <HelpLabel
-                  htmlFor="locationMapsUrl"
-                  description="Link do pinezki w Google Maps, który pojawi się przy lokalizacji i ułatwi uczestnikom nawigację do miejsca startu. Skopiuj go z maps.google.com → Udostępnij → Kopiuj link."
-                >
-                  Link do Google Maps (opcjonalnie)
-                </HelpLabel>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="locationMapsUrl"
-                    value={form.locationMapsUrl}
-                    onChange={(e) => form.setLocationMapsUrl(e.target.value)}
-                    placeholder="https://maps.google.com/..."
-                    className="pl-9"
-                  />
+            )}
+
+            {/* Private event toggle */}
+            <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="isPrivate"
+                  checked={form.isPrivate}
+                  onCheckedChange={(checked) => {
+                    const val = checked === true;
+                    form.setIsPrivate(val);
+                    if (val && !form.accessCode) form.setAccessCode(form.generateAccessCode());
+                  }}
+                />
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <Lock className="h-4 w-4 shrink-0 text-primary" />
+                  <Label htmlFor="isPrivate" className="cursor-pointer font-medium">
+                    Wydarzenie prywatne
+                  </Label>
+                  <FieldHelp description="Ukrywa wydarzenie z publicznych list. Dostep maja tylko osoby, ktore otrzymaja specjalny link z kodem dostepu." />
                 </div>
-                {form.locationMapsUrl && (
-                  <a
-                    href={form.locationMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+              </div>
+              {form.isPrivate && (
+                <div className="space-y-3 sm:pl-7">
+                  <p className="text-sm text-muted-foreground">
+                    Prywatne wydarzenie nie będzie widoczne publicznie. Uczestnicy mogą dołączyć
+                    tylko przez specjalny link.
+                  </p>
+                  <div className="space-y-2">
+                    <HelpLabel
+                      htmlFor="accessCode"
+                      description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejsc na strone wydarzenia mimo braku widocznosci publicznej."
+                    >
+                      Kod dostępu
+                    </HelpLabel>
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
+                        <Input
+                          id="accessCode"
+                          value={form.accessCode}
+                          onChange={(e) => form.setAccessCode(e.target.value)}
+                          placeholder="np. abc123xyz"
+                          className={`min-w-0 font-mono ${inputError(!!fe['accessCode'])}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => form.setAccessCode(form.generateAccessCode())}
+                          title="Wygeneruj nowy kod"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            const slug = form.name ? form.generateSlug(form.name) : 'wydarzenie';
+                            const url = `${window.location.origin}/events/${slug}?access=${form.accessCode}`;
+                            navigator.clipboard.writeText(url);
+                            form.toast({
+                              title: 'Skopiowano',
+                              description:
+                                'Link do prywatnego wydarzenia został skopiowany do schowka.',
+                            });
+                          }}
+                          title="Kopiuj link"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <FieldError message={fe['accessCode']} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {!form.isVirtual && (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <HelpLabel
+                      htmlFor="location"
+                      description="Dokladne miejsce startu lub centrum wydarzenia, np. stadion, park, hala albo adres punktu zbiorczego."
+                    >
+                      Lokalizacja (miejsce startu) *
+                    </HelpLabel>
+                    <Input
+                      id="location"
+                      value={form.location}
+                      onChange={(e) => form.setLocation(e.target.value)}
+                      placeholder="np. Stadion Narodowy"
+                      className={inputError(!!fe['location'])}
+                    />
+                    <FieldError message={fe['location']} />
+                  </div>
+                  <div className="space-y-2">
+                    <HelpLabel
+                      htmlFor="city"
+                      description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                    >
+                      Miasto *
+                    </HelpLabel>
+                    <Input
+                      id="city"
+                      value={form.city}
+                      onChange={(e) => form.setCity(e.target.value)}
+                      placeholder="np. Warszawa"
+                      className={inputError(!!fe['city'])}
+                    />
+                    <FieldError message={fe['city']} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <HelpLabel
+                    htmlFor="locationMapsUrl"
+                    description="Link do pinezki w Google Maps, który pojawi się przy lokalizacji i ułatwi uczestnikom nawigację do miejsca startu. Skopiuj go z maps.google.com → Udostępnij → Kopiuj link."
                   >
-                    <ExternalLink className="h-3 w-3" />
-                    Sprawdź link w nowej karcie
-                  </a>
-                )}
+                    Link do Google Maps (opcjonalnie)
+                  </HelpLabel>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="locationMapsUrl"
+                      value={form.locationMapsUrl}
+                      onChange={(e) => form.setLocationMapsUrl(e.target.value)}
+                      placeholder="https://maps.google.com/..."
+                      className="pl-9"
+                    />
+                  </div>
+                  {form.locationMapsUrl && (
+                    <a
+                      href={form.locationMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Sprawdź link w nowej karcie
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="space-y-2">
-            <HelpLabel
-              htmlFor="description"
-              description="Sformatowany opis widoczny na stronie wydarzenia. Warto opisac trase, charakter zawodow, atrakcje i najwazniejsze informacje dla uczestnika."
-            >
-              Opis wydarzenia
-            </HelpLabel>
-            <RichTextEditor
-              value={form.description}
-              onChange={form.setDescription}
-              placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
-              minHeight="140px"
-            />
-          </div>
-
-          <EventImageUploadField
-            label="Glowny obraz wydarzenia"
-            description="Obraz uzywany w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
-            recommendedSize="Zalecany format 16:9. Po wgraniu dopasujesz kadr przed zapisem."
-            value={form.imageUrl}
-            onChange={form.setImageUrl}
-            originalValue={form.originalImageUrl}
-            onOriginalChange={form.setOriginalImageUrl}
-            aspectRatio={16 / 9}
-            outputWidth={1200}
-            cropTitle="Dopasuj glowny obraz wydarzenia"
-            toast={form.toast}
-            showPreview={false}
-          />
-          <MainEventImagePlacementPreview form={form} />
-
-          {form.canManageFeatured && (
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="featured"
-                checked={form.featured}
-                onCheckedChange={(checked) => form.setFeatured(checked === true)}
+            <div className="space-y-2">
+              <HelpLabel
+                htmlFor="description"
+                description="Sformatowany opis widoczny na stronie wydarzenia. Warto opisac trase, charakter zawodow, atrakcje i najwazniejsze informacje dla uczestnika."
+              >
+                Opis wydarzenia
+              </HelpLabel>
+              <RichTextEditor
+                value={form.description}
+                onChange={form.setDescription}
+                placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
+                minHeight="140px"
               />
-              <Label htmlFor="featured" className="cursor-pointer leading-5">
-                Wyróżnij wydarzenie na stronie głównej
-              </Label>
-              <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
             </div>
-          )}
 
-        </CardContent>
-      </Card>}
+            <EventImageUploadField
+              label="Glowny obraz wydarzenia"
+              description="Obraz uzywany w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
+              recommendedSize="Zalecany format 16:9. Po wgraniu dopasujesz kadr przed zapisem."
+              value={form.imageUrl}
+              onChange={form.setImageUrl}
+              originalValue={form.originalImageUrl}
+              onOriginalChange={form.setOriginalImageUrl}
+              aspectRatio={16 / 9}
+              outputWidth={1200}
+              cropTitle="Dopasuj glowny obraz wydarzenia"
+              toast={form.toast}
+              showPreview={false}
+            />
+            <MainEventImagePlacementPreview form={form} />
+
+            {form.canManageFeatured && (
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="featured"
+                  checked={form.featured}
+                  onCheckedChange={(checked) => form.setFeatured(checked === true)}
+                />
+                <Label htmlFor="featured" className="cursor-pointer leading-5">
+                  Wyróżnij wydarzenie na stronie głównej
+                </Label>
+                <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── media: Zdjęcia i media ── */}
-      {activeSubStep === 'media' && <Card>
-        <CardHeader className="p-4 pb-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2">
-            <Image className="h-5 w-5 text-primary" /> Zdjęcia i media
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
-          <div className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <EventImageUploadField
-                label="Baner wydarzenia (zdjęcie w tle)"
-                description="Widoczny jako duże zdjęcie w tle na stronie wydarzenia. Najlepiej sprawdza się dynamiczne, marketingowe zdjęcie z atmosferą zawodów — np. tłum startujących, meta, krajobraz trasy z poprzedniej edycji. Przyciąga uwagę i buduje wizerunek imprezy. Główny obraz wydarzenia nie jest tu używany jako zastępstwo — jeśli nie dodasz baneru, tło pozostanie puste."
-                recommendedSize="Zalecany format 16:9, minimum 1200 px szerokości."
-                value={form.bannerUrl}
-                onChange={(url) => {
-                  form.setBannerUrl(url);
-                  form.setBannerCropArea(undefined);
-                }}
-                originalValue={form.originalBannerUrl}
-                onOriginalChange={form.setOriginalBannerUrl}
-                aspectRatio={16 / 9}
-                outputWidth={1600}
-                cropTitle="Dopasuj baner wydarzenia"
-                toast={form.toast}
-                previewClassName="max-w-64"
-              />
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <HelpLabel description="Wybierz uklad najblizszy realnym proporcjom logo. Ten wybor wplywa na kadrowanie, podglad i wyswietlanie na stronie wydarzenia.">
-                    Typ logo organizatora
-                  </HelpLabel>
-                  <RadioGroup
-                    value={form.organizerLogoShape}
-                    onValueChange={(value) =>
-                      form.setOrganizerLogoShape(value as OrganizerLogoShape)
-                    }
-                    className="grid gap-2 sm:grid-cols-3"
-                  >
-                    {logoShapeOptions.map((option) => {
-                      const Icon = option.icon;
-                      const id = `organizer-logo-shape-${option.value}`;
-
-                      return (
-                        <div
-                          key={option.value}
-                          className={`relative flex items-start gap-2 rounded-lg border p-3 transition-colors ${
-                            form.organizerLogoShape === option.value
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-muted-foreground/50'
-                          }`}
-                        >
-                          <RadioGroupItem value={option.value} id={id} className="mt-1" />
-                          <Label htmlFor={id} className="min-w-0 flex-1 cursor-pointer">
-                            <span className="flex items-center gap-1.5 text-sm font-medium">
-                              <Icon className="h-4 w-4 text-primary" />
-                              {option.label}
-                            </span>
-                            <span className="mt-1 block text-xs font-normal leading-4 text-muted-foreground">
-                              {option.description}
-                            </span>
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </RadioGroup>
-                </div>
-
+      {activeSubStep === 'media' && (
+        <Card>
+          <CardHeader className="p-4 pb-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2">
+              <Image className="h-5 w-5 text-primary" /> Zdjęcia i media
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+            <div className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
                 <EventImageUploadField
-                  label="Logo organizatora"
-                  description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow."
-                  recommendedSize="Wybierz typ logo powyzej, a po wgraniu dopasujesz kadr do wybranych proporcji."
-                  value={form.organizerLogoUrl}
-                  onChange={form.setOrganizerLogoUrl}
-                  originalValue={form.originalOrganizerLogoUrl}
-                  onOriginalChange={form.setOriginalOrganizerLogoUrl}
-                  aspectRatio={logoShapeConfig.aspectRatio}
-                  outputWidth={logoShapeConfig.outputWidth}
-                  cropTitle="Dopasuj logo organizatora"
+                  label="Baner wydarzenia (zdjęcie w tle)"
+                  description="Widoczny jako duże zdjęcie w tle na stronie wydarzenia. Najlepiej sprawdza się dynamiczne, marketingowe zdjęcie z atmosferą zawodów — np. tłum startujących, meta, krajobraz trasy z poprzedniej edycji. Przyciąga uwagę i buduje wizerunek imprezy. Główny obraz wydarzenia nie jest tu używany jako zastępstwo — jeśli nie dodasz baneru, tło pozostanie puste."
+                  recommendedSize="Zalecany format 16:9, minimum 1200 px szerokości."
+                  value={form.bannerUrl}
+                  onChange={(url) => {
+                    form.setBannerUrl(url);
+                    form.setBannerCropArea(undefined);
+                  }}
+                  originalValue={form.originalBannerUrl}
+                  onOriginalChange={form.setOriginalBannerUrl}
+                  aspectRatio={16 / 9}
+                  outputWidth={1600}
+                  cropTitle="Dopasuj baner wydarzenia"
                   toast={form.toast}
-                  previewClassName={logoShapeConfig.previewClassName}
-                  previewImageClassName="bg-background object-contain p-1"
+                  previewClassName="max-w-64"
                 />
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <HelpLabel description="Wybierz uklad najblizszy realnym proporcjom logo. Ten wybor wplywa na kadrowanie, podglad i wyswietlanie na stronie wydarzenia.">
+                      Typ logo organizatora
+                    </HelpLabel>
+                    <RadioGroup
+                      value={form.organizerLogoShape}
+                      onValueChange={(value) =>
+                        form.setOrganizerLogoShape(value as OrganizerLogoShape)
+                      }
+                      className="grid gap-2 sm:grid-cols-3"
+                    >
+                      {logoShapeOptions.map((option) => {
+                        const Icon = option.icon;
+                        const id = `organizer-logo-shape-${option.value}`;
+
+                        return (
+                          <div
+                            key={option.value}
+                            className={`relative flex items-start gap-2 rounded-lg border p-3 transition-colors ${
+                              form.organizerLogoShape === option.value
+                                ? 'border-primary bg-primary/5'
+                                : 'border-border hover:border-muted-foreground/50'
+                            }`}
+                          >
+                            <RadioGroupItem value={option.value} id={id} className="mt-1" />
+                            <Label htmlFor={id} className="min-w-0 flex-1 cursor-pointer">
+                              <span className="flex items-center gap-1.5 text-sm font-medium">
+                                <Icon className="h-4 w-4 text-primary" />
+                                {option.label}
+                              </span>
+                              <span className="mt-1 block text-xs font-normal leading-4 text-muted-foreground">
+                                {option.description}
+                              </span>
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </RadioGroup>
+                  </div>
+
+                  <EventImageUploadField
+                    label="Logo organizatora"
+                    description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow."
+                    recommendedSize="Wybierz typ logo powyzej, a po wgraniu dopasujesz kadr do wybranych proporcji."
+                    value={form.organizerLogoUrl}
+                    onChange={form.setOrganizerLogoUrl}
+                    originalValue={form.originalOrganizerLogoUrl}
+                    onOriginalChange={form.setOriginalOrganizerLogoUrl}
+                    aspectRatio={logoShapeConfig.aspectRatio}
+                    outputWidth={logoShapeConfig.outputWidth}
+                    cropTitle="Dopasuj logo organizatora"
+                    toast={form.toast}
+                    previewClassName={logoShapeConfig.previewClassName}
+                    previewImageClassName="bg-background object-contain p-1"
+                  />
+                </div>
+              </div>
+              <EventBackgroundPicker value={form.backgroundId} onChange={form.setBackgroundId} />
+
+              <div className="mt-6">
+                <EventImagesPlacementPreview form={form} />
               </div>
             </div>
-            <EventBackgroundPicker
-              value={form.backgroundId}
-              onChange={form.setBackgroundId}
-            />
-
-            <div className="mt-6">
-              <EventImagesPlacementPreview form={form} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── payment: Płatności ── */}
-      {activeSubStep === 'payment' && <Card>
-        <CardHeader className="p-4 pb-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-primary" /> Płatności
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
-          <div className="space-y-4">
-            {isEmbedRegistration ? (
-              <Alert className="border-muted bg-muted/50">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Platnosci poza Zmierzymy Czas</AlertTitle>
-                <AlertDescription>
-                  Przy embedzie organizator sam ustala sposob przyjmowania oplat i rozlicza
-                  uczestnikow poza tym systemem. Dlatego nie wymagamy danych bramki, konta bankowego
-                  ani tytulu przelewu.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  Wybierz sposób przyjmowania płatności od uczestników
-                </p>
-                <RadioGroup
-                  value={form.paymentConfigType}
-                  onValueChange={(value: PaymentConfigType) => form.setPaymentConfigType(value)}
-                  className="space-y-4"
-                >
-                  <div
-                    className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'admin_gateway' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+      {activeSubStep === 'payment' && (
+        <Card>
+          <CardHeader className="p-4 pb-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" /> Płatności
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+            <div className="space-y-4">
+              {isEmbedRegistration ? (
+                <Alert className="border-muted bg-muted/50">
+                  <Info className="h-4 w-4" />
+                  <AlertTitle>Platnosci poza Zmierzymy Czas</AlertTitle>
+                  <AlertDescription>
+                    Przy embedzie organizator sam ustala sposob przyjmowania oplat i rozlicza
+                    uczestnikow poza tym systemem. Dlatego nie wymagamy danych bramki, konta
+                    bankowego ani tytulu przelewu.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Wybierz sposób przyjmowania płatności od uczestników
+                  </p>
+                  <RadioGroup
+                    value={form.paymentConfigType}
+                    onValueChange={(value: PaymentConfigType) => form.setPaymentConfigType(value)}
+                    className="space-y-4"
                   >
-                    <RadioGroupItem value="admin_gateway" id="admin_gateway" className="mt-1" />
-                    <div className="min-w-0 flex-1">
-                      <Label
-                        htmlFor="admin_gateway"
-                        className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
-                      >
-                        <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza
-                        (automatyczna)
-                      </Label>
-                      <FieldHelp description="Platnosci sa obslugiwane przez bramke administratora serwisu. Organizator nie musi recznie potwierdzac przelewow." />
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Płatności są przetwarzane automatycznie przez bramkę płatniczą
-                        administratora serwisu.
-                      </p>
+                    <div
+                      className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'admin_gateway' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                    >
+                      <RadioGroupItem value="admin_gateway" id="admin_gateway" className="mt-1" />
+                      <div className="min-w-0 flex-1">
+                        <Label
+                          htmlFor="admin_gateway"
+                          className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                        >
+                          <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza
+                          (automatyczna)
+                        </Label>
+                        <FieldHelp description="Platnosci sa obslugiwane przez bramke administratora serwisu. Organizator nie musi recznie potwierdzac przelewow." />
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Płatności są przetwarzane automatycznie przez bramkę płatniczą
+                          administratora serwisu.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div
-                    className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'organizer_bank' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
-                  >
-                    <RadioGroupItem value="organizer_bank" id="organizer_bank" className="mt-1" />
-                    <div className="min-w-0 flex-1">
-                      <Label
-                        htmlFor="organizer_bank"
-                        className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
-                      >
-                        <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
-                      </Label>
-                      <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status platnosci trzeba pozniej potwierdzac recznie." />
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Uczestnicy wpłacają na Twoje konto bankowe. Musisz ręcznie potwierdzać
-                        otrzymane wpłaty.
-                      </p>
-                      {form.paymentConfigType === 'organizer_bank' && (
-                        <div className="mt-4 space-y-4 border-t border-dashed pt-4">
-                          <div className="space-y-2">
-                            <HelpLabel
-                              htmlFor="bankAccountNumber"
-                              description="Numer rachunku, na ktory uczestnicy beda wysylac oplaty startowe przy platnosci przelewem bankowym."
-                            >
-                              Numer konta bankowego *
-                            </HelpLabel>
-                            <Input
-                              id="bankAccountNumber"
-                              value={form.bankAccountNumber}
-                              onChange={(e) => form.setBankAccountNumber(e.target.value)}
-                              placeholder="PL 00 0000 0000 0000 0000 0000 0000"
-                              className={inputError(!!fe['bankAccountNumber'])}
-                            />
-                            <FieldError message={fe['bankAccountNumber']} />
-                            <p className="text-xs text-muted-foreground">
-                              Podaj pełny numer konta w formacie IBAN
-                            </p>
+                    <div
+                      className={`relative flex items-start gap-3 rounded-lg border p-4 transition-colors ${form.paymentConfigType === 'organizer_bank' ? 'border-primary bg-primary/5' : 'border-border hover:border-muted-foreground/50'}`}
+                    >
+                      <RadioGroupItem value="organizer_bank" id="organizer_bank" className="mt-1" />
+                      <div className="min-w-0 flex-1">
+                        <Label
+                          htmlFor="organizer_bank"
+                          className="flex cursor-pointer flex-wrap items-center gap-2 font-medium"
+                        >
+                          <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
+                        </Label>
+                        <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status platnosci trzeba pozniej potwierdzac recznie." />
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Uczestnicy wpłacają na Twoje konto bankowe. Musisz ręcznie potwierdzać
+                          otrzymane wpłaty.
+                        </p>
+                        {form.paymentConfigType === 'organizer_bank' && (
+                          <div className="mt-4 space-y-4 border-t border-dashed pt-4">
+                            <div className="space-y-2">
+                              <HelpLabel
+                                htmlFor="bankAccountNumber"
+                                description="Numer rachunku, na ktory uczestnicy beda wysylac oplaty startowe przy platnosci przelewem bankowym."
+                              >
+                                Numer konta bankowego *
+                              </HelpLabel>
+                              <Input
+                                id="bankAccountNumber"
+                                value={form.bankAccountNumber}
+                                onChange={(e) => form.setBankAccountNumber(e.target.value)}
+                                placeholder="PL 00 0000 0000 0000 0000 0000 0000"
+                                className={inputError(!!fe['bankAccountNumber'])}
+                              />
+                              <FieldError message={fe['bankAccountNumber']} />
+                              <p className="text-xs text-muted-foreground">
+                                Podaj pełny numer konta w formacie IBAN
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <HelpLabel
+                                htmlFor="bankAccountHolder"
+                                description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji platnosci."
+                              >
+                                Właściciel konta *
+                              </HelpLabel>
+                              <Input
+                                id="bankAccountHolder"
+                                value={form.bankAccountHolder}
+                                onChange={(e) => form.setBankAccountHolder(e.target.value)}
+                                placeholder="Nazwa firmy lub Imię Nazwisko"
+                                className={inputError(!!fe['bankAccountHolder'])}
+                              />
+                              <FieldError message={fe['bankAccountHolder']} />
+                            </div>
+                            <div className="space-y-2">
+                              <HelpLabel
+                                htmlFor="transferTitle"
+                                description="Szablon tytulu przelewu pokazywany uczestnikowi. Zmienne zostana podstawione danymi wydarzenia, dystansu i uczestnika."
+                              >
+                                Wzór tytułu przelewu
+                              </HelpLabel>
+                              <Input
+                                id="transferTitle"
+                                value={form.transferTitle}
+                                onChange={(e) => form.setTransferTitle(e.target.value)}
+                                placeholder="Opłata za {eventName} - {participantName}"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Dostępne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
+                                {'{distanceName}'}, {'{birthDate}'}
+                              </p>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <HelpLabel
-                              htmlFor="bankAccountHolder"
-                              description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji platnosci."
-                            >
-                              Właściciel konta *
-                            </HelpLabel>
-                            <Input
-                              id="bankAccountHolder"
-                              value={form.bankAccountHolder}
-                              onChange={(e) => form.setBankAccountHolder(e.target.value)}
-                              placeholder="Nazwa firmy lub Imię Nazwisko"
-                              className={inputError(!!fe['bankAccountHolder'])}
-                            />
-                            <FieldError message={fe['bankAccountHolder']} />
-                          </div>
-                          <div className="space-y-2">
-                            <HelpLabel
-                              htmlFor="transferTitle"
-                              description="Szablon tytulu przelewu pokazywany uczestnikowi. Zmienne zostana podstawione danymi wydarzenia, dystansu i uczestnika."
-                            >
-                              Wzór tytułu przelewu
-                            </HelpLabel>
-                            <Input
-                              id="transferTitle"
-                              value={form.transferTitle}
-                              onChange={(e) => form.setTransferTitle(e.target.value)}
-                              placeholder="Opłata za {eventName} - {participantName}"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                              Dostępne zmienne: {'{eventName}'}, {'{participantName}'},{' '}
-                              {'{distanceName}'}, {'{birthDate}'}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </RadioGroup>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>}
+                  </RadioGroup>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── content: Treści ── */}
-      {activeSubStep === 'content' && <Card>
-        <CardHeader className="p-4 pb-3 sm:p-6">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" /> Treści
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
-          <p className="text-sm text-muted-foreground">
-            Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
-          </p>
-          <div className="space-y-6">
+      {activeSubStep === 'content' && (
+        <Card>
+          <CardHeader className="p-4 pb-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> Treści
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+            <p className="text-sm text-muted-foreground">
+              Te pola pozwalają na formatowanie tekstu, dodawanie linków i list.
+            </p>
+            <div className="space-y-6">
               <DocumentsUploadSection form={form} />
               <div className="space-y-2">
                 <HelpLabel description="Tresci regulaminowe lub linki do dokumentow, ktore uczestnik powinien przeczytac przed zapisem.">
@@ -1978,7 +1975,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   value={form.rulesHtml}
                   onChange={form.setRulesHtml}
                   placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
-              minHeight="72px"
+                  minHeight="72px"
                 />
               </div>
               <div className="space-y-4">
@@ -2012,8 +2009,9 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 )}
               </div>
             </div>
-        </CardContent>
-      </Card>}
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── logistics: Logistyka zawodów ── */}
       {activeSubStep === 'logistics' && <LogisticsSection form={form} />}

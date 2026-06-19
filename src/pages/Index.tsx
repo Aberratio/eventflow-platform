@@ -19,7 +19,7 @@ import { pl } from 'date-fns/locale';
 
 import { getEvents, getFeaturedPartners } from '@/api';
 import { Layout } from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { SectionHeading } from '@/components/ui/section-heading';
@@ -366,7 +366,12 @@ const HeroEventCard = ({ event }: { event: Event }) => (
               Pozostało {spotsLeft(event)} miejsc
             </span>
           </div>
-          <div className="mt-5 flex h-11 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground transition group-hover:bg-primary/90">
+          <div
+            className={cn(
+              buttonVariants({ variant: 'primary' }),
+              'mt-5 h-11 rounded-md text-sm font-bold group-hover:brightness-110',
+            )}
+          >
             Zobacz wydarzenie
             <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
           </div>
@@ -427,13 +432,10 @@ const SearchPanel = ({
       <CalendarDays className="h-4 w-4" />
       Termin
     </Link>
-    <button
-      type="submit"
-      className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
-    >
+    <Button type="submit" variant="primary" className="h-11 rounded-md px-4 font-bold">
       <Search className="h-4 w-4" />
       Szukaj
-    </button>
+    </Button>
   </form>
 );
 

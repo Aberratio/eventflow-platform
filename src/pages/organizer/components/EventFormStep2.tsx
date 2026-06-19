@@ -2,6 +2,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
@@ -1107,27 +1108,28 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                                     <FieldError message={tierNameError} />
                                   </div>
                                   <div className="space-y-1">
-                                    <Input
-                                      type={dist.priceTierMode === 'date' ? 'date' : 'number'}
-                                      value={
-                                        dist.priceTierMode === 'date'
-                                          ? tier.endDate || ''
-                                          : tier.participantLimit || ''
-                                      }
-                                      onChange={(e) =>
-                                        form.updatePriceTier(
-                                          index,
-                                          tier.id,
-                                          dist.priceTierMode === 'date'
-                                            ? { endDate: e.target.value }
-                                            : { participantLimit: parseInt(e.target.value) || 0 },
-                                        )
-                                      }
-                                      placeholder={
-                                        dist.priceTierMode === 'date' ? undefined : 'np. 100'
-                                      }
-                                      className={`h-9 ${inputError(!!(tierDateError || tierLimitError))}`}
-                                    />
+                                    {dist.priceTierMode === 'date' ? (
+                                      <DateInput
+                                        value={tier.endDate || ''}
+                                        onValueChange={(endDate) =>
+                                          form.updatePriceTier(index, tier.id, { endDate })
+                                        }
+                                        className={`h-9 ${inputError(!!tierDateError)}`}
+                                        aria-invalid={!!tierDateError}
+                                      />
+                                    ) : (
+                                      <Input
+                                        type="number"
+                                        value={tier.participantLimit || ''}
+                                        onChange={(e) =>
+                                          form.updatePriceTier(index, tier.id, {
+                                            participantLimit: parseInt(e.target.value) || 0,
+                                          })
+                                        }
+                                        placeholder="np. 100"
+                                        className={`h-9 ${inputError(!!tierLimitError)}`}
+                                      />
+                                    )}
                                     <FieldError message={tierDateError || tierLimitError} />
                                   </div>
                                   <Input

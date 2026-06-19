@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-time-input';
 import {
   Select,
   SelectContent,
@@ -110,10 +111,9 @@ export const TierEditor = ({
         {mode === 'date' ? (
           <div className="space-y-2">
             <Label>Data końcowa</Label>
-            <Input
-              type="date"
+            <DateInput
               value={tier.endDate || ''}
-              onChange={(e) => onUpdate({ endDate: e.target.value })}
+              onValueChange={(endDate) => onUpdate({ endDate })}
             />
           </div>
         ) : (

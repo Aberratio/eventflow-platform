@@ -285,6 +285,7 @@ export const mockUsers: User[] = [
     website: 'https://timing.pl',
     description:
       'Profesjonalne zawody biegowe od 2010 roku. Organizujemy wydarzenia w całej Polsce.',
+    eventLimit: 10,
   },
   {
     id: 'o2',
@@ -296,6 +297,7 @@ export const mockUsers: User[] = [
     nip: '9876543210',
     website: 'https://sportevents.pl',
     description: 'Największy organizator imprez sportowych na Śląsku.',
+    eventLimit: 5,
   },
   {
     id: 'o3',
@@ -306,6 +308,7 @@ export const mockUsers: User[] = [
     companyName: 'RunPoland S.A.',
     website: 'https://runpoland.pl',
     description: 'Ogólnopolska sieć biegów ulicznych i górskich.',
+    eventLimit: 3,
   },
   // Admins
   {
@@ -342,6 +345,7 @@ export const mockUsers: User[] = [
     phone: '510000002',
     companyName: 'Test Organizer Sp. z o.o.',
     status: 'active',
+    eventLimit: 5,
   },
   {
     id: 'test-moderator',

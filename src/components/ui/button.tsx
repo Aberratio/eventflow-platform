@@ -4,13 +4,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
+const primaryButtonClasses =
+  'bg-[linear-gradient(135deg,hsl(var(--color-brand-navy-dark)),hsl(var(--color-brand-navy-light)))] text-white border border-white/[0.12] shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_20px_rgba(38,116,217,0.18)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_6px_28px_rgba(38,116,217,0.32)] hover:brightness-110 active:brightness-90 active:scale-[0.98]';
+
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--color-brand-navy-light))] focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default:
-          'bg-[linear-gradient(135deg,hsl(var(--color-brand-navy-dark)),hsl(var(--color-brand-navy-light)))] text-white border border-white/[0.12] shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_4px_20px_rgba(38,116,217,0.18)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_6px_28px_rgba(38,116,217,0.32)] hover:brightness-110 active:brightness-90 active:scale-[0.98]',
+        default: primaryButtonClasses,
+        primary: primaryButtonClasses,
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:scale-[0.98]',
         outline:

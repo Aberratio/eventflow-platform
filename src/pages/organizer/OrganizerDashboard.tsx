@@ -24,7 +24,6 @@ import { pl } from 'date-fns/locale';
 import { ListContainer, ListRow } from '@/components/lists';
 
 const EMPTY_EVENT_LIMIT: OrganizerEventLimit = {
-  total: 0,
   limit: 0,
   used: 0,
   available: 0,

@@ -89,12 +89,13 @@ const EventForm = () => {
               )}
 
               {form.step < 4 ? (
-                <Button onClick={form.nextStep} className="w-full sm:w-auto">
+                <Button variant="primary" onClick={form.nextStep} className="w-full sm:w-auto">
                   Zapisz i przejdź dalej <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleSaveClick}
+                  variant="primary"
                   disabled={
                     form.isSaving ||
                     (!form.isEditing && form.selectedEventLimit?.available === 0)
