@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -162,21 +163,19 @@ export const EditDiscountCodeDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Ważny od</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={editingCode.validFrom || ''}
-                onChange={(e) =>
-                  setEditingCode((prev) => (prev ? { ...prev, validFrom: e.target.value } : prev))
+                onValueChange={(validFrom) =>
+                  setEditingCode((prev) => (prev ? { ...prev, validFrom } : prev))
                 }
               />
             </div>
             <div className="space-y-2">
               <Label>Ważny do</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={editingCode.validTo || ''}
-                onChange={(e) =>
-                  setEditingCode((prev) => (prev ? { ...prev, validTo: e.target.value } : prev))
+                onValueChange={(validTo) =>
+                  setEditingCode((prev) => (prev ? { ...prev, validTo } : prev))
                 }
               />
             </div>

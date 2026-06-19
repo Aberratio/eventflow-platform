@@ -45,16 +45,17 @@ const SponsorLogoUpload = ({
   const [uploading, setUploading] = useState(false);
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Nieprawidłowy plik', description: 'Wybierz plik graficzny (PNG, SVG, JPG).', variant: 'destructive' });
-      return;
-    }
     setUploading(true);
     try {
       const response = await uploadEventImage(file);
       onUpload(response.data.url);
-    } catch {
-      toast({ title: 'Błąd uploadu', description: 'Nie udało się wgrać logo. Spróbuj ponownie.', variant: 'destructive' });
+    } catch (error) {
+      toast({
+        title: 'Błąd uploadu',
+        description:
+          error instanceof Error ? error.message : 'Nie udało się wgrać logo. Spróbuj ponownie.',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
@@ -84,7 +85,7 @@ const SponsorLogoUpload = ({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -122,16 +123,17 @@ const CoOrganizerLogoUpload = ({
   const [uploading, setUploading] = useState(false);
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Nieprawidłowy plik', description: 'Wybierz plik graficzny (PNG, SVG, JPG).', variant: 'destructive' });
-      return;
-    }
     setUploading(true);
     try {
       const response = await uploadEventImage(file);
       onUpload(response.data.url);
-    } catch {
-      toast({ title: 'Błąd uploadu', description: 'Nie udało się wgrać logo. Spróbuj ponownie.', variant: 'destructive' });
+    } catch (error) {
+      toast({
+        title: 'Błąd uploadu',
+        description:
+          error instanceof Error ? error.message : 'Nie udało się wgrać logo. Spróbuj ponownie.',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
@@ -161,7 +163,7 @@ const CoOrganizerLogoUpload = ({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];

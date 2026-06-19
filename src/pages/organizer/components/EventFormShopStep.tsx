@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -69,13 +70,17 @@ const FieldError = ({ message }: { message?: string }) =>
 
 const ImageUploadButton = ({ onUploaded }: { onUploaded: (url: string) => void }) => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    setError('');
     try {
       const res = await uploadEventImage(file);
       if (res.data?.url) onUploaded(res.data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wgrać zdjęcia.');
     } finally {
       setUploading(false);
     }
@@ -86,7 +91,7 @@ const ImageUploadButton = ({ onUploaded }: { onUploaded: (url: string) => void }
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -109,6 +114,7 @@ const ImageUploadButton = ({ onUploaded }: { onUploaded: (url: string) => void }
         )}
         Wgraj zdjęcie
       </Button>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </>
   );
 };
@@ -119,10 +125,12 @@ const DocumentUploadButton = ({
   onUploaded: (doc: Omit<GadgetDocument, 'id'>) => void;
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    setError('');
     try {
       const res = await uploadEventDocument(file);
       if (res.data?.url) {
@@ -133,6 +141,8 @@ const DocumentUploadButton = ({
           mimeType: res.data.mimeType || file.type,
         });
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wgrać pliku.');
     } finally {
       setUploading(false);
     }
@@ -143,7 +153,7 @@ const DocumentUploadButton = ({
       <input
         ref={fileRef}
         type="file"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -166,6 +176,7 @@ const DocumentUploadButton = ({
         )}
         Wgraj plik
       </Button>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </>
   );
 };
@@ -223,14 +234,18 @@ const GadgetCard = ({
 
   const togglePresetColor = (color: MerchandiseColor) => {
     const exists = gadget.colors.some((c) => c.id === color.id);
-    const next = exists ? gadget.colors.filter((c) => c.id !== color.id) : [...gadget.colors, color];
+    const next = exists
+      ? gadget.colors.filter((c) => c.id !== color.id)
+      : [...gadget.colors, color];
     onUpdate({ colors: next });
   };
 
   const addCustomColor = () => {
     const name = customColorName.trim();
     if (!name) return;
-    onUpdate({ colors: [...gadget.colors, { id: `custom-${Date.now()}`, name, hex: customColorHex }] });
+    onUpdate({
+      colors: [...gadget.colors, { id: `custom-${Date.now()}`, name, hex: customColorHex }],
+    });
     setCustomColorName('');
     setCustomColorHex('#000000');
   };
@@ -247,7 +262,11 @@ const GadgetCard = ({
 
   const setMainImage = (imgId: string) => {
     const img = gadget.images.find((i) => i.id === imgId);
-    if (img) onUpdate({ imageUrl: img.url, images: [img, ...gadget.images.filter((i) => i.id !== imgId)] });
+    if (img)
+      onUpdate({
+        imageUrl: img.url,
+        images: [img, ...gadget.images.filter((i) => i.id !== imgId)],
+      });
   };
 
   const addExtraImage = (url: string) => {
@@ -264,7 +283,7 @@ const GadgetCard = ({
     const removed = gadget.images.find((i) => i.id === imgId);
     onUpdate({
       images: newImages,
-      imageUrl: gadget.imageUrl === removed?.url ? (newImages[0]?.url || '') : gadget.imageUrl,
+      imageUrl: gadget.imageUrl === removed?.url ? newImages[0]?.url || '' : gadget.imageUrl,
     });
   };
 
@@ -368,7 +387,9 @@ const GadgetCard = ({
                     placeholder="Nazwa pliku"
                     className="h-7 text-xs"
                   />
-                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{doc.fileName}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    {doc.fileName}
+                  </p>
                 </div>
                 <Button
                   type="button"
@@ -440,7 +461,10 @@ const GadgetCard = ({
                     key={mode.value}
                     type="button"
                     onClick={() =>
-                      onUpdate({ quantityMode: mode.value, quantityMax: mode.value !== 'max' ? '' : gadget.quantityMax })
+                      onUpdate({
+                        quantityMode: mode.value,
+                        quantityMax: mode.value !== 'max' ? '' : gadget.quantityMax,
+                      })
                     }
                     className={`rounded-lg border p-3 text-left transition-colors ${
                       active
@@ -494,37 +518,39 @@ const GadgetCard = ({
 
           {/* Sale dates */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-1.5">
-              Okres sprzedaży
-            </Label>
+            <Label className="flex items-center gap-1.5">Okres sprzedaży</Label>
             <p className="text-xs text-muted-foreground">
               Zostaw puste, żeby gadżet był dostępny przez cały czas trwania zapisów.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor={`gadget-sale-from-${gadget.id}`} className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor={`gadget-sale-from-${gadget.id}`}
+                  className="text-xs text-muted-foreground"
+                >
                   Dostępny od
                 </Label>
-                <Input
+                <DateInput
                   id={`gadget-sale-from-${gadget.id}`}
-                  type="date"
                   value={gadget.saleFrom}
                   min={minDate || undefined}
                   max={gadget.saleTo || maxDate || undefined}
-                  onChange={(e) => onUpdate({ saleFrom: e.target.value })}
+                  onValueChange={(saleFrom) => onUpdate({ saleFrom })}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor={`gadget-sale-to-${gadget.id}`} className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor={`gadget-sale-to-${gadget.id}`}
+                  className="text-xs text-muted-foreground"
+                >
                   Dostępny do
                 </Label>
-                <Input
+                <DateInput
                   id={`gadget-sale-to-${gadget.id}`}
-                  type="date"
                   value={gadget.saleTo}
                   min={gadget.saleFrom || minDate || undefined}
                   max={maxDate || undefined}
-                  onChange={(e) => onUpdate({ saleTo: e.target.value })}
+                  onValueChange={(saleTo) => onUpdate({ saleTo })}
                 />
               </div>
             </div>
@@ -685,7 +711,9 @@ const GadgetCard = ({
                     <div
                       key={img.id}
                       className={`flex gap-3 rounded-lg border p-3 ${
-                        isMain ? 'border-primary/40 bg-primary/[0.06]' : 'border-white/10 bg-white/[0.02]'
+                        isMain
+                          ? 'border-primary/40 bg-primary/[0.06]'
+                          : 'border-white/10 bg-white/[0.02]'
                       }`}
                     >
                       {/* Thumbnail */}
@@ -733,7 +761,9 @@ const GadgetCard = ({
                         </div>
                         {gadget.colors.length > 0 && (
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Kolor na zdjęciu</Label>
+                            <Label className="text-xs text-muted-foreground">
+                              Kolor na zdjęciu
+                            </Label>
                             <div className="flex flex-wrap gap-1.5">
                               <button
                                 type="button"

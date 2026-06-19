@@ -58,6 +58,12 @@ const EventForm = () => {
           {form.isEditing ? 'Edytuj wydarzenie' : 'Nowe wydarzenie'}
         </h1>
 
+        {form.eventLoadError && (
+          <div className="mb-5 rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {form.eventLoadError}
+          </div>
+        )}
+
         <div className="flex gap-8 lg:gap-9">
           {/* Left sticky sidebar */}
           <div className="hidden lg:block">
@@ -97,8 +103,7 @@ const EventForm = () => {
                   onClick={handleSaveClick}
                   variant="primary"
                   disabled={
-                    form.isSaving ||
-                    (!form.isEditing && form.selectedEventLimit?.available === 0)
+                    form.isSaving || (!form.isEditing && form.selectedEventLimit?.available === 0)
                   }
                   className="w-full sm:w-auto"
                 >

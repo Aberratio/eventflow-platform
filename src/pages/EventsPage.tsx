@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Activity,
   ArrowDownUp,
@@ -49,6 +50,15 @@ type EventMonthGroup = {
   title: string;
   events: Event[];
 };
+
+// Flat item list fed to the virtualizer: either a sticky month header or an event row.
+type VirtualItem =
+  | { type: 'header'; monthKey: string; title: string; count: number; accentClass: string }
+  | { type: 'event'; event: Event };
+
+const HEADER_HEIGHT = 40;
+const FULL_ROW_HEIGHT = 76;
+const COMPACT_ROW_HEIGHT = 44;
 
 const disciplineSelectLabels: Record<'all' | SportDiscipline, string> = {
   all: 'Wszystkie',
@@ -216,11 +226,70 @@ const groupEventsByMonth = (events: Event[]): EventMonthGroup[] => {
   return Array.from(groups.values()).sort((a, b) => a.key.localeCompare(b.key));
 };
 
-const EventRow = ({ event }: { event: Event }) => {
+// Build a flat list of virtual items (headers + event rows) from month groups.
+const buildVirtualItems = (groups: EventMonthGroup[]): VirtualItem[] => {
+  const items: VirtualItem[] = [];
+  for (const group of groups) {
+    items.push({
+      type: 'header',
+      monthKey: group.key,
+      title: group.title,
+      count: group.events.length,
+      accentClass: getMonthAccentClass(group.events),
+    });
+    for (const event of group.events) {
+      items.push({ type: 'event', event });
+    }
+  }
+  return items;
+};
+
+const EventRow = ({ event, compact }: { event: Event; compact: boolean }) => {
   const status = getEventStatusKey(event);
   const StatusIcon = statusMeta[status].icon;
   const totalParticipants = getTotalParticipants(event);
   const eventDate = new Date(event.date);
+
+  if (compact) {
+    return (
+      <Link
+        to={`/events/${event.slug}`}
+        className="group flex h-[44px] items-center overflow-hidden border-b border-white/[0.07] bg-white/[0.025] transition-colors last:border-b-0 hover:bg-white/[0.055]"
+      >
+        <div className="flex w-[78px] shrink-0 flex-col items-center justify-center border-r border-white/[0.07] px-2 text-center">
+          <span className="text-sm font-bold leading-none text-foreground">
+            {format(eventDate, 'd MMM', { locale: pl })}
+          </span>
+        </div>
+        <div className="min-w-0 flex-1 px-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-foreground">{event.name}</h3>
+            {status === 'live' && (
+              <span className="shrink-0 rounded bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-blue-300">
+                Trwa
+              </span>
+            )}
+          </div>
+          <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{event.isVirtual ? 'Wirtualnie' : event.location}</span>
+          </div>
+        </div>
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-1.5 px-4 text-xs font-semibold',
+            statusMeta[status].tone,
+          )}
+        >
+          <StatusIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>{statusMeta[status].label}</span>
+        </div>
+        <div className="flex w-[48px] shrink-0 items-center justify-center border-l border-white/[0.07]">
+          <ChevronRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -297,21 +366,80 @@ const EventRow = ({ event }: { event: Event }) => {
   );
 };
 
-const EventSection = ({ title, events }: { title: string; events: Event[] }) => {
-  if (events.length === 0) return null;
+const MonthHeader = ({
+  title,
+  count,
+  accentClass,
+}: {
+  title: string;
+  count: number;
+  accentClass: string;
+}) => (
+  <div
+    className="sticky top-0 z-10 flex h-[40px] items-center gap-3 border-b border-white/[0.07] bg-[hsl(var(--background)/0.92)] px-1 backdrop-blur-sm"
+  >
+    <span className={cn('h-4 w-0.5 rounded-full', accentClass)} />
+    <span className="text-sm font-bold uppercase text-muted-foreground">{title}</span>
+    <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs text-muted-foreground">
+      {count}
+    </span>
+  </div>
+);
+
+// Desktop virtualised list — one scroll container, sticky month headers.
+const DesktopVirtualList = ({
+  groups,
+  compact,
+}: {
+  groups: EventMonthGroup[];
+  compact: boolean;
+}) => {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const rowHeight = compact ? COMPACT_ROW_HEIGHT : FULL_ROW_HEIGHT;
+
+  const items = useMemo(() => buildVirtualItems(groups), [groups]);
+
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => (items[index].type === 'header' ? HEADER_HEIGHT : rowHeight),
+    overscan: 8,
+  });
 
   return (
-    <section className="space-y-2">
-      <div className="flex items-center gap-3">
-        <span className={cn('h-4 w-0.5 rounded-full', getMonthAccentClass(events))} />
-        <h2 className="text-sm font-bold uppercase text-muted-foreground">{title}</h2>
+    <div
+      ref={parentRef}
+      className="scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overflow-y-auto overflow-x-hidden rounded-lg border border-white/[0.09] bg-[hsl(var(--surface-elevated)/0.55)] shadow-xl shadow-black/20"
+      style={{ height: 'calc(100vh - 280px)', minHeight: 400 }}
+    >
+      <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+        {virtualizer.getVirtualItems().map((vItem) => {
+          const item = items[vItem.index];
+          return (
+            <div
+              key={vItem.key}
+              style={{
+                position: 'absolute',
+                top: vItem.start,
+                left: 0,
+                right: 0,
+                height: vItem.size,
+              }}
+            >
+              {item.type === 'header' ? (
+                <MonthHeader
+                  title={item.title}
+                  count={item.count}
+                  accentClass={item.accentClass}
+                />
+              ) : (
+                <EventRow event={item.event} compact={compact} />
+              )}
+            </div>
+          );
+        })}
       </div>
-      <div className="overflow-hidden rounded-lg border border-white/[0.09] bg-[hsl(var(--surface-elevated)/0.55)] shadow-xl shadow-black/20">
-        {events.map((event) => (
-          <EventRow key={event.id} event={event} />
-        ))}
-      </div>
-    </section>
+    </div>
   );
 };
 
@@ -373,22 +501,19 @@ const MobileEventRow = ({ event }: { event: Event }) => {
   );
 };
 
-const MobileEventGroup = ({ title, events }: { title: string; events: Event[] }) => {
-  if (events.length === 0) return null;
-
-  return (
-    <section className="space-y-3">
-      <h2 className="px-3 text-base font-bold uppercase text-muted-foreground sm:px-4 sm:text-xl">
-        {title}
-      </h2>
-      <div className="overflow-hidden rounded-xl border border-white/[0.10] bg-[hsl(var(--surface-elevated)/0.52)] shadow-xl shadow-black/20">
-        {events.map((event) => (
-          <MobileEventRow key={event.id} event={event} />
-        ))}
-      </div>
-    </section>
-  );
-};
+// Mobile renders plain map — no virtualiser needed, native scroll is fine on mobile.
+const MobileMonthGroup = ({ group }: { group: EventMonthGroup }) => (
+  <section className="space-y-3">
+    <h2 className="px-3 text-base font-bold uppercase text-muted-foreground sm:px-4 sm:text-xl">
+      {group.title}
+    </h2>
+    <div className="overflow-hidden rounded-xl border border-white/[0.10] bg-[hsl(var(--surface-elevated)/0.52)] shadow-xl shadow-black/20">
+      {group.events.map((event) => (
+        <MobileEventRow key={event.id} event={event} />
+      ))}
+    </div>
+  </section>
+);
 
 const MobileStatCard = ({
   label,
@@ -444,6 +569,8 @@ const EventsPage = () => {
     activeFiltersCount,
     hasActiveFilters,
   } = useEventFilters();
+
+  const [compact, setCompact] = useState(false);
 
   const visibleEvents = useMemo(
     () =>
@@ -535,7 +662,6 @@ const EventsPage = () => {
   }, [filters, visibleEvents]);
 
   const eventMonthGroups = useMemo(() => groupEventsByMonth(filteredEvents), [filteredEvents]);
-  const mobilePastEvents: Event[] = [];
 
   const selectedDiscipline = filters.disciplines.length === 1 ? filters.disciplines[0] : 'all';
 
@@ -555,6 +681,7 @@ const EventsPage = () => {
           />
 
           <main className="min-w-0 flex-1 overflow-hidden">
+            {/* ── Mobile ── */}
             <div className="lg:hidden">
               <div className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-8">
                 <div className="mb-8 flex items-center gap-6">
@@ -597,7 +724,7 @@ const EventsPage = () => {
                   />
                 </div>
 
-<div className="mb-9 grid gap-3 sm:grid-cols-3">
+                <div className="mb-9 grid gap-3 sm:grid-cols-3">
                   <Select
                     value={String(filters.selectedYear)}
                     onValueChange={(value) => updateFilter('selectedYear', Number(value))}
@@ -679,24 +806,14 @@ const EventsPage = () => {
                 ) : (
                   <div className="space-y-6">
                     {eventMonthGroups.map((group) => (
-                      <MobileEventGroup key={group.key} title={group.title} events={group.events} />
+                      <MobileMonthGroup key={group.key} group={group} />
                     ))}
-                    <MobileEventGroup
-                      title="Zakończone — wyniki dostępne"
-                      events={mobilePastEvents}
-                    />
-                    <Button
-                      variant="outline"
-                      className="h-14 w-full rounded-xl border-white/10 bg-white/[0.025] text-base font-medium sm:h-16 sm:text-xl"
-                    >
-                      Pokaż więcej wydarzeń
-                      <ChevronDown className="ml-3 h-6 w-6" />
-                    </Button>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* ── Desktop ── */}
             <div className="hidden px-8 py-7 lg:block">
               <div className="mx-auto max-w-[1540px] space-y-5">
                 <div className="flex items-start justify-between gap-4">
@@ -713,7 +830,7 @@ const EventsPage = () => {
                   </div>
                 </div>
 
-<div className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[hsl(var(--surface-elevated)/0.50)] p-4 shadow-xl shadow-black/10 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[hsl(var(--surface-elevated)/0.50)] p-4 shadow-xl shadow-black/10 xl:flex-row xl:items-center xl:justify-between">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Select
                       value={String(filters.selectedYear)}
@@ -778,7 +895,14 @@ const EventsPage = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <Button variant="outline" className="h-10 border-white/10 bg-background/50">
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'h-10 border-white/10 bg-background/50',
+                        compact && 'border-primary/50 text-foreground',
+                      )}
+                      onClick={() => setCompact((v) => !v)}
+                    >
                       <ListFilter className="mr-2 h-4 w-4" />
                       Widok kompaktowy
                     </Button>
@@ -807,37 +931,7 @@ const EventsPage = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {eventMonthGroups.map((group) => (
-                      <EventSection key={group.key} title={group.title} events={group.events} />
-                    ))}
-                  </div>
-                )}
-
-                {filteredEvents.length > 0 && (
-                  <div className="flex items-center justify-between gap-4 py-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="icon" className="h-8 w-8 border-white/10">
-                        <ChevronRight className="h-4 w-4 rotate-180" />
-                      </Button>
-                      <Button size="sm" className="h-8 w-9">
-                        1
-                      </Button>
-                      <span className="px-2">2</span>
-                      <span className="px-2">3</span>
-                      <span className="px-2">...</span>
-                      <span className="px-2">17</span>
-                      <Button variant="outline" size="icon" className="h-8 w-8 border-white/10">
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span>Pokaż na stronie</span>
-                      <Button variant="outline" className="h-9 border-white/10">
-                        30
-                      </Button>
-                    </div>
-                  </div>
+                  <DesktopVirtualList groups={eventMonthGroups} compact={compact} />
                 )}
               </div>
             </div>

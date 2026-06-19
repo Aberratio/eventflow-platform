@@ -138,6 +138,25 @@ describe('httpAdapter contract mapping', () => {
     ).rejects.toThrow('Kod rabatowy');
   });
 
+  it('maps invalid organizer errors to a Polish actionable message', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: {
+            code: 'invalid_organizer',
+            message: 'Active organizer is required',
+          },
+        },
+        422,
+      ),
+    );
+
+    await expect(httpAdapter.createEvent({ name: 'Bieg' })).rejects.toThrow(
+      'Wybierz aktywne konto organizatora',
+    );
+  });
+
   it('clears the stored token and emits an auth event on protected 401 responses', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'expired-token');
     const onExpired = vi.fn();
@@ -152,7 +171,7 @@ describe('httpAdapter contract mapping', () => {
       ),
     );
 
-    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Invalid or expired token');
+    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Twoja sesja wygasła');
 
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
     expect(onExpired).toHaveBeenCalledTimes(1);
@@ -178,7 +197,7 @@ describe('httpAdapter contract mapping', () => {
       ),
     );
 
-    await expect(request).rejects.toThrow('Invalid or expired token');
+    await expect(request).rejects.toThrow('Twoja sesja wygasła');
 
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('fresh-token');
     expect(onExpired).not.toHaveBeenCalled();
@@ -199,10 +218,38 @@ describe('httpAdapter contract mapping', () => {
       ),
     );
 
-    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Invalid or expired token');
+    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Twoja sesja wygasła');
 
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('mock-user:test-organizer');
     expect(onExpired).not.toHaveBeenCalled();
     window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+  });
+
+  it('rejects unsupported image files before upload', async () => {
+    const file = new File(['<svg />'], 'logo.svg', { type: 'image/svg+xml' });
+
+    await expect(httpAdapter.uploadEventImage(file)).rejects.toThrow(
+      'Nieobsługiwany format obrazu',
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('maps backend upload errors to Polish messages', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'jwt-token');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'image_dimensions_too_large', message: 'Image dimensions are too large' },
+        },
+        422,
+      ),
+    );
+
+    const file = new File(['jpg'], 'photo.jpg', { type: 'image/jpeg' });
+
+    await expect(httpAdapter.uploadEventImage(file)).rejects.toThrow(
+      'Obraz ma zbyt dużą rozdzielczość',
+    );
   });
 });

@@ -152,6 +152,10 @@ const resizeToBlob = (file: File, maxWidth: number): Promise<Blob> =>
     img.src = url;
   });
 
+const isSupportedImageFile = (file: File) =>
+  ['image/jpeg', 'image/png', 'image/webp'].includes(file.type.toLowerCase()) ||
+  (file.type === '' && /\.(jpe?g|png|webp)$/i.test(file.name));
+
 const EventImageUploadField = ({
   label,
   description,
@@ -183,10 +187,10 @@ const EventImageUploadField = ({
 
   const handleFileChange = (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
+    if (!isSupportedImageFile(file)) {
       toast({
         title: 'Nieprawidlowy plik',
-        description: 'Wybierz plik obrazu.',
+        description: 'Wybierz obraz w formacie JPG, PNG albo WebP.',
         variant: 'destructive',
       });
       return;
@@ -1287,21 +1291,16 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
                           Data rozpoczęcia (opcjonalnie)
                         </HelpLabel>
-                        <Input
-                          type="date"
+                        <DateInput
                           value={form.embedStartDate}
-                          onChange={(e) => form.setEmbedStartDate(e.target.value)}
+                          onValueChange={form.setEmbedStartDate}
                         />
                       </div>
                       <div className="space-y-2">
                         <HelpLabel description="Opcjonalny koniec dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
                           Data zakończenia (opcjonalnie)
                         </HelpLabel>
-                        <Input
-                          type="date"
-                          value={form.embedEndDate}
-                          onChange={(e) => form.setEmbedEndDate(e.target.value)}
-                        />
+                        <DateInput value={form.embedEndDate} onValueChange={form.setEmbedEndDate} />
                       </div>
                     </div>
                   </div>
@@ -1343,19 +1342,23 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       ))}
                     </SelectContent>
                   </Select>
+                  {form.organizersLoadError && <FieldError message={form.organizersLoadError} />}
                 </div>
               )}
               <div className="md:col-span-2">
                 <p
                   className={
-                    form.selectedEventLimit && form.selectedEventLimit.available <= 0
+                    form.eventLimitError ||
+                    (form.selectedEventLimit && form.selectedEventLimit.available <= 0)
                       ? 'text-sm text-destructive'
                       : 'text-sm text-muted-foreground'
                   }
                 >
-                  {form.selectedEventLimit
-                    ? `Limit wydarzeń: wykorzystano ${form.selectedEventLimit.used} z ${form.selectedEventLimit.limit}. Dostępne: ${form.selectedEventLimit.available}.`
-                    : 'Ładowanie limitu wydarzeń...'}
+                  {form.eventLimitError
+                    ? form.eventLimitError
+                    : form.selectedEventLimit
+                      ? `Limit wydarzeń: wykorzystano ${form.selectedEventLimit.used} z ${form.selectedEventLimit.limit}. Dostępne: ${form.selectedEventLimit.available}.`
+                      : 'Ładowanie limitu wydarzeń...'}
                 </p>
               </div>
               <div className="space-y-2">
@@ -1384,12 +1387,12 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               >
                 Data wydarzenia *
               </HelpLabel>
-              <Input
+              <DateInput
                 id="date"
-                type="date"
                 value={form.date}
-                onChange={(e) => form.setDate(e.target.value)}
+                onValueChange={form.setDate}
                 className={inputError(!!fe['date'])}
+                aria-invalid={!!fe['date']}
               />
               <FieldError message={fe['date']} />
             </div>
@@ -1404,11 +1407,10 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="reg-open-date" className="text-sm text-muted-foreground">
                     Otwarcie zapisów (opcjonalne)
                   </Label>
-                  <Input
+                  <DateInput
                     id="reg-open-date"
-                    type="date"
                     value={form.registrationOpenDate}
-                    onChange={(e) => form.setRegistrationOpenDate(e.target.value)}
+                    onValueChange={form.setRegistrationOpenDate}
                   />
                 </div>
 
@@ -1416,17 +1418,17 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="deadline" className="text-sm text-muted-foreground">
                     Zamknięcie zapisów *
                   </Label>
-                  <Input
+                  <DateInput
                     id="deadline"
-                    type="date"
                     value={form.registrationUntilEventStart ? form.date : form.registrationDeadline}
-                    onChange={(e) => form.setRegistrationDeadline(e.target.value)}
+                    onValueChange={form.setRegistrationDeadline}
                     disabled={form.registrationUntilEventStart}
                     className={
                       form.registrationUntilEventStart
                         ? 'opacity-40'
                         : inputError(!!fe['registrationDeadline'])
                     }
+                    aria-invalid={!!fe['registrationDeadline']}
                   />
                   <FieldError message={fe['registrationDeadline']} />
                 </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,10 @@ const ParticipantProfileTab = () => {
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(publicProfileUrl);
-    toast({ title: 'Skopiowano link', description: 'Link do profilu został skopiowany do schowka.' });
+    toast({
+      title: 'Skopiowano link',
+      description: 'Link do profilu został skopiowany do schowka.',
+    });
   };
 
   const addSosContact = () => {
@@ -90,12 +94,10 @@ const ParticipantProfileTab = () => {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="birthDate">Data urodzenia</Label>
-                <Input
+                <DateInput
                   id="birthDate"
-                  type="date"
                   value={participantData.birthDate}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                  onValueChange={(val) => {
                     const year = val ? new Date(val).getFullYear().toString() : '';
                     setParticipantData({ ...participantData, birthDate: val, birthYear: year });
                   }}
@@ -173,7 +175,7 @@ const ParticipantProfileTab = () => {
               </p>
             )}
             {sosContacts.map((contact, index) => (
-              <div key={index} className="rounded-lg border p-3 space-y-3">
+              <div key={index} className="space-y-3 rounded-lg border p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-muted-foreground">
                     Kontakt {index + 1}

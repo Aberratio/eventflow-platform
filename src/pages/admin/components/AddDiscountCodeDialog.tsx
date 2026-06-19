@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -231,18 +232,16 @@ export const AddDiscountCodeDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Ważny od (opcjonalnie)</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={newCode.validFrom || ''}
-                onChange={(e) => setNewCode((prev) => ({ ...prev, validFrom: e.target.value }))}
+                onValueChange={(validFrom) => setNewCode((prev) => ({ ...prev, validFrom }))}
               />
             </div>
             <div className="space-y-2">
               <Label>Ważny do (opcjonalnie)</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={newCode.validTo || ''}
-                onChange={(e) => setNewCode((prev) => ({ ...prev, validTo: e.target.value }))}
+                onValueChange={(validTo) => setNewCode((prev) => ({ ...prev, validTo }))}
               />
             </div>
           </div>

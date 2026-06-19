@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -263,17 +264,15 @@ export const AdminOrdersTab = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              type="date"
+            <DateInput
               value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onValueChange={setDateFrom}
               className="w-full sm:w-[150px]"
               placeholder="Od"
             />
-            <Input
-              type="date"
+            <DateInput
               value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
+              onValueChange={setDateTo}
               className="w-full sm:w-[150px]"
               placeholder="Do"
             />

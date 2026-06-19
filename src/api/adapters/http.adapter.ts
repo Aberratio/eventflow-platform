@@ -17,8 +17,10 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   forbidden: 'Nie masz uprawnień do wykonania tej operacji.',
   event_limit_exceeded:
     'Limit wydarzeń został wyczerpany. Skontaktuj się z administratorem, aby zwiększyć limit.',
-  event_limit_below_usage:
-    'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
+  event_limit_below_usage: 'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
+  invalid_organizer: 'Wybierz aktywne konto organizatora wydarzenia.',
+  published_organizer_locked:
+    'Nie mozna przeniesc opublikowanego wydarzenia do innego organizatora.',
   event_delete_forbidden:
     'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
   event_archive_before_start: 'Archiwizować można tylko wydarzenia, które już się zakończyły.',
@@ -33,8 +35,7 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   file_too_large: 'Plik jest za duży. Maksymalny rozmiar to 5 MB.',
   unsupported_file_type: 'Nieobsługiwany format pliku. Dozwolone są JPG, PNG i WebP.',
   invalid_image_dimensions: 'Nie udało się odczytać wymiarów obrazu. Wybierz inny plik.',
-  image_dimensions_too_large:
-    'Obraz ma zbyt dużą rozdzielczość. Zmniejsz go i spróbuj ponownie.',
+  image_dimensions_too_large: 'Obraz ma zbyt dużą rozdzielczość. Zmniejsz go i spróbuj ponownie.',
   upload_dir_unavailable: 'Nie można teraz zapisać pliku na serwerze.',
   upload_failed: 'Nie udało się wgrać pliku. Spróbuj ponownie.',
 };
@@ -55,16 +56,17 @@ function isAllowedImageFile(file: File): boolean {
   return ALLOWED_IMAGE_TYPES.has(type) || (type === '' && /\.(jpe?g|png|webp)$/i.test(file.name));
 }
 
-function validateImageFile(file: File): void {
+function getImageFileValidationError(file: File): string | null {
   if (!isAllowedImageFile(file)) {
-    throw new Error('Nieobsługiwany format obrazu. Wgraj plik JPG, PNG albo WebP.');
+    return 'Nieobsługiwany format obrazu. Wgraj plik JPG, PNG albo WebP.';
   }
   if (file.size <= 0) {
-    throw new Error('Wybrany plik jest pusty. Wybierz inny obraz.');
+    return 'Wybrany plik jest pusty. Wybierz inny obraz.';
   }
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error('Obraz jest za duży. Maksymalny rozmiar pliku to 5 MB.');
+    return 'Obraz jest za duży. Maksymalny rozmiar pliku to 5 MB.';
   }
+  return null;
 }
 
 function query(params?: Record<string, QueryValue>): string {
@@ -101,23 +103,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       }
     }
 
-    const code = payload?.error?.code;
-    const messages: Record<string, string> = {
-      event_limit_exceeded:
-        'Limit wydarzeń został wyczerpany. Skontaktuj się z administratorem, aby zwiększyć limit.',
-      event_limit_below_usage:
-        'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
-      event_delete_forbidden:
-        'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
-      event_archive_before_start: 'Archiwizować można tylko wydarzenia, które już się zakończyły.',
-      discount_code_invalid: 'Nieprawidłowy kod rabatowy.',
-      discount_code_inactive: 'Kod rabatowy jest nieaktywny.',
-      discount_code_not_started: 'Kod rabatowy nie jest jeszcze aktywny.',
-      discount_code_expired: 'Kod rabatowy wygasł.',
-      discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
-      discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
-      registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
-    };
     throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
   }
   return payload as ApiResponse<T>;
@@ -142,13 +127,6 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
       }
     }
 
-    const code = payload?.error?.code;
-    const messages: Record<string, string> = {
-      file_too_large: 'Obraz jest za duzy.',
-      unsupported_file_type: 'Dozwolone sa tylko obrazy JPG, PNG i WebP.',
-      upload_dir_unavailable: 'Katalog uploadu na serwerze jest niedostepny.',
-      upload_failed: 'Nie udalo sie wgrac pliku.',
-    };
     throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
   }
   return payload as ApiResponse<T>;
@@ -164,7 +142,6 @@ async function paginated<T>(
 function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
 }
-
 
 export const httpAdapter: ApiAdapter = {
   getEvents: (filters) => paginated('/events', filters as Record<string, QueryValue>),
@@ -189,7 +166,8 @@ export const httpAdapter: ApiAdapter = {
   updateOrganizerEventLimit: (organizerId, limit) =>
     request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`, json('PATCH', { limit })),
   uploadEventImage: (file) => {
-    validateImageFile(file);
+    const validationError = getImageFileValidationError(file);
+    if (validationError) return Promise.reject(new Error(validationError));
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/event-images', formData).then((response) => ({
@@ -211,15 +189,15 @@ export const httpAdapter: ApiAdapter = {
 
   getEventBackgrounds: () => request('/event-backgrounds'),
   getEventBackgroundById: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}`),
-  getEventBackgroundUsages: (id) =>
-    request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
+  getEventBackgroundUsages: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
   createEventBackground: (data) => request('/event-backgrounds', json('POST', data)),
   updateEventBackground: (id, data) =>
     request(`/event-backgrounds/${encodeURIComponent(id)}`, json('PATCH', data)),
   deleteEventBackground: (id) =>
     request(`/event-backgrounds/${encodeURIComponent(id)}`, json('DELETE')),
   uploadEventBackground: (file) => {
-    validateImageFile(file);
+    const validationError = getImageFileValidationError(file);
+    if (validationError) return Promise.reject(new Error(validationError));
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/event-backgrounds', formData).then(
@@ -247,7 +225,8 @@ export const httpAdapter: ApiAdapter = {
   getParticipants: () => request('/participants'),
   getOrganizers: () => request('/organizers'),
   uploadAvatar: (file) => {
-    validateImageFile(file);
+    const validationError = getImageFileValidationError(file);
+    if (validationError) return Promise.reject(new Error(validationError));
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/avatars', formData).then((response) => ({
@@ -373,7 +352,8 @@ export const httpAdapter: ApiAdapter = {
   updatePartner: (id, data) => request(`/partners/${encodeURIComponent(id)}`, json('PATCH', data)),
   deletePartner: (id) => request(`/partners/${encodeURIComponent(id)}`, json('DELETE')),
   uploadPartnerLogo: (file) => {
-    validateImageFile(file);
+    const validationError = getImageFileValidationError(file);
+    if (validationError) return Promise.reject(new Error(validationError));
     const formData = new FormData();
     formData.append('file', file);
     return requestForm<{ url: string }>('/uploads/partner-logos', formData).then((response) => ({

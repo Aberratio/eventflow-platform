@@ -20,7 +20,6 @@ import {
   SpecialCategory,
   DistanceRouteFile,
   DistanceDocument,
-  DistanceDocumentType,
   RegistrationFormConfig,
   EventDisplayOptions,
   OrganizerEventLimit,
@@ -37,7 +36,6 @@ import {
   OrganizerContactEntry,
   EventSponsor,
   CoOrganizer,
-  EventMerchandise,
   MerchandiseColor,
   GadgetDocument,
   GadgetQuantityMode,
@@ -140,6 +138,16 @@ const getEventYearFromDate = (eventDate: string) =>
     ? parseInt(eventDate.substring(0, 4)) || new Date().getFullYear()
     : new Date().getFullYear();
 
+const isBlank = (value: unknown): boolean => String(value ?? '').trim() === '';
+
+const parseNumberInput = (value: unknown): number | null => {
+  if (isBlank(value)) return null;
+  const parsed = Number(String(value).trim().replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isPositiveInteger = (value: number): boolean => Number.isInteger(value) && value > 0;
+
 const generateStandardAgeCategoriesForDate = (eventDate: string): AgeCategory[] => {
   const eventYear = getEventYearFromDate(eventDate);
   const ranges = [
@@ -218,6 +226,9 @@ export const useEventFormState = () => {
     existingEvent?.organizerId || (user?.role === 'organizer' ? user.id : ''),
   );
   const [eventLimit, setEventLimit] = useState<OrganizerEventLimit | null>(null);
+  const [eventLimitError, setEventLimitError] = useState('');
+  const [eventLoadError, setEventLoadError] = useState('');
+  const [organizersLoadError, setOrganizersLoadError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const [step, setStep] = useState(1);
@@ -389,8 +400,7 @@ export const useEventFormState = () => {
 
   const addGadget = () => setGadgets((prev) => [...prev, emptyGadget()]);
 
-  const removeGadget = (id: string) =>
-    setGadgets((prev) => prev.filter((g) => g.id !== id));
+  const removeGadget = (id: string) => setGadgets((prev) => prev.filter((g) => g.id !== id));
 
   const updateGadget = (id: string, patch: Partial<GadgetFormData>) =>
     setGadgets((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
@@ -503,7 +513,6 @@ export const useEventFormState = () => {
   };
 
   // Categories
-  const getEventYear = () => getEventYearFromDate(date);
   const generateStandardAgeCategories = () => generateStandardAgeCategoriesForDate(date);
 
   const existingAgeCats = existingEvent?.distances?.[0]?.ageCategories;
@@ -557,12 +566,24 @@ export const useEventFormState = () => {
 
   useEffect(() => {
     if (!isEditing || !id) return;
+    setEventLoadError('');
     getEventById(id)
       .then((response) => {
         if (response.data) setExistingEvent(response.data);
       })
-      .catch(() => undefined);
-  }, [id, isEditing]);
+      .catch((error) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Nie udało się wczytać danych wydarzenia do edycji.';
+        setEventLoadError(message);
+        toast({
+          title: 'Nie udało się wczytać wydarzenia',
+          description: message,
+          variant: 'destructive',
+        });
+      });
+  }, [id, isEditing, toast]);
 
   useEffect(() => {
     if (!existingEvent) return;
@@ -668,6 +689,7 @@ export const useEventFormState = () => {
 
   useEffect(() => {
     if (!canChooseOrganizer) return;
+    setOrganizersLoadError('');
     getOrganizers()
       .then((response) => {
         setOrganizers(response.data);
@@ -675,8 +697,17 @@ export const useEventFormState = () => {
           setSelectedOrganizerId(response.data[0].id);
         }
       })
-      .catch(() => undefined);
-  }, [canChooseOrganizer, selectedOrganizerId]);
+      .catch((error) => {
+        const message =
+          error instanceof Error ? error.message : 'Nie udało się pobrać listy organizatorów.';
+        setOrganizersLoadError(message);
+        toast({
+          title: 'Nie udało się pobrać organizatorów',
+          description: message,
+          variant: 'destructive',
+        });
+      });
+  }, [canChooseOrganizer, selectedOrganizerId, toast]);
 
   useEffect(() => {
     if (canChooseOrganizer || user?.role !== 'organizer') return;
@@ -689,12 +720,24 @@ export const useEventFormState = () => {
   useEffect(() => {
     if (!selectedOrganizerId) {
       setEventLimit(null);
+      setEventLimitError('');
       return;
     }
+    setEventLimitError('');
     getOrganizerEventLimit(selectedOrganizerId)
       .then((response) => setEventLimit(response.data))
-      .catch(() => setEventLimit(null));
-  }, [selectedOrganizerId]);
+      .catch((error) => {
+        const message =
+          error instanceof Error ? error.message : 'Nie udało się pobrać limitu wydarzeń.';
+        setEventLimit(null);
+        setEventLimitError(message);
+        toast({
+          title: 'Nie udało się pobrać limitu wydarzeń',
+          description: message,
+          variant: 'destructive',
+        });
+      });
+  }, [selectedOrganizerId, toast]);
 
   // Distance handlers
   const addDistance = () => {
@@ -1073,28 +1116,43 @@ export const useEventFormState = () => {
       addError('distances', 'Dodaj przynajmniej jeden dystans');
     }
     for (const dist of distances) {
-      if ((!dist.noName && !dist.name) || (!dist.noLength && !dist.length) || !dist.price) {
+      const lengthValue = parseNumberInput(dist.length);
+      const priceValue = parseNumberInput(dist.price);
+      const limitValue = parseNumberInput(dist.limit);
+      const officePriceValue = parseNumberInput(dist.officePrice);
+
+      if (
+        (!dist.noName && !dist.name.trim()) ||
+        (!dist.noLength && isBlank(dist.length)) ||
+        isBlank(dist.price)
+      ) {
         addError('distances', 'Wypełnij wszystkie pola dystansów');
       }
-      if ((!dist.noLength && Number(dist.length) <= 0) || Number(dist.price) < 0) {
-        addError('distances', 'Dlugosc dystansu musi byc dodatnia, a cena nie moze byc ujemna');
+      if (!dist.noLength && !isBlank(dist.length) && (lengthValue === null || lengthValue <= 0)) {
+        addError('distances', 'Dlugosc dystansu musi byc poprawna liczba wieksza od 0');
       }
-      if (dist.limit && Number(dist.limit) <= 0) {
-        addError('distances', 'Limit uczestnikow musi byc dodatni albo pusty');
+      if (!isBlank(dist.price) && (priceValue === null || priceValue < 0)) {
+        addError('distances', 'Cena dystansu musi byc poprawna liczba i nie moze byc ujemna');
       }
-      if (dist.officePrice && Number(dist.officePrice) < 0) {
-        addError('distances', 'Cena w biurze zawodow nie moze byc ujemna');
+      if (!isBlank(dist.limit) && (limitValue === null || !isPositiveInteger(limitValue))) {
+        addError('distances', 'Limit uczestnikow musi byc dodatnia liczba calkowita albo pusty');
+      }
+      if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
+        addError(
+          'distances',
+          'Cena w biurze zawodow musi byc poprawna liczba i nie moze byc ujemna',
+        );
       }
       if (skipSystemPaymentConfig) continue;
 
       for (const tier of dist.priceTiers) {
-        const tierPrice = Number(tier.price ?? 0);
+        const tierPrice = parseNumberInput(tier.price);
         const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
         if (!tier.name.trim()) {
           addError('distances', 'Kazdy prog cenowy musi miec nazwe');
         }
-        if (hasExplicitPrice && tierPrice < 0) {
-          addError('distances', 'Cena w progu nie moze byc ujemna');
+        if (hasExplicitPrice && (tierPrice === null || tierPrice < 0)) {
+          addError('distances', 'Cena w progu musi byc poprawna liczba i nie moze byc ujemna');
         }
         if (dist.priceTierMode === 'date' && !tier.endDate) {
           addError('distances', 'Podaj date koncowa dla kazdego progu cenowego');
@@ -1112,16 +1170,18 @@ export const useEventFormState = () => {
         }
         if (
           dist.priceTierMode === 'participants' &&
-          (!tier.participantLimit || Number(tier.participantLimit) <= 0)
+          (isBlank(tier.participantLimit) ||
+            parseNumberInput(tier.participantLimit) === null ||
+            parseNumberInput(tier.participantLimit)! <= 0)
         ) {
           addError('distances', 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego');
         }
         if (dist.priceTierMode === 'participants') {
-          const participantLimit = Number(tier.participantLimit);
-          if (!Number.isInteger(participantLimit)) {
+          const participantLimit = parseNumberInput(tier.participantLimit);
+          if (participantLimit !== null && !Number.isInteger(participantLimit)) {
             addError('distances', 'Limit uczestnikow w progu musi byc liczba calkowita');
           }
-          if (dist.limit && participantLimit > Number(dist.limit)) {
+          if (limitValue !== null && participantLimit !== null && participantLimit > limitValue) {
             addError(
               'distances',
               'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
@@ -1136,10 +1196,47 @@ export const useEventFormState = () => {
         }
       }
       if (dist.priceTierMode === 'participants') {
-        const participantLimits = dist.priceTiers.map((tier) => Number(tier.participantLimit));
+        const participantLimits = dist.priceTiers
+          .map((tier) => parseNumberInput(tier.participantLimit))
+          .filter((value): value is number => value !== null);
         if (new Set(participantLimits).size !== participantLimits.length) {
           addError('distances', 'Limity uczestnikow w progach cenowych nie moga sie powtarzac');
         }
+      }
+    }
+
+    for (const gadget of gadgets) {
+      if (!gadget.name.trim()) continue;
+      const price = parseNumberInput(gadget.price);
+      const originalPrice = parseNumberInput(gadget.originalPrice);
+      const stockCount = parseNumberInput(gadget.stockCount);
+      const quantityMax = parseNumberInput(gadget.quantityMax);
+      if (price === null || price < 0) {
+        addError('gadgets', 'Cena gadzetu musi byc poprawna liczba i nie moze byc ujemna');
+      }
+      if (!isBlank(gadget.originalPrice) && (originalPrice === null || originalPrice < 0)) {
+        addError(
+          'gadgets',
+          'Cena regularna gadzetu musi byc poprawna liczba i nie moze byc ujemna',
+        );
+      }
+      if (!isBlank(gadget.stockCount) && (stockCount === null || !isPositiveInteger(stockCount))) {
+        addError(
+          'gadgets',
+          'Stan magazynowy gadzetu musi byc dodatnia liczba calkowita albo pusty',
+        );
+      }
+      if (
+        gadget.quantityMode === 'max' &&
+        (quantityMax === null || !isPositiveInteger(quantityMax))
+      ) {
+        addError('gadgets', 'Maksymalna liczba sztuk gadzetu musi byc dodatnia liczba calkowita');
+      }
+      if (gadget.saleFrom && gadget.saleTo && gadget.saleFrom > gadget.saleTo) {
+        addError(
+          'gadgets',
+          'Data poczatku sprzedazy gadzetu nie moze byc pozniejsza niz data konca',
+        );
       }
     }
 
@@ -1186,18 +1283,27 @@ export const useEventFormState = () => {
     }
 
     for (const [i, dist] of distances.entries()) {
-      if (!dist.noName && !dist.name) errors[`distance_${i}_name`] = 'Nazwa dystansu jest wymagana';
-      if (!dist.noLength && !dist.length)
+      const lengthValue = parseNumberInput(dist.length);
+      const priceValue = parseNumberInput(dist.price);
+      const limitValue = parseNumberInput(dist.limit);
+      const officePriceValue = parseNumberInput(dist.officePrice);
+
+      if (!dist.noName && !dist.name.trim())
+        errors[`distance_${i}_name`] = 'Nazwa dystansu jest wymagana';
+      if (!dist.noLength && isBlank(dist.length))
         errors[`distance_${i}_length`] = 'Długość dystansu jest wymagana';
-      else if (!dist.noLength && Number(dist.length) <= 0)
-        errors[`distance_${i}_length`] = 'Długość musi być większa od 0';
-      if (!dist.price && dist.price !== 0) errors[`distance_${i}_price`] = 'Cena jest wymagana';
-      else if (Number(dist.price) < 0) errors[`distance_${i}_price`] = 'Cena nie może być ujemna';
-      if (dist.limit && Number(dist.limit) <= 0) {
-        errors[`distance_${i}_limit`] = 'Limit uczestników musi być dodatni albo pusty';
+      else if (!dist.noLength && (lengthValue === null || lengthValue <= 0))
+        errors[`distance_${i}_length`] = 'Długość musi być poprawną liczbą większą od 0';
+      if (isBlank(dist.price)) errors[`distance_${i}_price`] = 'Cena jest wymagana';
+      else if (priceValue === null || priceValue < 0)
+        errors[`distance_${i}_price`] = 'Cena musi być poprawną liczbą i nie może być ujemna';
+      if (!isBlank(dist.limit) && (limitValue === null || !isPositiveInteger(limitValue))) {
+        errors[`distance_${i}_limit`] =
+          'Limit uczestników musi być dodatnią liczbą całkowitą albo pusty';
       }
-      if (dist.officePrice && Number(dist.officePrice) < 0) {
-        errors[`distance_${i}_officePrice`] = 'Cena biurowa nie może być ujemna';
+      if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
+        errors[`distance_${i}_officePrice`] =
+          'Cena biurowa musi być poprawną liczbą i nie może być ujemna';
       }
       if (registrationMode !== 'external_embed') {
         for (const [j, tier] of dist.priceTiers.entries()) {
@@ -1208,7 +1314,9 @@ export const useEventFormState = () => {
           }
           if (
             dist.priceTierMode === 'participants' &&
-            (!tier.participantLimit || Number(tier.participantLimit) <= 0)
+            (isBlank(tier.participantLimit) ||
+              parseNumberInput(tier.participantLimit) === null ||
+              parseNumberInput(tier.participantLimit)! <= 0)
           ) {
             errors[`distance_${i}_tier_${j}_participantLimit`] = 'Podaj dodatni limit uczestników';
           }
@@ -1223,6 +1331,7 @@ export const useEventFormState = () => {
   const fieldValidationErrors = getFieldValidationErrors();
   const getFirstValidationError = () =>
     STEP_NAV_ITEMS.flatMap((item) => sectionValidationErrors[item.id] ?? [])[0];
+  const getFirstCurrentSectionError = () => sectionValidationErrors[subStep]?.[0];
 
   // Validation
   const validateStep1 = (): boolean => {
@@ -1305,6 +1414,15 @@ export const useEventFormState = () => {
 
   const nextStep = () => {
     markValidationShown(subStep);
+    const sectionError = getFirstCurrentSectionError();
+    if (sectionError) {
+      toast({
+        title: 'Uzupełnij tę sekcję',
+        description: sectionError,
+        variant: 'destructive',
+      });
+      return;
+    }
     if (subStep === 'distances') {
       setDistances((prev) =>
         prev.map((dist) => ({
@@ -1383,20 +1501,22 @@ export const useEventFormState = () => {
       distances: distances.map((dist) => ({
         id: dist.id,
         name: dist.noName ? formatDistanceName(dist.length, dist.unit) : dist.name,
-        length: dist.noLength ? undefined : Number(dist.length),
+        length: dist.noLength ? undefined : (parseNumberInput(dist.length) ?? undefined),
         unit: dist.unit,
-        price: Number(dist.price),
-        officePrice: dist.officePrice ? Number(dist.officePrice) : undefined,
+        price: parseNumberInput(dist.price) ?? 0,
+        officePrice: parseNumberInput(dist.officePrice) ?? undefined,
         infoHtml: dist.infoHtml || undefined,
-        limit: dist.limit ? Number(dist.limit) : undefined,
+        limit: parseNumberInput(dist.limit) ?? undefined,
         priceTierMode: dist.priceTierMode,
         participantCountType: dist.participantCountType,
         priceTiers: dist.priceTiers.map((tier) => ({
           ...tier,
-          price: tier.price != null ? Number(tier.price) : undefined,
-          discountValue: Number(tier.discountValue),
+          price: tier.price != null ? (parseNumberInput(tier.price) ?? undefined) : undefined,
+          discountValue: parseNumberInput(tier.discountValue) ?? 0,
           participantLimit:
-            dist.priceTierMode === 'participants' ? Number(tier.participantLimit) : undefined,
+            dist.priceTierMode === 'participants'
+              ? (parseNumberInput(tier.participantLimit) ?? undefined)
+              : undefined,
           endDate: dist.priceTierMode === 'date' ? tier.endDate : undefined,
         })),
         registeredCount:
@@ -1465,16 +1585,17 @@ export const useEventFormState = () => {
           descriptionHtml: g.descriptionHtml || undefined,
           documents: g.documents.length > 0 ? g.documents : undefined,
           brand: g.brand || undefined,
-          price: Number(g.price) || 0,
-          originalPrice: g.originalPrice ? Number(g.originalPrice) : undefined,
+          price: parseNumberInput(g.price) ?? 0,
+          originalPrice: parseNumberInput(g.originalPrice) ?? undefined,
           sizes: g.sizes,
           colors: g.colors,
           imageUrl: g.imageUrl || undefined,
           images: g.images.length > 0 ? g.images : undefined,
           available: g.available,
-          stockCount: g.stockCount ? Number(g.stockCount) : undefined,
+          stockCount: parseNumberInput(g.stockCount) ?? undefined,
           quantityMode: g.quantityMode,
-          quantityMax: g.quantityMode === 'max' && g.quantityMax ? Number(g.quantityMax) : undefined,
+          quantityMax:
+            g.quantityMode === 'max' ? (parseNumberInput(g.quantityMax) ?? undefined) : undefined,
           saleFrom: g.saleFrom || undefined,
           saleTo: g.saleTo || undefined,
           distanceIds: g.distanceIds.length > 0 ? g.distanceIds : undefined,
@@ -1491,6 +1612,22 @@ export const useEventFormState = () => {
       toast({
         title: 'Błąd',
         description: 'Wybierz organizatora wydarzenia',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!isEditing && eventLimitError) {
+      toast({
+        title: 'Nie można potwierdzić limitu wydarzeń',
+        description: eventLimitError,
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (!isEditing && !selectedEventLimit) {
+      toast({
+        title: 'Limit wydarzeń jest jeszcze sprawdzany',
+        description: 'Poczekaj na pobranie limitu organizatora i spróbuj ponownie.',
         variant: 'destructive',
       });
       return;
@@ -1574,9 +1711,12 @@ export const useEventFormState = () => {
     canChooseOrganizer,
     canManageFeatured,
     organizers,
+    organizersLoadError,
     selectedOrganizerId,
     setSelectedOrganizerId,
     eventLimit,
+    eventLimitError,
+    eventLoadError,
     selectedEventLimit,
     isSaving,
 

@@ -59,9 +59,13 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
         setAvatarPreview(response.data.url);
         toast({ title: 'Zdjęcie profilowe zaktualizowane' });
       }
-    } catch {
+    } catch (error) {
       setAvatarPreview(previousPreview);
-      toast({ title: 'Błąd uploadu zdjęcia', variant: 'destructive' });
+      toast({
+        title: 'Błąd uploadu zdjęcia',
+        description: error instanceof Error ? error.message : 'Nie udało się wgrać zdjęcia.',
+        variant: 'destructive',
+      });
     } finally {
       setUploadingAvatar(false);
       e.target.value = '';

@@ -70,16 +70,20 @@ const RouteUrlOrUploadField = ({
   description,
   value,
   onChange,
-  acceptFiles = 'image/*',
+  acceptFiles = 'image/jpeg,image/png,image/webp',
 }: RouteUrlOrUploadFieldProps) => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    setError('');
     try {
       const res = await uploadEventDocument(file);
       if (res.data?.url) onChange(res.data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wgrać pliku.');
     } finally {
       setUploading(false);
     }
@@ -135,6 +139,7 @@ const RouteUrlOrUploadField = ({
           <Link className="h-3 w-3" /> Podgląd
         </a>
       )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
       <input
         ref={fileRef}
         type="file"
@@ -156,13 +161,17 @@ interface RouteFileUploadButtonProps {
 
 const RouteFileUploadButton = ({ onUploaded }: RouteFileUploadButtonProps) => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    setError('');
     try {
       const res = await uploadEventDocument(file);
       if (res.data?.url) onUploaded(res.data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wgrać pliku.');
     } finally {
       setUploading(false);
     }
@@ -188,6 +197,7 @@ const RouteFileUploadButton = ({ onUploaded }: RouteFileUploadButtonProps) => {
       <input
         ref={fileRef}
         type="file"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -195,6 +205,7 @@ const RouteFileUploadButton = ({ onUploaded }: RouteFileUploadButtonProps) => {
           e.target.value = '';
         }}
       />
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </>
   );
 };
@@ -205,10 +216,12 @@ interface DistanceDocumentUploadButtonProps {
 
 const DistanceDocumentUploadButton = ({ onUploaded }: DistanceDocumentUploadButtonProps) => {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     setUploading(true);
+    setError('');
     try {
       const res = await uploadEventDocument(file);
       if (res.data?.url) {
@@ -220,6 +233,8 @@ const DistanceDocumentUploadButton = ({ onUploaded }: DistanceDocumentUploadButt
           mimeType: res.data.mimeType || file.type,
         });
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wgrać dokumentu.');
     } finally {
       setUploading(false);
     }
@@ -245,7 +260,7 @@ const DistanceDocumentUploadButton = ({ onUploaded }: DistanceDocumentUploadButt
       <input
         ref={fileRef}
         type="file"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -253,6 +268,7 @@ const DistanceDocumentUploadButton = ({ onUploaded }: DistanceDocumentUploadButt
           e.target.value = '';
         }}
       />
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </>
   );
 };

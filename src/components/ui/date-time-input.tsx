@@ -47,6 +47,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       className,
       disabled,
       required,
+      min,
+      max,
       placeholder = 'Wybierz date',
       'aria-invalid': ariaInvalid,
       ...props
@@ -55,6 +57,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   ) => {
     const [open, setOpen] = React.useState(false);
     const selected = parseDateValue(value);
+    const minDate = typeof min === 'string' ? parseDateValue(min) : undefined;
+    const maxDate = typeof max === 'string' ? parseDateValue(max) : undefined;
 
     return (
       <div className="relative">
@@ -65,6 +69,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           value={value}
           disabled={disabled}
           required={required}
+          min={min}
+          max={max}
           readOnly
           {...props}
         />
@@ -94,6 +100,9 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
             <Calendar
               mode="single"
               selected={selected}
+              disabled={(date) =>
+                Boolean((minDate && date < minDate) || (maxDate && date > maxDate))
+              }
               onSelect={(date) => {
                 onValueChange?.(date ? formatDateValue(date) : '');
                 setOpen(false);
