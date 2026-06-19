@@ -83,6 +83,8 @@ import type {
   VirtualResultSubmissionStatus,
   PaymentDetails,
   OrganizerEventLimit,
+  EventBackground,
+  EventBackgroundUsage,
 } from '@/types';
 import type {
   EmailTemplate,
@@ -127,6 +129,23 @@ export interface ApiAdapter {
   uploadEventDocument(
     file: File,
   ): Promise<ApiResponse<{ url: string; originalName: string; mimeType: string }>>;
+
+  // ── Event Backgrounds ──
+  getEventBackgrounds(): Promise<ApiResponse<EventBackground[]>>;
+  getEventBackgroundById(id: string): Promise<ApiResponse<EventBackground | null>>;
+  getEventBackgroundUsages(id: string): Promise<ApiResponse<EventBackgroundUsage[]>>;
+  createEventBackground(data: {
+    name: string;
+    imageUrl: string;
+    thumbnailUrl?: string;
+    sortOrder?: number;
+  }): Promise<ApiResponse<EventBackground>>;
+  updateEventBackground(
+    id: string,
+    data: Partial<{ name: string; imageUrl: string; thumbnailUrl: string; sortOrder: number }>,
+  ): Promise<ApiResponse<EventBackground>>;
+  deleteEventBackground(id: string): Promise<ApiResponse<void>>;
+  uploadEventBackground(file: File): Promise<ApiResponse<{ url: string }>>;
 
   // ── Users ──
   getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>>;

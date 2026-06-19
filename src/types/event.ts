@@ -223,6 +223,22 @@ export interface BannerCropArea {
 
 export type OrganizerLogoShape = 'square' | 'portrait' | 'landscape';
 
+export interface EventBackground {
+  id: string;
+  name: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  sortOrder: number;
+  createdAt: string;
+}
+
+export interface EventBackgroundUsage {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -287,6 +303,7 @@ export interface Event {
   registrationFormConfig?: RegistrationFormConfig;
   displayOptions?: EventDisplayOptions;
   logisticsInfo?: EventLogisticsInfo;
+  backgroundId?: string;
 }
 
 export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';
@@ -362,6 +379,8 @@ export interface EventMerchandise {
   stockCount?: number;
   quantityMode?: GadgetQuantityMode;
   quantityMax?: number;
+  saleFrom?: string;
+  saleTo?: string;
   distanceIds?: string[];
   shopProductId?: string;
 }

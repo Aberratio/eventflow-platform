@@ -82,6 +82,8 @@ export interface GadgetFormData {
   stockCount: string;
   quantityMode: GadgetQuantityMode;
   quantityMax: string;
+  saleFrom: string;
+  saleTo: string;
   distanceIds: string[];
 }
 
@@ -101,6 +103,8 @@ export const emptyGadget = (): GadgetFormData => ({
   stockCount: '',
   quantityMode: 'any',
   quantityMax: '',
+  saleFrom: '',
+  saleTo: '',
   distanceIds: [],
 });
 
@@ -272,6 +276,7 @@ export const useEventFormState = () => {
     existingEvent?.organizerLogoShape || 'square',
   );
   const [showBannerCropper, setShowBannerCropper] = useState(false);
+  const [backgroundId, setBackgroundId] = useState(existingEvent?.backgroundId || '');
 
   // Payment
   const [paymentConfigType, setPaymentConfigType] = useState<PaymentConfigType>(
@@ -376,6 +381,8 @@ export const useEventFormState = () => {
       stockCount: m.stockCount != null ? String(m.stockCount) : '',
       quantityMode: m.quantityMode || 'any',
       quantityMax: m.quantityMax != null ? String(m.quantityMax) : '',
+      saleFrom: m.saleFrom || '',
+      saleTo: m.saleTo || '',
       distanceIds: m.distanceIds || [],
     }));
   });
@@ -582,6 +589,7 @@ export const useEventFormState = () => {
     setOrganizerLogoUrl(existingEvent.organizerLogoUrl || '');
     setOriginalOrganizerLogoUrl(existingEvent.originalOrganizerLogoUrl || '');
     setOrganizerLogoShape(existingEvent.organizerLogoShape || 'square');
+    setBackgroundId(existingEvent.backgroundId || '');
     setPaymentConfigType(existingEvent.paymentConfig?.type || 'admin_gateway');
     setBankAccountNumber(existingEvent.paymentConfig?.bankAccountNumber || '');
     setBankAccountHolder(existingEvent.paymentConfig?.bankAccountHolder || '');
@@ -1443,6 +1451,7 @@ export const useEventFormState = () => {
       registrationFormConfig: formConfig,
       displayOptions,
       logisticsInfo,
+      backgroundId: backgroundId || undefined,
       organizerInfo: {
         contacts: organizerContacts.filter((c) => c.email?.trim() || c.phone?.trim()),
         sponsors: sponsors.filter((s) => s.name.trim()),
@@ -1466,6 +1475,8 @@ export const useEventFormState = () => {
           stockCount: g.stockCount ? Number(g.stockCount) : undefined,
           quantityMode: g.quantityMode,
           quantityMax: g.quantityMode === 'max' && g.quantityMax ? Number(g.quantityMax) : undefined,
+          saleFrom: g.saleFrom || undefined,
+          saleTo: g.saleTo || undefined,
           distanceIds: g.distanceIds.length > 0 ? g.distanceIds : undefined,
         })),
     };
@@ -1620,6 +1631,8 @@ export const useEventFormState = () => {
     setOrganizerLogoShape,
     showBannerCropper,
     setShowBannerCropper,
+    backgroundId,
+    setBackgroundId,
     paymentConfigType,
     setPaymentConfigType,
     bankAccountNumber,

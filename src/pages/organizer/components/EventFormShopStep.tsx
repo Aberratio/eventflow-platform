@@ -177,6 +177,8 @@ const GadgetCard = ({
   onUpdate,
   onRemove,
   showValidation,
+  minDate,
+  maxDate,
 }: {
   gadget: GadgetFormData;
   index: number;
@@ -184,6 +186,8 @@ const GadgetCard = ({
   onUpdate: (patch: Partial<GadgetFormData>) => void;
   onRemove: () => void;
   showValidation: boolean;
+  minDate: string;
+  maxDate: string;
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [customSize, setCustomSize] = useState('');
@@ -488,6 +492,54 @@ const GadgetCard = ({
             </Label>
           </div>
 
+          {/* Sale dates */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              Okres sprzedaży
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Zostaw puste, żeby gadżet był dostępny przez cały czas trwania zapisów.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor={`gadget-sale-from-${gadget.id}`} className="text-xs text-muted-foreground">
+                  Dostępny od
+                </Label>
+                <Input
+                  id={`gadget-sale-from-${gadget.id}`}
+                  type="date"
+                  value={gadget.saleFrom}
+                  min={minDate || undefined}
+                  max={gadget.saleTo || maxDate || undefined}
+                  onChange={(e) => onUpdate({ saleFrom: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`gadget-sale-to-${gadget.id}`} className="text-xs text-muted-foreground">
+                  Dostępny do
+                </Label>
+                <Input
+                  id={`gadget-sale-to-${gadget.id}`}
+                  type="date"
+                  value={gadget.saleTo}
+                  min={gadget.saleFrom || minDate || undefined}
+                  max={maxDate || undefined}
+                  onChange={(e) => onUpdate({ saleTo: e.target.value })}
+                />
+              </div>
+            </div>
+            {(gadget.saleFrom || gadget.saleTo) && (
+              <button
+                type="button"
+                onClick={() => onUpdate({ saleFrom: '', saleTo: '' })}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+                Wyczyść daty
+              </button>
+            )}
+          </div>
+
           {/* Sizes */}
           <div className="space-y-2">
             <Label>Dostępne rozmiary</Label>
@@ -764,6 +816,13 @@ export const EventFormShopStep = ({ form }: EventFormShopStepProps) => {
     name: d.noName ? `${d.length} ${d.unit}` : d.name || `${d.length} ${d.unit}`,
   }));
 
+  const today = new Date().toISOString().slice(0, 10);
+  const minDate =
+    form.registrationOpenDate && form.registrationOpenDate > today
+      ? form.registrationOpenDate
+      : today;
+  const maxDate = form.registrationDeadline || '';
+
   return (
     <div className="space-y-6">
       <Card>
@@ -803,6 +862,8 @@ export const EventFormShopStep = ({ form }: EventFormShopStepProps) => {
                     form.setHasUnsavedChanges(true);
                   }}
                   showValidation={showValidation}
+                  minDate={minDate}
+                  maxDate={maxDate}
                 />
               ))}
             </div>

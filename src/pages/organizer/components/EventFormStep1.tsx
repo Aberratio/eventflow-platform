@@ -1,4 +1,4 @@
-﻿import { disciplineLabels, uploadEventImage } from '@/api';
+﻿import { disciplineLabels, uploadEventImage, getEventBackgrounds } from '@/api';
 import {
   EVENT_DOCUMENT_TYPE_LABELS,
   EventDocumentType,
@@ -6,8 +6,10 @@ import {
   SportDiscipline,
   PaymentConfigType,
   OrganizerLogoShape,
+  EventBackground,
 } from '@/types';
 import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -1095,6 +1097,70 @@ const DisciplineMultiSelect = ({
   );
 };
 
+const EventBackgroundPicker = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (id: string) => void;
+}) => {
+  const { data } = useQuery({
+    queryKey: ['event-backgrounds'],
+    queryFn: () => getEventBackgrounds().then((r) => r.data as EventBackground[]),
+  });
+  const backgrounds = data ?? [];
+
+  if (backgrounds.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <Label className="text-sm font-medium">
+          Tło strony wydarzenia <span className="text-destructive">*</span>
+        </Label>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Tło widoczne na stronie wydarzenia. Wybierz jedno z dostępnych.
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+        {backgrounds.map((bg) => (
+          <button
+            key={bg.id}
+            type="button"
+            onClick={() => onChange(bg.id)}
+            className={`group relative overflow-hidden rounded-lg border-2 transition-all ${
+              value === bg.id
+                ? 'border-primary shadow-md'
+                : 'border-transparent hover:border-primary/40'
+            }`}
+          >
+            <img
+              src={bg.thumbnailUrl ?? bg.imageUrl}
+              alt={bg.name}
+              className="aspect-video w-full object-cover"
+            />
+            {value === bg.id && (
+              <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+                <div className="rounded-full bg-primary p-1">
+                  <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="currentColor">
+                    <path d="M10 3L5 8.5 2 5.5l-1 1L5 10.5l6-7-1-0.5z" />
+                  </svg>
+                </div>
+              </div>
+            )}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1.5 py-1">
+              <span className="truncate text-xs text-white">{bg.name}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+      {!value && (
+        <p className="text-xs text-destructive">Wybierz tło strony wydarzenia.</p>
+      )}
+    </div>
+  );
+};
+
 export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
   const showValidation = form.shownValidationSubSteps.includes(activeSubStep as SubStep);
@@ -1746,6 +1812,11 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 />
               </div>
             </div>
+            <EventBackgroundPicker
+              value={form.backgroundId}
+              onChange={form.setBackgroundId}
+            />
+
             <div className="mt-6">
               <EventImagesPlacementPreview form={form} />
             </div>

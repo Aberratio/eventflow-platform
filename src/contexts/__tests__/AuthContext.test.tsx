@@ -27,6 +27,10 @@ vi.mock('@/api', () => ({
     const user = password === 'demo1234' ? testUsers.find((item) => item.email === email) : null;
     return { data: user ?? null, success: Boolean(user) };
   }),
+  loginByRole: vi.fn(async (role: UserRole) => {
+    const user = testUsers.find((item) => item.role === role) ?? null;
+    return { data: user, success: Boolean(user) };
+  }),
   logout: vi.fn(async () => ({ data: undefined, success: true })),
 }));
 

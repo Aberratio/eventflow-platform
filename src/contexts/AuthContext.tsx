@@ -2,6 +2,7 @@ import {
   getCurrentUser,
   getUsers,
   login as apiLogin,
+  loginByRole as apiLoginByRole,
   logout as apiLogout,
   updateUser as apiUpdateUser,
 } from '@/api';
@@ -129,8 +130,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (role: UserRole) => {
     try {
-      const response = await getUsers({ role, pageSize: 1 });
-      const databaseUser = response.data[0];
+      const roleLoginResponse = await apiLoginByRole(role);
+      const databaseUser =
+        roleLoginResponse.data ?? (await getUsers({ role, pageSize: 1 })).data[0];
       if (!databaseUser) return;
       setUser(databaseUser);
       setIsLoading(false);

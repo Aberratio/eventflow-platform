@@ -51,6 +51,7 @@ import type {
   VirtualResultSubmission,
   VirtualResultSubmissionStatus,
   PaymentDetails,
+  OrganizerEventLimit,
 } from '@/types';
 import {
   EMAIL_VARIABLES,
@@ -80,6 +81,7 @@ import type {
   CreateInfoPagePayload,
   UpdateInfoPagePayload,
 } from '../payloads';
+import { STORAGE_KEYS } from '@/constants';
 
 // ── Mock data imports ──
 import { mockUsers } from '../mock/users.mock';
@@ -149,6 +151,45 @@ let shopCategories: ShopCategoryConfig[] = Object.entries({
   electronics: 'Elektronika',
   services: 'Usługi',
 }).map(([id, name], index) => ({ id, name, sortOrder: index, status: 'active' }));
+
+const MOCK_TOKEN_PREFIX = 'mock-user:';
+
+function issueMockToken(user: User): string {
+  return `${MOCK_TOKEN_PREFIX}${user.id}`;
+}
+
+function getMockTokenUser(): User | null {
+  const token =
+    typeof window === 'undefined' ? null : window.localStorage.getItem(STORAGE_KEYS.API_TOKEN);
+  if (!token?.startsWith(MOCK_TOKEN_PREFIX)) return null;
+  const userId = token.slice(MOCK_TOKEN_PREFIX.length);
+  return mockUsers.find((user) => user.id === userId) ?? null;
+}
+
+function storeMockToken(user: User): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(STORAGE_KEYS.API_TOKEN, issueMockToken(user));
+}
+
+function clearMockToken(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(STORAGE_KEYS.API_TOKEN);
+}
+
+function getMockOrganizerEventLimit(organizerId: string): OrganizerEventLimit {
+  const organizer = mockUsers.find((user) => user.id === organizerId);
+  const limit = organizer?.eventLimit ?? 0;
+  const used = mockEvents.filter(
+    (event) => event.organizerId === organizerId && event.status !== 'deleted',
+  ).length;
+
+  return {
+    total: limit,
+    limit,
+    used,
+    available: Math.max(0, limit - used),
+  };
+}
 
 // ─────────────────────────────────────────────────────────
 // Mock Adapter Implementation
@@ -281,8 +322,18 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     return ok(mockEvents.filter((event) => event.organizerId === organizerId));
   },
-  getOrganizerEventLimit: (...args) => httpAdapter.getOrganizerEventLimit(...args),
-  updateOrganizerEventLimit: (...args) => httpAdapter.updateOrganizerEventLimit(...args),
+  async getOrganizerEventLimit(organizerId) {
+    await delay();
+    return ok(getMockOrganizerEventLimit(organizerId));
+  },
+  async updateOrganizerEventLimit(organizerId, limit) {
+    await delay();
+    const organizer = mockUsers.find((user) => user.id === organizerId);
+    if (organizer) {
+      organizer.eventLimit = limit;
+    }
+    return ok(getMockOrganizerEventLimit(organizerId));
+  },
   uploadEventImage: (...args) => httpAdapter.uploadEventImage(...args),
   uploadEventDocument: (...args) => httpAdapter.uploadEventDocument(...args),
 
@@ -370,23 +421,28 @@ export const mockAdapter: ApiAdapter = {
   async login(credentials) {
     await delay();
     const user = mockUsers.find((u) => u.email === credentials.email) ?? null;
-    return user ? ok(user) : fail(null, 'Invalid credentials');
+    if (!user) return fail(null, 'Invalid credentials');
+    storeMockToken(user);
+    return ok(user);
   },
 
   async loginByRole(role) {
     await delay();
     const user = mockUsers.find((u) => u.role === role) ?? null;
-    return user ? ok(user) : fail(null, 'User not found');
+    if (!user) return fail(null, 'User not found');
+    storeMockToken(user);
+    return ok(user);
   },
 
   async logout() {
     await delay();
+    clearMockToken();
     return ok(undefined as unknown as void);
   },
 
   async getCurrentUser() {
     await delay();
-    return ok(null);
+    return ok(getMockTokenUser());
   },
 
   async register(data) {
@@ -398,6 +454,8 @@ export const mockAdapter: ApiAdapter = {
       role: data.role ?? 'participant',
       isNewUser: true,
     };
+    mockUsers.push(newUser);
+    storeMockToken(newUser);
     return ok(newUser);
   },
 
@@ -872,6 +930,43 @@ export const mockAdapter: ApiAdapter = {
   },
 
   async uploadPartnerLogo(file) {
+    await delay();
+    return ok({ url: URL.createObjectURL(file) });
+  },
+
+  // ── Event Backgrounds ──
+
+  async getEventBackgrounds() {
+    await delay();
+    return ok([]);
+  },
+
+  async getEventBackgroundById() {
+    await delay();
+    return ok(null);
+  },
+
+  async getEventBackgroundUsages() {
+    await delay();
+    return ok([]);
+  },
+
+  async createEventBackground(data) {
+    await delay();
+    return ok({ id: crypto.randomUUID(), sortOrder: 0, createdAt: new Date().toISOString(), thumbnailUrl: undefined, ...data });
+  },
+
+  async updateEventBackground(id, data) {
+    await delay();
+    return ok({ id, name: '', imageUrl: '', sortOrder: 0, createdAt: new Date().toISOString(), ...data });
+  },
+
+  async deleteEventBackground() {
+    await delay();
+    return ok(undefined);
+  },
+
+  async uploadEventBackground(file) {
     await delay();
     return ok({ url: URL.createObjectURL(file) });
   },

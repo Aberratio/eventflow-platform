@@ -1,10 +1,11 @@
-import { disciplineLabels } from '@/api';
+import { disciplineLabels, getEventBackgrounds } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Event, OrganizerLogoShape } from '@/types';
+import { Event, OrganizerLogoShape, EventBackground } from '@/types';
 import { ArrowLeft, ChevronRight, Globe } from 'lucide-react';
 import { PageHero } from '@/components/ui/page-hero';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 interface EventHeroBannerProps {
   event: Event;
@@ -41,7 +42,16 @@ const Breadcrumb = ({ eventName }: { eventName: string }) => (
 );
 
 export const EventHeroBanner = ({ event, isPast }: EventHeroBannerProps) => {
-  const heroImageUrl = event.bannerUrl || event.imageUrl;
+  const { data: backgrounds } = useQuery({
+    queryKey: ['event-backgrounds'],
+    queryFn: () => getEventBackgrounds().then((r) => r.data as EventBackground[]),
+    staleTime: 5 * 60 * 1000,
+  });
+  const backgroundImageUrl = event.backgroundId
+    ? backgrounds?.find((b) => b.id === event.backgroundId)?.imageUrl
+    : undefined;
+
+  const heroImageUrl = event.bannerUrl || backgroundImageUrl || event.imageUrl;
 
   const getBannerStyle = (): React.CSSProperties => {
     if (!event.bannerUrl || !event.bannerCropArea) return {};

@@ -11,6 +11,7 @@ import { AdminPagesTab } from './components/AdminPagesTab';
 import { AdminSettingsTab } from './components/AdminSettingsTab';
 import { AdminChallengesTab } from './components/AdminChallengesTab';
 import { AdminFeaturedEventsTab } from './components/AdminFeaturedEventsTab';
+import { AdminEventBackgroundsTab } from './components/AdminEventBackgroundsTab';
 import { AdminSeriesTab } from './components/AdminSeriesTab';
 import { UsersAdminsTab } from './components/UsersAdminsTab';
 import {
@@ -27,6 +28,7 @@ import {
   Mail,
   Star,
   ClipboardList,
+  Image,
 } from 'lucide-react';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { AdminOrdersTab } from './components/AdminOrdersTab';
@@ -82,6 +84,7 @@ const navGroups: NavGroup[] = [
       { id: 'series', label: 'Serie', icon: Trophy },
       { id: 'featured', label: 'Polecane', icon: Star },
       { id: 'partners', label: 'Partnerzy', icon: Handshake },
+      { id: 'backgrounds', label: 'Tła wydarzeń', icon: Image },
       { id: 'pages', label: 'Strony', icon: FileText },
       { id: 'emails', label: 'Emaile', icon: Mail },
     ],
@@ -145,6 +148,8 @@ const AdminDashboard = () => {
         return <AdminChallengesTab />;
       case 'partners':
         return <AdminPartnersTab />;
+      case 'backgrounds':
+        return <AdminEventBackgroundsTab />;
       case 'pages':
         return <AdminPagesTab />;
       case 'emails':

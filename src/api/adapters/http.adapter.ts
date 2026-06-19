@@ -2,9 +2,11 @@ import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
+import { resolveApiAssetUrl } from '@/lib/utils';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const TOKEN_STORAGE_KEY = STORAGE_KEYS.API_TOKEN;
+const MOCK_TOKEN_PREFIX = 'mock-user:';
 
 type QueryValue = string | number | boolean | null | undefined;
 
@@ -31,7 +33,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (response.status === 401 && endpoint !== '/auth/login') {
+    if (
+      response.status === 401 &&
+      endpoint !== '/auth/login' &&
+      !token?.startsWith(MOCK_TOKEN_PREFIX)
+    ) {
       if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token } }));
@@ -77,7 +83,7 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 && !token?.startsWith(MOCK_TOKEN_PREFIX)) {
       if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token } }));
@@ -107,13 +113,6 @@ function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
 }
 
-function resolveApiAssetUrl(url: string): string {
-  if (!url.startsWith('/')) return url;
-  const apiOrigin = API_BASE_URL
-    ? new URL(API_BASE_URL, window.location.origin).origin
-    : window.location.origin;
-  return `${apiOrigin}${url}`;
-}
 
 export const httpAdapter: ApiAdapter = {
   getEvents: (filters) => paginated('/events', filters as Record<string, QueryValue>),
@@ -155,6 +154,26 @@ export const httpAdapter: ApiAdapter = {
       ...response,
       data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
     }));
+  },
+
+  getEventBackgrounds: () => request('/event-backgrounds'),
+  getEventBackgroundById: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}`),
+  getEventBackgroundUsages: (id) =>
+    request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
+  createEventBackground: (data) => request('/event-backgrounds', json('POST', data)),
+  updateEventBackground: (id, data) =>
+    request(`/event-backgrounds/${encodeURIComponent(id)}`, json('PATCH', data)),
+  deleteEventBackground: (id) =>
+    request(`/event-backgrounds/${encodeURIComponent(id)}`, json('DELETE')),
+  uploadEventBackground: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return requestForm<{ url: string }>('/uploads/event-backgrounds', formData).then(
+      (response) => ({
+        ...response,
+        data: { ...response.data, url: resolveApiAssetUrl(response.data.url) },
+      }),
+    );
   },
 
   getUsers: (filters) => paginated('/users', filters as Record<string, QueryValue>),

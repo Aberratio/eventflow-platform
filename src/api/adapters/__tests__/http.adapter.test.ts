@@ -184,4 +184,25 @@ describe('httpAdapter contract mapping', () => {
     expect(onExpired).not.toHaveBeenCalled();
     window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
   });
+
+  it('does not clear mock-mode tokens when delegated HTTP endpoints return 401', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'mock-user:test-organizer');
+    const onExpired = vi.fn();
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'unauthorized', message: 'Invalid or expired token' },
+        },
+        401,
+      ),
+    );
+
+    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Invalid or expired token');
+
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('mock-user:test-organizer');
+    expect(onExpired).not.toHaveBeenCalled();
+    window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+  });
 });

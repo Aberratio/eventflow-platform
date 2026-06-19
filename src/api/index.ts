@@ -305,6 +305,22 @@ export const submitVirtualResult: ApiAdapter['submitVirtualResult'] = (...args) 
 export const reviewVirtualResult: ApiAdapter['reviewVirtualResult'] = (...args) =>
   ensureAdapter().then((a) => a.reviewVirtualResult(...args));
 
+// Event Backgrounds
+export const getEventBackgrounds: ApiAdapter['getEventBackgrounds'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventBackgrounds(...args));
+export const getEventBackgroundById: ApiAdapter['getEventBackgroundById'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventBackgroundById(...args));
+export const getEventBackgroundUsages: ApiAdapter['getEventBackgroundUsages'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventBackgroundUsages(...args));
+export const createEventBackground: ApiAdapter['createEventBackground'] = (...args) =>
+  ensureAdapter().then((a) => a.createEventBackground(...args));
+export const updateEventBackground: ApiAdapter['updateEventBackground'] = (...args) =>
+  ensureAdapter().then((a) => a.updateEventBackground(...args));
+export const deleteEventBackground: ApiAdapter['deleteEventBackground'] = (...args) =>
+  ensureAdapter().then((a) => a.deleteEventBackground(...args));
+export const uploadEventBackground: ApiAdapter['uploadEventBackground'] = (...args) =>
+  ensureAdapter().then((a) => a.uploadEventBackground(...args));
+
 // Email Templates
 export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
   ensureAdapter().then((a) => a.getEmailTemplates(...args));
