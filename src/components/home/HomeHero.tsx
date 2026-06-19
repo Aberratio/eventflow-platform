@@ -1,22 +1,26 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Eyebrow } from '@/components/ui/eyebrow';
 import { Trophy, Calendar, ChevronRight } from 'lucide-react';
 
 export const HomeHero = () => {
   return (
-    <section className="relative overflow-hidden bg-[hsl(0_0%_5%)] py-16 md:py-24">
-      {/* Subtle gradient overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent to-background" />
+    <section
+      className="relative overflow-hidden py-16 md:py-24"
+      style={{ backgroundColor: 'var(--page-bg)' }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'var(--overlay-gradient-blue)' }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent"
+        style={{ backgroundImage: 'linear-gradient(to bottom, transparent, var(--page-bg))' }}
+      />
 
       <div className="container relative z-10 mx-auto px-4">
         <div className="max-w-2xl">
-          {/* Eyebrow */}
-          <div className="mb-6 flex items-center gap-3">
-            <div className="h-px w-10 bg-primary" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Platforma sportowa
-            </span>
-          </div>
+          <Eyebrow className="mb-6">Platforma sportowa</Eyebrow>
 
           <h1 className="mb-6 text-4xl font-bold leading-[1.08] tracking-tight text-foreground md:text-5xl lg:text-6xl">
             Twoje sportowe
@@ -46,7 +50,6 @@ export const HomeHero = () => {
             </Button>
           </div>
 
-          {/* Stats row */}
           <div className="mt-10 flex items-center gap-6 border-t border-border pt-8">
             {[
               { value: '2.4k+', label: 'Wydarzeń' },

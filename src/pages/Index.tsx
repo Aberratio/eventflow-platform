@@ -7,9 +7,6 @@ import {
   Bike,
   CalendarDays,
   Check,
-  CheckCircle2,
-  ChevronRight,
-  Clock3,
   Flag,
   MapPin,
   MoreHorizontal,
@@ -25,6 +22,10 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
+import { SectionHeading } from '@/components/ui/section-heading';
+import { EventImageCard } from '@/components/ui/event-image-card';
+import { EventTable, EventTableRow } from '@/components/ui/event-table';
+import { PageBg, PageContent } from '@/components/ui/page-bg';
 import { QUERY_KEYS } from '@/constants';
 import type { Event, Partner, SportDiscipline } from '@/types';
 import { cn } from '@/lib/utils';
@@ -304,43 +305,6 @@ const demoPartners: Partner[] = [
   featured: true,
 }));
 
-const SectionTitle = ({
-  title,
-  icon,
-  tone = 'primary',
-  linkTo,
-  linkLabel,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  tone?: 'primary' | 'warning' | 'success';
-  linkTo?: string;
-  linkLabel?: string;
-}) => {
-  const toneClass = {
-    primary: 'text-primary',
-    warning: 'text-orange-500',
-    success: 'text-emerald-400',
-  }[tone];
-
-  return (
-    <div className="mb-4 flex items-center justify-between gap-4">
-      <h2 className="flex min-w-0 items-center gap-2 text-lg font-bold tracking-tight text-white md:text-xl">
-        {icon && <span className={cn('shrink-0', toneClass)}>{icon}</span>}
-        {title}
-      </h2>
-      {linkTo && linkLabel && (
-        <Link
-          to={linkTo}
-          className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
-        >
-          {linkLabel}
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
-      )}
-    </div>
-  );
-};
 
 const EventMeta = ({ event, compact = false }: { event: Event; compact?: boolean }) => (
   <div
@@ -368,7 +332,8 @@ const HeroEventCard = ({ event }: { event: Event }) => (
   <div className="w-full lg:max-w-[430px] lg:justify-self-end">
     <Link
       to={`/events/${event.slug}`}
-      className="border-white/12 group block overflow-hidden rounded-lg border bg-[#0b121f]/70 shadow-2xl shadow-black/30"
+      className="group block overflow-hidden rounded-lg border border-white/[0.12] shadow-2xl shadow-black/30"
+      style={{ background: 'var(--page-bg-surface)' }}
     >
       <div className="relative min-h-[360px] overflow-hidden md:min-h-[420px] lg:min-h-[370px]">
         <img
@@ -376,7 +341,10 @@ const HeroEventCard = ({ event }: { event: Event }) => (
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-[1.03]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/55 to-black/10" />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'var(--overlay-card-fade)' }}
+        />
         <Badge className="absolute left-5 top-5 border-emerald-400/20 bg-emerald-500/10 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
           Zapisy otwarte
         </Badge>
@@ -433,7 +401,8 @@ const SearchPanel = ({
 }) => (
   <form
     onSubmit={onSubmit}
-    className="border-white/12 mt-8 grid gap-2 rounded-lg border bg-[#0b121f]/80 p-2 shadow-xl shadow-black/10 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+    className="mt-8 grid gap-2 rounded-lg border border-white/[0.12] p-2 shadow-xl shadow-black/10 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+    style={{ background: 'var(--glass-bg)' }}
   >
     <label className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-white/45 focus-within:bg-white/[0.03]">
       <Search className="h-4 w-4 shrink-0" />
@@ -470,10 +439,17 @@ const SearchPanel = ({
 
 const DisciplineGrid = () => (
   <section className="mt-12">
-    <SectionTitle
+    <SectionHeading
       title="Przeglądaj według dyscypliny"
-      linkTo="/wydarzenia"
-      linkLabel="Zobacz wszystkie dyscypliny"
+      action={
+        <Link
+          to="/wydarzenia"
+          className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+        >
+          Zobacz wszystkie dyscypliny
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      }
     />
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
       {disciplineFilters.map(({ key, label, count, Icon }) => (
@@ -491,124 +467,84 @@ const DisciplineGrid = () => (
   </section>
 );
 
-const EventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | 'finished' }) => (
-  <Link
-    to={`/events/${event.slug}${mode === 'finished' ? '?tab=results' : ''}`}
-    className={cn(
-      'group overflow-hidden rounded-lg border bg-white/[0.025] transition hover:bg-white/[0.04]',
-      mode === 'closing'
-        ? 'border-white/10 hover:border-orange-500/40'
-        : 'border-white/10 hover:border-emerald-500/40',
-    )}
-  >
-    <div className="relative h-44 overflow-hidden">
-      <img
-        src={eventImage(event)}
-        alt=""
-        className="opacity-62 h-full w-full object-cover transition duration-500 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/35 to-transparent" />
-      {mode === 'closing' && (
-        <span className="absolute left-3 top-3 rounded bg-black/75 px-2.5 py-1.5 text-[10px] font-extrabold uppercase leading-tight text-orange-400">
-          {deadlineText(event)}
-        </span>
-      )}
-    </div>
-    <div className="p-4 pt-3">
-      <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-snug text-white">
-        {event.name}
-      </h3>
-      <div className="mt-2">
-        <EventMeta event={event} compact />
-      </div>
-      {mode === 'closing' ? (
-        <>
-          <div className="mt-3 flex items-center gap-2 text-sm">
-            <span className="text-white/55">Od {minPrice(event)} zł</span>
-            <span className="text-white/24">•</span>
-            <span className="font-medium text-emerald-400">
-              Pozostało {spotsLeft(event)} miejsc
-            </span>
-          </div>
-          <div className="mt-3 flex h-9 items-center justify-center rounded-md border border-orange-500/60 text-sm font-bold text-white transition group-hover:bg-orange-500/10">
-            Zapisz się
-            <ArrowRight className="ml-2 h-3.5 w-3.5" />
-          </div>
-        </>
-      ) : (
-        <div className="mt-4 flex h-9 items-center justify-center rounded-md border border-emerald-500/60 text-sm font-bold text-white transition group-hover:bg-emerald-500/10">
-          Zobacz wyniki
-          <ArrowRight className="ml-2 h-3.5 w-3.5" />
+const HomeEventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | 'finished' }) => (
+  <EventImageCard
+    href={`/events/${event.slug}${mode === 'finished' ? '?tab=results' : ''}`}
+    imageSrc={eventImage(event)}
+    title={event.name}
+    mode={mode}
+    imageLabel={mode === 'closing' ? deadlineText(event) : undefined}
+    meta={<EventMeta event={event} compact />}
+    footer={
+      mode === 'closing' ? (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-white/55">Od {minPrice(event)} zł</span>
+          <span className="text-white/24">•</span>
+          <span className="font-medium text-emerald-400">
+            Pozostało {spotsLeft(event)} miejsc
+          </span>
         </div>
-      )}
-    </div>
-  </Link>
+      ) : undefined
+    }
+  />
+);
+
+const TABLE_HEADER_LABELS = ['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Zapisy', 'Cena od', ''];
+
+const UpcomingTableHeader = () => (
+  <div className="grid grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] items-center gap-4 px-4 py-2.5">
+    {TABLE_HEADER_LABELS.map((label) => (
+      <span key={label} className="text-[10px] font-bold uppercase tracking-widest text-white/[0.28]">
+        {label}
+      </span>
+    ))}
+  </div>
 );
 
 const UpcomingTable = ({ events }: { events: Event[] }) => (
-  <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]">
-    <div className="border-white/8 hidden grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] items-center gap-4 border-b px-4 py-2.5 md:grid">
-      {['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Zapisy', 'Cena od', ''].map((label) => (
-        <span key={label} className="text-white/28 text-[10px] font-bold uppercase tracking-widest">
-          {label}
-        </span>
-      ))}
-    </div>
-    <div className="divide-white/8 divide-y">
-      {events.slice(0, 4).map((event) => {
-        const tile = dateTile(eventDate(event));
-        const open = registrationLabel(event) === 'Zapisy otwarte';
+  <EventTable header={<UpcomingTableHeader />}>
+    {events.slice(0, 4).map((event) => {
+      const tile = dateTile(eventDate(event));
+      const open = registrationLabel(event) === 'Zapisy otwarte';
 
-        return (
-          <Link
-            key={event.id}
-            to={`/events/${event.slug}`}
-            className="group grid grid-cols-[54px_1fr_28px] items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03] md:grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] md:gap-4"
-          >
-            <div className="flex h-12 w-12 flex-col items-center justify-center rounded border border-white/10 bg-[#0a111d]">
-              <span className="text-base font-bold leading-none text-white">{tile.day}</span>
-              <span className="mt-0.5 text-[9px] font-bold uppercase text-white/45">
-                {tile.month}
-              </span>
-            </div>
-            <div className="min-w-0">
-              <div className="line-clamp-1 text-sm font-bold text-white">{event.name}</div>
-              <div className="text-white/42 mt-1 text-xs md:hidden">
-                {event.city} • {disciplineLabels[event.discipline]} • od {minPrice(event)} zł
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <Badge
-                variant="outline"
-                className="border-primary/30 bg-primary/10 text-[11px] font-medium text-primary"
-              >
-                {disciplineLabels[event.discipline]}
-              </Badge>
-            </div>
-            <div className="hidden text-sm text-white/55 md:block">{event.city}</div>
-            <div
-              className={cn(
-                'hidden text-sm font-medium md:flex md:items-center md:gap-2',
-                open ? 'text-emerald-400' : 'text-white/35',
-              )}
+      return (
+        <EventTableRow
+          key={event.id}
+          href={`/events/${event.slug}`}
+          dateTile={tile}
+          title={event.name}
+          mobileMeta={`${event.city} • ${disciplineLabels[event.discipline]} • od ${minPrice(event)} zł`}
+        >
+          <div className="hidden md:block">
+            <Badge
+              variant="outline"
+              className="border-primary/30 bg-primary/10 text-[11px] font-medium text-primary"
             >
-              {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-              {registrationLabel(event)}
-            </div>
-            <div className="hidden text-sm font-bold text-white md:block">{minPrice(event)} zł</div>
-            <ChevronRight className="h-4 w-4 text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/65" />
-          </Link>
-        );
-      })}
-    </div>
-  </div>
+              {disciplineLabels[event.discipline]}
+            </Badge>
+          </div>
+          <div className="hidden text-sm text-white/55 md:block">{event.city}</div>
+          <div
+            className={cn(
+              'hidden text-sm font-medium md:flex md:items-center md:gap-2',
+              open ? 'text-emerald-400' : 'text-white/35',
+            )}
+          >
+            {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+            {registrationLabel(event)}
+          </div>
+          <div className="hidden text-sm font-bold text-white md:block">{minPrice(event)} zł</div>
+        </EventTableRow>
+      );
+    })}
+  </EventTable>
 );
 
 const OrganizerCta = () => (
   <section className="mt-8">
     <div className="grid gap-5 rounded-lg border border-primary/30 bg-primary/10 p-5 md:grid-cols-[1fr_auto_210px] md:items-center md:p-6">
       <div className="flex items-start gap-5">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/55 bg-[#061326] text-primary">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/55 bg-primary/[0.08] text-primary">
           <Flag className="h-7 w-7" />
         </div>
         <div>
@@ -728,11 +664,8 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#06101d] text-white">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_8%_5%,rgba(37,99,235,0.18),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(14,165,233,0.10),transparent_24%)]" />
-        <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,rgba(5,11,20,0)_0%,rgba(5,11,20,0.60)_58%,rgba(5,11,20,0.94)_100%)]" />
-
-        <main className="relative mx-auto w-full max-w-[1200px] px-4 pb-10 sm:px-6 lg:px-8">
+      <PageBg>
+        <PageContent>
           <section className="grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,430px)] lg:items-start lg:py-8">
             <div className="pt-4 md:pt-8">
               <div className="mb-4 flex items-center gap-2.5">
@@ -772,25 +705,38 @@ const Index = () => {
           <DisciplineGrid />
 
           <section className="mt-10">
-            <SectionTitle
+            <SectionHeading
               title="Kończą się zapisy"
-              icon={<Clock3 className="h-5 w-5" />}
-              tone="warning"
-              linkTo="/wydarzenia"
-              linkLabel="Zobacz wszystkie"
+              accent="warning"
+              action={
+                <Link
+                  to="/wydarzenia"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                >
+                  Zobacz wszystkie
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              }
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {view.closing.map((event) => (
-                <EventImageCard key={event.id} event={event} mode="closing" />
+                <HomeEventImageCard key={event.id} event={event} mode="closing" />
               ))}
             </div>
           </section>
 
           <section className="mt-10">
-            <SectionTitle
+            <SectionHeading
               title="Nadchodzące wydarzenia"
-              linkTo="/wydarzenia"
-              linkLabel="Zobacz wszystkie"
+              action={
+                <Link
+                  to="/wydarzenia"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                >
+                  Zobacz wszystkie
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              }
             />
             <UpcomingTable events={view.upcoming} />
             <div className="mt-4 flex justify-center">
@@ -808,24 +754,30 @@ const Index = () => {
           </section>
 
           <section className="mt-10">
-            <SectionTitle
+            <SectionHeading
               title="Ostatnio zakończone"
-              icon={<CheckCircle2 className="h-5 w-5" />}
-              tone="success"
-              linkTo="/wyniki"
-              linkLabel="Zobacz wszystkie wyniki"
+              accent="success"
+              action={
+                <Link
+                  to="/wyniki"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                >
+                  Zobacz wszystkie wyniki
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              }
             />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {view.finished.map((event) => (
-                <EventImageCard key={event.id} event={event} mode="finished" />
+                <HomeEventImageCard key={event.id} event={event} mode="finished" />
               ))}
             </div>
           </section>
 
           <OrganizerCta />
           <PartnersStrip partners={partners} />
-        </main>
-      </div>
+        </PageContent>
+      </PageBg>
     </Layout>
   );
 };
