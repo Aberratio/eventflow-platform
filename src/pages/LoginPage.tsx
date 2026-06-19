@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -80,14 +80,21 @@ const MOCK_CREDENTIALS: MockCredential[] = [
 const LoginPage = () => {
   const { loginWithCredentials, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [quickLoginRole, setQuickLoginRole] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
+
   useEffect(() => {
     if (isAuthenticated && user) {
+      if (returnTo) {
+        navigate(returnTo);
+        return;
+      }
       const redirectPath = {
         participant: '/participant',
         organizer: '/organizer',
@@ -97,7 +104,7 @@ const LoginPage = () => {
       }[user.role];
       navigate(redirectPath);
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, returnTo]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),

@@ -127,9 +127,20 @@ export interface EventSponsor {
   logoOriginalUrl?: string;
 }
 
+export interface CoOrganizer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  logoUrl?: string;
+  logoOriginalUrl?: string;
+}
+
 export interface OrganizerInfo {
   contacts: OrganizerContactEntry[];
   sponsors: EventSponsor[];
+  coOrganizers?: CoOrganizer[];
 }
 
 export interface InsuranceOption {

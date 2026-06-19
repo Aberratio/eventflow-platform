@@ -78,7 +78,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         title: 'Wymagane logowanie',
         description: 'Zaloguj się, aby zapisać się na zawody.',
       });
-      navigate('/login');
+      navigate('/login', { state: { returnTo: `/events/${slug}/register` } });
     }
   }, [event, isAuthenticated, isLoading, navigate, previewMode]);
 

@@ -12,10 +12,12 @@ import {
   Mail,
   Phone,
   Globe,
+  MapPin,
   Plus,
   Trash2,
   Info,
   Link2,
+  Users,
   Upload,
   Loader2,
   X,
@@ -34,6 +36,83 @@ const SponsorLogoUpload = ({
   toast,
 }: {
   sponsorId: string;
+  logoUrl?: string;
+  onUpload: (url: string) => void;
+  onRemove: () => void;
+  toast: EventFormState['toast'];
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Nieprawidłowy plik', description: 'Wybierz plik graficzny (PNG, SVG, JPG).', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    try {
+      const response = await uploadEventImage(file);
+      onUpload(response.data.url);
+    } catch {
+      toast({ title: 'Błąd uploadu', description: 'Nie udało się wgrać logo. Spróbuj ponownie.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (logoUrl) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex h-10 w-24 shrink-0 items-center justify-center overflow-hidden rounded border border-border/60 bg-muted/30 p-1">
+          <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+          onClick={onRemove}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+          e.target.value = '';
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="gap-2"
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+      >
+        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+        {uploading ? 'Wgrywanie…' : 'Wgraj logo'}
+      </Button>
+    </>
+  );
+};
+
+const CoOrganizerLogoUpload = ({
+  logoUrl,
+  onUpload,
+  onRemove,
+  toast,
+}: {
   logoUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
@@ -251,6 +330,120 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
               .
             </AlertDescription>
           </Alert>
+        </CardContent>
+      </Card>
+
+      {/* Co-organizers */}
+      <Card>
+        <CardHeader className="p-4 pb-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" /> Współorganizatorzy
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+          <p className="text-sm text-muted-foreground">
+            Dodaj współorganizatorów wydarzenia. Podaj nazwę (wymagana) oraz opcjonalnie dane kontaktowe i logo.
+          </p>
+
+          {form.coOrganizers.length === 0 && (
+            <div className="rounded-lg border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+              Brak współorganizatorów. Dodaj pierwszego poniżej.
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {form.coOrganizers.map((coOrg, idx) => (
+              <div
+                key={coOrg.id}
+                className="relative rounded-lg border border-border/60 bg-card p-3"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Współorganizator {idx + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={() => form.removeCoOrganizer(coOrg.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">
+                      Nazwa współorganizatora <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      value={coOrg.name}
+                      onChange={(e) => form.updateCoOrganizer(coOrg.id, { name: e.target.value })}
+                      placeholder="np. Klub Sportowy XYZ"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-xs">
+                        <Mail className="h-3.5 w-3.5" /> E-mail
+                      </Label>
+                      <Input
+                        type="email"
+                        value={coOrg.email || ''}
+                        onChange={(e) => form.updateCoOrganizer(coOrg.id, { email: e.target.value })}
+                        placeholder="kontakt@example.com"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-xs">
+                        <Phone className="h-3.5 w-3.5" /> Telefon
+                      </Label>
+                      <Input
+                        type="tel"
+                        value={coOrg.phone || ''}
+                        onChange={(e) => form.updateCoOrganizer(coOrg.id, { phone: e.target.value })}
+                        placeholder="+48 123 456 789"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-xs">
+                      <MapPin className="h-3.5 w-3.5" /> Adres
+                    </Label>
+                    <Input
+                      value={coOrg.address || ''}
+                      onChange={(e) => form.updateCoOrganizer(coOrg.id, { address: e.target.value })}
+                      placeholder="ul. Sportowa 1, 00-001 Warszawa"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <HelpLabel description="Logo wyświetlane obok nazwy współorganizatora. Zalecany format: PNG lub SVG z przezroczystym tłem.">
+                      Logo
+                    </HelpLabel>
+                    <CoOrganizerLogoUpload
+                      logoUrl={coOrg.logoUrl}
+                      onUpload={(url) => form.updateCoOrganizer(coOrg.id, { logoUrl: url })}
+                      onRemove={() => form.updateCoOrganizer(coOrg.id, { logoUrl: undefined })}
+                      toast={form.toast}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={form.addCoOrganizer}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Dodaj współorganizatora
+          </Button>
         </CardContent>
       </Card>
 

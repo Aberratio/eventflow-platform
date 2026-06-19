@@ -184,7 +184,7 @@ export const AdminEventManage = () => {
     <Layout>
       <div className="container py-8">
         <div className="mb-6">
-          <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate('/admin')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Powrót do panelu
           </Button>

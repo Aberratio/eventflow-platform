@@ -82,7 +82,7 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
 
                 <div className="space-y-3">
                   {ageCategories.length > 0 && (
-                    <CategorySection label="Wiekowe" count={ageCategories.length}>
+                    <CategorySection label="Podstawowe" count={ageCategories.length}>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {ageCategories.map((cat) => (
                           <div
@@ -238,7 +238,7 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
               {distance.registeredCount.toLocaleString()}
               {distance.limit && ` / ${distance.limit.toLocaleString()}`} zapisanych
             </div>
-            {spotsLeft !== null && spotsLeft <= 100 && spotsLeft > 0 && (
+            {spotsLeft !== null && distance.limit != null && spotsLeft <= distance.limit * 0.2 && spotsLeft > 0 && (
               <Badge variant="destructive" className="mt-1">
                 Ostatnie {spotsLeft} miejsc!
               </Badge>

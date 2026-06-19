@@ -30,6 +30,12 @@ test.describe('Moderator Dashboard', () => {
     }
   });
 
+  test('can open event preview registration card', async ({ page }) => {
+    await page.goto('/events/krakowski-klasyk-rowerowy-2026/preview');
+    await expect(page.getByText('Krakowski Klasyk Rowerowy 2026').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Przetestuj formularz/i })).toBeVisible();
+  });
+
   test('orders tab shows order management', async ({ page }) => {
     const tab = page.locator('[role="tab"]:has-text("Zamówienia")');
     if (await tab.isVisible()) {

@@ -116,7 +116,7 @@ describe('participant event display', () => {
 
     render(<EventDistancesTab event={eventWithCategories} />);
 
-    expect(screen.getByText('Wiekowe')).toBeInTheDocument();
+    expect(screen.getByText('Podstawowe')).toBeInTheDocument();
     expect(screen.getByText('Specjalne')).toBeInTheDocument();
     expect(screen.getByText('Pozostałe')).toBeInTheDocument();
     expect(screen.getAllByText('Roczniki 1987–1996')).toHaveLength(2);

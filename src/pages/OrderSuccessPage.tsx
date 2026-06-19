@@ -185,7 +185,7 @@ const OrderSuccessPage = () => {
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="flex-1">
-              <Link to="/participant">Moje zamówienia</Link>
+              <Link to="/participant?tab=orders">Moje zamówienia</Link>
             </Button>
           </div>
         </div>

@@ -577,6 +577,7 @@ const EventsPage = () => {
                   <div className="relative">
                     <Search className="absolute left-6 top-1/2 h-6 w-6 -translate-y-1/2 text-muted-foreground" />
                     <Input
+                      id="search-input"
                       placeholder="Szukaj wydarzeń..."
                       value={filters.search}
                       onChange={(event) => updateFilter('search', event.target.value)}

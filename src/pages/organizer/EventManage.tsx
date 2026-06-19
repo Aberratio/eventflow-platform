@@ -64,9 +64,11 @@ const EventManage = () => {
     : isEventManageTab(legacyRequestedTab)
       ? legacyRequestedTab
       : 'overview';
-  const sectionBasePath = location.pathname.startsWith('/moderator/')
+  const isModeratorContext = location.pathname.startsWith('/moderator/');
+  const sectionBasePath = isModeratorContext
     ? `/moderator/events/${id}`
     : `/organizer/events/${id}`;
+  const dashboardPath = isModeratorContext ? '/moderator' : '/organizer';
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -149,7 +151,7 @@ const EventManage = () => {
             <h1 className="mb-4 text-2xl font-bold">
               {!event ? 'Wydarzenie nie znalezione' : 'Brak dostępu'}
             </h1>
-            <Button onClick={() => navigate(-1)}>Powrót do panelu</Button>
+            <Button onClick={() => navigate(dashboardPath)}>Powrót do panelu</Button>
           </div>
         </div>
       </Layout>
@@ -161,7 +163,7 @@ const EventManage = () => {
       <div className="container max-w-[1500px] py-8">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(dashboardPath)}
           className="mb-6 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu

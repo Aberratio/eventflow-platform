@@ -147,7 +147,7 @@ export const Header = () => {
           </DropdownMenu>
 
           <Link
-            to="/sklep"
+            to="/shop"
             className={cn(
               'relative rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
               isActive('/sklep') || isActive('/shop') ? 'text-foreground' : 'text-muted-foreground',
@@ -330,7 +330,7 @@ export const Header = () => {
               </CollapsibleContent>
             </Collapsible>
             <Link
-              to="/sklep"
+              to="/shop"
               className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
               onClick={() => setMobileMenuOpen(false)}
             >

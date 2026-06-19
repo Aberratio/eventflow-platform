@@ -34,6 +34,7 @@ import {
   LogisticsFieldStatus,
   OrganizerContactEntry,
   EventSponsor,
+  CoOrganizer,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -288,6 +289,11 @@ export const useEventFormState = () => {
     existingEvent?.organizerInfo?.sponsors || [],
   );
 
+  // Co-organizers
+  const [coOrganizers, setCoOrganizers] = useState<CoOrganizer[]>(
+    existingEvent?.organizerInfo?.coOrganizers || [],
+  );
+
   const updateLogisticsField = (
     key: keyof EventLogisticsInfo,
     updates: Partial<LogisticsField>,
@@ -376,6 +382,19 @@ export const useEventFormState = () => {
     setSponsors((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
   };
 
+  // Co-organizer handlers
+  const addCoOrganizer = () => {
+    setCoOrganizers((prev) => [...prev, { id: `coorg-${Date.now()}`, name: '' }]);
+  };
+
+  const removeCoOrganizer = (id: string) => {
+    setCoOrganizers((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const updateCoOrganizer = (id: string, updates: Partial<CoOrganizer>) => {
+    setCoOrganizers((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+  };
+
   // Categories
   const getEventYear = () => getEventYearFromDate(date);
   const generateStandardAgeCategories = () => generateStandardAgeCategoriesForDate(date);
@@ -389,13 +408,16 @@ export const useEventFormState = () => {
       : Array.isArray(existingAgeCats) && existingAgeCats.length > 0,
   );
   const [ageCategories, setAgeCategories] = useState<AgeCategory[]>(
-    Array.isArray(existingAgeCats) ? existingAgeCats : generateStandardAgeCategories(),
+    Array.isArray(existingAgeCats) ? existingAgeCats : [],
   );
   const [specialCategories, setSpecialCategories] = useState<SpecialCategory[]>(
     existingSpecialCats || [],
   );
 
   // Distances
+  const initGlobalAgeCatIds = (existingEvent?.distances?.[0]?.ageCategories || []).map((c) => c.id);
+  const initGlobalSpecialCatIds = (existingEvent?.distances?.[0]?.specialCategories || []).map((c) => c.id);
+  const initAllGlobalCatIds = [...initGlobalAgeCatIds, ...initGlobalSpecialCatIds];
   const [distances, setDistances] = useState<DistanceFormData[]>(
     existingEvent?.distances.map((d) => ({
       id: d.id,
@@ -410,7 +432,11 @@ export const useEventFormState = () => {
       priceTierMode: d.priceTierMode || 'date',
       participantCountType: d.participantCountType || 'registered',
       priceTiers: d.priceTiers || [],
-      disabledCategoryIds: [],
+      disabledCategoryIds: initAllGlobalCatIds.filter(
+        (id) =>
+          !(d.ageCategories || []).some((c) => c.id === id) &&
+          !(d.specialCategories || []).some((c) => c.id === id),
+      ),
       routeMapUrl: d.routeMapUrl || '',
       routeElevationProfile: d.routeElevationProfile || '',
       routeGpxUrl: d.routeGpxUrl || '',
@@ -478,11 +504,15 @@ export const useEventFormState = () => {
     setLogisticsInfo(existingEvent.logisticsInfo || {});
     setOrganizerContacts(existingEvent.organizerInfo?.contacts || []);
     setSponsors(existingEvent.organizerInfo?.sponsors || []);
+    setCoOrganizers(existingEvent.organizerInfo?.coOrganizers || []);
     const loadedAgeCats = existingEvent.distances?.[0]?.ageCategories;
     const hasLoadedCats = Array.isArray(loadedAgeCats) && loadedAgeCats.length > 0;
     setCategoriesEnabled(hasLoadedCats);
     setAgeCategories(Array.isArray(loadedAgeCats) ? loadedAgeCats : generateStandardAgeCategoriesForDate(existingEvent.date || ''));
     setSpecialCategories(existingEvent.distances?.[0]?.specialCategories || []);
+    const globalAgeCatIds = (existingEvent.distances?.[0]?.ageCategories || []).map((c) => c.id);
+    const globalSpecialCatIds = (existingEvent.distances?.[0]?.specialCategories || []).map((c) => c.id);
+    const allGlobalCatIds = [...globalAgeCatIds, ...globalSpecialCatIds];
     setDistances(
       existingEvent.distances.map((d) => ({
         id: d.id,
@@ -497,7 +527,11 @@ export const useEventFormState = () => {
         priceTierMode: d.priceTierMode || 'date',
         participantCountType: d.participantCountType || 'registered',
         priceTiers: d.priceTiers || [],
-        disabledCategoryIds: [],
+        disabledCategoryIds: allGlobalCatIds.filter(
+          (id) =>
+            !(d.ageCategories || []).some((c) => c.id === id) &&
+            !(d.specialCategories || []).some((c) => c.id === id),
+        ),
         routeMapUrl: d.routeMapUrl || '',
         routeElevationProfile: d.routeElevationProfile || '',
         routeGpxUrl: d.routeGpxUrl || '',
@@ -1096,6 +1130,18 @@ export const useEventFormState = () => {
 
   const nextStep = () => {
     markValidationShown(subStep);
+    if (subStep === 'distances') {
+      setDistances((prev) =>
+        prev.map((dist) => ({
+          ...dist,
+          priceTiers: [...dist.priceTiers].sort((a, b) =>
+            dist.priceTierMode === 'date'
+              ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
+              : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
+          ),
+        })),
+      );
+    }
     if (step === 1 && currentSubStepIndex < currentNavItems.length - 1) {
       const next = currentNavItems[currentSubStepIndex + 1];
       visitSubStep(next.id);
@@ -1232,6 +1278,7 @@ export const useEventFormState = () => {
       organizerInfo: {
         contacts: organizerContacts.filter((c) => c.email?.trim() || c.phone?.trim()),
         sponsors: sponsors.filter((s) => s.name.trim()),
+        coOrganizers: coOrganizers.filter((c) => c.name.trim()),
       },
     };
     return canManageFeatured ? { ...payload, featured } : payload;
@@ -1435,11 +1482,17 @@ export const useEventFormState = () => {
     addSponsor,
     removeSponsor,
     updateSponsor,
+    coOrganizers,
+    setCoOrganizers,
+    addCoOrganizer,
+    removeCoOrganizer,
+    updateCoOrganizer,
 
     // Step 2
     categoriesEnabled,
     setCategoriesEnabled,
     ageCategories,
+    setAgeCategories,
     addAgeCategory,
     removeAgeCategory,
     updateAgeCategory,

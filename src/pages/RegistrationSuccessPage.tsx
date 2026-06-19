@@ -320,7 +320,7 @@ const RegistrationSuccessPage = () => {
               <Link to={`/events/${slug}`}>Zobacz wydarzenie</Link>
             </Button>
             <Button variant="outline" asChild className="flex-1">
-              <Link to="/participant/registrations">Moje rejestracje</Link>
+              <Link to="/participant?tab=registrations">Moje rejestracje</Link>
             </Button>
           </div>
         </div>

@@ -166,7 +166,7 @@ export const AdminPartnerEditPage = () => {
     return (
       <Layout>
         <div className="container py-8">
-          <p className="text-muted-foreground">Ladowanie partnera...</p>
+          <p className="text-muted-foreground">Ładowanie partnera...</p>
         </div>
       </Layout>
     );
@@ -176,9 +176,9 @@ export const AdminPartnerEditPage = () => {
     return (
       <Layout>
         <div className="container py-8">
-          <p className="text-muted-foreground">Partner nie zostal znaleziony.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Powrot
+          <p className="text-muted-foreground">Partner nie został znaleziony.</p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Powrót
           </Button>
         </div>
       </Layout>

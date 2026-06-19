@@ -1,8 +1,10 @@
 import { mockResultDocuments, mockTeamResults } from '@/api';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -11,9 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Trophy, Medal, Users } from 'lucide-react';
-import { ResultsFilters } from '@/components/results/ResultsFilters';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Trophy, Medal, Users, ChevronDown, ChevronRight, Search, X, Timer, Gauge } from 'lucide-react';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
+import { useAuthSafe } from '@/contexts/AuthContext';
 import { Event, Result } from '@/types';
 
 interface ResultsSectionProps {
@@ -28,108 +32,529 @@ const getMedalIcon = (position: number) => {
   return null;
 };
 
-export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => {
-  const [selectedDistance, setSelectedDistance] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedGender, setSelectedGender] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+type DisplayMode = 'time' | 'pace' | 'speed';
 
-  const eventDocuments = mockResultDocuments.filter((d) => d.eventId === event.id);
-  const eventTeamResults = mockTeamResults.filter((t) => t.eventId === event.id);
+const formatPace = (timeInSeconds: number, distanceKm: number): string => {
+  const paceSeconds = timeInSeconds / distanceKm;
+  const mins = Math.floor(paceSeconds / 60);
+  const secs = Math.round(paceSeconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')} min/km`;
+};
 
-  const categories = useMemo(() => {
-    const cats = new Set(eventResults.map((r) => r.category));
-    return Array.from(cats).sort();
-  }, [eventResults]);
+const formatSpeed = (timeInSeconds: number, distanceKm: number): string => {
+  const kmh = (distanceKm / timeInSeconds) * 3600;
+  return `${kmh.toFixed(1)} km/h`;
+};
 
-  const filteredResults = useMemo(() => {
-    return eventResults
-      .filter((r) => {
-        if (selectedDistance !== 'all' && r.distanceId !== selectedDistance) return false;
-        if (selectedCategory !== 'all' && r.category !== selectedCategory) return false;
-        if (selectedGender !== 'all' && r.gender !== selectedGender) return false;
-        if (searchQuery && !r.userName.toLowerCase().includes(searchQuery.toLowerCase()))
-          return false;
-        return true;
-      })
-      .sort((a, b) => a.position - b.position);
-  }, [eventResults, selectedDistance, selectedCategory, selectedGender, searchQuery]);
+const formatValue = (result: { time: string; timeInSeconds: number }, mode: DisplayMode, distanceKm?: number): string => {
+  if (mode === 'pace' && distanceKm) return formatPace(result.timeInSeconds, distanceKm);
+  if (mode === 'speed' && distanceKm) return formatSpeed(result.timeInSeconds, distanceKm);
+  return result.time;
+};
+
+interface CategoryTableProps {
+  categoryName: string;
+  results: Result[];
+  positionKey: 'position' | 'categoryPosition';
+  showCategory?: boolean;
+  defaultOpen?: boolean;
+  forceOpen?: boolean;
+  distanceKm?: number;
+  displayMode: DisplayMode;
+  currentUserId?: string;
+}
+
+const COLUMN_LABEL: Record<DisplayMode, string> = {
+  time: 'Czas',
+  pace: 'Tempo',
+  speed: 'Prędkość',
+};
+
+const CategoryTable = ({
+  categoryName,
+  results,
+  positionKey,
+  showCategory = false,
+  defaultOpen = false,
+  forceOpen = false,
+  distanceKm,
+  displayMode,
+  currentUserId,
+}: CategoryTableProps) => {
+  const [open, setOpen] = useState(defaultOpen);
+  const winner = results[0];
+
+  useEffect(() => {
+    if (forceOpen) setOpen(true);
+  }, [forceOpen]);
+
+  const canConvert = !!distanceKm;
+  const activeMode = canConvert ? displayMode : 'time';
 
   return (
-    <>
-      <ResultsFilters
-        distances={event.distances}
-        selectedDistance={selectedDistance}
-        onDistanceChange={setSelectedDistance}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedGender={selectedGender}
-        onGenderChange={setSelectedGender}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        categories={categories}
-      />
+    <div className="border rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3">
+          {open ? (
+            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          )}
+          <span className="font-semibold text-sm">{categoryName}</span>
+          <Badge variant="secondary" className="text-xs">
+            {results.length}
+          </Badge>
+        </div>
+        {!open && winner && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Medal className="h-3.5 w-3.5 text-warning" />
+            <span className="font-medium text-foreground">{winner.userName}</span>
+            <span className="font-mono">{winner.time}</span>
+          </div>
+        )}
+      </button>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            Wyniki oficjalne
-            <Badge variant="secondary" className="ml-2">
-              {filteredResults.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredResults.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Poz.</TableHead>
-                    <TableHead>Uczestnik</TableHead>
-                    <TableHead className="hidden sm:table-cell">Dystans</TableHead>
-                    <TableHead>Czas</TableHead>
-                    <TableHead className="hidden md:table-cell">Kat.</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredResults.map((result) => (
-                    <TableRow key={result.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {getMedalIcon(result.position)}
-                          <span className="font-bold">{result.position}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
+      {open && (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-14">Poz.</TableHead>
+                <TableHead>Uczestnik</TableHead>
+                <TableHead>{COLUMN_LABEL[activeMode]}</TableHead>
+                {showCategory && (
+                  <TableHead className="hidden sm:table-cell">Kategoria</TableHead>
+                )}
+                <TableHead className="hidden sm:table-cell text-muted-foreground text-xs w-16">
+                  Nr
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {results.map((result) => {
+                const pos = result[positionKey];
+                const timeValue = formatValue(result, activeMode, distanceKm);
+                const isCurrentUser = !!currentUserId && result.userId === currentUserId;
+                return (
+                  <TableRow
+                    key={result.id}
+                    data-current-user={isCurrentUser || undefined}
+                    className={isCurrentUser ? 'bg-primary/10 font-semibold' : undefined}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {getMedalIcon(pos)}
+                        <span className={pos <= 3 ? 'font-bold' : ''}>{pos}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
                         <Link
                           to={`/athlete/${result.userId}`}
                           className="font-medium transition-colors hover:text-primary hover:underline"
                         >
                           {result.userName}
                         </Link>
+                        {isCurrentUser && (
+                          <Badge variant="default" className="text-xs px-1.5 py-0 shrink-0">
+                            Ty
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono">{timeValue}</TableCell>
+                    {showCategory && (
+                      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                        {result.category}
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell">{result.distanceName}</TableCell>
-                      <TableCell className="font-mono">{result.time}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {result.categoryPosition}. {result.category}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <p className="py-8 text-center text-muted-foreground">
-              {eventResults.length === 0
-                ? 'Wyniki będą dostępne wkrótce.'
-                : 'Brak wyników spełniających kryteria.'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                    )}
+                    <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                      {result.bibNumber}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+};
 
+interface DistancePanelProps {
+  results: Result[];
+  searchQuery: string;
+  distanceKm?: number;
+  currentUserId?: string;
+}
+
+const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: DistancePanelProps) => {
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('time');
+  const filtered = useMemo(() => {
+    return results.filter((r) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return r.userName.toLowerCase().includes(q) || r.bibNumber.toLowerCase().includes(q);
+    });
+  }, [results, searchQuery]);
+
+  const byCategory = useMemo(() => {
+    const map = new Map<string, Result[]>();
+    for (const r of filtered) {
+      const list = map.get(r.category) ?? [];
+      list.push(r);
+      map.set(r.category, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.categoryPosition - b.categoryPosition);
+    }
+    return map;
+  }, [filtered]);
+
+  const overallResults = useMemo(
+    () => [...filtered].sort((a, b) => a.position - b.position),
+    [filtered],
+  );
+
+  if (filtered.length === 0) {
+    return (
+      <p className="py-8 text-center text-muted-foreground">
+        Brak wyników spełniających kryteria.
+      </p>
+    );
+  }
+
+  const categories = Array.from(byCategory.entries());
+
+  return (
+    <div className="space-y-2">
+      {distanceKm && (
+        <div className="flex justify-end pb-1">
+          <ToggleGroup
+            type="single"
+            value={displayMode}
+            onValueChange={(v) => { if (v) setDisplayMode(v as DisplayMode); }}
+            size="sm"
+            variant="outline"
+          >
+            <ToggleGroupItem value="time" className="gap-1.5 px-3">
+              <Timer className="h-3.5 w-3.5" />
+              Czas
+            </ToggleGroupItem>
+            <ToggleGroupItem value="speed" className="gap-1.5 px-3">
+              <Gauge className="h-3.5 w-3.5" />
+              km/h
+            </ToggleGroupItem>
+            <ToggleGroupItem value="pace" className="gap-1.5 px-3">
+              <Gauge className="h-3.5 w-3.5" />
+              min/km
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
+      <CategoryTable
+        categoryName="Klasyfikacja generalna"
+        results={overallResults}
+        positionKey="position"
+        showCategory
+        defaultOpen={true}
+        forceOpen={!!searchQuery}
+        distanceKm={distanceKm}
+        displayMode={displayMode}
+        currentUserId={currentUserId}
+      />
+      {categories.map(([cat, catResults]) => (
+        <CategoryTable
+          key={cat}
+          categoryName={cat}
+          results={catResults}
+          positionKey="categoryPosition"
+          defaultOpen={false}
+          forceOpen={!!searchQuery}
+          distanceKm={distanceKm}
+          displayMode={displayMode}
+          currentUserId={currentUserId}
+        />
+      ))}
+    </div>
+  );
+};
+
+interface FlatResultsTableProps {
+  results: Result[];
+  showDistance: boolean;
+  distanceKm?: number;
+  displayMode: DisplayMode;
+  currentUserId?: string;
+}
+
+const FlatResultsTable = ({
+  results,
+  showDistance,
+  distanceKm,
+  displayMode,
+  currentUserId,
+}: FlatResultsTableProps) => {
+  const activeMode = distanceKm ? displayMode : 'time';
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-14">Poz.</TableHead>
+            <TableHead>Uczestnik</TableHead>
+            {showDistance && <TableHead className="hidden sm:table-cell">Dystans</TableHead>}
+            <TableHead>{COLUMN_LABEL[activeMode]}</TableHead>
+            <TableHead className="hidden md:table-cell">Kat.</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {results.map((result) => {
+            const timeValue = formatValue(result, activeMode, distanceKm);
+            const isCurrentUser = !!currentUserId && result.userId === currentUserId;
+            return (
+              <TableRow
+                key={result.id}
+                data-current-user={isCurrentUser || undefined}
+                className={isCurrentUser ? 'bg-primary/10 font-semibold' : undefined}
+              >
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    {getMedalIcon(result.position)}
+                    <span className="font-bold">{result.position}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/athlete/${result.userId}`}
+                      className="font-medium transition-colors hover:text-primary hover:underline"
+                    >
+                      {result.userName}
+                    </Link>
+                    {isCurrentUser && (
+                      <Badge variant="default" className="text-xs px-1.5 py-0 shrink-0">
+                        Ty
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                {showDistance && (
+                  <TableCell className="hidden sm:table-cell">{result.distanceName}</TableCell>
+                )}
+                <TableCell className="font-mono">{timeValue}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {result.categoryPosition}. {result.category}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => {
+  const auth = useAuthSafe();
+  const currentUserId = auth?.user?.id;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [displayModeSingle, setDisplayModeSingle] = useState<DisplayMode>('time');
+  const resultsCardRef = useRef<HTMLDivElement>(null);
+
+  const hasMyResult = useMemo(
+    () => !!currentUserId && eventResults.some((r) => r.userId === currentUserId),
+    [currentUserId, eventResults],
+  );
+
+  const scrollToMyResult = useCallback(() => {
+    const el = resultsCardRef.current?.querySelector('[data-current-user]');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
+
+  const eventDocuments = mockResultDocuments.filter((d) => d.eventId === event.id);
+  const eventTeamResults = mockTeamResults.filter((t) => t.eventId === event.id);
+
+  const hasMultipleDistances = event.distances.length > 1;
+
+  const distancesWithResults = useMemo(() => {
+    const ids = new Set(eventResults.map((r) => r.distanceId));
+    return event.distances.filter((d) => ids.has(d.id));
+  }, [event.distances, eventResults]);
+
+  const filteredResults = useMemo(() => {
+    return eventResults
+      .filter((r) => {
+        if (!searchQuery) return true;
+        const q = searchQuery.toLowerCase();
+        return r.userName.toLowerCase().includes(q) || r.bibNumber.toLowerCase().includes(q);
+      })
+      .sort((a, b) => a.position - b.position);
+  }, [eventResults, searchQuery]);
+
+  const resultsByDistance = useMemo(() => {
+    const map = new Map<string, Result[]>();
+    for (const r of eventResults) {
+      const list = map.get(r.distanceId) ?? [];
+      list.push(r);
+      map.set(r.distanceId, list);
+    }
+    return map;
+  }, [eventResults]);
+
+  return (
+    <>
+      {/* Filters */}
+      <div className="mb-6 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Szukaj po nazwisku lub numerze startowym..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        {hasMyResult && (
+          <Button variant="outline" size="sm" onClick={scrollToMyResult} className="shrink-0 gap-1.5">
+            <Medal className="h-3.5 w-3.5 text-primary" />
+            Mój wynik
+          </Button>
+        )}
+        {searchQuery && (
+          <Button variant="ghost" size="icon" onClick={() => setSearchQuery('')} className="shrink-0">
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Results */}
+      {hasMultipleDistances ? (
+        <Card ref={resultsCardRef}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              Wyniki oficjalne
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {eventResults.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">
+                Wyniki będą dostępne wkrótce.
+              </p>
+            ) : (
+              <Tabs defaultValue={distancesWithResults[0]?.id}>
+                <TabsList className="mb-4 flex flex-wrap h-auto gap-1">
+                  {distancesWithResults.map((d) => {
+                    const count = resultsByDistance.get(d.id)?.length ?? 0;
+                    return (
+                      <TabsTrigger key={d.id} value={d.id} className="gap-1.5">
+                        {d.name}
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                          {count}
+                        </Badge>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+
+                {distancesWithResults.map((d) => {
+                  const distResults = resultsByDistance.get(d.id) ?? [];
+                  const distanceKm =
+                    d.length != null
+                      ? d.unit === 'm'
+                        ? d.length / 1000
+                        : d.length
+                      : undefined;
+                  return (
+                    <TabsContent key={d.id} value={d.id}>
+                      <DistancePanel
+                        results={distResults}
+                        searchQuery={searchQuery}
+                        distanceKm={distanceKm}
+                        currentUserId={currentUserId}
+                      />
+                    </TabsContent>
+                  );
+                })}
+              </Tabs>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card ref={resultsCardRef}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              Wyniki oficjalne
+              <Badge variant="secondary" className="ml-2">
+                {filteredResults.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {filteredResults.length > 0 ? (
+              (() => {
+                const singleDistanceKm =
+                  event.distances[0]?.length != null
+                    ? event.distances[0].unit === 'm'
+                      ? event.distances[0].length! / 1000
+                      : event.distances[0].length!
+                    : undefined;
+                return (
+                  <>
+                    {singleDistanceKm && (
+                      <div className="flex justify-end pb-3">
+                        <ToggleGroup
+                          type="single"
+                          value={displayModeSingle}
+                          onValueChange={(v) => { if (v) setDisplayModeSingle(v as DisplayMode); }}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <ToggleGroupItem value="time" className="gap-1.5 px-3">
+                            <Timer className="h-3.5 w-3.5" />
+                            Czas
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="speed" className="gap-1.5 px-3">
+                            <Gauge className="h-3.5 w-3.5" />
+                            km/h
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="pace" className="gap-1.5 px-3">
+                            <Gauge className="h-3.5 w-3.5" />
+                            min/km
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                    )}
+                    <FlatResultsTable
+                      results={filteredResults}
+                      showDistance={false}
+                      distanceKm={singleDistanceKm}
+                      displayMode={displayModeSingle}
+                      currentUserId={currentUserId}
+                    />
+                  </>
+                );
+              })()
+            ) : (
+              <p className="py-8 text-center text-muted-foreground">
+                {eventResults.length === 0
+                  ? 'Wyniki będą dostępne wkrótce.'
+                  : 'Brak wyników spełniających kryteria.'}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Team results */}
       {eventTeamResults.length > 0 && (
         <Card>
           <CardHeader>

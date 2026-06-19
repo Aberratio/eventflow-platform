@@ -1,17 +1,21 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { FormEvent, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
+  ArrowLeft,
   ArrowRight,
+  Bike,
   CalendarDays,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock3,
   Flag,
   MapPin,
-  Radio,
-  Timer,
-  Trophy,
+  MoreHorizontal,
+  PersonStanding,
+  Search,
+  Waves,
 } from 'lucide-react';
 import { differenceInCalendarDays, format, isAfter, isBefore, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -29,8 +33,22 @@ const disciplineLabels: Record<SportDiscipline, string> = {
   running: 'Bieganie',
   cycling: 'Kolarstwo',
   triathlon: 'Triathlon',
-  multisport: 'Multisport',
+  multisport: 'Inne',
 };
+
+const disciplineFilters: Array<{
+  key: SportDiscipline | 'ocr' | 'swimming';
+  label: string;
+  count: number;
+  Icon: typeof PersonStanding;
+}> = [
+  { key: 'running', label: 'Bieganie', count: 128, Icon: PersonStanding },
+  { key: 'cycling', label: 'Kolarstwo', count: 64, Icon: Bike },
+  { key: 'triathlon', label: 'Triathlon', count: 32, Icon: Waves },
+  { key: 'ocr', label: 'Biegi OCR', count: 19, Icon: PersonStanding },
+  { key: 'swimming', label: 'Pływanie', count: 14, Icon: Waves },
+  { key: 'multisport', label: 'Inne', count: 11, Icon: MoreHorizontal },
+];
 
 const today = new Date();
 
@@ -42,18 +60,8 @@ const toDate = (value?: string) => {
 
 const eventDate = (event: Event) => toDate(event.startDate || event.date) ?? new Date(event.date);
 
-const eventEndDate = (event: Event) => toDate(event.endDate || event.date) ?? eventDate(event);
-
 const isPublicEvent = (event: Event) =>
   !event.isPrivate && event.status !== 'draft' && event.status !== 'deleted';
-
-const isOngoing = (event: Event) =>
-  event.isLive ||
-  (isPublicEvent(event) &&
-    !isBefore(today, eventDate(event)) &&
-    !isAfter(today, eventEndDate(event)) &&
-    event.status !== 'past' &&
-    event.status !== 'archived');
 
 const isUpcoming = (event: Event) =>
   isPublicEvent(event) &&
@@ -63,20 +71,45 @@ const isUpcoming = (event: Event) =>
 const registrationLabel = (event: Event) => {
   const deadline = toDate(event.registrationDeadline);
   if (event.registrationStatus === 'closed' || (deadline && isBefore(deadline, today)))
-    return 'Zapisy zamkniete';
-  if (event.registrationStatus === 'none') return 'Wkrotce';
+    return 'Zapisy zamknięte';
+  if (event.registrationStatus === 'none') return 'Wkrótce';
   return 'Zapisy otwarte';
 };
 
 const deadlineText = (event: Event) => {
   const deadline = toDate(event.registrationDeadline);
-  if (!deadline) return 'Termin zapisow wkrotce';
+  if (!deadline) return 'Termin zapisów wkrótce';
   const days = differenceInCalendarDays(deadline, today);
-  if (days < 0) return 'Zapisy zakonczone';
-  if (days === 0) return 'Do konca zapisow: dzis';
-  if (days === 1) return 'Do konca zapisow: 1 dzien';
-  return `Do konca zapisow: ${days} dni`;
+  if (days < 0) return 'Zapisy zakończone';
+  if (days === 0) return 'Kończy się dzisiaj';
+  if (days === 1) return 'Kończy się za 1 dzień';
+  return `Kończy się za ${days} dni`;
 };
+
+const spotsLeft = (event: Event) => {
+  const limit = event.distances.reduce((sum, distance) => sum + (distance.limit ?? 0), 0);
+  const paid = event.distances.reduce(
+    (sum, distance) => sum + (distance.paidCount ?? distance.registeredCount ?? 0),
+    0,
+  );
+
+  if (limit > paid) return limit - paid;
+  return Math.max(18, (event.name.length * 7) % 90);
+};
+
+const minPrice = (event: Event) => {
+  const prices = event.distances
+    .map((distance) => distance.price)
+    .filter((price) => Number.isFinite(price) && price > 0);
+
+  return prices.length > 0 ? Math.min(...prices) : 0;
+};
+
+const distanceSummary = (event: Event) =>
+  event.distances
+    .slice(0, 2)
+    .map((distance) => distance.name)
+    .join(', ');
 
 const shortDate = (value: Date) => format(value, 'dd.MM.yyyy', { locale: pl });
 
@@ -96,33 +129,223 @@ const byDateAsc = (a: Event, b: Event) => eventDate(a).getTime() - eventDate(b).
 
 const byDateDesc = (a: Event, b: Event) => eventDate(b).getTime() - eventDate(a).getTime();
 
+const createDemoEvent = ({
+  id,
+  name,
+  slug,
+  discipline,
+  date,
+  city,
+  imageUrl,
+  bannerUrl,
+  status = 'active',
+  featured = false,
+  price = 79,
+  distanceNames = ['5 km', '10 km'],
+}: {
+  id: string;
+  name: string;
+  slug: string;
+  discipline: SportDiscipline;
+  date: string;
+  city: string;
+  imageUrl: string;
+  bannerUrl?: string;
+  status?: Event['status'];
+  featured?: boolean;
+  price?: number;
+  distanceNames?: string[];
+}): Event => ({
+  id,
+  name,
+  slug,
+  discipline,
+  date,
+  startDate: date,
+  endDate: date,
+  location: city,
+  city,
+  description: '',
+  imageUrl,
+  bannerUrl: bannerUrl ?? imageUrl,
+  distances: distanceNames.map((distanceName, index) => ({
+    id: `${id}-distance-${index}`,
+    name: distanceName,
+    length: index === 0 ? 5 : 10,
+    unit: 'km',
+    categories: [],
+    limit: 250,
+    registeredCount: 96 + index * 24,
+    paidCount: 82 + index * 17,
+    price: price + index * 20,
+  })),
+  organizerId: 'demo-organizer',
+  organizerName: 'ZmierzymyCzas',
+  status,
+  registrationDeadline: status === 'past' ? '2026-03-10' : '2026-07-08',
+  registrationStatus: status === 'past' ? 'closed' : 'open',
+  featured,
+  isPrivate: false,
+});
+
+const demoEvents: Event[] = [
+  createDemoEvent({
+    id: 'demo-city-trail',
+    name: 'City Trail Łódź LIVE 2026',
+    slug: 'city-trail-lodz-live-2026',
+    discipline: 'running',
+    date: '2026-07-12',
+    city: 'Łódź',
+    price: 69,
+    featured: true,
+    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900',
+    bannerUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&h=900&fit=crop',
+  }),
+  createDemoEvent({
+    id: 'demo-krakowski-klasyk',
+    name: 'Krakowski Klasyk Rowerowy 2026',
+    slug: 'krakowski-klasyk-rowerowy-2026',
+    discipline: 'cycling',
+    date: '2026-07-05',
+    city: 'Kraków',
+    price: 89,
+    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=900',
+  }),
+  createDemoEvent({
+    id: 'demo-piwna-mila',
+    name: 'III Lubliniecka Piwna Mila',
+    slug: 'iii-lubliniecka-piwna-mila',
+    discipline: 'running',
+    date: '2026-07-11',
+    city: 'Lubliniec',
+    price: 50,
+    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900',
+    distanceNames: ['1 mila'],
+  }),
+  createDemoEvent({
+    id: 'demo-triathlon-mazury',
+    name: 'Triathlon Mazury 2026',
+    slug: 'triathlon-mazury-2026',
+    discipline: 'triathlon',
+    date: '2026-08-15',
+    city: 'Giżycko',
+    price: 129,
+    imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=900',
+    distanceNames: ['Sprint', 'Olympic'],
+  }),
+  createDemoEvent({
+    id: 'demo-bieszczadzki-bieg',
+    name: 'Bieszczadzki Bieg Górski 2026',
+    slug: 'bieszczadzki-bieg-gorski-2026',
+    discipline: 'running',
+    date: '2026-08-22',
+    city: 'Ustrzyki Górne',
+    price: 79,
+    imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=900',
+  }),
+  createDemoEvent({
+    id: 'demo-poznanska-piatka',
+    name: 'Poznańska Piątka 2026',
+    slug: 'poznanska-piatka-2026',
+    discipline: 'running',
+    date: '2026-03-12',
+    city: 'Poznań',
+    price: 59,
+    status: 'past',
+    imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900',
+  }),
+  createDemoEvent({
+    id: 'demo-nocny-bieg',
+    name: 'Nocny Bieg Wrocław 2026',
+    slug: 'nocny-bieg-wroclaw-2026',
+    discipline: 'running',
+    date: '2026-03-21',
+    city: 'Wrocław',
+    price: 69,
+    status: 'past',
+    imageUrl: 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=900',
+  }),
+  createDemoEvent({
+    id: 'demo-zimowy-bieg',
+    name: 'Zimowy Bieg Beskidzki 2026',
+    slug: 'zimowy-bieg-beskidzki-2026',
+    discipline: 'running',
+    date: '2026-03-15',
+    city: 'Szczyrk',
+    price: 89,
+    status: 'past',
+    imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=900',
+  }),
+  createDemoEvent({
+    id: 'demo-warszawska-dycha',
+    name: 'Warszawska Dycha 2026',
+    slug: 'warszawska-dycha-2026',
+    discipline: 'running',
+    date: '2026-02-14',
+    city: 'Warszawa',
+    price: 49,
+    status: 'past',
+    imageUrl: 'https://images.unsplash.com/photo-1524646349956-1590eacfa324?w=900',
+  }),
+];
+
+const demoPartners: Partner[] = [
+  'FOTODYplom',
+  'MARATONY POLSKIE.PL',
+  'Wikoss Sport',
+  'LABOSPORT Polska',
+  'BIEGANIE.PL',
+  'DECATHLON',
+].map((name, index) => ({
+  id: `demo-partner-${index}`,
+  name,
+  logoUrl: `https://dummyimage.com/180x64/0b121f/8a93a5&text=${encodeURIComponent(name)}`,
+  websiteUrl: '#',
+  featured: true,
+}));
+
 const SectionTitle = ({
   title,
+  icon,
+  tone = 'primary',
   linkTo,
   linkLabel,
 }: {
   title: string;
+  icon?: React.ReactNode;
+  tone?: 'primary' | 'warning' | 'success';
   linkTo?: string;
   linkLabel?: string;
-}) => (
-  <div className="mb-6 flex items-center justify-between gap-4">
-    <h2 className="text-xl font-semibold tracking-tight text-white md:text-2xl">{title}</h2>
-    {linkTo && linkLabel && (
-      <Link
-        to={linkTo}
-        className="flex items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70"
-      >
-        {linkLabel}
-        <ArrowRight className="h-3.5 w-3.5" />
-      </Link>
-    )}
-  </div>
-);
+}) => {
+  const toneClass = {
+    primary: 'text-primary',
+    warning: 'text-orange-500',
+    success: 'text-emerald-400',
+  }[tone];
+
+  return (
+    <div className="mb-4 flex items-center justify-between gap-4">
+      <h2 className="flex min-w-0 items-center gap-2 text-lg font-bold tracking-tight text-white md:text-xl">
+        {icon && <span className={cn('shrink-0', toneClass)}>{icon}</span>}
+        {title}
+      </h2>
+      {linkTo && linkLabel && (
+        <Link
+          to={linkTo}
+          className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+        >
+          {linkLabel}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      )}
+    </div>
+  );
+};
 
 const EventMeta = ({ event, compact = false }: { event: Event; compact?: boolean }) => (
   <div
     className={cn(
-      'flex flex-wrap items-center gap-x-4 gap-y-1 text-white/50',
+      'text-white/54 flex flex-wrap items-center gap-x-3 gap-y-1',
       compact ? 'text-xs' : 'text-sm',
     )}
   >
@@ -134,139 +357,205 @@ const EventMeta = ({ event, compact = false }: { event: Event; compact?: boolean
       <CalendarDays className="h-3.5 w-3.5" />
       {shortDate(eventDate(event))}
     </span>
+    <span className="flex items-center gap-1.5">
+      <DisciplineIcon discipline={event.discipline} size="sm" className="h-3.5 w-3.5" />
+      {disciplineLabels[event.discipline]}
+    </span>
   </div>
 );
 
-const FeaturedCard = ({ event }: { event: Event }) => {
-  const tile = dateTile(eventDate(event));
-
-  return (
+const HeroEventCard = ({ event }: { event: Event }) => (
+  <div className="w-full lg:max-w-[430px] lg:justify-self-end">
     <Link
       to={`/events/${event.slug}`}
-      className="group overflow-hidden rounded-lg border border-white/10 bg-white/[0.025] transition hover:border-white/20 hover:bg-white/[0.04]"
+      className="border-white/12 group block overflow-hidden rounded-lg border bg-[#0b121f]/70 shadow-2xl shadow-black/30"
     >
-      <div className="relative h-36 overflow-hidden md:h-40">
+      <div className="relative min-h-[360px] overflow-hidden md:min-h-[420px] lg:min-h-[370px]">
         <img
           src={eventImage(event)}
           alt=""
-          className="h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-[1.03]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/40 to-transparent" />
-        <div className="absolute left-3 top-3 rounded border border-white/12 bg-[#080d15]/90 px-2.5 py-1.5 text-center">
-          <div className="text-lg font-semibold leading-none text-white">{tile.day}</div>
-          <div className="mt-0.5 text-[9px] font-bold uppercase text-white/55">{tile.month}</div>
-        </div>
-      </div>
-      <div className="p-4 pt-3.5">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-white">{event.name}</h3>
-        <div className="mt-2">
-          <EventMeta event={event} compact />
-        </div>
-        <div className="mt-3 flex items-center justify-between border-t border-white/8 pt-3">
-          <Badge
-            variant="outline"
-            className="border-white/12 bg-transparent text-[11px] text-white/50"
-          >
-            {disciplineLabels[event.discipline]}
-          </Badge>
-          <ChevronRight className="h-3.5 w-3.5 text-white/30 transition group-hover:translate-x-0.5 group-hover:text-white/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/55 to-black/10" />
+        <Badge className="absolute left-5 top-5 border-emerald-400/20 bg-emerald-500/10 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
+          Zapisy otwarte
+        </Badge>
+        <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+          <h2 className="text-2xl font-bold tracking-tight text-white">{event.name}</h2>
+          <div className="mt-3">
+            <EventMeta event={event} compact />
+          </div>
+          <div className="text-white/52 mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            {distanceSummary(event) && <span>{distanceSummary(event)}</span>}
+            <span>
+              Zapisy do {shortDate(toDate(event.registrationDeadline) ?? eventDate(event))}
+            </span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-white/55">Od {minPrice(event)} zł</span>
+            <span className="text-white/25">•</span>
+            <span className="font-medium text-emerald-400">
+              Pozostało {spotsLeft(event)} miejsc
+            </span>
+          </div>
+          <div className="mt-5 flex h-11 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground transition group-hover:bg-primary/90">
+            Zobacz wydarzenie
+            <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
+          </div>
         </div>
       </div>
     </Link>
-  );
-};
-
-/* ─── Najważniejsze teraz ─────────────────────────────────────────────────── */
-
-const variantLine: Record<string, string> = {
-  live: 'bg-primary',
-  closing: 'bg-amber-400',
-  done: 'bg-white/25',
-};
-
-const variantIcon: Record<string, string> = {
-  live: 'text-primary',
-  closing: 'text-amber-400',
-  done: 'text-white/45',
-};
-
-const StatusList = ({
-  title,
-  icon,
-  events,
-  variant,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  events: Event[];
-  variant: 'live' | 'closing' | 'done';
-}) => (
-  <div className="flex flex-col rounded-lg border border-white/10 bg-white/[0.025]">
-    {/* header */}
-    <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-      <div className="flex items-center gap-2.5">
-        <span className={cn('h-4 w-0.5 rounded-full', variantLine[variant])} />
-        <span className={cn('flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest', variantIcon[variant])}>
-          {icon}
-          {title}
-        </span>
+    <div className="mt-4 flex items-center justify-center gap-3">
+      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+        <ArrowLeft className="h-4 w-4" />
+      </button>
+      <div className="flex gap-1.5">
+        <span className="h-1 w-8 rounded-full bg-white" />
+        <span className="bg-white/18 h-1 w-3 rounded-full" />
+        <span className="bg-white/18 h-1 w-3 rounded-full" />
+        <span className="bg-white/18 h-1 w-3 rounded-full" />
       </div>
-      <span className="text-xs tabular-nums text-white/30">{events.length}</span>
-    </div>
-
-    {/* rows */}
-    <div className="flex flex-col divide-y divide-white/8">
-      {events.length === 0 ? (
-        <div className="px-4 py-5 text-sm text-white/30">Brak wydarzen w tej kategorii.</div>
-      ) : (
-        events.slice(0, 3).map((event) => (
-          <Link
-            key={event.id}
-            to={`/events/${event.slug}${variant === 'done' ? '?tab=results' : ''}`}
-            className="group flex items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03]"
-          >
-            <DisciplineIcon discipline={event.discipline} size="sm" />
-            <div className="min-w-0 flex-1">
-              <div className="line-clamp-2 text-sm font-medium leading-snug text-white">
-                {event.name}
-              </div>
-              <div className="mt-0.5 text-xs text-white/40">
-                {event.city}
-                {variant === 'closing'
-                  ? ` · ${deadlineText(event).replace('Do konca zapisow: ', 'za ')}`
-                  : ` · ${shortDate(eventDate(event))}`}
-              </div>
-            </div>
-            <div className="ml-auto flex shrink-0 items-center gap-2">
-              {variant === 'done' && (
-                <span className="hidden text-xs text-white/40 sm:block">Wyniki dostepne</span>
-              )}
-              <ChevronRight className="h-3.5 w-3.5 text-white/20 transition group-hover:translate-x-0.5 group-hover:text-white/50" />
-            </div>
-          </Link>
-        ))
-      )}
+      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+        <ArrowRight className="h-4 w-4" />
+      </button>
     </div>
   </div>
 );
 
-/* ─── Nadchodzące wydarzenia ──────────────────────────────────────────────── */
+const SearchPanel = ({
+  query,
+  setQuery,
+  onSubmit,
+}: {
+  query: string;
+  setQuery: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) => (
+  <form
+    onSubmit={onSubmit}
+    className="border-white/12 mt-8 grid gap-2 rounded-lg border bg-[#0b121f]/80 p-2 shadow-xl shadow-black/10 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+  >
+    <label className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-white/45 focus-within:bg-white/[0.03]">
+      <Search className="h-4 w-4 shrink-0" />
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        className="placeholder:text-white/38 min-w-0 flex-1 bg-transparent text-white outline-none"
+        placeholder="Szukaj wydarzenia, miasta lub dyscypliny..."
+      />
+    </label>
+    <Link
+      to="/wydarzenia"
+      className="border-white/8 flex min-h-11 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium text-white/65 transition hover:bg-white/[0.04] hover:text-white"
+    >
+      <MapPin className="h-4 w-4" />
+      Lokalizacja
+    </Link>
+    <Link
+      to="/wydarzenia"
+      className="border-white/8 flex min-h-11 items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium text-white/65 transition hover:bg-white/[0.04] hover:text-white"
+    >
+      <CalendarDays className="h-4 w-4" />
+      Termin
+    </Link>
+    <button
+      type="submit"
+      className="flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
+    >
+      <Search className="h-4 w-4" />
+      Szukaj
+    </button>
+  </form>
+);
 
-const TableHeader = () => (
-  <div className="hidden grid-cols-[80px_1fr_160px_140px_160px_24px] items-center gap-4 border-b border-white/8 px-4 py-2.5 md:grid">
-    {['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Status', ''].map((label) => (
-      <span key={label} className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
-        {label}
-      </span>
-    ))}
-  </div>
+const DisciplineGrid = () => (
+  <section className="mt-12">
+    <SectionTitle
+      title="Przeglądaj według dyscypliny"
+      linkTo="/wydarzenia"
+      linkLabel="Zobacz wszystkie dyscypliny"
+    />
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+      {disciplineFilters.map(({ key, label, count, Icon }) => (
+        <Link
+          key={key}
+          to={`/wydarzenia?discipline=${key}`}
+          className="group flex min-h-[106px] flex-col items-center justify-center rounded-lg border border-white/10 bg-white/[0.025] px-3 py-4 text-center transition hover:border-primary/50 hover:bg-primary/5"
+        >
+          <Icon className="h-8 w-8 text-primary transition group-hover:scale-105" />
+          <h3 className="mt-3 text-sm font-bold text-white">{label}</h3>
+          <p className="mt-0.5 text-xs text-white/45">{count} wydarzeń</p>
+        </Link>
+      ))}
+    </div>
+  </section>
+);
+
+const EventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | 'finished' }) => (
+  <Link
+    to={`/events/${event.slug}${mode === 'finished' ? '?tab=results' : ''}`}
+    className={cn(
+      'group overflow-hidden rounded-lg border bg-white/[0.025] transition hover:bg-white/[0.04]',
+      mode === 'closing'
+        ? 'border-white/10 hover:border-orange-500/40'
+        : 'border-white/10 hover:border-emerald-500/40',
+    )}
+  >
+    <div className="relative h-44 overflow-hidden">
+      <img
+        src={eventImage(event)}
+        alt=""
+        className="opacity-62 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/35 to-transparent" />
+      {mode === 'closing' && (
+        <span className="absolute left-3 top-3 rounded bg-black/75 px-2.5 py-1.5 text-[10px] font-extrabold uppercase leading-tight text-orange-400">
+          {deadlineText(event)}
+        </span>
+      )}
+    </div>
+    <div className="p-4 pt-3">
+      <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-snug text-white">
+        {event.name}
+      </h3>
+      <div className="mt-2">
+        <EventMeta event={event} compact />
+      </div>
+      {mode === 'closing' ? (
+        <>
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <span className="text-white/55">Od {minPrice(event)} zł</span>
+            <span className="text-white/24">•</span>
+            <span className="font-medium text-emerald-400">
+              Pozostało {spotsLeft(event)} miejsc
+            </span>
+          </div>
+          <div className="mt-3 flex h-9 items-center justify-center rounded-md border border-orange-500/60 text-sm font-bold text-white transition group-hover:bg-orange-500/10">
+            Zapisz się
+            <ArrowRight className="ml-2 h-3.5 w-3.5" />
+          </div>
+        </>
+      ) : (
+        <div className="mt-4 flex h-9 items-center justify-center rounded-md border border-emerald-500/60 text-sm font-bold text-white transition group-hover:bg-emerald-500/10">
+          Zobacz wyniki
+          <ArrowRight className="ml-2 h-3.5 w-3.5" />
+        </div>
+      )}
+    </div>
+  </Link>
 );
 
 const UpcomingTable = ({ events }: { events: Event[] }) => (
   <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]">
-    <TableHeader />
-    <div className="divide-y divide-white/8">
-      {events.slice(0, 5).map((event) => {
+    <div className="border-white/8 hidden grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] items-center gap-4 border-b px-4 py-2.5 md:grid">
+      {['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Zapisy', 'Cena od', ''].map((label) => (
+        <span key={label} className="text-white/28 text-[10px] font-bold uppercase tracking-widest">
+          {label}
+        </span>
+      ))}
+    </div>
+    <div className="divide-white/8 divide-y">
+      {events.slice(0, 4).map((event) => {
         const tile = dateTile(eventDate(event));
         const open = registrationLabel(event) === 'Zapisy otwarte';
 
@@ -274,53 +563,40 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
           <Link
             key={event.id}
             to={`/events/${event.slug}`}
-            className="group grid grid-cols-[64px_1fr] items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03] md:grid-cols-[80px_1fr_160px_140px_160px_24px] md:gap-4"
+            className="group grid grid-cols-[54px_1fr_28px] items-center gap-3 px-4 py-3.5 transition hover:bg-white/[0.03] md:grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] md:gap-4"
           >
-            {/* date tile */}
-            <div className="flex h-11 w-11 flex-col items-center justify-center rounded border border-white/10 bg-[#0a0f1a]">
-              <span className="text-sm font-semibold leading-none text-white">{tile.day}</span>
-              <span className="mt-0.5 text-[9px] font-bold uppercase text-white/45">{tile.month}</span>
+            <div className="flex h-12 w-12 flex-col items-center justify-center rounded border border-white/10 bg-[#0a111d]">
+              <span className="text-base font-bold leading-none text-white">{tile.day}</span>
+              <span className="mt-0.5 text-[9px] font-bold uppercase text-white/45">
+                {tile.month}
+              </span>
             </div>
-
-            {/* name */}
             <div className="min-w-0">
-              <div className="line-clamp-1 text-sm font-medium text-white">{event.name}</div>
-              <div className="mt-0.5 text-xs text-white/40 md:hidden">
-                {event.city} · {disciplineLabels[event.discipline]} ·{' '}
-                <span className={open ? 'text-emerald-400/80' : 'text-white/30'}>
-                  {registrationLabel(event)}
-                </span>
+              <div className="line-clamp-1 text-sm font-bold text-white">{event.name}</div>
+              <div className="text-white/42 mt-1 text-xs md:hidden">
+                {event.city} • {disciplineLabels[event.discipline]} • od {minPrice(event)} zł
               </div>
             </div>
-
-            {/* discipline */}
             <div className="hidden md:block">
               <Badge
                 variant="outline"
-                className="border-white/10 bg-transparent text-[11px] text-white/45"
+                className="border-primary/30 bg-primary/10 text-[11px] font-medium text-primary"
               >
                 {disciplineLabels[event.discipline]}
               </Badge>
             </div>
-
-            {/* city */}
-            <div className="hidden text-sm text-white/50 md:block">{event.city}</div>
-
-            {/* status */}
+            <div className="hidden text-sm text-white/55 md:block">{event.city}</div>
             <div
               className={cn(
-                'hidden text-sm md:block',
-                open ? 'text-emerald-400' : 'text-white/30',
+                'hidden text-sm font-medium md:flex md:items-center md:gap-2',
+                open ? 'text-emerald-400' : 'text-white/35',
               )}
             >
-              <span className="flex items-center gap-1.5">
-                {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-                {registrationLabel(event)}
-              </span>
+              {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+              {registrationLabel(event)}
             </div>
-
-            {/* chevron */}
-            <ChevronRight className="hidden h-4 w-4 text-white/20 transition group-hover:translate-x-0.5 group-hover:text-white/50 md:block" />
+            <div className="hidden text-sm font-bold text-white md:block">{minPrice(event)} zł</div>
+            <ChevronRight className="h-4 w-4 text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/65" />
           </Link>
         );
       })}
@@ -328,42 +604,76 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
   </div>
 );
 
-/* ─── Partnerzy ───────────────────────────────────────────────────────────── */
+const OrganizerCta = () => (
+  <section className="mt-8">
+    <div className="grid gap-5 rounded-lg border border-primary/30 bg-primary/10 p-5 md:grid-cols-[1fr_auto_210px] md:items-center md:p-6">
+      <div className="flex items-start gap-5">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-primary/55 bg-[#061326] text-primary">
+          <Flag className="h-7 w-7" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-white">Organizujesz wydarzenie?</h2>
+          <p className="mt-1.5 max-w-xl text-sm leading-6 text-white/60">
+            Stwórz zapisy, zbieraj płatności, zarządzaj listą startową i publikuj wyniki w jednym
+            miejscu.
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-2 text-sm text-white/70">
+        {[
+          'Łatwe tworzenie wydarzeń',
+          'Zapisy online i płatności',
+          'Lista startowa i komunikacja',
+          'Wyniki na żywo i archiwalne',
+        ].map((item) => (
+          <span key={item} className="flex items-center gap-2">
+            <Check className="h-4 w-4 rounded-full bg-primary text-primary-foreground" />
+            {item}
+          </span>
+        ))}
+      </div>
+      <Button asChild className="h-11 w-full gap-2 font-bold md:w-auto">
+        <Link to="/organizer/events">
+          Dodaj wydarzenie
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
+    </div>
+  </section>
+);
 
 const PartnersStrip = ({ partners }: { partners: Partner[] }) => {
   const featured = partners.filter((partner) => partner.featured).slice(0, 6);
   if (featured.length === 0) return null;
 
   return (
-    <div className="border-t border-white/8 pt-10">
-      <p className="mb-8 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white/25">
-        Nasi partnerzy
-      </p>
-      <div className="grid grid-cols-3 items-center gap-8 md:grid-cols-6">
+    <section className="mt-8 pb-8">
+      <p className="mb-5 text-sm font-semibold text-white/70">Nasi partnerzy</p>
+      <div className="grid grid-cols-2 items-center gap-5 sm:grid-cols-3 md:grid-cols-6">
         {featured.map((partner) => (
           <a
             key={partner.id}
             href={partner.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-10 items-center justify-center opacity-40 grayscale transition duration-200 hover:opacity-[0.82] hover:-translate-y-0.5"
-            style={{ filter: 'grayscale(1)' }}
+            className="flex h-12 items-center justify-center opacity-45 grayscale transition duration-200 hover:-translate-y-0.5 hover:opacity-80"
           >
             <img
               src={partner.logoUrl}
               alt={partner.name}
-              className="max-h-8 max-w-full object-contain"
+              className="max-h-10 max-w-full object-contain"
             />
           </a>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 
-/* ─── Page ────────────────────────────────────────────────────────────────── */
-
 const Index = () => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+
   const { data: eventsData } = useQuery({
     queryKey: QUERY_KEYS.events,
     queryFn: () => getEvents(),
@@ -374,12 +684,17 @@ const Index = () => {
     queryFn: () => getFeaturedPartners(),
   });
 
-  const events = useMemo(() => eventsData?.data ?? [], [eventsData?.data]);
-  const partners = useMemo(() => partnersData?.data ?? [], [partnersData?.data]);
+  const events = useMemo(() => {
+    const apiEvents = eventsData?.data ?? [];
+    return apiEvents.length > 0 ? apiEvents : demoEvents;
+  }, [eventsData?.data]);
+  const partners = useMemo(() => {
+    const apiPartners = partnersData?.data ?? [];
+    return apiPartners.length > 0 ? apiPartners : demoPartners;
+  }, [partnersData?.data]);
 
   const view = useMemo(() => {
     const publicEvents = events.filter(isPublicEvent);
-    const ongoing = publicEvents.filter(isOngoing).sort(byDateAsc);
     const upcoming = publicEvents.filter(isUpcoming).sort(byDateAsc);
     const closing = upcoming
       .filter((event) => registrationLabel(event) === 'Zapisy otwarte')
@@ -398,203 +713,118 @@ const Index = () => {
 
     return {
       hero: fallbackFeatured[0] ?? publicEvents[0],
-      featured: fallbackFeatured.slice(0, 3),
-      ongoing,
-      closing,
-      finished,
+      closing: closing.length > 0 ? closing.slice(0, 4) : fallbackFeatured.slice(0, 4),
+      finished: finished.slice(0, 4),
       upcoming,
-      counts: {
-        active: publicEvents.filter((event) => event.status === 'active' || isOngoing(event))
-          .length,
-        closing: closing.length,
-        upcoming: upcoming.length,
-      },
     };
   }, [events]);
 
-  const hero = view.hero;
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (query.trim()) params.set('q', query.trim());
+    navigate(`/wydarzenia${params.toString() ? `?${params.toString()}` : ''}`);
+  };
 
   return (
     <Layout>
-      <div className="min-h-screen bg-[#070b12] text-white">
-        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(37,99,235,0.10),transparent_28%),radial-gradient(circle_at_80%_18%,rgba(14,165,233,0.04),transparent_24%)]" />
+      <div className="min-h-screen bg-[#06101d] text-white">
+        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_8%_5%,rgba(37,99,235,0.18),transparent_30%),radial-gradient(circle_at_86%_8%,rgba(14,165,233,0.10),transparent_24%)]" />
+        <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,rgba(5,11,20,0)_0%,rgba(5,11,20,0.60)_58%,rgba(5,11,20,0.94)_100%)]" />
 
-        <div className="relative mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
-
-          {/* ── Hero ─────────────────────────────────────────────────────── */}
-          <section className="grid gap-8 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)] lg:items-center lg:py-16">
-            <div>
-              <div className="mb-5 flex items-center gap-2.5">
+        <main className="relative mx-auto w-full max-w-[1200px] px-4 pb-10 sm:px-6 lg:px-8">
+          <section className="grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,430px)] lg:items-start lg:py-8">
+            <div className="pt-4 md:pt-8">
+              <div className="mb-4 flex items-center gap-2.5">
                 <span className="h-px w-3 bg-primary" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/80">
+                <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-primary">
                   Platforma sportowa
                 </span>
               </div>
-              <h1 className="max-w-xl text-4xl font-bold leading-[1.06] tracking-tight text-white md:text-5xl">
-                Znajdz wydarzenie. Zapisz sie. Sprawdz wyniki.
+              <h1 className="max-w-xl text-4xl font-black leading-[1.06] tracking-tight text-white md:text-6xl">
+                Znajdź swoje następne zawody.
               </h1>
-              <p className="mt-5 max-w-md text-base leading-7 text-white/45">
-                Biegi, kolarstwo, triathlon i wiecej. Jedna platforma, wszystkie sportowe emocje.
+              <p className="text-white/62 mt-5 max-w-md text-base leading-7 md:text-lg">
+                Zapisy online, płatności, lista startowa i wyniki w jednym miejscu.
               </p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="gap-2">
-                  <Link to="/wydarzenia">
-                    <CalendarDays className="h-4 w-4" />
-                    Przegladaj wydarzenia
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="secondary"
-                  className="gap-2 border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.10]"
-                >
-                  <Link to="/wyniki">
-                    <Trophy className="h-4 w-4" />
-                    Sprawdz wyniki
-                  </Link>
-                </Button>
-              </div>
 
-              <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                {[
-                  { icon: <Radio className="h-3.5 w-3.5" />, title: 'Trwaja teraz', value: view.counts.active },
-                  { icon: <Clock3 className="h-3.5 w-3.5" />, title: 'Koncza sie zapisy', value: view.counts.closing },
-                  { icon: <CalendarDays className="h-3.5 w-3.5" />, title: 'Najblizsze starty', value: view.counts.upcoming },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    className="rounded-lg border border-white/8 bg-white/[0.025] px-4 py-3.5"
-                  >
-                    <div className="mb-1.5 text-primary/70">{item.icon}</div>
-                    <div className="text-sm font-medium text-white">{item.title}</div>
-                    <div className="text-xs text-white/35">{item.value} wydarzen</div>
-                  </div>
-                ))}
+              <SearchPanel query={query} setQuery={setQuery} onSubmit={handleSearch} />
+
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/45">
+                <span className="mr-1">Popularne wyszukiwania:</span>
+                {['Bieganie', 'Kolarstwo', 'Triathlon', 'Ten weekend', 'W pobliżu mnie'].map(
+                  (item) => (
+                    <Link
+                      key={item}
+                      to={`/wydarzenia?q=${encodeURIComponent(item)}`}
+                      className="rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 text-white/55 transition hover:border-white/20 hover:text-white"
+                    >
+                      {item}
+                    </Link>
+                  ),
+                )}
               </div>
             </div>
 
-            {hero && (
-              <Link
-                to={`/events/${hero.slug}`}
-                className="group w-full max-w-[440px] overflow-hidden rounded-xl border border-white/10 bg-white/[0.025] shadow-2xl shadow-black/40 lg:justify-self-end"
-              >
-                <div className="relative min-h-[400px]">
-                  <img
-                    src={eventImage(hero)}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover opacity-65 transition duration-500 group-hover:scale-[1.02]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#070b12] via-[#070b12]/40 to-transparent" />
-                  <div className="absolute left-4 top-4 rounded border border-white/10 bg-[#080d15]/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-white/55">
-                    Wyroznione
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 p-5">
-                    <h2 className="text-2xl font-bold tracking-tight text-white">{hero.name}</h2>
-                    <div className="mt-3">
-                      <EventMeta event={hero} />
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="mt-3 border-white/12 bg-transparent text-white/55"
-                    >
-                      {disciplineLabels[hero.discipline]}
-                    </Badge>
-                    <div className="mt-4 flex items-center justify-between border-t border-white/8 pt-3.5 text-sm">
-                      <span className={registrationLabel(hero) === 'Zapisy otwarte' ? 'text-emerald-400' : 'text-white/40'}>
-                        {registrationLabel(hero)}
-                      </span>
-                      <span className="text-white/35">{deadlineText(hero)}</span>
-                    </div>
-                    <div className="mt-4 flex h-11 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-sm font-medium text-white transition group-hover:border-white/20 group-hover:bg-white/[0.07]">
-                      Zobacz wydarzenie
-                      <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
+            {view.hero && <HeroEventCard event={view.hero} />}
           </section>
 
-          {/* ── Wyróżnione wydarzenia ─────────────────────────────────────── */}
-          <section className="mt-4">
-            <SectionTitle title="Wyroznione wydarzenia" linkTo="/wydarzenia" linkLabel="Zobacz wszystkie" />
-            <div className="grid gap-4 md:grid-cols-3">
-              {view.featured.map((event) => (
-                <FeaturedCard key={event.id} event={event} />
+          <DisciplineGrid />
+
+          <section className="mt-10">
+            <SectionTitle
+              title="Kończą się zapisy"
+              icon={<Clock3 className="h-5 w-5" />}
+              tone="warning"
+              linkTo="/wydarzenia"
+              linkLabel="Zobacz wszystkie"
+            />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {view.closing.map((event) => (
+                <EventImageCard key={event.id} event={event} mode="closing" />
               ))}
             </div>
           </section>
 
-          {/* ── Najważniejsze teraz ───────────────────────────────────────── */}
-          <section className="mt-16">
-            <SectionTitle title="Najwazniejsze teraz" />
-            <div className="grid gap-4 lg:grid-cols-3">
-              <StatusList
-                title="Trwajace teraz"
-                icon={<Radio className="h-3 w-3" />}
-                events={view.ongoing}
-                variant="live"
-              />
-              <StatusList
-                title="Koncza sie zapisy"
-                icon={<Timer className="h-3 w-3" />}
-                events={view.closing}
-                variant="closing"
-              />
-              <StatusList
-                title="Ostatnio zakonczone"
-                icon={<CheckCircle2 className="h-3 w-3" />}
-                events={view.finished}
-                variant="done"
-              />
-            </div>
-          </section>
-
-          {/* ── Nadchodzące wydarzenia ────────────────────────────────────── */}
-          <section className="mt-16">
+          <section className="mt-10">
             <SectionTitle
-              title="Nadchodzace wydarzenia"
+              title="Nadchodzące wydarzenia"
               linkTo="/wydarzenia"
-              linkLabel="Zobacz wszystkie wydarzenia"
+              linkLabel="Zobacz wszystkie"
             />
             <UpcomingTable events={view.upcoming} />
-          </section>
-
-          {/* ── CTA organizatorzy ─────────────────────────────────────────── */}
-          <section className="mt-16">
-            <div className="flex flex-col gap-4 rounded-xl border border-white/8 bg-white/[0.02] px-5 py-5 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/50">
-                  <Flag className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-white">Organizujesz wydarzenie?</h2>
-                  <p className="mt-0.5 text-sm text-white/40">
-                    Stworz zapisy, zbieraj platnosci i publikuj wyniki w jednym miejscu.
-                  </p>
-                </div>
-              </div>
+            <div className="mt-4 flex justify-center">
               <Button
                 asChild
                 variant="outline"
-                className="shrink-0 border-white/15 bg-transparent text-white/80 hover:bg-white/[0.06] hover:text-white md:min-w-48"
+                className="min-w-64 border-white/15 bg-transparent text-white hover:bg-white/[0.06] hover:text-white"
               >
-                <Link to="/organizer">
-                  Dla organizatorow
-                  <ChevronRight className="ml-1.5 h-4 w-4" />
+                <Link to="/wydarzenia">
+                  Zobacz wszystkie wydarzenia
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
           </section>
 
-          {/* ── Partnerzy ─────────────────────────────────────────────────── */}
-          <section className="mt-16 pb-4">
-            <PartnersStrip partners={partners} />
+          <section className="mt-10">
+            <SectionTitle
+              title="Ostatnio zakończone"
+              icon={<CheckCircle2 className="h-5 w-5" />}
+              tone="success"
+              linkTo="/wyniki"
+              linkLabel="Zobacz wszystkie wyniki"
+            />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {view.finished.map((event) => (
+                <EventImageCard key={event.id} event={event} mode="finished" />
+              ))}
+            </div>
           </section>
 
-        </div>
+          <OrganizerCta />
+          <PartnersStrip partners={partners} />
+        </main>
       </div>
     </Layout>
   );

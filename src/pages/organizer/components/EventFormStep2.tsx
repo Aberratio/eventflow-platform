@@ -29,6 +29,8 @@ import {
   Info,
   AlertCircle,
 } from 'lucide-react';
+import { useState } from 'react';
+import type { AgeCategory } from '@/types';
 import type { EventFormState, SubStep } from '../hooks/useEventFormState';
 
 const FieldError = ({ message }: { message?: string }) =>
@@ -61,10 +63,94 @@ const DISTANCE_TEMPLATES = [
   { name: 'Trasa rowerowa 20 km', length: '20', unit: 'km' as const },
 ];
 
+type AgeCategoryTemplate = {
+  label: string;
+  description: string;
+  generate: (eventYear: number) => AgeCategory[];
+};
+
+const AGE_CATEGORY_TEMPLATES: AgeCategoryTemplate[] = [
+  {
+    label: 'Standard K+M 18–60+',
+    description: 'Kobiety i mężczyźni w przedziałach 18-29, 30-39, 40-49, 50-59, 60+',
+    generate: (y) => {
+      const ranges = [
+        { label: '18-29', from: y - 29, to: y - 18 },
+        { label: '30-39', from: y - 39, to: y - 30 },
+        { label: '40-49', from: y - 49, to: y - 40 },
+        { label: '50-59', from: y - 59, to: y - 50 },
+        { label: '60+', from: y - 100, to: y - 60 },
+      ];
+      const cats: AgeCategory[] = [];
+      for (const g of ['K', 'M'] as const)
+        for (const r of ranges)
+          cats.push({ id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: `${g}${r.label}`, gender: g, birthYearFrom: r.from, birthYearTo: r.to });
+      return cats;
+    },
+  },
+  {
+    label: 'Open (bez płci)',
+    description: 'Jedna klasyfikacja open bez podziału na płeć: 18-29, 30-39, 40-49, 50-59, 60+',
+    generate: (y) => {
+      const ranges = [
+        { label: '18-29', from: y - 29, to: y - 18 },
+        { label: '30-39', from: y - 39, to: y - 30 },
+        { label: '40-49', from: y - 49, to: y - 40 },
+        { label: '50-59', from: y - 59, to: y - 50 },
+        { label: '60+', from: y - 100, to: y - 60 },
+      ];
+      return ranges.map((r) => ({
+        id: `cat-open-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+        name: r.label,
+        gender: null,
+        birthYearFrom: r.from,
+        birthYearTo: r.to,
+      }));
+    },
+  },
+  {
+    label: 'Junior + Senior K+M',
+    description: 'Do 18, 18-29, 30-39, 40-49, 50-59, 60+ dla obu płci',
+    generate: (y) => {
+      const ranges = [
+        { label: 'Junior', from: y - 17, to: y },
+        { label: '18-29', from: y - 29, to: y - 18 },
+        { label: '30-39', from: y - 39, to: y - 30 },
+        { label: '40-49', from: y - 49, to: y - 40 },
+        { label: '50-59', from: y - 59, to: y - 50 },
+        { label: '60+', from: y - 100, to: y - 60 },
+      ];
+      const cats: AgeCategory[] = [];
+      for (const g of ['K', 'M'] as const)
+        for (const r of ranges)
+          cats.push({ id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: `${g} ${r.label}`, gender: g, birthYearFrom: r.from, birthYearTo: r.to });
+      return cats;
+    },
+  },
+  {
+    label: 'Tylko Open K i M',
+    description: 'Dwie kategorie: Kobiety Open i Mężczyźni Open bez podziału wiekowego',
+    generate: () => [
+      { id: `cat-K-open-${Date.now()}`, name: 'K Open', gender: 'K' as const, birthYearFrom: undefined, birthYearTo: undefined },
+      { id: `cat-M-open-${Date.now()}`, name: 'M Open', gender: 'M' as const, birthYearFrom: undefined, birthYearTo: undefined },
+    ],
+  },
+];
+
 export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventFormStep2Props) => {
   const isEmbedRegistration = form.registrationMode === 'external_embed';
   const showValidation = form.shownValidationSubSteps.includes(activeSubStep as SubStep);
   const fe = showValidation ? form.fieldValidationErrors : {};
+  const [ageInputMode, setAgeInputMode] = useState<'year' | 'age'>('year');
+
+  const eventYear = (() => {
+    const d = form.date;
+    if (!d) return new Date().getFullYear();
+    return parseInt(d.substring(0, 4)) || new Date().getFullYear();
+  })();
+
+  const ageToYear = (age: number) => eventYear - age;
+  const yearToAge = (year: number) => eventYear - year;
 
   const setTierPrice = (
     distanceIndex: number,
@@ -122,27 +208,38 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
           {form.categoriesEnabled && <>
           {/* Base Categories */}
           <div className="space-y-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-1.5">
-                <Label className="text-base font-medium">
-                  Kategorie podstawowe ({form.ageCategories.length})
-                </Label>
-                <FieldHelp description="Kategorie grupujące uczestników, np. według wieku, płci lub typu open (W Open, M Open). Używane w zapisach, listach startowych i wynikach." />
+            <div className="flex min-w-0 items-center gap-1.5">
+              <Label className="text-base font-medium">
+                Kategorie podstawowe ({form.ageCategories.length})
+              </Label>
+              <FieldHelp description="Kategorie grupujące uczestników, np. według wieku, płci lub typu open (W Open, M Open). Używane w zapisach, listach startowych i wynikach." />
+            </div>
+
+            {/* Category templates */}
+            <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-medium text-muted-foreground">Szablony kategorii</p>
+                <FieldHelp description="Kliknij szablon, aby zastąpić bieżące kategorie gotowym zestawem. Możesz go potem edytować." />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={form.applyStandardTemplate}
-                className="w-full sm:w-auto"
-              >
-                <ListPlus className="mr-2 h-4 w-4" /> Załaduj szablon standardowy
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                {AGE_CATEGORY_TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.label}
+                    type="button"
+                    title={tpl.description}
+                    onClick={() => form.setAgeCategories(tpl.generate(eventYear))}
+                    className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  >
+                    <ListPlus className="h-3.5 w-3.5 shrink-0" />
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {form.ageCategories.length > 0 && (
               <div className="space-y-2">
-                <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_100px_100px_40px]">
+                <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_110px_110px_40px]">
                   <span className="flex items-center gap-1">
                     Nazwa
                     <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29, M40-49 albo W Open." />
@@ -151,20 +248,27 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     Płeć
                     <FieldHelp description="Opcjonalne. Określa, czy kategoria dotyczy kobiet (K) lub mężczyzn (M). Zostaw puste dla kategorii Open." />
                   </span>
-                  <span className="flex items-center gap-1">
-                    Rok od
-                    <FieldHelp description="Opcjonalne. Najstarszy rocznik kwalifikujący się do tej kategorii (puste = brak limitu)." />
+                  <span className="flex items-center gap-1 gap-x-1">
+                    {ageInputMode === 'year' ? 'Rok od' : 'Wiek od'}
+                    <FieldHelp description={ageInputMode === 'year' ? 'Najstarszy rocznik kwalifikujący się do tej kategorii.' : 'Minimalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'} />
+                    <button
+                      type="button"
+                      onClick={() => setAgeInputMode(ageInputMode === 'year' ? 'age' : 'year')}
+                      className="ml-auto rounded px-1 py-0.5 text-[10px] font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      {ageInputMode === 'year' ? '→ wiek' : '→ rok'}
+                    </button>
                   </span>
                   <span className="flex items-center gap-1">
-                    Rok do
-                    <FieldHelp description="Opcjonalne. Najmłodszy rocznik kwalifikujący się do tej kategorii (puste = brak limitu)." />
+                    {ageInputMode === 'year' ? 'Rok do' : 'Wiek do'}
+                    <FieldHelp description={ageInputMode === 'year' ? 'Najmłodszy rocznik kwalifikujący się do tej kategorii.' : 'Maksymalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'} />
                   </span>
                   <span></span>
                 </div>
                 {form.ageCategories.map((cat, catIdx) => (
                   <div
                     key={cat.id}
-                    className="grid grid-cols-[minmax(0,1fr)_88px] items-center gap-2 md:grid-cols-[1fr_80px_100px_100px_40px]"
+                    className="grid grid-cols-[minmax(0,1fr)_88px] items-center gap-2 md:grid-cols-[1fr_80px_110px_110px_40px]"
                   >
                     <Input
                       value={cat.name}
@@ -193,27 +297,31 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     </Select>
                     <Input
                       type="number"
-                      value={cat.birthYearFrom ?? ''}
-                      onChange={(e) =>
-                        form.updateAgeCategory(
-                          catIdx,
-                          'birthYearFrom',
-                          e.target.value === '' ? null : parseInt(e.target.value) || 0,
-                        )
+                      value={
+                        ageInputMode === 'year'
+                          ? (cat.birthYearFrom ?? '')
+                          : (cat.birthYearFrom != null ? yearToAge(cat.birthYearFrom) : '')
                       }
+                      onChange={(e) => {
+                        const raw = e.target.value === '' ? null : parseInt(e.target.value) || 0;
+                        const year = raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
+                        form.updateAgeCategory(catIdx, 'birthYearFrom', year);
+                      }}
                       placeholder="—"
                       className="h-9"
                     />
                     <Input
                       type="number"
-                      value={cat.birthYearTo ?? ''}
-                      onChange={(e) =>
-                        form.updateAgeCategory(
-                          catIdx,
-                          'birthYearTo',
-                          e.target.value === '' ? null : parseInt(e.target.value) || 0,
-                        )
+                      value={
+                        ageInputMode === 'year'
+                          ? (cat.birthYearTo ?? '')
+                          : (cat.birthYearTo != null ? yearToAge(cat.birthYearTo) : '')
                       }
+                      onChange={(e) => {
+                        const raw = e.target.value === '' ? null : parseInt(e.target.value) || 0;
+                        const year = raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
+                        form.updateAgeCategory(catIdx, 'birthYearTo', year);
+                      }}
                       placeholder="—"
                       className="h-9"
                     />
@@ -228,6 +336,11 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     </Button>
                   </div>
                 ))}
+                {ageInputMode === 'age' && (
+                  <p className="px-1 text-xs text-muted-foreground">
+                    Wartości przeliczane na rok urodzenia względem roku wydarzenia ({eventYear}). Zapisywane jako roczniki.
+                  </p>
+                )}
               </div>
             )}
             <Button
@@ -597,13 +710,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           <span>Opis</span>
                           <span></span>
                         </div>
-                        {[...dist.priceTiers]
-                          .sort((a, b) =>
-                            dist.priceTierMode === 'date'
-                              ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
-                              : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
-                          )
-                          .map((tier) => {
+                        {dist.priceTiers.map((tier) => {
                             const j = dist.priceTiers.findIndex((t) => t.id === tier.id);
                             const tierPrice =
                               tier.price ??

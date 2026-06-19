@@ -52,7 +52,7 @@ export const BottomNav = () => {
         {
           icon: Search,
           label: 'Szukaj',
-          href: '/wydarzenia',
+          href: '/wydarzenia#search-input',
           active: false,
         },
         {
