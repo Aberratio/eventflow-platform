@@ -73,13 +73,40 @@ export interface SpecialCategory {
   description?: string;
 }
 
-export type DistanceRouteFileType = 'map' | 'elevation' | 'gpx' | 'image';
+export type DistanceRouteFileType = 'map' | 'elevation' | 'gpx' | 'image' | 'regulation' | 'other';
+
+export const DISTANCE_ROUTE_FILE_TYPE_LABELS: Record<DistanceRouteFileType, string> = {
+  map: 'Mapa trasy',
+  elevation: 'Profil przewyższeń',
+  gpx: 'Plik GPX',
+  image: 'Zdjęcie',
+  regulation: 'Regulamin',
+  other: 'Inny',
+};
 
 export interface DistanceRouteFile {
   id: string;
   name: string;
   type: DistanceRouteFileType;
   url: string;
+}
+
+export type DistanceDocumentType = 'regulation' | 'schedule' | 'map' | 'other';
+
+export const DISTANCE_DOCUMENT_TYPE_LABELS: Record<DistanceDocumentType, string> = {
+  regulation: 'Regulamin',
+  schedule: 'Harmonogram',
+  map: 'Mapa trasy',
+  other: 'Inny dokument',
+};
+
+export interface DistanceDocument {
+  id: string;
+  name: string;
+  type: DistanceDocumentType;
+  fileUrl: string;
+  fileName: string;
+  mimeType: string;
 }
 
 export interface Distance {
@@ -104,6 +131,7 @@ export interface Distance {
   routeElevationProfile?: string;
   routeGpxUrl?: string;
   routeFiles?: DistanceRouteFile[];
+  documents?: DistanceDocument[];
 }
 
 export interface OrganizerContact {
@@ -300,15 +328,42 @@ export interface MerchandiseColor {
   hex: string;
 }
 
+export interface GadgetDocument {
+  id: string;
+  name: string;
+  fileUrl: string;
+  fileName: string;
+  mimeType: string;
+}
+
+export type GadgetQuantityMode = 'any' | 'max' | 'one';
+
+export interface GadgetImage {
+  id: string;
+  url: string;
+  caption?: string;
+  colorId?: string;
+}
+
 export interface EventMerchandise {
   id: string;
   name: string;
   description?: string;
+  descriptionHtml?: string;
+  documents?: GadgetDocument[];
+  brand?: string;
   price: number;
+  originalPrice?: number;
   sizes: string[];
   colors: MerchandiseColor[];
   imageUrl?: string;
+  images?: GadgetImage[];
   available: boolean;
+  stockCount?: number;
+  quantityMode?: GadgetQuantityMode;
+  quantityMax?: number;
+  distanceIds?: string[];
+  shopProductId?: string;
 }
 
 export type GalleryPlatform = 'google_photos' | 'flickr' | 'facebook' | 'instagram' | 'other';

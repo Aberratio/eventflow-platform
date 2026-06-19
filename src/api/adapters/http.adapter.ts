@@ -1,9 +1,10 @@
 import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { User } from '@/types';
+import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
-const TOKEN_STORAGE_KEY = 'zmierzymy_czas_api_token';
+const TOKEN_STORAGE_KEY = STORAGE_KEYS.API_TOKEN;
 
 type QueryValue = string | number | boolean | null | undefined;
 
@@ -30,6 +31,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401 && endpoint !== '/auth/login') {
+      if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token } }));
+      }
+    }
+
     const code = payload?.error?.code;
     const messages: Record<string, string> = {
       event_limit_exceeded:
@@ -69,6 +77,13 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401) {
+      if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
+        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token } }));
+      }
+    }
+
     const code = payload?.error?.code;
     const messages: Record<string, string> = {
       file_too_large: 'Obraz jest za duzy.',
@@ -177,8 +192,11 @@ export const httpAdapter: ApiAdapter = {
   },
   loginByRole: async () => ({ data: null, success: false, message: 'Role login is mock-only' }),
   async logout() {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    return request('/auth/logout', json('POST'));
+    try {
+      return await request('/auth/logout', json('POST'));
+    } finally {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
   },
   getCurrentUser: () => request('/auth/me'),
   register: (data) => request('/auth/register', json('POST', data)),
@@ -188,8 +206,7 @@ export const httpAdapter: ApiAdapter = {
   getRegistrations: (filters) => paginated('/registrations', filters as Record<string, QueryValue>),
   getRegistrationsByEvent: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/registrations`),
-  getPublicStartList: (eventId) =>
-    request(`/events/${encodeURIComponent(eventId)}/start-list`),
+  getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getRegistrationsByUser: (userId) => request(`/users/${encodeURIComponent(userId)}/registrations`),
   createRegistration: (data) => request('/registrations', json('POST', data)),
   updateRegistration: (id, data) =>

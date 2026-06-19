@@ -12,10 +12,12 @@ import {
   Settings,
   LayoutDashboard,
   ShoppingCart,
-  ChevronDown,
   Radio,
   History,
   Package,
+  Trophy,
+  Layers,
+  Flame,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -25,9 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { NotificationCenter } from '@/components/NotificationCenter';
 import { cn } from '@/lib/utils';
 
 const roleLabels = {
@@ -52,7 +52,6 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [resultsOpen, setResultsOpen] = useState(false);
 
   const user = auth?.user ?? null;
   const isAuthenticated = auth?.isAuthenticated ?? false;
@@ -82,16 +81,15 @@ export const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
   const isActivePrefix = (prefix: string) => location.pathname.startsWith(prefix);
-  const hideOnEventsMobile =
-    location.pathname === '/wydarzenia' || location.pathname.startsWith('/events');
+
+  const navLinkClass = (active: boolean) =>
+    cn(
+      'rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
+      active ? 'text-foreground' : 'text-muted-foreground',
+    );
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-50 w-full border-b border-[hsl(var(--header-border))] bg-[hsl(var(--header-bg)/0.90)] backdrop-blur-xl',
-        hideOnEventsMobile && 'hidden lg:block',
-      )}
-    >
+    <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--header-border))] bg-[hsl(var(--header-bg)/0.90)] backdrop-blur-xl">
       <div className="container flex h-14 items-center justify-between">
         <Link to="/" className="group flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
@@ -104,74 +102,61 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-0.5 lg:flex">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                'relative flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
-                isActive('/wydarzenia') ||
-                  isActivePrefix('/wyniki') ||
-                  isActivePrefix('/series') ||
-                  isActivePrefix('/events') ||
-                  isActivePrefix('/challenges')
-                  ? 'text-foreground'
-                  : 'text-muted-foreground',
-              )}
-            >
-              Wydarzenia
-              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem asChild>
-                <Link to="/wydarzenia" className="w-full">
-                  Kalendarz
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/series" className="w-full">
-                  Serie i cykle
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/wyniki/live" className="flex w-full items-center gap-2">
-                  <Radio className="h-3 w-3 text-destructive" />
-                  Wyniki na żywo
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/challenges" className="w-full">
-                  Wyzwania
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Link
+            to="/wydarzenia"
+            className={navLinkClass(
+              isActive('/wydarzenia') || isActivePrefix('/events'),
+            )}
+          >
+            Kalendarz
+          </Link>
+
+          <Link
+            to="/series"
+            className={navLinkClass(isActivePrefix('/series'))}
+          >
+            Serie
+          </Link>
+
+          <Link
+            to="/wyniki/live"
+            className={cn(
+              navLinkClass(isActivePrefix('/wyniki')),
+              'flex items-center gap-1.5',
+            )}
+          >
+            <Radio className="h-3 w-3 text-destructive" />
+            Wyniki live
+          </Link>
+
+          <Link
+            to="/challenges"
+            className={navLinkClass(isActivePrefix('/challenges'))}
+          >
+            Wyzwania
+          </Link>
 
           <Link
             to="/shop"
-            className={cn(
-              'relative rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-foreground',
-              isActive('/sklep') || isActive('/shop') ? 'text-foreground' : 'text-muted-foreground',
-            )}
+            className={navLinkClass(isActive('/sklep') || isActive('/shop') || isActivePrefix('/shop'))}
           >
             Sklep
           </Link>
 
           <div className="mx-1 h-4 w-px bg-border" />
 
-          <Link
-            to="/cart"
-            className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            aria-label="Koszyk"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {totalItems > 0 && (
+          {totalItems > 0 && (
+            <Link
+              to="/cart"
+              className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              aria-label="Koszyk"
+            >
+              <ShoppingCart className="h-4 w-4" />
               <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold leading-none text-primary-foreground">
                 {totalItems > 9 ? '9+' : totalItems}
               </span>
-            )}
-          </Link>
-
-          {isAuthenticated && <NotificationCenter />}
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <DropdownMenu>
@@ -276,74 +261,72 @@ export const Header = () => {
           )}
         </nav>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center gap-1 lg:hidden">
+          {totalItems > 0 && (
+            <Link
+              to="/cart"
+              className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              aria-label="Koszyk"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold leading-none text-primary-foreground">
+                {totalItems > 9 ? '9+' : totalItems}
+              </span>
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden">
           <nav className="container flex flex-col gap-1 py-4">
-            <Collapsible open={resultsOpen} onOpenChange={setResultsOpen}>
-              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground">
-                Wydarzenia
-                <ChevronDown
-                  className={cn('h-4 w-4 transition-transform', resultsOpen && 'rotate-180')}
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pl-4">
-                <Link
-                  to="/wydarzenia"
-                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Kalendarz
-                </Link>
-                <Link
-                  to="/series"
-                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Serie i cykle
-                </Link>
-                <Link
-                  to="/wyniki/live"
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Radio className="h-3 w-3 text-destructive" />
-                  Wyniki na żywo
-                </Link>
-                <Link
-                  to="/challenges"
-                  className="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Wyzwania
-                </Link>
-              </CollapsibleContent>
-            </Collapsible>
             <Link
-              to="/shop"
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sklep
-            </Link>
-            <Link
-              to="/cart"
+              to="/wydarzenia"
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <ShoppingCart className="h-4 w-4" />
-              Koszyk
-              {totalItems > 0 && <Badge variant="secondary">{totalItems}</Badge>}
+              <Calendar className="h-4 w-4" />
+              Kalendarz wydarzeń
+            </Link>
+            <Link
+              to="/series"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Layers className="h-4 w-4" />
+              Serie i cykle
+            </Link>
+            <Link
+              to="/wyniki/live"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Radio className="h-4 w-4 text-destructive" />
+              Wyniki na żywo
+            </Link>
+            <Link
+              to="/challenges"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Flame className="h-4 w-4" />
+              Wyzwania
+            </Link>
+            <Link
+              to="/shop"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Trophy className="h-4 w-4" />
+              Sklep
             </Link>
 
             <div className="my-2 border-t border-border/60" />

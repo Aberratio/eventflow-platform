@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { httpAdapter } from '../http.adapter';
+import { AUTH_SESSION_EXPIRED_EVENT } from '@/constants';
 
 const TOKEN_STORAGE_KEY = 'zmierzymy_czas_api_token';
 
@@ -9,6 +10,14 @@ function mockJsonResponse(payload: unknown, status = 200): Response {
     status,
     json: vi.fn().mockResolvedValue(payload),
   } as unknown as Response;
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((innerResolve) => {
+    resolve = innerResolve;
+  });
+  return { promise, resolve };
 }
 
 describe('httpAdapter contract mapping', () => {
@@ -127,5 +136,52 @@ describe('httpAdapter contract mapping', () => {
         discountCode: 'USED',
       }),
     ).rejects.toThrow('Kod rabatowy');
+  });
+
+  it('clears the stored token and emits an auth event on protected 401 responses', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'expired-token');
+    const onExpired = vi.fn();
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'unauthorized', message: 'Invalid or expired token' },
+        },
+        401,
+      ),
+    );
+
+    await expect(httpAdapter.getCurrentUser()).rejects.toThrow('Invalid or expired token');
+
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
+    expect(onExpired).toHaveBeenCalledTimes(1);
+    window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+  });
+
+  it('does not clear a newer token when an older protected request returns 401', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
+    const onExpired = vi.fn();
+    const pending = deferred<Response>();
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
+    vi.mocked(fetch).mockReturnValueOnce(pending.promise);
+
+    const request = httpAdapter.getCurrentUser();
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'fresh-token');
+    pending.resolve(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'unauthorized', message: 'Invalid or expired token' },
+        },
+        401,
+      ),
+    );
+
+    await expect(request).rejects.toThrow('Invalid or expired token');
+
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('fresh-token');
+    expect(onExpired).not.toHaveBeenCalled();
+    window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
   });
 });

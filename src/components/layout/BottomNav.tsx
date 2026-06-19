@@ -1,14 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  BarChart3,
   Calendar,
-  ClipboardList,
-  Heart,
   Home,
   LogIn,
-  Search,
   ShoppingCart,
   User,
+  Trophy,
 } from 'lucide-react';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCartSafe } from '@/contexts/CartContext';
@@ -21,8 +18,6 @@ export const BottomNav = () => {
 
   const isAuthenticated = auth?.isAuthenticated ?? false;
   const user = auth?.user ?? null;
-  const isEventsPage =
-    location.pathname === '/wydarzenia' || location.pathname.startsWith('/events');
 
   const getDashboardLink = () => {
     if (!user) return '/login';
@@ -41,80 +36,59 @@ export const BottomNav = () => {
     }
   };
 
-  const navItems = isEventsPage
-    ? [
-        {
-          icon: Calendar,
-          label: 'Wydarzenia',
-          href: '/wydarzenia',
-          active: true,
-        },
-        {
-          icon: Search,
-          label: 'Szukaj',
-          href: '/wydarzenia#search-input',
-          active: false,
-        },
-        {
-          icon: Heart,
-          label: 'Ulubione',
-          href: '/participant',
-          active: false,
-        },
-        {
-          icon: ClipboardList,
-          label: 'Moje zapisy',
-          href: '/participant?tab=registrations',
-          active: false,
-        },
-        {
-          icon: BarChart3,
-          label: 'Wyniki',
-          href: '/wyniki/live',
-          active: false,
-        },
-      ]
-    : [
-        {
-          icon: Home,
-          label: 'Start',
-          href: '/',
-          active: location.pathname === '/',
-        },
-        {
-          icon: Calendar,
-          label: 'Wydarzenia',
-          href: '/wydarzenia',
-          active: location.pathname === '/wydarzenia' || location.pathname.startsWith('/events'),
-        },
-        {
-          icon: ShoppingCart,
-          label: 'Koszyk',
-          href: '/cart',
-          active: location.pathname === '/cart',
-          badge: totalItems > 0 ? totalItems : undefined,
-        },
-        {
-          icon: isAuthenticated ? User : LogIn,
-          label: isAuthenticated ? 'Panel' : 'Zaloguj',
-          href: isAuthenticated ? getDashboardLink() : '/login',
-          active: isAuthenticated
-            ? location.pathname.startsWith('/participant') ||
-              location.pathname.startsWith('/organizer') ||
-              location.pathname.startsWith('/moderator') ||
-              location.pathname.startsWith('/admin')
-            : location.pathname === '/login',
-        },
-      ];
+  const isPanelActive =
+    location.pathname.startsWith('/participant') ||
+    location.pathname.startsWith('/organizer') ||
+    location.pathname.startsWith('/moderator') ||
+    location.pathname.startsWith('/admin');
+
+  const cartItem = {
+    icon: ShoppingCart,
+    label: 'Koszyk',
+    href: '/cart',
+    active: location.pathname === '/cart',
+    badge: totalItems,
+  };
+
+  const panelItem = {
+    icon: isAuthenticated ? User : LogIn,
+    label: isAuthenticated ? 'Panel' : 'Zaloguj',
+    href: isAuthenticated ? getDashboardLink() : '/login',
+    active: isAuthenticated ? isPanelActive : location.pathname === '/login',
+    badge: 0,
+  };
+
+  const baseItems = [
+    {
+      icon: Home,
+      label: 'Start',
+      href: '/',
+      active: location.pathname === '/',
+      badge: 0,
+    },
+    {
+      icon: Calendar,
+      label: 'Kalendarz',
+      href: '/wydarzenia',
+      active: location.pathname === '/wydarzenia' || location.pathname.startsWith('/events'),
+      badge: 0,
+    },
+    {
+      icon: Trophy,
+      label: 'Sklep',
+      href: '/shop',
+      active: location.pathname === '/shop' || location.pathname.startsWith('/shop'),
+      badge: 0,
+    },
+  ];
+
+  const navItems = totalItems > 0
+    ? [...baseItems, cartItem, panelItem]
+    : [...baseItems, panelItem];
 
   return (
-    <nav
-      className={cn(
-        'safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl lg:hidden',
-        isEventsPage ? 'border-white/10 bg-[#070b10]/95' : 'border-border bg-background',
-      )}
-    >
-      <div className={cn('flex items-center justify-around', isEventsPage ? 'h-20' : 'h-16')}>
+    <nav className="safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background backdrop-blur-xl lg:hidden">
+      <div className="flex h-16 items-center justify-around">
         {navItems.map((item) => (
           <Link
             key={item.href}
@@ -126,7 +100,7 @@ export const BottomNav = () => {
           >
             <div className="relative">
               <item.icon className="h-5 w-5" />
-              {item.badge && (
+              {item.badge > 0 && (
                 <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
                   {item.badge > 9 ? '9+' : item.badge}
                 </span>

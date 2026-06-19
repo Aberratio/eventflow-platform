@@ -3,8 +3,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { OnboardingDialog } from '@/components/OnboardingDialog';
@@ -27,6 +27,7 @@ import {
 // ─── Eagerly loaded (critical path) ───────────────────────
 import Index from './pages/Index';
 import NotFound from './pages/NotFound';
+import type { UserRole } from '@/types';
 
 // ─── Lazy-loaded pages (code-split) ──────────────────────
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -104,6 +105,36 @@ const DynamicInfoPage = lazy(() =>
 const Lazy = ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => (
   <Suspense fallback={fallback}>{children}</Suspense>
 );
+
+const adminRoles: UserRole[] = ['admin', 'superadmin'];
+const moderatorRoles: UserRole[] = ['moderator'];
+const organizerRoles: UserRole[] = ['organizer'];
+const participantRoles: UserRole[] = ['participant'];
+
+const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: UserRole[] }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  if (!isAuthenticated || !user) {
+    return (
+      <Navigate
+        to="/logowanie"
+        replace
+        state={{ returnTo: `${location.pathname}${location.search}` }}
+      />
+    );
+  }
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/403" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 // ─── QueryClient with optimised defaults ─────────────────
 const queryClient = new QueryClient({
@@ -347,7 +378,9 @@ const App = () => (
                       path="/notifications"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <NotificationsPage />
+                          <ProtectedRoute>
+                            <NotificationsPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -355,7 +388,9 @@ const App = () => (
                       path="/profile"
                       element={
                         <Lazy fallback={<ProfilePageSkeleton />}>
-                          <ProfilePage />
+                          <ProtectedRoute>
+                            <ProfilePage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -379,7 +414,9 @@ const App = () => (
                       path="/participant"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <ParticipantDashboard />
+                          <ProtectedRoute roles={participantRoles}>
+                            <ParticipantDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -387,7 +424,9 @@ const App = () => (
                       path="/participant/*"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <ParticipantDashboard />
+                          <ProtectedRoute roles={participantRoles}>
+                            <ParticipantDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -395,7 +434,9 @@ const App = () => (
                       path="/organizer"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <OrganizerDashboard />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <OrganizerDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -403,7 +444,9 @@ const App = () => (
                       path="/organizer/events"
                       element={
                         <Lazy fallback={<EventsPageSkeleton />}>
-                          <OrganizerEventsPage />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <OrganizerEventsPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -411,7 +454,9 @@ const App = () => (
                       path="/organizer/events/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -419,7 +464,9 @@ const App = () => (
                       path="/organizer/events/:id"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <EventManage />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <EventManage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -427,7 +474,9 @@ const App = () => (
                       path="/organizer/events/:id/:tab"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <EventManage />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <EventManage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -435,7 +484,9 @@ const App = () => (
                       path="/organizer/events/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={organizerRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -443,7 +494,9 @@ const App = () => (
                       path="/moderator"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <ModeratorDashboard />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <ModeratorDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -451,7 +504,9 @@ const App = () => (
                       path="/moderator/series/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminSeriesEditPage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <AdminSeriesEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -459,7 +514,9 @@ const App = () => (
                       path="/moderator/series/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminSeriesEditPage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <AdminSeriesEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -467,7 +524,9 @@ const App = () => (
                       path="/moderator/challenges/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminChallengeEditPage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <AdminChallengeEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -475,7 +534,9 @@ const App = () => (
                       path="/moderator/challenges/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminChallengeEditPage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <AdminChallengeEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -483,7 +544,9 @@ const App = () => (
                       path="/moderator/events/:id"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <EventManage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <EventManage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -491,7 +554,9 @@ const App = () => (
                       path="/moderator/events/:id/:tab"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <EventManage />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <EventManage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -499,7 +564,9 @@ const App = () => (
                       path="/moderator/events/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -507,7 +574,9 @@ const App = () => (
                       path="/moderator/events/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -515,7 +584,9 @@ const App = () => (
                       path="/moderator/*"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <ModeratorDashboard />
+                          <ProtectedRoute roles={moderatorRoles}>
+                            <ModeratorDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -523,7 +594,9 @@ const App = () => (
                       path="/admin"
                       element={
                         <Lazy fallback={<AdminDashboardSkeleton />}>
-                          <AdminDashboard />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -531,7 +604,9 @@ const App = () => (
                       path="/admin/:section"
                       element={
                         <Lazy fallback={<AdminDashboardSkeleton />}>
-                          <AdminDashboard />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -539,7 +614,9 @@ const App = () => (
                       path="/admin/events/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={adminRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -547,7 +624,9 @@ const App = () => (
                       path="/admin/events/:id"
                       element={
                         <Lazy fallback={<DashboardSkeleton />}>
-                          <AdminEventManage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminEventManage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -555,7 +634,9 @@ const App = () => (
                       path="/admin/events/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <EventForm />
+                          <ProtectedRoute roles={adminRoles}>
+                            <EventForm />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -563,7 +644,9 @@ const App = () => (
                       path="/admin/series/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminSeriesEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminSeriesEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -571,7 +654,9 @@ const App = () => (
                       path="/admin/series/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminSeriesEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminSeriesEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -579,7 +664,9 @@ const App = () => (
                       path="/admin/shop/products/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminProductEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminProductEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -587,7 +674,9 @@ const App = () => (
                       path="/admin/shop/products/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminProductEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminProductEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -595,7 +684,9 @@ const App = () => (
                       path="/admin/pages/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <PageEditorPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <PageEditorPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -603,7 +694,9 @@ const App = () => (
                       path="/admin/pages/:pageId/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <PageEditorPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <PageEditorPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -611,7 +704,9 @@ const App = () => (
                       path="/admin/orders/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminOrderEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminOrderEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -619,7 +714,9 @@ const App = () => (
                       path="/admin/challenges/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminChallengeEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminChallengeEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -627,7 +724,9 @@ const App = () => (
                       path="/admin/challenges/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminChallengeEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminChallengeEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -635,7 +734,9 @@ const App = () => (
                       path="/admin/partners/new"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminPartnerEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminPartnerEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -643,7 +744,9 @@ const App = () => (
                       path="/admin/partners/:id/edit"
                       element={
                         <Lazy fallback={<FormPageSkeleton />}>
-                          <AdminPartnerEditPage />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminPartnerEditPage />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />
@@ -651,7 +754,9 @@ const App = () => (
                       path="/admin/*"
                       element={
                         <Lazy fallback={<AdminDashboardSkeleton />}>
-                          <AdminDashboard />
+                          <ProtectedRoute roles={adminRoles}>
+                            <AdminDashboard />
+                          </ProtectedRoute>
                         </Lazy>
                       }
                     />

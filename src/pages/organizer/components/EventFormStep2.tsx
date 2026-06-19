@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
-import { applyDiscount } from '@/api';
+import { applyDiscount, uploadEventDocument } from '@/api';
 import {
   Select,
   SelectContent,
@@ -30,10 +30,23 @@ import {
   AlertTriangle,
   Info,
   AlertCircle,
+  Upload,
+  FileText,
+  Link,
+  X,
 } from 'lucide-react';
-import { useState } from 'react';
-import type { AgeCategory, ParticipantCountType, PriceTierMode } from '@/types';
-import type { EventFormState, SubStep } from '../hooks/useEventFormState';
+import { useState, useRef } from 'react';
+import {
+  DISTANCE_ROUTE_FILE_TYPE_LABELS,
+  DISTANCE_DOCUMENT_TYPE_LABELS,
+  type AgeCategory,
+  type ParticipantCountType,
+  type PriceTierMode,
+  type DistanceRouteFileType,
+  type DistanceDocumentType,
+  type DistanceDocument,
+} from '@/types';
+import { formatDistanceName, type EventFormState, type SubStep } from '../hooks/useEventFormState';
 
 const FieldError = ({ message }: { message?: string }) =>
   message ? (
@@ -42,6 +55,206 @@ const FieldError = ({ message }: { message?: string }) =>
       {message}
     </p>
   ) : null;
+
+interface RouteUrlOrUploadFieldProps {
+  label: string;
+  description: string;
+  value: string;
+  onChange: (value: string) => void;
+  acceptFiles?: string;
+}
+
+const RouteUrlOrUploadField = ({
+  label,
+  description,
+  value,
+  onChange,
+  acceptFiles = 'image/*',
+}: RouteUrlOrUploadFieldProps) => {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await uploadEventDocument(file);
+      if (res.data?.url) onChange(res.data.url);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <HelpLabel className="text-xs" description={description}>
+        {label}
+      </HelpLabel>
+      <div className="flex gap-1.5">
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://..."
+          className="h-9 min-w-0 flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          title="Wgraj plik"
+          disabled={uploading}
+          onClick={() => fileRef.current?.click()}
+        >
+          {uploading ? (
+            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            <Upload className="h-3.5 w-3.5" />
+          )}
+        </Button>
+        {value && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 text-muted-foreground"
+            title="Wyczyść"
+            onClick={() => onChange('')}
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+      {value && (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <Link className="h-3 w-3" /> Podgląd
+        </a>
+      )}
+      <input
+        ref={fileRef}
+        type="file"
+        accept={acceptFiles}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = '';
+        }}
+      />
+    </div>
+  );
+};
+
+interface RouteFileUploadButtonProps {
+  onUploaded: (url: string) => void;
+}
+
+const RouteFileUploadButton = ({ onUploaded }: RouteFileUploadButtonProps) => {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await uploadEventDocument(file);
+      if (res.data?.url) onUploaded(res.data.url);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-9 shrink-0 gap-1.5 text-xs"
+        disabled={uploading}
+        onClick={() => fileRef.current?.click()}
+      >
+        {uploading ? (
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <Upload className="h-3.5 w-3.5" />
+        )}
+        Wgraj
+      </Button>
+      <input
+        ref={fileRef}
+        type="file"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = '';
+        }}
+      />
+    </>
+  );
+};
+
+interface DistanceDocumentUploadButtonProps {
+  onUploaded: (doc: Omit<DistanceDocument, 'id'>) => void;
+}
+
+const DistanceDocumentUploadButton = ({ onUploaded }: DistanceDocumentUploadButtonProps) => {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const res = await uploadEventDocument(file);
+      if (res.data?.url) {
+        onUploaded({
+          name: file.name.replace(/\.[^.]+$/, ''),
+          type: 'other',
+          fileUrl: res.data.url,
+          fileName: res.data.originalName || file.name,
+          mimeType: res.data.mimeType || file.type,
+        });
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="gap-1.5 text-xs"
+        disabled={uploading}
+        onClick={() => fileRef.current?.click()}
+      >
+        {uploading ? (
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <Upload className="h-3.5 w-3.5" />
+        )}
+        Wgraj dokument
+      </Button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = '';
+        }}
+      />
+    </>
+  );
+};
 
 const inputError = (hasError: boolean) =>
   hasError
@@ -533,7 +746,9 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
               <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
                 <div className="flex items-start justify-between gap-3">
                   <CardTitle className="min-w-0 break-words text-lg">
-                    {dist.name || `Dystans ${index + 1}`}
+                    {dist.noName
+                      ? formatDistanceName(dist.length, dist.unit) || `Dystans ${index + 1}`
+                      : dist.name || `Dystans ${index + 1}`}
                   </CardTitle>
                   <Button
                     variant="ghost"
@@ -548,16 +763,43 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
               <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="space-y-2">
-                    <HelpLabel description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint.">
-                      Nazwa dystansu *
+                    <HelpLabel
+                      description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint."
+                      title="Nazwa dystansu"
+                    >
+                      Nazwa dystansu{dist.noName ? '' : ' *'}
                     </HelpLabel>
-                    <Input
-                      value={dist.name}
-                      onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
-                      placeholder="np. Maraton"
-                      className={inputError(!!fe[`distance_${index}_name`])}
-                    />
+                    {dist.noName ? (
+                      <div className="flex h-9 items-center">
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceName(dist.length, dist.unit) || '—'}
+                        </span>
+                      </div>
+                    ) : (
+                      <Input
+                        value={dist.name}
+                        onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
+                        placeholder="np. Maraton"
+                        className={inputError(!!fe[`distance_${index}_name`])}
+                      />
+                    )}
                     <FieldError message={fe[`distance_${index}_name`]} />
+                    {!dist.noLength && dist.length && (
+                      <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={dist.noName}
+                          onCheckedChange={(checked) => {
+                            form.updateDistance(index, 'noName', !!checked);
+                            if (checked) form.updateDistance(index, 'name', '');
+                          }}
+                        />
+                        <span>Bez dodatkowej nazwy</span>
+                        <FieldHelp
+                          title="Bez dodatkowej nazwy"
+                          description='Zaznacz, jesli kilometraz wystarczy jako identyfikator dystansu - np. "5 km" zamiast "5 km / Dystans 5 km". Unikniesz powielania tej samej informacji w nazwie i w polu dlugosci.'
+                        />
+                      </label>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <HelpLabel description="Dlugosc dystansu wraz z jednostka. Zostaw puste, jezeli zawody nie sa rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
@@ -657,6 +899,68 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     onChange={(html) => form.updateDistance(index, 'infoHtml', html)}
                     placeholder="Wpisz informacje widoczne dla uczestników przy tym dystansie..."
                     minHeight="90px"
+                  />
+                </div>
+
+                {/* Distance documents */}
+                <div className="space-y-2 border-t pt-4">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-xs font-medium">Dokumenty dystansu</Label>
+                    <FieldHelp description="Wgraj dodatkowe dokumenty dla tego dystansu, np. regulamin, harmonogram lub mape trasy w PDF." />
+                  </div>
+                  {dist.distanceDocuments.map((doc) => (
+                    <div key={doc.id} className="flex items-center gap-2 rounded-md border p-2">
+                      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">
+                          {doc.name || doc.fileName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {DISTANCE_DOCUMENT_TYPE_LABELS[doc.type as DistanceDocumentType] ||
+                            doc.type}
+                        </div>
+                      </div>
+                      <Select
+                        value={doc.type}
+                        onValueChange={(v) => form.updateDistanceDocument(index, doc.id, 'type', v)}
+                      >
+                        <SelectTrigger className="h-8 w-[140px] shrink-0 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(
+                            Object.entries(DISTANCE_DOCUMENT_TYPE_LABELS) as [
+                              DistanceDocumentType,
+                              string,
+                            ][]
+                          ).map(([value, label]) => (
+                            <SelectItem key={value} value={value} className="text-xs">
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        value={doc.name}
+                        onChange={(e) =>
+                          form.updateDistanceDocument(index, doc.id, 'name', e.target.value)
+                        }
+                        placeholder="Nazwa dokumentu"
+                        className="h-8 w-[160px] shrink-0 text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                        onClick={() => form.removeDistanceDocument(index, doc.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <DistanceDocumentUploadButton
+                    onUploaded={(doc) => form.addDistanceDocument(index, doc)}
                   />
                 </div>
 
@@ -929,95 +1233,84 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-4 pt-4">
                     <div className="grid gap-4 md:grid-cols-3">
-                      <div className="space-y-2">
-                        <HelpLabel
-                          className="text-xs"
-                          description="Link do mapy trasy, ktora uczestnik moze otworzyc przed startem."
-                        >
-                          URL mapy trasy
-                        </HelpLabel>
-                        <Input
-                          value={dist.routeMapUrl}
-                          onChange={(e) =>
-                            form.updateDistance(index, 'routeMapUrl', e.target.value)
-                          }
-                          placeholder="https://..."
-                          className="h-9"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <HelpLabel
-                          className="text-xs"
-                          description="Link do profilu przewyzszen, przydatny szczegolnie dla biegow gorskich, kolarskich i tras trailowych."
-                        >
-                          URL profilu przewyższeń
-                        </HelpLabel>
-                        <Input
-                          value={dist.routeElevationProfile}
-                          onChange={(e) =>
-                            form.updateDistance(index, 'routeElevationProfile', e.target.value)
-                          }
-                          placeholder="https://..."
-                          className="h-9"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <HelpLabel
-                          className="text-xs"
-                          description="Link do pliku GPX, ktory uczestnik moze pobrac do zegarka, nawigacji lub aplikacji treningowej."
-                        >
-                          URL pliku GPX
-                        </HelpLabel>
-                        <Input
-                          value={dist.routeGpxUrl}
-                          onChange={(e) =>
-                            form.updateDistance(index, 'routeGpxUrl', e.target.value)
-                          }
-                          placeholder="https://..."
-                          className="h-9"
-                        />
-                      </div>
+                      <RouteUrlOrUploadField
+                        label="Mapa trasy"
+                        description="Link do mapy trasy lub wgraj plik (obraz). Widoczne dla uczestnikow przed startem."
+                        value={dist.routeMapUrl}
+                        onChange={(v) => form.updateDistance(index, 'routeMapUrl', v)}
+                      />
+                      <RouteUrlOrUploadField
+                        label="Profil przewyższeń"
+                        description="Link do profilu przewyzszen lub wgraj plik (obraz). Przydatne dla tras gorskich i trailowych."
+                        value={dist.routeElevationProfile}
+                        onChange={(v) => form.updateDistance(index, 'routeElevationProfile', v)}
+                      />
+                      <RouteUrlOrUploadField
+                        label="Plik GPX"
+                        description="Link do pliku GPX lub wgraj plik GPX. Uczestnik moze pobrac do zegarka lub aplikacji treningowej."
+                        value={dist.routeGpxUrl}
+                        onChange={(v) => form.updateDistance(index, 'routeGpxUrl', v)}
+                        acceptFiles=".gpx,application/gpx+xml"
+                      />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
-                        <Label className="text-xs font-medium">Dodatkowe pliki</Label>
-                        <FieldHelp description="Lista dodatkowych materialow dla trasy, np. mapa, profil przewyzszen, GPX albo zdjecie trasy." />
+                        <Label className="text-xs font-medium">Dodatkowe pliki trasy</Label>
+                        <FieldHelp description="Dodaj kolejne materialy dla trasy z wyborem typu: mapa, profil przewyzszen, GPX, zdjecie, regulamin lub inny plik. Mozesz wgrac plik lub podac link." />
                       </div>
                       {dist.routeFiles.map((file) => (
                         <div
                           key={file.id}
-                          className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_1fr_100px_32px]"
+                          className="grid grid-cols-1 items-start gap-2 rounded-md border p-3 sm:grid-cols-[1fr_auto]"
                         >
-                          <Input
-                            value={file.name}
-                            onChange={(e) =>
-                              form.updateRouteFile(index, file.id, 'name', e.target.value)
-                            }
-                            placeholder="Nazwa pliku"
-                            className="h-9 min-w-0"
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_140px]">
+                            <Input
+                              value={file.name}
+                              onChange={(e) =>
+                                form.updateRouteFile(index, file.id, 'name', e.target.value)
+                              }
+                              placeholder="Nazwa pliku"
+                              className="h-9 min-w-0"
+                            />
+                            <Input
+                              value={file.url}
+                              onChange={(e) =>
+                                form.updateRouteFile(index, file.id, 'url', e.target.value)
+                              }
+                              placeholder="URL lub wgraj poniżej"
+                              className="h-9 min-w-0"
+                            />
+                            <Select
+                              value={file.type}
+                              onValueChange={(v) =>
+                                form.updateRouteFile(
+                                  index,
+                                  file.id,
+                                  'type',
+                                  v as DistanceRouteFileType,
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(
+                                  Object.entries(DISTANCE_ROUTE_FILE_TYPE_LABELS) as [
+                                    DistanceRouteFileType,
+                                    string,
+                                  ][]
+                                ).map(([value, label]) => (
+                                  <SelectItem key={value} value={value}>
+                                    {label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <RouteFileUploadButton
+                            onUploaded={(url) => form.updateRouteFile(index, file.id, 'url', url)}
                           />
-                          <Input
-                            value={file.url}
-                            onChange={(e) =>
-                              form.updateRouteFile(index, file.id, 'url', e.target.value)
-                            }
-                            placeholder="URL"
-                            className="h-9 min-w-0"
-                          />
-                          <Select
-                            value={file.type}
-                            onValueChange={(v) => form.updateRouteFile(index, file.id, 'type', v)}
-                          >
-                            <SelectTrigger className="h-9 sm:w-[120px] lg:w-auto">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="map">Mapa</SelectItem>
-                              <SelectItem value="elevation">Profil</SelectItem>
-                              <SelectItem value="gpx">GPX</SelectItem>
-                              <SelectItem value="image">Zdjęcie</SelectItem>
-                            </SelectContent>
-                          </Select>
                           <Button
                             type="button"
                             variant="ghost"

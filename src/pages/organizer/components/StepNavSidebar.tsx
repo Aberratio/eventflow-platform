@@ -11,10 +11,11 @@ interface StepNavSidebarProps {
   onNavigate: (subStep: SubStep) => void;
 }
 
-const STEP_LABELS: Record<1 | 2 | 3, string> = {
+const STEP_LABELS: Record<1 | 2 | 3 | 4, string> = {
   1: 'Podstawowe',
   2: 'Kategorie',
-  3: 'Publikacja',
+  3: 'Sklep',
+  4: 'Publikacja',
 };
 
 export const StepNavSidebar = ({
@@ -25,7 +26,7 @@ export const StepNavSidebar = ({
   revisitedSubSteps = [],
   onNavigate,
 }: StepNavSidebarProps) => {
-  const groups = ([1, 2, 3] as const).map((mainStep) => ({
+  const groups = ([1, 2, 3, 4] as const).map((mainStep) => ({
     mainStep,
     label: STEP_LABELS[mainStep],
     items: STEP_NAV_ITEMS.filter((item) => item.mainStep === mainStep),

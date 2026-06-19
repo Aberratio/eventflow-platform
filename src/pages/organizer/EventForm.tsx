@@ -6,6 +6,7 @@ import { useEventFormState } from './hooks/useEventFormState';
 import { appLogger } from '@/lib/logger';
 import { EventFormStep1 } from './components/EventFormStep1';
 import { EventFormStep2 } from './components/EventFormStep2';
+import { EventFormShopStep } from './components/EventFormShopStep';
 import { EventFormStep3 } from './components/EventFormStep3';
 import { PrivacyChangeConfirmDialog } from './components/PrivacyChangeConfirmDialog';
 import { StepNavSidebar } from './components/StepNavSidebar';
@@ -74,7 +75,8 @@ const EventForm = () => {
           <div className="min-w-0 flex-1">
             {form.step === 1 && <EventFormStep1 form={form} activeSubStep={form.subStep} />}
             {form.step === 2 && <EventFormStep2 form={form} activeSubStep={form.subStep} />}
-            {form.step === 3 && <EventFormStep3 form={form} />}
+            {form.step === 3 && <EventFormShopStep form={form} />}
+            {form.step === 4 && <EventFormStep3 form={form} />}
 
             {/* Navigation buttons */}
             <div className="mt-5 flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-0">
@@ -86,7 +88,7 @@ const EventForm = () => {
                 <div className="hidden sm:block" />
               )}
 
-              {form.step < 3 ? (
+              {form.step < 4 ? (
                 <Button onClick={form.nextStep} className="w-full sm:w-auto">
                   Zapisz i przejdź dalej <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -94,7 +96,8 @@ const EventForm = () => {
                 <Button
                   onClick={handleSaveClick}
                   disabled={
-                    form.isSaving || (!form.isEditing && form.selectedEventLimit?.available === 0)
+                    form.isSaving ||
+                    (!form.isEditing && form.selectedEventLimit?.available === 0)
                   }
                   className="w-full sm:w-auto"
                 >

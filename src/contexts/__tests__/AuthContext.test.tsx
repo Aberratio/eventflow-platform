@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
+import { getCurrentUser } from '@/api';
+import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import type { User, UserRole } from '@/types';
 
 const testUsers: User[] = [
@@ -93,5 +95,52 @@ describe('AuthContext', () => {
     });
     const stored = JSON.parse(localStorage.getItem('zmierzymyczas_auth')!);
     expect(stored.role).toBe('organizer');
+  });
+
+  it('hydrates cached user while validating stored bearer token', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'jwt-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+    vi.mocked(getCurrentUser).mockResolvedValueOnce({ data: testUsers[2], success: true });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    expect(result.current.user?.role).toBe('organizer');
+    expect(result.current.isAuthenticated).toBe(true);
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.user?.role).toBe('organizer');
+  });
+
+  it('clears cached auth when the API reports an expired session', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'jwt-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT));
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(localStorage.getItem(STORAGE_KEYS.AUTH)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBeNull();
+  });
+
+  it('ignores expired-session events for a token that is no longer current', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'fresh-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+    vi.mocked(getCurrentUser).mockResolvedValueOnce({ data: testUsers[2], success: true });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token: 'old-token' } }),
+      );
+    });
+
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEYS.AUTH)).not.toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBe('fresh-token');
   });
 });

@@ -87,9 +87,12 @@ export const SERIES_STATUS_LABELS: Record<string, string> = {
 
 export const STORAGE_KEYS = {
   AUTH: 'zmierzymyczas_auth',
+  API_TOKEN: 'zmierzymy_czas_api_token',
   EVENTS_FILTERS: 'events-page-filters',
   COOKIE_CONSENT: 'cookie-consent',
 } as const;
+
+export const AUTH_SESSION_EXPIRED_EVENT = 'zmierzymyczas:auth-session-expired';
 
 export const QUERY_KEYS = {
   events: ['events'] as const,

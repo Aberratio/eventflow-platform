@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Event, Registration, User } from '@/types';
+import { Event, Registration, User, EventMerchandise } from '@/types';
 import { Result } from '@/types/result';
 import {
   CalendarDays,
@@ -26,6 +26,7 @@ import {
   Phone,
   Route,
   Share2,
+  ShoppingBag,
   Trophy,
   Users,
   XCircle,
@@ -758,6 +759,75 @@ const ResultsSidebarCard = ({
   );
 };
 
+const EventGadgetsCard = ({ gadgets }: { gadgets: EventMerchandise[] }) => {
+  const available = gadgets.filter((g) => g.available);
+  if (available.length === 0) return null;
+
+  return (
+    <Card className="overflow-hidden border-white/10 bg-white/[0.035]">
+      <CardHeader className="p-4 pb-3 sm:p-5">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ShoppingBag className="h-4 w-4 shrink-0 text-primary" />
+          Gadżety do kupienia
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 p-4 pt-0 sm:p-5 sm:pt-0">
+        {available.map((g) => (
+          <div
+            key={g.id}
+            className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2.5"
+          >
+            {g.imageUrl ? (
+              <img
+                src={g.imageUrl}
+                alt={g.name}
+                className="h-10 w-10 shrink-0 rounded-md object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.04]">
+                <ShoppingBag className="h-4 w-4 text-foreground/30" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{g.name}</p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-semibold text-primary">
+                  {g.price.toFixed(2)} PLN
+                </span>
+                {g.originalPrice != null && g.originalPrice > g.price && (
+                  <span className="text-xs text-foreground/40 line-through">
+                    {g.originalPrice.toFixed(2)} PLN
+                  </span>
+                )}
+                {g.sizes && g.sizes.length > 0 && (
+                  <span className="text-xs text-foreground/50">
+                    Rozmiary: {g.sizes.join(', ')}
+                  </span>
+                )}
+              </div>
+              {g.colors && g.colors.length > 0 && (
+                <div className="mt-1 flex gap-1">
+                  {g.colors.map((c) => (
+                    <span
+                      key={c.id}
+                      title={c.name}
+                      className="h-3 w-3 rounded-full border border-white/20"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        <p className="pt-1 text-center text-xs text-foreground/45">
+          Gadżety można zamówić podczas rejestracji
+        </p>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const EventSidebar = ({
   event,
   user,
@@ -830,6 +900,10 @@ export const EventSidebar = ({
       )}
 
       <div id="event-start-list-sidebar-slot" className="space-y-5" />
+
+      {event.merchandise && event.merchandise.length > 0 && (
+        <EventGadgetsCard gadgets={event.merchandise} />
+      )}
 
       {(event.organizerInfo?.contacts?.length || event.organizerContact) && (
         <Card className="border-white/10 bg-white/[0.035]">

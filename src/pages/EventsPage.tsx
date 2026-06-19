@@ -597,39 +597,7 @@ const EventsPage = () => {
                   />
                 </div>
 
-                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                  <MobileStatCard
-                    label="Trwa teraz"
-                    count={statusCounts.live}
-                    status="live"
-                    active={filters.statuses.includes('live')}
-                    onClick={() => toggleArrayFilter('statuses', 'live')}
-                  />
-                  <MobileStatCard
-                    label="Otwarte"
-                    count={statusCounts.open}
-                    status="open"
-                    active={filters.statuses.includes('open')}
-                    onClick={() => toggleArrayFilter('statuses', 'open')}
-                  />
-                  <MobileStatCard
-                    label="Kończą się"
-                    count={statusCounts.ending}
-                    status="ending"
-                    active={filters.statuses.includes('ending')}
-                    onClick={() => toggleArrayFilter('statuses', 'ending')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => toggleArrayFilter('statuses', 'past')}
-                    className="flex min-h-[92px] flex-col items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-muted-foreground transition-colors hover:bg-white/[0.055] sm:min-h-[98px]"
-                  >
-                    <span className="text-lg">Więcej</span>
-                    <ChevronDown className="mt-2 h-7 w-7" />
-                  </button>
-                </div>
-
-                <div className="mb-9 grid gap-3 sm:grid-cols-3">
+<div className="mb-9 grid gap-3 sm:grid-cols-3">
                   <Select
                     value={String(filters.selectedYear)}
                     onValueChange={(value) => updateFilter('selectedYear', Number(value))}
@@ -745,39 +713,7 @@ const EventsPage = () => {
                   </div>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-6">
-                  {(Object.keys(statusMeta) as EventStatusKey[]).map((status) => {
-                    const Icon = statusMeta[status].icon;
-                    return (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => toggleArrayFilter('statuses', status)}
-                        className={cn(
-                          'flex min-h-[72px] items-center gap-4 rounded-lg border px-4 text-left transition-colors',
-                          statusMeta[status].tone,
-                          filters.statuses.includes(status)
-                            ? 'ring-current/40 ring-1'
-                            : 'hover:bg-white/[0.055]',
-                        )}
-                      >
-                        <span className="bg-current/10 flex h-9 w-9 items-center justify-center rounded-full">
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span>
-                          <span className="block text-xs font-medium text-foreground/90">
-                            {statusMeta[status].label}
-                          </span>
-                          <span className="block text-2xl font-bold leading-tight text-foreground">
-                            {statusCounts[status].toLocaleString('pl-PL')}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[hsl(var(--surface-elevated)/0.50)] p-4 shadow-xl shadow-black/10 xl:flex-row xl:items-center xl:justify-between">
+<div className="flex flex-col gap-4 rounded-lg border border-white/[0.08] bg-[hsl(var(--surface-elevated)/0.50)] p-4 shadow-xl shadow-black/10 xl:flex-row xl:items-center xl:justify-between">
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Select
                       value={String(filters.selectedYear)}
