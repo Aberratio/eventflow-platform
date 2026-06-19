@@ -396,12 +396,14 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                 >
                   Dystanse
                 </TabsTrigger>
-                <TabsTrigger
-                  value="startlist"
-                  className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
-                >
-                  Lista startowa
-                </TabsTrigger>
+                {!(isPast && eventResults.length > 0) || canViewDraft ? (
+                  <TabsTrigger
+                    value="startlist"
+                    className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
+                  >
+                    Lista startowa
+                  </TabsTrigger>
+                ) : null}
                 {showLiveResultsTab && (
                   <TabsTrigger
                     value="live"
@@ -424,7 +426,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
               <div className="mt-6 grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
                 <div className="min-w-0">
                   <TabsContent value="info" className="mt-0">
-                    <EventInfoTab event={event} />
+                    <EventInfoTab
+                      event={event}
+                      isPast={isPast}
+                      eventResults={eventResults}
+                      onGoToResults={() => setActiveTab('results')}
+                    />
                   </TabsContent>
 
                   {event.routeMapUrl && (
@@ -488,6 +495,9 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                   onShare={handleShare}
                   previewMode={isPreview}
                   hideRegistrationCard={activeTab === 'startlist'}
+                  isPast={isPast}
+                  eventResults={eventResults}
+                  onGoToResults={() => setActiveTab('results')}
                 />
               </div>
             </Tabs>

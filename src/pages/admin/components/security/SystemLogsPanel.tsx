@@ -18,21 +18,22 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Terminal, Search, RefreshCw, Trash2, Download, Filter } from 'lucide-react';
 import {
-  Terminal,
-  Search,
-  RefreshCw,
-  Trash2,
-  Download,
-  Filter,
-} from 'lucide-react';
-import { getStoredLogs, clearStoredLogs } from '@/lib/logger';
-import type { LogEntry, LogLevel, LogCategory } from '@/lib/logger';
+  clearStoredLogs,
+  getStoredLogs,
+  type LogCategory,
+  type LogEntry,
+  type LogLevel,
+} from '@/lib/logger';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 
-const LEVEL_BADGE: Record<LogLevel, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+const LEVEL_BADGE: Record<
+  LogLevel,
+  { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+> = {
   info: { variant: 'secondary', label: 'INFO' },
   warn: { variant: 'outline', label: 'WARN' },
   error: { variant: 'destructive', label: 'ERROR' },
@@ -131,7 +132,12 @@ export const SystemLogsPanel = () => {
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
               Odśwież
             </Button>
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={filtered.length === 0}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={filtered.length === 0}
+            >
               <Download className="mr-1.5 h-3.5 w-3.5" />
               Eksport
             </Button>
@@ -150,11 +156,20 @@ export const SystemLogsPanel = () => {
             <Input
               placeholder="Szukaj w logach..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
               className="pl-9"
             />
           </div>
-          <Select value={levelFilter} onValueChange={(v) => { setLevelFilter(v as LogLevel | 'all'); setPage(0); }}>
+          <Select
+            value={levelFilter}
+            onValueChange={(v) => {
+              setLevelFilter(v as LogLevel | 'all');
+              setPage(0);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-36">
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Poziom" />
@@ -167,7 +182,13 @@ export const SystemLogsPanel = () => {
               <SelectItem value="audit">Audit</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v as LogCategory | 'all'); setPage(0); }}>
+          <Select
+            value={categoryFilter}
+            onValueChange={(v) => {
+              setCategoryFilter(v as LogCategory | 'all');
+              setPage(0);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-44">
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Kategoria" />
@@ -175,7 +196,9 @@ export const SystemLogsPanel = () => {
             <SelectContent>
               <SelectItem value="all">Wszystkie kategorie</SelectItem>
               {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -223,14 +246,18 @@ export const SystemLogsPanel = () => {
                             <p className="text-muted-foreground">{log.userRole}</p>
                           </div>
                         ) : log.userId ? (
-                          <span className="font-mono text-muted-foreground">{log.userId.slice(0, 8)}…</span>
+                          <span className="font-mono text-muted-foreground">
+                            {log.userId.slice(0, 8)}…
+                          </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-xs">
                         {log.targetName ? (
-                          <Badge variant="secondary" className="text-[10px]">{log.targetName}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {log.targetName}
+                          </Badge>
                         ) : log.targetId ? (
                           <span className="font-mono text-muted-foreground">{log.targetId}</span>
                         ) : (
@@ -255,13 +282,24 @@ export const SystemLogsPanel = () => {
         {totalPages > 1 && (
           <div className="flex items-center justify-between text-sm">
             <p className="text-muted-foreground">
-              Wyświetlono {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} z {filtered.length}
+              Wyświetlono {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)}{' '}
+              z {filtered.length}
             </p>
             <div className="flex gap-1">
-              <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 0}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 0}
+              >
                 Poprzednia
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= totalPages - 1}
+              >
                 Następna
               </Button>
             </div>

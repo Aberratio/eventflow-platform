@@ -10,14 +10,14 @@
  *   3. That's it — all consumers import from `@/api` and stay unchanged.
  */
 
-import type { ApiResponse, PaginatedResponse } from './types';
 import type {
+  ApiResponse,
+  PaginatedResponse,
   EventFilters,
   UserFilters,
   ResultFilters,
   RegistrationFilters,
   ShopProductFilters,
-  OrderFilters,
   ActivityLogFilters,
   VirtualResultFilters,
   SeriesFilters,

@@ -1,40 +1,6 @@
 import { test, expect } from '../playwright-fixture';
 import type { Page } from '@playwright/test';
-
-async function login(page: Page, email: string) {
-  await page.goto('/login');
-  await dismissCookies(page);
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', 'demo1234');
-  await page.click('button[type="submit"]');
-}
-
-async function dismissCookies(page: Page) {
-  const acceptCookies = page.getByRole('button', { name: /Akceptuj wszystkie/i });
-  if (await acceptCookies.isVisible({ timeout: 1000 }).catch(() => false)) {
-    await acceptCookies.click();
-  }
-}
-
-async function loginAsOrganizer(page: Page) {
-  await login(page, 'marek@timing.pl');
-  await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
-}
-
-async function loginAsModerator(page: Page) {
-  await login(page, 'monika@zmierzymyczas.pl');
-  await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
-}
-
-async function loginAsAdmin(page: Page) {
-  await login(page, 'admin@zmierzymyczas.pl');
-  await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-}
-
-async function loginAsParticipant(page: Page) {
-  await login(page, 'jan@example.com');
-  await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
-}
+import { loginAs } from './helpers';
 
 async function openOrganizerSettings(page: Page, eventId: string) {
   await page.goto(`/organizer/events/${eventId}/settings`);
@@ -43,7 +9,7 @@ async function openOrganizerSettings(page: Page, eventId: string) {
 
 test.describe('Event workflow - organizer', () => {
   test('event management tabs use addressable routes', async ({ page }) => {
-    await loginAsOrganizer(page);
+    await loginAs(page, 'organizer');
 
     await page.goto('/organizer/events/e2e-approved/participants');
     await expect(page).toHaveURL(/\/organizer\/events\/e2e-approved\/participants$/);
@@ -65,7 +31,7 @@ test.describe('Event workflow - organizer', () => {
   });
 
   test('validates and creates a draft event', async ({ page }) => {
-    await loginAsOrganizer(page);
+    await loginAs(page, 'organizer');
     await page.goto('/organizer/events/new');
 
     await page.getByRole('button', { name: /Dalej/i }).click();
@@ -110,7 +76,7 @@ test.describe('Event workflow - organizer', () => {
   });
 
   test('submits draft for review and publishes an approved event', async ({ page }) => {
-    await loginAsOrganizer(page);
+    await loginAs(page, 'organizer');
 
     await openOrganizerSettings(page, 'e19');
     await page.getByRole('button', { name: /Oddaj do sprawdzenia/i }).click();
@@ -126,8 +92,8 @@ test.describe('Event workflow - organizer', () => {
 });
 
 test.describe('Event workflow - moderation', () => {
-  test('moderator can approve an event waiting for review', async ({ page }) => {
-    await loginAsModerator(page);
+  test('moderator can approve an event waiting for review @smoke', async ({ page }) => {
+    await loginAs(page, 'moderator');
     await page.getByRole('button', { name: /^Moderacja$/i }).click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeVisible();
     await page
@@ -138,7 +104,7 @@ test.describe('Event workflow - moderation', () => {
   });
 
   test('moderator can reject with a comment', async ({ page }) => {
-    await loginAsModerator(page);
+    await loginAs(page, 'moderator');
     await page.getByRole('button', { name: /^Moderacja$/i }).click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeVisible();
     page.once('dialog', async (dialog) => {
@@ -153,7 +119,7 @@ test.describe('Event workflow - moderation', () => {
   });
 
   test('admin can see pending and approved moderation queues', async ({ page }) => {
-    await loginAsAdmin(page);
+    await loginAs(page, 'admin');
     await page.getByRole('button', { name: /^Moderacja$/i }).click();
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toBeVisible();
     await page.getByRole('tab', { name: /Zatwierdzone/i }).click();
@@ -162,11 +128,11 @@ test.describe('Event workflow - moderation', () => {
 });
 
 test.describe('Event workflow - participant', () => {
-  test('lists public events and hides unpublished drafts', async ({ page }) => {
+  test('lists public events and hides unpublished drafts @smoke', async ({ page }) => {
     await page.goto('/events');
     await expect(page.getByText('Bieg Testowy Do Moderacji 2026')).toHaveCount(0);
     await expect(page.getByText('Bieg Miejski')).toHaveCount(0);
-    await expect(page.locator('a[href*="/events/"]').first()).toBeVisible();
+    await expect(page.locator('a[href*="/events/"]:visible').first()).toBeVisible();
   });
 
   test('anonymous user is redirected from registration to login', async ({ page }) => {
@@ -175,7 +141,7 @@ test.describe('Event workflow - participant', () => {
   });
 
   test('closed or sold-out event cannot be registered for', async ({ page }) => {
-    await loginAsParticipant(page);
+    await loginAs(page, 'participant');
     await page.goto('/events/bieg-wyprzedany-2026/register');
     await expect(page).toHaveURL(/\/events\/bieg-wyprzedany-2026$/);
     await expect(page.getByText(/Bieg Wyprzedany 2026/i)).toBeVisible();

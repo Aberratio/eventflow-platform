@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const useMockApi =
+  process.env.PLAYWRIGHT_USE_MOCKS ??
+  (process.env.npm_lifecycle_event === 'test:e2e:smoke' ? 'true' : 'false');
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
@@ -34,6 +38,7 @@ export default defineConfig({
         env: {
           ...process.env,
           VITE_API_URL: '',
+          VITE_ENABLE_MOCKS: useMockApi,
         },
       },
 });

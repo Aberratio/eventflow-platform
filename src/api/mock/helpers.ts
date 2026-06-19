@@ -157,7 +157,7 @@ export const validateTeamName = (name: string): { valid: boolean; error?: string
   if (trimmed.length < 3) return { valid: false, error: 'Nazwa musi mieć minimum 3 znaki' };
   if (trimmed.length > 50) return { valid: false, error: 'Nazwa może mieć maksymalnie 50 znaków' };
 
-  const validPattern = /^[a-zA-Ząćęłń󜟿ĄĆʣŃӌŹŻ0-9\s\-'.]+$/;
+  const validPattern = /^[\p{L}0-9\s\-'.]+$/u;
   if (!validPattern.test(trimmed))
     return { valid: false, error: 'Nazwa zawiera niedozwolone znaki' };
 

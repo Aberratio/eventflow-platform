@@ -1,4 +1,5 @@
 import { Event, EventLogisticsInfo, EventDocumentType, EVENT_DOCUMENT_TYPE_LABELS, EventSponsor } from '@/types';
+import { Result } from '@/types/result';
 import {
   Mail,
   Phone,
@@ -30,6 +31,8 @@ import {
   AlertCircle,
   Link2,
   Building2,
+  ChevronRight,
+  Medal,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
@@ -204,9 +207,165 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
 
 interface EventInfoTabProps {
   event: Event;
+  isPast?: boolean;
+  eventResults?: Result[];
+  onGoToResults?: () => void;
 }
 
-export const EventInfoTab = ({ event }: EventInfoTabProps) => {
+const MEDAL_COLORS = [
+  'text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]',
+  'text-slate-300 drop-shadow-[0_0_4px_rgba(203,213,225,0.5)]',
+  'text-amber-600 drop-shadow-[0_0_4px_rgba(217,119,6,0.5)]',
+];
+
+const ResultsAnnouncementBanner = ({
+  onGoToResults,
+}: {
+  onGoToResults?: () => void;
+}) => (
+  <div className="relative overflow-hidden rounded-xl border border-yellow-400/25 bg-gradient-to-br from-yellow-400/10 via-amber-500/5 to-transparent p-5 shadow-[0_0_40px_rgba(250,204,21,0.08)]">
+    <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.07]">
+      <Trophy className="h-28 w-28 text-yellow-400" />
+    </div>
+    <div className="relative flex items-center gap-4">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-yellow-400/30 bg-yellow-400/15 shadow-[0_0_20px_rgba(250,204,21,0.2)]">
+        <Trophy className="h-6 w-6 text-yellow-400" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-base font-semibold leading-tight text-foreground">
+          Wyniki są już dostępne!
+        </p>
+        <p className="mt-0.5 text-sm text-foreground/65">
+          Zawody się zakończyły — sprawdź pełne wyniki i klasyfikacje.
+        </p>
+      </div>
+      {onGoToResults && (
+        <button
+          type="button"
+          onClick={onGoToResults}
+          className="shrink-0 flex items-center gap-1.5 rounded-lg border border-yellow-400/30 bg-yellow-400/10 px-3 py-2 text-sm font-semibold text-yellow-300 transition-colors hover:bg-yellow-400/20"
+        >
+          Zobacz wyniki
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  </div>
+);
+
+const WinnersWidget = ({ results }: { results: Result[] }) => {
+  const finished = results.filter((r) => r.status === 'finished');
+  if (finished.length === 0) return null;
+
+  const distances = Array.from(new Set(finished.map((r) => r.distanceName)));
+  const manyDistancesOrCategories =
+    distances.length > 2 ||
+    Array.from(new Set(finished.map((r) => r.category))).length > 4;
+
+  if (manyDistancesOrCategories) {
+    // Jedno pierwsze miejsce z klasyfikacji generalnej każdego dystansu
+    const generalWinners = distances
+      .map((dist) => {
+        const distResults = finished
+          .filter((r) => r.distanceName === dist)
+          .sort((a, b) => a.position - b.position);
+        return distResults[0] ?? null;
+      })
+      .filter(Boolean) as Result[];
+
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
+          Zwycięzcy — klasyfikacja generalna
+        </p>
+        <div className="space-y-2">
+          {generalWinners.map((r) => (
+            <div
+              key={r.id}
+              className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
+            >
+              <Medal className="h-4 w-4 shrink-0 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
+                <p className="text-xs text-foreground/50">{r.distanceName}</p>
+              </div>
+              <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Kilka kategorii — top 3 z każdej
+  const categories = Array.from(new Set(finished.map((r) => r.category))).filter(Boolean);
+  if (categories.length === 0) {
+    // Brak kategorii — top 3 ogółem
+    const top3 = [...finished].sort((a, b) => a.position - b.position).slice(0, 3);
+    return (
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
+          Podium
+        </p>
+        <div className="space-y-2">
+          {top3.map((r, i) => (
+            <div
+              key={r.id}
+              className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
+            >
+              <Medal className={`h-4 w-4 shrink-0 ${MEDAL_COLORS[i]}`} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
+                {r.distanceName && (
+                  <p className="text-xs text-foreground/50">{r.distanceName}</p>
+                )}
+              </div>
+              <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {categories.map((cat) => {
+        const top3 = finished
+          .filter((r) => r.category === cat)
+          .sort((a, b) => a.categoryPosition - b.categoryPosition)
+          .slice(0, 3);
+        if (top3.length === 0) return null;
+        return (
+          <div key={cat} className="space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
+              {cat}
+            </p>
+            <div className="space-y-1.5">
+              {top3.map((r, i) => (
+                <div
+                  key={r.id}
+                  className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
+                >
+                  <Medal className={`h-4 w-4 shrink-0 ${MEDAL_COLORS[i]}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
+                  </div>
+                  <span className="shrink-0 font-mono text-sm font-bold text-primary">
+                    {r.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: EventInfoTabProps) => {
+  const hasResults = isPast && eventResults && eventResults.length > 0;
   const raceOffice = event.logisticsInfo?.raceOffice;
   const baggage = event.logisticsInfo?.baggage;
 
@@ -228,6 +387,10 @@ export const EventInfoTab = ({ event }: EventInfoTabProps) => {
 
   return (
     <div className="space-y-6">
+      {hasResults && (
+        <ResultsAnnouncementBanner onGoToResults={onGoToResults} />
+      )}
+
       {/* ── Najważniejsze przed startem ──────────────────────── */}
       <InfoSection
         title="Najważniejsze przed startem"

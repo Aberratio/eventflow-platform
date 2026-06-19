@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Event, Registration, User } from '@/types';
+import { Result } from '@/types/result';
 import {
   CalendarDays,
   CheckCircle2,
@@ -20,10 +21,12 @@ import {
   Info,
   Lock,
   Mail,
+  Medal,
   Pencil,
   Phone,
   Route,
   Share2,
+  Trophy,
   Users,
   XCircle,
 } from 'lucide-react';
@@ -46,6 +49,9 @@ interface EventSidebarProps {
   onShare: () => void;
   previewMode?: boolean;
   hideRegistrationCard?: boolean;
+  isPast?: boolean;
+  eventResults?: Result[];
+  onGoToResults?: () => void;
 }
 
 type PaymentState = {
@@ -658,6 +664,100 @@ const RegistrationCtaCard = ({
   );
 };
 
+const MEDAL_COLORS = [
+  'text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]',
+  'text-slate-300 drop-shadow-[0_0_4px_rgba(203,213,225,0.5)]',
+  'text-amber-600 drop-shadow-[0_0_4px_rgba(217,119,6,0.5)]',
+];
+
+const ResultsSidebarCard = ({
+  results,
+  onGoToResults,
+}: {
+  results: Result[];
+  onGoToResults?: () => void;
+}) => {
+  const finished = results.filter((r) => r.status === 'finished');
+  if (finished.length === 0) return null;
+
+  const distances = Array.from(new Set(finished.map((r) => r.distanceName)));
+  const categories = Array.from(new Set(finished.map((r) => r.category))).filter(Boolean);
+  const manyDistancesOrCategories = distances.length > 2 || categories.length > 4;
+
+  const rows: { result: Result; label: string; medalIdx: number }[] = [];
+
+  if (manyDistancesOrCategories) {
+    distances.forEach((dist) => {
+      const winner = [...finished]
+        .filter((r) => r.distanceName === dist)
+        .sort((a, b) => a.position - b.position)[0];
+      if (winner) rows.push({ result: winner, label: dist, medalIdx: 0 });
+    });
+  } else if (categories.length > 0) {
+    categories.forEach((cat) => {
+      const top3 = [...finished]
+        .filter((r) => r.category === cat)
+        .sort((a, b) => a.categoryPosition - b.categoryPosition)
+        .slice(0, 3);
+      top3.forEach((r, i) => rows.push({ result: r, label: cat, medalIdx: i }));
+    });
+  } else {
+    [...finished]
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 3)
+      .forEach((r, i) => rows.push({ result: r, label: r.distanceName ?? '', medalIdx: i }));
+  }
+
+  if (rows.length === 0) return null;
+
+  return (
+    <Card className="overflow-hidden border-yellow-400/20 bg-white/[0.035] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+      <div className="h-px bg-gradient-to-r from-yellow-400/80 to-transparent" />
+      <CardContent className="p-5">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-yellow-400/30 bg-yellow-400/15 shadow-[0_0_16px_rgba(250,204,21,0.18)]">
+              <Trophy className="h-4 w-4 text-yellow-400" />
+            </div>
+            <h2 className="text-base font-semibold">Wyniki zawodów</h2>
+          </div>
+          {onGoToResults && (
+            <button
+              type="button"
+              onClick={onGoToResults}
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              Pełne wyniki
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          {rows.map(({ result: r, label, medalIdx }, idx) => {
+            const showLabel =
+              idx === 0 || rows[idx - 1].label !== label;
+            return (
+              <div key={r.id}>
+                {showLabel && (
+                  <p className="mb-1 mt-2 first:mt-0 text-[10px] font-semibold uppercase tracking-wider text-foreground/40">
+                    {label}
+                  </p>
+                )}
+                <div className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2">
+                  <Medal className={`h-3.5 w-3.5 shrink-0 ${MEDAL_COLORS[medalIdx]}`} />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{r.userName}</span>
+                  <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const EventSidebar = ({
   event,
   user,
@@ -668,6 +768,9 @@ export const EventSidebar = ({
   onShare,
   previewMode = false,
   hideRegistrationCard = false,
+  isPast,
+  eventResults,
+  onGoToResults,
 }: EventSidebarProps) => {
   const hasExternalRegistration = isExternalRegistrationEvent(event);
   const lowestOnlinePrice = Math.min(
@@ -691,6 +794,8 @@ export const EventSidebar = ({
       {!hideRegistrationCard &&
         (userRegistration ? (
           <RegistrationStatusCard event={event} registration={userRegistration} onShare={onShare} />
+        ) : isPast && eventResults && eventResults.length > 0 ? (
+          <ResultsSidebarCard results={eventResults} onGoToResults={onGoToResults} />
         ) : (
           <RegistrationCtaCard
             event={event}

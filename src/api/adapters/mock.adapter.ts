@@ -7,9 +7,21 @@
 
 import type { ApiAdapter } from '../contract';
 import { httpAdapter } from './http.adapter';
-import type { ApiResponse, PaginatedResponse } from '../types';
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  EventFilters,
+  UserFilters,
+  ResultFilters,
+  RegistrationFilters,
+  ShopProductFilters,
+  ActivityLogFilters,
+  VirtualResultFilters,
+  SeriesFilters,
+} from '../types';
 import type { SalesStats } from '@/types/admin';
 import type {
+  Event,
   User,
   UserRole,
   Result,
@@ -40,26 +52,17 @@ import type {
   VirtualResultSubmissionStatus,
   PaymentDetails,
 } from '@/types';
-import type {
+import {
+  EMAIL_VARIABLES,
+  SYSTEM_TRIGGER_TYPES,
+  type CreateEmailTemplatePayload,
   EmailTemplate,
+  type EmailPreviewRequest,
+  type EmailPreviewResult,
   EmailSendLog,
-  CreateEmailTemplatePayload,
-  SendEmailResult,
-  EmailPreviewRequest,
-  EmailPreviewResult,
-  EmailTemplateVariable,
+  type EmailTemplateVariable,
+  type SendEmailResult,
 } from '@/types/email';
-import { SYSTEM_TRIGGER_TYPES, EMAIL_VARIABLES } from '@/types/email';
-import type {
-  EventFilters,
-  UserFilters,
-  ResultFilters,
-  RegistrationFilters,
-  ShopProductFilters,
-  ActivityLogFilters,
-  VirtualResultFilters,
-  SeriesFilters,
-} from '../types';
 import type {
   CreateEventPayload,
   UpdateEventPayload,
@@ -80,6 +83,7 @@ import type {
 
 // ── Mock data imports ──
 import { mockUsers } from '../mock/users.mock';
+import { mockEvents } from '../mock/events.mock';
 import {
   mockResults,
   mockPersonalRecords,
@@ -153,20 +157,130 @@ let shopCategories: ShopCategoryConfig[] = Object.entries({
 export const mockAdapter: ApiAdapter = {
   // ── Events — delegated to HTTP adapter ──
 
-  getEvents: (...args) => httpAdapter.getEvents(...args),
-  getEventBySlug: (...args) => httpAdapter.getEventBySlug(...args),
-  getEventById: (...args) => httpAdapter.getEventById(...args),
-  createEvent: (...args) => httpAdapter.createEvent(...args),
-  updateEvent: (...args) => httpAdapter.updateEvent(...args),
-  deleteEvent: (...args) => httpAdapter.deleteEvent(...args),
-  updateEventStatus: (...args) => httpAdapter.updateEventStatus(...args),
-  submitEvent: (...args) => httpAdapter.submitEvent(...args),
-  approveEvent: (...args) => httpAdapter.approveEvent(...args),
-  rejectEvent: (...args) => httpAdapter.rejectEvent(...args),
-  publishEvent: (...args) => httpAdapter.publishEvent(...args),
-  getFeaturedEvents: (...args) => httpAdapter.getFeaturedEvents(...args),
-  getLiveEvents: (...args) => httpAdapter.getLiveEvents(...args),
-  getEventsByOrganizer: (...args) => httpAdapter.getEventsByOrganizer(...args),
+  async getEvents(filters) {
+    await delay();
+    let filtered = [...mockEvents];
+    if (!filters?.includePrivate) filtered = filtered.filter((event) => !event.isPrivate);
+    if (!filters?.includeUnpublished) {
+      filtered = filtered.filter((event) => ['active', 'past', 'archived'].includes(event.status));
+    } else if (!filters?.includeDeleted) {
+      filtered = filtered.filter((event) => event.status !== 'deleted');
+    }
+    if (filters?.discipline) {
+      filtered = filtered.filter((event) => event.discipline === filters.discipline);
+    }
+    if (filters?.city) {
+      filtered = filtered.filter((event) => event.city === filters.city);
+    }
+    if (filters?.status) {
+      filtered = filtered.filter((event) => event.status === filters.status);
+    }
+    if (filters?.search) {
+      const query = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (event) =>
+          event.name.toLowerCase().includes(query) ||
+          event.city.toLowerCase().includes(query) ||
+          event.location.toLowerCase().includes(query),
+      );
+    }
+    return paginated(filtered);
+  },
+  async getEventBySlug(slug) {
+    await delay();
+    return ok(mockEvents.find((event) => event.slug === slug) ?? null);
+  },
+  async getEventById(id) {
+    await delay();
+    return ok(mockEvents.find((event) => event.id === id) ?? null);
+  },
+  async createEvent(data) {
+    await delay();
+    const event: Event = {
+      id: `e-${Date.now()}`,
+      status: 'draft',
+      featured: false,
+      isVirtual: false,
+      ...data,
+      organizerName: data.organizerName ?? 'Mock Organizer',
+      imageUrl: data.imageUrl ?? 'https://example.test/event.jpg',
+      distances: data.distances ?? [],
+    } as Event;
+    mockEvents.push(event);
+    return ok(event, 'Event created');
+  },
+  async updateEvent(id, data) {
+    await delay();
+    const index = mockEvents.findIndex((event) => event.id === id);
+    if (index === -1) return fail(null, 'Event not found');
+    mockEvents[index] = { ...mockEvents[index], ...data };
+    return ok(mockEvents[index]);
+  },
+  async deleteEvent(id) {
+    await delay();
+    const event = mockEvents.find((item) => item.id === id);
+    if (event) event.status = 'deleted';
+    return ok(undefined as unknown as void);
+  },
+  async updateEventStatus(id, status, reason) {
+    await delay();
+    if (['awaiting_approval', 'approved', 'active'].includes(status)) {
+      return fail(null, 'Use moderation workflow actions');
+    }
+    const event = mockEvents.find((item) => item.id === id);
+    if (!event) return fail(null, 'Event not found');
+    event.status = status;
+    event.rejectionReason = reason;
+    return ok(event);
+  },
+  async submitEvent(id) {
+    await delay();
+    const event = mockEvents.find((item) => item.id === id);
+    if (!event || event.status !== 'draft') return fail(null, 'Invalid status transition');
+    event.status = 'awaiting_approval';
+    event.submittedAt = new Date().toISOString();
+    return ok(event);
+  },
+  async approveEvent(id) {
+    await delay();
+    const event = mockEvents.find((item) => item.id === id);
+    if (!event || event.status !== 'awaiting_approval') {
+      return fail(null, 'Invalid status transition');
+    }
+    event.status = 'approved';
+    event.approvedAt = new Date().toISOString();
+    return ok(event);
+  },
+  async rejectEvent(id, reason) {
+    await delay();
+    const event = mockEvents.find((item) => item.id === id);
+    if (!event || event.status !== 'awaiting_approval') {
+      return fail(null, 'Invalid status transition');
+    }
+    event.status = 'draft';
+    event.rejectionReason = reason;
+    return ok(event);
+  },
+  async publishEvent(id) {
+    await delay();
+    const event = mockEvents.find((item) => item.id === id);
+    if (!event || event.status !== 'approved') return fail(null, 'Invalid status transition');
+    event.status = 'active';
+    event.publishedAt = new Date().toISOString();
+    return ok(event);
+  },
+  async getFeaturedEvents() {
+    await delay();
+    return ok(mockEvents.filter((event) => event.featured && event.status === 'active'));
+  },
+  async getLiveEvents() {
+    await delay();
+    return ok(mockEvents.filter((event) => event.isLive && event.status === 'active'));
+  },
+  async getEventsByOrganizer(organizerId) {
+    await delay();
+    return ok(mockEvents.filter((event) => event.organizerId === organizerId));
+  },
   getOrganizerEventLimit: (...args) => httpAdapter.getOrganizerEventLimit(...args),
   updateOrganizerEventLimit: (...args) => httpAdapter.updateOrganizerEventLimit(...args),
   uploadEventImage: (...args) => httpAdapter.uploadEventImage(...args),

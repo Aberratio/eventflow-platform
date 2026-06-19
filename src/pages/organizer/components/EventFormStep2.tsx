@@ -8,6 +8,8 @@ import { FieldHelp, HelpLabel } from '@/components/ui/field-help';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
+import { applyDiscount } from '@/api';
 import {
   Select,
   SelectContent,
@@ -30,7 +32,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useState } from 'react';
-import type { AgeCategory } from '@/types';
+import type { AgeCategory, ParticipantCountType, PriceTierMode } from '@/types';
 import type { EventFormState, SubStep } from '../hooks/useEventFormState';
 
 const FieldError = ({ message }: { message?: string }) =>
@@ -42,10 +44,9 @@ const FieldError = ({ message }: { message?: string }) =>
   ) : null;
 
 const inputError = (hasError: boolean) =>
-  hasError ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20' : '';
-import { applyDiscount } from '@/api';
-import type { ParticipantCountType, PriceTierMode } from '@/types';
-import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
+  hasError
+    ? 'border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20'
+    : '';
 
 interface EventFormStep2Props {
   form: EventFormState;
@@ -84,7 +85,13 @@ const AGE_CATEGORY_TEMPLATES: AgeCategoryTemplate[] = [
       const cats: AgeCategory[] = [];
       for (const g of ['K', 'M'] as const)
         for (const r of ranges)
-          cats.push({ id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: `${g}${r.label}`, gender: g, birthYearFrom: r.from, birthYearTo: r.to });
+          cats.push({
+            id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            name: `${g}${r.label}`,
+            gender: g,
+            birthYearFrom: r.from,
+            birthYearTo: r.to,
+          });
       return cats;
     },
   },
@@ -100,7 +107,7 @@ const AGE_CATEGORY_TEMPLATES: AgeCategoryTemplate[] = [
         { label: '60+', from: y - 100, to: y - 60 },
       ];
       return ranges.map((r) => ({
-        id: `cat-open-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+        id: `cat-open-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         name: r.label,
         gender: null,
         birthYearFrom: r.from,
@@ -123,7 +130,13 @@ const AGE_CATEGORY_TEMPLATES: AgeCategoryTemplate[] = [
       const cats: AgeCategory[] = [];
       for (const g of ['K', 'M'] as const)
         for (const r of ranges)
-          cats.push({ id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: `${g} ${r.label}`, gender: g, birthYearFrom: r.from, birthYearTo: r.to });
+          cats.push({
+            id: `cat-${g}-${r.label}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            name: `${g} ${r.label}`,
+            gender: g,
+            birthYearFrom: r.from,
+            birthYearTo: r.to,
+          });
       return cats;
     },
   },
@@ -131,8 +144,20 @@ const AGE_CATEGORY_TEMPLATES: AgeCategoryTemplate[] = [
     label: 'Tylko Open K i M',
     description: 'Dwie kategorie: Kobiety Open i Mężczyźni Open bez podziału wiekowego',
     generate: () => [
-      { id: `cat-K-open-${Date.now()}`, name: 'K Open', gender: 'K' as const, birthYearFrom: undefined, birthYearTo: undefined },
-      { id: `cat-M-open-${Date.now()}`, name: 'M Open', gender: 'M' as const, birthYearFrom: undefined, birthYearTo: undefined },
+      {
+        id: `cat-K-open-${Date.now()}`,
+        name: 'K Open',
+        gender: 'K' as const,
+        birthYearFrom: undefined,
+        birthYearTo: undefined,
+      },
+      {
+        id: `cat-M-open-${Date.now()}`,
+        name: 'M Open',
+        gender: 'M' as const,
+        birthYearFrom: undefined,
+        birthYearTo: undefined,
+      },
     ],
   },
 ];
@@ -170,814 +195,857 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
   return (
     <div className="space-y-6">
       {/* EVENT-LEVEL CATEGORIES */}
-      {activeSubStep === 'categories' && <Card>
-        <CardHeader className="p-4 pb-3 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz
-                wyłączyć wybrane kategorie.
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2.5 rounded-lg border px-3 py-2">
-              <Switch
-                id="categories-enabled"
-                checked={form.categoriesEnabled}
-                onCheckedChange={form.setCategoriesEnabled}
-              />
-              <Label htmlFor="categories-enabled" className="cursor-pointer text-sm font-medium">
-                {form.categoriesEnabled ? 'Kategorie włączone' : 'Brak kategorii'}
-              </Label>
-              <FieldHelp description="Wyłącz, jeśli wydarzenie nie ma podziału na kategorie. Zdefiniowane kategorie zostaną zapamiętane, ale nie zostaną zapisane do bazy danych." />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
-          {!form.categoriesEnabled && (
-            <Alert className="border-muted bg-muted/50">
-              <Info className="h-4 w-4" />
-              <AlertTitle>Brak kategorii</AlertTitle>
-              <AlertDescription>
-                Wydarzenie nie będzie miało podziału na kategorie. Uczestnicy nie będą wybierać
-                kategorii podczas rejestracji.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {form.categoriesEnabled && <>
-          {/* Base Categories */}
-          <div className="space-y-3">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <Label className="text-base font-medium">
-                Kategorie podstawowe ({form.ageCategories.length})
-              </Label>
-              <FieldHelp description="Kategorie grupujące uczestników, np. według wieku, płci lub typu open (W Open, M Open). Używane w zapisach, listach startowych i wynikach." />
-            </div>
-
-            {/* Category templates */}
-            <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-              <div className="flex items-center gap-1.5">
-                <p className="text-xs font-medium text-muted-foreground">Szablony kategorii</p>
-                <FieldHelp description="Kliknij szablon, aby zastąpić bieżące kategorie gotowym zestawem. Możesz go potem edytować." />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {AGE_CATEGORY_TEMPLATES.map((tpl) => (
-                  <button
-                    key={tpl.label}
-                    type="button"
-                    title={tpl.description}
-                    onClick={() => form.setAgeCategories(tpl.generate(eventYear))}
-                    className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
-                  >
-                    <ListPlus className="h-3.5 w-3.5 shrink-0" />
-                    {tpl.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {form.ageCategories.length > 0 && (
-              <div className="space-y-2">
-                <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_110px_110px_40px]">
-                  <span className="flex items-center gap-1">
-                    Nazwa
-                    <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29, M40-49 albo W Open." />
-                  </span>
-                  <span className="flex items-center gap-1">
-                    Płeć
-                    <FieldHelp description="Opcjonalne. Określa, czy kategoria dotyczy kobiet (K) lub mężczyzn (M). Zostaw puste dla kategorii Open." />
-                  </span>
-                  <span className="flex items-center gap-1 gap-x-1">
-                    {ageInputMode === 'year' ? 'Rok od' : 'Wiek od'}
-                    <FieldHelp description={ageInputMode === 'year' ? 'Najstarszy rocznik kwalifikujący się do tej kategorii.' : 'Minimalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'} />
-                    <button
-                      type="button"
-                      onClick={() => setAgeInputMode(ageInputMode === 'year' ? 'age' : 'year')}
-                      className="ml-auto rounded px-1 py-0.5 text-[10px] font-semibold text-primary underline-offset-2 hover:underline"
-                    >
-                      {ageInputMode === 'year' ? '→ wiek' : '→ rok'}
-                    </button>
-                  </span>
-                  <span className="flex items-center gap-1">
-                    {ageInputMode === 'year' ? 'Rok do' : 'Wiek do'}
-                    <FieldHelp description={ageInputMode === 'year' ? 'Najmłodszy rocznik kwalifikujący się do tej kategorii.' : 'Maksymalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'} />
-                  </span>
-                  <span></span>
-                </div>
-                {form.ageCategories.map((cat, catIdx) => (
-                  <div
-                    key={cat.id}
-                    className="grid grid-cols-[minmax(0,1fr)_88px] items-center gap-2 md:grid-cols-[1fr_80px_110px_110px_40px]"
-                  >
-                    <Input
-                      value={cat.name}
-                      onChange={(e) => form.updateAgeCategory(catIdx, 'name', e.target.value)}
-                      placeholder="np. W Open, M40-49"
-                      className="h-9"
-                    />
-                    <Select
-                      value={cat.gender ?? '__none__'}
-                      onValueChange={(v) =>
-                        form.updateAgeCategory(
-                          catIdx,
-                          'gender',
-                          v === '__none__' ? null : (v as 'K' | 'M'),
-                        )
-                      }
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue placeholder="—" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">—</SelectItem>
-                        <SelectItem value="K">K</SelectItem>
-                        <SelectItem value="M">M</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      type="number"
-                      value={
-                        ageInputMode === 'year'
-                          ? (cat.birthYearFrom ?? '')
-                          : (cat.birthYearFrom != null ? yearToAge(cat.birthYearFrom) : '')
-                      }
-                      onChange={(e) => {
-                        const raw = e.target.value === '' ? null : parseInt(e.target.value) || 0;
-                        const year = raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
-                        form.updateAgeCategory(catIdx, 'birthYearFrom', year);
-                      }}
-                      placeholder="—"
-                      className="h-9"
-                    />
-                    <Input
-                      type="number"
-                      value={
-                        ageInputMode === 'year'
-                          ? (cat.birthYearTo ?? '')
-                          : (cat.birthYearTo != null ? yearToAge(cat.birthYearTo) : '')
-                      }
-                      onChange={(e) => {
-                        const raw = e.target.value === '' ? null : parseInt(e.target.value) || 0;
-                        const year = raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
-                        form.updateAgeCategory(catIdx, 'birthYearTo', year);
-                      }}
-                      placeholder="—"
-                      className="h-9"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-full text-destructive hover:text-destructive md:w-9"
-                      onClick={() => form.removeAgeCategory(catIdx)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                {ageInputMode === 'age' && (
-                  <p className="px-1 text-xs text-muted-foreground">
-                    Wartości przeliczane na rok urodzenia względem roku wydarzenia ({eventYear}). Zapisywane jako roczniki.
-                  </p>
-                )}
-              </div>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={form.addAgeCategory}
-              className="w-full text-primary sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię
-            </Button>
-          </div>
-
-          {/* Special Categories */}
-          <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center gap-1.5">
-              <Label className="text-base font-medium">
-                Kategorie specjalne ({form.specialCategories.length})
-              </Label>
-              <FieldHelp description="Kategorie specjalne dodaja dodatkowe klasyfikacje niezalezne od wieku, np. mieszkancy miasta, sluzby mundurowe albo pracownicy firmy." />
-            </div>
-            {form.specialCategories.length > 0 && (
-              <div className="space-y-2">
-                <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_1fr_40px]">
-                  <span className="flex items-center gap-1">
-                    Nazwa
-                    <FieldHelp description="Nazwa kategorii specjalnej widoczna dla uczestnikow i w klasyfikacjach." />
-                  </span>
-                  <span className="flex items-center gap-1">
-                    Opis (opcjonalnie)
-                    <FieldHelp description="Krotkie wyjasnienie warunkow przynaleznosci do kategorii specjalnej." />
-                  </span>
-                  <span></span>
-                </div>
-                {form.specialCategories.map((cat, catIdx) => (
-                  <div
-                    key={cat.id}
-                    className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] md:grid-cols-[1fr_1fr_40px]"
-                  >
-                    <Input
-                      value={cat.name}
-                      onChange={(e) => form.updateSpecialCategory(catIdx, 'name', e.target.value)}
-                      placeholder="np. Mieszkaniec Warszawy"
-                      className="h-9 sm:col-span-2 md:col-span-1"
-                    />
-                    <Input
-                      value={cat.description || ''}
-                      onChange={(e) =>
-                        form.updateSpecialCategory(catIdx, 'description', e.target.value)
-                      }
-                      placeholder="np. Osoby zameldowane w Warszawie"
-                      className="h-9"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
-                      onClick={() => form.removeSpecialCategory(catIdx)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={form.addSpecialCategory}
-              className="w-full text-primary sm:w-auto"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
-            </Button>
-          </div>
-          </>}
-        </CardContent>
-      </Card>}
-
-      {/* DISTANCES */}
-      {activeSubStep === 'distances' && <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
-        <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
-          <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
-        </Button>
-      </div>
-
-      <Card>
-        <CardContent className="space-y-3 p-4 sm:p-5">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium">Popularne szablony dystansów</p>
-              <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
-              wariantów.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {DISTANCE_TEMPLATES.map((template) => (
-              <Button
-                key={`${template.name}-${template.length}-${template.unit}`}
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => form.addDistanceFromTemplate(template)}
-                className="h-8"
-              >
-                <ListPlus className="mr-1.5 h-3.5 w-3.5" />
-                {template.name}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {form.distances.length === 0 && (
+      {activeSubStep === 'categories' && (
         <Card>
-          <CardContent className="p-6 py-10 text-center text-muted-foreground sm:py-12">
-            <p>Nie dodano jeszcze żadnych dystansów.</p>
-            <Button onClick={form.addDistance} className="mt-4 w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Dodaj pierwszy dystans
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {form.distances.map((dist, index) => (
-        <Card key={dist.id}>
-          <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
-            <div className="flex items-start justify-between gap-3">
-              <CardTitle className="min-w-0 break-words text-lg">
-                {dist.name || `Dystans ${index + 1}`}
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => form.removeDistance(index)}
-                className="shrink-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+          <CardHeader className="p-4 pb-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <CardTitle className="text-xl">Kategorie uczestników</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Zdefiniuj kategorie dla całego wydarzenia. W poszczególnych dystansach możesz
+                  wyłączyć wybrane kategorie.
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2.5 rounded-lg border px-3 py-2">
+                <Switch
+                  id="categories-enabled"
+                  checked={form.categoriesEnabled}
+                  onCheckedChange={form.setCategoriesEnabled}
+                />
+                <Label htmlFor="categories-enabled" className="cursor-pointer text-sm font-medium">
+                  {form.categoriesEnabled ? 'Kategorie włączone' : 'Brak kategorii'}
+                </Label>
+                <FieldHelp description="Wyłącz, jeśli wydarzenie nie ma podziału na kategorie. Zdefiniowane kategorie zostaną zapamiętane, ale nie zostaną zapisane do bazy danych." />
+              </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
-                <HelpLabel description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint.">
-                  Nazwa dystansu *
-                </HelpLabel>
-                <Input
-                  value={dist.name}
-                  onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
-                  placeholder="np. Maraton"
-                  className={inputError(!!fe[`distance_${index}_name`])}
-                />
-                <FieldError message={fe[`distance_${index}_name`]} />
-              </div>
-              <div className="space-y-2">
-                <HelpLabel description="Dlugosc dystansu wraz z jednostka. Zostaw puste, jezeli zawody nie sa rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
-                  Długość
-                </HelpLabel>
-                {dist.noLength ? (
-                  <div className="flex h-9 items-center">
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        checked
-                        onCheckedChange={() => form.updateDistance(index, 'noLength', false)}
-                      />
-                      Brak dystansu
-                    </label>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-2">
-                    <Input
-                      type="number"
-                      value={dist.length}
-                      onChange={(e) => form.updateDistance(index, 'length', e.target.value)}
-                      placeholder="42.195"
-                      className={inputError(!!fe[`distance_${index}_length`])}
-                    />
-                    <Select
-                      value={dist.unit}
-                      onValueChange={(v: 'km' | 'm') => form.updateDistance(index, 'unit', v)}
-                    >
-                      <SelectTrigger className="w-20">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="km">km</SelectItem>
-                        <SelectItem value="m">m</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                {!dist.noLength && <FieldError message={fe[`distance_${index}_length`]} />}
-                {!dist.noLength && (
-                  <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
-                    <Checkbox
-                      checked={false}
-                      onCheckedChange={() => form.updateDistance(index, 'noLength', true)}
-                    />
-                    Brak dystansu (zawody bez określonej długości)
-                  </label>
-                )}
-              </div>
-              <div className="space-y-2">
-                <HelpLabel description="Podstawowa oplata startowa za ten dystans w zlotowkach. Uzywana w koszyku, rejestracji i podsumowaniach platnosci.">
-                  Cena bazowa (PLN) *
-                </HelpLabel>
-                <Input
-                  type="number"
-                  value={dist.price}
-                  onChange={(e) => form.updateDistance(index, 'price', e.target.value)}
-                  placeholder="150"
-                  className={inputError(!!fe[`distance_${index}_price`])}
-                />
-                <FieldError message={fe[`distance_${index}_price`]} />
-              </div>
-              <div className="space-y-2">
-                <HelpLabel description="Cena pobierana przy zapisie na miejscu, w biurze zawodow. Nie zmienia ceny online, ale jest widoczna w podgladzie wydarzenia.">
-                  Cena w biurze
-                </HelpLabel>
-                <Input
-                  type="number"
-                  value={dist.officePrice}
-                  onChange={(e) => form.updateDistance(index, 'officePrice', e.target.value)}
-                  placeholder="180"
-                  className={inputError(!!fe[`distance_${index}_officePrice`])}
-                />
-                <FieldError message={fe[`distance_${index}_officePrice`]} />
-              </div>
-              <div className="space-y-2">
-                <HelpLabel description="Maksymalna liczba zapisow na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
-                  Limit uczestników
-                </HelpLabel>
-                <Input
-                  type="number"
-                  value={dist.limit}
-                  onChange={(e) => form.updateDistance(index, 'limit', e.target.value)}
-                  placeholder="500"
-                  className={inputError(!!fe[`distance_${index}_limit`])}
-                />
-                <FieldError message={fe[`distance_${index}_limit`]} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <HelpLabel description="Opcjonalny opis widoczny przy dystansie, np. limit wieku, charakter trasy, przewyższenia, wymagany sprzęt albo ważne zasady dla tego wariantu.">
-                Dodatkowe informacje o dystansie
-              </HelpLabel>
-              <RichTextEditor
-                value={dist.infoHtml}
-                onChange={(html) => form.updateDistance(index, 'infoHtml', html)}
-                placeholder="Wpisz informacje widoczne dla uczestników przy tym dystansie..."
-                minHeight="90px"
-              />
-            </div>
-
-            <Collapsible>
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
-                >
-                  <Wallet className="h-4 w-4" /> Konfiguracja płatności
-                  {isEmbedRegistration ? (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      po stronie organizatora
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {dist.priceTiers.length} progów
-                    </Badge>
-                  )}
-                  <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-4">
-                {isEmbedRegistration ? (
-                  <Alert className="border-muted bg-muted/50">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Platnosci i progi poza systemem</AlertTitle>
-                    <AlertDescription>
-                      Dla zawodow typu embed nie konfigurujemy progow cenowych ani sposobu
-                      pobierania oplat. Te zasady ustala i obsluguje organizator lub zewnetrzny
-                      system poza panelem.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <>
-                    <div className="grid gap-4 md:grid-cols-[220px_1fr]">
-                      <div className="space-y-2">
-                        <HelpLabel
-                          className="text-xs"
-                          description="Okresla, czy aktywny prog zalezy od daty, czy od liczby zapisanych lub oplaconych uczestnikow."
-                        >
-                          Sposob naliczania
-                        </HelpLabel>
-                        <Select
-                          value={dist.priceTierMode}
-                          onValueChange={(value: PriceTierMode) => {
-                            form.updateDistance(index, 'priceTierMode', value);
-                            form.updateDistance(index, 'priceTiers', []);
-                          }}
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="date">
-                              <span className="flex items-center gap-2">
-                                <Calendar className="h-3.5 w-3.5" /> Po dacie
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="participants">
-                              <span className="flex items-center gap-2">
-                                <Users className="h-3.5 w-3.5" /> Po liczbie uczestnikow
-                              </span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {dist.priceTierMode === 'participants' && (
-                        <div className="space-y-2">
-                          <HelpLabel
-                            className="text-xs"
-                            description="Dla progow uczestnikow mozesz liczyc wszystkie zapisy albo tylko osoby z potwierdzona oplata startowa."
-                          >
-                            Licznik uczestnikow
-                          </HelpLabel>
-                          <Select
-                            value={dist.participantCountType}
-                            onValueChange={(value: ParticipantCountType) =>
-                              form.updateDistance(index, 'participantCountType', value)
-                            }
-                          >
-                            <SelectTrigger className="h-9 max-w-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="registered">Zapisani</SelectItem>
-                              <SelectItem value="paid">Oplaceni</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-
-                    <PriceTierPreview
-                      basePrice={Number(dist.price) || 0}
-                      tiers={dist.priceTiers}
-                      mode={dist.priceTierMode}
-                      participantCountType={dist.participantCountType}
-                    />
-
-                    {dist.priceTiers.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_150px_130px_1fr_40px]">
-                          <span>Nazwa</span>
-                          <span>{dist.priceTierMode === 'date' ? 'Obowiazuje do' : 'Limit'}</span>
-                          <span>Cena w progu</span>
-                          <span>Opis</span>
-                          <span></span>
-                        </div>
-                        {dist.priceTiers.map((tier) => {
-                            const j = dist.priceTiers.findIndex((t) => t.id === tier.id);
-                            const tierPrice =
-                              tier.price ??
-                              applyDiscount(
-                                Number(dist.price) || 0,
-                                tier.discountType,
-                                tier.discountValue,
-                              );
-                            const basePrice = Number(dist.price) || 0;
-                            const priceWarning = tierPrice > basePrice;
-                            const tierNameError = fe[`distance_${index}_tier_${j}_name`];
-                            const tierDateError = fe[`distance_${index}_tier_${j}_endDate`];
-                            const tierLimitError = fe[`distance_${index}_tier_${j}_participantLimit`];
-                            return (
-                              <div
-                                key={tier.id}
-                                className="grid grid-cols-1 items-start gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
-                              >
-                                <div className="space-y-1">
-                                <Input
-                                  value={tier.name}
-                                  onChange={(e) =>
-                                    form.updatePriceTier(index, tier.id, { name: e.target.value })
-                                  }
-                                  placeholder="np. Early Bird"
-                                  className={`h-9 ${inputError(!!tierNameError)}`}
-                                />
-                                <FieldError message={tierNameError} />
-                                </div>
-                                <div className="space-y-1">
-                                <Input
-                                  type={dist.priceTierMode === 'date' ? 'date' : 'number'}
-                                  value={
-                                    dist.priceTierMode === 'date'
-                                      ? tier.endDate || ''
-                                      : tier.participantLimit || ''
-                                  }
-                                  onChange={(e) =>
-                                    form.updatePriceTier(
-                                      index,
-                                      tier.id,
-                                      dist.priceTierMode === 'date'
-                                        ? { endDate: e.target.value }
-                                        : { participantLimit: parseInt(e.target.value) || 0 },
-                                    )
-                                  }
-                                  placeholder={
-                                    dist.priceTierMode === 'date' ? undefined : 'np. 100'
-                                  }
-                                  className={`h-9 ${inputError(!!(tierDateError || tierLimitError))}`}
-                                />
-                                <FieldError message={tierDateError || tierLimitError} />
-                                </div>
-                                <Input
-                                  type="number"
-                                  value={tierPrice}
-                                  onChange={(e) =>
-                                    setTierPrice(index, tier.id, dist.price, e.target.value)
-                                  }
-                                  placeholder="np. 120"
-                                  className="h-9"
-                                />
-                                {priceWarning && (
-                                  <p className="flex items-start gap-1.5 text-xs text-amber-700 md:col-start-3">
-                                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                                    <span>
-                                      Cena progu jest wyzsza od ceny bazowej. To tylko ostrzezenie.
-                                    </span>
-                                  </p>
-                                )}
-                                <Input
-                                  value={tier.description || ''}
-                                  onChange={(e) =>
-                                    form.updatePriceTier(index, tier.id, {
-                                      description: e.target.value,
-                                    })
-                                  }
-                                  placeholder={
-                                    dist.priceTierMode === 'date'
-                                      ? 'np. cena do konca maja'
-                                      : 'np. pierwsze 100 oplaconych'
-                                  }
-                                  className="h-9"
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-9 w-full text-destructive hover:text-destructive md:w-9"
-                                  onClick={() => form.removePriceTier(index, tier.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    )}
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => form.addPriceTier(index)}
-                      className="w-full sm:w-auto"
-                    >
-                      <Plus className="mr-2 h-4 w-4" /> Dodaj prog cenowy
-                    </Button>
-                  </>
-                )}
-              </CollapsibleContent>
-            </Collapsible>
-
-            {/* Per-distance category toggles */}
-            {form.allCategories.length > 0 && (
-              <div className="space-y-2 border-t pt-4">
-                <div className="flex items-center gap-1.5">
-                  <Label className="text-sm text-muted-foreground">
-                    Kategorie w tym dystansie (odznacz, aby wyłączyć)
-                  </Label>
-                  <FieldHelp description="Pozwala wlaczyc lub wylaczyc wybrane kategorie dla konkretnego dystansu, gdy nie wszystkie klasyfikacje maja zastosowanie." />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {form.allCategories.map((cat) => {
-                    const isDisabled = dist.disabledCategoryIds.includes(cat.id);
-                    return (
-                      <Badge
-                        key={cat.id}
-                        variant={isDisabled ? 'outline' : 'secondary'}
-                        className={`cursor-pointer select-none transition-opacity ${isDisabled ? 'line-through opacity-40' : ''}`}
-                        onClick={() => form.toggleCategoryForDistance(index, cat.id)}
-                      >
-                        {cat.name}
-                        {cat.type === 'special' ? ' ★' : ''}
-                      </Badge>
-                    );
-                  })}
-                </div>
-              </div>
+          <CardContent className="space-y-6 p-4 pt-0 sm:p-6 sm:pt-0">
+            {!form.categoriesEnabled && (
+              <Alert className="border-muted bg-muted/50">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Brak kategorii</AlertTitle>
+                <AlertDescription>
+                  Wydarzenie nie będzie miało podziału na kategorie. Uczestnicy nie będą wybierać
+                  kategorii podczas rejestracji.
+                </AlertDescription>
+              </Alert>
             )}
 
-            {/* Route artifacts */}
-            <Collapsible>
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
-                >
-                  <Map className="h-4 w-4" /> Trasa i mapy
-                  <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <HelpLabel
-                      className="text-xs"
-                      description="Link do mapy trasy, ktora uczestnik moze otworzyc przed startem."
-                    >
-                      URL mapy trasy
-                    </HelpLabel>
-                    <Input
-                      value={dist.routeMapUrl}
-                      onChange={(e) => form.updateDistance(index, 'routeMapUrl', e.target.value)}
-                      placeholder="https://..."
-                      className="h-9"
-                    />
+            {form.categoriesEnabled && (
+              <>
+                {/* Base Categories */}
+                <div className="space-y-3">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <Label className="text-base font-medium">
+                      Kategorie podstawowe ({form.ageCategories.length})
+                    </Label>
+                    <FieldHelp description="Kategorie grupujące uczestników, np. według wieku, płci lub typu open (W Open, M Open). Używane w zapisach, listach startowych i wynikach." />
                   </div>
-                  <div className="space-y-2">
-                    <HelpLabel
-                      className="text-xs"
-                      description="Link do profilu przewyzszen, przydatny szczegolnie dla biegow gorskich, kolarskich i tras trailowych."
-                    >
-                      URL profilu przewyższeń
-                    </HelpLabel>
-                    <Input
-                      value={dist.routeElevationProfile}
-                      onChange={(e) =>
-                        form.updateDistance(index, 'routeElevationProfile', e.target.value)
-                      }
-                      placeholder="https://..."
-                      className="h-9"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <HelpLabel
-                      className="text-xs"
-                      description="Link do pliku GPX, ktory uczestnik moze pobrac do zegarka, nawigacji lub aplikacji treningowej."
-                    >
-                      URL pliku GPX
-                    </HelpLabel>
-                    <Input
-                      value={dist.routeGpxUrl}
-                      onChange={(e) => form.updateDistance(index, 'routeGpxUrl', e.target.value)}
-                      placeholder="https://..."
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1.5">
-                    <Label className="text-xs font-medium">Dodatkowe pliki</Label>
-                    <FieldHelp description="Lista dodatkowych materialow dla trasy, np. mapa, profil przewyzszen, GPX albo zdjecie trasy." />
-                  </div>
-                  {dist.routeFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_1fr_100px_32px]"
-                    >
-                      <Input
-                        value={file.name}
-                        onChange={(e) =>
-                          form.updateRouteFile(index, file.id, 'name', e.target.value)
-                        }
-                        placeholder="Nazwa pliku"
-                        className="h-9 min-w-0"
-                      />
-                      <Input
-                        value={file.url}
-                        onChange={(e) =>
-                          form.updateRouteFile(index, file.id, 'url', e.target.value)
-                        }
-                        placeholder="URL"
-                        className="h-9 min-w-0"
-                      />
-                      <Select
-                        value={file.type}
-                        onValueChange={(v) => form.updateRouteFile(index, file.id, 'type', v)}
-                      >
-                        <SelectTrigger className="h-9 sm:w-[120px] lg:w-auto">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="map">Mapa</SelectItem>
-                          <SelectItem value="elevation">Profil</SelectItem>
-                          <SelectItem value="gpx">GPX</SelectItem>
-                          <SelectItem value="image">Zdjęcie</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
-                        onClick={() => form.removeRouteFile(index, file.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                  {/* Category templates */}
+                  <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Szablony kategorii
+                      </p>
+                      <FieldHelp description="Kliknij szablon, aby zastąpić bieżące kategorie gotowym zestawem. Możesz go potem edytować." />
                     </div>
-                  ))}
+                    <div className="flex flex-wrap gap-2">
+                      {AGE_CATEGORY_TEMPLATES.map((tpl) => (
+                        <button
+                          key={tpl.label}
+                          type="button"
+                          title={tpl.description}
+                          onClick={() => form.setAgeCategories(tpl.generate(eventYear))}
+                          className="flex items-center gap-1.5 rounded-md border bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
+                        >
+                          <ListPlus className="h-3.5 w-3.5 shrink-0" />
+                          {tpl.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {form.ageCategories.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_80px_110px_110px_40px]">
+                        <span className="flex items-center gap-1">
+                          Nazwa
+                          <FieldHelp description="Nazwa kategorii widoczna w zapisach i wynikach, np. K18-29, M40-49 albo W Open." />
+                        </span>
+                        <span className="flex items-center gap-1">
+                          Płeć
+                          <FieldHelp description="Opcjonalne. Określa, czy kategoria dotyczy kobiet (K) lub mężczyzn (M). Zostaw puste dla kategorii Open." />
+                        </span>
+                        <span className="flex items-center gap-1 gap-x-1">
+                          {ageInputMode === 'year' ? 'Rok od' : 'Wiek od'}
+                          <FieldHelp
+                            description={
+                              ageInputMode === 'year'
+                                ? 'Najstarszy rocznik kwalifikujący się do tej kategorii.'
+                                : 'Minimalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'
+                            }
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAgeInputMode(ageInputMode === 'year' ? 'age' : 'year')
+                            }
+                            className="ml-auto rounded px-1 py-0.5 text-[10px] font-semibold text-primary underline-offset-2 hover:underline"
+                          >
+                            {ageInputMode === 'year' ? '→ wiek' : '→ rok'}
+                          </button>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          {ageInputMode === 'year' ? 'Rok do' : 'Wiek do'}
+                          <FieldHelp
+                            description={
+                              ageInputMode === 'year'
+                                ? 'Najmłodszy rocznik kwalifikujący się do tej kategorii.'
+                                : 'Maksymalny wiek uczestnika (zostanie przeliczony na rok urodzenia).'
+                            }
+                          />
+                        </span>
+                        <span></span>
+                      </div>
+                      {form.ageCategories.map((cat, catIdx) => (
+                        <div
+                          key={cat.id}
+                          className="grid grid-cols-[minmax(0,1fr)_88px] items-center gap-2 md:grid-cols-[1fr_80px_110px_110px_40px]"
+                        >
+                          <Input
+                            value={cat.name}
+                            onChange={(e) => form.updateAgeCategory(catIdx, 'name', e.target.value)}
+                            placeholder="np. W Open, M40-49"
+                            className="h-9"
+                          />
+                          <Select
+                            value={cat.gender ?? '__none__'}
+                            onValueChange={(v) =>
+                              form.updateAgeCategory(
+                                catIdx,
+                                'gender',
+                                v === '__none__' ? null : (v as 'K' | 'M'),
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="—" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">—</SelectItem>
+                              <SelectItem value="K">K</SelectItem>
+                              <SelectItem value="M">M</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            type="number"
+                            value={
+                              ageInputMode === 'year'
+                                ? (cat.birthYearFrom ?? '')
+                                : cat.birthYearFrom != null
+                                  ? yearToAge(cat.birthYearFrom)
+                                  : ''
+                            }
+                            onChange={(e) => {
+                              const raw =
+                                e.target.value === '' ? null : parseInt(e.target.value) || 0;
+                              const year =
+                                raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
+                              form.updateAgeCategory(catIdx, 'birthYearFrom', year);
+                            }}
+                            placeholder="—"
+                            className="h-9"
+                          />
+                          <Input
+                            type="number"
+                            value={
+                              ageInputMode === 'year'
+                                ? (cat.birthYearTo ?? '')
+                                : cat.birthYearTo != null
+                                  ? yearToAge(cat.birthYearTo)
+                                  : ''
+                            }
+                            onChange={(e) => {
+                              const raw =
+                                e.target.value === '' ? null : parseInt(e.target.value) || 0;
+                              const year =
+                                raw == null ? null : ageInputMode === 'age' ? ageToYear(raw) : raw;
+                              form.updateAgeCategory(catIdx, 'birthYearTo', year);
+                            }}
+                            placeholder="—"
+                            className="h-9"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-full text-destructive hover:text-destructive md:w-9"
+                            onClick={() => form.removeAgeCategory(catIdx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      {ageInputMode === 'age' && (
+                        <p className="px-1 text-xs text-muted-foreground">
+                          Wartości przeliczane na rok urodzenia względem roku wydarzenia (
+                          {eventYear}). Zapisywane jako roczniki.
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => form.addRouteFile(index)}
+                    onClick={form.addAgeCategory}
                     className="w-full text-primary sm:w-auto"
                   >
-                    <Plus className="mr-2 h-4 w-4" /> Dodaj plik
+                    <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię
                   </Button>
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
+
+                {/* Special Categories */}
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-base font-medium">
+                      Kategorie specjalne ({form.specialCategories.length})
+                    </Label>
+                    <FieldHelp description="Kategorie specjalne dodaja dodatkowe klasyfikacje niezalezne od wieku, np. mieszkancy miasta, sluzby mundurowe albo pracownicy firmy." />
+                  </div>
+                  {form.specialCategories.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_1fr_40px]">
+                        <span className="flex items-center gap-1">
+                          Nazwa
+                          <FieldHelp description="Nazwa kategorii specjalnej widoczna dla uczestnikow i w klasyfikacjach." />
+                        </span>
+                        <span className="flex items-center gap-1">
+                          Opis (opcjonalnie)
+                          <FieldHelp description="Krotkie wyjasnienie warunkow przynaleznosci do kategorii specjalnej." />
+                        </span>
+                        <span></span>
+                      </div>
+                      {form.specialCategories.map((cat, catIdx) => (
+                        <div
+                          key={cat.id}
+                          className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] md:grid-cols-[1fr_1fr_40px]"
+                        >
+                          <Input
+                            value={cat.name}
+                            onChange={(e) =>
+                              form.updateSpecialCategory(catIdx, 'name', e.target.value)
+                            }
+                            placeholder="np. Mieszkaniec Warszawy"
+                            className="h-9 sm:col-span-2 md:col-span-1"
+                          />
+                          <Input
+                            value={cat.description || ''}
+                            onChange={(e) =>
+                              form.updateSpecialCategory(catIdx, 'description', e.target.value)
+                            }
+                            placeholder="np. Osoby zameldowane w Warszawie"
+                            className="h-9"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
+                            onClick={() => form.removeSpecialCategory(catIdx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={form.addSpecialCategory}
+                    className="w-full text-primary sm:w-auto"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Dodaj kategorię specjalną
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
-      ))}
-      </>}
+      )}
+
+      {/* DISTANCES */}
+      {activeSubStep === 'distances' && (
+        <>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold">Dystanse ({form.distances.length})</h2>
+            <Button onClick={form.addDistance} variant="outline" className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" /> Dodaj dystans
+            </Button>
+          </div>
+
+          <Card>
+            <CardContent className="space-y-3 p-4 sm:p-5">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium">Popularne szablony dystansów</p>
+                  <FieldHelp description="Kliknięcie dodaje nowy dystans z uzupełnioną nazwą i długością. Cena, limit i pozostałe dane nadal ustawiasz ręcznie." />
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Szablony nie są ładowane automatycznie. To tylko skróty do najczęściej używanych
+                  wariantów.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {DISTANCE_TEMPLATES.map((template) => (
+                  <Button
+                    key={`${template.name}-${template.length}-${template.unit}`}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => form.addDistanceFromTemplate(template)}
+                    className="h-8"
+                  >
+                    <ListPlus className="mr-1.5 h-3.5 w-3.5" />
+                    {template.name}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {form.distances.length === 0 && (
+            <Card>
+              <CardContent className="p-6 py-10 text-center text-muted-foreground sm:py-12">
+                <p>Nie dodano jeszcze żadnych dystansów.</p>
+                <Button onClick={form.addDistance} className="mt-4 w-full sm:w-auto">
+                  <Plus className="mr-2 h-4 w-4" /> Dodaj pierwszy dystans
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {form.distances.map((dist, index) => (
+            <Card key={dist.id}>
+              <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="min-w-0 break-words text-lg">
+                    {dist.name || `Dystans ${index + 1}`}
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => form.removeDistance(index)}
+                    className="shrink-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-2">
+                    <HelpLabel description="Nazwa wariantu startu widoczna przy zapisach, wynikach i na stronie wydarzenia, np. 5 km, Maraton albo Sprint.">
+                      Nazwa dystansu *
+                    </HelpLabel>
+                    <Input
+                      value={dist.name}
+                      onChange={(e) => form.updateDistance(index, 'name', e.target.value)}
+                      placeholder="np. Maraton"
+                      className={inputError(!!fe[`distance_${index}_name`])}
+                    />
+                    <FieldError message={fe[`distance_${index}_name`]} />
+                  </div>
+                  <div className="space-y-2">
+                    <HelpLabel description="Dlugosc dystansu wraz z jednostka. Zostaw puste, jezeli zawody nie sa rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
+                      Długość
+                    </HelpLabel>
+                    {dist.noLength ? (
+                      <div className="flex h-9 items-center">
+                        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                          <Checkbox
+                            checked
+                            onCheckedChange={() => form.updateDistance(index, 'noLength', false)}
+                          />
+                          Brak dystansu
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-[minmax(0,1fr)_80px] gap-2">
+                        <Input
+                          type="number"
+                          value={dist.length}
+                          onChange={(e) => form.updateDistance(index, 'length', e.target.value)}
+                          placeholder="42.195"
+                          className={inputError(!!fe[`distance_${index}_length`])}
+                        />
+                        <Select
+                          value={dist.unit}
+                          onValueChange={(v: 'km' | 'm') => form.updateDistance(index, 'unit', v)}
+                        >
+                          <SelectTrigger className="w-20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="km">km</SelectItem>
+                            <SelectItem value="m">m</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    {!dist.noLength && <FieldError message={fe[`distance_${index}_length`]} />}
+                    {!dist.noLength && (
+                      <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+                        <Checkbox
+                          checked={false}
+                          onCheckedChange={() => form.updateDistance(index, 'noLength', true)}
+                        />
+                        Brak dystansu (zawody bez określonej długości)
+                      </label>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <HelpLabel description="Podstawowa oplata startowa za ten dystans w zlotowkach. Uzywana w koszyku, rejestracji i podsumowaniach platnosci.">
+                      Cena bazowa (PLN) *
+                    </HelpLabel>
+                    <Input
+                      type="number"
+                      value={dist.price}
+                      onChange={(e) => form.updateDistance(index, 'price', e.target.value)}
+                      placeholder="150"
+                      className={inputError(!!fe[`distance_${index}_price`])}
+                    />
+                    <FieldError message={fe[`distance_${index}_price`]} />
+                  </div>
+                  <div className="space-y-2">
+                    <HelpLabel description="Cena pobierana przy zapisie na miejscu, w biurze zawodow. Nie zmienia ceny online, ale jest widoczna w podgladzie wydarzenia.">
+                      Cena w biurze
+                    </HelpLabel>
+                    <Input
+                      type="number"
+                      value={dist.officePrice}
+                      onChange={(e) => form.updateDistance(index, 'officePrice', e.target.value)}
+                      placeholder="180"
+                      className={inputError(!!fe[`distance_${index}_officePrice`])}
+                    />
+                    <FieldError message={fe[`distance_${index}_officePrice`]} />
+                  </div>
+                  <div className="space-y-2">
+                    <HelpLabel description="Maksymalna liczba zapisow na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
+                      Limit uczestników
+                    </HelpLabel>
+                    <Input
+                      type="number"
+                      value={dist.limit}
+                      onChange={(e) => form.updateDistance(index, 'limit', e.target.value)}
+                      placeholder="500"
+                      className={inputError(!!fe[`distance_${index}_limit`])}
+                    />
+                    <FieldError message={fe[`distance_${index}_limit`]} />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <HelpLabel description="Opcjonalny opis widoczny przy dystansie, np. limit wieku, charakter trasy, przewyższenia, wymagany sprzęt albo ważne zasady dla tego wariantu.">
+                    Dodatkowe informacje o dystansie
+                  </HelpLabel>
+                  <RichTextEditor
+                    value={dist.infoHtml}
+                    onChange={(html) => form.updateDistance(index, 'infoHtml', html)}
+                    placeholder="Wpisz informacje widoczne dla uczestników przy tym dystansie..."
+                    minHeight="90px"
+                  />
+                </div>
+
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
+                    >
+                      <Wallet className="h-4 w-4" /> Konfiguracja płatności
+                      {isEmbedRegistration ? (
+                        <Badge variant="secondary" className="ml-1 text-xs">
+                          po stronie organizatora
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="ml-1 text-xs">
+                          {dist.priceTiers.length} progów
+                        </Badge>
+                      )}
+                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-4">
+                    {isEmbedRegistration ? (
+                      <Alert className="border-muted bg-muted/50">
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>Platnosci i progi poza systemem</AlertTitle>
+                        <AlertDescription>
+                          Dla zawodow typu embed nie konfigurujemy progow cenowych ani sposobu
+                          pobierania oplat. Te zasady ustala i obsluguje organizator lub zewnetrzny
+                          system poza panelem.
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <>
+                        <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+                          <div className="space-y-2">
+                            <HelpLabel
+                              className="text-xs"
+                              description="Okresla, czy aktywny prog zalezy od daty, czy od liczby zapisanych lub oplaconych uczestnikow."
+                            >
+                              Sposob naliczania
+                            </HelpLabel>
+                            <Select
+                              value={dist.priceTierMode}
+                              onValueChange={(value: PriceTierMode) => {
+                                form.updateDistance(index, 'priceTierMode', value);
+                                form.updateDistance(index, 'priceTiers', []);
+                              }}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="date">
+                                  <span className="flex items-center gap-2">
+                                    <Calendar className="h-3.5 w-3.5" /> Po dacie
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="participants">
+                                  <span className="flex items-center gap-2">
+                                    <Users className="h-3.5 w-3.5" /> Po liczbie uczestnikow
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          {dist.priceTierMode === 'participants' && (
+                            <div className="space-y-2">
+                              <HelpLabel
+                                className="text-xs"
+                                description="Dla progow uczestnikow mozesz liczyc wszystkie zapisy albo tylko osoby z potwierdzona oplata startowa."
+                              >
+                                Licznik uczestnikow
+                              </HelpLabel>
+                              <Select
+                                value={dist.participantCountType}
+                                onValueChange={(value: ParticipantCountType) =>
+                                  form.updateDistance(index, 'participantCountType', value)
+                                }
+                              >
+                                <SelectTrigger className="h-9 max-w-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="registered">Zapisani</SelectItem>
+                                  <SelectItem value="paid">Oplaceni</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+
+                        <PriceTierPreview
+                          basePrice={Number(dist.price) || 0}
+                          tiers={dist.priceTiers}
+                          mode={dist.priceTierMode}
+                          participantCountType={dist.participantCountType}
+                        />
+
+                        {dist.priceTiers.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_150px_130px_1fr_40px]">
+                              <span>Nazwa</span>
+                              <span>
+                                {dist.priceTierMode === 'date' ? 'Obowiazuje do' : 'Limit'}
+                              </span>
+                              <span>Cena w progu</span>
+                              <span>Opis</span>
+                              <span></span>
+                            </div>
+                            {dist.priceTiers.map((tier) => {
+                              const j = dist.priceTiers.findIndex((t) => t.id === tier.id);
+                              const tierPrice =
+                                tier.price ??
+                                applyDiscount(
+                                  Number(dist.price) || 0,
+                                  tier.discountType,
+                                  tier.discountValue,
+                                );
+                              const basePrice = Number(dist.price) || 0;
+                              const priceWarning = tierPrice > basePrice;
+                              const tierNameError = fe[`distance_${index}_tier_${j}_name`];
+                              const tierDateError = fe[`distance_${index}_tier_${j}_endDate`];
+                              const tierLimitError =
+                                fe[`distance_${index}_tier_${j}_participantLimit`];
+                              return (
+                                <div
+                                  key={tier.id}
+                                  className="grid grid-cols-1 items-start gap-2 rounded-md border p-3 md:grid-cols-[1fr_150px_130px_1fr_40px]"
+                                >
+                                  <div className="space-y-1">
+                                    <Input
+                                      value={tier.name}
+                                      onChange={(e) =>
+                                        form.updatePriceTier(index, tier.id, {
+                                          name: e.target.value,
+                                        })
+                                      }
+                                      placeholder="np. Early Bird"
+                                      className={`h-9 ${inputError(!!tierNameError)}`}
+                                    />
+                                    <FieldError message={tierNameError} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Input
+                                      type={dist.priceTierMode === 'date' ? 'date' : 'number'}
+                                      value={
+                                        dist.priceTierMode === 'date'
+                                          ? tier.endDate || ''
+                                          : tier.participantLimit || ''
+                                      }
+                                      onChange={(e) =>
+                                        form.updatePriceTier(
+                                          index,
+                                          tier.id,
+                                          dist.priceTierMode === 'date'
+                                            ? { endDate: e.target.value }
+                                            : { participantLimit: parseInt(e.target.value) || 0 },
+                                        )
+                                      }
+                                      placeholder={
+                                        dist.priceTierMode === 'date' ? undefined : 'np. 100'
+                                      }
+                                      className={`h-9 ${inputError(!!(tierDateError || tierLimitError))}`}
+                                    />
+                                    <FieldError message={tierDateError || tierLimitError} />
+                                  </div>
+                                  <Input
+                                    type="number"
+                                    value={tierPrice}
+                                    onChange={(e) =>
+                                      setTierPrice(index, tier.id, dist.price, e.target.value)
+                                    }
+                                    placeholder="np. 120"
+                                    className="h-9"
+                                  />
+                                  {priceWarning && (
+                                    <p className="flex items-start gap-1.5 text-xs text-amber-700 md:col-start-3">
+                                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                      <span>
+                                        Cena progu jest wyzsza od ceny bazowej. To tylko
+                                        ostrzezenie.
+                                      </span>
+                                    </p>
+                                  )}
+                                  <Input
+                                    value={tier.description || ''}
+                                    onChange={(e) =>
+                                      form.updatePriceTier(index, tier.id, {
+                                        description: e.target.value,
+                                      })
+                                    }
+                                    placeholder={
+                                      dist.priceTierMode === 'date'
+                                        ? 'np. cena do konca maja'
+                                        : 'np. pierwsze 100 oplaconych'
+                                    }
+                                    className="h-9"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-full text-destructive hover:text-destructive md:w-9"
+                                    onClick={() => form.removePriceTier(index, tier.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => form.addPriceTier(index)}
+                          className="w-full sm:w-auto"
+                        >
+                          <Plus className="mr-2 h-4 w-4" /> Dodaj prog cenowy
+                        </Button>
+                      </>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
+
+                {/* Per-distance category toggles */}
+                {form.allCategories.length > 0 && (
+                  <div className="space-y-2 border-t pt-4">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm text-muted-foreground">
+                        Kategorie w tym dystansie (odznacz, aby wyłączyć)
+                      </Label>
+                      <FieldHelp description="Pozwala wlaczyc lub wylaczyc wybrane kategorie dla konkretnego dystansu, gdy nie wszystkie klasyfikacje maja zastosowanie." />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {form.allCategories.map((cat) => {
+                        const isDisabled = dist.disabledCategoryIds.includes(cat.id);
+                        return (
+                          <Badge
+                            key={cat.id}
+                            variant={isDisabled ? 'outline' : 'secondary'}
+                            className={`cursor-pointer select-none transition-opacity ${isDisabled ? 'line-through opacity-40' : ''}`}
+                            onClick={() => form.toggleCategoryForDistance(index, cat.id)}
+                          >
+                            {cat.name}
+                            {cat.type === 'special' ? ' ★' : ''}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Route artifacts */}
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full justify-start gap-2 rounded-none border-t pt-4 text-muted-foreground"
+                    >
+                      <Map className="h-4 w-4" /> Trasa i mapy
+                      <ChevronDown className="ml-auto h-4 w-4 shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div className="space-y-2">
+                        <HelpLabel
+                          className="text-xs"
+                          description="Link do mapy trasy, ktora uczestnik moze otworzyc przed startem."
+                        >
+                          URL mapy trasy
+                        </HelpLabel>
+                        <Input
+                          value={dist.routeMapUrl}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'routeMapUrl', e.target.value)
+                          }
+                          placeholder="https://..."
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel
+                          className="text-xs"
+                          description="Link do profilu przewyzszen, przydatny szczegolnie dla biegow gorskich, kolarskich i tras trailowych."
+                        >
+                          URL profilu przewyższeń
+                        </HelpLabel>
+                        <Input
+                          value={dist.routeElevationProfile}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'routeElevationProfile', e.target.value)
+                          }
+                          placeholder="https://..."
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel
+                          className="text-xs"
+                          description="Link do pliku GPX, ktory uczestnik moze pobrac do zegarka, nawigacji lub aplikacji treningowej."
+                        >
+                          URL pliku GPX
+                        </HelpLabel>
+                        <Input
+                          value={dist.routeGpxUrl}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'routeGpxUrl', e.target.value)
+                          }
+                          placeholder="https://..."
+                          className="h-9"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <Label className="text-xs font-medium">Dodatkowe pliki</Label>
+                        <FieldHelp description="Lista dodatkowych materialow dla trasy, np. mapa, profil przewyzszen, GPX albo zdjecie trasy." />
+                      </div>
+                      {dist.routeFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto] lg:grid-cols-[1fr_1fr_100px_32px]"
+                        >
+                          <Input
+                            value={file.name}
+                            onChange={(e) =>
+                              form.updateRouteFile(index, file.id, 'name', e.target.value)
+                            }
+                            placeholder="Nazwa pliku"
+                            className="h-9 min-w-0"
+                          />
+                          <Input
+                            value={file.url}
+                            onChange={(e) =>
+                              form.updateRouteFile(index, file.id, 'url', e.target.value)
+                            }
+                            placeholder="URL"
+                            className="h-9 min-w-0"
+                          />
+                          <Select
+                            value={file.type}
+                            onValueChange={(v) => form.updateRouteFile(index, file.id, 'type', v)}
+                          >
+                            <SelectTrigger className="h-9 sm:w-[120px] lg:w-auto">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="map">Mapa</SelectItem>
+                              <SelectItem value="elevation">Profil</SelectItem>
+                              <SelectItem value="gpx">GPX</SelectItem>
+                              <SelectItem value="image">Zdjęcie</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-full text-destructive hover:text-destructive sm:w-9"
+                            onClick={() => form.removeRouteFile(index, file.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => form.addRouteFile(index)}
+                        className="w-full text-primary sm:w-auto"
+                      >
+                        <Plus className="mr-2 h-4 w-4" /> Dodaj plik
+                      </Button>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            </Card>
+          ))}
+        </>
+      )}
     </div>
   );
 };
