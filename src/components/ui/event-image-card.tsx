@@ -57,11 +57,12 @@ const EventImageCard = React.forwardRef<HTMLAnchorElement, EventImageCardProps>(
           className,
         )}
       >
-        <div className="relative h-44 overflow-hidden">
+        <div className="relative h-44 overflow-hidden bg-black">
           <img
             src={imageSrc}
             alt={imageAlt}
             className="h-full w-full object-cover opacity-[0.62] transition duration-500 group-hover:scale-105"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
           <div
             className="absolute inset-0"

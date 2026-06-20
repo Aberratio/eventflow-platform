@@ -781,7 +781,8 @@ const EventGadgetsCard = ({ gadgets }: { gadgets: EventMerchandise[] }) => {
               <img
                 src={g.imageUrl}
                 alt={g.name}
-                className="h-10 w-10 shrink-0 rounded-md object-cover"
+                className="h-10 w-10 shrink-0 rounded-md object-cover bg-black"
+                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
               />
             ) : (
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.04]">

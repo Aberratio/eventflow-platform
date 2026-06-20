@@ -638,7 +638,8 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="h-12 w-12 shrink-0 rounded-md object-cover"
+                      className="h-12 w-12 shrink-0 rounded-md object-cover bg-black"
+                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
                   )}
                   <span className="truncate text-sm">{item.name}</span>
@@ -743,6 +744,7 @@ const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
           src={sponsor.logoUrl}
           alt={sponsor.name}
           className="h-6 w-auto max-w-[60px] object-contain opacity-90"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
       )}
       <span className="text-sm font-medium text-foreground/80">{sponsor.name}</span>
