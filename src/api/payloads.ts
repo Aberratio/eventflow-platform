@@ -151,6 +151,7 @@ export interface CreateRegistrationPayload {
   totalAmount?: number;
   merchandiseOrders?: MerchandiseOrder[];
   paymentDetails?: Registration['paymentDetails'];
+  registeredById?: string;
 }
 
 export type UpdateRegistrationPayload = Partial<

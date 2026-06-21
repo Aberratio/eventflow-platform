@@ -1,17 +1,27 @@
-import { createRegistration, disciplineLabels, getEventBySlug } from '@/api';
+import { createRegistration, disciplineLabels, getEventBySlug, getAuthorizations } from '@/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { ArrowLeft, Calendar, CheckCircle2, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle2, MapPin, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 import { formatMoney } from '@/lib/discountValue';
 import {
@@ -19,6 +29,7 @@ import {
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
+import type { AuthorizationGrantedToMe } from '@/types';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -32,6 +43,33 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Zapis w imieniu kogoś innego
+  const [registeringForOther, setRegisteringForOther] = useState(false);
+  const [selectedGrantorId, setSelectedGrantorId] = useState<string>('');
+  const [grantorSearch, setGrantorSearch] = useState('');
+
+  const isParticipant = user?.role === 'participant';
+
+  const { data: authorizationsData } = useQuery({
+    queryKey: ['authorizations'],
+    queryFn: () => getAuthorizations(),
+    enabled: isParticipant && !previewMode,
+    select: (r) => r.data,
+  });
+
+  const grantedToMe: AuthorizationGrantedToMe[] = authorizationsData?.grantedToMe ?? [];
+  const hasGrantors = grantedToMe.length > 0;
+
+  const filteredGrantors = useMemo(() => {
+    if (!grantorSearch.trim()) return grantedToMe;
+    const q = grantorSearch.toLowerCase();
+    return grantedToMe.filter(
+      (g) => g.grantorName.toLowerCase().includes(q) || g.grantorEmail.toLowerCase().includes(q),
+    );
+  }, [grantedToMe, grantorSearch]);
+
+  const selectedGrantor = grantedToMe.find((g) => g.grantorId === selectedGrantorId) ?? null;
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event-by-slug', slug],
@@ -198,14 +236,20 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     }
     if (!user || isSubmitting) return;
 
+    const registeredFor =
+      registeringForOther && selectedGrantor
+        ? { userId: selectedGrantor.grantorId, userName: selectedGrantor.grantorName, userEmail: selectedGrantor.grantorEmail }
+        : { userId: user.id, userName: user.name, userEmail: user.email };
+
     setIsSubmitting(true);
     try {
       await createRegistration({
         eventId: event.id,
         eventName: event.name,
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
+        userId: registeredFor.userId,
+        userName: registeredFor.userName,
+        userEmail: registeredFor.userEmail,
+        registeredById: registeringForOther && selectedGrantor ? user.id : undefined,
         distanceId: data.distanceId,
         distanceName: data.distanceName,
         category: data.category,
@@ -305,11 +349,120 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
       {/* Registration Form */}
       <div className="container py-8">
+        {/* Zapis w imieniu kogoś innego */}
+        {isParticipant && hasGrantors && !previewMode && (
+          <div className="mx-auto mb-6 max-w-2xl">
+            <div
+              className={`rounded-lg border px-4 py-3 transition-colors ${registeringForOther ? 'border-primary/40 bg-primary/5' : 'border-border bg-muted/30'}`}
+            >
+              <label className="flex cursor-pointer items-center gap-3">
+                <Checkbox
+                  id="register-for-other"
+                  checked={registeringForOther}
+                  onCheckedChange={(v) => {
+                    setRegisteringForOther(v === true);
+                    if (!v) {
+                      setSelectedGrantorId('');
+                      setGrantorSearch('');
+                    } else if (grantedToMe.length === 1) {
+                      setSelectedGrantorId(grantedToMe[0].grantorId);
+                    }
+                  }}
+                />
+                <div className="flex items-center gap-2">
+                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="register-for-other" className="cursor-pointer text-sm font-medium">
+                    Zapisuję kogoś innego
+                  </Label>
+                </div>
+              </label>
+
+              {registeringForOther && (
+                <div className="mt-3 border-t border-border/50 pt-3">
+                  {grantedToMe.length > 10 ? (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">
+                        Szukaj osoby do zapisania
+                      </Label>
+                      <Input
+                        placeholder="Imię lub adres e-mail..."
+                        value={grantorSearch}
+                        onChange={(e) => {
+                          setGrantorSearch(e.target.value);
+                          setSelectedGrantorId('');
+                        }}
+                        className="h-8 text-sm"
+                        autoFocus
+                      />
+                      {grantorSearch && (
+                        <div className="max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
+                          {filteredGrantors.length === 0 ? (
+                            <p className="px-3 py-2 text-sm text-muted-foreground">
+                              Nie znaleziono osoby
+                            </p>
+                          ) : (
+                            filteredGrantors.map((g) => (
+                              <button
+                                key={g.grantorId}
+                                type="button"
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${selectedGrantorId === g.grantorId ? 'bg-primary/10 font-medium' : ''}`}
+                                onClick={() => {
+                                  setSelectedGrantorId(g.grantorId);
+                                  setGrantorSearch(g.grantorName);
+                                }}
+                              >
+                                <span className="font-medium">{g.grantorName}</span>
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                  {g.grantorEmail}
+                                </span>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                      {selectedGrantor && (
+                        <p className="text-xs text-muted-foreground">
+                          Zapisujesz:{' '}
+                          <span className="font-medium text-foreground">
+                            {selectedGrantor.grantorName}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">
+                        Kogo zapisujesz?
+                      </Label>
+                      <Select value={selectedGrantorId} onValueChange={setSelectedGrantorId}>
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Wybierz osobę..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {grantedToMe.map((g) => (
+                            <SelectItem key={g.grantorId} value={g.grantorId}>
+                              <span>{g.grantorName}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">
+                                {g.grantorEmail}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <RegistrationForm
           event={event}
           onComplete={handleComplete}
           onCancel={handleCancel}
           previewMode={isPreviewAvailable}
+          disabled={registeringForOther && !selectedGrantorId}
         />
       </div>
     </Layout>

@@ -75,6 +75,8 @@ import type {
   Ticket,
   Certificate,
   Partner,
+  AuthorizationsResponse,
+  AuthorizationGrantedByMe,
   GlobalInsuranceSettings,
   AdminActivityLog,
   SecuritySettings,
@@ -287,6 +289,11 @@ export interface ApiAdapter {
   updatePartner(id: string, data: UpdatePartnerPayload): Promise<ApiResponse<Partner>>;
   deletePartner(id: string): Promise<ApiResponse<void>>;
   uploadPartnerLogo(file: File): Promise<ApiResponse<{ url: string }>>;
+
+  // ── Authorizations ──
+  getAuthorizations(): Promise<ApiResponse<AuthorizationsResponse>>;
+  grantAuthorization(email: string): Promise<ApiResponse<AuthorizationGrantedByMe>>;
+  revokeAuthorization(id: string): Promise<ApiResponse<void>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;

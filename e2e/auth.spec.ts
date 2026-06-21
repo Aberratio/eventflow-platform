@@ -49,13 +49,10 @@ test.describe('Authentication Flow', () => {
     await expect(page.locator('a[href="/forgot-password"]')).toBeVisible();
   });
 
-  test('mock credential cards are visible on login page', async ({ page }) => {
+  test('login page does not show quick login panel', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('text=Konta testowe')).toBeVisible();
-    await expect(page.locator('text=Uczestnik')).toBeVisible();
-    await expect(page.locator('text=Organizator')).toBeVisible();
-    await expect(page.locator('text=Moderator')).toBeVisible();
-    await expect(page.locator('text=Super Admin')).toBeVisible();
+    await expect(page.locator('text=Szybkie logowanie')).not.toBeVisible();
+    await expect(page.locator('text=Konta testowe')).not.toBeVisible();
   });
 });
 

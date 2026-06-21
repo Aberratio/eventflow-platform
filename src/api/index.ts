@@ -329,6 +329,14 @@ export const deleteEventBackground: ApiAdapter['deleteEventBackground'] = (...ar
 export const uploadEventBackground: ApiAdapter['uploadEventBackground'] = (...args) =>
   ensureAdapter().then((a) => a.uploadEventBackground(...args));
 
+// Authorizations
+export const getAuthorizations: ApiAdapter['getAuthorizations'] = (...args) =>
+  ensureAdapter().then((a) => a.getAuthorizations(...args));
+export const grantAuthorization: ApiAdapter['grantAuthorization'] = (...args) =>
+  ensureAdapter().then((a) => a.grantAuthorization(...args));
+export const revokeAuthorization: ApiAdapter['revokeAuthorization'] = (...args) =>
+  ensureAdapter().then((a) => a.revokeAuthorization(...args));
+
 // Email Templates
 export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
   ensureAdapter().then((a) => a.getEmailTemplates(...args));

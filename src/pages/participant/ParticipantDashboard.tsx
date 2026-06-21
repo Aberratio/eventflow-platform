@@ -24,6 +24,7 @@ import {
   TicketIcon,
   Package,
   Trophy,
+  ShieldCheck,
 } from 'lucide-react';
 import ParticipantOverviewTab from './components/ParticipantOverviewTab';
 import ParticipantRegistrationsTab from './components/ParticipantRegistrationsTab';
@@ -34,6 +35,7 @@ import ParticipantProfileTab from './components/ParticipantProfileTab';
 import ParticipantTicketsTab from './components/ParticipantTicketsTab';
 import ParticipantOrdersTab from './components/ParticipantOrdersTab';
 import ParticipantChallengesTab from './components/ParticipantChallengesTab';
+import ParticipantAuthorizationsTab from './components/ParticipantAuthorizationsTab';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
@@ -100,6 +102,7 @@ const ParticipantDashboard = () => {
     { id: 'tickets', label: 'Bilety', icon: TicketIcon, badge: userTickets.length },
     { id: 'orders', label: 'Zamówienia', icon: Package, badge: userOrders.length },
     { id: 'profile', label: 'Profil', icon: UserCog },
+    { id: 'authorizations', label: 'Upoważnienia', icon: ShieldCheck },
     { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
   ];
 
@@ -168,6 +171,10 @@ const ParticipantDashboard = () => {
 
           <TabsContent value="orders" className="mt-0">
             <ParticipantOrdersTab orders={userOrders} />
+          </TabsContent>
+
+          <TabsContent value="authorizations" className="mt-0">
+            <ParticipantAuthorizationsTab />
           </TabsContent>
 
           <TabsContent value="messages" className="mt-0">

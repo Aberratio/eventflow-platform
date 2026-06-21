@@ -22,4 +22,5 @@ export interface Registration {
   insurancePaid?: number;
   removedAt?: string;
   paymentDetails?: PaymentDetails;
+  registeredById?: string;
 }

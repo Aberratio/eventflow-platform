@@ -1241,6 +1241,32 @@ export const mockAdapter: ApiAdapter = {
     );
   },
 
+  // ── Authorizations ──
+
+  async getAuthorizations() {
+    await delay();
+    return ok({ grantedToMe: [], grantedByMe: [] });
+  },
+
+  async grantAuthorization(email) {
+    await delay();
+    const user = mockUsers.find((u) => u.email === email);
+    if (!user) throw new Error('Nie znaleziono użytkownika z tym adresem e-mail.');
+    return ok({
+      id: `auth-${Date.now()}`,
+      granteeId: user.id,
+      granteeName: user.name,
+      granteeEmail: user.email,
+      granteeAvatar: user.avatar,
+      createdAt: new Date().toISOString(),
+    });
+  },
+
+  async revokeAuthorization(_id) {
+    await delay();
+    return ok(undefined as unknown as void);
+  },
+
   async previewEmailTemplate(request) {
     await delay();
 

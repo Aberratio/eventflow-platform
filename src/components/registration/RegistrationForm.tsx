@@ -53,6 +53,7 @@ interface RegistrationFormProps {
   onComplete: (data: RegistrationData) => void;
   onCancel: () => void;
   previewMode?: boolean;
+  disabled?: boolean;
 }
 
 export interface RegistrationData {
@@ -110,6 +111,7 @@ export const RegistrationForm = ({
   onComplete,
   onCancel,
   previewMode = false,
+  disabled = false,
 }: RegistrationFormProps) => {
   const form = useRegistrationForm(event);
 
@@ -239,7 +241,7 @@ export const RegistrationForm = ({
           </Button>
         )}
         {form.isLastStep ? (
-          <Button onClick={handleSubmit} disabled={!form.agreedToTerms} size="lg">
+          <Button onClick={handleSubmit} disabled={!form.agreedToTerms || disabled} size="lg">
             {previewMode
               ? 'Zakończ testowo, bez płatności'
               : event.paymentConfig?.type === 'organizer_bank'
@@ -248,7 +250,7 @@ export const RegistrationForm = ({
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={form.handleNext} disabled={!form.canProceed()}>
+          <Button onClick={form.handleNext} disabled={!form.canProceed() || disabled}>
             Dalej <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}

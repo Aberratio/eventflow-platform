@@ -434,4 +434,8 @@ export const httpAdapter: ApiAdapter = {
     ),
   previewEmailTemplate: (requestPayload) =>
     request('/email-templates/preview', json('POST', requestPayload)),
+
+  getAuthorizations: () => request('/authorizations'),
+  grantAuthorization: (email) => request('/authorizations', json('POST', { email })),
+  revokeAuthorization: (id) => request(`/authorizations/${encodeURIComponent(id)}`, json('DELETE')),
 };

@@ -35,6 +35,29 @@ export interface User {
   eventLimit?: number;
 }
 
+export interface AuthorizationGrantedToMe {
+  id: string;
+  grantorId: string;
+  grantorName: string;
+  grantorEmail: string;
+  grantorAvatar?: string;
+  createdAt: string;
+}
+
+export interface AuthorizationGrantedByMe {
+  id: string;
+  granteeId: string;
+  granteeName: string;
+  granteeEmail: string;
+  granteeAvatar?: string;
+  createdAt: string;
+}
+
+export interface AuthorizationsResponse {
+  grantedToMe: AuthorizationGrantedToMe[];
+  grantedByMe: AuthorizationGrantedByMe[];
+}
+
 export type AdminActionType =
   | 'login'
   | 'logout'

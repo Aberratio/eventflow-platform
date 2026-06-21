@@ -45,8 +45,6 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-const EXISTING_EMAILS = ['jan@example.com', 'anna@example.com'];
-
 const RegisterPage = () => {
   const { loginWithCredentials } = useAuth();
   const navigate = useNavigate();
@@ -68,18 +66,6 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (EXISTING_EMAILS.includes(data.email)) {
-      appLogger.auth('register_failed', `Nieudana rejestracja — email już istnieje: ${data.email}`, { metadata: { email: data.email } });
-      toast({
-        title: 'Błąd rejestracji',
-        description: 'Użytkownik o tym adresie email już istnieje.',
-        variant: 'destructive',
-      });
-      setIsLoading(false);
-      return;
-    }
 
     appLogger.auth('register', `Zarejestrowano nowe konto: ${data.firstName} ${data.lastName} (${data.role})`, {
       metadata: { email: data.email, role: data.role, name: `${data.firstName} ${data.lastName}` },
