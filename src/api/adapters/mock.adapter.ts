@@ -563,6 +563,11 @@ export const mockAdapter: ApiAdapter = {
     return ok(doc);
   },
 
+  createResultImport: (...args) => httpAdapter.createResultImport(...args),
+  updateResultImportMapping: (...args) => httpAdapter.updateResultImportMapping(...args),
+  updateResultImportRow: (...args) => httpAdapter.updateResultImportRow(...args),
+  commitResultImport: (...args) => httpAdapter.commitResultImport(...args),
+
   // ── Series ──
 
   async getSeries(filters) {
@@ -1121,6 +1126,7 @@ export const mockAdapter: ApiAdapter = {
       status: 'pending',
       ...data,
     } as VirtualResultSubmission;
+    mockVirtualResultSubmissions.unshift(submission);
     return ok(submission);
   },
 
@@ -1128,7 +1134,10 @@ export const mockAdapter: ApiAdapter = {
     await delay();
     const sub = mockVirtualResultSubmissions.find((s) => s.id === id);
     if (!sub) return fail(null as unknown as VirtualResultSubmission, 'Submission not found');
-    return ok({ ...sub, status, rejectionReason: reason, reviewedAt: new Date().toISOString() });
+    sub.status = status;
+    sub.rejectionReason = status === 'rejected' ? reason : undefined;
+    sub.reviewedAt = new Date().toISOString();
+    return ok({ ...sub });
   },
 
   // ── Email Templates ──

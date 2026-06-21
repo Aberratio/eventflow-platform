@@ -1,4 +1,5 @@
-import { mockInfoPages } from '@/api';
+import { getInfoPages } from '@/api';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   Timer,
@@ -12,7 +13,14 @@ import {
 } from 'lucide-react';
 
 export const Footer = () => {
-  const footerPages = mockInfoPages
+  const { data: pagesResp } = useQuery({
+    queryKey: ['info-pages'],
+    queryFn: getInfoPages,
+    staleTime: 10 * 60 * 1000,
+    select: (r) => r.data ?? [],
+  });
+
+  const footerPages = (pagesResp ?? [])
     .filter((page) => page.published && page.showInFooter)
     .sort((a, b) => a.order - b.order);
 

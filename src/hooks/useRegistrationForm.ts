@@ -4,10 +4,11 @@ import {
   validateDiscountCode,
   validateTeamName,
   applyDiscount,
-  mockGlobalInsuranceSettings,
-  mockRegistrations,
+  getRegistrationsByEvent,
+  getGlobalInsuranceSettings,
 } from '@/api';
 import { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
@@ -72,11 +73,6 @@ export const useRegistrationForm = (event: Event) => {
     }
   }, [isProfileComplete, user]);
 
-  const existingTeams = useMemo(
-    () => getExistingTeamsForEvent(mockRegistrations, event.id),
-    [event.id],
-  );
-
   const selectedDistance = event.distances.find((d) => d.id === selectedDistanceId);
   const formCfg = event.registrationFormConfig;
   const hasMerchandise =
@@ -86,6 +82,25 @@ export const useRegistrationForm = (event: Event) => {
     event.merchandise.length > 0;
   const hasInsurance = (formCfg?.collectInsurance ?? true) && event.insuranceOption?.enabled;
   const hasTeamOption = formCfg?.collectTeam ?? true;
+
+  const { data: eventRegsData } = useQuery({
+    queryKey: ['registrations', 'event', event.id],
+    queryFn: () => getRegistrationsByEvent(event.id),
+    enabled: hasTeamOption,
+    select: (r) => r.data ?? [],
+  });
+
+  const existingTeams = useMemo(
+    () => getExistingTeamsForEvent(eventRegsData ?? [], event.id),
+    [eventRegsData, event.id],
+  );
+
+  const { data: insuranceSettings } = useQuery({
+    queryKey: ['insurance-settings'],
+    queryFn: getGlobalInsuranceSettings,
+    enabled: !!hasInsurance,
+    select: (r) => r.data,
+  });
 
   // Build steps dynamically
   const activeSteps = useMemo(() => {
@@ -104,11 +119,11 @@ export const useRegistrationForm = (event: Event) => {
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
 
   const insurancePrice = useMemo(() => {
-    if (!hasInsurance || !wantsInsurance || !age) return 0;
-    const { baseFee, ageMultiplier, maxAge } = mockGlobalInsuranceSettings;
+    if (!hasInsurance || !wantsInsurance || !age || !insuranceSettings) return 0;
+    const { baseFee, ageMultiplier, maxAge } = insuranceSettings;
     if (age > maxAge) return 0;
     return Math.round(baseFee + Math.max(0, age - 18) * ageMultiplier);
-  }, [hasInsurance, wantsInsurance, age]);
+  }, [hasInsurance, wantsInsurance, age, insuranceSettings]);
 
   const activeVip = useMemo(() => {
     if (!selectedDistance || !selectedVipId) return null;
@@ -366,5 +381,6 @@ export const useRegistrationForm = (event: Event) => {
     buildSubmitData,
     isLastStep,
     isFirstStep,
+    insuranceSettings,
   };
 };

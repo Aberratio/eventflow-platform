@@ -153,6 +153,14 @@ export const getResultDocuments: ApiAdapter['getResultDocuments'] = (...args) =>
   ensureAdapter().then((a) => a.getResultDocuments(...args));
 export const uploadResultDocument: ApiAdapter['uploadResultDocument'] = (...args) =>
   ensureAdapter().then((a) => a.uploadResultDocument(...args));
+export const createResultImport: ApiAdapter['createResultImport'] = (...args) =>
+  ensureAdapter().then((a) => a.createResultImport(...args));
+export const updateResultImportMapping: ApiAdapter['updateResultImportMapping'] = (...args) =>
+  ensureAdapter().then((a) => a.updateResultImportMapping(...args));
+export const updateResultImportRow: ApiAdapter['updateResultImportRow'] = (...args) =>
+  ensureAdapter().then((a) => a.updateResultImportRow(...args));
+export const commitResultImport: ApiAdapter['commitResultImport'] = (...args) =>
+  ensureAdapter().then((a) => a.commitResultImport(...args));
 
 // Series
 export const getSeries: ApiAdapter['getSeries'] = (...args) =>
@@ -407,38 +415,3 @@ export {
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';
-
-// ─── Mock data re-exports ───────────────────────────────
-// Mock-only data re-exports kept for domains that are not backed by API endpoints yet.
-export { mockMerchandise } from './mock/merchandise.mock';
-export { mockRegistrations } from './mock/registrations.mock';
-export {
-  mockResults,
-  mockPersonalRecords,
-  mockTeamResults,
-  mockResultDocuments,
-  mockMessages,
-  mockCertificates,
-} from './mock/results.mock';
-export { mockSeries } from './mock/series.mock';
-export {
-  mockShopProducts,
-  mockDeliveryMethods,
-  mockShopPaymentMethods,
-  mockShopOrders,
-  mockTickets,
-  mockGroupDiscountCodes,
-} from './mock/shop.mock';
-export { mockChallenges, mockChallengeParticipations } from './mock/challenges.mock';
-export { mockPartners } from './mock/partners.mock';
-export { mockGlobalInsuranceSettings } from './mock/insurance.mock';
-export {
-  mockAdminActivityLogs,
-  mockSecuritySettings,
-  mockOnlineSessions,
-  mockSalesStats,
-} from './mock/admin.mock';
-export { mockInfoPages } from './mock/cms.mock';
-export { mockGoogleCalendarSettings } from './mock/calendar.mock';
-export { mockVirtualResultSubmissions, mockVirtualEvents } from './mock/virtual-results.mock';
-export { mockEmailTemplates, mockEmailSendLogs } from './mock/email-templates.mock';

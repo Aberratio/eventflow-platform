@@ -1,5 +1,6 @@
-import { mockSecuritySettings } from '@/api';
+import { getSecuritySettings, updateSecuritySettings } from '@/api';
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,28 +55,38 @@ function getDeviceIcon(os: string) {
 }
 
 export const SecuritySection = () => {
-  const [settings, setSettings] = useState(mockSecuritySettings);
+  const queryClient = useQueryClient();
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [show2FADialog, setShow2FADialog] = useState(false);
   const [removeDeviceId, setRemoveDeviceId] = useState<string | null>(null);
+
+  const { data: settings } = useQuery({
+    queryKey: ['security-settings'],
+    queryFn: getSecuritySettings,
+    select: (r) => r.data,
+  });
+
+  const patchMutation = useMutation({
+    mutationFn: updateSecuritySettings,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['security-settings'] }),
+  });
+
+  if (!settings) return null;
 
   const daysSincePasswordChange = Math.floor(
     (Date.now() - new Date(settings.lastPasswordChange).getTime()) / (1000 * 60 * 60 * 24),
   );
 
   const handlePasswordChanged = () => {
-    setSettings((prev) => ({
-      ...prev,
-      lastPasswordChange: new Date().toISOString().split('T')[0],
-    }));
+    patchMutation.mutate({ lastPasswordChange: new Date().toISOString().split('T')[0] });
   };
 
   const handle2FASetup = (method: 'app' | 'sms') => {
-    setSettings((prev) => ({ ...prev, twoFactorEnabled: true, twoFactorMethod: method }));
+    patchMutation.mutate({ twoFactorEnabled: true, twoFactorMethod: method });
   };
 
   const handleDisable2FA = () => {
-    setSettings((prev) => ({ ...prev, twoFactorEnabled: false, twoFactorMethod: undefined }));
+    patchMutation.mutate({ twoFactorEnabled: false, twoFactorMethod: undefined });
     toast({
       title: '2FA wyłączone',
       description: 'Uwierzytelnianie dwuskładnikowe zostało wyłączone.',
@@ -83,10 +94,9 @@ export const SecuritySection = () => {
   };
 
   const handleRemoveDevice = (deviceId: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      trustedDevices: prev.trustedDevices.filter((d) => d.id !== deviceId),
-    }));
+    patchMutation.mutate({
+      trustedDevices: settings.trustedDevices.filter((d) => d.id !== deviceId),
+    });
     setRemoveDeviceId(null);
     toast({
       title: 'Urządzenie usunięte',
@@ -95,7 +105,7 @@ export const SecuritySection = () => {
   };
 
   const handleSessionTimeoutChange = (value: string) => {
-    setSettings((prev) => ({ ...prev, sessionTimeoutMinutes: parseInt(value) }));
+    patchMutation.mutate({ sessionTimeoutMinutes: parseInt(value) });
     toast({ title: 'Zapisano', description: `Limit sesji ustawiony na ${value} minut.` });
   };
 

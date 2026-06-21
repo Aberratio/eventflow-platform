@@ -1,4 +1,4 @@
-import { getUserById, mockShopOrders, mockShopProducts } from '@/api';
+import { getUserById, getOrders } from '@/api';
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -66,7 +66,13 @@ export const AdminOrderEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const originalOrder = mockShopOrders.find((o) => o.id === id);
+  const { data: ordersResp } = useQuery({
+    queryKey: ['shop-orders'],
+    queryFn: () => getOrders(),
+    select: (r) => r.data ?? [],
+  });
+  const originalOrder = (ordersResp ?? []).find((o) => o.id === id) ?? null;
+
   const { data: customerResponse } = useQuery({
     queryKey: ['users', originalOrder?.userId],
     queryFn: () => getUserById(originalOrder?.userId ?? ''),
@@ -124,15 +130,13 @@ export const AdminOrderEditPage = () => {
   };
 
   const addItem = () => {
-    const product = mockShopProducts[0];
-    if (!product) return;
     setItems((prev) => [
       ...prev,
       {
-        productId: product.id,
-        productName: product.name,
+        productId: '',
+        productName: 'Nowy produkt',
         quantity: 1,
-        price: product.price,
+        price: 0,
       },
     ]);
   };

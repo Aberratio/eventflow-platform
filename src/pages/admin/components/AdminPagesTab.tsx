@@ -1,6 +1,7 @@
-import { mockInfoPages } from '@/api';
+import { getInfoPages, deleteInfoPage, updateInfoPage, reorderInfoPages } from '@/api';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,59 +56,62 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export const AdminPagesTab = () => {
   const navigate = useNavigate();
-  const [pages, setPages] = useState<InfoPage[]>(mockInfoPages);
+  const queryClient = useQueryClient();
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const { data: pagesResp } = useQuery({
+    queryKey: ['info-pages'],
+    queryFn: getInfoPages,
+    select: (r) => r.data ?? [],
+  });
+
+  const pages = pagesResp ?? [];
   const sortedPages = [...pages].sort((a, b) => a.order - b.order);
 
-  const handleCreatePage = () => {
-    navigate('/admin/pages/new');
-  };
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['info-pages'] });
 
-  const handleEditPage = (page: InfoPage) => {
-    navigate(`/admin/pages/${page.id}/edit`);
-  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteInfoPage,
+    onSuccess: () => {
+      invalidate();
+      setDeletePageId(null);
+      toast({ title: 'Usunięto stronę', variant: 'destructive' });
+    },
+  });
 
-  const handleDeletePage = (id: string) => {
-    setPages(pages.filter((p) => p.id !== id));
-    setDeletePageId(null);
-    toast({ title: 'Usunięto stronę', variant: 'destructive' });
-  };
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, published }: { id: string; published: boolean }) =>
+      updateInfoPage(id, { published }),
+    onSuccess: (_, vars) => {
+      invalidate();
+      const page = pages.find((p) => p.id === vars.id);
+      toast({
+        title: vars.published ? 'Strona opublikowana' : 'Strona ukryta',
+        description: page ? `"${page.title}" jest teraz ${vars.published ? 'widoczna publicznie' : 'ukryta'}.` : undefined,
+      });
+    },
+  });
 
-  const handleTogglePublish = (page: InfoPage) => {
-    const updated = pages.map((p) =>
-      p.id === page.id ? { ...p, published: !p.published, updatedAt: new Date().toISOString() } : p,
-    );
-    setPages(updated);
-    toast({
-      title: page.published ? 'Strona ukryta' : 'Strona opublikowana',
-      description: `"${page.title}" jest teraz ${page.published ? 'ukryta' : 'widoczna publicznie'}.`,
-    });
-  };
+  const reorderMutation = useMutation({
+    mutationFn: reorderInfoPages,
+    onSuccess: invalidate,
+  });
 
   const handleMoveUp = (page: InfoPage) => {
     const index = sortedPages.findIndex((p) => p.id === page.id);
     if (index <= 0) return;
-    const prevPage = sortedPages[index - 1];
-    const updated = pages.map((p) => {
-      if (p.id === page.id) return { ...p, order: prevPage.order };
-      if (p.id === prevPage.id) return { ...p, order: page.order };
-      return p;
-    });
-    setPages(updated);
+    const newOrder = sortedPages.map((p) => p.id);
+    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+    reorderMutation.mutate(newOrder);
   };
 
   const handleMoveDown = (page: InfoPage) => {
     const index = sortedPages.findIndex((p) => p.id === page.id);
     if (index >= sortedPages.length - 1) return;
-    const nextPage = sortedPages[index + 1];
-    const updated = pages.map((p) => {
-      if (p.id === page.id) return { ...p, order: nextPage.order };
-      if (p.id === nextPage.id) return { ...p, order: page.order };
-      return p;
-    });
-    setPages(updated);
+    const newOrder = sortedPages.map((p) => p.id);
+    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+    reorderMutation.mutate(newOrder);
   };
 
   const getIcon = (iconName: string) => {
@@ -123,7 +127,7 @@ export const AdminPagesTab = () => {
             <CardTitle>Strony informacyjne</CardTitle>
             <CardDescription>Zarządzaj treścią stron publicznych platformy</CardDescription>
           </div>
-          <Button onClick={handleCreatePage}>
+          <Button onClick={() => navigate('/admin/pages/new')}>
             <Plus className="mr-2 h-4 w-4" />
             Dodaj stronę
           </Button>
@@ -191,7 +195,7 @@ export const AdminPagesTab = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEditPage(page)}>
+                    <DropdownMenuItem onClick={() => navigate(`/admin/pages/${page.id}/edit`)}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Edytuj
                     </DropdownMenuItem>
@@ -201,7 +205,9 @@ export const AdminPagesTab = () => {
                         Podgląd
                       </a>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleTogglePublish(page)}>
+                    <DropdownMenuItem
+                      onClick={() => toggleMutation.mutate({ id: page.id, published: !page.published })}
+                    >
                       {page.published ? (
                         <>
                           <EyeOff className="mr-2 h-4 w-4" />
@@ -241,7 +247,7 @@ export const AdminPagesTab = () => {
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => deletePageId && handleDeletePage(deletePageId)}
+              onClick={() => deletePageId && deleteMutation.mutate(deletePageId)}
             >
               Usuń
             </AlertDialogAction>

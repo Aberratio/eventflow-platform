@@ -25,7 +25,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Timer, Lock, Mail, Eye, EyeOff, User, Briefcase, UserCheck, Shield, Crown } from 'lucide-react';
-import { MockCredentialCard, type MockCredential } from '@/components/auth/MockCredentialCard';
+import { CredentialCard, type QuickLoginCredential } from '@/components/auth/CredentialCard';
 
 const loginSchema = z.object({
   email: z.string().email('Nieprawidłowy adres email'),
@@ -34,7 +34,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-const MOCK_CREDENTIALS: MockCredential[] = [
+const QUICK_LOGIN_CREDENTIALS: QuickLoginCredential[] = [
   {
     role: 'participant',
     label: 'Uczestnik',
@@ -128,7 +128,7 @@ const LoginPage = () => {
     setIsLoading(false);
   };
 
-  const handleQuickLogin = async (cred: MockCredential) => {
+  const handleQuickLogin = async (cred: QuickLoginCredential) => {
     setQuickLoginRole(cred.role);
     form.setValue('email', cred.email);
     form.setValue('password', cred.password);
@@ -250,19 +250,19 @@ const LoginPage = () => {
                 </CardFooter>
               </Card>
 
-              {/* Mock credentials panel */}
+              {/* Quick login panel */}
               <div className="space-y-4">
                 <div className="mb-2 flex items-center gap-2">
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Konta testowe (demo)
+                    Szybkie logowanie
                   </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
 
                 <div className="grid gap-3">
-                  {MOCK_CREDENTIALS.map((cred) => (
-                    <MockCredentialCard
+                  {QUICK_LOGIN_CREDENTIALS.map((cred) => (
+                    <CredentialCard
                       key={cred.role}
                       credential={cred}
                       copiedField={copiedField}
@@ -274,7 +274,7 @@ const LoginPage = () => {
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground">
-                  💡 Kliknij kartę, aby automatycznie wypełnić formularz danymi testowymi.
+                  Kliknij kartę, aby zalogować się na konto demo danej roli.
                 </p>
               </div>
             </div>

@@ -64,9 +64,9 @@ const EventForm = () => {
           </div>
         )}
 
-        <div className="flex gap-8 lg:gap-9">
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-9">
           {/* Left sticky sidebar */}
-          <div className="hidden lg:block">
+          <div className="lg:block">
             <StepNavSidebar
               currentStep={form.step}
               currentSubStep={form.subStep}

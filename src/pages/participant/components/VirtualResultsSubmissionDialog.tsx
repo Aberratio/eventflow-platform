@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { submitVirtualResult } from '@/api';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Event, Distance } from '@/types';
+import { Event } from '@/types';
 import { Clock, Link as LinkIcon, FileText, Send } from 'lucide-react';
 
 interface VirtualResultsSubmissionDialogProps {
@@ -26,6 +27,7 @@ interface VirtualResultsSubmissionDialogProps {
   onOpenChange: (open: boolean) => void;
   event: Event;
   registeredDistanceId?: string;
+  onSubmitted?: () => void;
 }
 
 export const VirtualResultsSubmissionDialog = ({
@@ -33,6 +35,7 @@ export const VirtualResultsSubmissionDialog = ({
   onOpenChange,
   event,
   registeredDistanceId,
+  onSubmitted,
 }: VirtualResultsSubmissionDialogProps) => {
   const { toast } = useToast();
 
@@ -44,19 +47,13 @@ export const VirtualResultsSubmissionDialog = ({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const selectedDistance = event.distances.find((d) => d.id === selectedDistanceId);
-
   const validateTime = () => {
     const h = parseInt(hours) || 0;
     const m = parseInt(minutes) || 0;
     const s = parseInt(seconds) || 0;
 
-    if (h === 0 && m === 0 && s === 0) {
-      return false;
-    }
-    if (m > 59 || s > 59) {
-      return false;
-    }
+    if (h === 0 && m === 0 && s === 0) return false;
+    if (m > 59 || s > 59) return false;
     return true;
   };
 
@@ -94,24 +91,37 @@ export const VirtualResultsSubmissionDialog = ({
     }
 
     setIsSubmitting(true);
+    try {
+      await submitVirtualResult({
+        eventId: event.id,
+        distanceId: selectedDistanceId,
+        submittedTime: formatTime(),
+        submittedTimeInSeconds: calculateTimeInSeconds(),
+        proofUrl: proofUrl.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast({
+        title: 'Wynik zgłoszony',
+        description: `Twój czas ${formatTime()} został przesłany do weryfikacji przez organizatora.`,
+      });
 
-    toast({
-      title: 'Wynik zgłoszony',
-      description: `Twój czas ${formatTime()} został przesłany do weryfikacji przez organizatora.`,
-    });
-
-    setIsSubmitting(false);
-    onOpenChange(false);
-
-    // Reset form
-    setHours('');
-    setMinutes('');
-    setSeconds('');
-    setProofUrl('');
-    setNotes('');
+      onSubmitted?.();
+      onOpenChange(false);
+      setHours('');
+      setMinutes('');
+      setSeconds('');
+      setProofUrl('');
+      setNotes('');
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zgłosić wyniku',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -126,7 +136,6 @@ export const VirtualResultsSubmissionDialog = ({
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          {/* Distance selector */}
           <div className="space-y-2">
             <Label>Dystans *</Label>
             <Select value={selectedDistanceId} onValueChange={setSelectedDistanceId}>
@@ -136,14 +145,14 @@ export const VirtualResultsSubmissionDialog = ({
               <SelectContent>
                 {event.distances.map((distance) => (
                   <SelectItem key={distance.id} value={distance.id}>
-                    {distance.name}{distance.length != null ? ` (${distance.length} ${distance.unit})` : ''}
+                    {distance.name}
+                    {distance.length != null ? ` (${distance.length} ${distance.unit})` : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Time input */}
           <div className="space-y-2">
             <Label>Twój czas *</Label>
             <div className="flex items-center gap-2">
@@ -188,7 +197,6 @@ export const VirtualResultsSubmissionDialog = ({
             </div>
           </div>
 
-          {/* Proof URL */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <LinkIcon className="h-4 w-4" />
@@ -204,7 +212,6 @@ export const VirtualResultsSubmissionDialog = ({
             </p>
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -218,7 +225,6 @@ export const VirtualResultsSubmissionDialog = ({
             />
           </div>
 
-          {/* Submit button */}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Anuluj

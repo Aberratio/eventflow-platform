@@ -1,7 +1,8 @@
 import { getResultsByEvent, getTeamResults, getResultDocuments } from '@/api';
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -12,11 +13,12 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Event, Result, Registration, TeamResult, EventResultDocument } from '@/types';
-import { Plus, FileText, Save, Trophy, Users } from 'lucide-react';
+import { Event, Registration, TeamResult, EventResultDocument } from '@/types';
+import { Plus, FileText, Save, Trophy, Users, AlertCircle } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { AddResultDialog } from '@/components/organizer/AddResultDialog';
 import { UploadResultDocumentDialog } from '@/components/organizer/UploadResultDocumentDialog';
+import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { TeamResultsManager } from '@/components/organizer/TeamResultsManager';
 import { IndividualResultsCard } from './IndividualResultsCard';
 import { ResultDocumentsCard } from './ResultDocumentsCard';
@@ -36,10 +38,13 @@ interface LocalResult {
 
 export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedDistance, setSelectedDistance] = useState<string>(event.distances[0]?.id || '');
   const [entryMode, setEntryMode] = useState<'manual' | 'import'>('manual');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const canUploadResults = event.status === 'active' || event.status === 'past';
 
   const { data: resultsResp } = useQuery({
     queryKey: ['event-results', event.id],
@@ -87,7 +92,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     toast({ title: 'Wynik usunięty', description: `Usunięto wynik dla numeru ${bibNumber}` });
   };
 
-  const handleImportCSV = () => {
+  const _handleImportCSV = () => {
     toast({ title: 'Import CSV', description: 'Wybierz plik CSV z wynikami (symulacja)' });
     setTimeout(
       () =>
@@ -155,6 +160,16 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
 
   return (
     <div className="space-y-6">
+      {!canUploadResults && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Wyniki niedostepne dla tego statusu</AlertTitle>
+          <AlertDescription>
+            Wyniki mozna wgrywac tylko do wydarzen trwajacych albo zakonczonych.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -171,10 +186,10 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
               </SelectContent>
             </Select>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => setAddDialogOpen(true)}>
+              <Button onClick={() => setAddDialogOpen(true)} disabled={!canUploadResults}>
                 <Plus className="mr-2 h-4 w-4" /> Dodaj wynik
               </Button>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(true)}>
+              <Button variant="outline" onClick={() => setUploadDialogOpen(true)} disabled={!canUploadResults}>
                 <FileText className="mr-2 h-4 w-4" /> Dodaj PDF
               </Button>
             </div>
@@ -206,9 +221,10 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
             onEntryModeChange={setEntryMode}
             onAddResult={() => setAddDialogOpen(true)}
             onDeleteResult={handleDeleteResult}
-            onImportCSV={handleImportCSV}
+            onImportCSV={() => setImportDialogOpen(true)}
             onExportCSV={handleExportCSV}
             onExportPDF={handleExportPDF}
+            canEdit={canUploadResults}
           />
         </TabsContent>
 
@@ -227,6 +243,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
             documents={localDocuments}
             onUpload={() => setUploadDialogOpen(true)}
             onDelete={handleDeleteDocument}
+            canUpload={canUploadResults}
           />
         </TabsContent>
       </Tabs>
@@ -261,6 +278,17 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         eventId={event.id}
         distances={event.distances}
         onUpload={handleUploadDocument}
+      />
+      <ResultImportWizardDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        eventId={event.id}
+        selectedDistanceId={selectedDistance}
+        distances={event.distances}
+        onCommitted={() => {
+          queryClient.invalidateQueries({ queryKey: ['event-results', event.id] });
+          queryClient.invalidateQueries({ queryKey: ['event-registrations', event.id] });
+        }}
       />
     </div>
   );

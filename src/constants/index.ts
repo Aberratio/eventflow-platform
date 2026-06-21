@@ -94,6 +94,12 @@ export const STORAGE_KEYS = {
 
 export const AUTH_SESSION_EXPIRED_EVENT = 'zmierzymyczas:auth-session-expired';
 
+export const GROUP_DISCOUNT_TIERS = [
+  { minParticipants: 3, discountPercent: 10 },
+  { minParticipants: 5, discountPercent: 15 },
+  { minParticipants: 10, discountPercent: 20 },
+] as const;
+
 export const QUERY_KEYS = {
   events: ['events'] as const,
   featuredEvents: ['events', 'featured'] as const,
@@ -111,6 +117,9 @@ export const QUERY_KEYS = {
   results: ['results'] as const,
   resultsByEvent: (eventId: string) => ['results', 'event', eventId] as const,
   resultsByUser: (userId: string) => ['results', 'user', userId] as const,
+  teamResults: (eventId: string) => ['results', 'teams', eventId] as const,
+  resultDocuments: (eventId: string) => ['results', 'documents', eventId] as const,
+  virtualResults: ['virtualResults'] as const,
   registrations: ['registrations'] as const,
   registrationsByEvent: (eventId: string) => ['registrations', 'event', eventId] as const,
   registrationsByUser: (userId: string) => ['registrations', 'user', userId] as const,

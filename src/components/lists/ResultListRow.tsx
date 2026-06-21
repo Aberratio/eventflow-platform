@@ -37,6 +37,7 @@ export const ResultListRow = ({
   isHighlighted = false,
 }: ResultListRowProps) => {
   const medal = getMedalIcon(result.categoryPosition);
+  const finished = result.status === 'finished';
 
   const title = showEvent ? result.eventName : result.userName;
 
@@ -46,7 +47,7 @@ export const ResultListRow = ({
       : result.distanceName;
 
   const badge =
-    result.status === 'finished' ? (
+    finished ? (
       medal ? (
         <span className="flex items-center gap-1">
           {medal}
@@ -66,10 +67,10 @@ export const ResultListRow = ({
         {result.time}
       </span>
       <span className="text-sm text-muted-foreground">
-        OPEN: <strong>{result.position}</strong>
+        OPEN: <strong>{finished ? result.position : '-'}</strong>
       </span>
       <span className="hidden text-sm text-muted-foreground sm:inline">
-        {result.category}: <strong>{result.categoryPosition}</strong>
+        {result.category}: <strong>{finished ? result.categoryPosition : '-'}</strong>
       </span>
     </div>
   );

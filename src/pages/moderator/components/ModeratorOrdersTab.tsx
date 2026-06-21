@@ -1,6 +1,6 @@
-import { getUsers, mockShopOrders } from '@/api';
+import { getUsers, getOrders, updateOrderStatus } from '@/api';
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,13 @@ const allowedStatusTransitions: Record<ShopOrder['status'], ShopOrder['status'][
 };
 
 export const ModeratorOrdersTab = () => {
-  const [orders, setOrders] = useState<ShopOrder[]>(mockShopOrders);
+  const queryClient = useQueryClient();
+  const { data: ordersResp } = useQuery({
+    queryKey: ['shop-orders'],
+    queryFn: () => getOrders(),
+    select: (r) => r.data ?? [],
+  });
+  const orders = ordersResp ?? [];
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState<ShopOrder['status'] | 'all'>('all');
   const [viewingOrder, setViewingOrder] = useState<ShopOrder | null>(null);
@@ -76,6 +82,12 @@ export const ModeratorOrdersTab = () => {
     queryFn: () => getUsers({ pageSize: 1000 }),
   });
   const users = usersResponse?.data ?? [];
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status, trackingNumber }: { id: string; status: ShopOrder['status']; trackingNumber?: string }) =>
+      updateOrderStatus(id, status, trackingNumber),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shop-orders'] }),
+  });
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -101,20 +113,19 @@ export const ModeratorOrdersTab = () => {
 
   const handleSaveOrder = () => {
     if (!viewingOrder) return;
-
-    setOrders(
-      orders.map((o) =>
-        o.id === viewingOrder.id
-          ? {
-              ...o,
-              status: orderNewStatus,
-              trackingNumber: orderNewStatus === 'shipped' ? orderTrackingNumber : o.trackingNumber,
-            }
-          : o,
-      ),
+    statusMutation.mutate(
+      {
+        id: viewingOrder.id,
+        status: orderNewStatus,
+        trackingNumber: orderNewStatus === 'shipped' ? orderTrackingNumber : undefined,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Status zamówienia został zaktualizowany');
+          setIsOrderDialogOpen(false);
+        },
+      },
     );
-    toast.success('Status zamówienia został zaktualizowany');
-    setIsOrderDialogOpen(false);
   };
 
   const getStatusIcon = (status: ShopOrder['status']) => {

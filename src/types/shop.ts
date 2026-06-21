@@ -59,6 +59,8 @@ export interface ShopProduct {
 
 export interface CartItem {
   productId: string;
+  productName: string;
+  unitPrice: number;
   quantity: number;
   size?: string;
   color?: string;

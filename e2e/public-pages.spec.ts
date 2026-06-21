@@ -56,6 +56,16 @@ test.describe('Public Pages - No Auth Required', () => {
 });
 
 test.describe('Error Pages', () => {
+  const implementedStatusPages = ['400', '401', '405', '409', '422', '429', '502', '504'];
+
+  for (const statusCode of implementedStatusPages) {
+    test(`${statusCode} error page renders`, async ({ page }) => {
+      await page.goto(`/${statusCode}`);
+      await expect(page.locator('body')).not.toBeEmpty();
+      await expect(page.getByText(statusCode).first()).toBeVisible();
+    });
+  }
+
   test('404 page renders for unknown route', async ({ page }) => {
     await page.goto('/this-does-not-exist-xyz');
     await expect(page.locator('body')).not.toBeEmpty();

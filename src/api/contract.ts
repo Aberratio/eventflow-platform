@@ -56,6 +56,8 @@ import type {
   UserRole,
   Registration,
   Result,
+  ResultImportBatch,
+  ResultImportMode,
   PersonalRecord,
   TeamResult,
   EventResultDocument,
@@ -198,6 +200,22 @@ export interface ApiAdapter {
   uploadResultDocument(
     data: Partial<EventResultDocument>,
   ): Promise<ApiResponse<EventResultDocument>>;
+  createResultImport(
+    eventId: string,
+    distanceId: string,
+    file: File,
+    mode: ResultImportMode,
+  ): Promise<ApiResponse<ResultImportBatch>>;
+  updateResultImportMapping(
+    importId: string,
+    mapping: Record<string, string>,
+    sheetName?: string | null,
+  ): Promise<ApiResponse<ResultImportBatch>>;
+  updateResultImportRow(
+    rowId: string,
+    data: Record<string, unknown>,
+  ): Promise<ApiResponse<ResultImportBatch>>;
+  commitResultImport(importId: string): Promise<ApiResponse<ResultImportBatch>>;
 
   // ── Series ──
   getSeries(filters?: SeriesFilters): Promise<PaginatedResponse<EventSeries>>;

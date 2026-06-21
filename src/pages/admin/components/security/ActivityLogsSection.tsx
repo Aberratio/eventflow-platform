@@ -1,5 +1,6 @@
-import { mockAdminActivityLogs } from '@/api';
+import { getActivityLogs } from '@/api';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -61,7 +62,15 @@ export const ActivityLogsSection = () => {
   const [logSearch, setLogSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(5);
 
-  const filteredLogs = mockAdminActivityLogs.filter((log) => {
+  const { data: logsResp } = useQuery({
+    queryKey: ['activity-logs'],
+    queryFn: getActivityLogs,
+    select: (r) => r.data ?? [],
+  });
+
+  const allLogs = logsResp ?? [];
+
+  const filteredLogs = allLogs.filter((log) => {
     const matchesFilter = logFilter === 'all' || log.action === logFilter;
     const matchesSearch =
       logSearch === '' ||

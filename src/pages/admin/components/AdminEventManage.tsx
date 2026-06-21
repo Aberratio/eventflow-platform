@@ -2,7 +2,6 @@ import {
   getEventById,
   getRegistrations,
   getUsers,
-  mockMerchandise,
   defaultPaymentMethods,
   updateEvent,
 } from '@/api';
@@ -64,7 +63,7 @@ export const AdminEventManage = () => {
   const eventRegistrations = registrationsResponse?.data ?? [];
 
   const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
-    event?.merchandise || mockMerchandise,
+    event?.merchandise || [],
   );
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(
     event?.paymentMethods || defaultPaymentMethods,
@@ -79,7 +78,7 @@ export const AdminEventManage = () => {
 
   useEffect(() => {
     if (!event) return;
-    setMerchandise(event.merchandise || mockMerchandise);
+    setMerchandise(event.merchandise || []);
     setPaymentMethods(event.paymentMethods || defaultPaymentMethods);
     setLiveResultsUrl(event.liveResultsUrl || '');
     setSelectedOrganizer(event.organizerId || '');

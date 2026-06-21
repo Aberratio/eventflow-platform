@@ -1,4 +1,4 @@
-import { mockDeliveryMethods, mockShopPaymentMethods } from '@/api';
+import { getDeliveryMethods, getShopPaymentMethods } from '@/api';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
@@ -38,7 +39,6 @@ const paymentIcons: Record<string, React.ReactNode> = {
 const CartPage = () => {
   const {
     items,
-    getProduct,
     updateItemQuantity,
     removeItemByVariant,
     clearCart,
@@ -48,17 +48,32 @@ const CartPage = () => {
   } = useCart();
   const navigate = useNavigate();
 
+  const { data: deliveryMethodsResp } = useQuery({
+    queryKey: ['delivery-methods'],
+    queryFn: getDeliveryMethods,
+    staleTime: 10 * 60 * 1000,
+    select: (r) => r.data ?? [],
+  });
+
+  const { data: paymentMethodsResp } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: getShopPaymentMethods,
+    staleTime: 10 * 60 * 1000,
+    select: (r) => r.data ?? [],
+  });
+
+  const deliveryMethods = deliveryMethodsResp ?? [];
+  const paymentMethods = paymentMethodsResp ?? [];
+
   const [selectedDelivery, setSelectedDelivery] = useState<string>('');
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const deliveryMethod = mockDeliveryMethods.find((d) => d.id === selectedDelivery);
-  const paymentMethod = mockShopPaymentMethods.find((p) => p.id === selectedPayment);
+  const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
+  const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
 
-  const hasOnlyServices = items.every((item) => {
-    const product = getProduct(item.productId);
-    return product?.isService;
-  });
+  // Services have no physical delivery
+  const hasOnlyServices = false;
 
   const deliveryPrice = hasOnlyServices ? 0 : deliveryMethod?.price || 0;
   const paymentSurcharge = paymentMethod?.surcharge || 0;
@@ -92,11 +107,11 @@ const CartPage = () => {
       orderNumber,
       items: items.map((item) => ({
         productId: item.productId,
-        productName: getProduct(item.productId)?.name || 'Produkt',
+        productName: item.productName,
         quantity: item.quantity,
         size: item.size,
         color: item.color,
-        price: getProduct(item.productId)?.price || 0,
+        price: item.unitPrice,
       })),
       deliveryMethod: effectiveDeliveryMethod,
       paymentMethod,
@@ -166,22 +181,16 @@ const CartPage = () => {
                 Produkty
               </h2>
               <div className="space-y-3">
-                {items.map((item, index) => {
-                  const product = getProduct(item.productId);
-                  if (!product) return null;
-
-                  return (
-                    <CartItemCard
-                      key={`${item.productId}-${item.size}-${item.color}-${index}`}
-                      item={item}
-                      product={product}
-                      onUpdateQuantity={(quantity) =>
-                        updateItemQuantity(item.productId, quantity, item.size, item.color)
-                      }
-                      onRemove={() => removeItemByVariant(item.productId, item.size, item.color)}
-                    />
-                  );
-                })}
+                {items.map((item, index) => (
+                  <CartItemCard
+                    key={`${item.productId}-${item.size}-${item.color}-${index}`}
+                    item={item}
+                    onUpdateQuantity={(quantity) =>
+                      updateItemQuantity(item.productId, quantity, item.size, item.color)
+                    }
+                    onRemove={() => removeItemByVariant(item.productId, item.size, item.color)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -201,7 +210,7 @@ const CartPage = () => {
 
                   <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
                     <div className="space-y-2">
-                      {mockDeliveryMethods.map((method) => (
+                      {deliveryMethods.map((method) => (
                         <div
                           key={method.id}
                           className={`flex cursor-pointer items-start space-x-3 rounded-lg border p-3 transition-all ${
@@ -272,7 +281,7 @@ const CartPage = () => {
 
                 <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
                   <div className="space-y-2">
-                    {mockShopPaymentMethods.map((method) => (
+                    {paymentMethods.map((method) => (
                       <div
                         key={method.id}
                         className={`flex cursor-pointer items-start space-x-3 rounded-lg border p-3 transition-all ${

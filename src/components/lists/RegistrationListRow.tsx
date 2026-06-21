@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Registration, Event, VirtualResultSubmission } from '@/types';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Ticket, Globe, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
-import { format, isAfter, isBefore } from 'date-fns';
+import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -23,21 +23,20 @@ export const RegistrationListRow = ({
 }: RegistrationListRowProps) => {
   const now = new Date();
   const isVirtual = event.isVirtual;
-
-  // Virtual event window status
   const startDate = event.startDate ? new Date(event.startDate) : null;
   const endDate = event.endDate ? new Date(event.endDate) : null;
-  const windowNotStarted = startDate && isBefore(now, startDate);
-  const windowActive = startDate && endDate && isAfter(now, startDate) && isBefore(now, endDate);
-  const windowEnded = endDate && isAfter(now, endDate);
+  const windowStart = startDate ? startOfDay(startDate) : null;
+  const windowEnd = endDate ? endOfDay(endDate) : null;
+  const windowNotStarted = windowStart && isBefore(now, windowStart);
+  const windowActive =
+    windowStart && windowEnd && !isBefore(now, windowStart) && !isAfter(now, windowEnd);
+  const windowEnded = windowEnd && isAfter(now, windowEnd);
 
-  // Format subtitle based on virtual or regular event
   const subtitle =
     isVirtual && event.startDate && event.endDate
       ? `${format(new Date(event.startDate), 'd MMM', { locale: pl })} - ${format(new Date(event.endDate), 'd MMMM yyyy', { locale: pl })} • ${event.city}`
       : `${format(new Date(event.date), 'd MMMM yyyy', { locale: pl })} • ${event.city}`;
 
-  // Build badges
   const badges = (
     <div className="flex flex-wrap items-center gap-2">
       {isVirtual && (
@@ -55,11 +54,64 @@ export const RegistrationListRow = ({
     </div>
   );
 
-  // Build virtual submission status or action
+  const submitButton = (label: string, variant: 'default' | 'outline' = 'default') => (
+    <Button
+      size="sm"
+      variant={variant}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onSubmitResult?.();
+      }}
+      className="h-7 text-xs"
+    >
+      <Send className="mr-1 h-3 w-3" />
+      {label}
+    </Button>
+  );
+
+  const renderSubmissionStatus = () => {
+    if (!virtualSubmission) return null;
+
+    switch (virtualSubmission.status) {
+      case 'pending':
+        return (
+          <Badge variant="outline" className="border-warning text-xs text-warning">
+            <Clock className="mr-1 h-3 w-3" />
+            Oczekuje: {virtualSubmission.submittedTime}
+          </Badge>
+        );
+      case 'approved':
+        return (
+          <Badge variant="outline" className="border-primary text-xs text-primary">
+            <CheckCircle className="mr-1 h-3 w-3" />
+            Zatwierdzony: {virtualSubmission.submittedTime}
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="destructive" className="text-xs">
+                  <XCircle className="mr-1 h-3 w-3" />
+                  Odrzucony
+                </Badge>
+              </TooltipTrigger>
+              {virtualSubmission.rejectionReason && (
+                <TooltipContent>
+                  <p>Powód: {virtualSubmission.rejectionReason}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        );
+    }
+  };
+
   const renderVirtualStatus = () => {
     if (!isVirtual) return null;
 
-    // Window hasn't started yet
     if (windowNotStarted && startDate) {
       return (
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -69,86 +121,31 @@ export const RegistrationListRow = ({
       );
     }
 
-    // Window is active
     if (windowActive && endDate) {
-      return (
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          Okno otwarte do {format(endDate, 'd MMM', { locale: pl })}
-        </span>
-      );
-    }
-
-    // Window ended - check submission status
-    if (windowEnded) {
-      if (!virtualSubmission) {
-        // No submission yet - show button
+      if (!virtualSubmission) return submitButton('Wprowadź wynik');
+      if (virtualSubmission.status === 'rejected') {
         return (
-          <Button
-            size="sm"
-            variant="default"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onSubmitResult?.();
-            }}
-            className="h-7 text-xs"
-          >
-            <Send className="mr-1 h-3 w-3" />
-            Wprowadź wynik
-          </Button>
+          <div className="flex items-center gap-2">
+            {renderSubmissionStatus()}
+            {submitButton('Zgłoś ponownie', 'outline')}
+          </div>
         );
       }
+      return renderSubmissionStatus();
+    }
 
-      // Has submission - show status
-      switch (virtualSubmission.status) {
-        case 'pending':
-          return (
-            <Badge variant="outline" className="border-warning text-xs text-warning">
-              <Clock className="mr-1 h-3 w-3" />
-              Oczekuje: {virtualSubmission.submittedTime}
-            </Badge>
-          );
-        case 'approved':
-          return (
-            <Badge variant="outline" className="border-primary text-xs text-primary">
-              <CheckCircle className="mr-1 h-3 w-3" />
-              Zatwierdzony: {virtualSubmission.submittedTime}
-            </Badge>
-          );
-        case 'rejected':
-          return (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="destructive" className="text-xs">
-                      <XCircle className="mr-1 h-3 w-3" />
-                      Odrzucony
-                    </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onSubmitResult?.();
-                      }}
-                      className="h-7 text-xs"
-                    >
-                      Zgłoś ponownie
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {virtualSubmission.rejectionReason && (
-                  <TooltipContent>
-                    <p>Powód: {virtualSubmission.rejectionReason}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          );
-      }
+    if (windowEnded) {
+      return (
+        <div className="flex items-center gap-2">
+          {renderSubmissionStatus()}
+          {!virtualSubmission && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              Okno startowe zamknięte
+            </span>
+          )}
+        </div>
+      );
     }
 
     return null;

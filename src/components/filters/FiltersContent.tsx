@@ -1,4 +1,5 @@
-import { disciplineLabels, mockSeries } from '@/api';
+import { disciplineLabels, getSeries } from '@/api';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -67,6 +68,13 @@ export const FiltersContent = ({
   showApplyButton = false,
   showHeader = false,
 }: FiltersContentProps) => {
+  const { data: seriesList } = useQuery({
+    queryKey: ['series'],
+    queryFn: getSeries,
+    staleTime: 5 * 60 * 1000,
+    select: (r) => r.data ?? [],
+  });
+
   return (
     <div className="flex h-full flex-col">
       {showHeader && (
@@ -155,7 +163,7 @@ export const FiltersContent = ({
               checked={filters.seriesId === null}
               onCheckedChange={() => updateFilter('seriesId', null)}
             />
-            {mockSeries.map((series) => (
+            {(seriesList ?? []).map((series) => (
               <CheckboxItem
                 key={series.id}
                 id={`series-${series.id}`}

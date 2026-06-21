@@ -58,6 +58,7 @@ interface IndividualResultsCardProps {
   onImportCSV: () => void;
   onExportCSV: () => void;
   onExportPDF: () => void;
+  canEdit?: boolean;
 }
 
 export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
@@ -70,6 +71,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
   onImportCSV,
   onExportCSV,
   onExportPDF,
+  canEdit = true,
 }) => (
   <Card>
     <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
@@ -79,6 +81,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
           variant={entryMode === 'manual' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onEntryModeChange('manual')}
+          disabled={!canEdit}
         >
           Ręcznie
         </Button>
@@ -86,6 +89,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
           variant={entryMode === 'import' ? 'default' : 'outline'}
           size="sm"
           onClick={() => onEntryModeChange('import')}
+          disabled={!canEdit}
         >
           Import CSV
         </Button>
@@ -117,7 +121,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
             <p className="mb-4 text-sm text-muted-foreground">
               Format: numer_startowy, czas (HH:MM:SS), status (finished/dnf/dsq)
             </p>
-            <Button onClick={onImportCSV}>
+            <Button onClick={onImportCSV} disabled={!canEdit}>
               <Upload className="mr-2 h-4 w-4" /> Wybierz plik
             </Button>
           </div>
@@ -138,7 +142,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
         <div className="py-12 text-center text-muted-foreground">
           <Clock className="mx-auto mb-4 h-12 w-12 opacity-50" />
           <p>Brak wprowadzonych wyników dla tego dystansu.</p>
-          <Button className="mt-4" onClick={onAddResult}>
+          <Button className="mt-4" onClick={onAddResult} disabled={!canEdit}>
             <Plus className="mr-2 h-4 w-4" /> Dodaj pierwszy wynik
           </Button>
         </div>
@@ -189,6 +193,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => onDeleteResult(result.bibNumber)}
+                        disabled={!canEdit}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>

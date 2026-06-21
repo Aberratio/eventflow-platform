@@ -1,6 +1,6 @@
 import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
-import type { User } from '@/types';
+import type { ResultImportBatch, User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { resolveApiAssetUrl } from '@/lib/utils';
 
@@ -31,6 +31,15 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
   discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
   registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
+  virtual_event_required: 'Wynik można zgłosić tylko dla wydarzenia wirtualnego.',
+  virtual_result_window_closed: 'Wynik można zgłosić tylko w aktywnym oknie startowym.',
+  virtual_result_registration_required: 'Nie znaleziono aktywnej rejestracji na ten dystans.',
+  virtual_result_duplicate: 'Wynik dla tego dystansu został już zgłoszony.',
+  result_event_not_open:
+    'Wyniki mozna wgrywac tylko do wydarzen trwajacych albo zakonczonych, ktorymi zarzadzasz.',
+  pdf_text_not_detected: 'Nie udalo sie odczytac tekstu z PDF. To moze byc skan wymagajacy OCR.',
+  pdf_table_not_detected:
+    'Odczytano tekst z PDF, ale nie wykryto wierszy wynikow. Wgraj CSV/XLSX albo popraw dane po konwersji.',
   validation_error: 'Sprawdź poprawność danych i spróbuj ponownie.',
   file_too_large: 'Plik jest za duży. Maksymalny rozmiar to 5 MB.',
   unsupported_file_type: 'Nieobsługiwany format pliku. Dozwolone są JPG, PNG i WebP.',
@@ -288,6 +297,24 @@ export const httpAdapter: ApiAdapter = {
       `/events/${encodeURIComponent(data.eventId ?? '')}/result-documents`,
       json('POST', data),
     ),
+  createResultImport: (eventId, distanceId, file, mode) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('mode', mode);
+    return requestForm<ResultImportBatch>(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/result-imports`,
+      formData,
+    );
+  },
+  updateResultImportMapping: (importId, mapping, sheetName) =>
+    request(
+      `/result-imports/${encodeURIComponent(importId)}/mapping`,
+      json('PATCH', { mapping, sheetName }),
+    ),
+  updateResultImportRow: (rowId, data) =>
+    request(`/result-import-rows/${encodeURIComponent(rowId)}`, json('PATCH', data)),
+  commitResultImport: (importId) =>
+    request(`/result-imports/${encodeURIComponent(importId)}/commit`, json('POST')),
 
   getSeries: (filters) => paginated('/series', filters as Record<string, QueryValue>),
   getSeriesById: (id) => request(`/series/${encodeURIComponent(id)}`),

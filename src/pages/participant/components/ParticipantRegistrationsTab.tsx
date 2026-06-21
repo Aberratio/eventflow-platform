@@ -1,12 +1,13 @@
-import { getEvents, mockVirtualResultSubmissions } from '@/api';
+import { getEvents, getVirtualResultSubmissions } from '@/api';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Ticket } from 'lucide-react';
 import { Registration, Event } from '@/types';
 import { ListContainer, ListEmptyState, RegistrationListRow } from '@/components/lists';
 import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog';
+import { QUERY_KEYS } from '@/constants';
 
 interface ParticipantRegistrationsTabProps {
   registrations: Registration[];
@@ -16,18 +17,23 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string | undefined>(undefined);
+  const queryClient = useQueryClient();
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-registrations'],
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
   });
   const events = eventsResponse?.data ?? [];
+  const { data: virtualSubmissionsResponse } = useQuery({
+    queryKey: [...QUERY_KEYS.virtualResults, 'participant'],
+    queryFn: () => getVirtualResultSubmissions(),
+  });
+  const virtualSubmissions = virtualSubmissionsResponse?.data ?? [];
 
   const registrationsWithEvents = registrations
     .map((reg) => {
       const event = events.find((e) => e.id === reg.eventId);
-      // Find virtual submission for this registration
       const virtualSubmission = event?.isVirtual
-        ? mockVirtualResultSubmissions.find(
+        ? virtualSubmissions.find(
             (sub) =>
               sub.eventId === reg.eventId &&
               sub.userId === reg.userId &&
@@ -95,6 +101,10 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
           onOpenChange={handleDialogClose}
           event={selectedEvent}
           registeredDistanceId={selectedDistanceId}
+          onSubmitted={() => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.virtualResults });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.results });
+          }}
         />
       )}
     </>

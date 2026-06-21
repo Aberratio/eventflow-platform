@@ -1,4 +1,3 @@
-import { mockShopProducts } from '@/api';
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { CartItem, ShopProduct, OrderDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -26,10 +25,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lastOrder, setLastOrder] = useState<OrderDetails | null>(null);
   const { toast } = useToast();
 
-  const getProduct = useCallback((productId: string) => {
-    return mockShopProducts.find((p) => p.id === productId);
-  }, []);
-
   const addItem = useCallback(
     (item: CartItem) => {
       setItems((prev) => {
@@ -46,26 +41,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return [...prev, item];
       });
 
-      const product = getProduct(item.productId);
       toast({
         title: 'Dodano do koszyka',
-        description: product?.name || 'Produkt został dodany',
+        description: item.productName,
       });
-      appLogger.shop('cart_add', `Dodano do koszyka: ${product?.name ?? item.productId} (ilość: ${item.quantity})`, {
-        targetType: 'product', targetId: item.productId, targetName: product?.name,
+      appLogger.shop('cart_add', `Dodano do koszyka: ${item.productName} (ilość: ${item.quantity})`, {
+        targetType: 'product', targetId: item.productId, targetName: item.productName,
         metadata: { quantity: item.quantity, size: item.size, color: item.color },
       });
     },
-    [getProduct, toast],
+    [toast],
   );
 
   const removeItem = useCallback((productId: string) => {
-    const product = getProduct(productId);
-    appLogger.shop('cart_remove', `Usunięto z koszyka: ${product?.name ?? productId}`, {
-      targetType: 'product', targetId: productId, targetName: product?.name,
+    const item = items.find((i) => i.productId === productId);
+    appLogger.shop('cart_remove', `Usunięto z koszyka: ${item?.productName ?? productId}`, {
+      targetType: 'product', targetId: productId, targetName: item?.productName,
     });
     setItems((prev) => prev.filter((i) => i.productId !== productId));
-  }, [getProduct]);
+  }, [items]);
 
   const removeItemByVariant = useCallback((productId: string, size?: string, color?: string) => {
     setItems((prev) =>
@@ -111,13 +105,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
   const totalPrice = useMemo(
-    () =>
-      items.reduce((sum, item) => {
-        const product = getProduct(item.productId);
-        return sum + (product?.price || 0) * item.quantity;
-      }, 0),
-    [items, getProduct],
+    () => items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    [items],
   );
+
+  // Kept for backward compatibility with components that resolve product details from cart
+  const getProduct = useCallback((_productId: string): ShopProduct | undefined => {
+    return undefined;
+  }, []);
 
   return (
     <CartContext.Provider

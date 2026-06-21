@@ -1,9 +1,5 @@
-import {
-  getCurrentPrice,
-  applyDiscount,
-  mockGlobalInsuranceSettings,
-  mockGroupDiscountCodes,
-} from '@/api';
+import { getCurrentPrice, applyDiscount } from '@/api';
+import { GROUP_DISCOUNT_TIERS } from '@/constants';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -859,12 +855,12 @@ const TeamStep = ({ form }: { form: FormHook }) => (
           Zniżki są naliczane automatycznie po zapisaniu minimalnej liczby osób z tej samej drużyny:
         </p>
         <ul className="space-y-2 text-sm">
-          {mockGroupDiscountCodes.map((discount) => (
-            <li key={discount.id} className="flex items-center gap-2">
+          {GROUP_DISCOUNT_TIERS.map((tier) => (
+            <li key={tier.minParticipants} className="flex items-center gap-2">
               <Badge variant="secondary" className="font-mono">
-                {discount.minParticipants}+ osób
+                {tier.minParticipants}+ osób
               </Badge>
-              <span className="font-medium text-primary">-{discount.discountValue}%</span>
+              <span className="font-medium text-primary">-{tier.discountPercent}%</span>
               <span className="text-muted-foreground">rabatu</span>
             </li>
           ))}
@@ -887,9 +883,11 @@ const InsuranceStep = ({ form }: { form: FormHook }) => (
       <CardDescription>Zabezpiecz się na wypadek kontuzji podczas zawodów</CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
-      <div className="rounded-lg bg-muted/50 p-4">
-        <RichTextDisplay html={mockGlobalInsuranceSettings.infoHtml} />
-      </div>
+      {form.insuranceSettings && (
+        <div className="rounded-lg bg-muted/50 p-4">
+          <RichTextDisplay html={form.insuranceSettings.infoHtml} />
+        </div>
+      )}
       <div
         className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
         onClick={() => form.setWantsInsurance(!form.wantsInsurance)}
@@ -904,11 +902,11 @@ const InsuranceStep = ({ form }: { form: FormHook }) => (
             <label htmlFor="insurance" className="cursor-pointer font-medium">
               Chcę wykupić ubezpieczenie NNW
             </label>
-            {form.age && (
+            {form.age && form.insuranceSettings && (
               <div className="mt-2 text-sm">
-                {form.age > mockGlobalInsuranceSettings.maxAge ? (
+                {form.age > form.insuranceSettings.maxAge ? (
                   <span className="text-destructive">
-                    Ubezpieczenie niedostępne dla osób powyżej {mockGlobalInsuranceSettings.maxAge}{' '}
+                    Ubezpieczenie niedostępne dla osób powyżej {form.insuranceSettings.maxAge}{' '}
                     lat
                   </span>
                 ) : (
@@ -918,14 +916,14 @@ const InsuranceStep = ({ form }: { form: FormHook }) => (
                     </span>
                     <span className="font-bold text-primary">
                       {Math.round(
-                        mockGlobalInsuranceSettings.baseFee +
-                          Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier,
+                        form.insuranceSettings.baseFee +
+                          Math.max(0, form.age - 18) * form.insuranceSettings.ageMultiplier,
                       )}{' '}
                       zł
                     </span>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      (składka bazowa {mockGlobalInsuranceSettings.baseFee} zł + dodatek wiekowy{' '}
-                      {Math.max(0, form.age - 18) * mockGlobalInsuranceSettings.ageMultiplier} zł)
+                      (składka bazowa {form.insuranceSettings.baseFee} zł + dodatek wiekowy{' '}
+                      {Math.max(0, form.age - 18) * form.insuranceSettings.ageMultiplier} zł)
                     </p>
                   </>
                 )}

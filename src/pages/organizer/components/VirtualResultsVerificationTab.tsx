@@ -1,5 +1,6 @@
-import { mockVirtualResultSubmissions } from '@/api';
+import { getVirtualResultSubmissions, reviewVirtualResult } from '@/api';
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Event, VirtualResultSubmission } from '@/types';
+import { QUERY_KEYS } from '@/constants';
 import {
   Check,
   X,
@@ -42,6 +44,7 @@ interface VirtualResultsVerificationTabProps {
 
 export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificationTabProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [selectedDistance, setSelectedDistance] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('pending');
@@ -49,23 +52,39 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [isReviewing, setIsReviewing] = useState(false);
 
-  // Get submissions for this event
-  const submissions = mockVirtualResultSubmissions.filter((s) => s.eventId === event.id);
+  const queryKey = [...QUERY_KEYS.virtualResults, event.id];
+  const { data: submissionsResponse, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => getVirtualResultSubmissions({ eventId: event.id }),
+  });
+  const submissions = submissionsResponse?.data ?? [];
 
-  // Filter by distance and status
-  const filteredSubmissions = submissions.filter((s) => {
-    if (selectedDistance !== 'all' && s.distanceId !== selectedDistance) return false;
-    if (selectedStatus !== 'all' && s.status !== selectedStatus) return false;
+  const filteredSubmissions = submissions.filter((submission) => {
+    if (selectedDistance !== 'all' && submission.distanceId !== selectedDistance) return false;
+    if (selectedStatus !== 'all' && submission.status !== selectedStatus) return false;
     return true;
   });
 
+  const refreshResults = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.results }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.resultsByEvent(event.id) }),
+    ]);
+  };
+
   const toggleSelection = (id: string) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
   };
 
   const selectAll = () => {
-    const pendingIds = filteredSubmissions.filter((s) => s.status === 'pending').map((s) => s.id);
+    const pendingIds = filteredSubmissions
+      .filter((submission) => submission.status === 'pending')
+      .map((submission) => submission.id);
     setSelectedIds((prev) => {
       const allSelected = pendingIds.every((id) => prev.includes(id));
       return allSelected
@@ -74,21 +93,46 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     });
   };
 
-  const handleApprove = (id: string) => {
-    toast({
-      title: 'Wynik zatwierdzony',
-      description: 'Wynik został zatwierdzony i dodany do klasyfikacji.',
-    });
-    // In real app: update submission status to 'approved'
+  const handleApprove = async (id: string) => {
+    setIsReviewing(true);
+    try {
+      await reviewVirtualResult(id, 'approved');
+      await refreshResults();
+      toast({
+        title: 'Wynik zatwierdzony',
+        description: 'Wynik został zatwierdzony i dodany do klasyfikacji.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zatwierdzić wyniku',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
-  const handleBulkApprove = () => {
+  const handleBulkApprove = async () => {
     if (selectedIds.length === 0) return;
-    toast({
-      title: 'Wyniki zatwierdzone',
-      description: `Zatwierdzono ${selectedIds.length} wyników.`,
-    });
-    setSelectedIds([]);
+    setIsReviewing(true);
+    try {
+      await Promise.all(selectedIds.map((id) => reviewVirtualResult(id, 'approved')));
+      await refreshResults();
+      toast({
+        title: 'Wyniki zatwierdzone',
+        description: `Zatwierdzono ${selectedIds.length} wyników.`,
+      });
+      setSelectedIds([]);
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zatwierdzić wyników',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   const openRejectDialog = (id: string) => {
@@ -97,7 +141,7 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     setRejectDialogOpen(true);
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!rejectionReason.trim()) {
       toast({
         title: 'Błąd',
@@ -106,13 +150,31 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
       });
       return;
     }
-    toast({
-      title: 'Wynik odrzucony',
-      description: 'Uczestnik otrzyma powiadomienie z powodem odrzucenia.',
-    });
-    setRejectDialogOpen(false);
-    setRejectingId(null);
-    setRejectionReason('');
+
+    const ids = rejectingId === 'bulk' ? selectedIds : rejectingId ? [rejectingId] : [];
+    if (ids.length === 0) return;
+
+    setIsReviewing(true);
+    try {
+      await Promise.all(ids.map((id) => reviewVirtualResult(id, 'rejected', rejectionReason)));
+      await refreshResults();
+      toast({
+        title: ids.length > 1 ? 'Wyniki odrzucone' : 'Wynik odrzucony',
+        description: 'Uczestnik otrzyma powód odrzucenia.',
+      });
+      setSelectedIds([]);
+      setRejectDialogOpen(false);
+      setRejectingId(null);
+      setRejectionReason('');
+    } catch (error) {
+      toast({
+        title: 'Nie udało się odrzucić wyniku',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsReviewing(false);
+    }
   };
 
   const handleBulkReject = () => {
@@ -137,11 +199,13 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     }
   };
 
-  const pendingCount = submissions.filter((s) => s.status === 'pending').length;
+  const pendingCount = submissions.filter((submission) => submission.status === 'pending').length;
+  const pendingFiltered = filteredSubmissions.filter(
+    (submission) => submission.status === 'pending',
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header with filters */}
       <Card>
         <CardHeader>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -162,9 +226,9 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Wszystkie</SelectItem>
-                  {event.distances.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
+                  {event.distances.map((distance) => (
+                    <SelectItem key={distance.id} value={distance.id}>
+                      {distance.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -189,11 +253,16 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
                 <span className="text-sm text-muted-foreground">
                   Zaznaczono: {selectedIds.length}
                 </span>
-                <Button size="sm" onClick={handleBulkApprove}>
+                <Button size="sm" onClick={() => void handleBulkApprove()} disabled={isReviewing}>
                   <CheckCheck className="mr-1 h-4 w-4" />
                   Zatwierdź
                 </Button>
-                <Button size="sm" variant="destructive" onClick={handleBulkReject}>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleBulkReject}
+                  disabled={isReviewing}
+                >
                   <XCircle className="mr-1 h-4 w-4" />
                   Odrzuć
                 </Button>
@@ -203,8 +272,13 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
         </CardContent>
       </Card>
 
-      {/* Submissions list */}
-      {filteredSubmissions.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Ładowanie zgłoszeń...</p>
+          </CardContent>
+        </Card>
+      ) : filteredSubmissions.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Clock className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
@@ -213,18 +287,15 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
         </Card>
       ) : (
         <div className="space-y-3">
-          {selectedStatus === 'pending' &&
-            filteredSubmissions.some((s) => s.status === 'pending') && (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={filteredSubmissions
-                    .filter((s) => s.status === 'pending')
-                    .every((s) => selectedIds.includes(s.id))}
-                  onCheckedChange={selectAll}
-                />
-                <span className="text-sm text-muted-foreground">Zaznacz wszystkie oczekujące</span>
-              </div>
-            )}
+          {selectedStatus === 'pending' && pendingFiltered.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={pendingFiltered.every((submission) => selectedIds.includes(submission.id))}
+                onCheckedChange={selectAll}
+              />
+              <span className="text-sm text-muted-foreground">Zaznacz wszystkie oczekujące</span>
+            </div>
+          )}
 
           {filteredSubmissions.map((submission) => (
             <Card
@@ -294,13 +365,20 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
 
                   {submission.status === 'pending' && (
                     <div className="flex shrink-0 gap-2">
-                      <Button size="sm" onClick={() => handleApprove(submission.id)}>
+                      <Button
+                        size="sm"
+                        aria-label={`Zatwierdź wynik ${submission.userName}`}
+                        onClick={() => void handleApprove(submission.id)}
+                        disabled={isReviewing}
+                      >
                         <Check className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
+                        aria-label={`Odrzuć wynik ${submission.userName}`}
                         onClick={() => openRejectDialog(submission.id)}
+                        disabled={isReviewing}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -313,7 +391,6 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
         </div>
       )}
 
-      {/* Rejection dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -338,7 +415,11 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
               <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
                 Anuluj
               </Button>
-              <Button variant="destructive" onClick={handleReject}>
+              <Button
+                variant="destructive"
+                onClick={() => void handleReject()}
+                disabled={isReviewing}
+              >
                 Odrzuć
               </Button>
             </div>

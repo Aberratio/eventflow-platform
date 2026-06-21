@@ -793,11 +793,11 @@ const EventGadgetsCard = ({ gadgets }: { gadgets: EventMerchandise[] }) => {
               <p className="truncate text-sm font-medium">{g.name}</p>
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                 <span className="text-xs font-semibold text-primary">
-                  {g.price.toFixed(2)} PLN
+                  {Number(g.price).toFixed(2)} PLN
                 </span>
-                {g.originalPrice != null && g.originalPrice > g.price && (
+                {g.originalPrice != null && Number(g.originalPrice) > Number(g.price) && (
                   <span className="text-xs text-foreground/40 line-through">
-                    {g.originalPrice.toFixed(2)} PLN
+                    {Number(g.originalPrice).toFixed(2)} PLN
                   </span>
                 )}
                 {g.sizes && g.sizes.length > 0 && (

@@ -1,8 +1,6 @@
 import {
   getCurrentUser,
-  getUsers,
   login as apiLogin,
-  loginByRole as apiLoginByRole,
   logout as apiLogout,
   updateUser as apiUpdateUser,
 } from '@/api';
@@ -14,7 +12,7 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-import { User, UserRole } from '@/types';
+import { User } from '@/types';
 import { UpdateUserPayload } from '@/api/payloads';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
@@ -23,7 +21,6 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (role: UserRole) => Promise<void>;
   loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateCurrentUser: (data: UpdateUserPayload) => Promise<User | null>;
@@ -128,31 +125,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
   }, [clearSessionForToken]);
 
-  const login = async (role: UserRole) => {
-    try {
-      const roleLoginResponse = await apiLoginByRole(role);
-      const databaseUser =
-        roleLoginResponse.data ?? (await getUsers({ role, pageSize: 1 })).data[0];
-      if (!databaseUser) return;
-      setUser(databaseUser);
-      setIsLoading(false);
-      getStorage()?.setItem(AUTH_STORAGE_KEY, JSON.stringify(databaseUser));
-      appLogger.setCurrentUser({
-        id: databaseUser.id,
-        role: databaseUser.role,
-        name: databaseUser.name,
-        email: databaseUser.email,
-      });
-      appLogger.auth(`login`, `Selected ${databaseUser.name} (${databaseUser.role})`, {
-        userId: databaseUser.id,
-        userRole: databaseUser.role,
-        userName: databaseUser.name,
-      });
-    } catch {
-      return undefined;
-    }
-  };
-
   const loginWithCredentials = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await apiLogin({ email, password });
@@ -200,7 +172,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         user,
         isAuthenticated: !!user,
         isLoading,
-        login,
         loginWithCredentials,
         logout,
         updateCurrentUser,

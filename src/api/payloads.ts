@@ -9,6 +9,7 @@ import type {
   SportDiscipline,
   Distance,
   OrganizerContact,
+  OrganizerInfo,
   PaymentMethod,
   EventMerchandise,
   DiscountCode,
@@ -19,6 +20,7 @@ import type {
   RegistrationEmbedConfig,
   RegistrationFormConfig,
   EventDisplayOptions,
+  EventLogisticsInfo,
   PaymentConfig,
   UserRole,
   UserAddress,
@@ -75,6 +77,10 @@ export interface CreateEventPayload {
   registrationEmbed?: RegistrationEmbedConfig;
   registrationFormConfig?: RegistrationFormConfig;
   displayOptions?: EventDisplayOptions;
+  logisticsInfo?: EventLogisticsInfo;
+  organizerInfo?: OrganizerInfo;
+  organizersHtml?: string;
+  featured?: boolean;
 }
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;

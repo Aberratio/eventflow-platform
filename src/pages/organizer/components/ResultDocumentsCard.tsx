@@ -10,12 +10,14 @@ interface ResultDocumentsCardProps {
   documents: EventResultDocument[];
   onUpload: () => void;
   onDelete: (docId: string) => void;
+  canUpload?: boolean;
 }
 
 export const ResultDocumentsCard: React.FC<ResultDocumentsCardProps> = ({
   documents,
   onUpload,
   onDelete,
+  canUpload = true,
 }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between">
@@ -23,7 +25,7 @@ export const ResultDocumentsCard: React.FC<ResultDocumentsCardProps> = ({
         <FileText className="h-5 w-5 text-primary" />
         Dokumenty PDF z wynikami
       </CardTitle>
-      <Button onClick={onUpload}>
+      <Button onClick={onUpload} disabled={!canUpload}>
         <Upload className="mr-2 h-4 w-4" />
         Dodaj dokument
       </Button>
@@ -33,7 +35,7 @@ export const ResultDocumentsCard: React.FC<ResultDocumentsCardProps> = ({
         <div className="py-12 text-center text-muted-foreground">
           <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
           <p>Brak dokumentów PDF.</p>
-          <Button className="mt-4" onClick={onUpload}>
+          <Button className="mt-4" onClick={onUpload} disabled={!canUpload}>
             <Upload className="mr-2 h-4 w-4" />
             Dodaj pierwszy dokument
           </Button>
@@ -70,7 +72,7 @@ export const ResultDocumentsCard: React.FC<ResultDocumentsCardProps> = ({
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)}>
+              <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)} disabled={!canUpload}>
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </div>

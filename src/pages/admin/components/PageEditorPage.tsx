@@ -1,5 +1,6 @@
-import { mockInfoPages } from '@/api';
+import { getInfoPages, createInfoPage, updateInfoPage } from '@/api';
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,7 +83,15 @@ export const PageEditorPage = () => {
   const { pageId } = useParams<{ pageId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const isNewPage = pageId === 'new';
+
+  const { data: allPages } = useQuery({
+    queryKey: ['info-pages'],
+    queryFn: getInfoPages,
+    select: (r) => r.data ?? [],
+    enabled: isNewPage,
+  });
 
   const [formData, setFormData] = useState<InfoPage>({
     id: `page-${Date.now()}`,
@@ -94,24 +103,60 @@ export const PageEditorPage = () => {
     published: false,
     showInFooter: false,
     showInHeader: false,
-    order: mockInfoPages.length + 1,
+    order: 1,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
 
+  useEffect(() => {
+    if (isNewPage && allPages) {
+      setFormData((prev) => ({ ...prev, order: allPages.length + 1 }));
+    }
+  }, [isNewPage, allPages]);
+
   const [showAddSection, setShowAddSection] = useState(false);
 
+  const { data: existingPage } = useQuery({
+    queryKey: ['info-page-by-id', pageId],
+    queryFn: async () => {
+      // Backend endpoint to get by id — use slug as fallback via getInfoPages
+      const resp = await getInfoPages();
+      return (resp.data ?? []).find((p) => p.id === pageId) ?? null;
+    },
+    enabled: !isNewPage && !!pageId,
+  });
+
   useEffect(() => {
-    if (!isNewPage && pageId) {
-      const page = mockInfoPages.find((p) => p.id === pageId);
-      if (page) {
-        setFormData(page);
-      } else {
+    if (!isNewPage && existingPage !== undefined) {
+      if (existingPage) {
+        setFormData(existingPage);
+      } else if (existingPage === null) {
         toast({ title: 'Nie znaleziono strony', variant: 'destructive' });
         navigate('/admin?tab=pages');
       }
     }
-  }, [pageId, isNewPage, navigate, toast]);
+  }, [existingPage, isNewPage, navigate, toast]);
+
+  const saveMutation = useMutation({
+    mutationFn: (data: InfoPage) =>
+      isNewPage ? createInfoPage(data) : updateInfoPage(data.id, data),
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({ queryKey: ['info-pages'] });
+      appLogger.cms(isNewPage ? 'page_create' : 'page_update',
+        isNewPage ? `Utworzono stronę «${data.title}»` : `Zaktualizowano stronę «${data.title}»`, {
+          targetType: 'page', targetId: data.id, targetName: data.title,
+          metadata: { slug: data.slug, sectionsCount: data.content.length, published: data.published },
+        });
+      toast({
+        title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
+        description: `Strona "${data.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,
+      });
+      navigate('/admin?tab=pages');
+    },
+    onError: () => {
+      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+    },
+  });
 
   const updateField = <K extends keyof InfoPage>(field: K, value: InfoPage[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -188,17 +233,7 @@ export const PageEditorPage = () => {
       toast({ title: 'Podaj slug URL', variant: 'destructive' });
       return;
     }
-
-    appLogger.cms(isNewPage ? 'page_create' : 'page_update',
-      isNewPage ? `Utworzono stronę «${formData.title}»` : `Zaktualizowano stronę «${formData.title}»`, {
-        targetType: 'page', targetId: formData.id, targetName: formData.title,
-        metadata: { slug: formData.slug, sectionsCount: formData.content.length, published: formData.published },
-      });
-    toast({
-      title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
-      description: `Strona "${formData.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,
-    });
-    navigate(-1);
+    saveMutation.mutate(formData);
   };
 
   const handlePreview = () => {

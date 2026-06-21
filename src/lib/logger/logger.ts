@@ -1,5 +1,6 @@
 import type { LogLevel, LogCategory, LogEntry, LogTransport, LoggerUserContext } from './types';
-import { MockTransport } from './transports';
+import { ApiTransport, MockTransport } from './transports';
+import { STORAGE_KEYS } from '@/constants';
 
 function generateId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -151,5 +152,16 @@ class AppLogger {
   }
 }
 
+function createDefaultTransport(): LogTransport {
+  if (import.meta.env.PROD) {
+    const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api/v1';
+    return new ApiTransport(
+      `${apiBase}/admin/client-logs`,
+      () => localStorage.getItem(STORAGE_KEYS.API_TOKEN),
+    );
+  }
+  return new MockTransport();
+}
+
 /** Globalny singleton loggera */
-export const appLogger = new AppLogger();
+export const appLogger = new AppLogger(createDefaultTransport());

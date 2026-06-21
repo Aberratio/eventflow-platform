@@ -1,45 +1,22 @@
-import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CartItem, ShopProduct } from '@/types';
+import { CartItem } from '@/types';
 
 interface CartItemCardProps {
   item: CartItem;
-  product: ShopProduct;
   onUpdateQuantity: (quantity: number) => void;
   onRemove: () => void;
 }
 
-export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: CartItemCardProps) => {
-  const itemTotal = product.price * item.quantity;
+export const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardProps) => {
+  const itemTotal = item.unitPrice * item.quantity;
 
   return (
     <div className="flex gap-4 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
-      {/* Product Image */}
-      <Link to={`/shop/${product.slug}`} className="shrink-0">
-        <div className="relative overflow-hidden rounded-lg">
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="h-20 w-20 object-cover transition-transform hover:scale-105 sm:h-24 sm:w-24"
-          />
-          {product.isService && (
-            <Badge className="absolute left-1 top-1 bg-primary/90 px-1.5 py-0 text-[10px]">
-              Cyfrowa
-            </Badge>
-          )}
-        </div>
-      </Link>
-
       {/* Product Details */}
       <div className="min-w-0 flex-1">
-        <Link
-          to={`/shop/${product.slug}`}
-          className="line-clamp-2 font-medium text-foreground transition-colors hover:text-primary"
-        >
-          {product.name}
-        </Link>
+        <p className="line-clamp-2 font-medium text-foreground">{item.productName}</p>
 
         {(item.size || item.color) && (
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -57,7 +34,7 @@ export const CartItemCard = ({ item, product, onUpdateQuantity, onRemove }: Cart
         )}
 
         <div className="mt-2 text-sm font-medium text-muted-foreground">
-          {product.price.toFixed(2)} zł / szt.
+          {item.unitPrice.toFixed(2)} zł / szt.
         </div>
       </div>
 

@@ -59,18 +59,21 @@ export function clearStoredLogs(): void {
   storedLogs.length = 0;
 }
 
-/*
- * ─── Przyszłość: ApiTransport ───────────────────────────
- *
- * export class ApiTransport implements LogTransport {
- *   constructor(private endpoint: string) {}
- *
- *   async send(entries: LogEntry[]): Promise<void> {
- *     await fetch(this.endpoint, {
- *       method: 'POST',
- *       headers: { 'Content-Type': 'application/json' },
- *       body: JSON.stringify({ logs: entries }),
- *     });
- *   }
- * }
- */
+export class ApiTransport implements LogTransport {
+  constructor(
+    private endpoint: string,
+    private getToken: () => string | null,
+  ) {}
+
+  async send(entries: LogEntry[]): Promise<void> {
+    const token = this.getToken();
+    await fetch(this.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ logs: entries }),
+    }).catch(() => {});
+  }
+}

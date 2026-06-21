@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Copy, Check } from 'lucide-react';
 import { UserRole } from '@/types';
 
-export interface MockCredential {
+export interface QuickLoginCredential {
   role: UserRole;
   label: string;
   email: string;
@@ -13,21 +13,21 @@ export interface MockCredential {
   color: string;
 }
 
-interface MockCredentialCardProps {
-  credential: MockCredential;
+interface CredentialCardProps {
+  credential: QuickLoginCredential;
   copiedField: string | null;
   isLoading?: boolean;
-  onLogin: (cred: MockCredential) => void;
+  onLogin: (cred: QuickLoginCredential) => void;
   onCopy: (text: string, fieldId: string) => void;
 }
 
-export const MockCredentialCard = ({
+export const CredentialCard = ({
   credential,
   copiedField,
   isLoading = false,
   onLogin,
   onCopy,
-}: MockCredentialCardProps) => {
+}: CredentialCardProps) => {
   const Icon = credential.icon;
 
   return (

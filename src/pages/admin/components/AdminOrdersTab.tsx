@@ -1,4 +1,4 @@
-import { getUsers, mockShopOrders } from '@/api';
+import { getUsers, getOrders } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -67,7 +67,12 @@ type SortDir = 'asc' | 'desc';
 
 export const AdminOrdersTab = () => {
   const navigate = useNavigate();
-  const [orders] = useState<ShopOrder[]>(mockShopOrders);
+  const { data: ordersResp } = useQuery({
+    queryKey: ['shop-orders'],
+    queryFn: () => getOrders(),
+    select: (r) => r.data ?? [],
+  });
+  const orders = ordersResp ?? [];
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ShopOrder['status'] | 'all'>('all');
   const [dateFrom, setDateFrom] = useState('');

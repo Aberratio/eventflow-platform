@@ -48,7 +48,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 const EXISTING_EMAILS = ['jan@example.com', 'anna@example.com'];
 
 const RegisterPage = () => {
-  const { login } = useAuth();
+  const { loginWithCredentials } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +88,7 @@ const RegisterPage = () => {
       title: 'Konto zostało utworzone!',
       description: 'Na podany adres email wysłaliśmy link aktywacyjny.',
     });
-    login(data.role);
+    await loginWithCredentials(data.email, data.password);
     const redirectPath = data.role === 'organizer' ? '/organizer' : '/participant';
     navigate(redirectPath);
     setIsLoading(false);

@@ -1,5 +1,7 @@
-import { mockResultDocuments, mockTeamResults } from '@/api';
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getResultDocuments, getTeamResults } from '@/api';
+import { QUERY_KEYS } from '@/constants';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +17,9 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Trophy, Medal, Users, ChevronDown, ChevronRight, Search, X, Timer, Gauge } from 'lucide-react';
+import { Trophy, Medal, Users, ChevronDown, ChevronRight, Search, X, Timer, Gauge, Upload } from 'lucide-react';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
+import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { Event, Result } from '@/types';
 
@@ -47,6 +50,7 @@ const formatSpeed = (timeInSeconds: number, distanceKm: number): string => {
 };
 
 const formatValue = (result: { time: string; timeInSeconds: number }, mode: DisplayMode, distanceKm?: number): string => {
+  if (result.timeInSeconds <= 0) return result.time;
   if (mode === 'pace' && distanceKm) return formatPace(result.timeInSeconds, distanceKm);
   if (mode === 'speed' && distanceKm) return formatSpeed(result.timeInSeconds, distanceKm);
   return result.time;
@@ -138,6 +142,7 @@ const CategoryTable = ({
                 const pos = result[positionKey];
                 const timeValue = formatValue(result, activeMode, distanceKm);
                 const isCurrentUser = !!currentUserId && result.userId === currentUserId;
+                const finished = result.status === 'finished';
                 return (
                   <TableRow
                     key={result.id}
@@ -145,10 +150,14 @@ const CategoryTable = ({
                     className={isCurrentUser ? 'bg-primary/10 font-semibold' : undefined}
                   >
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        {getMedalIcon(pos)}
-                        <span className={pos <= 3 ? 'font-bold' : ''}>{pos}</span>
-                      </div>
+                      {finished ? (
+                        <div className="flex items-center gap-1">
+                          {getMedalIcon(pos)}
+                          <span className={pos <= 3 ? 'font-bold' : ''}>{pos}</span>
+                        </div>
+                      ) : (
+                        '-'
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -210,13 +219,22 @@ const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: Dist
       map.set(r.category, list);
     }
     for (const list of map.values()) {
-      list.sort((a, b) => a.categoryPosition - b.categoryPosition);
+      list.sort((a, b) => {
+        if (a.status !== 'finished' && b.status === 'finished') return 1;
+        if (a.status === 'finished' && b.status !== 'finished') return -1;
+        return a.categoryPosition - b.categoryPosition;
+      });
     }
     return map;
   }, [filtered]);
 
   const overallResults = useMemo(
-    () => [...filtered].sort((a, b) => a.position - b.position),
+    () =>
+      [...filtered].sort((a, b) => {
+        if (a.status !== 'finished' && b.status === 'finished') return 1;
+        if (a.status === 'finished' && b.status !== 'finished') return -1;
+        return a.position - b.position;
+      }),
     [filtered],
   );
 
@@ -316,6 +334,7 @@ const FlatResultsTable = ({
           {results.map((result) => {
             const timeValue = formatValue(result, activeMode, distanceKm);
             const isCurrentUser = !!currentUserId && result.userId === currentUserId;
+            const finished = result.status === 'finished';
             return (
               <TableRow
                 key={result.id}
@@ -323,10 +342,14 @@ const FlatResultsTable = ({
                 className={isCurrentUser ? 'bg-primary/10 font-semibold' : undefined}
               >
                 <TableCell>
-                  <div className="flex items-center gap-1">
-                    {getMedalIcon(result.position)}
-                    <span className="font-bold">{result.position}</span>
-                  </div>
+                  {finished ? (
+                    <div className="flex items-center gap-1">
+                      {getMedalIcon(result.position)}
+                      <span className="font-bold">{result.position}</span>
+                    </div>
+                  ) : (
+                    '-'
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -348,7 +371,8 @@ const FlatResultsTable = ({
                 )}
                 <TableCell className="font-mono">{timeValue}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {result.categoryPosition}. {result.category}
+                  {finished ? `${result.categoryPosition}. ` : ''}
+                  {result.category}
                 </TableCell>
               </TableRow>
             );
@@ -361,10 +385,18 @@ const FlatResultsTable = ({
 
 export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => {
   const auth = useAuthSafe();
+  const queryClient = useQueryClient();
   const currentUserId = auth?.user?.id;
   const [searchQuery, setSearchQuery] = useState('');
   const [displayModeSingle, setDisplayModeSingle] = useState<DisplayMode>('time');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
+  const canUploadResults =
+    (event.status === 'active' || event.status === 'past') &&
+    (auth?.user?.role === 'admin' ||
+      auth?.user?.role === 'superadmin' ||
+      auth?.user?.role === 'moderator' ||
+      (auth?.user?.role === 'organizer' && auth.user.id === event.organizerId));
 
   const hasMyResult = useMemo(
     () => !!currentUserId && eventResults.some((r) => r.userId === currentUserId),
@@ -378,8 +410,16 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
     }
   }, []);
 
-  const eventDocuments = mockResultDocuments.filter((d) => d.eventId === event.id);
-  const eventTeamResults = mockTeamResults.filter((t) => t.eventId === event.id);
+  const { data: documentsResponse } = useQuery({
+    queryKey: QUERY_KEYS.resultDocuments(event.id),
+    queryFn: () => getResultDocuments(event.id),
+  });
+  const { data: teamResultsResponse } = useQuery({
+    queryKey: QUERY_KEYS.teamResults(event.id),
+    queryFn: () => getTeamResults(event.id),
+  });
+  const eventDocuments = documentsResponse?.data ?? [];
+  const eventTeamResults = teamResultsResponse?.data ?? [];
 
   const hasMultipleDistances = event.distances.length > 1;
 
@@ -395,7 +435,11 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
         const q = searchQuery.toLowerCase();
         return r.userName.toLowerCase().includes(q) || r.bibNumber.toLowerCase().includes(q);
       })
-      .sort((a, b) => a.position - b.position);
+      .sort((a, b) => {
+        if (a.status !== 'finished' && b.status === 'finished') return 1;
+        if (a.status === 'finished' && b.status !== 'finished') return -1;
+        return a.position - b.position;
+      });
   }, [eventResults, searchQuery]);
 
   const resultsByDistance = useMemo(() => {
@@ -425,6 +469,12 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           <Button variant="outline" size="sm" onClick={scrollToMyResult} className="shrink-0 gap-1.5">
             <Medal className="h-3.5 w-3.5 text-primary" />
             Mój wynik
+          </Button>
+        )}
+        {canUploadResults && (
+          <Button size="sm" onClick={() => setImportDialogOpen(true)} className="shrink-0 gap-1.5">
+            <Upload className="h-3.5 w-3.5" />
+            Wgraj wyniki
           </Button>
         )}
         {searchQuery && (
@@ -606,6 +656,17 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
       )}
 
       {eventDocuments.length > 0 && <ResultDocumentsList documents={eventDocuments} />}
+      <ResultImportWizardDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        eventId={event.id}
+        selectedDistanceId={event.distances[0]?.id ?? ''}
+        distances={event.distances}
+        onCommitted={() => {
+          queryClient.invalidateQueries({ queryKey: ['event-results', event.id] });
+          queryClient.invalidateQueries({ queryKey: ['event-registrations', event.id] });
+        }}
+      />
     </>
   );
 };

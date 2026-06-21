@@ -239,6 +239,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     : null;
 
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
+  const showResultsTab = isPast || event.status === 'active' || event.status === 'past';
 
   const handleRegister = () => {
     if (hasExternalRegistration) {
@@ -413,7 +414,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                     Na żywo
                   </TabsTrigger>
                 )}
-                {isPast && (
+                {showResultsTab && (
                   <TabsTrigger
                     value="results"
                     className="relative data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:absolute data-[state=active]:after:bottom-[-7px] data-[state=active]:after:left-2 data-[state=active]:after:right-2 data-[state=active]:after:h-0.5 data-[state=active]:after:rounded-full data-[state=active]:after:bg-primary"
@@ -478,7 +479,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                     </TabsContent>
                   )}
 
-                  {isPast && (
+                  {showResultsTab && (
                     <TabsContent value="results" className="mt-0 space-y-6">
                       <ResultsSection event={event} eventResults={eventResults} />
                     </TabsContent>
