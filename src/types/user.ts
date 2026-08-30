@@ -35,27 +35,73 @@ export interface User {
   eventLimit?: number;
 }
 
-export interface AuthorizationGrantedToMe {
+/**
+ * Zawodnik: profil danych startowych. Byt samodzielny — nie własność Konta,
+ * może istnieć bez żadnego powiązanego Konta (np. dziecko zarejestrowane przez rodzica).
+ */
+export interface Competitor {
   id: string;
-  grantorId: string;
-  grantorName: string;
-  grantorEmail: string;
-  grantorAvatar?: string;
+  firstName: string;
+  lastName: string;
+  birthDate?: string;
+  gender?: 'M' | 'K';
+  email?: string;
+  phone?: string;
+  club?: string;
+  userId?: string | null;
+}
+
+/** Zawodnik pod moją opieką — mogę go zapisywać na zawody. */
+export interface MyCompetitor {
+  id: string; // id relacji Opieki
+  competitorId: string;
+  createdAt: string;
+  firstName: string;
+  lastName: string;
+  birthDate?: string;
+  gender?: 'M' | 'K';
+  email?: string;
+  phone?: string;
+  club?: string;
+  competitorUserId?: string | null;
+}
+
+/** Konto, które sprawuje opiekę nade mną (może mnie zapisywać). */
+export interface Caregiver {
+  id: string; // id relacji Opieki
+  kontoId: string;
+  kontoName: string;
+  kontoEmail: string;
+  kontoAvatar?: string;
   createdAt: string;
 }
 
-export interface AuthorizationGrantedByMe {
-  id: string;
-  granteeId: string;
-  granteeName: string;
-  granteeEmail: string;
-  granteeAvatar?: string;
-  createdAt: string;
+export interface CareResponse {
+  myCompetitors: MyCompetitor[];
+  caregivers: Caregiver[];
 }
 
-export interface AuthorizationsResponse {
-  grantedToMe: AuthorizationGrantedToMe[];
-  grantedByMe: AuthorizationGrantedByMe[];
+export interface GrantCareByEmailPayload {
+  email: string;
+}
+
+export interface AddCompetitorPayload {
+  firstName: string;
+  lastName: string;
+  birthDate?: string;
+  gender?: 'M' | 'K';
+  email?: string;
+  phone?: string;
+  club?: string;
+}
+
+export interface GrantCareResult {
+  id: string;
+  kontoId?: string;
+  competitorId: string;
+  createdAt: string;
+  competitor?: Competitor;
+  duplicateWarnings?: Competitor[];
 }
 
 export type AdminActionType =

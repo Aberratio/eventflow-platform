@@ -329,13 +329,17 @@ export const deleteEventBackground: ApiAdapter['deleteEventBackground'] = (...ar
 export const uploadEventBackground: ApiAdapter['uploadEventBackground'] = (...args) =>
   ensureAdapter().then((a) => a.uploadEventBackground(...args));
 
-// Authorizations
-export const getAuthorizations: ApiAdapter['getAuthorizations'] = (...args) =>
-  ensureAdapter().then((a) => a.getAuthorizations(...args));
-export const grantAuthorization: ApiAdapter['grantAuthorization'] = (...args) =>
-  ensureAdapter().then((a) => a.grantAuthorization(...args));
-export const revokeAuthorization: ApiAdapter['revokeAuthorization'] = (...args) =>
-  ensureAdapter().then((a) => a.revokeAuthorization(...args));
+// Opieka (Care) i Zawodnicy (Competitors)
+export const getCare: ApiAdapter['getCare'] = (...args) =>
+  ensureAdapter().then((a) => a.getCare(...args));
+export const grantCareByEmail: ApiAdapter['grantCareByEmail'] = (...args) =>
+  ensureAdapter().then((a) => a.grantCareByEmail(...args));
+export const addCompetitor: ApiAdapter['addCompetitor'] = (...args) =>
+  ensureAdapter().then((a) => a.addCompetitor(...args));
+export const revokeCare: ApiAdapter['revokeCare'] = (...args) =>
+  ensureAdapter().then((a) => a.revokeCare(...args));
+export const checkCompetitorDuplicates: ApiAdapter['checkCompetitorDuplicates'] = (...args) =>
+  ensureAdapter().then((a) => a.checkCompetitorDuplicates(...args));
 
 // Email Templates
 export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>

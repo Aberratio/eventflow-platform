@@ -11,6 +11,8 @@ export interface Registration {
   eventId: string;
   eventName: string;
   userId: string;
+  /** Zawodnik będący źródłem tożsamości zapisu (E0.1) — identyfikator, nie kopiowana nazwa. */
+  competitorId?: string;
   userName: string;
   userEmail: string;
   distanceId: string;

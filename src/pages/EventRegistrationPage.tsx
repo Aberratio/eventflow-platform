@@ -1,4 +1,4 @@
-import { createRegistration, disciplineLabels, getEventBySlug, getAuthorizations } from '@/api';
+import { createRegistration, disciplineLabels, getEventBySlug, getCare } from '@/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -29,7 +29,7 @@ import {
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
-import type { AuthorizationGrantedToMe } from '@/types';
+import type { MyCompetitor } from '@/types';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -44,32 +44,35 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Zapis w imieniu kogoś innego
+  // Zapis Zawodnika pod moją opieką (kogoś innego niż ja)
   const [registeringForOther, setRegisteringForOther] = useState(false);
-  const [selectedGrantorId, setSelectedGrantorId] = useState<string>('');
+  const [selectedCompetitorRelId, setSelectedCompetitorRelId] = useState<string>('');
   const [grantorSearch, setGrantorSearch] = useState('');
 
   const isParticipant = user?.role === 'participant';
 
-  const { data: authorizationsData } = useQuery({
-    queryKey: ['authorizations'],
-    queryFn: () => getAuthorizations(),
+  const { data: careData } = useQuery({
+    queryKey: ['care'],
+    queryFn: () => getCare(),
     enabled: isParticipant && !previewMode,
     select: (r) => r.data,
   });
 
-  const grantedToMe: AuthorizationGrantedToMe[] = authorizationsData?.grantedToMe ?? [];
-  const hasGrantors = grantedToMe.length > 0;
+  const myCompetitors: MyCompetitor[] = useMemo(() => careData?.myCompetitors ?? [], [careData]);
+  const hasGrantors = myCompetitors.length > 0;
+
+  const competitorName = (c: MyCompetitor) => `${c.firstName} ${c.lastName}`.trim();
 
   const filteredGrantors = useMemo(() => {
-    if (!grantorSearch.trim()) return grantedToMe;
+    if (!grantorSearch.trim()) return myCompetitors;
     const q = grantorSearch.toLowerCase();
-    return grantedToMe.filter(
-      (g) => g.grantorName.toLowerCase().includes(q) || g.grantorEmail.toLowerCase().includes(q),
+    return myCompetitors.filter(
+      (g) =>
+        competitorName(g).toLowerCase().includes(q) || (g.email ?? '').toLowerCase().includes(q),
     );
-  }, [grantedToMe, grantorSearch]);
+  }, [myCompetitors, grantorSearch]);
 
-  const selectedGrantor = grantedToMe.find((g) => g.grantorId === selectedGrantorId) ?? null;
+  const selectedGrantor = myCompetitors.find((g) => g.id === selectedCompetitorRelId) ?? null;
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event-by-slug', slug],
@@ -239,11 +242,12 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     const registeredFor =
       registeringForOther && selectedGrantor
         ? {
-            userId: selectedGrantor.grantorId,
-            userName: selectedGrantor.grantorName,
-            userEmail: selectedGrantor.grantorEmail,
+            userId: selectedGrantor.competitorUserId ?? user.id,
+            competitorId: selectedGrantor.competitorId,
+            userName: competitorName(selectedGrantor),
+            userEmail: selectedGrantor.email ?? '',
           }
-        : { userId: user.id, userName: user.name, userEmail: user.email };
+        : { userId: user.id, competitorId: undefined, userName: user.name, userEmail: user.email };
 
     setIsSubmitting(true);
     try {
@@ -251,6 +255,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         eventId: event.id,
         eventName: event.name,
         userId: registeredFor.userId,
+        competitorId: registeredFor.competitorId,
         userName: registeredFor.userName,
         userEmail: registeredFor.userEmail,
         registeredById: registeringForOther && selectedGrantor ? user.id : undefined,
@@ -367,10 +372,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                   onCheckedChange={(v) => {
                     setRegisteringForOther(v === true);
                     if (!v) {
-                      setSelectedGrantorId('');
+                      setSelectedCompetitorRelId('');
                       setGrantorSearch('');
-                    } else if (grantedToMe.length === 1) {
-                      setSelectedGrantorId(grantedToMe[0].grantorId);
+                    } else if (myCompetitors.length === 1) {
+                      setSelectedCompetitorRelId(myCompetitors[0].id);
                     }
                   }}
                 />
@@ -387,7 +392,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
               {registeringForOther && (
                 <div className="mt-3 border-t border-border/50 pt-3">
-                  {grantedToMe.length > 10 ? (
+                  {myCompetitors.length > 10 ? (
                     <div className="space-y-2">
                       <Label className="text-xs text-muted-foreground">
                         Szukaj osoby do zapisania
@@ -397,7 +402,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                         value={grantorSearch}
                         onChange={(e) => {
                           setGrantorSearch(e.target.value);
-                          setSelectedGrantorId('');
+                          setSelectedCompetitorRelId('');
                         }}
                         className="h-8 text-sm"
                         autoFocus
@@ -411,17 +416,17 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                           ) : (
                             filteredGrantors.map((g) => (
                               <button
-                                key={g.grantorId}
+                                key={g.id}
                                 type="button"
-                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${selectedGrantorId === g.grantorId ? 'bg-primary/10 font-medium' : ''}`}
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${selectedCompetitorRelId === g.id ? 'bg-primary/10 font-medium' : ''}`}
                                 onClick={() => {
-                                  setSelectedGrantorId(g.grantorId);
-                                  setGrantorSearch(g.grantorName);
+                                  setSelectedCompetitorRelId(g.id);
+                                  setGrantorSearch(competitorName(g));
                                 }}
                               >
-                                <span className="font-medium">{g.grantorName}</span>
+                                <span className="font-medium">{competitorName(g)}</span>
                                 <span className="ml-2 text-xs text-muted-foreground">
-                                  {g.grantorEmail}
+                                  {g.email}
                                 </span>
                               </button>
                             ))
@@ -432,7 +437,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                         <p className="text-xs text-muted-foreground">
                           Zapisujesz:{' '}
                           <span className="font-medium text-foreground">
-                            {selectedGrantor.grantorName}
+                            {competitorName(selectedGrantor)}
                           </span>
                         </p>
                       )}
@@ -440,17 +445,18 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                   ) : (
                     <div className="space-y-1.5">
                       <Label className="text-xs text-muted-foreground">Kogo zapisujesz?</Label>
-                      <Select value={selectedGrantorId} onValueChange={setSelectedGrantorId}>
+                      <Select
+                        value={selectedCompetitorRelId}
+                        onValueChange={setSelectedCompetitorRelId}
+                      >
                         <SelectTrigger className="h-8 text-sm">
                           <SelectValue placeholder="Wybierz osobę..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {grantedToMe.map((g) => (
-                            <SelectItem key={g.grantorId} value={g.grantorId}>
-                              <span>{g.grantorName}</span>
-                              <span className="ml-2 text-xs text-muted-foreground">
-                                {g.grantorEmail}
-                              </span>
+                          {myCompetitors.map((g) => (
+                            <SelectItem key={g.id} value={g.id}>
+                              <span>{competitorName(g)}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">{g.email}</span>
                             </SelectItem>
                           ))}
                         </SelectContent>

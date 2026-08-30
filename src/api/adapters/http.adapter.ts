@@ -439,7 +439,16 @@ export const httpAdapter: ApiAdapter = {
   previewEmailTemplate: (requestPayload) =>
     request('/email-templates/preview', json('POST', requestPayload)),
 
-  getAuthorizations: () => request('/authorizations'),
-  grantAuthorization: (email) => request('/authorizations', json('POST', { email })),
-  revokeAuthorization: (id) => request(`/authorizations/${encodeURIComponent(id)}`, json('DELETE')),
+  getCare: () => request('/care'),
+  grantCareByEmail: (email) => request('/care', json('POST', { email })),
+  addCompetitor: (payload) => request('/care', json('POST', payload)),
+  revokeCare: (id) => request(`/care/${encodeURIComponent(id)}`, json('DELETE')),
+  checkCompetitorDuplicates: (firstName, lastName, birthDate) =>
+    request(
+      `/competitors/duplicates?${new URLSearchParams({
+        firstName,
+        lastName,
+        ...(birthDate ? { birthDate } : {}),
+      }).toString()}`,
+    ),
 };

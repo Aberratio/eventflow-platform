@@ -75,8 +75,10 @@ import type {
   Ticket,
   Certificate,
   Partner,
-  AuthorizationsResponse,
-  AuthorizationGrantedByMe,
+  CareResponse,
+  Competitor,
+  GrantCareResult,
+  AddCompetitorPayload,
   GlobalInsuranceSettings,
   AdminActivityLog,
   SecuritySettings,
@@ -290,10 +292,16 @@ export interface ApiAdapter {
   deletePartner(id: string): Promise<ApiResponse<void>>;
   uploadPartnerLogo(file: File): Promise<ApiResponse<{ url: string }>>;
 
-  // ── Authorizations ──
-  getAuthorizations(): Promise<ApiResponse<AuthorizationsResponse>>;
-  grantAuthorization(email: string): Promise<ApiResponse<AuthorizationGrantedByMe>>;
-  revokeAuthorization(id: string): Promise<ApiResponse<void>>;
+  // ── Opieka (Care) i Zawodnicy (Competitors) ──
+  getCare(): Promise<ApiResponse<CareResponse>>;
+  grantCareByEmail(email: string): Promise<ApiResponse<GrantCareResult>>;
+  addCompetitor(payload: AddCompetitorPayload): Promise<ApiResponse<GrantCareResult>>;
+  revokeCare(id: string): Promise<ApiResponse<void>>;
+  checkCompetitorDuplicates(
+    firstName: string,
+    lastName: string,
+    birthDate?: string,
+  ): Promise<ApiResponse<Competitor[]>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
