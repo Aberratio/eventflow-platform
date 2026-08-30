@@ -17,7 +17,8 @@ import {
 import { differenceInCalendarDays, format, isAfter, isBefore, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
-import { getEvents, getFeaturedPartners } from '@/api';
+import { getFeaturedPartners } from '@/api';
+import { getAllEvents } from '@/api/allEvents';
 import { Layout } from '@/components/layout/Layout';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,13 +62,10 @@ const toDate = (value?: string) => {
 
 const eventDate = (event: Event) => toDate(event.startDate || event.date) ?? new Date(event.date);
 
-const isPublicEvent = (event: Event) =>
-  !event.isPrivate && event.status !== 'draft' && event.status !== 'deleted';
-
-const isUpcoming = (event: Event) =>
-  isPublicEvent(event) &&
-  ['active', 'approved'].includes(event.status) &&
-  isAfter(eventDate(event), today);
+// The API only ever returns published, non-private events, so what counts as upcoming is
+// purely a question of the date. Re-deriving visibility here is what let this page and the
+// calendar disagree about which events exist.
+const isUpcoming = (event: Event) => isAfter(eventDate(event), today);
 
 const registrationLabel = (event: Event) => {
   const deadline = toDate(event.registrationDeadline);
@@ -129,182 +127,6 @@ const eventImage = (event: Event) =>
 const byDateAsc = (a: Event, b: Event) => eventDate(a).getTime() - eventDate(b).getTime();
 
 const byDateDesc = (a: Event, b: Event) => eventDate(b).getTime() - eventDate(a).getTime();
-
-const createDemoEvent = ({
-  id,
-  name,
-  slug,
-  discipline,
-  date,
-  city,
-  imageUrl,
-  bannerUrl,
-  status = 'active',
-  featured = false,
-  price = 79,
-  distanceNames = ['5 km', '10 km'],
-}: {
-  id: string;
-  name: string;
-  slug: string;
-  discipline: SportDiscipline;
-  date: string;
-  city: string;
-  imageUrl: string;
-  bannerUrl?: string;
-  status?: Event['status'];
-  featured?: boolean;
-  price?: number;
-  distanceNames?: string[];
-}): Event => ({
-  id,
-  name,
-  slug,
-  discipline,
-  date,
-  startDate: date,
-  endDate: date,
-  location: city,
-  city,
-  description: '',
-  imageUrl,
-  bannerUrl: bannerUrl ?? imageUrl,
-  distances: distanceNames.map((distanceName, index) => ({
-    id: `${id}-distance-${index}`,
-    name: distanceName,
-    length: index === 0 ? 5 : 10,
-    unit: 'km',
-    categories: [],
-    limit: 250,
-    registeredCount: 96 + index * 24,
-    paidCount: 82 + index * 17,
-    price: price + index * 20,
-  })),
-  organizerId: 'demo-organizer',
-  organizerName: 'ZmierzymyCzas',
-  status,
-  registrationDeadline: status === 'past' ? '2026-03-10' : '2026-07-08',
-  registrationStatus: status === 'past' ? 'closed' : 'open',
-  featured,
-  isPrivate: false,
-});
-
-const demoEvents: Event[] = [
-  createDemoEvent({
-    id: 'demo-city-trail',
-    name: 'City Trail Łódź LIVE 2026',
-    slug: 'city-trail-lodz-live-2026',
-    discipline: 'running',
-    date: '2026-07-12',
-    city: 'Łódź',
-    price: 69,
-    featured: true,
-    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=900',
-    bannerUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&h=900&fit=crop',
-  }),
-  createDemoEvent({
-    id: 'demo-krakowski-klasyk',
-    name: 'Krakowski Klasyk Rowerowy 2026',
-    slug: 'krakowski-klasyk-rowerowy-2026',
-    discipline: 'cycling',
-    date: '2026-07-05',
-    city: 'Kraków',
-    price: 89,
-    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=900',
-  }),
-  createDemoEvent({
-    id: 'demo-piwna-mila',
-    name: 'III Lubliniecka Piwna Mila',
-    slug: 'iii-lubliniecka-piwna-mila',
-    discipline: 'running',
-    date: '2026-07-11',
-    city: 'Lubliniec',
-    price: 50,
-    imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900',
-    distanceNames: ['1 mila'],
-  }),
-  createDemoEvent({
-    id: 'demo-triathlon-mazury',
-    name: 'Triathlon Mazury 2026',
-    slug: 'triathlon-mazury-2026',
-    discipline: 'triathlon',
-    date: '2026-08-15',
-    city: 'Giżycko',
-    price: 129,
-    imageUrl: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=900',
-    distanceNames: ['Sprint', 'Olympic'],
-  }),
-  createDemoEvent({
-    id: 'demo-bieszczadzki-bieg',
-    name: 'Bieszczadzki Bieg Górski 2026',
-    slug: 'bieszczadzki-bieg-gorski-2026',
-    discipline: 'running',
-    date: '2026-08-22',
-    city: 'Ustrzyki Górne',
-    price: 79,
-    imageUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=900',
-  }),
-  createDemoEvent({
-    id: 'demo-poznanska-piatka',
-    name: 'Poznańska Piątka 2026',
-    slug: 'poznanska-piatka-2026',
-    discipline: 'running',
-    date: '2026-03-12',
-    city: 'Poznań',
-    price: 59,
-    status: 'past',
-    imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=900',
-  }),
-  createDemoEvent({
-    id: 'demo-nocny-bieg',
-    name: 'Nocny Bieg Wrocław 2026',
-    slug: 'nocny-bieg-wroclaw-2026',
-    discipline: 'running',
-    date: '2026-03-21',
-    city: 'Wrocław',
-    price: 69,
-    status: 'past',
-    imageUrl: 'https://images.unsplash.com/photo-1519505907962-0a6cb0167c73?w=900',
-  }),
-  createDemoEvent({
-    id: 'demo-zimowy-bieg',
-    name: 'Zimowy Bieg Beskidzki 2026',
-    slug: 'zimowy-bieg-beskidzki-2026',
-    discipline: 'running',
-    date: '2026-03-15',
-    city: 'Szczyrk',
-    price: 89,
-    status: 'past',
-    imageUrl: 'https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=900',
-  }),
-  createDemoEvent({
-    id: 'demo-warszawska-dycha',
-    name: 'Warszawska Dycha 2026',
-    slug: 'warszawska-dycha-2026',
-    discipline: 'running',
-    date: '2026-02-14',
-    city: 'Warszawa',
-    price: 49,
-    status: 'past',
-    imageUrl: 'https://images.unsplash.com/photo-1524646349956-1590eacfa324?w=900',
-  }),
-];
-
-const demoPartners: Partner[] = [
-  'FOTODYplom',
-  'MARATONY POLSKIE.PL',
-  'Wikoss Sport',
-  'LABOSPORT Polska',
-  'BIEGANIE.PL',
-  'DECATHLON',
-].map((name, index) => ({
-  id: `demo-partner-${index}`,
-  name,
-  logoUrl: `https://dummyimage.com/180x64/0b121f/8a93a5&text=${encodeURIComponent(name)}`,
-  websiteUrl: '#',
-  featured: true,
-}));
-
 
 const EventMeta = ({ event, compact = false }: { event: Event; compact?: boolean }) => (
   <div
@@ -614,7 +436,7 @@ const Index = () => {
 
   const { data: eventsData } = useQuery({
     queryKey: QUERY_KEYS.events,
-    queryFn: () => getEvents(),
+    queryFn: () => getAllEvents(),
   });
 
   const { data: partnersData } = useQuery({
@@ -622,17 +444,14 @@ const Index = () => {
     queryFn: () => getFeaturedPartners(),
   });
 
-  const events = useMemo(() => {
-    const apiEvents = eventsData?.data ?? [];
-    return apiEvents.length > 0 ? apiEvents : demoEvents;
-  }, [eventsData?.data]);
-  const partners = useMemo(() => {
-    const apiPartners = partnersData?.data ?? [];
-    return apiPartners.length > 0 ? apiPartners : demoPartners;
-  }, [partnersData?.data]);
+  // No hard-coded fallback: this page used to invent a handful of events whenever the API
+  // returned nothing, which is why the home page showed races the calendar had never heard
+  // of. An empty database should look empty.
+  const events = useMemo(() => eventsData ?? [], [eventsData]);
+  const partners = useMemo(() => partnersData?.data ?? [], [partnersData?.data]);
 
   const view = useMemo(() => {
-    const publicEvents = events.filter(isPublicEvent);
+    const publicEvents = events;
     const upcoming = publicEvents.filter(isUpcoming).sort(byDateAsc);
     const closing = upcoming
       .filter((event) => registrationLabel(event) === 'Zapisy otwarte')

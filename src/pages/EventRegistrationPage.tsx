@@ -238,7 +238,11 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
     const registeredFor =
       registeringForOther && selectedGrantor
-        ? { userId: selectedGrantor.grantorId, userName: selectedGrantor.grantorName, userEmail: selectedGrantor.grantorEmail }
+        ? {
+            userId: selectedGrantor.grantorId,
+            userName: selectedGrantor.grantorName,
+            userEmail: selectedGrantor.grantorEmail,
+          }
         : { userId: user.id, userName: user.name, userEmail: user.email };
 
     setIsSubmitting(true);
@@ -254,6 +258,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         distanceName: data.distanceName,
         category: data.category,
         teamName: data.teamName,
+        relayMembers: data.relayMembers,
         discountCode: data.discountCode,
         discountAmount: data.discountAmount,
         pricePaid: Math.max(0, data.price - (data.discountAmount ?? 0)),
@@ -371,7 +376,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                 />
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="register-for-other" className="cursor-pointer text-sm font-medium">
+                  <Label
+                    htmlFor="register-for-other"
+                    className="cursor-pointer text-sm font-medium"
+                  >
                     Zapisuję kogoś innego
                   </Label>
                 </div>
@@ -431,9 +439,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                     </div>
                   ) : (
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-muted-foreground">
-                        Kogo zapisujesz?
-                      </Label>
+                      <Label className="text-xs text-muted-foreground">Kogo zapisujesz?</Label>
                       <Select value={selectedGrantorId} onValueChange={setSelectedGrantorId}>
                         <SelectTrigger className="h-8 text-sm">
                           <SelectValue placeholder="Wybierz osobę..." />

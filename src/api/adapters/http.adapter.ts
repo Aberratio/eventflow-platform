@@ -31,6 +31,10 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
   discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
   registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
+  registration_relay_team_required: 'Ten dystans wymaga wyboru drużyny sztafetowej.',
+  registration_relay_team_full: 'Wybrana drużyna sztafetowa ma już komplet zawodników.',
+  registration_relay_team_incomplete_deadline:
+    'Deadline kompletowania składu minął. Drużyna musi mieć wymagany minimalny skład.',
   virtual_event_required: 'Wynik można zgłosić tylko dla wydarzenia wirtualnego.',
   virtual_result_window_closed: 'Wynik można zgłosić tylko w aktywnym oknie startowym.',
   virtual_result_registration_required: 'Nie znaleziono aktywnej rejestracji na ten dystans.',

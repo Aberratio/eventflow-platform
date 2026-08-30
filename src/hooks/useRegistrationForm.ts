@@ -10,6 +10,7 @@ import {
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import type { RelayTeamMember } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 import { roundToCents } from '@/lib/discountValue';
@@ -44,6 +45,7 @@ export const useRegistrationForm = (event: Event) => {
   const [teamName, setTeamName] = useState('');
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
+  const [relayMembers, setRelayMembers] = useState<RelayTeamMember[]>([]);
 
   // VIP
   const [selectedVipId, setSelectedVipId] = useState<string>('');
@@ -81,7 +83,19 @@ export const useRegistrationForm = (event: Event) => {
     event.merchandise &&
     event.merchandise.length > 0;
   const hasInsurance = (formCfg?.collectInsurance ?? true) && event.insuranceOption?.enabled;
-  const hasTeamOption = formCfg?.collectTeam ?? true;
+  const isRelayDistance = selectedDistance?.startType === 'relay';
+  const relayMaxTeamSize = selectedDistance?.relayMaxTeamSize;
+  const relayMinTeamSize = selectedDistance?.relayMinTeamSize;
+  const relayTeamCompletionDeadline = selectedDistance?.relayTeamCompletionDeadline;
+  const hasTeamOption = (formCfg?.collectTeam ?? true) || isRelayDistance;
+  const relayTeamSizeLabel =
+    selectedDistance?.relayMinTeamSize && selectedDistance?.relayMaxTeamSize
+      ? `${selectedDistance.relayMinTeamSize}-${selectedDistance.relayMaxTeamSize} os.`
+      : selectedDistance?.relayMinTeamSize
+        ? `od ${selectedDistance.relayMinTeamSize} os.`
+        : selectedDistance?.relayMaxTeamSize
+          ? `do ${selectedDistance.relayMaxTeamSize} os.`
+          : '';
 
   const { data: eventRegsData } = useQuery({
     queryKey: ['registrations', 'event', event.id],
@@ -91,8 +105,11 @@ export const useRegistrationForm = (event: Event) => {
   });
 
   const existingTeams = useMemo(
-    () => getExistingTeamsForEvent(eventRegsData ?? [], event.id),
-    [eventRegsData, event.id],
+    () =>
+      getExistingTeamsForEvent(eventRegsData ?? [], event.id, selectedDistanceId).filter(
+        (team) => !relayMaxTeamSize || team.memberCount < relayMaxTeamSize,
+      ),
+    [eventRegsData, event.id, selectedDistanceId, relayMaxTeamSize],
   );
 
   const { data: insuranceSettings } = useQuery({
@@ -115,6 +132,24 @@ export const useRegistrationForm = (event: Event) => {
     steps.push({ id: 6, name: 'Podsumowanie' });
     return steps;
   }, [hasTeamOption, hasInsurance, hasMerchandise]);
+
+  useEffect(() => {
+    if (isRelayDistance) {
+      setWantsTeam(true);
+    } else if (!(formCfg?.collectTeam ?? true)) {
+      setWantsTeam(false);
+    }
+  }, [formCfg?.collectTeam, isRelayDistance]);
+
+  useEffect(() => {
+    if (
+      teamMode === 'join' &&
+      selectedExistingTeam &&
+      !existingTeams.some((team) => team.name === selectedExistingTeam)
+    ) {
+      setSelectedExistingTeam('');
+    }
+  }, [existingTeams, selectedExistingTeam, teamMode]);
 
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
 
@@ -189,6 +224,53 @@ export const useRegistrationForm = (event: Event) => {
   const getFinalTeamName = (): string | undefined => {
     if (!wantsTeam) return undefined;
     return teamMode === 'create' ? teamName.trim() || undefined : selectedExistingTeam || undefined;
+  };
+
+  const filledRelayMembers = useMemo(
+    () => relayMembers.filter((member) => member.name.trim() || member.email?.trim()),
+    [relayMembers],
+  );
+
+  const normalizedRelayMembers = useMemo(
+    () =>
+      filledRelayMembers.map((member) => ({
+        ...member,
+        name: member.name.trim(),
+        email: member.email?.trim() || undefined,
+      })),
+    [filledRelayMembers],
+  );
+
+  const relayTeamMemberCount =
+    isRelayDistance && teamMode === 'create' ? 1 + normalizedRelayMembers.length : 1;
+  const relayAdditionalMemberLimit = relayMaxTeamSize ? Math.max(relayMaxTeamSize - 1, 0) : 20;
+  const relayTeamIsBelowMinimum =
+    !!isRelayDistance &&
+    !!relayMinTeamSize &&
+    teamMode === 'create' &&
+    relayTeamMemberCount < relayMinTeamSize;
+  const relayMemberLimitReached = normalizedRelayMembers.length >= relayAdditionalMemberLimit;
+  const relayRosterIsValid =
+    !isRelayDistance ||
+    teamMode !== 'create' ||
+    (normalizedRelayMembers.length <= relayAdditionalMemberLimit &&
+      normalizedRelayMembers.every(
+        (member) => member.name.length >= 2 && (!member.email || member.email.includes('@')),
+      ));
+
+  const addRelayMember = () => {
+    if (relayMemberLimitReached) return;
+    setRelayMembers((prev) => [...prev, { id: crypto.randomUUID(), name: '', email: '' }]);
+  };
+
+  const updateRelayMember = (id: string, patch: Partial<RelayTeamMember>) => {
+    setRelayMembers((prev) =>
+      prev.map((member) => (member.id === id ? { ...member, ...patch } : member)),
+    );
+  };
+
+  const removeRelayMember = (id: string) => {
+    setRelayMembers((prev) => prev.filter((member) => member.id !== id));
   };
 
   const handleApplyDiscount = () => {
@@ -267,7 +349,9 @@ export const useRegistrationForm = (event: Event) => {
         return !!selectedCategory;
       }
       case 25:
+        if (isRelayDistance && !wantsTeam) return false;
         if (!wantsTeam) return true;
+        if (isRelayDistance && !relayRosterIsValid) return false;
         if (teamMode === 'create') return teamName.trim().length >= 3 && !teamNameError;
         return !!selectedExistingTeam;
       case 3:
@@ -308,6 +392,10 @@ export const useRegistrationForm = (event: Event) => {
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
       teamName: getFinalTeamName(),
+      relayMembers:
+        isRelayDistance && teamMode === 'create' && normalizedRelayMembers.length > 0
+          ? normalizedRelayMembers
+          : undefined,
       vipPriceId: activeVip ? selectedVipId : undefined,
       vipPriceName: activeVip?.name,
       vipCustomFieldValue: activeVip?.customFieldLabel ? vipCustomFieldValue : undefined,
@@ -355,6 +443,15 @@ export const useRegistrationForm = (event: Event) => {
     selectedExistingTeam,
     setSelectedExistingTeam,
     teamNameError,
+    relayMembers,
+    addRelayMember,
+    updateRelayMember,
+    removeRelayMember,
+    normalizedRelayMembers,
+    relayTeamMemberCount,
+    relayTeamIsBelowMinimum,
+    relayMemberLimitReached,
+    relayRosterIsValid,
     existingTeams,
     selectedVipId,
     setSelectedVipId,
@@ -366,6 +463,11 @@ export const useRegistrationForm = (event: Event) => {
     hasMerchandise,
     hasInsurance,
     hasTeamOption,
+    isRelayDistance,
+    relayMinTeamSize,
+    relayMaxTeamSize,
+    relayTeamCompletionDeadline,
+    relayTeamSizeLabel,
     age,
     insurancePrice,
     activeVip,

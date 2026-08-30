@@ -40,6 +40,7 @@ import {
   GadgetDocument,
   GadgetQuantityMode,
   GadgetImage,
+  DistanceStartType,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -49,6 +50,10 @@ export interface DistanceFormData {
   noLength: boolean;
   length: string;
   unit: 'km' | 'm';
+  startType: DistanceStartType;
+  relayMinTeamSize: string;
+  relayMaxTeamSize: string;
+  relayTeamCompletionDeadline: string;
   price: string;
   officePrice: string;
   limit: string;
@@ -544,6 +549,10 @@ export const useEventFormState = () => {
       unit: d.unit,
       noName: !!d.length && d.name === formatDistanceName(d.length.toString(), d.unit),
       name: !!d.length && d.name === formatDistanceName(d.length.toString(), d.unit) ? '' : d.name,
+      startType: d.startType || (d.relayMinTeamSize || d.relayMaxTeamSize ? 'relay' : 'individual'),
+      relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
+      relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
+      relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
       price: d.price.toString(),
       officePrice: d.officePrice?.toString() || '',
       limit: d.limit?.toString() || '',
@@ -666,6 +675,11 @@ export const useEventFormState = () => {
         noName: !!d.length && d.name === formatDistanceName(d.length.toString(), d.unit),
         name:
           !!d.length && d.name === formatDistanceName(d.length.toString(), d.unit) ? '' : d.name,
+        startType:
+          d.startType || (d.relayMinTeamSize || d.relayMaxTeamSize ? 'relay' : 'individual'),
+        relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
+        relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
+        relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
         price: d.price.toString(),
         officePrice: d.officePrice?.toString() || '',
         limit: d.limit?.toString() || '',
@@ -750,6 +764,10 @@ export const useEventFormState = () => {
         noLength: false,
         length: '',
         unit: 'km',
+        startType: 'individual',
+        relayMinTeamSize: '',
+        relayMaxTeamSize: '',
+        relayTeamCompletionDeadline: '',
         price: '',
         officePrice: '',
         limit: '',
@@ -779,6 +797,10 @@ export const useEventFormState = () => {
         noLength: false,
         length: template.length,
         unit: template.unit,
+        startType: 'individual',
+        relayMinTeamSize: '',
+        relayMaxTeamSize: '',
+        relayTeamCompletionDeadline: '',
         price: '',
         officePrice: '',
         limit: '',
@@ -810,7 +832,8 @@ export const useEventFormState = () => {
       | DistanceRouteFile[]
       | PriceTier[]
       | PriceTierMode
-      | ParticipantCountType,
+      | ParticipantCountType
+      | DistanceStartType,
   ) => {
     setDistances((prev) => {
       const updated = [...prev];
@@ -1120,6 +1143,8 @@ export const useEventFormState = () => {
       const priceValue = parseNumberInput(dist.price);
       const limitValue = parseNumberInput(dist.limit);
       const officePriceValue = parseNumberInput(dist.officePrice);
+      const relayMinTeamSize = parseNumberInput(dist.relayMinTeamSize);
+      const relayMaxTeamSize = parseNumberInput(dist.relayMaxTeamSize);
 
       if (
         (!dist.noName && !dist.name.trim()) ||
@@ -1142,6 +1167,41 @@ export const useEventFormState = () => {
           'distances',
           'Cena w biurze zawodow musi byc poprawna liczba i nie moze byc ujemna',
         );
+      }
+      if (dist.startType === 'relay') {
+        if (
+          isBlank(dist.relayMinTeamSize) ||
+          relayMinTeamSize === null ||
+          !isPositiveInteger(relayMinTeamSize)
+        ) {
+          addError('distances', 'Podaj minimalna liczbe zawodnikow w sztafecie');
+        }
+        if (
+          isBlank(dist.relayMaxTeamSize) ||
+          relayMaxTeamSize === null ||
+          !isPositiveInteger(relayMaxTeamSize)
+        ) {
+          addError('distances', 'Podaj maksymalna liczbe zawodnikow w sztafecie');
+        }
+        if (
+          relayMinTeamSize !== null &&
+          relayMaxTeamSize !== null &&
+          relayMaxTeamSize < relayMinTeamSize
+        ) {
+          addError(
+            'distances',
+            'Maksymalna liczba zawodnikow w sztafecie nie moze byc mniejsza niz minimalna',
+          );
+        }
+        if (isBlank(dist.relayTeamCompletionDeadline)) {
+          addError('distances', 'Podaj deadline kompletowania skladu sztafety');
+        }
+        if (dist.relayTeamCompletionDeadline && date && dist.relayTeamCompletionDeadline > date) {
+          addError(
+            'distances',
+            'Deadline kompletowania skladu sztafety nie moze byc pozniejszy niz data wydarzenia',
+          );
+        }
       }
       if (skipSystemPaymentConfig) continue;
 
@@ -1287,6 +1347,8 @@ export const useEventFormState = () => {
       const priceValue = parseNumberInput(dist.price);
       const limitValue = parseNumberInput(dist.limit);
       const officePriceValue = parseNumberInput(dist.officePrice);
+      const relayMinTeamSize = parseNumberInput(dist.relayMinTeamSize);
+      const relayMaxTeamSize = parseNumberInput(dist.relayMaxTeamSize);
 
       if (!dist.noName && !dist.name.trim())
         errors[`distance_${i}_name`] = 'Nazwa dystansu jest wymagana';
@@ -1304,6 +1366,33 @@ export const useEventFormState = () => {
       if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
         errors[`distance_${i}_officePrice`] =
           'Cena biurowa musi być poprawną liczbą i nie może być ujemna';
+      }
+      if (dist.startType === 'relay') {
+        if (
+          isBlank(dist.relayMinTeamSize) ||
+          relayMinTeamSize === null ||
+          !isPositiveInteger(relayMinTeamSize)
+        ) {
+          errors[`distance_${i}_relayMinTeamSize`] =
+            'Podaj minimalną liczbę zawodników w sztafecie';
+        }
+        if (
+          isBlank(dist.relayMaxTeamSize) ||
+          relayMaxTeamSize === null ||
+          !isPositiveInteger(relayMaxTeamSize)
+        ) {
+          errors[`distance_${i}_relayMaxTeamSize`] =
+            'Podaj maksymalną liczbę zawodników w sztafecie';
+        } else if (relayMinTeamSize !== null && relayMaxTeamSize < relayMinTeamSize) {
+          errors[`distance_${i}_relayMaxTeamSize`] = 'Maksimum nie może być mniejsze niż minimum';
+        }
+        if (isBlank(dist.relayTeamCompletionDeadline)) {
+          errors[`distance_${i}_relayTeamCompletionDeadline`] =
+            'Deadline kompletowania składu jest wymagany';
+        } else if (date && dist.relayTeamCompletionDeadline > date) {
+          errors[`distance_${i}_relayTeamCompletionDeadline`] =
+            'Deadline nie może być późniejszy niż data wydarzenia';
+        }
       }
       if (registrationMode !== 'external_embed') {
         for (const [j, tier] of dist.priceTiers.entries()) {
@@ -1503,6 +1592,17 @@ export const useEventFormState = () => {
         name: dist.noName ? formatDistanceName(dist.length, dist.unit) : dist.name,
         length: dist.noLength ? undefined : (parseNumberInput(dist.length) ?? undefined),
         unit: dist.unit,
+        startType: dist.startType,
+        relayMinTeamSize:
+          dist.startType === 'relay'
+            ? (parseNumberInput(dist.relayMinTeamSize) ?? undefined)
+            : undefined,
+        relayMaxTeamSize:
+          dist.startType === 'relay'
+            ? (parseNumberInput(dist.relayMaxTeamSize) ?? undefined)
+            : undefined,
+        relayTeamCompletionDeadline:
+          dist.startType === 'relay' ? dist.relayTeamCompletionDeadline || undefined : undefined,
         price: parseNumberInput(dist.price) ?? 0,
         officePrice: parseNumberInput(dist.officePrice) ?? undefined,
         infoHtml: dist.infoHtml || undefined,

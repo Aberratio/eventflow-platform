@@ -20,6 +20,15 @@ const formatLength = (length: number, unit: 'km' | 'm'): string => {
   return `${formatted} ${unit}`;
 };
 
+const formatRelayTeamSize = (distance: Distance): string => {
+  const min = distance.relayMinTeamSize;
+  const max = distance.relayMaxTeamSize;
+  if (min && max) return `${min}-${max} os.`;
+  if (min) return `od ${min} os.`;
+  if (max) return `do ${max} os.`;
+  return 'sztafeta';
+};
+
 /** Expand short gender codes to readable Polish labels */
 const expandCategoryName = (raw: string): string => {
   return raw
@@ -28,7 +37,13 @@ const expandCategoryName = (raw: string): string => {
     .replace(/\bOpen\b/gi, 'Open');
 };
 
-const DistanceCard = ({ distance, singleDistance }: { distance: Distance; singleDistance: boolean }) => {
+const DistanceCard = ({
+  distance,
+  singleDistance,
+}: {
+  distance: Distance;
+  singleDistance: boolean;
+}) => {
   const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
   const isFull = spotsLeft !== null && spotsLeft <= 0;
   const { price: currentPrice, tierName } = getCurrentPrice(distance);
@@ -55,6 +70,16 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
           <div className="flex-1 space-y-3">
             <div>
               <h4 className="text-lg font-semibold">{distance.name}</h4>
+              {distance.startType === 'relay' && (
+                <Badge variant="outline" className="mt-1">
+                  Sztafeta: {formatRelayTeamSize(distance)}
+                </Badge>
+              )}
+              {distance.startType === 'relay' && distance.relayTeamCompletionDeadline && (
+                <p className="mt-1 text-xs text-foreground/60">
+                  Sklad druzyny trzeba uzupelnic do {distance.relayTeamCompletionDeadline}
+                </p>
+              )}
               {distance.length != null && (
                 <div className="text-2xl font-bold text-primary">
                   {formatLength(distance.length, distance.unit)}
@@ -205,10 +230,7 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
                       vip.discountValue,
                     );
                     return (
-                      <div
-                        key={vip.id}
-                        className="flex justify-between text-xs text-foreground/65"
-                      >
+                      <div key={vip.id} className="flex justify-between text-xs text-foreground/65">
                         <span>{vip.name}</span>
                         <span className="font-medium text-primary">{vipPrice} zł</span>
                       </div>
@@ -238,11 +260,14 @@ const DistanceCard = ({ distance, singleDistance }: { distance: Distance; single
               {distance.registeredCount.toLocaleString()}
               {distance.limit && ` / ${distance.limit.toLocaleString()}`} zapisanych
             </div>
-            {spotsLeft !== null && distance.limit != null && spotsLeft <= distance.limit * 0.2 && spotsLeft > 0 && (
-              <Badge variant="destructive" className="mt-1">
-                Ostatnie {spotsLeft} miejsc!
-              </Badge>
-            )}
+            {spotsLeft !== null &&
+              distance.limit != null &&
+              spotsLeft <= distance.limit * 0.2 &&
+              spotsLeft > 0 && (
+                <Badge variant="destructive" className="mt-1">
+                  Ostatnie {spotsLeft} miejsc!
+                </Badge>
+              )}
             {isFull && (
               <Badge variant="secondary" className="mt-1">
                 Brak miejsc
@@ -307,7 +332,11 @@ const CategorySection = ({
 export const EventDistancesTab = ({ event }: EventDistancesTabProps) => (
   <div className="space-y-4">
     {event.distances.map((distance) => (
-      <DistanceCard key={distance.id} distance={distance} singleDistance={event.distances.length === 1} />
+      <DistanceCard
+        key={distance.id}
+        distance={distance}
+        singleDistance={event.distances.length === 1}
+      />
     ))}
   </div>
 );

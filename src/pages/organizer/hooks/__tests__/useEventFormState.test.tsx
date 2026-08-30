@@ -68,6 +68,8 @@ describe('useEventFormState event wizard validation', () => {
   beforeEach(() => {
     toast.mockClear();
     navigate.mockClear();
+    vi.mocked(createEvent).mockClear();
+    vi.mocked(getOrganizerEventLimit).mockClear();
     vi.mocked(getOrganizerEventLimit).mockResolvedValue({ success: true, data: limit });
     vi.mocked(createEvent).mockResolvedValue({
       success: true,
@@ -196,6 +198,10 @@ describe('useEventFormState event wizard validation', () => {
     act(() => {
       fillRequiredBasics(result.current);
       addValidDistance(result.current);
+      result.current.updateDistance(0, 'startType', 'relay');
+      result.current.updateDistance(0, 'relayMinTeamSize', '2');
+      result.current.updateDistance(0, 'relayMaxTeamSize', '4');
+      result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
       result.current.updateDistance(0, 'officePrice', '120,50');
       result.current.updateDistance(0, 'limit', '250');
       result.current.addGadget();
@@ -219,6 +225,10 @@ describe('useEventFormState event wizard validation', () => {
             price: 99,
             officePrice: 120.5,
             limit: 250,
+            startType: 'relay',
+            relayMinTeamSize: 2,
+            relayMaxTeamSize: 4,
+            relayTeamCompletionDeadline: '2027-05-05',
           }),
         ],
         merchandise: [
@@ -229,5 +239,26 @@ describe('useEventFormState event wizard validation', () => {
         ],
       }),
     );
+  });
+
+  it('rejects invalid relay team size range', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.updateDistance(0, 'startType', 'relay');
+      result.current.updateDistance(0, 'relayMinTeamSize', '5');
+      result.current.updateDistance(0, 'relayMaxTeamSize', '3');
+      result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).not.toHaveBeenCalled();
+    expect(result.current.fieldValidationErrors.distance_0_relayMaxTeamSize).toContain('Maksimum');
   });
 });

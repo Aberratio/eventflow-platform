@@ -174,14 +174,21 @@ export const validateTeamName = (name: string): { valid: boolean; error?: string
 export const getExistingTeamsForEvent = (
   registrations: Registration[],
   eventId: string,
+  distanceId?: string,
 ): Array<{ name: string; memberCount: number }> => {
   const teamsMap = new Map<string, number>();
 
   registrations
-    .filter((r) => r.eventId === eventId && r.teamName && r.status !== 'cancelled')
+    .filter(
+      (r) =>
+        r.eventId === eventId &&
+        (!distanceId || r.distanceId === distanceId) &&
+        r.teamName &&
+        r.status !== 'cancelled',
+    )
     .forEach((r) => {
       const count = teamsMap.get(r.teamName!) || 0;
-      teamsMap.set(r.teamName!, count + 1);
+      teamsMap.set(r.teamName!, count + 1 + (r.relayMembers?.length ?? 0));
     });
 
   return Array.from(teamsMap.entries())

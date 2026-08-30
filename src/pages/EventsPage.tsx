@@ -37,7 +37,7 @@ import {
   EventFiltersSidebar,
   EventFiltersDrawerTrigger,
 } from '@/components/filters/EventFiltersSidebar';
-import { getEvents } from '@/api';
+import { getAllEvents } from '@/api/allEvents';
 import { QUERY_KEYS } from '@/constants';
 import { useEventFilters, distanceRangeOptions } from '@/hooks/useEventFilters';
 import { cn } from '@/lib/utils';
@@ -554,13 +554,6 @@ const MobileStatCard = ({
 };
 
 const EventsPage = () => {
-  const { data: eventsData, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.events,
-    queryFn: () => getEvents(),
-  });
-
-  const allEvents = useMemo(() => eventsData?.data ?? [], [eventsData?.data]);
-
   const {
     filters,
     updateFilter,
@@ -570,15 +563,16 @@ const EventsPage = () => {
     hasActiveFilters,
   } = useEventFilters();
 
+  const { data: allEvents, isLoading } = useQuery({
+    queryKey: QUERY_KEYS.events,
+    queryFn: () => getAllEvents(),
+  });
+
   const [compact, setCompact] = useState(false);
 
-  const visibleEvents = useMemo(
-    () =>
-      allEvents
-        .filter((event) => !event.isPrivate)
-        .filter((event) => ['active', 'past', 'archived', 'deleted'].includes(event.status)),
-    [allEvents],
-  );
+  // The API already returns only published, non-private events, so there is nothing left
+  // to filter out here — doing it again is how this page and the home page drifted apart.
+  const visibleEvents = useMemo(() => allEvents ?? [], [allEvents]);
 
   const availableYears = useMemo(() => {
     const years = new Set<number>();

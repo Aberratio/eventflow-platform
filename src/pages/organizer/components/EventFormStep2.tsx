@@ -907,6 +907,89 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   </div>
                 </div>
 
+                <div className="grid gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-2">
+                    <HelpLabel description="Okresla, czy zapis na ten dystans jest indywidualny, czy sztafetowy. Dla sztafety uczestnik musi wybrac albo utworzyc druzyne.">
+                      Typ startu
+                    </HelpLabel>
+                    <Select
+                      value={dist.startType}
+                      onValueChange={(value: 'individual' | 'relay') => {
+                        form.updateDistance(index, 'startType', value);
+                        if (value === 'individual') {
+                          form.updateDistance(index, 'relayMinTeamSize', '');
+                          form.updateDistance(index, 'relayMaxTeamSize', '');
+                          form.updateDistance(index, 'relayTeamCompletionDeadline', '');
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="individual">Indywidualny</SelectItem>
+                        <SelectItem value="relay">Sztafeta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {dist.startType === 'relay' && (
+                    <>
+                      <div className="space-y-2">
+                        <HelpLabel description="Minimalna liczba zawodnikow wymagana w jednej druzynie sztafetowej.">
+                          Od ilu zawodnikow *
+                        </HelpLabel>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={dist.relayMinTeamSize}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'relayMinTeamSize', e.target.value)
+                          }
+                          placeholder="2"
+                          className={inputError(!!fe[`distance_${index}_relayMinTeamSize`])}
+                        />
+                        <FieldError message={fe[`distance_${index}_relayMinTeamSize`]} />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Maksymalna liczba zawodnikow, ktorzy moga nalezec do jednej druzyny sztafetowej.">
+                          Do ilu zawodnikow *
+                        </HelpLabel>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={dist.relayMaxTeamSize}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'relayMaxTeamSize', e.target.value)
+                          }
+                          placeholder="4"
+                          className={inputError(!!fe[`distance_${index}_relayMaxTeamSize`])}
+                        />
+                        <FieldError message={fe[`distance_${index}_relayMaxTeamSize`]} />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Data, do ktorej kapitan druzyny musi uzupelnic wymagany sklad sztafety.">
+                          Deadline skladu *
+                        </HelpLabel>
+                        <Input
+                          type="date"
+                          value={dist.relayTeamCompletionDeadline}
+                          onChange={(e) =>
+                            form.updateDistance(
+                              index,
+                              'relayTeamCompletionDeadline',
+                              e.target.value,
+                            )
+                          }
+                          className={inputError(
+                            !!fe[`distance_${index}_relayTeamCompletionDeadline`],
+                          )}
+                        />
+                        <FieldError message={fe[`distance_${index}_relayTeamCompletionDeadline`]} />
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <HelpLabel description="Opcjonalny opis widoczny przy dystansie, np. limit wieku, charakter trasy, przewyższenia, wymagany sprzęt albo ważne zasady dla tego wariantu.">
                     Dodatkowe informacje o dystansie

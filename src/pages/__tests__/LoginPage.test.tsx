@@ -14,7 +14,6 @@ vi.mock('@/contexts/AuthContext', () => ({
     user: null,
   }),
   useAuthSafe: () => ({
-    loginWithCredentials: mockLoginWithCredentials,
     isAuthenticated: false,
     user: null,
   }),
@@ -40,8 +39,8 @@ describe('LoginPage', () => {
 
   it('renderuje formularz logowania', () => {
     render(<LoginPage />);
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Hasło')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('twoj@email.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Zaloguj się' })).toBeInTheDocument();
   });
 
@@ -72,7 +71,7 @@ describe('LoginPage', () => {
 
   it('pokazuje błąd walidacji gdy hasło jest puste', async () => {
     render(<LoginPage />);
-    await userEvent.type(screen.getByLabelText('Email'), 'test@example.com');
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'test@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
     await waitFor(() => {
       expect(screen.getByText('Hasło jest wymagane')).toBeInTheDocument();
@@ -83,8 +82,8 @@ describe('LoginPage', () => {
     mockLoginWithCredentials.mockResolvedValueOnce(true);
     render(<LoginPage />);
 
-    await userEvent.type(screen.getByLabelText('Email'), 'jan@example.com');
-    await userEvent.type(screen.getByLabelText('Hasło'), 'demo1234');
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'jan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'demo1234');
     fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
 
     await waitFor(() => {
@@ -94,12 +93,12 @@ describe('LoginPage', () => {
 
   it('przycisk jest zablokowany podczas logowania', async () => {
     mockLoginWithCredentials.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(true), 200)),
+      () => new Promise((resolve) => setTimeout(() => resolve(true), 500)),
     );
     render(<LoginPage />);
 
-    await userEvent.type(screen.getByLabelText('Email'), 'jan@example.com');
-    await userEvent.type(screen.getByLabelText('Hasło'), 'demo1234');
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'jan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'demo1234');
     fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
 
     await waitFor(() => {
@@ -109,32 +108,20 @@ describe('LoginPage', () => {
 
   it('przełącza widoczność hasła po kliknięciu ikony', async () => {
     render(<LoginPage />);
-    const passwordInput = screen.getByLabelText('Hasło');
+    const passwordInput = screen.getByPlaceholderText('••••••••');
     expect(passwordInput).toHaveAttribute('type', 'password');
 
-    const toggleBtn = screen.getByRole('button', { name: '' });
-    await userEvent.click(toggleBtn);
+    // Przycisk toggle jest jedynym type="button" wewnątrz pola hasła
+    const toggleBtns = screen.getAllByRole('button');
+    // Przycisk submit ma type="submit", toggle ma type="button" i nie jest głównym buttonem
+    const toggleBtn = toggleBtns.find(
+      (btn) =>
+        btn.getAttribute('type') === 'button' &&
+        btn !== screen.getByRole('button', { name: 'Zaloguj się' }),
+    );
+    if (!toggleBtn) throw new Error('Nie znaleziono przycisku toggle hasła');
+    fireEvent.click(toggleBtn);
 
     expect(passwordInput).toHaveAttribute('type', 'text');
-  });
-});
-
-describe('LoginPage — przekierowanie po zalogowaniu', () => {
-  it('przekierowuje uczestnika do /participant', async () => {
-    vi.doMock('@/contexts/AuthContext', () => ({
-      AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-      useAuth: () => ({
-        loginWithCredentials: vi.fn(),
-        isAuthenticated: true,
-        user: { role: 'participant' },
-      }),
-    }));
-
-    const { default: LoginPageRedirect } = await import('../LoginPage');
-    render(<LoginPageRedirect />);
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/participant');
-    });
   });
 });

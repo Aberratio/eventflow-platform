@@ -5,6 +5,7 @@ export type RegistrationStatus = 'open' | 'closed' | 'none';
 export type PriceTierMode = 'date' | 'participants';
 export type ParticipantCountType = 'registered' | 'paid';
 export type PriceTierDiscountType = 'percent' | 'fixed';
+export type DistanceStartType = 'individual' | 'relay';
 
 export interface VipPrice {
   id: string;
@@ -115,6 +116,10 @@ export interface Distance {
   length: number | null;
   unit: 'km' | 'm';
   categories: string[];
+  startType?: DistanceStartType;
+  relayMinTeamSize?: number;
+  relayMaxTeamSize?: number;
+  relayTeamCompletionDeadline?: string;
   ageCategories?: AgeCategory[];
   specialCategories?: SpecialCategory[];
   limit?: number;

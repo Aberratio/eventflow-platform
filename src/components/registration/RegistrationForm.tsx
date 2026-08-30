@@ -38,7 +38,7 @@ import {
   UserCog,
   Star,
 } from 'lucide-react';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import { Event, EventMerchandise, MerchandiseOrder, RelayTeamMember } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -68,6 +68,7 @@ export interface RegistrationData {
   insurancePrice?: number;
   totalAmount: number;
   teamName?: string;
+  relayMembers?: RelayTeamMember[];
   vipPriceId?: string;
   vipPriceName?: string;
   vipCustomFieldValue?: string;
@@ -346,6 +347,14 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                     </div>
                   )}
                   <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    {distance.startType === 'relay' && (
+                      <Badge variant="outline">
+                        Sztafeta
+                        {distance.relayMinTeamSize && distance.relayMaxTeamSize
+                          ? `: ${distance.relayMinTeamSize}-${distance.relayMaxTeamSize} os.`
+                          : ''}
+                      </Badge>
+                    )}
                     {isFull ? (
                       <Badge variant="destructive">Brak miejsc</Badge>
                     ) : spotsLeft !== null && spotsLeft <= 50 ? (
@@ -603,8 +612,12 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                       wziąć udział, możesz:
                     </p>
                     <ul className="ml-4 list-disc space-y-0.5">
-                      <li>zmienić dane (płeć, rok urodzenia) w swoim profilu, jeśli zawierają błąd,</li>
-                      <li>zalogować się na właściwe konto — zapisy możliwe tylko z własnego profilu,</li>
+                      <li>
+                        zmienić dane (płeć, rok urodzenia) w swoim profilu, jeśli zawierają błąd,
+                      </li>
+                      <li>
+                        zalogować się na właściwe konto — zapisy możliwe tylko z własnego profilu,
+                      </li>
                       <li>skontaktować się z organizatorem, jeśli uważasz, że to pomyłka.</li>
                     </ul>
                   </AlertDescription>
@@ -737,29 +750,41 @@ const TeamStep = ({ form }: { form: FormHook }) => (
   <Card>
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
-        <Users className="h-5 w-5" /> Zapis drużynowy (opcjonalne)
+        <Users className="h-5 w-5" />{' '}
+        {form.isRelayDistance ? 'Zapis sztafetowy' : 'Zapis drużynowy (opcjonalne)'}
       </CardTitle>
       <CardDescription>
-        Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych
+        {form.isRelayDistance
+          ? `Ten dystans wymaga druzyny${form.relayTeamSizeLabel ? `: ${form.relayTeamSizeLabel}` : ''}.`
+          : 'Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych'}
       </CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
       <div
         className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsTeam ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-        onClick={() => form.setWantsTeam(!form.wantsTeam)}
+        onClick={() => {
+          if (!form.isRelayDistance) form.setWantsTeam(!form.wantsTeam);
+        }}
       >
         <div className="flex items-start gap-3">
           <Checkbox
             id="team"
             checked={form.wantsTeam}
-            onCheckedChange={(checked) => form.setWantsTeam(checked === true)}
+            disabled={form.isRelayDistance}
+            onCheckedChange={(checked) => {
+              if (!form.isRelayDistance) form.setWantsTeam(checked === true);
+            }}
           />
           <div className="flex-1">
             <label htmlFor="team" className="cursor-pointer font-medium">
-              Chcę zapisać się jako część drużyny
+              {form.isRelayDistance
+                ? 'Ten dystans jest sztafeta'
+                : 'Chcę zapisać się jako część drużyny'}
             </label>
             <p className="mt-1 text-sm text-muted-foreground">
-              Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.
+              {form.isRelayDistance
+                ? 'Utworz druzyne sztafetowa albo dolacz do druzyny, ktora ma jeszcze wolne miejsce.'
+                : 'Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.'}
             </p>
           </div>
         </div>
@@ -846,6 +871,77 @@ const TeamStep = ({ form }: { form: FormHook }) => (
               )}
             </div>
           </RadioGroup>
+
+          {form.isRelayDistance && form.teamMode === 'create' && (
+            <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+              <div>
+                <Label className="text-sm font-medium">Sklad sztafety</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Kapitan jest liczony jako pierwszy zawodnik. Pozostale osoby mozesz wpisac teraz
+                  albo uzupelnic pozniej
+                  {form.relayTeamCompletionDeadline
+                    ? ` do ${form.relayTeamCompletionDeadline}`
+                    : ''}
+                  .
+                </p>
+              </div>
+
+              <div className="rounded-md bg-background px-3 py-2 text-sm">
+                <div className="font-medium">{form.user?.name || 'Osoba zapisujaca'}</div>
+                <div className="text-xs text-muted-foreground">Kapitan / zawodnik 1</div>
+              </div>
+
+              {form.relayMembers.map((member, index) => (
+                <div key={member.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <Input
+                    value={member.name}
+                    onChange={(e) => form.updateRelayMember(member.id, { name: e.target.value })}
+                    placeholder={`Zawodnik ${index + 2} - imie i nazwisko`}
+                  />
+                  <Input
+                    type="email"
+                    value={member.email || ''}
+                    onChange={(e) => form.updateRelayMember(member.id, { email: e.target.value })}
+                    placeholder="E-mail (opcjonalnie)"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => form.removeRelayMember(member.id)}
+                    aria-label="Usun zawodnika"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs text-muted-foreground">
+                  Wpisano {form.relayTeamMemberCount}
+                  {form.relayMaxTeamSize ? ` / ${form.relayMaxTeamSize}` : ''} zawodnikow.
+                  {form.relayTeamIsBelowMinimum &&
+                    ` Minimum ${form.relayMinTeamSize} trzeba uzupelnic przed deadline.`}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={form.addRelayMember}
+                  disabled={form.relayMemberLimitReached}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Dodaj zawodnika
+                </Button>
+              </div>
+
+              {!form.relayRosterIsValid && (
+                <p className="flex items-center gap-1 text-xs text-destructive">
+                  <AlertCircle className="h-3 w-3" />
+                  Wpisany zawodnik musi miec imie i nazwisko, a e-mail musi byc poprawny.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -908,8 +1004,7 @@ const InsuranceStep = ({ form }: { form: FormHook }) => (
               <div className="mt-2 text-sm">
                 {form.age > form.insuranceSettings.maxAge ? (
                   <span className="text-destructive">
-                    Ubezpieczenie niedostępne dla osób powyżej {form.insuranceSettings.maxAge}{' '}
-                    lat
+                    Ubezpieczenie niedostępne dla osób powyżej {form.insuranceSettings.maxAge} lat
                   </span>
                 ) : (
                   <>
@@ -1079,6 +1174,15 @@ const SummaryStep = ({
               <span className="flex items-center gap-2">
                 <Users className="h-4 w-4" /> Drużyna: {form.getFinalTeamName()}
               </span>
+            </div>
+          )}
+          {form.isRelayDistance && form.teamMode === 'create' && (
+            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+              Sklad sztafety: {form.relayTeamMemberCount}
+              {form.relayMaxTeamSize ? ` / ${form.relayMaxTeamSize}` : ''} zawodnikow
+              {form.relayTeamIsBelowMinimum && form.relayTeamCompletionDeadline
+                ? `. Brakujace osoby trzeba dodac do ${form.relayTeamCompletionDeadline}.`
+                : '.'}
             </div>
           )}
           {form.insurancePrice > 0 && (

@@ -413,13 +413,13 @@ export {
   validateDiscountCode,
   validateTeamName,
   getExistingTeamsForEvent,
-} from './mock/helpers';
+} from './pricing';
 export {
   seriesTypeLabels,
   disciplineLabels,
   shopCategoryLabels,
   defaultPaymentMethods,
-} from './mock/labels';
+} from './labels';
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';

@@ -5,7 +5,7 @@ import {
   validateDiscountCode,
   validateTeamName,
   getExistingTeamsForEvent,
-} from '@/api/mock/helpers';
+} from '@/api/pricing';
 import type { DiscountCode, Distance, Event, Registration } from '@/types';
 
 describe('applyDiscount', () => {
@@ -238,6 +238,27 @@ describe('getExistingTeamsForEvent', () => {
   it('excludes cancelled registrations', () => {
     const teams = getExistingTeamsForEvent(registrations, 'e1');
     expect(teams.find((t) => t.name === 'Cancelled')).toBeUndefined();
+  });
+
+  it('counts relay members stored on captain registration', () => {
+    const teams = getExistingTeamsForEvent(
+      [
+        {
+          eventId: 'e1',
+          distanceId: 'd1',
+          teamName: 'Relay',
+          status: 'confirmed',
+          relayMembers: [
+            { id: 'm1', name: 'Anna Nowak' },
+            { id: 'm2', name: 'Jan Kowalski' },
+          ],
+        },
+      ] as Registration[],
+      'e1',
+      'd1',
+    );
+
+    expect(teams).toEqual([{ name: 'Relay', memberCount: 3 }]);
   });
 
   it('returns empty for unknown event', () => {

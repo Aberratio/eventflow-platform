@@ -1,5 +1,11 @@
 import type { MerchandiseOrder, PaymentDetails } from './event';
 
+export interface RelayTeamMember {
+  id: string;
+  name: string;
+  email?: string;
+}
+
 export interface Registration {
   id: string;
   eventId: string;
@@ -15,6 +21,7 @@ export interface Registration {
   bibNumber?: string;
   teamName?: string;
   teamId?: string;
+  relayMembers?: RelayTeamMember[];
   pricePaid?: number;
   discountCode?: string;
   discountAmount?: number;
