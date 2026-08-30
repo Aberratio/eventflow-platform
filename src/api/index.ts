@@ -274,6 +274,8 @@ export const updateGlobalInsuranceSettings: ApiAdapter['updateGlobalInsuranceSet
 // Admin
 export const getActivityLogs: ApiAdapter['getActivityLogs'] = (...args) =>
   ensureAdapter().then((a) => a.getActivityLogs(...args));
+export const getEventActivityLogs: ApiAdapter['getEventActivityLogs'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventActivityLogs(...args));
 export const getSecuritySettings: ApiAdapter['getSecuritySettings'] = (...args) =>
   ensureAdapter().then((a) => a.getSecuritySettings(...args));
 export const updateSecuritySettings: ApiAdapter['updateSecuritySettings'] = (...args) =>
@@ -373,6 +375,7 @@ export type {
   ShopProductFilters,
   OrderFilters,
   ActivityLogFilters,
+  EventActivityLogFilters,
   VirtualResultFilters,
   ChallengeParticipationFilters,
   ChallengeFilters,

@@ -394,6 +394,10 @@ export const httpAdapter: ApiAdapter = {
 
   getActivityLogs: (filters) =>
     request(`/admin/activity-logs${query(filters as Record<string, QueryValue>)}`),
+  getEventActivityLogs: (eventId, filters) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/activity-logs${query(filters as Record<string, QueryValue>)}`,
+    ),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),

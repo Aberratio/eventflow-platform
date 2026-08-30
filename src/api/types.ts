@@ -93,6 +93,12 @@ export interface ActivityLogFilters {
   dateTo?: string;
 }
 
+/** E0.8: filters for the event-owner-scoped slice of the activity log. */
+export interface EventActivityLogFilters {
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface VirtualResultFilters {
   eventId?: string;
   status?: VirtualResultSubmissionStatus;

@@ -10,8 +10,13 @@ const LEVEL_ICONS: Record<string, string> = {
 const storedLogs: LogEntry[] = [];
 
 /**
- * MockTransport — loguje do konsoli i przechowuje w pamięci.
- * Docelowo zostanie zastąpiony przez ApiTransport.
+ * MockTransport — loguje do konsoli i przechowuje w pamięci (per przeglądarka).
+ *
+ * E0.8: żaden transport nie wysyła tych wpisów na serwer. Rejestr aktywności
+ * (audit log) jest pisany wyłącznie przez serwer, na podstawie tożsamości
+ * z zweryfikowanego JWT — POST /admin/client-logs został usunięty, bo
+ * pozwalał dowolnemu klientowi sfałszować wpis przypisany komuś innemu.
+ * Ten transport służy tylko do lokalnego debugowania w przeglądarce.
  */
 export class MockTransport implements LogTransport {
   async send(entries: LogEntry[]): Promise<void> {
@@ -57,23 +62,4 @@ export function getStoredLogs(): ReadonlyArray<LogEntry> {
 /** Czyści logi w pamięci. */
 export function clearStoredLogs(): void {
   storedLogs.length = 0;
-}
-
-export class ApiTransport implements LogTransport {
-  constructor(
-    private endpoint: string,
-    private getToken: () => string | null,
-  ) {}
-
-  async send(entries: LogEntry[]): Promise<void> {
-    const token = this.getToken();
-    await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ logs: entries }),
-    }).catch(() => {});
-  }
 }

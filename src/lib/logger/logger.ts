@@ -1,6 +1,5 @@
 import type { LogLevel, LogCategory, LogEntry, LogTransport, LoggerUserContext } from './types';
-import { ApiTransport, MockTransport } from './transports';
-import { STORAGE_KEYS } from '@/constants';
+import { MockTransport } from './transports';
 
 function generateId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -152,16 +151,13 @@ class AppLogger {
   }
 }
 
+// E0.8: rejestr aktywności (audit log) jest pisany wyłącznie przez serwer —
+// nie ma już transportu, który wysyłałby te wpisy do API (POST
+// /admin/client-logs został usunięty, bo pozwalał sfałszować autora wpisu).
+// MockTransport zostaje jako lokalne logowanie do konsoli/pamięci przeglądarki.
 function createDefaultTransport(): LogTransport {
-  if (import.meta.env.PROD) {
-    const apiBase = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api/v1';
-    return new ApiTransport(
-      `${apiBase}/admin/client-logs`,
-      () => localStorage.getItem(STORAGE_KEYS.API_TOKEN),
-    );
-  }
   return new MockTransport();
 }
 
-/** Globalny singleton loggera */
+/** Globalny singleton loggera (logowanie lokalne — nic stąd nie trafia na serwer) */
 export const appLogger = new AppLogger(createDefaultTransport());

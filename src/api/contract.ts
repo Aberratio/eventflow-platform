@@ -19,6 +19,7 @@ import type {
   RegistrationFilters,
   ShopProductFilters,
   ActivityLogFilters,
+  EventActivityLogFilters,
   VirtualResultFilters,
   SeriesFilters,
   ChallengeFilters,
@@ -310,7 +311,14 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<GlobalInsuranceSettings>>;
 
   // ── Admin ──
+  // E0.8: global list — admin/superadmin only, enforced server-side.
   getActivityLogs(filters?: ActivityLogFilters): Promise<ApiResponse<AdminActivityLog[]>>;
+  // E0.8: event-owner-scoped slice — organizer sees only their own event's entries,
+  // authorized server-side via the existing single-owner check.
+  getEventActivityLogs(
+    eventId: string,
+    filters?: EventActivityLogFilters,
+  ): Promise<ApiResponse<AdminActivityLog[]>>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;

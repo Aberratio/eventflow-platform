@@ -33,6 +33,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { PrivacyChangeConfirmDialog } from './PrivacyChangeConfirmDialog';
+import { EventActivityLogCard } from './EventActivityLogCard';
 
 interface EventSettingsTabProps {
   event: Event;
@@ -459,6 +460,8 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EventActivityLogCard eventId={event.id} />
 
       {pendingIsPrivate !== null && (
         <PrivacyChangeConfirmDialog
