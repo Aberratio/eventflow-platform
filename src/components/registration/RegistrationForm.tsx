@@ -1,4 +1,4 @@
-import { getCurrentPrice, applyDiscount } from '@/api';
+import { getCurrentPrice, applyDiscount, isTierExpired } from '@/api';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -276,7 +276,6 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
             const { price, tierName } = getCurrentPrice(distance);
             const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
             const isFull = spotsLeft !== null && spotsLeft <= 0;
-            const mode = distance.priceTierMode || 'date';
             return (
               <div
                 key={distance.id}
@@ -316,15 +315,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                         const tierPrice =
                           tier.price ??
                           applyDiscount(distance.price, tier.discountType, tier.discountValue);
-                        const isPast =
-                          mode === 'date' && tier.endDate
-                            ? new Date(tier.endDate) < new Date()
-                            : false;
-                        const isOverLimit =
-                          mode === 'participants' &&
-                          tier.participantLimit != null &&
-                          distance.registeredCount >= tier.participantLimit;
-                        const dimmed = isPast || isOverLimit;
+                        const dimmed = isTierExpired(tier, distance.registeredCount);
                         return (
                           <div
                             key={tier.id}
@@ -333,11 +324,9 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                             <span>{tier.name}</span>
                             <span>
                               {tierPrice} zł
-                              {mode === 'date' &&
-                                tier.endDate &&
+                              {tier.endDate &&
                                 ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
-                              {mode === 'participants' &&
-                                tier.participantLimit != null &&
+                              {tier.participantLimit != null &&
                                 ` (do ${tier.participantLimit} os.)`}
                             </span>
                           </div>

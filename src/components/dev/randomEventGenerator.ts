@@ -350,7 +350,16 @@ function generateDistances(
       registeredCount,
       paidCount: Math.floor(registeredCount * randFloat(0.7, 1.0)),
       price: basePrice,
-      officePrice: basePrice + 20,
+      pricingVariants: [
+        {
+          id: uid(),
+          name: 'Zapis w biurze zawodów',
+          price: basePrice + 20,
+          officeOnly: true,
+          visibleInPublicForm: false,
+          sortOrder: 0,
+        },
+      ],
       priceTiers,
       infoHtml: Math.random() < 0.5
         ? `<p>Dystans ${name}. Trasa widokowa, nawierzchnia mieszana. Pomiar czasu chipem.</p>`

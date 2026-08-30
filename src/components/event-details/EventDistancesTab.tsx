@@ -1,4 +1,4 @@
-import { getCurrentPrice, applyDiscount } from '@/api';
+import { getCurrentPrice, applyDiscount, isTierExpired } from '@/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -194,23 +194,18 @@ const DistanceCard = ({
                     const tierPrice =
                       tier.price ??
                       applyDiscount(distance.price, tier.discountType, tier.discountValue);
-                    const mode = distance.priceTierMode || 'date';
-                    const isPastTier =
-                      mode === 'date' && tier.endDate ? new Date(tier.endDate) < new Date() : false;
+                    const isExpiredTier = isTierExpired(tier, distance.registeredCount);
                     return (
                       <div
                         key={tier.id}
-                        className={`flex justify-between text-xs ${isPastTier ? 'text-foreground/40 line-through' : 'text-foreground/65'}`}
+                        className={`flex justify-between text-xs ${isExpiredTier ? 'text-foreground/40 line-through' : 'text-foreground/65'}`}
                       >
                         <span>{tier.name}</span>
                         <span>
                           {tierPrice} zł
-                          {mode === 'date' &&
-                            tier.endDate &&
+                          {tier.endDate &&
                             ` do ${format(new Date(tier.endDate), 'd MMM yyyy', { locale: pl })}`}
-                          {mode === 'participants' &&
-                            tier.participantLimit != null &&
-                            ` (do ${tier.participantLimit} os.)`}
+                          {tier.participantLimit != null && ` (do ${tier.participantLimit} os.)`}
                         </span>
                       </div>
                     );
@@ -237,13 +232,6 @@ const DistanceCard = ({
                     );
                   })}
                 </div>
-              </div>
-            )}
-
-            {distance.officePrice != null && (
-              <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2 text-sm">
-                <span className="text-foreground/65">Cena w biurze zawodów: </span>
-                <span className="font-semibold">{distance.officePrice} zł</span>
               </div>
             )}
           </div>

@@ -25,8 +25,6 @@ import {
   OrganizerEventLimit,
   OrganizerLogoShape,
   PriceTier,
-  PriceTierMode,
-  ParticipantCountType,
   EventDocument,
   EventDocumentType,
   EventLogisticsInfo,
@@ -55,11 +53,10 @@ export interface DistanceFormData {
   relayMaxTeamSize: string;
   relayTeamCompletionDeadline: string;
   price: string;
+  /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
   officePrice: string;
   limit: string;
   infoHtml: string;
-  priceTierMode: PriceTierMode;
-  participantCountType: ParticipantCountType;
   priceTiers: PriceTier[];
   disabledCategoryIds: string[];
   routeMapUrl: string;
@@ -110,6 +107,12 @@ export const emptyGadget = (): GadgetFormData => ({
   saleTo: '',
   distanceIds: [],
 });
+
+export const OFFICE_PRICING_VARIANT_NAME = 'Zapis w biurze zawodów';
+
+/** The office-only pricing variant (event_distance_pricing_variants), if the distance has one. */
+const officeVariantOf = (d: { pricingVariants?: { officeOnly?: boolean; price: number }[] }) =>
+  d.pricingVariants?.find((v) => v.officeOnly);
 
 export const formatDistanceName = (length: string, unit: 'km' | 'm'): string => {
   const num = parseFloat(length);
@@ -554,11 +557,9 @@ export const useEventFormState = () => {
       relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
       relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
       price: d.price.toString(),
-      officePrice: d.officePrice?.toString() || '',
+      officePrice: officeVariantOf(d)?.price?.toString() || '',
       limit: d.limit?.toString() || '',
       infoHtml: d.infoHtml || '',
-      priceTierMode: d.priceTierMode || 'date',
-      participantCountType: d.participantCountType || 'registered',
       priceTiers: d.priceTiers || [],
       disabledCategoryIds: initAllGlobalCatIds.filter(
         (id) =>
@@ -681,11 +682,9 @@ export const useEventFormState = () => {
         relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
         relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
         price: d.price.toString(),
-        officePrice: d.officePrice?.toString() || '',
+        officePrice: officeVariantOf(d)?.price?.toString() || '',
         limit: d.limit?.toString() || '',
         infoHtml: d.infoHtml || '',
-        priceTierMode: d.priceTierMode || 'date',
-        participantCountType: d.participantCountType || 'registered',
         priceTiers: d.priceTiers || [],
         disabledCategoryIds: allGlobalCatIds.filter(
           (id) =>
@@ -772,8 +771,6 @@ export const useEventFormState = () => {
         officePrice: '',
         limit: '',
         infoHtml: '',
-        priceTierMode: 'date',
-        participantCountType: 'registered',
         priceTiers: [],
         disabledCategoryIds: [],
         routeMapUrl: '',
@@ -805,8 +802,6 @@ export const useEventFormState = () => {
         officePrice: '',
         limit: '',
         infoHtml: '',
-        priceTierMode: 'date',
-        participantCountType: 'registered',
         priceTiers: [],
         disabledCategoryIds: [],
         routeMapUrl: '',
@@ -825,15 +820,7 @@ export const useEventFormState = () => {
   const updateDistance = (
     index: number,
     field: keyof DistanceFormData,
-    value:
-      | string
-      | boolean
-      | string[]
-      | DistanceRouteFile[]
-      | PriceTier[]
-      | PriceTierMode
-      | ParticipantCountType
-      | DistanceStartType,
+    value: string | boolean | string[] | DistanceRouteFile[] | PriceTier[] | DistanceStartType,
   ) => {
     setDistances((prev) => {
       const updated = [...prev];
@@ -846,17 +833,16 @@ export const useEventFormState = () => {
     setDistances((prev) => {
       const updated = [...prev];
       const dist = updated[distIndex];
-      const mode = dist.priceTierMode || 'date';
       updated[distIndex] = {
         ...dist,
         priceTiers: [
           ...dist.priceTiers,
           {
             id: `pt-${Date.now()}`,
-            name: mode === 'date' ? 'Cena promocyjna' : 'Próg uczestników',
+            name: 'Cena promocyjna',
             discountType: 'fixed',
             discountValue: 0,
-            ...(mode === 'date' ? { endDate: '' } : { participantLimit: 100 }),
+            endDate: '',
           },
         ],
       };
@@ -1214,10 +1200,7 @@ export const useEventFormState = () => {
         if (hasExplicitPrice && (tierPrice === null || tierPrice < 0)) {
           addError('distances', 'Cena w progu musi byc poprawna liczba i nie moze byc ujemna');
         }
-        if (dist.priceTierMode === 'date' && !tier.endDate) {
-          addError('distances', 'Podaj date koncowa dla kazdego progu cenowego');
-        }
-        if (dist.priceTierMode === 'date' && tier.endDate) {
+        if (tier.endDate) {
           if (Number.isNaN(new Date(tier.endDate).getTime())) {
             addError('distances', 'Data koncowa progu cenowego jest nieprawidlowa');
           }
@@ -1228,20 +1211,13 @@ export const useEventFormState = () => {
             );
           }
         }
-        if (
-          dist.priceTierMode === 'participants' &&
-          (isBlank(tier.participantLimit) ||
-            parseNumberInput(tier.participantLimit) === null ||
-            parseNumberInput(tier.participantLimit)! <= 0)
-        ) {
-          addError('distances', 'Podaj dodatni limit uczestnikow dla kazdego progu cenowego');
-        }
-        if (dist.priceTierMode === 'participants') {
+        if (!isBlank(tier.participantLimit)) {
           const participantLimit = parseNumberInput(tier.participantLimit);
-          if (participantLimit !== null && !Number.isInteger(participantLimit)) {
+          if (participantLimit === null || participantLimit <= 0) {
+            addError('distances', 'Limit uczestnikow w progu musi byc dodatnia liczba');
+          } else if (!Number.isInteger(participantLimit)) {
             addError('distances', 'Limit uczestnikow w progu musi byc liczba calkowita');
-          }
-          if (limitValue !== null && participantLimit !== null && participantLimit > limitValue) {
+          } else if (limitValue !== null && participantLimit > limitValue) {
             addError(
               'distances',
               'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
@@ -1249,19 +1225,15 @@ export const useEventFormState = () => {
           }
         }
       }
-      if (dist.priceTierMode === 'date') {
-        const dates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
-        if (new Set(dates).size !== dates.length) {
-          addError('distances', 'Daty koncowe progow cenowych nie moga sie powtarzac');
-        }
+      const tierDates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
+      if (new Set(tierDates).size !== tierDates.length) {
+        addError('distances', 'Daty koncowe progow cenowych nie moga sie powtarzac');
       }
-      if (dist.priceTierMode === 'participants') {
-        const participantLimits = dist.priceTiers
-          .map((tier) => parseNumberInput(tier.participantLimit))
-          .filter((value): value is number => value !== null);
-        if (new Set(participantLimits).size !== participantLimits.length) {
-          addError('distances', 'Limity uczestnikow w progach cenowych nie moga sie powtarzac');
-        }
+      const tierParticipantLimits = dist.priceTiers
+        .map((tier) => parseNumberInput(tier.participantLimit))
+        .filter((value): value is number => value !== null);
+      if (new Set(tierParticipantLimits).size !== tierParticipantLimits.length) {
+        addError('distances', 'Limity uczestnikow w progach cenowych nie moga sie powtarzac');
       }
     }
 
@@ -1398,13 +1370,12 @@ export const useEventFormState = () => {
         for (const [j, tier] of dist.priceTiers.entries()) {
           if (!tier.name.trim())
             errors[`distance_${i}_tier_${j}_name`] = 'Nazwa progu jest wymagana';
-          if (dist.priceTierMode === 'date' && !tier.endDate) {
-            errors[`distance_${i}_tier_${j}_endDate`] = 'Data końcowa progu jest wymagana';
+          if (tier.endDate && Number.isNaN(new Date(tier.endDate).getTime())) {
+            errors[`distance_${i}_tier_${j}_endDate`] = 'Data końcowa progu jest nieprawidłowa';
           }
           if (
-            dist.priceTierMode === 'participants' &&
-            (isBlank(tier.participantLimit) ||
-              parseNumberInput(tier.participantLimit) === null ||
+            !isBlank(tier.participantLimit) &&
+            (parseNumberInput(tier.participantLimit) === null ||
               parseNumberInput(tier.participantLimit)! <= 0)
           ) {
             errors[`distance_${i}_tier_${j}_participantLimit`] = 'Podaj dodatni limit uczestników';
@@ -1513,14 +1484,17 @@ export const useEventFormState = () => {
       return;
     }
     if (subStep === 'distances') {
+      // Tiers are evaluated in this order by the server (first non-expired one wins), so
+      // push any tier with neither limit set to the end — it never expires and would
+      // otherwise shadow every tier configured after it.
       setDistances((prev) =>
         prev.map((dist) => ({
           ...dist,
-          priceTiers: [...dist.priceTiers].sort((a, b) =>
-            dist.priceTierMode === 'date'
-              ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
-              : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
-          ),
+          priceTiers: [...dist.priceTiers].sort((a, b) => {
+            const aNeverExpires = !a.endDate && a.participantLimit == null;
+            const bNeverExpires = !b.endDate && b.participantLimit == null;
+            return Number(aNeverExpires) - Number(bNeverExpires);
+          }),
         })),
       );
     }
@@ -1604,20 +1578,29 @@ export const useEventFormState = () => {
         relayTeamCompletionDeadline:
           dist.startType === 'relay' ? dist.relayTeamCompletionDeadline || undefined : undefined,
         price: parseNumberInput(dist.price) ?? 0,
-        officePrice: parseNumberInput(dist.officePrice) ?? undefined,
+        pricingVariants: (() => {
+          const officePrice = parseNumberInput(dist.officePrice);
+          return officePrice == null
+            ? []
+            : [
+                {
+                  id: `pv-office-${dist.id}`,
+                  name: OFFICE_PRICING_VARIANT_NAME,
+                  price: officePrice,
+                  officeOnly: true,
+                  visibleInPublicForm: false,
+                  sortOrder: 0,
+                },
+              ];
+        })(),
         infoHtml: dist.infoHtml || undefined,
         limit: parseNumberInput(dist.limit) ?? undefined,
-        priceTierMode: dist.priceTierMode,
-        participantCountType: dist.participantCountType,
         priceTiers: dist.priceTiers.map((tier) => ({
           ...tier,
           price: tier.price != null ? (parseNumberInput(tier.price) ?? undefined) : undefined,
           discountValue: parseNumberInput(tier.discountValue) ?? 0,
-          participantLimit:
-            dist.priceTierMode === 'participants'
-              ? (parseNumberInput(tier.participantLimit) ?? undefined)
-              : undefined,
-          endDate: dist.priceTierMode === 'date' ? tier.endDate : undefined,
+          participantLimit: parseNumberInput(tier.participantLimit) ?? undefined,
+          endDate: tier.endDate || undefined,
         })),
         registeredCount:
           existingEvent?.distances.find((d) => d.id === dist.id)?.registeredCount || 0,

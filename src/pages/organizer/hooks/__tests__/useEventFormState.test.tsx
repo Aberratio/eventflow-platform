@@ -223,7 +223,14 @@ describe('useEventFormState event wizard validation', () => {
         distances: [
           expect.objectContaining({
             price: 99,
-            officePrice: 120.5,
+            pricingVariants: [
+              expect.objectContaining({
+                name: 'Zapis w biurze zawodów',
+                price: 120.5,
+                officeOnly: true,
+                visibleInPublicForm: false,
+              }),
+            ],
             limit: 250,
             startType: 'relay',
             relayMinTeamSize: 2,

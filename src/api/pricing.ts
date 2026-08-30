@@ -1,4 +1,4 @@
-import type { PriceTierDiscountType, Event, Registration, Distance } from '@/types';
+import type { PriceTierDiscountType, Event, Registration, Distance, PriceTier } from '@/types';
 import { roundToCents, formatDiscountBadge } from '@/lib/discountValue';
 
 /** Calculate price after applying a discount to a base price. */
@@ -13,90 +13,68 @@ export const applyDiscount = (
   return roundToCents(Math.max(0, basePrice - Number(discountValue)));
 };
 
-/** Get the current active price tier for a distance. */
+/**
+ * A Próg (price tier) expires on whichever of its two independent, optional
+ * limits is hit first ("co nastąpi wcześniej") — mirrors
+ * RegistrationRepository::currentDistancePrice on the server (E0.3).
+ */
+export const isTierExpired = (tier: PriceTier, registeredCount: number): boolean => {
+  const expiredByDate = !!tier.endDate && new Date(tier.endDate) < new Date();
+  const expiredByCount =
+    tier.participantLimit != null && tier.participantLimit > 0
+      ? registeredCount >= tier.participantLimit
+      : false;
+  return expiredByDate || expiredByCount;
+};
+
+/** Human-readable description of what makes a tier expire, for preview/threshold UI. */
+export const describeTierThreshold = (tier: PriceTier): string | undefined => {
+  const parts: string[] = [];
+  if (tier.endDate) parts.push(`do ${tier.endDate}`);
+  if (tier.participantLimit != null) parts.push(`do ${tier.participantLimit} uczestnika`);
+  return parts.length > 0 ? parts.join(' lub ') : undefined;
+};
+
+const priceForTier = (basePrice: number, tier: PriceTier): number =>
+  tier.price != null
+    ? roundToCents(Number(tier.price))
+    : applyDiscount(basePrice, tier.discountType, tier.discountValue);
+
+/**
+ * Get the current active price tier for a distance. Tiers are evaluated in
+ * their configured order (not re-sorted) — the first one that is not
+ * expired by either limit wins, matching the server's
+ * RegistrationRepository::currentDistancePrice (E0.3).
+ */
 export const getCurrentPrice = (
   distance: Distance,
-  context?: { paidCount?: number },
 ): {
   price: number;
   tierName: string;
   nextTier?: { name: string; price: number; threshold: string };
   discount?: { type: PriceTierDiscountType; value: number };
 } => {
-  if (!distance.priceTiers || distance.priceTiers.length === 0) {
+  const tiers = distance.priceTiers ?? [];
+  if (tiers.length === 0) {
     return { price: distance.price, tierName: 'Cena standardowa' };
   }
 
   const basePrice = distance.price;
-  const mode = distance.priceTierMode || 'date';
+  const registeredCount = distance.registeredCount;
 
-  if (mode === 'participants') {
-    const countType = distance.participantCountType || 'registered';
-    const count =
-      countType === 'paid'
-        ? (context?.paidCount ?? distance.paidCount ?? 0)
-        : distance.registeredCount;
-
-    const sortedTiers = [...distance.priceTiers]
-      .filter((t) => t.participantLimit != null)
-      .sort((a, b) => (a.participantLimit ?? 0) - (b.participantLimit ?? 0));
-
-    for (let i = 0; i < sortedTiers.length; i++) {
-      const tier = sortedTiers[i];
-      if (count < (tier.participantLimit ?? 0)) {
-        const price =
-          tier.price != null
-            ? roundToCents(Number(tier.price))
-            : applyDiscount(basePrice, tier.discountType, tier.discountValue);
-        const nextTier = sortedTiers[i + 1];
-        return {
-          price,
-          tierName: tier.name,
-          discount: { type: tier.discountType, value: tier.discountValue },
-          nextTier: nextTier
-            ? {
-                name: nextTier.name,
-                price:
-                  nextTier.price != null
-                    ? roundToCents(Number(nextTier.price))
-                    : applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
-                threshold: `od ${tier.participantLimit} uczestnika`,
-              }
-            : undefined,
-        };
-      }
-    }
-
-    // Past all tiers — base price
-    return { price: basePrice, tierName: 'Cena standardowa' };
-  }
-
-  // mode === 'date'
-  const now = new Date();
-  const sortedTiers = [...distance.priceTiers]
-    .filter((t) => t.endDate != null)
-    .sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime());
-
-  for (let i = 0; i < sortedTiers.length; i++) {
-    const tier = sortedTiers[i];
-    if (new Date(tier.endDate!) >= now) {
-      const price =
-        tier.price != null
-          ? roundToCents(Number(tier.price))
-          : applyDiscount(basePrice, tier.discountType, tier.discountValue);
-      const nextTier = sortedTiers[i + 1];
+  for (let i = 0; i < tiers.length; i++) {
+    const tier = tiers[i];
+    if (!isTierExpired(tier, registeredCount)) {
+      const nextTier = tiers[i + 1];
       return {
-        price,
+        price: priceForTier(basePrice, tier),
         tierName: tier.name,
         discount: { type: tier.discountType, value: tier.discountValue },
         nextTier: nextTier
           ? {
               name: nextTier.name,
-              price:
-                nextTier.price != null
-                  ? roundToCents(Number(nextTier.price))
-                  : applyDiscount(basePrice, nextTier.discountType, nextTier.discountValue),
-              threshold: `od ${tier.endDate}`,
+              price: priceForTier(basePrice, nextTier),
+              threshold: describeTierThreshold(tier) ?? '',
             }
           : undefined,
       };

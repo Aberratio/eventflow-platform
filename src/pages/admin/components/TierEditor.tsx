@@ -11,13 +11,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Trash2, ArrowRight, AlertTriangle } from 'lucide-react';
-import { PriceTier, PriceTierMode, PriceTierDiscountType } from '@/types';
+import { PriceTier, PriceTierDiscountType } from '@/types';
 
 interface TierEditorProps {
   tier: PriceTier;
   index: number;
-  mode: PriceTierMode;
-  basePrice: number;
   calculatedPrice: number;
   priceWarning?: string;
   isPast: boolean;
@@ -29,7 +27,6 @@ interface TierEditorProps {
 export const TierEditor = ({
   tier,
   index,
-  mode,
   calculatedPrice,
   priceWarning,
   isPast,
@@ -44,8 +41,8 @@ export const TierEditor = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-medium">Próg {index + 1}</span>
-          {isPast && <Badge variant="secondary">Zakończony</Badge>}
-          {isOverLimit && <Badge variant="secondary">Przekroczony</Badge>}
+          {isPast && <Badge variant="secondary">Data minęła</Badge>}
+          {isOverLimit && <Badge variant="secondary">Limit przekroczony</Badge>}
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5">
@@ -63,7 +60,7 @@ export const TierEditor = ({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-2">
           <Label>Nazwa</Label>
           <Input
@@ -108,26 +105,31 @@ export const TierEditor = ({
             </p>
           )}
         </div>
-        {mode === 'date' ? (
-          <div className="space-y-2">
-            <Label>Data końcowa</Label>
-            <DateInput
-              value={tier.endDate || ''}
-              onValueChange={(endDate) => onUpdate({ endDate })}
-            />
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <Label>Do ilu uczestników</Label>
-            <Input
-              type="number"
-              value={tier.participantLimit || ''}
-              onChange={(e) => onUpdate({ participantLimit: parseInt(e.target.value) || 0 })}
-              placeholder="np. 100"
-            />
-          </div>
-        )}
+        <div className="space-y-2">
+          <Label>Data końcowa (opcjonalnie)</Label>
+          <DateInput
+            value={tier.endDate || ''}
+            onValueChange={(endDate) => onUpdate({ endDate: endDate || undefined })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Do ilu uczestników (opcjonalnie)</Label>
+          <Input
+            type="number"
+            value={tier.participantLimit ?? ''}
+            onChange={(e) =>
+              onUpdate({
+                participantLimit: e.target.value === '' ? undefined : parseInt(e.target.value) || 0,
+              })
+            }
+            placeholder="np. 100"
+          />
+        </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Prog wygasa na tym, co nastapi wczesniej — po dacie, po limicie uczestnikow, albo od razu
+        gdy zadne pole nie jest ustawione, wtedy prog nigdy nie wygasa.
+      </p>
 
       <div className="space-y-2">
         <Label>Opis (opcjonalnie)</Label>

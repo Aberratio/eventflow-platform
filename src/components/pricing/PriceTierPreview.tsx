@@ -1,13 +1,11 @@
-import { applyDiscount } from '@/api';
+import { applyDiscount, isTierExpired } from '@/api';
 import { Badge } from '@/components/ui/badge';
-import type { ParticipantCountType, PriceTier, PriceTierMode } from '@/types';
+import type { PriceTier } from '@/types';
 import { Calendar, Users } from 'lucide-react';
 
 interface PriceTierPreviewProps {
   basePrice: number;
   tiers: PriceTier[];
-  mode: PriceTierMode;
-  participantCountType?: ParticipantCountType;
   currentCount?: number;
   className?: string;
 }
@@ -19,24 +17,19 @@ const getTierPrice = (basePrice: number, tier: PriceTier) =>
     ? Number(tier.price)
     : applyDiscount(basePrice, tier.discountType, tier.discountValue);
 
-const getSortedTiers = (tiers: PriceTier[], mode: PriceTierMode) =>
-  [...tiers].sort((a, b) =>
-    mode === 'date'
-      ? String(a.endDate || '').localeCompare(String(b.endDate || ''))
-      : Number(a.participantLimit || 0) - Number(b.participantLimit || 0),
-  );
-
+/**
+ * Shows the configured tiers in their evaluation order — the same order the
+ * server walks in RegistrationRepository::currentDistancePrice — rather than
+ * re-sorting by a single field, since a tier can carry both an end date and
+ * a participant limit at once (E0.3).
+ */
 export const PriceTierPreview = ({
   basePrice,
   tiers,
-  mode,
-  participantCountType = 'registered',
   currentCount = 0,
   className,
 }: PriceTierPreviewProps) => {
-  const sortedTiers = getSortedTiers(tiers, mode);
-
-  if (sortedTiers.length === 0) {
+  if (tiers.length === 0) {
     return (
       <div className={className}>
         <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
@@ -46,87 +39,52 @@ export const PriceTierPreview = ({
     );
   }
 
-  if (mode === 'date') {
-    return (
-      <div className={className}>
-        <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5" />
-          Timeline cen wedlug dat
-        </div>
-        <div className="grid gap-2 md:grid-cols-[repeat(auto-fit,minmax(140px,1fr))]">
-          {sortedTiers.map((tier, index) => {
-            const price = getTierPrice(basePrice, tier);
-            return (
-              <div key={tier.id} className="relative rounded-md border bg-background p-3">
-                <div className="absolute left-3 right-3 top-0 h-1 rounded-b bg-primary/70" />
-                <div className="text-xs text-muted-foreground">
-                  {index === 0 ? 'do' : 'nastepnie do'} {tier.endDate || 'brak daty'}
-                </div>
-                <div className="mt-1 text-sm font-semibold">{formatPrice(price)}</div>
-                <div className="mt-1 truncate text-xs text-muted-foreground">
-                  {tier.name || `Prog ${index + 1}`}
-                </div>
-              </div>
-            );
-          })}
-          <div className="rounded-md border border-dashed bg-muted/20 p-3">
-            <div className="text-xs text-muted-foreground">po ostatnim progu</div>
-            <div className="mt-1 text-sm font-semibold">{formatPrice(basePrice)}</div>
-            <div className="mt-1 text-xs text-muted-foreground">Cena bazowa</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  let activeFound = false;
 
-  let previousLimit = 0;
   return (
     <div className={className}>
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
         <span className="flex items-center gap-2">
-          <Users className="h-3.5 w-3.5" />
-          Przedzialy cen wedlug liczby uczestnikow
+          <Calendar className="h-3.5 w-3.5" />
+          Progi cenowe — wygasa to, co nastąpi wcześniej
         </span>
         <Badge variant="outline" className="text-[11px]">
-          {participantCountType === 'paid' ? 'oplaceni' : 'zapisani'}: {currentCount}
+          <Users className="mr-1 h-3 w-3" />
+          zapisani: {currentCount}
         </Badge>
       </div>
       <div className="space-y-2">
-        {sortedTiers.map((tier, index) => {
-          const limit = Number(tier.participantLimit || 0);
-          const from = previousLimit + 1;
-          previousLimit = limit;
-          const isCurrent = currentCount < limit && currentCount >= from - 1;
+        {tiers.map((tier, index) => {
+          const expired = isTierExpired(tier, currentCount);
+          const isActive = !expired && !activeFound;
+          if (isActive) activeFound = true;
           const price = getTierPrice(basePrice, tier);
 
           return (
             <div
               key={tier.id}
-              className={`grid gap-2 rounded-md border p-3 sm:grid-cols-[140px_1fr_auto] ${
-                isCurrent ? 'border-primary bg-primary/5' : 'bg-background'
+              className={`grid gap-2 rounded-md border p-3 sm:grid-cols-[1fr_auto] ${
+                isActive ? 'border-primary bg-primary/5' : expired ? 'opacity-50' : 'bg-background'
               }`}
             >
-              <div className="text-sm font-medium">
-                {from}-{limit}
-              </div>
               <div className="min-w-0">
-                <div className="h-2 rounded-full bg-muted">
-                  <div
-                    className="h-2 rounded-full bg-primary"
-                    style={{ width: `${Math.max(16, 100 - index * 16)}%` }}
-                  />
-                </div>
-                <div className="mt-1 truncate text-xs text-muted-foreground">
+                <div className="truncate text-sm font-medium">
                   {tier.name || `Prog ${index + 1}`}
+                </div>
+                <div className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                  {tier.endDate && <span>do {tier.endDate}</span>}
+                  {tier.participantLimit != null && (
+                    <span>do {tier.participantLimit} uczestnika</span>
+                  )}
+                  {expired && <span className="text-destructive/80">wygasł</span>}
                 </div>
               </div>
               <div className="text-sm font-semibold">{formatPrice(price)}</div>
             </div>
           );
         })}
-        <div className="grid gap-2 rounded-md border border-dashed bg-muted/20 p-3 sm:grid-cols-[140px_1fr_auto]">
-          <div className="text-sm font-medium">od {previousLimit + 1}</div>
-          <div className="text-xs text-muted-foreground">Cena bazowa po wykorzystaniu progow</div>
+        <div className="grid gap-2 rounded-md border border-dashed bg-muted/20 p-3 sm:grid-cols-[1fr_auto]">
+          <div className="text-xs text-muted-foreground">Po ostatnim (nie)wygasłym progu</div>
           <div className="text-sm font-semibold">{formatPrice(basePrice)}</div>
         </div>
       </div>

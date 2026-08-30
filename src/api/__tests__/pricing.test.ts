@@ -39,7 +39,7 @@ describe('getCurrentPrice', () => {
     const futureDate = new Date(Date.now() + 86400000 * 30).toISOString();
     const distance = {
       price: 100,
-      priceTierMode: 'date',
+      registeredCount: 0,
       priceTiers: [
         { name: 'Wczesna', endDate: futureDate, discountType: 'percent', discountValue: 20 },
       ],
@@ -53,7 +53,7 @@ describe('getCurrentPrice', () => {
     const pastDate = new Date(Date.now() - 86400000).toISOString();
     const distance = {
       price: 100,
-      priceTierMode: 'date',
+      registeredCount: 0,
       priceTiers: [
         { name: 'Expired', endDate: pastDate, discountType: 'percent', discountValue: 20 },
       ],
@@ -65,8 +65,6 @@ describe('getCurrentPrice', () => {
   it('handles participant-based tiers', () => {
     const distance = {
       price: 100,
-      priceTierMode: 'participants',
-      participantCountType: 'registered',
       registeredCount: 5,
       priceTiers: [
         { name: 'Early', participantLimit: 50, discountType: 'fixed', discountValue: 20 },
@@ -75,6 +73,46 @@ describe('getCurrentPrice', () => {
     const result = getCurrentPrice(distance);
     expect(result.price).toBe(80);
     expect(result.tierName).toBe('Early');
+  });
+
+  it('expires a tier by count even when its end date is still in the future', () => {
+    const futureDate = new Date(Date.now() + 86400000 * 30).toISOString();
+    const distance = {
+      price: 100,
+      registeredCount: 50,
+      priceTiers: [
+        {
+          name: 'Both limits',
+          endDate: futureDate,
+          participantLimit: 50,
+          discountType: 'percent',
+          discountValue: 20,
+        },
+      ],
+    } as unknown as Distance;
+    const result = getCurrentPrice(distance);
+    expect(result.price).toBe(100);
+    expect(result.tierName).toBe('Cena standardowa');
+  });
+
+  it('expires a tier by date even when its participant limit is not yet reached', () => {
+    const pastDate = new Date(Date.now() - 86400000).toISOString();
+    const distance = {
+      price: 100,
+      registeredCount: 0,
+      priceTiers: [
+        {
+          name: 'Both limits',
+          endDate: pastDate,
+          participantLimit: 50,
+          discountType: 'percent',
+          discountValue: 20,
+        },
+      ],
+    } as unknown as Distance;
+    const result = getCurrentPrice(distance);
+    expect(result.price).toBe(100);
+    expect(result.tierName).toBe('Cena standardowa');
   });
 });
 

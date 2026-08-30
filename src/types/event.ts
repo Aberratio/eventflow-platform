@@ -2,8 +2,6 @@ export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport'
 
 export type RegistrationStatus = 'open' | 'closed' | 'none';
 
-export type PriceTierMode = 'date' | 'participants';
-export type ParticipantCountType = 'registered' | 'paid';
 export type PriceTierDiscountType = 'percent' | 'fixed';
 export type DistanceStartType = 'individual' | 'relay';
 
@@ -16,6 +14,12 @@ export interface VipPrice {
   customFieldRequired?: boolean;
 }
 
+/**
+ * A Próg (price tier). `endDate` and `participantLimit` are independent, both
+ * optional, and can be set at the same time — the tier expires on whichever
+ * is hit first ("co nastąpi wcześniej"). There is no mode flag choosing
+ * between them (E0.3).
+ */
 export interface PriceTier {
   id: string;
   name: string;
@@ -26,6 +30,21 @@ export interface PriceTier {
   description?: string;
   /** @deprecated Use discountType+discountValue. Kept for backward compat in views. */
   price?: number;
+}
+
+/**
+ * A pricing variant belonging to a Dystans — e.g. the office-only "zapis w
+ * biurze zawodow" price that used to be the special-cased `officePrice` field
+ * on Distance (E0.3). Office-only variants are hidden from the public
+ * registration form.
+ */
+export interface DistancePricingVariant {
+  id: string;
+  name: string;
+  price: number;
+  officeOnly?: boolean;
+  visibleInPublicForm?: boolean;
+  sortOrder?: number;
 }
 
 export interface DiscountCodeUsage {
@@ -126,10 +145,8 @@ export interface Distance {
   registeredCount: number;
   paidCount?: number;
   price: number;
-  officePrice?: number;
+  pricingVariants?: DistancePricingVariant[];
   infoHtml?: string;
-  priceTierMode?: PriceTierMode;
-  participantCountType?: ParticipantCountType;
   priceTiers?: PriceTier[];
   vipPrices?: VipPrice[];
   routeMapUrl?: string;

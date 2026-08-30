@@ -414,6 +414,8 @@ export { setApiAdapter } from './provider';
 export {
   getCurrentPrice,
   applyDiscount,
+  isTierExpired,
+  describeTierThreshold,
   validateDiscountCode,
   validateTeamName,
   getExistingTeamsForEvent,

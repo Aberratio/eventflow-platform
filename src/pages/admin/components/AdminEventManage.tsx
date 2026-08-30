@@ -62,9 +62,7 @@ export const AdminEventManage = () => {
     : 'overview';
   const eventRegistrations = registrationsResponse?.data ?? [];
 
-  const [merchandise, setMerchandise] = useState<EventMerchandise[]>(
-    event?.merchandise || [],
-  );
+  const [merchandise, setMerchandise] = useState<EventMerchandise[]>(event?.merchandise || []);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(
     event?.paymentMethods || defaultPaymentMethods,
   );
@@ -120,9 +118,9 @@ export const AdminEventManage = () => {
           toast.error('Kazdy prog cenowy musi miec nazwe');
           return false;
         }
-        if (distance.priceTierMode === 'date') {
-          if (!tier.endDate || Number.isNaN(new Date(tier.endDate).getTime())) {
-            toast.error('Podaj prawidlowa date koncowa dla kazdego progu cenowego');
+        if (tier.endDate) {
+          if (Number.isNaN(new Date(tier.endDate).getTime())) {
+            toast.error('Podaj prawidlowa date koncowa dla progu cenowego');
             return false;
           }
           if (event.registrationDeadline && tier.endDate > event.registrationDeadline) {
@@ -130,7 +128,7 @@ export const AdminEventManage = () => {
             return false;
           }
         }
-        if (distance.priceTierMode === 'participants') {
+        if (tier.participantLimit != null) {
           const participantLimit = Number(tier.participantLimit);
           if (!participantLimit || participantLimit <= 0 || !Number.isInteger(participantLimit)) {
             toast.error('Limit uczestnikow w progu musi byc dodatnia liczba calkowita');
@@ -142,19 +140,17 @@ export const AdminEventManage = () => {
           }
         }
       }
-      if (distance.priceTierMode === 'date') {
-        const dates = tiers.map((tier) => tier.endDate).filter(Boolean);
-        if (new Set(dates).size !== dates.length) {
-          toast.error('Daty koncowe progow cenowych nie moga sie powtarzac');
-          return false;
-        }
+      const dates = tiers.map((tier) => tier.endDate).filter(Boolean);
+      if (new Set(dates).size !== dates.length) {
+        toast.error('Daty koncowe progow cenowych nie moga sie powtarzac');
+        return false;
       }
-      if (distance.priceTierMode === 'participants') {
-        const participantLimits = tiers.map((tier) => Number(tier.participantLimit));
-        if (new Set(participantLimits).size !== participantLimits.length) {
-          toast.error('Limity uczestnikow w progach cenowych nie moga sie powtarzac');
-          return false;
-        }
+      const participantLimits = tiers
+        .map((tier) => tier.participantLimit)
+        .filter((value): value is number => value != null);
+      if (new Set(participantLimits).size !== participantLimits.length) {
+        toast.error('Limity uczestnikow w progach cenowych nie moga sie powtarzac');
+        return false;
       }
     }
     return true;
