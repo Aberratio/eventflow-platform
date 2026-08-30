@@ -264,7 +264,7 @@ describe('participant event display', () => {
     expect(screen.getByRole('button', { name: /Udostępnij/i })).toBeInTheDocument();
   });
 
-  it('renders bank transfer reminder without share action while payment is pending', () => {
+  it('renders bank transfer reminder with share action while payment is pending', () => {
     render(
       <EventSidebar
         event={{
@@ -309,6 +309,6 @@ describe('participant event display', () => {
     expect(
       screen.getByRole('button', { name: /Przypomnij dane do przelewu/i }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Udostępnij/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Udostępnij/i })).toBeInTheDocument();
   });
 });

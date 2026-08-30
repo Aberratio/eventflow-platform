@@ -20,6 +20,6 @@ describe('Badge', () => {
 
   it('applies secondary variant', () => {
     render(<Badge variant="secondary">Secondary</Badge>);
-    expect(screen.getByText('Secondary').className).toContain('bg-secondary');
+    expect(screen.getByText('Secondary').className).toContain('bg-[var(--glass-bg-hover)]');
   });
 });

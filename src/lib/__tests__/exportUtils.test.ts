@@ -122,8 +122,8 @@ describe('exportToCSV', () => {
     createdUrl = '';
     clickedLink = null;
 
-    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
+    URL.revokeObjectURL = vi.fn();
 
     const originalCreate = document.createElement.bind(document);
     vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
@@ -149,9 +149,10 @@ describe('exportToCSV', () => {
 
   it('uses semicolon as delimiter', () => {
     let blobContent = '';
+    const OriginalBlob = globalThis.Blob;
     vi.spyOn(globalThis, 'Blob').mockImplementation((parts: BlobPart[]) => {
       blobContent = parts.join('');
-      return new Blob(parts);
+      return new OriginalBlob(parts);
     });
 
     exportToCSV([{ Imię: 'Jan', Wynik: 100 }], 'test');
@@ -160,9 +161,10 @@ describe('exportToCSV', () => {
 
   it('wraps values containing semicolons in quotes', () => {
     let blobContent = '';
+    const OriginalBlob = globalThis.Blob;
     vi.spyOn(globalThis, 'Blob').mockImplementation((parts: BlobPart[]) => {
       blobContent = parts.join('');
-      return new Blob(parts);
+      return new OriginalBlob(parts);
     });
 
     exportToCSV([{ Opis: 'Bieg; Szybki' }], 'test');
@@ -172,8 +174,8 @@ describe('exportToCSV', () => {
 
 describe('exportToXML', () => {
   beforeEach(() => {
-    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
-    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
+    URL.revokeObjectURL = vi.fn();
 
     const originalCreate = document.createElement.bind(document);
     vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
@@ -194,9 +196,10 @@ describe('exportToXML', () => {
 
   it('generates XML with correct structure', () => {
     let blobContent = '';
+    const OriginalBlob = globalThis.Blob;
     vi.spyOn(globalThis, 'Blob').mockImplementation((parts: BlobPart[]) => {
       blobContent = parts.join('');
-      return new Blob(parts);
+      return new OriginalBlob(parts);
     });
 
     exportToXML([{ name: 'Jan', score: 42 }], 'results', 'result', 'export');
@@ -211,9 +214,10 @@ describe('exportToXML', () => {
 
   it('escapes XML special characters', () => {
     let blobContent = '';
+    const OriginalBlob = globalThis.Blob;
     vi.spyOn(globalThis, 'Blob').mockImplementation((parts: BlobPart[]) => {
       blobContent = parts.join('');
-      return new Blob(parts);
+      return new OriginalBlob(parts);
     });
 
     exportToXML([{ name: '<Jan & Nowak>' }], 'root', 'item', 'test');

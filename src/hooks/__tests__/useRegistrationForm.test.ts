@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRegistrationForm } from '@/hooks/useRegistrationForm';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
@@ -44,8 +45,16 @@ const mockEvent: Event = {
   enableMerchandiseInRegistration: false,
 } as unknown as Event;
 
-const wrapper = ({ children }: { children: React.ReactNode }) =>
-  React.createElement(BrowserRouter, null, React.createElement(AuthProvider, null, children));
+const wrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return React.createElement(
+    QueryClientProvider,
+    { client: queryClient },
+    React.createElement(BrowserRouter, null, React.createElement(AuthProvider, null, children)),
+  );
+};
 
 describe('useRegistrationForm', () => {
   it('initializes with step 1 and no distance selected', () => {
@@ -91,6 +100,7 @@ describe('useRegistrationForm', () => {
       distances: [
         {
           ...mockEvent.distances[0],
+          ageCategories: [],
           categories: ['Open'],
         },
       ],

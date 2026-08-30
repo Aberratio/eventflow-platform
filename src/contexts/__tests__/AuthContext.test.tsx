@@ -52,7 +52,7 @@ describe('AuthContext', () => {
   it('login sets user by role', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
-      await result.current.login('participant');
+      await result.current.loginWithCredentials('jan@example.com', 'demo1234');
     });
     expect(result.current.isAuthenticated).toBe(true);
     expect(result.current.user?.role).toBe('participant');
@@ -81,7 +81,7 @@ describe('AuthContext', () => {
   it('logout clears user and storage', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
-      await result.current.login('admin');
+      await result.current.loginWithCredentials('admin@test.com', 'demo1234');
     });
     expect(result.current.isAuthenticated).toBe(true);
 
@@ -95,7 +95,7 @@ describe('AuthContext', () => {
   it('persists session to localStorage', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
-      await result.current.login('organizer');
+      await result.current.loginWithCredentials('organizer@test.com', 'demo1234');
     });
     const stored = JSON.parse(localStorage.getItem('zmierzymyczas_auth')!);
     expect(stored.role).toBe('organizer');
