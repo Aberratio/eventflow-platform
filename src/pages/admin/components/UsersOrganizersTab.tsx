@@ -43,7 +43,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { UserViewEditDialog } from '@/components/admin/UserViewEditDialog';
 import {
@@ -71,8 +70,6 @@ const statusLabels: Partial<Record<Event['publicationStatus'], string>> = {
   published: 'Aktywne',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Archiwum',
-  deleted: 'Usunięte',
 } as const;
 
 export const UsersOrganizersTab = () => {
@@ -130,10 +127,7 @@ export const UsersOrganizersTab = () => {
   });
 
   const getOrganizerEvents = (organizerId: string) =>
-    events.filter(
-      (e) =>
-        e.organizerId === organizerId && (canManageAdmins || e.publicationStatus !== 'deleted'),
-    );
+    events.filter((e) => e.organizerId === organizerId);
 
   const saveLimit = async (organizerId: string) => {
     const draft = Number(limitDrafts[organizerId] ?? 0);
@@ -219,11 +213,6 @@ export const UsersOrganizersTab = () => {
   };
 
   const organizerEvents = selectedUser ? getOrganizerEvents(selectedUser.id) : [];
-  const currentEvents = organizerEvents.filter(
-    (e) => e.publicationStatus !== 'archived' && e.publicationStatus !== 'deleted',
-  );
-  const archivedEvents = organizerEvents.filter((e) => e.publicationStatus === 'archived');
-  const deletedEvents = organizerEvents.filter((e) => e.publicationStatus === 'deleted');
 
   const renderLimitEditor = (organizer: User) => {
     const limit = eventLimits[organizer.id];
@@ -351,11 +340,7 @@ export const UsersOrganizersTab = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {
-                        getOrganizerEvents(user.id).filter(
-                          (event) => event.publicationStatus !== 'deleted',
-                        ).length
-                      }
+                      {getOrganizerEvents(user.id).length}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -428,22 +413,9 @@ export const UsersOrganizersTab = () => {
           <DialogHeader>
             <DialogTitle>Wydarzenia organizatora: {selectedUser?.name}</DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="current" className="pt-2">
-            <TabsList className={`grid w-full ${canManageAdmins ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <TabsTrigger value="current">Bieżące ({currentEvents.length})</TabsTrigger>
-              <TabsTrigger value="archive">Archiwum ({archivedEvents.length})</TabsTrigger>
-              <TabsTrigger value="deleted">Usunięte ({deletedEvents.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="current" className="max-h-[400px] space-y-2 overflow-y-auto pt-3">
-              {renderEventList(currentEvents)}
-            </TabsContent>
-            <TabsContent value="archive" className="max-h-[400px] space-y-2 overflow-y-auto pt-3">
-              {renderEventList(archivedEvents)}
-            </TabsContent>
-            <TabsContent value="deleted" className="max-h-[400px] space-y-2 overflow-y-auto pt-3">
-              {renderEventList(deletedEvents)}
-            </TabsContent>
-          </Tabs>
+          <div className="max-h-[400px] space-y-2 overflow-y-auto pt-3">
+            {renderEventList(organizerEvents)}
+          </div>
         </DialogContent>
       </Dialog>
 

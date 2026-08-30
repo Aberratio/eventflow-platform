@@ -122,12 +122,7 @@ const getEventStatusKey = (event: Event): EventStatusKey => {
   const eventDate = new Date(event.date);
 
   if (event.isLive || isToday(eventDate)) return 'live';
-  if (
-    event.publicationStatus === 'finished' ||
-    event.publicationStatus === 'archived' ||
-    eventDate < today
-  )
-    return 'past';
+  if (event.publicationStatus === 'finished' || eventDate < today) return 'past';
 
   const registrationDeadline = new Date(event.registrationDeadline);
   const deadlineDays = differenceInCalendarDays(registrationDeadline, today);

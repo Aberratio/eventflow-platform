@@ -16,7 +16,6 @@ export const DraftBanner = ({ event, user }: DraftBannerProps) => {
     draft: 'Podgląd - wydarzenie nie jest widoczne publicznie',
     submitted: 'Podgląd - wydarzenie oczekuje na sprawdzenie przez moderatora',
     rejected: 'Podgląd - wydarzenie zostało odrzucone przez moderatora',
-    deleted: 'Podgląd - wydarzenie jest oznaczone jako usunięte',
   };
 
   const message = messages[event.publicationStatus];
@@ -29,19 +28,17 @@ export const DraftBanner = ({ event, user }: DraftBannerProps) => {
           <Eye className="h-4 w-4 shrink-0" />
           <span>{message}</span>
         </div>
-        {event.publicationStatus !== 'deleted' && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
-            asChild
-          >
-            <Link to={getEditUrl(event, user)}>
-              <Pencil className="mr-1 h-3 w-3" />
-              Edytuj
-            </Link>
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 border-warning-foreground/30 bg-background/20 text-xs hover:bg-background/40"
+          asChild
+        >
+          <Link to={getEditUrl(event, user)}>
+            <Pencil className="mr-1 h-3 w-3" />
+            Edytuj
+          </Link>
+        </Button>
       </div>
     </div>
   );

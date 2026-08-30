@@ -13,14 +13,13 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Event } from '@/types';
 
-type StatusFilter = 'all' | 'published' | 'draft' | 'finished' | 'archived';
+type StatusFilter = 'all' | 'published' | 'draft' | 'finished';
 
 const statusLabels: Record<StatusFilter, string> = {
   all: 'Wszystkie',
   published: 'Aktywne',
   draft: 'Szkice',
   finished: 'Zakończone',
-  archived: 'Archiwum',
 };
 
 const getStatusBadge = (status: Event['publicationStatus']) => {
@@ -37,10 +36,6 @@ const getStatusBadge = (status: Event['publicationStatus']) => {
       return <Badge variant="secondary">Zakończone</Badge>;
     case 'cancelled':
       return <Badge variant="destructive">Odwołane</Badge>;
-    case 'archived':
-      return <Badge variant="outline">Zarchiwizowane</Badge>;
-    case 'deleted':
-      return <Badge variant="destructive">Usunięte</Badge>;
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
@@ -63,9 +58,7 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
-  const myEvents = (eventsResponse?.data ?? []).filter(
-    (event) => event.publicationStatus !== 'deleted',
-  );
+  const myEvents = eventsResponse?.data ?? [];
   const filteredEvents =
     statusFilter === 'all'
       ? myEvents
@@ -99,8 +92,8 @@ const OrganizerEventsPage = () => {
                   Limit wydarzeń: wykorzystano {eventLimit.used} z {eventLimit.limit}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Do limitu liczą się szkice, aktywne, przeszłe i zarchiwizowane wydarzenia.
-                  Usunięte szkice bez zapisów nie są liczone.
+                  Do limitu liczą się szkice, aktywne i przeszłe wydarzenia. Usunięte szkice bez
+                  zapisów nie są liczone.
                 </p>
               </div>
               <Badge variant={canCreateEvent ? 'secondary' : 'destructive'}>

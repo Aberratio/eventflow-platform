@@ -159,8 +159,6 @@ export const httpAdapter: ApiAdapter = {
   createEvent: (data) => request('/events', json('POST', data)),
   updateEvent: (id, data) => request(`/events/${encodeURIComponent(id)}`, json('PATCH', data)),
   deleteEvent: (id) => request(`/events/${encodeURIComponent(id)}`, json('DELETE')),
-  updateEventStatus: (id, status, reason) =>
-    request(`/events/${encodeURIComponent(id)}/status`, json('PATCH', { status, reason })),
   submitEvent: (id) => request(`/events/${encodeURIComponent(id)}/submit`, json('POST')),
   approveEvent: (id) => request(`/events/${encodeURIComponent(id)}/approve`, json('POST')),
   rejectEvent: (id, reason) =>
@@ -171,6 +169,8 @@ export const httpAdapter: ApiAdapter = {
       `/events/${encodeURIComponent(id)}/visibility`,
       json('PATCH', { visibility, accessCode }),
     ),
+  setEventIsTest: (id, isTest) =>
+    request(`/events/${encodeURIComponent(id)}/is-test`, json('PATCH', { isTest })),
   getFeaturedEvents: () => request('/events/featured'),
   getLiveEvents: () => request('/events/live'),
   getEventsByOrganizer: (organizerId) =>

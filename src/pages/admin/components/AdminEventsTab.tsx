@@ -32,8 +32,6 @@ const statusLabels: Record<Event['publicationStatus'], string> = {
   published: 'Aktywne',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Zarchiwizowane',
-  deleted: 'Usunięte',
 };
 
 const statusColors: Record<Event['publicationStatus'], string> = {
@@ -43,8 +41,6 @@ const statusColors: Record<Event['publicationStatus'], string> = {
   published: 'bg-primary/10 text-primary border-primary/20',
   finished: 'bg-muted text-muted-foreground',
   cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
-  archived: 'bg-secondary text-secondary-foreground',
-  deleted: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
 export const AdminEventsTab = () => {
@@ -66,7 +62,6 @@ export const AdminEventsTab = () => {
   const events = eventsResponse?.data ?? [];
 
   const filteredEvents = events.filter((event) => {
-    if (event.publicationStatus === 'deleted' && !canSeeDeleted) return false;
     const matchesSearch =
       event.name.toLowerCase().includes(search.toLowerCase()) ||
       event.city.toLowerCase().includes(search.toLowerCase()) ||
@@ -100,8 +95,6 @@ export const AdminEventsTab = () => {
             <SelectItem value="published">Aktywne</SelectItem>
             <SelectItem value="finished">Zakończone</SelectItem>
             <SelectItem value="cancelled">Odwołane</SelectItem>
-            <SelectItem value="archived">Zarchiwizowane</SelectItem>
-            {canSeeDeleted && <SelectItem value="deleted">Usunięte</SelectItem>}
           </SelectContent>
         </Select>
         <Select value={disciplineFilter} onValueChange={setDisciplineFilter}>

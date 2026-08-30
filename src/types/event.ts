@@ -282,9 +282,7 @@ export type EventPublicationStatus =
   | 'rejected'
   | 'published'
   | 'finished'
-  | 'cancelled'
-  | 'archived'
-  | 'deleted';
+  | 'cancelled';
 
 /**
  * Axis 2 — visibility (E1.1). Only meaningful/editable while

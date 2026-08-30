@@ -15,8 +15,6 @@ const statusLabels: Record<Event['publicationStatus'], string> = {
   published: 'Opublikowane',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Zarchiwizowane',
-  deleted: 'Usuniete',
 };
 
 export const AdminModerationTab = () => {

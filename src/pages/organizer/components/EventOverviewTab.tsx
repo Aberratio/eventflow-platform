@@ -33,8 +33,6 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
     published: 'Aktywne',
     finished: 'Zakończone',
     cancelled: 'Odwołane',
-    archived: 'Zarchiwizowane',
-    deleted: 'Usunięte',
   };
 
   const statusVariant = event.publicationStatus === 'published' ? 'default' : 'secondary';

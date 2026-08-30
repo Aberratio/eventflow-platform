@@ -48,8 +48,6 @@ const statusLabels = {
   published: 'Aktywne',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Zarchiwizowane',
-  deleted: 'Usunięte',
 } as const;
 
 const EventManage = () => {
@@ -128,10 +126,12 @@ const EventManage = () => {
       });
   };
 
+  // Moderator access starts at `submitted` — a Szkic (draft) is visible only to its
+  // owning organizer/team and to admins (spec 08, "Co widzi każda rola").
   const canManage =
     user?.role === 'admin' ||
     user?.role === 'superadmin' ||
-    user?.role === 'moderator' ||
+    (user?.role === 'moderator' && visibleEvent?.publicationStatus !== 'draft') ||
     (user?.role === 'organizer' && visibleEvent?.organizerId === user?.id);
 
   if (isLoading) {
@@ -144,7 +144,7 @@ const EventManage = () => {
     );
   }
 
-  if (!visibleEvent || !canManage || visibleEvent.publicationStatus === 'deleted') {
+  if (!visibleEvent || !canManage) {
     return (
       <Layout>
         <div className="container py-8">
@@ -273,7 +273,10 @@ const EventManage = () => {
           </TabsContent>
 
           <TabsContent value="settings">
-            <EventSettingsTab event={visibleEvent} />
+            <EventSettingsTab
+              event={visibleEvent}
+              currentUser={user ? { id: user.id, role: user.role } : null}
+            />
           </TabsContent>
         </Tabs>
       </div>

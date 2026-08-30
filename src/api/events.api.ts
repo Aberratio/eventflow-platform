@@ -26,14 +26,6 @@ export async function deleteEvent(id: string): Promise<ApiResponse<void>> {
   return httpAdapter.deleteEvent(id);
 }
 
-export async function updateEventStatus(
-  id: string,
-  status: Event['publicationStatus'],
-  reason?: string,
-): Promise<ApiResponse<Event>> {
-  return httpAdapter.updateEventStatus(id, status, reason);
-}
-
 export async function submitEvent(id: string): Promise<ApiResponse<Event>> {
   return httpAdapter.submitEvent(id);
 }
@@ -56,6 +48,10 @@ export async function setEventVisibility(
   accessCode?: string,
 ): Promise<ApiResponse<Event>> {
   return httpAdapter.setEventVisibility(id, visibility, accessCode);
+}
+
+export async function setEventIsTest(id: string, isTest: boolean): Promise<ApiResponse<Event>> {
+  return httpAdapter.setEventIsTest(id, isTest);
 }
 
 export async function getFeaturedEvents(): Promise<ApiResponse<Event[]>> {

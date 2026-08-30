@@ -116,11 +116,6 @@ export interface ApiAdapter {
   createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>>;
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;
   deleteEvent(id: string): Promise<ApiResponse<void>>;
-  updateEventStatus(
-    id: string,
-    status: Event['publicationStatus'],
-    reason?: string,
-  ): Promise<ApiResponse<Event>>;
   /** draft/rejected -> submitted. Also irreversibly clears `isTest`. */
   submitEvent(id: string): Promise<ApiResponse<Event>>;
   /** submitted -> published (single action, no separate resting "approved" state). */
@@ -135,6 +130,8 @@ export interface ApiAdapter {
     visibility: EventVisibility,
     accessCode?: string,
   ): Promise<ApiResponse<Event>>;
+  /** Only valid while publicationStatus === 'draft'. */
+  setEventIsTest(id: string, isTest: boolean): Promise<ApiResponse<Event>>;
   getFeaturedEvents(): Promise<ApiResponse<Event[]>>;
   getLiveEvents(): Promise<ApiResponse<Event[]>>;
   getEventsByOrganizer(organizerId: string): Promise<ApiResponse<Event[]>>;

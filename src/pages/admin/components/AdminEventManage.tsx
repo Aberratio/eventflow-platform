@@ -34,9 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const AdminEventManage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: eventResponse, isLoading } = useQuery({
@@ -209,7 +211,10 @@ export const AdminEventManage = () => {
           </TabsContent>
 
           <TabsContent value="settings">
-            <EventSettingsTab event={event} />
+            <EventSettingsTab
+              event={event}
+              currentUser={user ? { id: user.id, role: user.role } : null}
+            />
           </TabsContent>
 
           <TabsContent value="advanced">

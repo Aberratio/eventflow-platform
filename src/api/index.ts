@@ -49,8 +49,6 @@ export const updateEvent: ApiAdapter['updateEvent'] = (...args) =>
   ensureAdapter().then((a) => a.updateEvent(...args));
 export const deleteEvent: ApiAdapter['deleteEvent'] = (...args) =>
   ensureAdapter().then((a) => a.deleteEvent(...args));
-export const updateEventStatus: ApiAdapter['updateEventStatus'] = (...args) =>
-  ensureAdapter().then((a) => a.updateEventStatus(...args));
 export const submitEvent: ApiAdapter['submitEvent'] = (...args) =>
   ensureAdapter().then((a) => a.submitEvent(...args));
 export const approveEvent: ApiAdapter['approveEvent'] = (...args) =>
@@ -61,6 +59,8 @@ export const cancelEvent: ApiAdapter['cancelEvent'] = (...args) =>
   ensureAdapter().then((a) => a.cancelEvent(...args));
 export const setEventVisibility: ApiAdapter['setEventVisibility'] = (...args) =>
   ensureAdapter().then((a) => a.setEventVisibility(...args));
+export const setEventIsTest: ApiAdapter['setEventIsTest'] = (...args) =>
+  ensureAdapter().then((a) => a.setEventIsTest(...args));
 export const getFeaturedEvents: ApiAdapter['getFeaturedEvents'] = (...args) =>
   ensureAdapter().then((a) => a.getFeaturedEvents(...args));
 export const getLiveEvents: ApiAdapter['getLiveEvents'] = (...args) =>

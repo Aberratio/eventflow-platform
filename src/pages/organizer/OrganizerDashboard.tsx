@@ -10,15 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Event, OrganizerEventLimit } from '@/types';
-import {
-  Calendar,
-  Users,
-  TrendingUp,
-  Plus,
-  LayoutDashboard,
-  CalendarDays,
-  Archive,
-} from 'lucide-react';
+import { Calendar, Users, TrendingUp, Plus, LayoutDashboard, CalendarDays } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListContainer, ListRow } from '@/components/lists';
@@ -36,11 +28,9 @@ const statusConfig: Record<
   published: { label: 'Aktywne', variant: 'default' },
   finished: { label: 'Zakończone', variant: 'secondary' },
   cancelled: { label: 'Odwołane', variant: 'destructive' },
-  archived: { label: 'Zarchiwizowane', variant: 'outline' },
   draft: { label: 'Szkic', variant: 'outline' },
   submitted: { label: 'Do sprawdzenia', variant: 'outline' },
   rejected: { label: 'Odrzucone', variant: 'destructive' },
-  deleted: { label: 'Usunięte', variant: 'destructive' },
 };
 
 const OrganizerDashboard = () => {
@@ -61,10 +51,7 @@ const OrganizerDashboard = () => {
 
   const myEvents = eventsResponse?.data ?? [];
   const eventLimit = eventLimitResponse?.data ?? EMPTY_EVENT_LIMIT;
-  const visibleEvents = myEvents.filter(
-    (event) => event.publicationStatus !== 'archived' && event.publicationStatus !== 'deleted',
-  );
-  const archivedEvents = myEvents.filter((event) => event.publicationStatus === 'archived');
+  const visibleEvents = myEvents;
   const totalParticipants = myEvents.reduce(
     (acc, e) => acc + e.distances.reduce((a, d) => a + d.registeredCount, 0),
     0,
@@ -74,7 +61,6 @@ const OrganizerDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Pulpit', icon: LayoutDashboard },
     { id: 'events', label: 'Moje wydarzenia', icon: CalendarDays },
-    { id: 'archive', label: 'Archiwum', icon: Archive },
   ];
 
   const getStatusBadge = (event: Event) => {
@@ -144,7 +130,7 @@ const OrganizerDashboard = () => {
                 {eventLimit.available}.
               </p>
               <p className="text-sm text-muted-foreground">
-                Do limitu liczą się wszystkie wydarzenia poza usuniętymi, również szkice i archiwum.
+                Do limitu liczą się wszystkie wydarzenia poza usuniętymi, również szkice.
               </p>
             </div>
             <Badge variant={canCreateEvent ? 'secondary' : 'destructive'} className="self-start">
@@ -240,17 +226,6 @@ const OrganizerDashboard = () => {
                     ? 'Nie masz jeszcze żadnych wydarzeń. Utwórz pierwsze z przycisku Dodaj.'
                     : 'Nie masz wydarzeń w głównym panelu.',
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="archive" className="mt-0 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Archiwum wydarzeń</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {renderEventList(archivedEvents, 'Archiwum jest puste.')}
               </CardContent>
             </Card>
           </TabsContent>

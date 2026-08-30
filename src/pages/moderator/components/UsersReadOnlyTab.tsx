@@ -64,8 +64,7 @@ export const UsersReadOnlyTab = ({ userType }: UsersReadOnlyTabProps) => {
   };
 
   const getOrganizerEvents = (organizerId: string) => {
-    return events.filter((e) => e.organizerId === organizerId && e.publicationStatus !== 'deleted')
-      .length;
+    return events.filter((e) => e.organizerId === organizerId).length;
   };
 
   const isParticipant = userType === 'participant';

@@ -98,8 +98,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const isUnpublished = event && nonPublicStatuses.includes(event.publicationStatus);
   const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
   const isModeratorLike = isAdminLike || user?.role === 'moderator';
+  // A moderator has no access to a Szkic (draft) — their access starts at `submitted`
+  // (spec 08, "Co widzi każda rola"). Admins keep full access to every status.
   const canViewDraft =
-    isModeratorLike || (user?.role === 'organizer' && event?.organizerId === user?.id);
+    isAdminLike ||
+    (user?.role === 'moderator' && event?.publicationStatus !== 'draft') ||
+    (user?.role === 'organizer' && event?.organizerId === user?.id);
 
   const accessCodeFromUrl = searchParams.get('access');
   const isPrivateEvent = event?.visibility === 'private';

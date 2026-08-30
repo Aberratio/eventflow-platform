@@ -18,19 +18,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import {
-  cancelEvent,
-  deleteEvent,
-  setEventVisibility,
-  submitEvent,
-  updateEvent,
-  updateEventStatus,
-} from '@/api';
-import type { Event } from '@/types';
+import { cancelEvent, deleteEvent, setEventIsTest, setEventVisibility, submitEvent } from '@/api';
+import type { Event, UserRole } from '@/types';
 import { appLogger } from '@/lib/logger';
 import {
   AlertTriangle,
-  Archive,
   Ban,
   Copy,
   Edit,
@@ -45,6 +37,8 @@ import { EventActivityLogCard } from './EventActivityLogCard';
 
 interface EventSettingsTabProps {
   event: Event;
+  /** Current user, used to gate role-restricted actions (e.g. cancelling an event). */
+  currentUser?: { id: string; role: UserRole } | null;
 }
 
 const statusLabels: Record<Event['publicationStatus'], string> = {
@@ -54,16 +48,13 @@ const statusLabels: Record<Event['publicationStatus'], string> = {
   published: 'Opublikowane',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Zarchiwizowane',
-  deleted: 'Usuniete',
 };
 
-export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
+export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTabProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(event.visibility === 'private');
   const [accessCode, setAccessCode] = useState(event.accessCode || '');
@@ -71,24 +62,25 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const [pendingIsPrivate, setPendingIsPrivate] = useState<boolean | null>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPrivacySaving, setIsPrivacySaving] = useState(false);
   const [isTestSaving, setIsTestSaving] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
-  const eventEndDate = (event.endDate || event.date).slice(0, 10);
-  const hasEnded = eventEndDate < today;
   const hasRegistrations = event.distances.some((distance) => distance.registeredCount > 0);
   const canDeleteUpcoming =
-    !['finished', 'archived', 'deleted', 'cancelled'].includes(event.publicationStatus) &&
+    !['finished', 'cancelled'].includes(event.publicationStatus) &&
     event.date.slice(0, 10) >= today &&
     !hasRegistrations;
-  const canArchive =
-    event.publicationStatus !== 'archived' && (event.publicationStatus === 'finished' || hasEnded);
   const canSubmitReview =
     event.publicationStatus === 'draft' || event.publicationStatus === 'rejected';
-  const canCancel = event.publicationStatus === 'published';
+  // Cancelling is restricted to the owning organizer or an admin/superadmin — never a
+  // moderator (spec 08, "Co widzi każda rola").
+  const isOwnerOrAdmin =
+    currentUser?.role === 'admin' ||
+    currentUser?.role === 'superadmin' ||
+    (currentUser?.role === 'organizer' && currentUser.id === event.organizerId);
+  const canCancel = event.publicationStatus === 'published' && isOwnerOrAdmin;
   const isDraft = event.publicationStatus === 'draft';
 
   const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
@@ -219,7 +211,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const handleToggleIsTest = async (checked: boolean) => {
     try {
       setIsTestSaving(true);
-      const response = await updateEvent(event.id, { isTest: checked });
+      const response = await setEventIsTest(event.id, checked);
       if (!response.success) {
         throw new Error(response.message || 'Nie udalo sie zmienic trybu testowego.');
       }
@@ -238,36 +230,6 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       });
     } finally {
       setIsTestSaving(false);
-    }
-  };
-
-  const handleArchive = async () => {
-    try {
-      setIsArchiving(true);
-      const response = await updateEventStatus(event.id, 'archived');
-      if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie zarchiwizowac wydarzenia.');
-      }
-      appLogger.event('status_change', `Zarchiwizowano wydarzenie "${event.name}"`, {
-        targetType: 'event',
-        targetId: event.id,
-        targetName: event.name,
-        metadata: { oldStatus: event.publicationStatus, newStatus: 'archived' },
-      });
-      await invalidateEventQueries();
-      toast({ title: 'Wydarzenie zarchiwizowane' });
-      setArchiveDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: 'Nie udalo sie zarchiwizowac wydarzenia',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'Archiwizowac mozna tylko wydarzenia, ktore juz sie zakonczyly.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsArchiving(false);
     }
   };
 
@@ -322,10 +284,6 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         return <Badge variant="outline">Zakończone</Badge>;
       case 'cancelled':
         return <Badge variant="destructive">Odwołane</Badge>;
-      case 'archived':
-        return <Badge variant="outline">Zarchiwizowane</Badge>;
-      case 'deleted':
-        return <Badge variant="destructive">Usuniete</Badge>;
       default:
         return <Badge variant="outline">{statusLabels[status]}</Badge>;
     }
@@ -412,22 +370,6 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </Card>
       )}
 
-      {canArchive && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Archiwum</CardTitle>
-            <CardDescription>
-              Przeszle wydarzenie mozesz przeniesc do archiwum organizatora.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" onClick={() => setArchiveDialogOpen(true)}>
-              <Archive className="mr-2 h-4 w-4" /> Przenies do archiwum
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {event.publicationStatus === 'published' && (
         <Card>
           <CardHeader>
@@ -504,8 +446,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
               Usuniecie nadchodzacego wydarzenia
             </CardTitle>
             <CardDescription>
-              Wydarzenie bez zapisow moze zostac usuniete przed terminem. Przeszle wydarzenia
-              przenos do archiwum.
+              Wydarzenie bez zapisow moze zostac usuniete przed terminem.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -515,23 +456,6 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           </CardContent>
         </Card>
       )}
-
-      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Zarchiwizowac wydarzenie?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Wydarzenie zostanie przeniesione do archiwum organizatora.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive} disabled={isArchiving}>
-              {isArchiving ? 'Archiwizowanie...' : 'Archiwizuj'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>

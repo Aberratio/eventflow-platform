@@ -16,8 +16,6 @@ const statusLabels: Record<Event['publicationStatus'], string> = {
   published: 'Otwarta rejestracja',
   finished: 'Zakończone',
   cancelled: 'Odwołane',
-  archived: 'Archiwum',
-  deleted: 'Usunięte',
 };
 
 export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) => (
