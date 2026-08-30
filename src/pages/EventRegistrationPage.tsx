@@ -81,7 +81,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   });
 
   const event = eventResponse?.data ?? null;
-  const isUnpublished = event && event.status === 'draft';
+  const isUnpublished = event && event.publicationStatus === 'draft';
   const canManagePreview =
     user?.role === 'admin' ||
     user?.role === 'superadmin' ||

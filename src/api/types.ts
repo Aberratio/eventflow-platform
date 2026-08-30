@@ -40,7 +40,7 @@ export interface EventFilters {
   city?: string;
   dateFrom?: string;
   dateTo?: string;
-  status?: Event['status'];
+  publicationStatus?: Event['publicationStatus'];
   seriesId?: string;
   search?: string;
   registrationStatus?: RegistrationStatus;

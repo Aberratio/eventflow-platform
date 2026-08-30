@@ -163,10 +163,7 @@ const HeroEventCard = ({ event }: { event: Event }) => (
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-500 group-hover:scale-[1.03]"
         />
-        <div
-          className="absolute inset-0"
-          style={{ background: 'var(--overlay-card-fade)' }}
-        />
+        <div className="absolute inset-0" style={{ background: 'var(--overlay-card-fade)' }} />
         <Badge className="absolute left-5 top-5 border-emerald-400/20 bg-emerald-500/10 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
           Zapisy otwarte
         </Badge>
@@ -304,9 +301,7 @@ const HomeEventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | '
         <div className="flex items-center gap-2 text-sm">
           <span className="text-white/55">Od {minPrice(event)} zł</span>
           <span className="text-white/24">•</span>
-          <span className="font-medium text-emerald-400">
-            Pozostało {spotsLeft(event)} miejsc
-          </span>
+          <span className="font-medium text-emerald-400">Pozostało {spotsLeft(event)} miejsc</span>
         </div>
       ) : undefined
     }
@@ -318,7 +313,10 @@ const TABLE_HEADER_LABELS = ['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Zapi
 const UpcomingTableHeader = () => (
   <div className="grid grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] items-center gap-4 px-4 py-2.5">
     {TABLE_HEADER_LABELS.map((label) => (
-      <span key={label} className="text-[10px] font-bold uppercase tracking-widest text-white/[0.28]">
+      <span
+        key={label}
+        className="text-[10px] font-bold uppercase tracking-widest text-white/[0.28]"
+      >
         {label}
       </span>
     ))}
@@ -460,11 +458,11 @@ const Index = () => {
           (toDate(a.registrationDeadline)?.getTime() ?? Number.MAX_SAFE_INTEGER) -
           (toDate(b.registrationDeadline)?.getTime() ?? Number.MAX_SAFE_INTEGER),
       );
-    const finished = publicEvents.filter((event) => event.status === 'past').sort(byDateDesc);
+    const finished = publicEvents
+      .filter((event) => event.publicationStatus === 'finished')
+      .sort(byDateDesc);
     const featured = publicEvents
-      .filter(
-        (event) => event.featured && (event.status === 'active' || event.status === 'approved'),
-      )
+      .filter((event) => event.featured && event.publicationStatus === 'published')
       .sort(byDateAsc);
     const fallbackFeatured = featured.length > 0 ? featured : upcoming;
 

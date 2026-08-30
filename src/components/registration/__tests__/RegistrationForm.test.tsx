@@ -104,7 +104,7 @@ const event = {
   distances: [formState.selectedDistance],
   organizerId: 'o1',
   organizerName: 'Organizer',
-  status: 'draft',
+  publicationStatus: 'draft',
   registrationDeadline: '2026-05-20',
   featured: false,
 } as Event;

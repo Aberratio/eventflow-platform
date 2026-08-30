@@ -1,6 +1,6 @@
 import type { ApiResponse, PaginatedResponse, EventFilters } from './types';
 import { httpAdapter } from './adapters/http.adapter';
-import type { Event } from '@/types';
+import type { Event, EventVisibility } from '@/types';
 
 export async function getEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
   return httpAdapter.getEvents(filters);
@@ -28,7 +28,7 @@ export async function deleteEvent(id: string): Promise<ApiResponse<void>> {
 
 export async function updateEventStatus(
   id: string,
-  status: Event['status'],
+  status: Event['publicationStatus'],
   reason?: string,
 ): Promise<ApiResponse<Event>> {
   return httpAdapter.updateEventStatus(id, status, reason);
@@ -46,8 +46,16 @@ export async function rejectEvent(id: string, reason: string): Promise<ApiRespon
   return httpAdapter.rejectEvent(id, reason);
 }
 
-export async function publishEvent(id: string): Promise<ApiResponse<Event>> {
-  return httpAdapter.publishEvent(id);
+export async function cancelEvent(id: string): Promise<ApiResponse<Event>> {
+  return httpAdapter.cancelEvent(id);
+}
+
+export async function setEventVisibility(
+  id: string,
+  visibility: EventVisibility,
+  accessCode?: string,
+): Promise<ApiResponse<Event>> {
+  return httpAdapter.setEventVisibility(id, visibility, accessCode);
 }
 
 export async function getFeaturedEvents(): Promise<ApiResponse<Event[]>> {

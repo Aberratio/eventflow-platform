@@ -261,6 +261,39 @@ export interface EventBackgroundUsage {
   status: string;
 }
 
+/**
+ * Axis 1 — moderation workflow (E1.1). Replaces the old mixed `status` field.
+ *
+ *   draft -> submitted -> published -> finished
+ *                       \-> rejected (organizer edits, resubmits)
+ *              published -> cancelled (irreversible, terminal)
+ *
+ * Approval is a single moderator/admin action that results directly in
+ * `published` — there is no separate resting "approved" state to manage.
+ * `finished` is set automatically by the backend after the event date.
+ * `archived` / `deleted` are pre-existing organizer/admin housekeeping states
+ * (archive a finished event, soft-delete a draft) — orthogonal to the
+ * moderation workflow itself but kept as part of the same enum for
+ * backward compatibility with existing archive/delete features.
+ */
+export type EventPublicationStatus =
+  | 'draft'
+  | 'submitted'
+  | 'rejected'
+  | 'published'
+  | 'finished'
+  | 'cancelled'
+  | 'archived'
+  | 'deleted';
+
+/**
+ * Axis 2 — visibility (E1.1). Only meaningful/editable while
+ * `publicationStatus === 'published'`: public events show in calendar/search,
+ * private events are hidden from them and reachable only via direct link
+ * (optionally gated by `accessCode`).
+ */
+export type EventVisibility = 'public' | 'private';
+
 export interface Event {
   id: string;
   name: string;
@@ -279,13 +312,17 @@ export interface Event {
   organizerName: string;
   organizerContact?: OrganizerContact;
   organizerInfo?: OrganizerInfo;
-  status: 'draft' | 'awaiting_approval' | 'approved' | 'active' | 'past' | 'archived' | 'deleted';
+  publicationStatus: EventPublicationStatus;
+  /** Only meaningful/editable while `publicationStatus === 'draft'`; cleared and locked once submitted. */
+  isTest?: boolean;
   rejectionReason?: string;
   submittedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
   publishedAt?: string;
   publishedBy?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
   createdBy?: string;
   registrationDeadline: string;
   registrationOpenDate?: string;
@@ -319,7 +356,8 @@ export interface Event {
   rulesHtml?: string;
   finalAcceptanceHtml?: string;
   requireFinalAcceptance?: boolean;
-  isPrivate?: boolean;
+  /** Only meaningful/editable while `publicationStatus === 'published'`. */
+  visibility?: EventVisibility;
   accessCode?: string;
   registrationEmbed?: RegistrationEmbedConfig;
   registrationFormConfig?: RegistrationFormConfig;

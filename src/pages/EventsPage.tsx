@@ -109,7 +109,7 @@ const _sectionMeta: Record<EventSectionKey, { title: string; colorClass: string 
   past: { title: 'Zakończone - wyniki dostępne', colorClass: 'bg-violet-400' },
 };
 
-const isCancelledEvent = (event: Event) => event.status === 'deleted';
+const isCancelledEvent = (event: Event) => event.publicationStatus === 'cancelled';
 
 const getTotalParticipants = (event: Event) =>
   event.distances.reduce((sum, distance) => sum + distance.registeredCount, 0);
@@ -122,7 +122,12 @@ const getEventStatusKey = (event: Event): EventStatusKey => {
   const eventDate = new Date(event.date);
 
   if (event.isLive || isToday(eventDate)) return 'live';
-  if (event.status === 'past' || event.status === 'archived' || eventDate < today) return 'past';
+  if (
+    event.publicationStatus === 'finished' ||
+    event.publicationStatus === 'archived' ||
+    eventDate < today
+  )
+    return 'past';
 
   const registrationDeadline = new Date(event.registrationDeadline);
   const deadlineDays = differenceInCalendarDays(registrationDeadline, today);
@@ -375,9 +380,7 @@ const MonthHeader = ({
   count: number;
   accentClass: string;
 }) => (
-  <div
-    className="sticky top-0 z-10 flex h-[40px] items-center gap-3 border-b border-white/[0.07] bg-[hsl(var(--background)/0.92)] px-1 backdrop-blur-sm"
-  >
+  <div className="sticky top-0 z-10 flex h-[40px] items-center gap-3 border-b border-white/[0.07] bg-[hsl(var(--background)/0.92)] px-1 backdrop-blur-sm">
     <span className={cn('h-4 w-0.5 rounded-full', accentClass)} />
     <span className="text-sm font-bold uppercase text-muted-foreground">{title}</span>
     <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-xs text-muted-foreground">
@@ -427,11 +430,7 @@ const DesktopVirtualList = ({
               }}
             >
               {item.type === 'header' ? (
-                <MonthHeader
-                  title={item.title}
-                  count={item.count}
-                  accentClass={item.accentClass}
-                />
+                <MonthHeader title={item.title} count={item.count} accentClass={item.accentClass} />
               ) : (
                 <EventRow event={item.event} compact={compact} />
               )}

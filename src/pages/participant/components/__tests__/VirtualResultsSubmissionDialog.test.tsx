@@ -39,7 +39,7 @@ const event: Event = {
   ],
   organizerId: 'organizer',
   organizerName: 'Organizer',
-  status: 'active',
+  publicationStatus: 'published',
   registrationDeadline: '2026-06-01',
   featured: false,
   isVirtual: true,
@@ -65,8 +65,14 @@ describe('VirtualResultsSubmissionDialog', () => {
     await user.type(screen.getByPlaceholderText('GG'), '1');
     await user.type(screen.getByPlaceholderText('MM'), '02');
     await user.type(screen.getByPlaceholderText('SS'), '03');
-    await user.type(screen.getByPlaceholderText('https://strava.com/activities/...'), 'https://strava.test/1');
-    await user.type(screen.getByPlaceholderText('Np. Bieg w parku miejskim w Krakowie...'), 'Dobry bieg');
+    await user.type(
+      screen.getByPlaceholderText('https://strava.com/activities/...'),
+      'https://strava.test/1',
+    );
+    await user.type(
+      screen.getByPlaceholderText('Np. Bieg w parku miejskim w Krakowie...'),
+      'Dobry bieg',
+    );
     await user.click(screen.getByRole('button', { name: 'Zgłoś wynik' }));
 
     await waitFor(() => {

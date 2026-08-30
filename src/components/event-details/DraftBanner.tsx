@@ -12,12 +12,14 @@ interface DraftBannerProps {
 }
 
 export const DraftBanner = ({ event, user }: DraftBannerProps) => {
-  const messages: Partial<Record<Event['status'], string>> = {
+  const messages: Partial<Record<Event['publicationStatus'], string>> = {
     draft: 'Podgląd - wydarzenie nie jest widoczne publicznie',
+    submitted: 'Podgląd - wydarzenie oczekuje na sprawdzenie przez moderatora',
+    rejected: 'Podgląd - wydarzenie zostało odrzucone przez moderatora',
     deleted: 'Podgląd - wydarzenie jest oznaczone jako usunięte',
   };
 
-  const message = messages[event.status];
+  const message = messages[event.publicationStatus];
   if (!message) return null;
 
   return (
@@ -27,7 +29,7 @@ export const DraftBanner = ({ event, user }: DraftBannerProps) => {
           <Eye className="h-4 w-4 shrink-0" />
           <span>{message}</span>
         </div>
-        {event.status !== 'deleted' && (
+        {event.publicationStatus !== 'deleted' && (
           <Button
             size="sm"
             variant="outline"

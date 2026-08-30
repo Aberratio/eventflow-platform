@@ -16,37 +16,111 @@ import type {
 // ─── Seed data pools ────────────────────────────────────────
 
 const CITIES = [
-  'Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź', 'Katowice',
-  'Lublin', 'Białystok', 'Rzeszów', 'Toruń', 'Bydgoszcz', 'Szczecin',
-  'Olsztyn', 'Kielce', 'Opole', 'Gliwice', 'Zabrze', 'Częstochowa', 'Radom',
-  'Zakopane', 'Sopot', 'Nowy Sącz', 'Tarnów', 'Legnica',
+  'Warszawa',
+  'Kraków',
+  'Wrocław',
+  'Poznań',
+  'Gdańsk',
+  'Łódź',
+  'Katowice',
+  'Lublin',
+  'Białystok',
+  'Rzeszów',
+  'Toruń',
+  'Bydgoszcz',
+  'Szczecin',
+  'Olsztyn',
+  'Kielce',
+  'Opole',
+  'Gliwice',
+  'Zabrze',
+  'Częstochowa',
+  'Radom',
+  'Zakopane',
+  'Sopot',
+  'Nowy Sącz',
+  'Tarnów',
+  'Legnica',
 ];
 
 const LOCATIONS = [
-  'Park Miejski', 'Bulwary Wiślane', 'Stadion Miejski', 'Park Łazienkowski',
-  'Rynek Główny', 'Plaża Miejska', 'Las Kabacki', 'Puszcza Białowieska',
-  'Błonia Krakowskie', 'Park Narodowy', 'Centrum Sportowe', 'Dolina Chochołowska',
-  'Morskie Oko', 'Wisła Środkowa', 'Wał Miedzeszyński',
+  'Park Miejski',
+  'Bulwary Wiślane',
+  'Stadion Miejski',
+  'Park Łazienkowski',
+  'Rynek Główny',
+  'Plaża Miejska',
+  'Las Kabacki',
+  'Puszcza Białowieska',
+  'Błonia Krakowskie',
+  'Park Narodowy',
+  'Centrum Sportowe',
+  'Dolina Chochołowska',
+  'Morskie Oko',
+  'Wisła Środkowa',
+  'Wał Miedzeszyński',
 ];
 
 const EVENT_NAME_PREFIXES = [
-  'Bieg', 'Maraton', 'Półmaraton', 'Triathlon', 'Duathlon', 'Grand Prix',
-  'Mistrzostwa', 'Puchar', 'Memoriał', 'Nocny Bieg', 'Ultramaraton',
-  'Bieg Uliczny', 'Cross', 'Wyścig', 'Rajd',
+  'Bieg',
+  'Maraton',
+  'Półmaraton',
+  'Triathlon',
+  'Duathlon',
+  'Grand Prix',
+  'Mistrzostwa',
+  'Puchar',
+  'Memoriał',
+  'Nocny Bieg',
+  'Ultramaraton',
+  'Bieg Uliczny',
+  'Cross',
+  'Wyścig',
+  'Rajd',
 ];
 
 const EVENT_NAME_THEMES = [
-  'Lasu', 'Gór', 'Rzeki', 'Miasta', 'Parku', 'Wiosny', 'Lata', 'Jesieni',
-  'Zimy', 'Słońca', 'Mazur', 'Tatr', 'Pienin', 'Karpat', 'Podhala',
-  'Warmii', 'Śląska', 'Podlasia', 'Kujaw', 'Wybrzeża', 'Świętokrzyski',
-  'Krakowski', 'Warszawski', 'Wrocławski', 'Gdański', 'Poznański',
+  'Lasu',
+  'Gór',
+  'Rzeki',
+  'Miasta',
+  'Parku',
+  'Wiosny',
+  'Lata',
+  'Jesieni',
+  'Zimy',
+  'Słońca',
+  'Mazur',
+  'Tatr',
+  'Pienin',
+  'Karpat',
+  'Podhala',
+  'Warmii',
+  'Śląska',
+  'Podlasia',
+  'Kujaw',
+  'Wybrzeża',
+  'Świętokrzyski',
+  'Krakowski',
+  'Warszawski',
+  'Wrocławski',
+  'Gdański',
+  'Poznański',
 ];
 
 const ORGANIZER_NAMES = [
-  'Stowarzyszenie Biegaczy Aktywnych', 'Klub Sportowy Sprint', 'RunForFun',
-  'Towarzystwo Sportowe Olimpia', 'Fundacja Aktywne Życie', 'Sport Events Polska',
-  'Agencja Eventowa SportPro', 'Lokalne Stowarzyszenie Sportowe', 'Marathon Club PL',
-  'Triathloniści Polscy', 'Stowarzyszenie Biegowe', 'Active Sport Foundation',
+  'Stowarzyszenie Biegaczy Aktywnych',
+  'Klub Sportowy Sprint',
+  'RunForFun',
+  'Towarzystwo Sportowe Olimpia',
+  'Fundacja Aktywne Życie',
+  'Sport Events Polska',
+  'Agencja Eventowa SportPro',
+  'Lokalne Stowarzyszenie Sportowe',
+  'Marathon Club PL',
+  'Triathloniści Polscy',
+  'Stowarzyszenie Biegowe',
+  'Active Sport Foundation',
 ];
 
 const ORGANIZER_CONTACTS = [
@@ -111,28 +185,112 @@ const RULES_HTML = [
 ];
 
 const FIRST_NAMES_M = [
-  'Andrzej', 'Bartosz', 'Cezary', 'Dawid', 'Emil', 'Filip', 'Grzegorz', 'Hubert',
-  'Igor', 'Jakub', 'Kamil', 'Łukasz', 'Marek', 'Norbert', 'Oskar', 'Piotr',
-  'Rafał', 'Sławomir', 'Tomasz', 'Wojciech', 'Adam', 'Krzysztof', 'Michał',
-  'Robert', 'Paweł', 'Marcin', 'Artur', 'Mariusz', 'Sebastian', 'Dariusz',
+  'Andrzej',
+  'Bartosz',
+  'Cezary',
+  'Dawid',
+  'Emil',
+  'Filip',
+  'Grzegorz',
+  'Hubert',
+  'Igor',
+  'Jakub',
+  'Kamil',
+  'Łukasz',
+  'Marek',
+  'Norbert',
+  'Oskar',
+  'Piotr',
+  'Rafał',
+  'Sławomir',
+  'Tomasz',
+  'Wojciech',
+  'Adam',
+  'Krzysztof',
+  'Michał',
+  'Robert',
+  'Paweł',
+  'Marcin',
+  'Artur',
+  'Mariusz',
+  'Sebastian',
+  'Dariusz',
 ];
 
 const FIRST_NAMES_F = [
-  'Anna', 'Barbara', 'Celina', 'Dorota', 'Ewa', 'Franciszka', 'Grażyna',
-  'Halina', 'Irena', 'Joanna', 'Katarzyna', 'Lidia', 'Małgorzata', 'Natalia',
-  'Olga', 'Patrycja', 'Renata', 'Sandra', 'Teresa', 'Urszula', 'Agnieszka',
-  'Monika', 'Beata', 'Alicja', 'Zofia', 'Marta', 'Karolina', 'Magdalena',
-  'Aleksandra', 'Julia',
+  'Anna',
+  'Barbara',
+  'Celina',
+  'Dorota',
+  'Ewa',
+  'Franciszka',
+  'Grażyna',
+  'Halina',
+  'Irena',
+  'Joanna',
+  'Katarzyna',
+  'Lidia',
+  'Małgorzata',
+  'Natalia',
+  'Olga',
+  'Patrycja',
+  'Renata',
+  'Sandra',
+  'Teresa',
+  'Urszula',
+  'Agnieszka',
+  'Monika',
+  'Beata',
+  'Alicja',
+  'Zofia',
+  'Marta',
+  'Karolina',
+  'Magdalena',
+  'Aleksandra',
+  'Julia',
 ];
 
 const LAST_NAMES = [
-  'Kowalski', 'Nowak', 'Wiśniewski', 'Wójcik', 'Kowalczyk', 'Kamiński',
-  'Lewandowski', 'Zielińska', 'Szymański', 'Woźniak', 'Dąbrowski', 'Kozłowski',
-  'Jankowski', 'Mazur', 'Wojciechowski', 'Kwiatkowski', 'Krawczyk', 'Piotrowski',
-  'Grabowski', 'Nowakowski', 'Pawłowski', 'Michalski', 'Adamczyk', 'Dudek',
-  'Zając', 'Wieczorek', 'Jabłoński', 'Król', 'Majewski', 'Olszewski',
-  'Jaworski', 'Wróbel', 'Malinowski', 'Pawlak', 'Witkowski', 'Walczak',
-  'Stępień', 'Górski', 'Rutkowski', 'Michalak',
+  'Kowalski',
+  'Nowak',
+  'Wiśniewski',
+  'Wójcik',
+  'Kowalczyk',
+  'Kamiński',
+  'Lewandowski',
+  'Zielińska',
+  'Szymański',
+  'Woźniak',
+  'Dąbrowski',
+  'Kozłowski',
+  'Jankowski',
+  'Mazur',
+  'Wojciechowski',
+  'Kwiatkowski',
+  'Krawczyk',
+  'Piotrowski',
+  'Grabowski',
+  'Nowakowski',
+  'Pawłowski',
+  'Michalski',
+  'Adamczyk',
+  'Dudek',
+  'Zając',
+  'Wieczorek',
+  'Jabłoński',
+  'Król',
+  'Majewski',
+  'Olszewski',
+  'Jaworski',
+  'Wróbel',
+  'Malinowski',
+  'Pawlak',
+  'Witkowski',
+  'Walczak',
+  'Stępień',
+  'Górski',
+  'Rutkowski',
+  'Michalak',
 ];
 
 const EMAIL_DOMAINS = ['gmail.com', 'wp.pl', 'onet.pl', 'o2.pl', 'interia.pl', 'poczta.fm'];
@@ -170,10 +328,19 @@ function pastDate(daysAgoMin: number, daysAgoMax: number): string {
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e').replace(/ł/g, 'l')
-    .replace(/ń/g, 'n').replace(/ó/g, 'o').replace(/ś/g, 's').replace(/ź/g, 'z')
-    .replace(/ż/g, 'z').replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+    .replace(/ą/g, 'a')
+    .replace(/ć/g, 'c')
+    .replace(/ę/g, 'e')
+    .replace(/ł/g, 'l')
+    .replace(/ń/g, 'n')
+    .replace(/ó/g, 'o')
+    .replace(/ś/g, 's')
+    .replace(/ź/g, 'z')
+    .replace(/ż/g, 'z')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
 }
 
 function formatTime(totalSeconds: number): string {
@@ -238,11 +405,12 @@ function generateName(): { firstName: string; lastName: string; gender: 'M' | 'K
   const gender: 'M' | 'K' = Math.random() < 0.42 ? 'K' : 'M';
   const firstName = gender === 'M' ? pick(FIRST_NAMES_M) : pick(FIRST_NAMES_F);
   const base = pick(LAST_NAMES);
-  const lastName = gender === 'K' && base.endsWith('ski')
-    ? base.replace('ski', 'ska')
-    : gender === 'K' && base.endsWith('cki')
-      ? base.replace('cki', 'cka')
-      : base;
+  const lastName =
+    gender === 'K' && base.endsWith('ski')
+      ? base.replace('ski', 'ska')
+      : gender === 'K' && base.endsWith('cki')
+        ? base.replace('cki', 'cka')
+        : base;
   return { firstName, lastName, gender };
 }
 
@@ -282,7 +450,18 @@ export function generateParticipants(count: number): GeneratedParticipant[] {
       birthYear: rand(1965, 2005),
     };
     if (Math.random() < 0.7) p.phone = `+48 ${rand(500, 799)} ${rand(100, 999)} ${rand(100, 999)}`;
-    if (Math.random() < 0.4) p.club = pick(['BiegamBo Lubię', 'Orlik Team', 'Run Crew', 'Wolni Biegacze', 'Maratonczycy.pl', 'RunFit', 'Biegamy Razem', 'Trail Warriors', 'City Runners']);
+    if (Math.random() < 0.4)
+      p.club = pick([
+        'BiegamBo Lubię',
+        'Orlik Team',
+        'Run Crew',
+        'Wolni Biegacze',
+        'Maratonczycy.pl',
+        'RunFit',
+        'Biegamy Razem',
+        'Trail Warriors',
+        'City Runners',
+      ]);
 
     participants.push(p);
   }
@@ -326,8 +505,8 @@ function generateDistances(
     const distLen: Record<string, { length: number; unit: 'km' | 'm' }> = {
       '5 km': { length: 5, unit: 'km' },
       '10 km': { length: 10, unit: 'km' },
-      'Półmaraton': { length: 21.097, unit: 'km' },
-      'Maraton': { length: 42.195, unit: 'km' },
+      Półmaraton: { length: 21.097, unit: 'km' },
+      Maraton: { length: 42.195, unit: 'km' },
       '3 km (nordic walking)': { length: 3, unit: 'km' },
       'Mini (2 km)': { length: 2, unit: 'km' },
       '25 km': { length: 25, unit: 'km' },
@@ -337,7 +516,10 @@ function generateDistances(
     const distInfo = distLen[name] ?? { length: null, unit: 'km' as const };
 
     const limit = rand(50, 500);
-    const registeredCount = Math.min(rand(Math.floor(participantCount * 0.3), participantCount), limit);
+    const registeredCount = Math.min(
+      rand(Math.floor(participantCount * 0.3), participantCount),
+      limit,
+    );
 
     return {
       id: uid(),
@@ -361,9 +543,10 @@ function generateDistances(
         },
       ],
       priceTiers,
-      infoHtml: Math.random() < 0.5
-        ? `<p>Dystans ${name}. Trasa widokowa, nawierzchnia mieszana. Pomiar czasu chipem.</p>`
-        : undefined,
+      infoHtml:
+        Math.random() < 0.5
+          ? `<p>Dystans ${name}. Trasa widokowa, nawierzchnia mieszana. Pomiar czasu chipem.</p>`
+          : undefined,
     } satisfies Distance;
   });
 }
@@ -431,14 +614,42 @@ function generateLogistics(opts: SeedEventOptions): EventLogisticsInfo {
     };
   }
 
-  logistics.changingRooms = field(opts.includeChangingRooms, 0.5, '<p>Przebieralnie w namiocie przy strefie startu.</p>');
-  logistics.buffet = field(opts.includeBuffet, 0.65, '<p>Bufet dla uczestników przy mecie. Napoje, owoce, batony energetyczne.</p>');
-  logistics.medicalPoint = field(opts.includeMedical, 0.8, '<p>Punkt medyczny przy starcie/mecie. Karetka przez cały czas trwania biegu.</p>');
-  logistics.showers = field(opts.includeShowers, 0.45, '<p>Prysznice dostępne w pobliskim obiekcie sportowym.</p>');
-  logistics.luggage = field(null, 0.6, '<p>Depozyty w namiocie A. Szatnia czynna od 7:00 do 14:00.</p>');
+  logistics.changingRooms = field(
+    opts.includeChangingRooms,
+    0.5,
+    '<p>Przebieralnie w namiocie przy strefie startu.</p>',
+  );
+  logistics.buffet = field(
+    opts.includeBuffet,
+    0.65,
+    '<p>Bufet dla uczestników przy mecie. Napoje, owoce, batony energetyczne.</p>',
+  );
+  logistics.medicalPoint = field(
+    opts.includeMedical,
+    0.8,
+    '<p>Punkt medyczny przy starcie/mecie. Karetka przez cały czas trwania biegu.</p>',
+  );
+  logistics.showers = field(
+    opts.includeShowers,
+    0.45,
+    '<p>Prysznice dostępne w pobliskim obiekcie sportowym.</p>',
+  );
+  logistics.luggage = field(
+    null,
+    0.6,
+    '<p>Depozyty w namiocie A. Szatnia czynna od 7:00 do 14:00.</p>',
+  );
   logistics.toilets = field(null, 0.85, '<p>Toalety przenośne przy starcie i na trasie biegu.</p>');
-  logistics.timeMeasurement = field(null, 0.9, '<p>Profesjonalny pomiar czasu chipem. Chip wbudowany w numer startowy.</p>');
-  logistics.awardsClassifications = field(null, 0.7, '<p>Dekoracja zwycięzców przy scenie głównej po godzinie od mety ostatniego zawodnika w danej kategorii.</p>');
+  logistics.timeMeasurement = field(
+    null,
+    0.9,
+    '<p>Profesjonalny pomiar czasu chipem. Chip wbudowany w numer startowy.</p>',
+  );
+  logistics.awardsClassifications = field(
+    null,
+    0.7,
+    '<p>Dekoracja zwycięzców przy scenie głównej po godzinie od mety ostatniego zawodnika w danej kategorii.</p>',
+  );
 
   return logistics;
 }
@@ -453,15 +664,17 @@ function generateOrganizerInfo(): OrganizerInfo {
         phone: `+48 ${rand(500, 799)} ${rand(100, 999)} ${rand(100, 999)}`,
       },
     ],
-    sponsors: Math.random() < 0.6
-      ? [
-          { id: uid(), name: 'Sport Partner', url: 'https://example.pl' },
-          { id: uid(), name: 'Gmina Miejska', url: 'https://example.pl' },
-        ]
-      : [],
-    coOrganizers: Math.random() < 0.4
-      ? [{ id: uid(), name: pick(ORGANIZER_NAMES), email: 'partner@example.pl' }]
-      : [],
+    sponsors:
+      Math.random() < 0.6
+        ? [
+            { id: uid(), name: 'Sport Partner', url: 'https://example.pl' },
+            { id: uid(), name: 'Gmina Miejska', url: 'https://example.pl' },
+          ]
+        : [],
+    coOrganizers:
+      Math.random() < 0.4
+        ? [{ id: uid(), name: pick(ORGANIZER_NAMES), email: 'partner@example.pl' }]
+        : [],
   };
 }
 
@@ -474,7 +687,8 @@ export interface GeneratedEventData {
 }
 
 export function generateRandomEventPayload(opts: SeedEventOptions): GeneratedEventData {
-  const discipline = opts.discipline ?? pick(['running', 'cycling', 'triathlon', 'multisport'] as const);
+  const discipline =
+    opts.discipline ?? pick(['running', 'cycling', 'triathlon', 'multisport'] as const);
   const city = pick(CITIES);
   const prefix = pick(EVENT_NAME_PREFIXES);
   const theme = pick(EVENT_NAME_THEMES);
@@ -495,7 +709,9 @@ export function generateRandomEventPayload(opts: SeedEventOptions): GeneratedEve
   const distances = generateDistances(discipline, opts, opts.participantCount);
   const merchandise = generateMerchandise(opts);
   const logisticsInfo = generateLogistics(opts);
-  const organizerInfo = resolveBool(opts.includeOrganizersHtml, 0.6) ? generateOrganizerInfo() : undefined;
+  const organizerInfo = resolveBool(opts.includeOrganizersHtml, 0.6)
+    ? generateOrganizerInfo()
+    : undefined;
 
   const organizerContact = pick(ORGANIZER_CONTACTS);
   const organizerName = pick(ORGANIZER_NAMES);
@@ -544,7 +760,7 @@ export function generateRandomEventPayload(opts: SeedEventOptions): GeneratedEve
     organizerContact,
     registrationDeadline: regDeadline,
     isVirtual,
-    isPrivate,
+    visibility: isPrivate ? 'private' : 'public',
     merchandise,
     paymentMethods,
     discountCodes,
@@ -585,8 +801,8 @@ export interface GeneratedResult {
 const BASE_PACE_PER_KM: Record<string, number> = {
   '5 km': 300,
   '10 km': 320,
-  'Półmaraton': 350,
-  'Maraton': 380,
+  Półmaraton: 350,
+  Maraton: 380,
   '3 km (nordic walking)': 480,
   'Mini (2 km)': 280,
   '25 km': 300,
@@ -636,7 +852,10 @@ export function generateResults(
     const timings = assigned.map((p) => ({
       ...p,
       seconds: estimateTimeInSeconds(dist.name, dist.length),
-      status: (Math.random() < 0.08 ? 'dnf' : Math.random() < 0.02 ? 'dsq' : 'finished') as 'finished' | 'dnf' | 'dsq',
+      status: (Math.random() < 0.08 ? 'dnf' : Math.random() < 0.02 ? 'dsq' : 'finished') as
+        | 'finished'
+        | 'dnf'
+        | 'dsq',
     }));
 
     // Sort by time for position assignment (DNF/DSQ at end)
@@ -654,9 +873,10 @@ export function generateResults(
       const catPos = (catPositions.get(catKey) ?? 0) + 1;
       catPositions.set(catKey, catPos);
 
-      const category = p.gender === 'K'
-        ? `K${Math.floor((new Date().getFullYear() - p.birthYear) / 10) * 10}`
-        : `M${Math.floor((new Date().getFullYear() - p.birthYear) / 10) * 10}`;
+      const category =
+        p.gender === 'K'
+          ? `K${Math.floor((new Date().getFullYear() - p.birthYear) / 10) * 10}`
+          : `M${Math.floor((new Date().getFullYear() - p.birthYear) / 10) * 10}`;
 
       results.push({
         userId: p.userId,

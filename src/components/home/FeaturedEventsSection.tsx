@@ -15,7 +15,7 @@ interface FeaturedEventsSectionProps {
 
 export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) => {
   const featuredEvents = events
-    .filter((e) => !e.isPrivate && e.featured && e.status === 'active')
+    .filter((e) => e.visibility !== 'private' && e.featured && e.publicationStatus === 'published')
     .slice(0, 4);
 
   if (featuredEvents.length === 0) return null;
@@ -47,50 +47,50 @@ export const FeaturedEventsSection = ({ events }: FeaturedEventsSectionProps) =>
         }
       />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {featuredEvents.map((event) => (
-            <Link
-              key={event.id}
-              to={`/events/${event.slug}`}
-              className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-warning/30 hover:bg-accent/50"
-            >
-              <div className="shrink-0 rounded-lg bg-muted p-2 transition-colors group-hover:bg-warning/10">
-                <DisciplineIcon discipline={event.discipline} size="md" />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {featuredEvents.map((event) => (
+          <Link
+            key={event.id}
+            to={`/events/${event.slug}`}
+            className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-warning/30 hover:bg-accent/50"
+          >
+            <div className="shrink-0 rounded-lg bg-muted p-2 transition-colors group-hover:bg-warning/10">
+              <DisciplineIcon discipline={event.discipline} size="md" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="line-clamp-2 text-sm font-medium leading-tight transition-colors group-hover:text-foreground">
+                {event.name}
+              </h3>
+              <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {event.city}
+                </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="line-clamp-2 text-sm font-medium leading-tight transition-colors group-hover:text-foreground">
-                  {event.name}
-                </h3>
-                <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {format(new Date(event.date), 'd MMM yyyy', { locale: pl })}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {event.city}
-                  </span>
-                </div>
-                <div className="mt-2 flex gap-1.5">
-                  {event.distances.slice(0, 3).map((d) => (
-                    <Badge key={d.id} variant="secondary" className="px-1.5 py-0 text-[10px]">
-                      {d.name}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="mt-2 flex gap-1.5">
+                {event.distances.slice(0, 3).map((d) => (
+                  <Badge key={d.id} variant="secondary" className="px-1.5 py-0 text-[10px]">
+                    {d.name}
+                  </Badge>
+                ))}
               </div>
-            </Link>
-          ))}
-        </div>
+            </div>
+          </Link>
+        ))}
+      </div>
 
-        <div className="mt-4 text-center sm:hidden">
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/events">
-              Wszystkie wydarzenia
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+      <div className="mt-4 text-center sm:hidden">
+        <Button asChild variant="outline" size="sm" className="gap-1.5">
+          <Link to="/events">
+            Wszystkie wydarzenia
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
     </PageSection>
   );
 };

@@ -165,7 +165,12 @@ export const httpAdapter: ApiAdapter = {
   approveEvent: (id) => request(`/events/${encodeURIComponent(id)}/approve`, json('POST')),
   rejectEvent: (id, reason) =>
     request(`/events/${encodeURIComponent(id)}/reject`, json('POST', { reason })),
-  publishEvent: (id) => request(`/events/${encodeURIComponent(id)}/publish`, json('POST')),
+  cancelEvent: (id) => request(`/events/${encodeURIComponent(id)}/cancel`, json('POST')),
+  setEventVisibility: (id, visibility, accessCode) =>
+    request(
+      `/events/${encodeURIComponent(id)}/visibility`,
+      json('PATCH', { visibility, accessCode }),
+    ),
   getFeaturedEvents: () => request('/events/featured'),
   getLiveEvents: () => request('/events/live'),
   getEventsByOrganizer: (organizerId) =>

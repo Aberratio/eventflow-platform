@@ -18,13 +18,13 @@ export const ModeratorModerationTab = () => {
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
   });
   const events = eventsResponse?.data ?? [];
-  const pendingEvents = events.filter((event) => event.status === 'awaiting_approval');
+  const pendingEvents = events.filter((event) => event.publicationStatus === 'submitted');
 
   const approveMutation = useMutation({
     mutationFn: (event: Event) => approveEvent(event.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
-      toast.success('Wydarzenie zatwierdzone. Organizator moze je teraz opublikowac.');
+      toast.success('Wydarzenie zatwierdzone i opublikowane.');
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');

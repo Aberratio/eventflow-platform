@@ -45,7 +45,7 @@ export const AdminOverviewTab = () => {
   const salesStats = salesStatsResponse?.data;
   const onlineSessions = onlineSessionsResponse?.data ?? [];
   const registrations = registrationsResponse?.data ?? [];
-  const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
+  const pendingModerationCount = events.filter((e) => e.publicationStatus === 'submitted').length;
 
   const stats = [
     {
@@ -307,7 +307,7 @@ export const AdminOverviewTab = () => {
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {events
-                .filter((e) => e.status === 'active')
+                .filter((e) => e.publicationStatus === 'published')
                 .slice(0, 5)
                 .map((event) => (
                   <div

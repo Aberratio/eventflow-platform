@@ -17,7 +17,18 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Trophy, Medal, Users, ChevronDown, ChevronRight, Search, X, Timer, Gauge, Upload } from 'lucide-react';
+import {
+  Trophy,
+  Medal,
+  Users,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  X,
+  Timer,
+  Gauge,
+  Upload,
+} from 'lucide-react';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { useAuthSafe } from '@/contexts/AuthContext';
@@ -49,7 +60,11 @@ const formatSpeed = (timeInSeconds: number, distanceKm: number): string => {
   return `${kmh.toFixed(1)} km/h`;
 };
 
-const formatValue = (result: { time: string; timeInSeconds: number }, mode: DisplayMode, distanceKm?: number): string => {
+const formatValue = (
+  result: { time: string; timeInSeconds: number },
+  mode: DisplayMode,
+  distanceKm?: number,
+): string => {
   if (result.timeInSeconds <= 0) return result.time;
   if (mode === 'pace' && distanceKm) return formatPace(result.timeInSeconds, distanceKm);
   if (mode === 'speed' && distanceKm) return formatSpeed(result.timeInSeconds, distanceKm);
@@ -96,18 +111,18 @@ const CategoryTable = ({
   const activeMode = canConvert ? displayMode : 'time';
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="overflow-hidden rounded-lg border">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-muted/40 hover:bg-muted/60 transition-colors text-left"
+        className="flex w-full items-center justify-between bg-muted/40 px-4 py-3 text-left transition-colors hover:bg-muted/60"
       >
         <div className="flex items-center gap-3">
           {open ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
-          <span className="font-semibold text-sm">{categoryName}</span>
+          <span className="text-sm font-semibold">{categoryName}</span>
           <Badge variant="secondary" className="text-xs">
             {results.length}
           </Badge>
@@ -129,10 +144,8 @@ const CategoryTable = ({
                 <TableHead className="w-14">Poz.</TableHead>
                 <TableHead>Uczestnik</TableHead>
                 <TableHead>{COLUMN_LABEL[activeMode]}</TableHead>
-                {showCategory && (
-                  <TableHead className="hidden sm:table-cell">Kategoria</TableHead>
-                )}
-                <TableHead className="hidden sm:table-cell text-muted-foreground text-xs w-16">
+                {showCategory && <TableHead className="hidden sm:table-cell">Kategoria</TableHead>}
+                <TableHead className="hidden w-16 text-xs text-muted-foreground sm:table-cell">
                   Nr
                 </TableHead>
               </TableRow>
@@ -168,7 +181,7 @@ const CategoryTable = ({
                           {result.userName}
                         </Link>
                         {isCurrentUser && (
-                          <Badge variant="default" className="text-xs px-1.5 py-0 shrink-0">
+                          <Badge variant="default" className="shrink-0 px-1.5 py-0 text-xs">
                             Ty
                           </Badge>
                         )}
@@ -176,11 +189,11 @@ const CategoryTable = ({
                     </TableCell>
                     <TableCell className="font-mono">{timeValue}</TableCell>
                     {showCategory && (
-                      <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                      <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
                         {result.category}
                       </TableCell>
                     )}
-                    <TableCell className="hidden sm:table-cell text-muted-foreground text-sm">
+                    <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
                       {result.bibNumber}
                     </TableCell>
                   </TableRow>
@@ -240,9 +253,7 @@ const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: Dist
 
   if (filtered.length === 0) {
     return (
-      <p className="py-8 text-center text-muted-foreground">
-        Brak wyników spełniających kryteria.
-      </p>
+      <p className="py-8 text-center text-muted-foreground">Brak wyników spełniających kryteria.</p>
     );
   }
 
@@ -255,7 +266,9 @@ const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: Dist
           <ToggleGroup
             type="single"
             value={displayMode}
-            onValueChange={(v) => { if (v) setDisplayMode(v as DisplayMode); }}
+            onValueChange={(v) => {
+              if (v) setDisplayMode(v as DisplayMode);
+            }}
             size="sm"
             variant="outline"
           >
@@ -360,7 +373,7 @@ const FlatResultsTable = ({
                       {result.userName}
                     </Link>
                     {isCurrentUser && (
-                      <Badge variant="default" className="text-xs px-1.5 py-0 shrink-0">
+                      <Badge variant="default" className="shrink-0 px-1.5 py-0 text-xs">
                         Ty
                       </Badge>
                     )}
@@ -392,7 +405,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const resultsCardRef = useRef<HTMLDivElement>(null);
   const canUploadResults =
-    (event.status === 'active' || event.status === 'past') &&
+    (event.publicationStatus === 'published' || event.publicationStatus === 'finished') &&
     (auth?.user?.role === 'admin' ||
       auth?.user?.role === 'superadmin' ||
       auth?.user?.role === 'moderator' ||
@@ -466,7 +479,12 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           />
         </div>
         {hasMyResult && (
-          <Button variant="outline" size="sm" onClick={scrollToMyResult} className="shrink-0 gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={scrollToMyResult}
+            className="shrink-0 gap-1.5"
+          >
             <Medal className="h-3.5 w-3.5 text-primary" />
             Mój wynik
           </Button>
@@ -478,7 +496,12 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           </Button>
         )}
         {searchQuery && (
-          <Button variant="ghost" size="icon" onClick={() => setSearchQuery('')} className="shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSearchQuery('')}
+            className="shrink-0"
+          >
             <X className="h-4 w-4" />
           </Button>
         )}
@@ -500,13 +523,13 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
               </p>
             ) : (
               <Tabs defaultValue={distancesWithResults[0]?.id}>
-                <TabsList className="mb-4 flex flex-wrap h-auto gap-1">
+                <TabsList className="mb-4 flex h-auto flex-wrap gap-1">
                   {distancesWithResults.map((d) => {
                     const count = resultsByDistance.get(d.id)?.length ?? 0;
                     return (
                       <TabsTrigger key={d.id} value={d.id} className="gap-1.5">
                         {d.name}
-                        <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                        <Badge variant="secondary" className="px-1.5 py-0 text-xs">
                           {count}
                         </Badge>
                       </TabsTrigger>
@@ -517,11 +540,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
                 {distancesWithResults.map((d) => {
                   const distResults = resultsByDistance.get(d.id) ?? [];
                   const distanceKm =
-                    d.length != null
-                      ? d.unit === 'm'
-                        ? d.length / 1000
-                        : d.length
-                      : undefined;
+                    d.length != null ? (d.unit === 'm' ? d.length / 1000 : d.length) : undefined;
                   return (
                     <TabsContent key={d.id} value={d.id}>
                       <DistancePanel
@@ -564,7 +583,9 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
                         <ToggleGroup
                           type="single"
                           value={displayModeSingle}
-                          onValueChange={(v) => { if (v) setDisplayModeSingle(v as DisplayMode); }}
+                          onValueChange={(v) => {
+                            if (v) setDisplayModeSingle(v as DisplayMode);
+                          }}
                           size="sm"
                           variant="outline"
                         >

@@ -57,8 +57,10 @@ export const approveEvent: ApiAdapter['approveEvent'] = (...args) =>
   ensureAdapter().then((a) => a.approveEvent(...args));
 export const rejectEvent: ApiAdapter['rejectEvent'] = (...args) =>
   ensureAdapter().then((a) => a.rejectEvent(...args));
-export const publishEvent: ApiAdapter['publishEvent'] = (...args) =>
-  ensureAdapter().then((a) => a.publishEvent(...args));
+export const cancelEvent: ApiAdapter['cancelEvent'] = (...args) =>
+  ensureAdapter().then((a) => a.cancelEvent(...args));
+export const setEventVisibility: ApiAdapter['setEventVisibility'] = (...args) =>
+  ensureAdapter().then((a) => a.setEventVisibility(...args));
 export const getFeaturedEvents: ApiAdapter['getFeaturedEvents'] = (...args) =>
   ensureAdapter().then((a) => a.getFeaturedEvents(...args));
 export const getLiveEvents: ApiAdapter['getLiveEvents'] = (...args) =>

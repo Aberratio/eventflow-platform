@@ -53,6 +53,7 @@ import type {
 } from './payloads';
 import type {
   Event,
+  EventVisibility,
   User,
   UserRole,
   Registration,
@@ -117,13 +118,23 @@ export interface ApiAdapter {
   deleteEvent(id: string): Promise<ApiResponse<void>>;
   updateEventStatus(
     id: string,
-    status: Event['status'],
+    status: Event['publicationStatus'],
     reason?: string,
   ): Promise<ApiResponse<Event>>;
+  /** draft/rejected -> submitted. Also irreversibly clears `isTest`. */
   submitEvent(id: string): Promise<ApiResponse<Event>>;
+  /** submitted -> published (single action, no separate resting "approved" state). */
   approveEvent(id: string): Promise<ApiResponse<Event>>;
+  /** submitted -> rejected. */
   rejectEvent(id: string, reason: string): Promise<ApiResponse<Event>>;
-  publishEvent(id: string): Promise<ApiResponse<Event>>;
+  /** published -> cancelled. Manual, by owner or admin. Irreversible/terminal. */
+  cancelEvent(id: string): Promise<ApiResponse<Event>>;
+  /** Only valid while publicationStatus === 'published'. */
+  setEventVisibility(
+    id: string,
+    visibility: EventVisibility,
+    accessCode?: string,
+  ): Promise<ApiResponse<Event>>;
   getFeaturedEvents(): Promise<ApiResponse<Event[]>>;
   getLiveEvents(): Promise<ApiResponse<Event[]>>;
   getEventsByOrganizer(organizerId: string): Promise<ApiResponse<Event[]>>;

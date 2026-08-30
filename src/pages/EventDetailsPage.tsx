@@ -27,6 +27,7 @@ import {
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Event } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
@@ -34,6 +35,8 @@ import { RouteMap } from '@/components/RouteMap';
 import {
   DraftBanner,
   PrivateBanner,
+  CancelledBanner,
+  ModerationReviewBar,
   ResultsSection,
   EventHeroBanner,
   EventSidebar,
@@ -91,15 +94,16 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   });
   const eventResults = resultsResponse?.data ?? [];
 
-  const isUnpublished = event && event.status === 'draft';
+  const nonPublicStatuses: Array<Event['publicationStatus']> = ['draft', 'submitted', 'rejected'];
+  const isUnpublished = event && nonPublicStatuses.includes(event.publicationStatus);
   const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
+  const isModeratorLike = isAdminLike || user?.role === 'moderator';
   const canViewDraft =
-    isAdminLike ||
-    user?.role === 'moderator' ||
-    (user?.role === 'organizer' && event?.organizerId === user?.id);
+    isModeratorLike || (user?.role === 'organizer' && event?.organizerId === user?.id);
 
   const accessCodeFromUrl = searchParams.get('access');
-  const isPrivateEvent = event?.isPrivate;
+  const isPrivateEvent = event?.visibility === 'private';
+  const isCancelled = event?.publicationStatus === 'cancelled';
 
   const hasPrivateAccess = (() => {
     if (!isPrivateEvent || !event) return !isPrivateEvent;
@@ -239,7 +243,8 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     : null;
 
   const showLiveResultsTab = !isPast && event.liveResultsUrl;
-  const showResultsTab = isPast || event.status === 'active' || event.status === 'past';
+  const showResultsTab =
+    isPast || event.publicationStatus === 'published' || event.publicationStatus === 'finished';
 
   const handleRegister = () => {
     if (hasExternalRegistration) {
@@ -278,7 +283,10 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
 
   return (
     <Layout>
-      {isPreview ? (
+      {isCancelled && <CancelledBanner event={event} />}
+      {isModeratorLike && isUnpublished ? (
+        <ModerationReviewBar event={event} />
+      ) : isPreview ? (
         <PreviewBanner detailsUrl={detailsUrl} settingsUrl={manageSettingsUrl} />
       ) : (
         isUnpublished && <DraftBanner event={event} user={user} />

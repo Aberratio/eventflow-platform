@@ -15,10 +15,12 @@ const mockEvent: Event = {
   city: 'Test City',
   description: 'Test',
   discipline: 'running',
-  status: 'active',
+  publicationStatus: 'published',
   registrationStatus: 'open',
   imageUrl: '',
   distances: [],
+  organizerId: 'organizer-1',
+  organizerName: 'Organizer',
   featured: false,
 } as Event;
 

@@ -30,15 +30,16 @@ const EMPTY_EVENT_LIMIT: OrganizerEventLimit = {
 };
 
 const statusConfig: Record<
-  Event['status'],
+  Event['publicationStatus'],
   { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
 > = {
-  active: { label: 'Aktywne', variant: 'default' },
-  past: { label: 'Przeszłe', variant: 'secondary' },
+  published: { label: 'Aktywne', variant: 'default' },
+  finished: { label: 'Zakończone', variant: 'secondary' },
+  cancelled: { label: 'Odwołane', variant: 'destructive' },
   archived: { label: 'Zarchiwizowane', variant: 'outline' },
   draft: { label: 'Szkic', variant: 'outline' },
-  awaiting_approval: { label: 'Do sprawdzenia', variant: 'outline' },
-  approved: { label: 'Zatwierdzone', variant: 'secondary' },
+  submitted: { label: 'Do sprawdzenia', variant: 'outline' },
+  rejected: { label: 'Odrzucone', variant: 'destructive' },
   deleted: { label: 'Usunięte', variant: 'destructive' },
 };
 
@@ -61,9 +62,9 @@ const OrganizerDashboard = () => {
   const myEvents = eventsResponse?.data ?? [];
   const eventLimit = eventLimitResponse?.data ?? EMPTY_EVENT_LIMIT;
   const visibleEvents = myEvents.filter(
-    (event) => event.status !== 'archived' && event.status !== 'deleted',
+    (event) => event.publicationStatus !== 'archived' && event.publicationStatus !== 'deleted',
   );
-  const archivedEvents = myEvents.filter((event) => event.status === 'archived');
+  const archivedEvents = myEvents.filter((event) => event.publicationStatus === 'archived');
   const totalParticipants = myEvents.reduce(
     (acc, e) => acc + e.distances.reduce((a, d) => a + d.registeredCount, 0),
     0,
@@ -77,7 +78,7 @@ const OrganizerDashboard = () => {
   ];
 
   const getStatusBadge = (event: Event) => {
-    const config = statusConfig[event.status] || statusConfig.draft;
+    const config = statusConfig[event.publicationStatus] || statusConfig.draft;
     return (
       <Badge variant={config.variant} className="text-xs">
         {config.label}
@@ -202,7 +203,7 @@ const OrganizerDashboard = () => {
                     </div>
                     <div>
                       <div className="text-2xl font-bold">
-                        {myEvents.filter((e) => e.status === 'active').length}
+                        {myEvents.filter((e) => e.publicationStatus === 'published').length}
                       </div>
                       <div className="text-sm text-muted-foreground">Aktywnych</div>
                     </div>

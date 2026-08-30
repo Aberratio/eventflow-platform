@@ -26,19 +26,20 @@ interface EventOverviewTabProps {
 }
 
 export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
-  const statusLabels: Record<Event['status'], string> = {
+  const statusLabels: Record<Event['publicationStatus'], string> = {
     draft: 'Szkic',
-    awaiting_approval: 'Do sprawdzenia',
-    approved: 'Zatwierdzone',
-    active: 'Aktywne',
-    past: 'Przeszłe',
+    submitted: 'Do sprawdzenia',
+    rejected: 'Odrzucone',
+    published: 'Aktywne',
+    finished: 'Zakończone',
+    cancelled: 'Odwołane',
     archived: 'Zarchiwizowane',
     deleted: 'Usunięte',
   };
 
-  const statusVariant = event.status === 'active' ? 'default' : 'secondary';
+  const statusVariant = event.publicationStatus === 'published' ? 'default' : 'secondary';
   const eventPageUrl =
-    event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
+    event.publicationStatus === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`;
   const dateLabel = event.isVirtual
     ? [event.startDate, event.endDate].filter(Boolean).join(' - ') || event.date
     : event.date;
@@ -84,7 +85,7 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
     {
       icon: ShieldCheck,
       label: 'Status',
-      value: statusLabels[event.status],
+      value: statusLabels[event.publicationStatus],
     },
     {
       icon: CreditCard,
@@ -100,10 +101,11 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={statusVariant}>{statusLabels[event.status]}</Badge>
+                <Badge variant={statusVariant}>{statusLabels[event.publicationStatus]}</Badge>
                 <Badge variant="outline">{disciplineLabels[event.discipline]}</Badge>
                 {event.featured && <Badge variant="outline">Wyróżnione</Badge>}
-                {event.isPrivate && <Badge variant="outline">Prywatne</Badge>}
+                {event.visibility === 'private' && <Badge variant="outline">Prywatne</Badge>}
+                {event.isTest && <Badge variant="outline">Testowe</Badge>}
               </div>
               <div>
                 <h2 className="text-xl font-semibold leading-tight">Najważniejsze informacje</h2>

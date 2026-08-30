@@ -44,7 +44,8 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const canUploadResults = event.status === 'active' || event.status === 'past';
+  const canUploadResults =
+    event.publicationStatus === 'published' || event.publicationStatus === 'finished';
 
   const { data: resultsResp } = useQuery({
     queryKey: ['event-results', event.id],
@@ -180,7 +181,8 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
               <SelectContent>
                 {event.distances.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
-                    {d.name}{d.length != null ? ` (${d.length} ${d.unit})` : ''}
+                    {d.name}
+                    {d.length != null ? ` (${d.length} ${d.unit})` : ''}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -189,7 +191,11 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
               <Button onClick={() => setAddDialogOpen(true)} disabled={!canUploadResults}>
                 <Plus className="mr-2 h-4 w-4" /> Dodaj wynik
               </Button>
-              <Button variant="outline" onClick={() => setUploadDialogOpen(true)} disabled={!canUploadResults}>
+              <Button
+                variant="outline"
+                onClick={() => setUploadDialogOpen(true)}
+                disabled={!canUploadResults}
+              >
                 <FileText className="mr-2 h-4 w-4" /> Dodaj PDF
               </Button>
             </div>

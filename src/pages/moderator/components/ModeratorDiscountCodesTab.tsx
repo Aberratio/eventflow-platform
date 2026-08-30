@@ -21,7 +21,10 @@ export const ModeratorDiscountCodesTab = () => {
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
   });
   const publishedEvents = (eventsResponse?.data ?? []).filter(
-    (e) => e.status === 'active' || e.status === 'past' || e.status === 'archived',
+    (e) =>
+      e.publicationStatus === 'published' ||
+      e.publicationStatus === 'finished' ||
+      e.publicationStatus === 'archived',
   );
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const selectedEvent = publishedEvents.find((e) => e.id === selectedEventId);

@@ -13,28 +13,30 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import type { Event } from '@/types';
 
-type StatusFilter = 'all' | 'active' | 'draft' | 'past' | 'archived';
+type StatusFilter = 'all' | 'published' | 'draft' | 'finished' | 'archived';
 
 const statusLabels: Record<StatusFilter, string> = {
   all: 'Wszystkie',
-  active: 'Aktywne',
+  published: 'Aktywne',
   draft: 'Szkice',
-  past: 'Przeszłe',
+  finished: 'Zakończone',
   archived: 'Archiwum',
 };
 
-const getStatusBadge = (status: Event['status']) => {
+const getStatusBadge = (status: Event['publicationStatus']) => {
   switch (status) {
-    case 'active':
+    case 'published':
       return <Badge variant="default">Aktywne</Badge>;
     case 'draft':
       return <Badge variant="secondary">Szkic</Badge>;
-    case 'awaiting_approval':
+    case 'submitted':
       return <Badge variant="outline">Do sprawdzenia</Badge>;
-    case 'approved':
-      return <Badge variant="secondary">Zatwierdzone</Badge>;
-    case 'past':
-      return <Badge variant="secondary">Przeszłe</Badge>;
+    case 'rejected':
+      return <Badge variant="destructive">Odrzucone</Badge>;
+    case 'finished':
+      return <Badge variant="secondary">Zakończone</Badge>;
+    case 'cancelled':
+      return <Badge variant="destructive">Odwołane</Badge>;
     case 'archived':
       return <Badge variant="outline">Zarchiwizowane</Badge>;
     case 'deleted':
@@ -61,9 +63,13 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
-  const myEvents = (eventsResponse?.data ?? []).filter((event) => event.status !== 'deleted');
+  const myEvents = (eventsResponse?.data ?? []).filter(
+    (event) => event.publicationStatus !== 'deleted',
+  );
   const filteredEvents =
-    statusFilter === 'all' ? myEvents : myEvents.filter((event) => event.status === statusFilter);
+    statusFilter === 'all'
+      ? myEvents
+      : myEvents.filter((event) => event.publicationStatus === statusFilter);
   const eventLimit = eventLimitResponse?.data;
   const canCreateEvent = !eventLimit || eventLimit.available > 0;
 
@@ -140,7 +146,7 @@ const OrganizerEventsPage = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate text-base font-semibold">{event.name}</h3>
-                        {getStatusBadge(event.status)}
+                        {getStatusBadge(event.publicationStatus)}
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">

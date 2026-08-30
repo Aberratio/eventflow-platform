@@ -64,10 +64,13 @@ import { AddOrganizerDialog } from './AddOrganizerDialog';
 import { appLogger } from '@/lib/logger';
 import { useAuth } from '@/contexts/AuthContext';
 
-const statusLabels: Partial<Record<Event['status'], string>> = {
+const statusLabels: Partial<Record<Event['publicationStatus'], string>> = {
   draft: 'Szkic',
-  active: 'Aktywne',
-  past: 'Przeszłe',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Aktywne',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Archiwum',
   deleted: 'Usunięte',
 } as const;
@@ -128,7 +131,8 @@ export const UsersOrganizersTab = () => {
 
   const getOrganizerEvents = (organizerId: string) =>
     events.filter(
-      (e) => e.organizerId === organizerId && (canManageAdmins || e.status !== 'deleted'),
+      (e) =>
+        e.organizerId === organizerId && (canManageAdmins || e.publicationStatus !== 'deleted'),
     );
 
   const saveLimit = async (organizerId: string) => {
@@ -216,10 +220,10 @@ export const UsersOrganizersTab = () => {
 
   const organizerEvents = selectedUser ? getOrganizerEvents(selectedUser.id) : [];
   const currentEvents = organizerEvents.filter(
-    (e) => e.status !== 'archived' && e.status !== 'deleted',
+    (e) => e.publicationStatus !== 'archived' && e.publicationStatus !== 'deleted',
   );
-  const archivedEvents = organizerEvents.filter((e) => e.status === 'archived');
-  const deletedEvents = organizerEvents.filter((e) => e.status === 'deleted');
+  const archivedEvents = organizerEvents.filter((e) => e.publicationStatus === 'archived');
+  const deletedEvents = organizerEvents.filter((e) => e.publicationStatus === 'deleted');
 
   const renderLimitEditor = (organizer: User) => {
     const limit = eventLimits[organizer.id];
@@ -267,7 +271,11 @@ export const UsersOrganizersTab = () => {
     return events.map((event) => (
       <Link
         key={event.id}
-        to={event.status === 'draft' ? `/events/${event.slug}/preview` : `/events/${event.slug}`}
+        to={
+          event.publicationStatus === 'draft'
+            ? `/events/${event.slug}/preview`
+            : `/events/${event.slug}`
+        }
         className="flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-accent/50"
         onClick={() => setEventsDialogOpen(false)}
       >
@@ -278,7 +286,7 @@ export const UsersOrganizersTab = () => {
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
-          {statusLabels[event.status] ?? event.status}
+          {statusLabels[event.publicationStatus] ?? event.publicationStatus}
         </Badge>
       </Link>
     ));
@@ -344,8 +352,9 @@ export const UsersOrganizersTab = () => {
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       {
-                        getOrganizerEvents(user.id).filter((event) => event.status !== 'deleted')
-                          .length
+                        getOrganizerEvents(user.id).filter(
+                          (event) => event.publicationStatus !== 'deleted',
+                        ).length
                       }
                     </div>
                   </TableCell>

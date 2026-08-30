@@ -20,7 +20,7 @@ const event: Event = {
     phone: '500600700',
     website: 'https://example.test',
   },
-  status: 'active',
+  publicationStatus: 'published',
   registrationDeadline: '2026-06-01',
   featured: false,
   organizersHtml: '<p>Partner techniczny <a href="https://partner.example.test">Partner</a></p>',

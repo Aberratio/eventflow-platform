@@ -41,7 +41,7 @@ const event: Event = {
   ],
   organizerId: 'organizer',
   organizerName: 'Organizer',
-  status: 'active',
+  publicationStatus: 'published',
   registrationDeadline: '2026-06-01',
   featured: false,
   isVirtual: true,

@@ -9,12 +9,13 @@ interface SeriesEventsListProps {
   events: Event[];
 }
 
-const statusLabels: Record<Event['status'], string> = {
+const statusLabels: Record<Event['publicationStatus'], string> = {
   draft: 'Wersja robocza',
-  awaiting_approval: 'Do sprawdzenia',
-  approved: 'Zatwierdzone',
-  active: 'Otwarta rejestracja',
-  past: 'Zakończone',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Otwarta rejestracja',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Archiwum',
   deleted: 'Usunięte',
 };
@@ -64,14 +65,14 @@ export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) =>
                 </div>
                 <Badge
                   variant={
-                    event.status === 'active'
+                    event.publicationStatus === 'published'
                       ? 'default'
-                      : event.status === 'past'
+                      : event.publicationStatus === 'finished'
                         ? 'secondary'
                         : 'outline'
                   }
                 >
-                  {statusLabels[event.status]}
+                  {statusLabels[event.publicationStatus]}
                 </Badge>
               </div>
             </Link>

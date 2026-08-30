@@ -18,15 +18,23 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { deleteEvent, publishEvent, submitEvent, updateEvent, updateEventStatus } from '@/api';
+import {
+  cancelEvent,
+  deleteEvent,
+  setEventVisibility,
+  submitEvent,
+  updateEvent,
+  updateEventStatus,
+} from '@/api';
 import type { Event } from '@/types';
 import { appLogger } from '@/lib/logger';
 import {
   AlertTriangle,
   Archive,
+  Ban,
   Copy,
   Edit,
-  Eye,
+  FlaskConical,
   Lock,
   RefreshCw,
   Send,
@@ -39,12 +47,13 @@ interface EventSettingsTabProps {
   event: Event;
 }
 
-const statusLabels: Record<Event['status'], string> = {
+const statusLabels: Record<Event['publicationStatus'], string> = {
   draft: 'Szkic',
-  awaiting_approval: 'Do sprawdzenia',
-  approved: 'Zatwierdzone',
-  active: 'Opublikowane',
-  past: 'Przeszle',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Opublikowane',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Zarchiwizowane',
   deleted: 'Usuniete',
 };
@@ -55,34 +64,39 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(event.isPrivate || false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(event.visibility === 'private');
   const [accessCode, setAccessCode] = useState(event.accessCode || '');
   const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
   const [pendingIsPrivate, setPendingIsPrivate] = useState<boolean | null>(null);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPrivacySaving, setIsPrivacySaving] = useState(false);
+  const [isTestSaving, setIsTestSaving] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
   const eventEndDate = (event.endDate || event.date).slice(0, 10);
   const hasEnded = eventEndDate < today;
   const hasRegistrations = event.distances.some((distance) => distance.registeredCount > 0);
   const canDeleteUpcoming =
-    !['past', 'archived', 'deleted'].includes(event.status) &&
+    !['finished', 'archived', 'deleted', 'cancelled'].includes(event.publicationStatus) &&
     event.date.slice(0, 10) >= today &&
     !hasRegistrations;
-  const canArchive = event.status !== 'archived' && (event.status === 'past' || hasEnded);
-  const canSubmitReview = event.status === 'draft';
-  const canPublish = event.status === 'approved';
+  const canArchive =
+    event.publicationStatus !== 'archived' && (event.publicationStatus === 'finished' || hasEnded);
+  const canSubmitReview =
+    event.publicationStatus === 'draft' || event.publicationStatus === 'rejected';
+  const canCancel = event.publicationStatus === 'published';
+  const isDraft = event.publicationStatus === 'draft';
 
   const generateAccessCode = () => Math.random().toString(36).substring(2, 14);
 
   useEffect(() => {
-    setIsPrivate(event.isPrivate || false);
+    setIsPrivate(event.visibility === 'private');
     setAccessCode(event.accessCode || '');
-  }, [event.accessCode, event.isPrivate]);
+  }, [event.accessCode, event.visibility]);
 
   const invalidateEventQueries = async () => {
     await Promise.all([
@@ -106,10 +120,11 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
 
     try {
       setIsPrivacySaving(true);
-      const response = await updateEvent(event.id, {
-        isPrivate: pendingIsPrivate,
-        accessCode: nextAccessCode,
-      });
+      const response = await setEventVisibility(
+        event.id,
+        pendingIsPrivate ? 'private' : 'public',
+        nextAccessCode,
+      );
       if (!response.success) {
         throw new Error(response.message || 'Nie udalo sie zmienic prywatnosci wydarzenia.');
       }
@@ -124,7 +139,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
           targetType: 'event',
           targetId: event.id,
           targetName: event.name,
-          metadata: { isPrivate: pendingIsPrivate },
+          metadata: { visibility: pendingIsPrivate ? 'private' : 'public' },
         },
       );
       await invalidateEventQueries();
@@ -170,26 +185,59 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     }
   };
 
-  const handlePublish = async () => {
+  const handleCancelEvent = async () => {
     try {
-      setIsPublishing(true);
-      const response = await publishEvent(event.id);
+      setIsCancelling(true);
+      const response = await cancelEvent(event.id);
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie opublikowac wydarzenia.');
+        throw new Error(response.message || 'Nie udalo sie odwolac wydarzenia.');
       }
+      appLogger.event('status_change', `Odwolano wydarzenie "${event.name}"`, {
+        targetType: 'event',
+        targetId: event.id,
+        targetName: event.name,
+        metadata: { oldStatus: event.publicationStatus, newStatus: 'cancelled' },
+      });
       await invalidateEventQueries();
       toast({
-        title: 'Wydarzenie opublikowane',
-        description: 'Od teraz jest publicznie widoczne dla uczestnikow.',
+        title: 'Wydarzenie odwolane',
+        description: 'Uczestnicy zobacza informacje o odwolaniu wydarzenia.',
+        variant: 'destructive',
       });
+      setCancelDialogOpen(false);
     } catch (error) {
       toast({
-        title: 'Nie udalo sie opublikowac wydarzenia',
-        description: error instanceof Error ? error.message : 'Wydarzenie musi byc zatwierdzone.',
+        title: 'Nie udalo sie odwolac wydarzenia',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
         variant: 'destructive',
       });
     } finally {
-      setIsPublishing(false);
+      setIsCancelling(false);
+    }
+  };
+
+  const handleToggleIsTest = async (checked: boolean) => {
+    try {
+      setIsTestSaving(true);
+      const response = await updateEvent(event.id, { isTest: checked });
+      if (!response.success) {
+        throw new Error(response.message || 'Nie udalo sie zmienic trybu testowego.');
+      }
+      await invalidateEventQueries();
+      toast({
+        title: checked ? 'Tryb testowy wlaczony' : 'Tryb testowy wylaczony',
+        description: checked
+          ? 'Mozesz teraz przetestowac formularz zapisu przez bezposredni link.'
+          : undefined,
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udalo sie zmienic trybu testowego',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTestSaving(false);
     }
   };
 
@@ -204,7 +252,7 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         targetType: 'event',
         targetId: event.id,
         targetName: event.name,
-        metadata: { oldStatus: event.status, newStatus: 'archived' },
+        metadata: { oldStatus: event.publicationStatus, newStatus: 'archived' },
       });
       await invalidateEventQueries();
       toast({ title: 'Wydarzenie zarchiwizowane' });
@@ -260,16 +308,20 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
     }
   };
 
-  const getStatusBadge = (status: Event['status']) => {
+  const getStatusBadge = (status: Event['publicationStatus']) => {
     switch (status) {
-      case 'active':
+      case 'published':
         return <Badge className="bg-success/10 text-success">Opublikowane</Badge>;
       case 'draft':
         return <Badge variant="secondary">Szkic</Badge>;
-      case 'awaiting_approval':
+      case 'submitted':
         return <Badge variant="outline">Do sprawdzenia</Badge>;
-      case 'approved':
-        return <Badge className="bg-primary/10 text-primary">Zatwierdzone</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">Odrzucone</Badge>;
+      case 'finished':
+        return <Badge variant="outline">Zakończone</Badge>;
+      case 'cancelled':
+        return <Badge variant="destructive">Odwołane</Badge>;
       case 'archived':
         return <Badge variant="outline">Zarchiwizowane</Badge>;
       case 'deleted':
@@ -296,29 +348,69 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
       <Card>
         <CardHeader>
           <CardTitle>Status wydarzenia</CardTitle>
-          <CardDescription>Aktualny status: {getStatusBadge(event.status)}</CardDescription>
+          <CardDescription>
+            Aktualny status: {getStatusBadge(event.publicationStatus)}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Organizator nie zmienia statusow recznie. Po zatwierdzeniu przez admina lub moderatora
-            moze opublikowac wydarzenie dla uczestnikow.
+            Po oddaniu do sprawdzenia admin lub moderator zatwierdza wydarzenie — zatwierdzenie
+            publikuje je od razu, bez dodatkowego kroku po stronie organizatora.
           </p>
+          {event.publicationStatus === 'rejected' && event.rejectionReason && (
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <strong>Powod odrzucenia:</strong> {event.rejectionReason}
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             {canSubmitReview && (
               <Button onClick={handleSubmitReview} disabled={isSubmittingReview}>
                 <Send className="mr-2 h-4 w-4" />
-                {isSubmittingReview ? 'Wysylanie...' : 'Oddaj do sprawdzenia'}
+                {isSubmittingReview
+                  ? 'Wysylanie...'
+                  : event.publicationStatus === 'rejected'
+                    ? 'Popraw i oddaj ponownie do sprawdzenia'
+                    : 'Oddaj do sprawdzenia'}
               </Button>
             )}
-            {canPublish && (
-              <Button onClick={handlePublish} disabled={isPublishing}>
-                <Eye className="mr-2 h-4 w-4" />
-                {isPublishing ? 'Publikowanie...' : 'Opublikuj'}
+            {canCancel && (
+              <Button variant="destructive" onClick={() => setCancelDialogOpen(true)}>
+                <Ban className="mr-2 h-4 w-4" />
+                Odwolaj wydarzenie
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {isDraft && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FlaskConical className="h-5 w-5" />
+              Tryb testowy
+            </CardTitle>
+            <CardDescription>
+              Pozwala przetestowac formularz zapisu przez bezposredni link, zanim oddasz wydarzenie
+              do sprawdzenia. Dostepny tylko dla szkicu — po oddaniu do sprawdzenia znika
+              bezpowrotnie.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="is-test-toggle" className="cursor-pointer">
+                Wydarzenie testowe
+              </Label>
+              <Switch
+                id="is-test-toggle"
+                checked={event.isTest ?? false}
+                onCheckedChange={handleToggleIsTest}
+                disabled={isTestSaving}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {canArchive && (
         <Card>
@@ -336,71 +428,73 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Prywatnosc
-          </CardTitle>
-          <CardDescription>
-            Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy moga dolaczyc tylko przez
-            specjalny link.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="privacy-toggle" className="cursor-pointer">
-              Wydarzenie prywatne
-            </Label>
-            <Switch
-              id="privacy-toggle"
-              checked={isPrivate}
-              onCheckedChange={requestPrivacyChange}
-              disabled={isPrivacySaving}
-            />
-          </div>
-          {isPrivate && (
-            <div className="space-y-3 border-t pt-2">
-              <div className="space-y-2">
-                <Label>Kod dostepu</Label>
-                <div className="flex gap-2">
-                  <Input value={accessCode} readOnly className="font-mono" />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setAccessCode(generateAccessCode())}
-                    title="Wygeneruj nowy kod"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Link do wydarzenia</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={`${window.location.origin}/events/${event.slug}?access=${accessCode}`}
-                    readOnly
-                    className="text-xs"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      const url = `${window.location.origin}/events/${event.slug}?access=${accessCode}`;
-                      navigator.clipboard.writeText(url);
-                      toast({ title: 'Skopiowano', description: 'Link skopiowany do schowka.' });
-                    }}
-                    title="Kopiuj link"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+      {event.publicationStatus === 'published' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Widocznosc
+            </CardTitle>
+            <CardDescription>
+              Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy moga dolaczyc tylko przez
+              specjalny link. Widocznosc mozna zmieniac tylko po publikacji wydarzenia.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="privacy-toggle" className="cursor-pointer">
+                Wydarzenie prywatne
+              </Label>
+              <Switch
+                id="privacy-toggle"
+                checked={isPrivate}
+                onCheckedChange={requestPrivacyChange}
+                disabled={isPrivacySaving}
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            {isPrivate && (
+              <div className="space-y-3 border-t pt-2">
+                <div className="space-y-2">
+                  <Label>Kod dostepu</Label>
+                  <div className="flex gap-2">
+                    <Input value={accessCode} readOnly className="font-mono" />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setAccessCode(generateAccessCode())}
+                      title="Wygeneruj nowy kod"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Link do wydarzenia</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={`${window.location.origin}/events/${event.slug}?access=${accessCode}`}
+                      readOnly
+                      className="text-xs"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const url = `${window.location.origin}/events/${event.slug}?access=${accessCode}`;
+                        navigator.clipboard.writeText(url);
+                        toast({ title: 'Skopiowano', description: 'Link skopiowany do schowka.' });
+                      }}
+                      title="Kopiuj link"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {canDeleteUpcoming && (
         <Card className="border-destructive/50">
@@ -434,6 +528,28 @@ export const EventSettingsTab = ({ event }: EventSettingsTabProps) => {
             <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={handleArchive} disabled={isArchiving}>
               {isArchiving ? 'Archiwizowanie...' : 'Archiwizuj'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Odwolac wydarzenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              To dzialanie jest nieodwracalne. Wydarzenie zostanie oznaczone jako odwolane, a
+              wszyscy uzytkownicy zobacza o tym informacje na stronie wydarzenia.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleCancelEvent}
+              disabled={isCancelling}
+            >
+              {isCancelling ? 'Odwolywanie...' : 'Tak, odwolaj wydarzenie'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

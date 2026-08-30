@@ -43,10 +43,11 @@ const isEventManageTab = (value: string | null | undefined): value is EventManag
 
 const statusLabels = {
   draft: 'Szkic',
-  awaiting_approval: 'Do sprawdzenia',
-  approved: 'Zatwierdzone',
-  active: 'Aktywne',
-  past: 'Przeszłe',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Aktywne',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Zarchiwizowane',
   deleted: 'Usunięte',
 } as const;
@@ -77,10 +78,10 @@ const EventManage = () => {
   });
 
   const event = eventResponse?.data ?? null;
-  const [localStatus, setLocalStatus] = useState(event?.status);
-  const visibleEvent = event && localStatus ? { ...event, status: localStatus } : event;
+  const [localStatus, setLocalStatus] = useState(event?.publicationStatus);
+  const visibleEvent = event && localStatus ? { ...event, publicationStatus: localStatus } : event;
   const hasVisibleEvent = Boolean(event);
-  const isDraft = visibleEvent?.status === 'draft';
+  const isDraft = visibleEvent?.publicationStatus === 'draft';
   const activeTab: EventManageTab =
     isDraft && ['participants', 'results'].includes(requestedTab) ? 'overview' : requestedTab;
 
@@ -96,7 +97,7 @@ const EventManage = () => {
   useEffect(() => {
     if (event) {
       setDiscountCodes(event.discountCodes || []);
-      setLocalStatus(event.status);
+      setLocalStatus(event.publicationStatus);
     }
   }, [event]);
 
@@ -143,7 +144,7 @@ const EventManage = () => {
     );
   }
 
-  if (!visibleEvent || !canManage || visibleEvent.status === 'deleted') {
+  if (!visibleEvent || !canManage || visibleEvent.publicationStatus === 'deleted') {
     return (
       <Layout>
         <div className="container py-8">
@@ -174,10 +175,10 @@ const EventManage = () => {
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{visibleEvent.name}</h1>
               <Badge
-                variant={visibleEvent.status === 'active' ? 'default' : 'outline'}
+                variant={visibleEvent.publicationStatus === 'published' ? 'default' : 'outline'}
                 className="rounded-md px-2.5 py-1"
               >
-                {statusLabels[visibleEvent.status]}
+                {statusLabels[visibleEvent.publicationStatus]}
               </Badge>
             </div>
           </div>

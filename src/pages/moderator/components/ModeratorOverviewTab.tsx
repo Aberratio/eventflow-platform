@@ -20,8 +20,8 @@ export const ModeratorOverviewTab = () => {
   const events = eventsResponse?.data ?? [];
   const users = usersResponse?.data ?? [];
   const registrations = registrationsResponse?.data ?? [];
-  const pendingModerationCount = events.filter((e) => e.status === 'awaiting_approval').length;
-  const publishedEvents = events.filter((e) => e.status === 'active').length;
+  const pendingModerationCount = events.filter((e) => e.publicationStatus === 'submitted').length;
+  const publishedEvents = events.filter((e) => e.publicationStatus === 'published').length;
   const participantCount = users.filter((u) => u.role === 'participant').length;
   const organizerCount = users.filter((u) => u.role === 'organizer').length;
 
@@ -136,7 +136,7 @@ export const ModeratorOverviewTab = () => {
             <h3 className="mb-4 font-semibold">Nadchodzące wydarzenia</h3>
             <div className="space-y-3">
               {events
-                .filter((e) => e.status === 'active')
+                .filter((e) => e.publicationStatus === 'published')
                 .slice(0, 5)
                 .map((event) => (
                   <div

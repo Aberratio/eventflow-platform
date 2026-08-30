@@ -8,6 +8,7 @@
 import type {
   SportDiscipline,
   Distance,
+  EventVisibility,
   OrganizerContact,
   OrganizerInfo,
   PaymentMethod,
@@ -72,8 +73,9 @@ export interface CreateEventPayload {
   rulesHtml?: string;
   finalAcceptanceHtml?: string;
   requireFinalAcceptance?: boolean;
-  isPrivate?: boolean;
+  visibility?: EventVisibility;
   accessCode?: string;
+  isTest?: boolean;
   registrationEmbed?: RegistrationEmbedConfig;
   registrationFormConfig?: RegistrationFormConfig;
   displayOptions?: EventDisplayOptions;

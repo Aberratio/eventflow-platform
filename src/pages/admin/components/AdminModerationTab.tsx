@@ -4,17 +4,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Event } from '@/types';
 import { CheckCircle, FileText, Eye, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const statusLabels: Record<Event['status'], string> = {
+const statusLabels: Record<Event['publicationStatus'], string> = {
   draft: 'Szkic',
-  awaiting_approval: 'Do sprawdzenia',
-  approved: 'Zatwierdzone',
-  active: 'Opublikowane',
-  past: 'Przeszle',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Opublikowane',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Zarchiwizowane',
   deleted: 'Usuniete',
 };
@@ -27,14 +27,13 @@ export const AdminModerationTab = () => {
   });
   const events = eventsResponse?.data ?? [];
 
-  const pendingEvents = events.filter((event) => event.status === 'awaiting_approval');
-  const approvedEvents = events.filter((event) => event.status === 'approved');
+  const pendingEvents = events.filter((event) => event.publicationStatus === 'submitted');
 
   const approveMutation = useMutation({
     mutationFn: (event: Event) => approveEvent(event.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
-      toast.success('Wydarzenie zatwierdzone. Organizator moze je teraz opublikowac.');
+      toast.success('Wydarzenie zatwierdzone i opublikowane.');
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
@@ -79,7 +78,7 @@ export const AdminModerationTab = () => {
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-semibold">{event.name}</h3>
-              <Badge variant="outline">{statusLabels[event.status]}</Badge>
+              <Badge variant="outline">{statusLabels[event.publicationStatus]}</Badge>
               <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -99,7 +98,7 @@ export const AdminModerationTab = () => {
                 Zarzadzaj
               </a>
             </Button>
-            {event.status === 'awaiting_approval' && (
+            {event.publicationStatus === 'submitted' && (
               <>
                 <Button size="sm" onClick={() => approve(event)}>
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -122,8 +121,8 @@ export const AdminModerationTab = () => {
       <div>
         <h2 className="text-xl font-semibold">Moderacja wydarzen</h2>
         <p className="text-muted-foreground">
-          Admin lub moderator zatwierdza wydarzenie oddane do sprawdzenia. Publikuje je dopiero
-          organizator.
+          Admin lub moderator zatwierdza wydarzenie oddane do sprawdzenia. Zatwierdzenie publikuje
+          je od razu.
         </p>
       </div>
 
@@ -135,18 +134,10 @@ export const AdminModerationTab = () => {
         </Card>
       )}
 
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">Do sprawdzenia ({pendingEvents.length})</TabsTrigger>
-          <TabsTrigger value="approved">Zatwierdzone ({approvedEvents.length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="pending" className="space-y-4">
-          {renderEvents(pendingEvents, 'Brak wydarzen do sprawdzenia')}
-        </TabsContent>
-        <TabsContent value="approved" className="space-y-4">
-          {renderEvents(approvedEvents, 'Brak zatwierdzonych wydarzen oczekujacych na publikacje')}
-        </TabsContent>
-      </Tabs>
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Do sprawdzenia ({pendingEvents.length})</h3>
+        {renderEvents(pendingEvents, 'Brak wydarzen do sprawdzenia')}
+      </div>
     </div>
   );
 };

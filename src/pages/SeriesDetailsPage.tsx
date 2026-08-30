@@ -83,7 +83,7 @@ const SeriesDetailsPage = () => {
   }, [allEvents, series]);
 
   const completedEvents = useMemo(() => {
-    return seriesEvents.filter((e) => e.status === 'past');
+    return seriesEvents.filter((e) => e.publicationStatus === 'finished');
   }, [seriesEvents]);
 
   const standings = useMemo((): SeriesStanding[] => {

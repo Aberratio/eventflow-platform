@@ -35,7 +35,10 @@ export const AdminFeaturedEventsTab = () => {
 
   const publishedEvents = events.filter(
     (e) =>
-      !e.isPrivate && (e.status === 'active' || e.status === 'past' || e.status === 'archived'),
+      e.visibility !== 'private' &&
+      (e.publicationStatus === 'published' ||
+        e.publicationStatus === 'finished' ||
+        e.publicationStatus === 'archived'),
   );
   const featuredEvents = events.filter((e) => e.featured);
 

@@ -25,22 +25,24 @@ import { Search, Calendar, MapPin, Settings, Eye, Plus } from 'lucide-react';
 import type { Event } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 
-const statusLabels: Record<Event['status'], string> = {
+const statusLabels: Record<Event['publicationStatus'], string> = {
   draft: 'Wersja robocza',
-  awaiting_approval: 'Do sprawdzenia',
-  approved: 'Zatwierdzone',
-  active: 'Aktywne',
-  past: 'Przeszłe',
+  submitted: 'Do sprawdzenia',
+  rejected: 'Odrzucone',
+  published: 'Aktywne',
+  finished: 'Zakończone',
+  cancelled: 'Odwołane',
   archived: 'Zarchiwizowane',
   deleted: 'Usunięte',
 };
 
-const statusColors: Record<Event['status'], string> = {
+const statusColors: Record<Event['publicationStatus'], string> = {
   draft: 'bg-muted text-muted-foreground',
-  awaiting_approval: 'bg-warning/10 text-warning border-warning/20',
-  approved: 'bg-primary/10 text-primary border-primary/20',
-  active: 'bg-primary/10 text-primary border-primary/20',
-  past: 'bg-muted text-muted-foreground',
+  submitted: 'bg-warning/10 text-warning border-warning/20',
+  rejected: 'bg-destructive/10 text-destructive border-destructive/20',
+  published: 'bg-primary/10 text-primary border-primary/20',
+  finished: 'bg-muted text-muted-foreground',
+  cancelled: 'bg-destructive/10 text-destructive border-destructive/20',
   archived: 'bg-secondary text-secondary-foreground',
   deleted: 'bg-destructive/10 text-destructive border-destructive/20',
 };
@@ -64,12 +66,12 @@ export const AdminEventsTab = () => {
   const events = eventsResponse?.data ?? [];
 
   const filteredEvents = events.filter((event) => {
-    if (event.status === 'deleted' && !canSeeDeleted) return false;
+    if (event.publicationStatus === 'deleted' && !canSeeDeleted) return false;
     const matchesSearch =
       event.name.toLowerCase().includes(search.toLowerCase()) ||
       event.city.toLowerCase().includes(search.toLowerCase()) ||
       event.organizerName.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || event.publicationStatus === statusFilter;
     const matchesDiscipline = disciplineFilter === 'all' || event.discipline === disciplineFilter;
     return matchesSearch && matchesStatus && matchesDiscipline;
   });
@@ -93,10 +95,11 @@ export const AdminEventsTab = () => {
           <SelectContent>
             <SelectItem value="all">Wszystkie statusy</SelectItem>
             <SelectItem value="draft">Wersja robocza</SelectItem>
-            <SelectItem value="awaiting_approval">Do sprawdzenia</SelectItem>
-            <SelectItem value="approved">Zatwierdzone</SelectItem>
-            <SelectItem value="active">Aktywne</SelectItem>
-            <SelectItem value="past">Przeszłe</SelectItem>
+            <SelectItem value="submitted">Do sprawdzenia</SelectItem>
+            <SelectItem value="rejected">Odrzucone</SelectItem>
+            <SelectItem value="published">Aktywne</SelectItem>
+            <SelectItem value="finished">Zakończone</SelectItem>
+            <SelectItem value="cancelled">Odwołane</SelectItem>
             <SelectItem value="archived">Zarchiwizowane</SelectItem>
             {canSeeDeleted && <SelectItem value="deleted">Usunięte</SelectItem>}
           </SelectContent>
@@ -159,8 +162,8 @@ export const AdminEventsTab = () => {
                   {event.organizerName}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={statusColors[event.status]}>
-                    {statusLabels[event.status]}
+                  <Badge variant="outline" className={statusColors[event.publicationStatus]}>
+                    {statusLabels[event.publicationStatus]}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -168,7 +171,9 @@ export const AdminEventsTab = () => {
                     <Button variant="ghost" size="icon" asChild>
                       <Link
                         to={
-                          event.status === 'draft'
+                          event.publicationStatus === 'draft' ||
+                          event.publicationStatus === 'submitted' ||
+                          event.publicationStatus === 'rejected'
                             ? `/events/${event.slug}/preview`
                             : `/events/${event.slug}`
                         }

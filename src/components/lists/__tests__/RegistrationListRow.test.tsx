@@ -29,7 +29,7 @@ const event: Event = {
   ],
   organizerId: 'organizer',
   organizerName: 'Organizer',
-  status: 'active',
+  publicationStatus: 'published',
   registrationDeadline: '2026-05-31',
   featured: false,
   isVirtual: true,

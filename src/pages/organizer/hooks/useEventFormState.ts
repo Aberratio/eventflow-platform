@@ -275,8 +275,8 @@ export const useEventFormState = () => {
   const [startDate, setStartDate] = useState(existingEvent?.startDate || '');
   const [endDate, setEndDate] = useState(existingEvent?.endDate || '');
 
-  // Private event
-  const [isPrivate, setIsPrivate] = useState(existingEvent?.isPrivate || false);
+  // Private event (visibility; only takes effect once the event is published — E1.1)
+  const [isPrivate, setIsPrivate] = useState(existingEvent?.visibility === 'private');
   const [accessCode, setAccessCode] = useState(existingEvent?.accessCode || '');
 
   // Media
@@ -612,7 +612,7 @@ export const useEventFormState = () => {
     setIsVirtual(existingEvent.isVirtual || false);
     setStartDate(existingEvent.startDate || '');
     setEndDate(existingEvent.endDate || '');
-    setIsPrivate(existingEvent.isPrivate || false);
+    setIsPrivate(existingEvent.visibility === 'private');
     setAccessCode(existingEvent.accessCode || '');
     setBannerUrl(existingEvent.bannerUrl || '');
     setOriginalBannerUrl(existingEvent.originalBannerUrl || '');
@@ -1641,7 +1641,7 @@ export const useEventFormState = () => {
       rulesHtml,
       finalAcceptanceHtml,
       requireFinalAcceptance,
-      isPrivate,
+      visibility: isPrivate ? ('private' as const) : ('public' as const),
       accessCode: accessCode || undefined,
       registrationEmbed: {
         enabled: registrationMode === 'external_embed',
@@ -1785,8 +1785,8 @@ export const useEventFormState = () => {
   return {
     // Meta
     isEditing,
-    originalIsPrivate: existingEvent?.isPrivate || false,
-    privacyChanged: isEditing && (existingEvent?.isPrivate || false) !== isPrivate,
+    originalIsPrivate: existingEvent?.visibility === 'private',
+    privacyChanged: isEditing && (existingEvent?.visibility === 'private') !== isPrivate,
     step,
     navigate,
     toast,
