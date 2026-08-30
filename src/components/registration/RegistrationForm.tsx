@@ -37,7 +37,7 @@ import {
   UserCog,
   Star,
 } from 'lucide-react';
-import { Event, EventMerchandise, MerchandiseOrder, RelayTeamMember } from '@/types';
+import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -67,7 +67,6 @@ export interface RegistrationData {
   insurancePrice?: number;
   totalAmount: number;
   teamName?: string;
-  relayMembers?: RelayTeamMember[];
   vipPriceId?: string;
   vipPriceName?: string;
   vipCustomFieldValue?: string;
@@ -860,76 +859,6 @@ const TeamStep = ({ form }: { form: FormHook }) => (
             </div>
           </RadioGroup>
 
-          {form.isRelayDistance && form.teamMode === 'create' && (
-            <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
-              <div>
-                <Label className="text-sm font-medium">Sklad sztafety</Label>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Kapitan jest liczony jako pierwszy zawodnik. Pozostale osoby mozesz wpisac teraz
-                  albo uzupelnic pozniej
-                  {form.relayTeamCompletionDeadline
-                    ? ` do ${form.relayTeamCompletionDeadline}`
-                    : ''}
-                  .
-                </p>
-              </div>
-
-              <div className="rounded-md bg-background px-3 py-2 text-sm">
-                <div className="font-medium">{form.user?.name || 'Osoba zapisujaca'}</div>
-                <div className="text-xs text-muted-foreground">Kapitan / zawodnik 1</div>
-              </div>
-
-              {form.relayMembers.map((member, index) => (
-                <div key={member.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                  <Input
-                    value={member.name}
-                    onChange={(e) => form.updateRelayMember(member.id, { name: e.target.value })}
-                    placeholder={`Zawodnik ${index + 2} - imie i nazwisko`}
-                  />
-                  <Input
-                    type="email"
-                    value={member.email || ''}
-                    onChange={(e) => form.updateRelayMember(member.id, { email: e.target.value })}
-                    placeholder="E-mail (opcjonalnie)"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => form.removeRelayMember(member.id)}
-                    aria-label="Usun zawodnika"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs text-muted-foreground">
-                  Wpisano {form.relayTeamMemberCount}
-                  {form.relayMaxTeamSize ? ` / ${form.relayMaxTeamSize}` : ''} zawodnikow.
-                  {form.relayTeamIsBelowMinimum &&
-                    ` Minimum ${form.relayMinTeamSize} trzeba uzupelnic przed deadline.`}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={form.addRelayMember}
-                  disabled={form.relayMemberLimitReached}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Dodaj zawodnika
-                </Button>
-              </div>
-
-              {!form.relayRosterIsValid && (
-                <p className="flex items-center gap-1 text-xs text-destructive">
-                  <AlertCircle className="h-3 w-3" />
-                  Wpisany zawodnik musi miec imie i nazwisko, a e-mail musi byc poprawny.
-                </p>
-              )}
-            </div>
-          )}
         </div>
       )}
     </CardContent>
@@ -1138,15 +1067,6 @@ const SummaryStep = ({
               <span className="flex items-center gap-2">
                 <Users className="h-4 w-4" /> Drużyna: {form.getFinalTeamName()}
               </span>
-            </div>
-          )}
-          {form.isRelayDistance && form.teamMode === 'create' && (
-            <div className="rounded-md border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-              Sklad sztafety: {form.relayTeamMemberCount}
-              {form.relayMaxTeamSize ? ` / ${form.relayMaxTeamSize}` : ''} zawodnikow
-              {form.relayTeamIsBelowMinimum && form.relayTeamCompletionDeadline
-                ? `. Brakujace osoby trzeba dodac do ${form.relayTeamCompletionDeadline}.`
-                : '.'}
             </div>
           )}
           {form.insurancePrice > 0 && (

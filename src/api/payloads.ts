@@ -27,7 +27,6 @@ import type {
   SosContact,
   MerchandiseOrder,
   Registration,
-  RelayTeamMember,
   ShopOrder,
   InfoPageSection,
   EventSeries,
@@ -148,7 +147,6 @@ export interface CreateRegistrationPayload {
   category: string;
   teamName?: string;
   teamId?: string;
-  relayMembers?: RelayTeamMember[];
   discountCode?: string;
   discountAmount?: number;
   pricePaid?: number;

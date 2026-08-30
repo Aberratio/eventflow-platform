@@ -166,7 +166,7 @@ export const getExistingTeamsForEvent = (
     )
     .forEach((r) => {
       const count = teamsMap.get(r.teamName!) || 0;
-      teamsMap.set(r.teamName!, count + 1 + (r.relayMembers?.length ?? 0));
+      teamsMap.set(r.teamName!, count + 1);
     });
 
   return Array.from(teamsMap.entries())

@@ -10,7 +10,6 @@ import {
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
-import type { RelayTeamMember } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 import { roundToCents } from '@/lib/discountValue';
@@ -45,7 +44,6 @@ export const useRegistrationForm = (event: Event) => {
   const [teamName, setTeamName] = useState('');
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
-  const [relayMembers, setRelayMembers] = useState<RelayTeamMember[]>([]);
 
   // VIP
   const [selectedVipId, setSelectedVipId] = useState<string>('');
@@ -226,53 +224,6 @@ export const useRegistrationForm = (event: Event) => {
     return teamMode === 'create' ? teamName.trim() || undefined : selectedExistingTeam || undefined;
   };
 
-  const filledRelayMembers = useMemo(
-    () => relayMembers.filter((member) => member.name.trim() || member.email?.trim()),
-    [relayMembers],
-  );
-
-  const normalizedRelayMembers = useMemo(
-    () =>
-      filledRelayMembers.map((member) => ({
-        ...member,
-        name: member.name.trim(),
-        email: member.email?.trim() || undefined,
-      })),
-    [filledRelayMembers],
-  );
-
-  const relayTeamMemberCount =
-    isRelayDistance && teamMode === 'create' ? 1 + normalizedRelayMembers.length : 1;
-  const relayAdditionalMemberLimit = relayMaxTeamSize ? Math.max(relayMaxTeamSize - 1, 0) : 20;
-  const relayTeamIsBelowMinimum =
-    !!isRelayDistance &&
-    !!relayMinTeamSize &&
-    teamMode === 'create' &&
-    relayTeamMemberCount < relayMinTeamSize;
-  const relayMemberLimitReached = normalizedRelayMembers.length >= relayAdditionalMemberLimit;
-  const relayRosterIsValid =
-    !isRelayDistance ||
-    teamMode !== 'create' ||
-    (normalizedRelayMembers.length <= relayAdditionalMemberLimit &&
-      normalizedRelayMembers.every(
-        (member) => member.name.length >= 2 && (!member.email || member.email.includes('@')),
-      ));
-
-  const addRelayMember = () => {
-    if (relayMemberLimitReached) return;
-    setRelayMembers((prev) => [...prev, { id: crypto.randomUUID(), name: '', email: '' }]);
-  };
-
-  const updateRelayMember = (id: string, patch: Partial<RelayTeamMember>) => {
-    setRelayMembers((prev) =>
-      prev.map((member) => (member.id === id ? { ...member, ...patch } : member)),
-    );
-  };
-
-  const removeRelayMember = (id: string) => {
-    setRelayMembers((prev) => prev.filter((member) => member.id !== id));
-  };
-
   const handleApplyDiscount = () => {
     if (!discountCode.trim()) {
       setDiscountError('Wpisz kod rabatowy');
@@ -351,7 +302,6 @@ export const useRegistrationForm = (event: Event) => {
       case 25:
         if (isRelayDistance && !wantsTeam) return false;
         if (!wantsTeam) return true;
-        if (isRelayDistance && !relayRosterIsValid) return false;
         if (teamMode === 'create') return teamName.trim().length >= 3 && !teamNameError;
         return !!selectedExistingTeam;
       case 3:
@@ -392,10 +342,6 @@ export const useRegistrationForm = (event: Event) => {
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       totalAmount,
       teamName: getFinalTeamName(),
-      relayMembers:
-        isRelayDistance && teamMode === 'create' && normalizedRelayMembers.length > 0
-          ? normalizedRelayMembers
-          : undefined,
       vipPriceId: activeVip ? selectedVipId : undefined,
       vipPriceName: activeVip?.name,
       vipCustomFieldValue: activeVip?.customFieldLabel ? vipCustomFieldValue : undefined,
@@ -443,15 +389,6 @@ export const useRegistrationForm = (event: Event) => {
     selectedExistingTeam,
     setSelectedExistingTeam,
     teamNameError,
-    relayMembers,
-    addRelayMember,
-    updateRelayMember,
-    removeRelayMember,
-    normalizedRelayMembers,
-    relayTeamMemberCount,
-    relayTeamIsBelowMinimum,
-    relayMemberLimitReached,
-    relayRosterIsValid,
     existingTeams,
     selectedVipId,
     setSelectedVipId,

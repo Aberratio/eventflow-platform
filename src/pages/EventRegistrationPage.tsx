@@ -263,7 +263,6 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         distanceName: data.distanceName,
         category: data.category,
         teamName: data.teamName,
-        relayMembers: data.relayMembers,
         discountCode: data.discountCode,
         discountAmount: data.discountAmount,
         pricePaid: Math.max(0, data.price - (data.discountAmount ?? 0)),

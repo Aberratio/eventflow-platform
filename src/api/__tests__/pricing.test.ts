@@ -278,27 +278,6 @@ describe('getExistingTeamsForEvent', () => {
     expect(teams.find((t) => t.name === 'Cancelled')).toBeUndefined();
   });
 
-  it('counts relay members stored on captain registration', () => {
-    const teams = getExistingTeamsForEvent(
-      [
-        {
-          eventId: 'e1',
-          distanceId: 'd1',
-          teamName: 'Relay',
-          status: 'confirmed',
-          relayMembers: [
-            { id: 'm1', name: 'Anna Nowak' },
-            { id: 'm2', name: 'Jan Kowalski' },
-          ],
-        },
-      ] as Registration[],
-      'e1',
-      'd1',
-    );
-
-    expect(teams).toEqual([{ name: 'Relay', memberCount: 3 }]);
-  });
-
   it('returns empty for unknown event', () => {
     expect(getExistingTeamsForEvent(registrations, 'e999')).toEqual([]);
   });
