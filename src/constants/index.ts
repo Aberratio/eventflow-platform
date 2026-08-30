@@ -94,12 +94,6 @@ export const STORAGE_KEYS = {
 
 export const AUTH_SESSION_EXPIRED_EVENT = 'zmierzymyczas:auth-session-expired';
 
-export const GROUP_DISCOUNT_TIERS = [
-  { minParticipants: 3, discountPercent: 10 },
-  { minParticipants: 5, discountPercent: 15 },
-  { minParticipants: 10, discountPercent: 20 },
-] as const;
-
 export const QUERY_KEYS = {
   events: ['events'] as const,
   featuredEvents: ['events', 'featured'] as const,

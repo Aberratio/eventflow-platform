@@ -1,5 +1,4 @@
 import { getCurrentPrice, applyDiscount } from '@/api';
-import { GROUP_DISCOUNT_TIERS } from '@/constants';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -756,7 +755,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
       <CardDescription>
         {form.isRelayDistance
           ? `Ten dystans wymaga druzyny${form.relayTeamSizeLabel ? `: ${form.relayTeamSizeLabel}` : ''}.`
-          : 'Zapisz się jako część drużyny i skorzystaj ze zniżek grupowych'}
+          : 'Zapisz się jako część drużyny'}
       </CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
@@ -944,30 +943,6 @@ const TeamStep = ({ form }: { form: FormHook }) => (
           )}
         </div>
       )}
-
-      <div className="space-y-3 rounded-lg bg-muted/50 p-4">
-        <h4 className="flex items-center gap-2 font-semibold">
-          <Tag className="h-4 w-4" /> Zniżki grupowe
-        </h4>
-        <p className="text-sm text-muted-foreground">
-          Zniżki są naliczane automatycznie po zapisaniu minimalnej liczby osób z tej samej drużyny:
-        </p>
-        <ul className="space-y-2 text-sm">
-          {GROUP_DISCOUNT_TIERS.map((tier) => (
-            <li key={tier.minParticipants} className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono">
-                {tier.minParticipants}+ osób
-              </Badge>
-              <span className="font-medium text-primary">-{tier.discountPercent}%</span>
-              <span className="text-muted-foreground">rabatu</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 text-xs text-muted-foreground">
-          💡 Zniżka zostanie przypisana do wszystkich członków drużyny po osiągnięciu minimalnej
-          liczby zapisanych.
-        </p>
-      </div>
     </CardContent>
   </Card>
 );
