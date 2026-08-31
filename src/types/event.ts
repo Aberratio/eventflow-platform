@@ -40,8 +40,10 @@ export interface PriceTier {
  *
  * Per the E1.2 pricing algorithm ("Rozliczenie", steps 1-2), the Wariant
  * carries its own base `price` AND its own Próg (tier) list — it is a full
- * price list, not a discount off the distance's base price. `tiers` uses the
- * same dual-optional-limit shape as `PriceTier` (see `isTierExpired`).
+ * price list, not a discount off the distance's base price. `priceTiers`
+ * uses the same dual-optional-limit shape as `PriceTier` (see
+ * `isTierExpired`). Field name matches the server's
+ * `EventRepository::children(..., ['priceTiers'])` payload shape.
  */
 export interface DistancePricingVariant {
   id: string;
@@ -50,7 +52,7 @@ export interface DistancePricingVariant {
   officeOnly?: boolean;
   visibleInPublicForm?: boolean;
   sortOrder?: number;
-  tiers?: PriceTier[];
+  priceTiers?: PriceTier[];
 }
 
 export interface DiscountCodeUsage {

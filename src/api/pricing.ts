@@ -111,7 +111,7 @@ export const getVariantPrice = (
   tierName: string;
   nextTier?: { name: string; price: number; threshold: string };
 } => {
-  const tiers = variant.tiers ?? [];
+  const tiers = variant.priceTiers ?? [];
   const basePrice = variant.price;
   if (tiers.length === 0) {
     return { price: roundToCents(basePrice), tierName: 'Cena standardowa' };

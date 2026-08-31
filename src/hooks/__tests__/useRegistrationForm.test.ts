@@ -310,7 +310,7 @@ describe('useRegistrationForm', () => {
                 id: 'v1',
                 name: 'Standard',
                 price: 110,
-                tiers: [
+                priceTiers: [
                   {
                     id: 't1',
                     name: 'Early bird',

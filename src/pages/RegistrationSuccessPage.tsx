@@ -19,12 +19,28 @@ import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
-import { PaymentConfig } from '@/types';
+import { PaymentConfig, Registration } from '@/types';
 import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
 import { useEffect, useRef } from 'react';
 import { formatMoney } from '@/lib/discountValue';
+import { cn } from '@/lib/utils';
 
 interface RegistrationSuccessState {
+  /**
+   * The server's frozen response from `createRegistration()` — the
+   * authoritative Rozliczenie (E1.2). Everything actually charged/recorded
+   * (`totalAmount`, `settlementItems`, `pricePaid`, `discountAmount`,
+   * `insurancePaid`, `merchandiseOrders`) must be read from here, never from
+   * `registrationData`.
+   */
+  registration: Registration;
+  /**
+   * The client's own pre-submit preview (see `RegistrationData`'s doc
+   * comment) — used here only for fields the server response doesn't carry
+   * (e.g. `birthDate`) or as a last-resort display fallback if the server
+   * response is ever incomplete. Never used for money that was actually
+   * charged.
+   */
   registrationData: RegistrationData;
   eventId: string;
   eventName: string;
@@ -33,6 +49,68 @@ interface RegistrationSuccessState {
   eventCity: string;
   paymentConfig?: PaymentConfig;
 }
+
+interface ReceiptLine {
+  key: string;
+  label: string;
+  amount: number;
+}
+
+/**
+ * Build the receipt line items to render, from the server's frozen
+ * Rozliczenie — never from the pre-submit preview. `settlementItems` (the
+ * position-by-position breakdown the server computes, E1.2) is authoritative
+ * when present; the discrete `pricePaid`/`discountAmount`/`insurancePaid`/
+ * `merchandiseOrders` fields on the same server response are the fallback
+ * for older/partial responses. `registrationData` is touched only as a
+ * last-resort fallback so the page still renders something sensible if the
+ * server response is ever missing a field entirely.
+ */
+const buildReceiptLines = (
+  registration: Registration,
+  registrationData: RegistrationData,
+): ReceiptLine[] => {
+  if (registration.settlementItems && registration.settlementItems.length > 0) {
+    return [...registration.settlementItems]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((item) => ({ key: item.id, label: item.name, amount: item.amount }));
+  }
+
+  const lines: ReceiptLine[] = [];
+  const distanceName = registration.distanceName || registrationData.distanceName;
+  const startFee = registration.pricePaid ?? registrationData.price;
+  lines.push({
+    key: 'start-fee',
+    label: `Opłata startowa (${distanceName})`,
+    amount: startFee,
+  });
+
+  const discountAmount = registration.discountAmount ?? registrationData.discountAmount;
+  if (discountAmount && discountAmount > 0) {
+    const discountCode = registration.discountCode ?? registrationData.discountCode;
+    lines.push({
+      key: 'discount',
+      label: discountCode ? `Rabat (${discountCode})` : 'Rabat',
+      amount: -discountAmount,
+    });
+  }
+
+  const insuranceAmount = registration.insurancePaid ?? registrationData.insurancePrice;
+  if (insuranceAmount && insuranceAmount > 0) {
+    lines.push({ key: 'insurance', label: 'Ubezpieczenie NNW', amount: insuranceAmount });
+  }
+
+  const merchandiseOrders = registration.merchandiseOrders ?? registrationData.merchandiseOrders;
+  merchandiseOrders?.forEach((order, index) => {
+    const variant = [order.size, order.color].filter(Boolean).join(', ');
+    const label = `${order.merchandiseName}${variant ? ` (${variant})` : ''}${
+      order.quantity > 1 ? ` x${order.quantity}` : ''
+    }`;
+    lines.push({ key: `merch-${index}`, label, amount: order.price });
+  });
+
+  return lines;
+};
 
 const RegistrationSuccessPage = () => {
   const { slug } = useParams();
@@ -75,7 +153,10 @@ const RegistrationSuccessPage = () => {
     return state.paymentConfig.transferTitle
       .replace('{eventName}', state.eventName)
       .replace('{participantName}', user?.name || 'Uczestnik')
-      .replace('{distanceName}', state.registrationData.distanceName)
+      .replace(
+        '{distanceName}',
+        state.registration.distanceName || state.registrationData.distanceName,
+      )
       .replace('{birthDate}', state.registrationData.birthDate || '');
   };
 
@@ -101,8 +182,12 @@ const RegistrationSuccessPage = () => {
     );
   }
 
-  const { registrationData, eventName, eventDate, eventCity, paymentConfig } = state;
+  const { registration, registrationData, eventName, eventDate, eventCity, paymentConfig } = state;
   const isBankTransfer = paymentConfig?.type === 'organizer_bank';
+  const receiptLines = buildReceiptLines(registration, registrationData);
+  const totalAmount = registration.totalAmount ?? registrationData.totalAmount;
+  const distanceName = registration.distanceName || registrationData.distanceName;
+  const category = registration.category || registrationData.category;
 
   return (
     <Layout>
@@ -131,9 +216,9 @@ const RegistrationSuccessPage = () => {
               </span>
             </div>
             <p className="mt-2 text-sm">
-              Dystans: <span className="font-medium">{registrationData.distanceName}</span>
+              Dystans: <span className="font-medium">{distanceName}</span>
               {' • '}
-              Kategoria: <span className="font-medium">{registrationData.category}</span>
+              Kategoria: <span className="font-medium">{category}</span>
             </p>
           </div>
 
@@ -146,42 +231,16 @@ const RegistrationSuccessPage = () => {
                   {isBankTransfer ? 'Szczegóły zamówienia' : 'Szczegóły rejestracji'}
                 </h2>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span>Opłata startowa ({registrationData.distanceName})</span>
-                    <span className="font-medium">{formatMoney(registrationData.price)}</span>
-                  </div>
-
-                  {registrationData.discountAmount && registrationData.discountAmount > 0 && (
-                    <div className="flex justify-between text-primary">
-                      <span>Rabat ({registrationData.discountCode})</span>
+                  {receiptLines.map((line) => (
+                    <div
+                      key={line.key}
+                      className={cn('flex justify-between', line.amount < 0 && 'text-primary')}
+                    >
+                      <span>{line.label}</span>
                       <span className="font-medium">
-                        -{formatMoney(registrationData.discountAmount)}
+                        {line.amount < 0 ? '-' : ''}
+                        {formatMoney(Math.abs(line.amount))}
                       </span>
-                    </div>
-                  )}
-
-                  {registrationData.insurancePrice && registrationData.insurancePrice > 0 && (
-                    <div className="flex justify-between">
-                      <span>Ubezpieczenie NNW</span>
-                      <span className="font-medium">
-                        {formatMoney(registrationData.insurancePrice)}
-                      </span>
-                    </div>
-                  )}
-
-                  {registrationData.merchandiseOrders.map((order, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span>
-                        {order.merchandiseName}
-                        {(order.size || order.color) && (
-                          <span className="text-muted-foreground">
-                            {' '}
-                            ({[order.size, order.color].filter(Boolean).join(', ')})
-                          </span>
-                        )}
-                        {order.quantity > 1 && ` x${order.quantity}`}
-                      </span>
-                      <span className="font-medium">{formatMoney(order.price)}</span>
                     </div>
                   ))}
                 </div>
@@ -190,7 +249,7 @@ const RegistrationSuccessPage = () => {
 
                 <div className="flex justify-between text-lg font-semibold">
                   <span>{isBankTransfer ? 'Do zapłaty' : 'Razem zapłacono'}</span>
-                  <span>{formatMoney(registrationData.totalAmount)}</span>
+                  <span>{formatMoney(totalAmount)}</span>
                 </div>
 
                 {!isBankTransfer && (
@@ -266,16 +325,12 @@ const RegistrationSuccessPage = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted-foreground">Kwota</p>
-                      <p className="text-lg font-bold">
-                        {registrationData.totalAmount.toFixed(2)} PLN
-                      </p>
+                      <p className="text-lg font-bold">{totalAmount.toFixed(2)} PLN</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        copyToClipboard(`${registrationData.totalAmount.toFixed(2)}`, 'Kwota')
-                      }
+                      onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>

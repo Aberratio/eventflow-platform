@@ -29,7 +29,7 @@ import {
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
-import type { MyCompetitor } from '@/types';
+import type { MyCompetitor, Registration } from '@/types';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -250,12 +250,15 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         : { userId: user.id, competitorId: undefined, userName: user.name, userEmail: user.email };
 
     setIsSubmitting(true);
+    let registration: Registration;
     try {
       // E1.2: the client never sends computed money amounts (price,
       // discountAmount, pricePaid, totalAmount, insurancePrice, or the
       // amount fields inside paymentDetails) — only IDs/selections. The
-      // server recomputes and freezes the authoritative Rozliczenie.
-      await createRegistration({
+      // server recomputes and freezes the authoritative Rozliczenie and
+      // returns it on the response — that response (not this preview `data`)
+      // is what the success page must render.
+      const response = await createRegistration({
         eventId: event.id,
         eventName: event.name,
         userId: registeredFor.userId,
@@ -282,6 +285,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
               : undefined,
         },
       });
+      registration = response.data;
     } catch (error) {
       toast({
         title: 'Nie udało się zapisać rejestracji',
@@ -292,9 +296,12 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       return;
     }
 
-    // Redirect to success page with registration data
+    // Redirect to success page with the server's frozen registration
+    // (authoritative amounts) plus the pre-submit preview (non-money display
+    // fields only, e.g. birthDate).
     navigate(`/events/${slug}/register/success`, {
       state: {
+        registration,
         registrationData: data,
         eventId: event.id,
         eventName: event.name,
