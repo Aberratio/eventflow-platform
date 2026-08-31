@@ -248,6 +248,36 @@ describe('useEventFormState event wizard validation', () => {
     );
   });
 
+  it('defaults payment window fields and submits them normalized as numbers', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    // E1.4: bramka domyślnie 45 minut, przelew domyślnie 3 dni — zanim organizator
+    // cokolwiek zmieni w formularzu.
+    expect(result.current.gatewayWindowMinutes).toBe('45');
+    expect(result.current.transferWindowDays).toBe('3');
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.setGatewayWindowMinutes('60');
+      result.current.setTransferWindowDays('5');
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        paymentConfig: expect.objectContaining({
+          gatewayWindowMinutes: 60,
+          transferWindowDays: 5,
+        }),
+      }),
+    );
+  });
+
   it('rejects invalid relay team size range', async () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
     await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());

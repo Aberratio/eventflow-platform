@@ -310,6 +310,16 @@ export const useEventFormState = () => {
   const [transferTitle, setTransferTitle] = useState(
     existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
   );
+  // E1.4: okno płatności — dwie niezależne, konfigurowalne per Wydarzenie wartości
+  // (docs/20 pkt 1). Domyślne wartości muszą zgadzać się z serwerowymi (patrz
+  // EventRepository::withPaymentWindowDefaults) — trzymane tu jako string, jak
+  // każde inne pole liczbowe w tym formularzu (parseNumberInput() na submit).
+  const [gatewayWindowMinutes, setGatewayWindowMinutes] = useState(
+    String(existingEvent?.paymentConfig?.gatewayWindowMinutes ?? 45),
+  );
+  const [transferWindowDays, setTransferWindowDays] = useState(
+    String(existingEvent?.paymentConfig?.transferWindowDays ?? 3),
+  );
 
   // Documents
   const [documents, setDocuments] = useState<EventDocument[]>(existingEvent?.documents || []);
@@ -627,6 +637,8 @@ export const useEventFormState = () => {
     setTransferTitle(
       existingEvent.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
     );
+    setGatewayWindowMinutes(String(existingEvent.paymentConfig?.gatewayWindowMinutes ?? 45));
+    setTransferWindowDays(String(existingEvent.paymentConfig?.transferWindowDays ?? 3));
     setDocuments(existingEvent.documents || []);
     setOrganizersHtml(existingEvent.organizersHtml || '');
     setRulesHtml(existingEvent.rulesHtml || '');
@@ -1636,6 +1648,8 @@ export const useEventFormState = () => {
         bankAccountNumber: bankAccountNumber || undefined,
         bankAccountHolder: bankAccountHolder || undefined,
         transferTitle: transferTitle || undefined,
+        gatewayWindowMinutes: parseNumberInput(gatewayWindowMinutes) ?? undefined,
+        transferWindowDays: parseNumberInput(transferWindowDays) ?? undefined,
       },
       documents,
       rulesHtml,
@@ -1864,6 +1878,10 @@ export const useEventFormState = () => {
     setBankAccountHolder,
     transferTitle,
     setTransferTitle,
+    gatewayWindowMinutes,
+    setGatewayWindowMinutes,
+    transferWindowDays,
+    setTransferWindowDays,
     documents,
     isUploadingDocument,
     addDocumentFile,

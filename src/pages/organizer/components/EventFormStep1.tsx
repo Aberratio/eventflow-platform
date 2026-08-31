@@ -1945,6 +1945,50 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       </div>
                     </div>
                   </RadioGroup>
+
+                  <div className="mt-6 space-y-4 border-t pt-4">
+                    <div>
+                      <Label className="font-medium">Okno płatności</Label>
+                      <FieldHelp description="Czas, po ktorym nieoplacony Zapis wygasa i zwalnia miejsce (oraz tanszy prog cenowy) dla kolejnej osoby. Bramka i przelew maja osobne okna, bo platnosc bramka jest natychmiastowa, a przelew ksieguje sie realnie kilka dni." />
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Po tym czasie nieopłacony Zapis wygasa i zwalnia miejsce kolejnej osobie.
+                      </p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <HelpLabel
+                          htmlFor="gatewayWindowMinutes"
+                          description="Okno platnosci dla bramki (Tpay/PayNow) — platnosc jest natychmiastowa, wiec dluzsze oczekiwanie tylko blokuje tansza pule innym zapisujacym sie. Domyslnie 45 minut."
+                        >
+                          Okno bramki (minuty)
+                        </HelpLabel>
+                        <Input
+                          id="gatewayWindowMinutes"
+                          type="number"
+                          min={1}
+                          value={form.gatewayWindowMinutes}
+                          onChange={(e) => form.setGatewayWindowMinutes(e.target.value)}
+                          placeholder="45"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel
+                          htmlFor="transferWindowDays"
+                          description="Okno platnosci dla przelewu tradycyjnego — realny czas ksiegowania wplaty. Domyslnie 3 dni robocze."
+                        >
+                          Okno przelewu (dni)
+                        </HelpLabel>
+                        <Input
+                          id="transferWindowDays"
+                          type="number"
+                          min={1}
+                          value={form.transferWindowDays}
+                          onChange={(e) => form.setTransferWindowDays(e.target.value)}
+                          placeholder="3"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
             </div>

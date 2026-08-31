@@ -403,6 +403,15 @@ export interface PaymentConfig {
   bankAccountNumber?: string;
   bankAccountHolder?: string;
   transferTitle?: string;
+  /**
+   * E1.4: okno płatności, konfigurowalne per Wydarzenie (docs/20 pkt 1). Bramka
+   * (Tpay/PayNow): domyślnie 45 minut. Serwer (EventRepository) domyśla te wartości
+   * na czytaniu, więc zawsze przychodzą wypełnione — undefined tu oznacza tylko
+   * "jeszcze nie wysłano do API", nie "brak wartości".
+   */
+  gatewayWindowMinutes?: number;
+  /** Przelew tradycyjny: domyślnie 3 dni robocze. */
+  transferWindowDays?: number;
 }
 
 export interface MerchandisePaymentStatus {
