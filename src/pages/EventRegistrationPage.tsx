@@ -251,6 +251,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
     setIsSubmitting(true);
     try {
+      // E1.2: the client never sends computed money amounts (price,
+      // discountAmount, pricePaid, totalAmount, insurancePrice, or the
+      // amount fields inside paymentDetails) — only IDs/selections. The
+      // server recomputes and freezes the authoritative Rozliczenie.
       await createRegistration({
         eventId: event.id,
         eventName: event.name,
@@ -263,30 +267,19 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         distanceName: data.distanceName,
         category: data.category,
         teamName: data.teamName,
+        pricingVariantId: data.pricingVariantId,
         discountCode: data.discountCode,
-        discountAmount: data.discountAmount,
-        pricePaid: Math.max(0, data.price - (data.discountAmount ?? 0)),
-        totalAmount: data.totalAmount,
-        merchandiseOrders: data.merchandiseOrders,
+        merchandise: data.merchandise,
+        insuranceVariantId: data.insuranceVariantId,
         paymentDetails: {
           startFeePaid: event.paymentConfig?.type !== 'organizer_bank',
           startFeePaidAt:
             event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
-          startFeeAmount: Math.max(0, data.price - (data.discountAmount ?? 0)),
           insurancePaid: event.paymentConfig?.type !== 'organizer_bank',
           insurancePaidAt:
-            event.paymentConfig?.type !== 'organizer_bank' && data.insurancePrice
+            event.paymentConfig?.type !== 'organizer_bank' && data.insuranceVariantId
               ? new Date().toISOString()
               : undefined,
-          insuranceAmount: data.insurancePrice,
-          merchandisePayments: data.merchandiseOrders.map((order) => ({
-            merchandiseId: order.merchandiseId,
-            merchandiseName: order.merchandiseName,
-            paid: event.paymentConfig?.type !== 'organizer_bank',
-            paidAt:
-              event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
-            amount: order.price,
-          })),
         },
       });
     } catch (error) {
@@ -473,7 +466,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           onComplete={handleComplete}
           onCancel={handleCancel}
           previewMode={isPreviewAvailable}
-          disabled={registeringForOther && !selectedGrantorId}
+          disabled={registeringForOther && !selectedGrantor}
         />
       </div>
     </Layout>

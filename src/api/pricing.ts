@@ -1,4 +1,12 @@
-import type { PriceTierDiscountType, Event, Registration, Distance, PriceTier } from '@/types';
+import type {
+  PriceTierDiscountType,
+  Event,
+  Registration,
+  Distance,
+  PriceTier,
+  DistancePricingVariant,
+  InsuranceVariant,
+} from '@/types';
 import { roundToCents, formatDiscountBadge } from '@/lib/discountValue';
 
 /** Calculate price after applying a discount to a base price. */
@@ -83,6 +91,85 @@ export const getCurrentPrice = (
 
   // All tiers expired — base price
   return { price: basePrice, tierName: 'Cena standardowa' };
+};
+
+/**
+ * PREVIEW ONLY — non-authoritative. Resolve the current price of a Wariant
+ * opłaty (steps 1-2 of the E1.2 "Rozliczenie" algorithm): the Wariant is a
+ * full price list carrying its own base price and its own tier list — not a
+ * discount off `distance.price`. Tiers are evaluated in configured order,
+ * first non-expired one wins (`isTierExpired`), matching the server's
+ * eventual authoritative computation. The server always recomputes and
+ * freezes the real "opłata startowa" on the Zapis; this only drives the
+ * client-side price preview shown before submit.
+ */
+export const getVariantPrice = (
+  variant: DistancePricingVariant,
+  registeredCount: number,
+): {
+  price: number;
+  tierName: string;
+  nextTier?: { name: string; price: number; threshold: string };
+} => {
+  const tiers = variant.tiers ?? [];
+  const basePrice = variant.price;
+  if (tiers.length === 0) {
+    return { price: roundToCents(basePrice), tierName: 'Cena standardowa' };
+  }
+
+  for (let i = 0; i < tiers.length; i++) {
+    const tier = tiers[i];
+    if (!isTierExpired(tier, registeredCount)) {
+      const nextTier = tiers[i + 1];
+      return {
+        price: priceForTier(basePrice, tier),
+        tierName: tier.name,
+        nextTier: nextTier
+          ? {
+              name: nextTier.name,
+              price: priceForTier(basePrice, nextTier),
+              threshold: describeTierThreshold(tier) ?? '',
+            }
+          : undefined,
+      };
+    }
+  }
+
+  return { price: roundToCents(basePrice), tierName: 'Cena standardowa' };
+};
+
+/**
+ * Age as of a given reference date (defaults to today), counting whole years
+ * elapsed since `birthDate`. Used for the NNW premium preview, which per
+ * E1.2 resolution #9 must use the age AS OF THE EVENT DATE, not today and
+ * not the registration date.
+ */
+export const calculateAge = (birthDate: string, asOfDate: string | Date = new Date()): number => {
+  const ref = typeof asOfDate === 'string' ? new Date(asOfDate) : asOfDate;
+  const birth = new Date(birthDate);
+  let age = ref.getFullYear() - birth.getFullYear();
+  const hasHadBirthdayThisYear =
+    ref.getMonth() > birth.getMonth() ||
+    (ref.getMonth() === birth.getMonth() && ref.getDate() >= birth.getDate());
+  if (!hasHadBirthdayThisYear) age -= 1;
+  return age;
+};
+
+/**
+ * PREVIEW ONLY — non-authoritative. NNW premium for step 6 of the E1.2
+ * algorithm: baseFee + max(0, age-18) * ageMultiplier, age computed as of
+ * the EVENT date. Returns 0 when the competitor's age at the event exceeds
+ * the variant's maxAge (insurance unavailable). The server recomputes and
+ * freezes the real amount.
+ */
+export const calculateInsurancePreview = (
+  variant: InsuranceVariant,
+  birthDate: string,
+  eventDate: string,
+): number => {
+  const age = calculateAge(birthDate, eventDate);
+  if (age > variant.maxAge) return 0;
+  return roundToCents(variant.baseFee + Math.max(0, age - 18) * variant.ageMultiplier);
 };
 
 /** Validate a discount code for an event. */

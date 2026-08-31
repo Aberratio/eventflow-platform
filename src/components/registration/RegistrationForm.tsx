@@ -1,4 +1,10 @@
-import { getCurrentPrice, applyDiscount, isTierExpired } from '@/api';
+import {
+  getCurrentPrice,
+  getVariantPrice,
+  applyDiscount,
+  isTierExpired,
+  type RegistrationMerchandiseSelection,
+} from '@/api';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -55,6 +61,17 @@ interface RegistrationFormProps {
   disabled?: boolean;
 }
 
+/**
+ * Client-side representation of a completed registration form. This carries
+ * PREVIEW money fields (`price`, `discountAmount`, `insurancePrice`,
+ * `totalAmount`, `modifiersTotal`) purely for on-screen display (Summary
+ * step, and the local-only "test registration" preview for draft events) —
+ * they are NEVER sent to the server as-is. The actual `createRegistration`
+ * call (see `EventRegistrationPage.handleComplete`) forwards only the
+ * selection fields (`pricingVariantId`, `discountCode`, `merchandise`,
+ * `insuranceVariantId`) per the E1.2 contract: the server recomputes and
+ * freezes the authoritative amounts.
+ */
 export interface RegistrationData {
   distanceId: string;
   distanceName: string;
@@ -64,12 +81,13 @@ export interface RegistrationData {
   discountCode?: string;
   discountAmount?: number;
   merchandiseOrders: MerchandiseOrder[];
+  merchandise: RegistrationMerchandiseSelection[];
   insurancePrice?: number;
+  modifiersTotal: number;
   totalAmount: number;
   teamName?: string;
-  vipPriceId?: string;
-  vipPriceName?: string;
-  vipCustomFieldValue?: string;
+  pricingVariantId?: string;
+  insuranceVariantId?: string;
 }
 
 const currentYear = new Date().getFullYear();
@@ -212,7 +230,7 @@ export const RegistrationForm = ({
 
       {/* Step 3: Insurance */}
       {form.step === 3 && form.isStepInActiveSteps(3) && form.hasInsurance && (
-        <InsuranceStep form={form} />
+        <InsuranceStep event={event} form={form} />
       )}
 
       {/* Step 4: Merchandise */}
@@ -272,7 +290,13 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
       <RadioGroup value={form.selectedDistanceId} onValueChange={form.setSelectedDistanceId}>
         <div className="space-y-4">
           {event.distances.map((distance) => {
-            const { price, tierName } = getCurrentPrice(distance);
+            const publicVariants = (distance.pricingVariants ?? [])
+              .filter((v) => !v.officeOnly && (v.visibleInPublicForm ?? true))
+              .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+            const { price, tierName } =
+              publicVariants.length > 0
+                ? getVariantPrice(publicVariants[0], distance.registeredCount)
+                : getCurrentPrice(distance);
             const spotsLeft = distance.limit ? distance.limit - distance.registeredCount : null;
             const isFull = spotsLeft !== null && spotsLeft <= 0;
             return (
@@ -307,32 +331,34 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                       </Badge>
                     </div>
                   </div>
-                  {distance.priceTiers && distance.priceTiers.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                      {distance.priceTiers.map((tier) => {
-                        const isCurrentTier = tier.name === tierName;
-                        const tierPrice =
-                          tier.price ??
-                          applyDiscount(distance.price, tier.discountType, tier.discountValue);
-                        const dimmed = isTierExpired(tier, distance.registeredCount);
-                        return (
-                          <div
-                            key={tier.id}
-                            className={`flex justify-between text-xs ${isCurrentTier ? 'font-medium text-primary' : dimmed ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}
-                          >
-                            <span>{tier.name}</span>
-                            <span>
-                              {tierPrice} zł
-                              {tier.endDate &&
-                                ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
-                              {tier.participantLimit != null &&
-                                ` (do ${tier.participantLimit} os.)`}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {publicVariants.length === 0 &&
+                    distance.priceTiers &&
+                    distance.priceTiers.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {distance.priceTiers.map((tier) => {
+                          const isCurrentTier = tier.name === tierName;
+                          const tierPrice =
+                            tier.price ??
+                            applyDiscount(distance.price, tier.discountType, tier.discountValue);
+                          const dimmed = isTierExpired(tier, distance.registeredCount);
+                          return (
+                            <div
+                              key={tier.id}
+                              className={`flex justify-between text-xs ${isCurrentTier ? 'font-medium text-primary' : dimmed ? 'text-muted-foreground line-through' : 'text-muted-foreground'}`}
+                            >
+                              <span>{tier.name}</span>
+                              <span>
+                                {tierPrice} zł
+                                {tier.endDate &&
+                                  ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
+                                {tier.participantLimit != null &&
+                                  ` (do ${tier.participantLimit} os.)`}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                     {distance.startType === 'relay' && (
                       <Badge variant="outline">
@@ -367,72 +393,42 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
         </div>
       </RadioGroup>
 
-      {/* VIP Price Selection */}
-      {form.selectedDistance &&
-        (() => {
-          const { price: tierPrice } = getCurrentPrice(form.selectedDistance);
-          const vipOptions = form.selectedDistance.vipPrices || [];
-          if (vipOptions.length === 0) return null;
-          return (
-            <div className="mt-4 space-y-3 rounded-lg border p-4">
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <Label className="text-sm font-medium">Ceny specjalne (VIP)</Label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Jeśli kwalifikujesz się do ceny specjalnej, wybierz odpowiednią opcję poniżej.
-              </p>
-              <RadioGroup
-                value={form.selectedVipId}
-                onValueChange={(v) => {
-                  form.setSelectedVipId(v);
-                  form.setVipCustomFieldValue('');
-                }}
-              >
-                <div className="space-y-2">
-                  <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
-                    <RadioGroupItem value="" />
-                    <span className="text-sm">Cena standardowa — {tierPrice} zł</span>
+      {/* Wariant opłaty selection — only rendered as a chooser when 2+ Warianty
+          exist; a single Wariant is auto-selected silently (E1.2 resolution #1). */}
+      {form.selectedDistance && form.pricingVariants.length > 1 && (
+        <div className="mt-4 space-y-3 rounded-lg border p-4">
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
+            <Label className="text-sm font-medium">Wariant opłaty</Label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Wybierz wariant zapisu, który Cię dotyczy.
+          </p>
+          <RadioGroup
+            value={form.selectedPricingVariantId}
+            onValueChange={form.setSelectedPricingVariantId}
+          >
+            <div className="space-y-2">
+              {form.pricingVariants.map((variant) => {
+                const { price: variantPrice } = getVariantPrice(
+                  variant,
+                  form.selectedDistance!.registeredCount,
+                );
+                return (
+                  <label
+                    key={variant.id}
+                    className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50"
+                  >
+                    <RadioGroupItem value={variant.id} />
+                    <span className="flex-1 text-sm">{variant.name}</span>
+                    <span className="text-sm font-semibold text-primary">{variantPrice} zł</span>
                   </label>
-                  {vipOptions.map((vip) => {
-                    const vipFinalPrice = applyDiscount(
-                      form.selectedDistance!.price,
-                      vip.discountType,
-                      vip.discountValue,
-                    );
-                    return (
-                      <div key={vip.id}>
-                        <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
-                          <RadioGroupItem value={vip.id} />
-                          <span className="flex-1 text-sm">{vip.name}</span>
-                          <span className="text-sm font-semibold text-primary">
-                            {vipFinalPrice} zł
-                          </span>
-                        </label>
-                        {form.selectedVipId === vip.id && vip.customFieldLabel && (
-                          <div className="ml-7 mt-2 space-y-1">
-                            <Label className="text-xs">
-                              {vip.customFieldLabel}{' '}
-                              {vip.customFieldRequired && (
-                                <span className="text-destructive">*</span>
-                              )}
-                            </Label>
-                            <Input
-                              value={form.vipCustomFieldValue}
-                              onChange={(e) => form.setVipCustomFieldValue(e.target.value)}
-                              placeholder={vip.customFieldLabel}
-                              className="h-8 text-sm"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </RadioGroup>
+                );
+              })}
             </div>
-          );
-        })()}
+          </RadioGroup>
+        </div>
+      )}
     </CardContent>
   </Card>
 );
@@ -858,73 +854,142 @@ const TeamStep = ({ form }: { form: FormHook }) => (
               )}
             </div>
           </RadioGroup>
-
         </div>
       )}
     </CardContent>
   </Card>
 );
 
-const InsuranceStep = ({ form }: { form: FormHook }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="flex items-center gap-2">
-        <Shield className="h-5 w-5" /> Ubezpieczenie NNW (opcjonalne)
-      </CardTitle>
-      <CardDescription>Zabezpiecz się na wypadek kontuzji podczas zawodów</CardDescription>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      {form.insuranceSettings && (
-        <div className="rounded-lg bg-muted/50 p-4">
-          <RichTextDisplay html={form.insuranceSettings.infoHtml} />
-        </div>
-      )}
-      <div
-        className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-        onClick={() => form.setWantsInsurance(!form.wantsInsurance)}
-      >
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="insurance"
-            checked={form.wantsInsurance}
-            onCheckedChange={(checked) => form.setWantsInsurance(checked === true)}
-          />
-          <div className="flex-1">
-            <label htmlFor="insurance" className="cursor-pointer font-medium">
-              Chcę wykupić ubezpieczenie NNW
-            </label>
-            {form.age && form.insuranceSettings && (
-              <div className="mt-2 text-sm">
-                {form.age > form.insuranceSettings.maxAge ? (
-                  <span className="text-destructive">
-                    Ubezpieczenie niedostępne dla osób powyżej {form.insuranceSettings.maxAge} lat
-                  </span>
-                ) : (
-                  <>
-                    <span className="text-muted-foreground">
-                      Składka dla Twojego wieku ({form.age} lat):{' '}
-                    </span>
-                    <span className="font-bold text-primary">
-                      {Math.round(
-                        form.insuranceSettings.baseFee +
-                          Math.max(0, form.age - 18) * form.insuranceSettings.ageMultiplier,
-                      )}{' '}
-                      zł
-                    </span>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      (składka bazowa {form.insuranceSettings.baseFee} zł + dodatek wiekowy{' '}
-                      {Math.max(0, form.age - 18) * form.insuranceSettings.ageMultiplier} zł)
-                    </p>
-                  </>
+/**
+ * NNW premium preview for one catalog variant. Age is computed as of the
+ * EVENT date (E1.2 resolution #9), not today — mirrors
+ * `calculateInsurancePreview` in `@/api/pricing`, kept inline here since the
+ * form already has `birthDate`/`event.date` at hand for the render.
+ */
+const previewInsurancePremium = (
+  variant: { baseFee: number; ageMultiplier: number; maxAge: number },
+  birthDate: string,
+  eventDate: string,
+): { available: boolean; amount: number } => {
+  const ref = new Date(eventDate);
+  const birth = new Date(birthDate);
+  let age = ref.getFullYear() - birth.getFullYear();
+  const hadBirthday =
+    ref.getMonth() > birth.getMonth() ||
+    (ref.getMonth() === birth.getMonth() && ref.getDate() >= birth.getDate());
+  if (!hadBirthday) age -= 1;
+  if (age > variant.maxAge) return { available: false, amount: 0 };
+  return {
+    available: true,
+    amount: Math.round(variant.baseFee + Math.max(0, age - 18) * variant.ageMultiplier),
+  };
+};
+
+const InsuranceStep = ({ event, form }: { event: Event; form: FormHook }) => {
+  if (form.singleInsuranceVariant) {
+    const variant = form.singleInsuranceVariant;
+    const premium = form.birthDate
+      ? previewInsurancePremium(variant, form.birthDate, event.date)
+      : null;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" /> {variant.name} (opcjonalne)
+          </CardTitle>
+          <CardDescription>Zabezpiecz się na wypadek kontuzji podczas zawodów</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {variant.infoHtml && (
+            <div className="rounded-lg bg-muted/50 p-4">
+              <RichTextDisplay html={variant.infoHtml} />
+            </div>
+          )}
+          <div
+            className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsInsurance ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+            onClick={() => form.setWantsInsurance(!form.wantsInsurance)}
+          >
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="insurance"
+                checked={form.wantsInsurance}
+                onCheckedChange={(checked) => form.setWantsInsurance(checked === true)}
+              />
+              <div className="flex-1">
+                <label htmlFor="insurance" className="cursor-pointer font-medium">
+                  Chcę wykupić ubezpieczenie {variant.name}
+                </label>
+                {premium && (
+                  <div className="mt-2 text-sm">
+                    {!premium.available ? (
+                      <span className="text-destructive">
+                        Ubezpieczenie niedostępne dla osób powyżej {variant.maxAge} lat (na dzień
+                        zawodów)
+                      </span>
+                    ) : (
+                      <span className="font-bold text-primary">
+                        Składka: {premium.amount} zł (wiek na dzień zawodów)
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="h-5 w-5" /> Ubezpieczenie NNW (opcjonalne)
+        </CardTitle>
+        <CardDescription>Wybierz wariant ubezpieczenia lub zrezygnuj</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <RadioGroup
+          value={form.selectedInsuranceVariantId}
+          onValueChange={form.setSelectedInsuranceVariantId}
+        >
+          <div className="space-y-2">
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
+              <RadioGroupItem value="" />
+              <span className="text-sm">Bez ubezpieczenia</span>
+            </label>
+            {form.insuranceVariants.map((variant) => {
+              const premium = form.birthDate
+                ? previewInsurancePremium(variant, form.birthDate, event.date)
+                : null;
+              return (
+                <div key={variant.id}>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-md border p-2 hover:bg-muted/50">
+                    <RadioGroupItem value={variant.id} disabled={premium?.available === false} />
+                    <span className="flex-1 text-sm">{variant.name}</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {premium?.available === false
+                        ? `niedostępne pow. ${variant.maxAge} lat`
+                        : premium
+                          ? `${premium.amount} zł`
+                          : '—'}
+                    </span>
+                  </label>
+                  {form.selectedInsuranceVariantId === variant.id && variant.infoHtml && (
+                    <div className="ml-7 mt-2 rounded-lg bg-muted/50 p-3">
+                      <RichTextDisplay html={variant.infoHtml} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </RadioGroup>
+      </CardContent>
+    </Card>
+  );
+};
 
 const MerchandiseStep = ({ event, form }: { event: Event; form: FormHook }) => (
   <Card>
@@ -1069,6 +1134,11 @@ const SummaryStep = ({
               </span>
             </div>
           )}
+          <Separator />
+          <div className="flex justify-between text-muted-foreground">
+            <span>Modyfikatory</span>
+            <span>{formatMoney(form.modifiersTotal)}</span>
+          </div>
           {form.insurancePrice > 0 && (
             <>
               <Separator />

@@ -26,7 +26,6 @@ import type {
   UserRole,
   UserAddress,
   SosContact,
-  MerchandiseOrder,
   Registration,
   ShopOrder,
   InfoPageSection,
@@ -136,6 +135,29 @@ export interface ChangePasswordPayload {
 
 // ──────────────── Registrations ────────────────
 
+/**
+ * A merchandise selection as sent to the server — id + choices + quantity
+ * only, no price (E1.2: the client never sends computed money, the server
+ * prices the line itself).
+ */
+export interface RegistrationMerchandiseSelection {
+  merchandiseId: string;
+  size?: string;
+  color?: string;
+  quantity: number;
+}
+
+/**
+ * Registration create payload (E1.2). The client sends only IDs/selections
+ * for anything that affects price — `pricingVariantId`, `discountCode`,
+ * `merchandise`, `insuranceVariantId` — and NEVER computed money amounts
+ * (`price`, `discountAmount`, `pricePaid`, `totalAmount`, `insurancePrice`,
+ * or the amount fields inside `paymentDetails`). The server recomputes and
+ * freezes the real Rozliczenie; the client's own price math is preview-only.
+ * `pricingVariantId` may be omitted for distances that were never migrated
+ * to Warianty — the server then falls back to pricing off
+ * `distance.price`/`distance.priceTiers` directly.
+ */
 export interface CreateRegistrationPayload {
   eventId: string;
   eventName: string;
@@ -149,12 +171,15 @@ export interface CreateRegistrationPayload {
   category: string;
   teamName?: string;
   teamId?: string;
+  pricingVariantId?: string;
   discountCode?: string;
-  discountAmount?: number;
-  pricePaid?: number;
-  totalAmount?: number;
-  merchandiseOrders?: MerchandiseOrder[];
-  paymentDetails?: Registration['paymentDetails'];
+  merchandise?: RegistrationMerchandiseSelection[];
+  insuranceVariantId?: string;
+  /** Payment-method UX booleans only — never the amount fields (E1.2). */
+  paymentDetails?: Pick<
+    NonNullable<Registration['paymentDetails']>,
+    'startFeePaid' | 'startFeePaidAt' | 'insurancePaid' | 'insurancePaidAt'
+  >;
   registeredById?: string;
 }
 

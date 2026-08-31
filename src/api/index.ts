@@ -394,6 +394,7 @@ export type {
   ResetPasswordPayload,
   ChangePasswordPayload,
   CreateRegistrationPayload,
+  RegistrationMerchandiseSelection,
   UpdateRegistrationPayload,
   CreateResultPayload,
   UpdateResultPayload,
@@ -418,6 +419,9 @@ export { setApiAdapter } from './provider';
 // Utility re-exports (synchronous helpers used in UI)
 export {
   getCurrentPrice,
+  getVariantPrice,
+  calculateAge,
+  calculateInsurancePreview,
   applyDiscount,
   isTierExpired,
   describeTierThreshold,

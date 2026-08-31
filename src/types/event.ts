@@ -37,6 +37,11 @@ export interface PriceTier {
  * biurze zawodow" price that used to be the special-cased `officePrice` field
  * on Distance (E0.3). Office-only variants are hidden from the public
  * registration form.
+ *
+ * Per the E1.2 pricing algorithm ("Rozliczenie", steps 1-2), the Wariant
+ * carries its own base `price` AND its own Próg (tier) list — it is a full
+ * price list, not a discount off the distance's base price. `tiers` uses the
+ * same dual-optional-limit shape as `PriceTier` (see `isTierExpired`).
  */
 export interface DistancePricingVariant {
   id: string;
@@ -45,6 +50,7 @@ export interface DistancePricingVariant {
   officeOnly?: boolean;
   visibleInPublicForm?: boolean;
   sortOrder?: number;
+  tiers?: PriceTier[];
 }
 
 export interface DiscountCodeUsage {
@@ -193,6 +199,11 @@ export interface OrganizerInfo {
   coOrganizers?: CoOrganizer[];
 }
 
+/** @deprecated Single-object legacy insurance config. Superseded by the global
+ * catalog of `InsuranceVariant`s (E1.2) — an event now offers 0..n catalog
+ * variants via `Event.insuranceVariants` instead of one ad-hoc option. Kept
+ * for backward compatibility with call sites that haven't migrated yet;
+ * the registration flow no longer reads it. */
 export interface InsuranceOption {
   id: string;
   name: string;
@@ -201,6 +212,22 @@ export interface InsuranceOption {
   ageMultiplier: number;
   maxAge: number;
   enabled: boolean;
+}
+
+/**
+ * A catalog NNW (accident insurance) variant, defined globally by the admin
+ * with its pricing formula parameters; an organizer opts an event into 0, 1,
+ * or several of these (E1.2, resolution #9). Premium = baseFee +
+ * max(0, age-18) * ageMultiplier, age computed as of the EVENT date (not
+ * registration date), unavailable above maxAge.
+ */
+export interface InsuranceVariant {
+  id: string;
+  name: string;
+  baseFee: number;
+  ageMultiplier: number;
+  maxAge: number;
+  infoHtml?: string;
 }
 
 export interface RegistrationEmbedConfig {
@@ -333,7 +360,10 @@ export interface Event {
   merchandise?: EventMerchandise[];
   discountCodes?: DiscountCode[];
   enableMerchandiseInRegistration?: boolean;
+  /** @deprecated see `InsuranceOption`. Use `insuranceVariants` instead. */
   insuranceOption?: InsuranceOption;
+  /** Catalog NNW variants this event offers (E1.2, resolution #9). Empty/absent = no insurance step. */
+  insuranceVariants?: InsuranceVariant[];
   galleryAlbums?: GalleryAlbum[];
   routeMapUrl?: string;
   routeGpxUrl?: string;

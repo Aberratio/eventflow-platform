@@ -1,11 +1,11 @@
 import {
   getCurrentPrice,
+  getVariantPrice,
+  calculateInsurancePreview,
   getExistingTeamsForEvent,
   validateDiscountCode,
   validateTeamName,
-  applyDiscount,
   getRegistrationsByEvent,
-  getGlobalInsuranceSettings,
 } from '@/api';
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +24,6 @@ export const useRegistrationForm = (event: Event) => {
   const [birthYear, setBirthYear] = useState<string>('');
   const [birthMonth, setBirthMonth] = useState<string>('');
   const [birthDay, setBirthDay] = useState<string>('');
-  const [wantsInsurance, setWantsInsurance] = useState(false);
   const [merchandiseOrders, setMerchandiseOrders] = useState<Map<string, MerchandiseOrder>>(
     new Map(),
   );
@@ -45,9 +44,11 @@ export const useRegistrationForm = (event: Event) => {
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
 
-  // VIP
-  const [selectedVipId, setSelectedVipId] = useState<string>('');
-  const [vipCustomFieldValue, setVipCustomFieldValue] = useState<string>('');
+  // Wariant opłaty (E1.2, step 1-2 of the "Rozliczenie" algorithm)
+  const [selectedPricingVariantId, setSelectedPricingVariantId] = useState<string>('');
+
+  // NNW (insurance) — id of the selected catalog InsuranceVariant, '' = none
+  const [selectedInsuranceVariantId, setSelectedInsuranceVariantId] = useState<string>('');
 
   // Profile completeness
   const isProfileComplete = useMemo(() => {
@@ -80,7 +81,67 @@ export const useRegistrationForm = (event: Event) => {
     event.enableMerchandiseInRegistration &&
     event.merchandise &&
     event.merchandise.length > 0;
-  const hasInsurance = (formCfg?.collectInsurance ?? true) && event.insuranceOption?.enabled;
+
+  // Warianty opłaty visible on the public form for the selected distance
+  // (office-only variants are for in-person race-office sign-up only — E0.3
+  // resolution #13). Empty = distance was never migrated to Warianty; the
+  // legacy distance.price/priceTiers pricing applies instead.
+  const pricingVariants = useMemo(
+    () =>
+      (selectedDistance?.pricingVariants ?? []).filter(
+        (v) => !v.officeOnly && (v.visibleInPublicForm ?? true),
+      ),
+    [selectedDistance],
+  );
+
+  useEffect(() => {
+    if (pricingVariants.length === 1) {
+      if (selectedPricingVariantId !== pricingVariants[0].id) {
+        setSelectedPricingVariantId(pricingVariants[0].id);
+      }
+    } else if (pricingVariants.length === 0) {
+      if (selectedPricingVariantId !== '') setSelectedPricingVariantId('');
+    } else if (!pricingVariants.some((v) => v.id === selectedPricingVariantId)) {
+      setSelectedPricingVariantId('');
+    }
+  }, [pricingVariants, selectedPricingVariantId]);
+
+  const selectedPricingVariant = useMemo(
+    () => pricingVariants.find((v) => v.id === selectedPricingVariantId) ?? null,
+    [pricingVariants, selectedPricingVariantId],
+  );
+
+  // Catalog NNW variants offered by this event (E1.2, resolution #9). Empty
+  // means no insurance step at all.
+  const insuranceVariants = useMemo(
+    () => ((formCfg?.collectInsurance ?? true) ? (event.insuranceVariants ?? []) : []),
+    [formCfg?.collectInsurance, event.insuranceVariants],
+  );
+  const hasInsurance = insuranceVariants.length > 0;
+  const singleInsuranceVariant = insuranceVariants.length === 1 ? insuranceVariants[0] : null;
+
+  useEffect(() => {
+    if (
+      selectedInsuranceVariantId &&
+      !insuranceVariants.some((v) => v.id === selectedInsuranceVariantId)
+    ) {
+      setSelectedInsuranceVariantId('');
+    }
+  }, [insuranceVariants, selectedInsuranceVariantId]);
+
+  const selectedInsuranceVariant = useMemo(
+    () => insuranceVariants.find((v) => v.id === selectedInsuranceVariantId) ?? null,
+    [insuranceVariants, selectedInsuranceVariantId],
+  );
+
+  /** Convenience for the single-variant checkbox UX ("Chcę wykupić NNW"). */
+  const wantsInsurance = selectedInsuranceVariantId !== '';
+  const setWantsInsurance = (checked: boolean) => {
+    if (singleInsuranceVariant) {
+      setSelectedInsuranceVariantId(checked ? singleInsuranceVariant.id : '');
+    }
+  };
+
   const isRelayDistance = selectedDistance?.startType === 'relay';
   const relayMaxTeamSize = selectedDistance?.relayMaxTeamSize;
   const relayMinTeamSize = selectedDistance?.relayMinTeamSize;
@@ -109,13 +170,6 @@ export const useRegistrationForm = (event: Event) => {
       ),
     [eventRegsData, event.id, selectedDistanceId, relayMaxTeamSize],
   );
-
-  const { data: insuranceSettings } = useQuery({
-    queryKey: ['insurance-settings'],
-    queryFn: getGlobalInsuranceSettings,
-    enabled: !!hasInsurance,
-    select: (r) => r.data,
-  });
 
   // Build steps dynamically
   const activeSteps = useMemo(() => {
@@ -150,26 +204,33 @@ export const useRegistrationForm = (event: Event) => {
   }, [existingTeams, selectedExistingTeam, teamMode]);
 
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
+  const birthDate =
+    birthYear && birthMonth && birthDay ? `${birthYear}-${birthMonth}-${birthDay}` : undefined;
 
+  /**
+   * PREVIEW ONLY. NNW premium (step 6): age computed as of the EVENT date
+   * (E1.2 resolution #9), not today and not the registration date. The
+   * server recomputes and freezes the real amount.
+   */
   const insurancePrice = useMemo(() => {
-    if (!hasInsurance || !wantsInsurance || !age || !insuranceSettings) return 0;
-    const { baseFee, ageMultiplier, maxAge } = insuranceSettings;
-    if (age > maxAge) return 0;
-    return Math.round(baseFee + Math.max(0, age - 18) * ageMultiplier);
-  }, [hasInsurance, wantsInsurance, age, insuranceSettings]);
+    if (!hasInsurance || !selectedInsuranceVariant || !birthDate) return 0;
+    return calculateInsurancePreview(selectedInsuranceVariant, birthDate, event.date);
+  }, [hasInsurance, selectedInsuranceVariant, birthDate, event.date]);
 
-  const activeVip = useMemo(() => {
-    if (!selectedDistance || !selectedVipId) return null;
-    return selectedDistance.vipPrices?.find((v) => v.id === selectedVipId) || null;
-  }, [selectedDistance, selectedVipId]);
+  /**
+   * PREVIEW ONLY. Steps 1-2 of the "Rozliczenie" algorithm: the selected
+   * Wariant's own price + its own tier list. Falls back to the legacy
+   * distance-level tiers when the distance has no Warianty configured yet.
+   */
+  const variantPricePreview = useMemo(() => {
+    if (!selectedDistance) return { price: 0, tierName: 'Cena standardowa' };
+    if (selectedPricingVariant) {
+      return getVariantPrice(selectedPricingVariant, selectedDistance.registeredCount);
+    }
+    return getCurrentPrice(selectedDistance);
+  }, [selectedDistance, selectedPricingVariant]);
 
-  const distancePrice = useMemo(() => {
-    if (!selectedDistance) return 0;
-    const { price } = getCurrentPrice(selectedDistance);
-    if (activeVip)
-      return applyDiscount(selectedDistance.price, activeVip.discountType, activeVip.discountValue);
-    return price;
-  }, [selectedDistance, activeVip]);
+  const distancePrice = variantPricePreview.price;
 
   const merchandiseTotal = useMemo(() => {
     let total = 0;
@@ -179,6 +240,7 @@ export const useRegistrationForm = (event: Event) => {
     return total;
   }, [merchandiseOrders]);
 
+  /** Step 3: discount code bites only the result of step 2, result >= 0. */
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
     if (appliedDiscount.type === 'percent')
@@ -186,8 +248,20 @@ export const useRegistrationForm = (event: Event) => {
     return roundToCents(Math.min(Number(appliedDiscount.value), distancePrice));
   }, [appliedDiscount, distancePrice]);
 
-  const totalAmount = roundToCents(
-    distancePrice - discountAmount + merchandiseTotal + insurancePrice,
+  /**
+   * Step 4 placeholder. Modyfikatory (form-field-variant price modifiers)
+   * are not built yet (ticket E1.13 / "10") — always zero today, but kept as
+   * an explicit line in the breakdown rather than silently absent so the
+   * preview UI already has a real (if empty) "Modyfikatory" row, matching
+   * the server which reserves the same empty stage.
+   */
+  const modifiersTotal = 0;
+
+  const totalAmount = Math.max(
+    0,
+    roundToCents(
+      distancePrice - discountAmount + modifiersTotal + merchandiseTotal + insurancePrice,
+    ),
   );
 
   useEffect(() => {
@@ -286,7 +360,7 @@ export const useRegistrationForm = (event: Event) => {
     switch (step) {
       case 1: {
         if (!selectedDistanceId) return false;
-        if (activeVip?.customFieldRequired && !vipCustomFieldValue.trim()) return false;
+        if (pricingVariants.length > 1 && !selectedPricingVariantId) return false;
         const dist = event.distances.find((d) => d.id === selectedDistanceId);
         if (dist?.limit != null && dist.registeredCount >= dist.limit) return false;
         return true;
@@ -327,8 +401,6 @@ export const useRegistrationForm = (event: Event) => {
 
   const buildSubmitData = (): RegistrationData | null => {
     if (!agreedToTerms || !selectedDistance) return null;
-    const birthDate =
-      birthYear && birthMonth && birthDay ? `${birthYear}-${birthMonth}-${birthDay}` : undefined;
 
     return {
       distanceId: selectedDistanceId,
@@ -339,12 +411,18 @@ export const useRegistrationForm = (event: Event) => {
       discountCode: appliedDiscount ? discountCode : undefined,
       discountAmount: discountAmount > 0 ? discountAmount : undefined,
       merchandiseOrders: Array.from(merchandiseOrders.values()),
+      merchandise: Array.from(merchandiseOrders.values()).map((order) => ({
+        merchandiseId: order.merchandiseId,
+        size: order.size,
+        color: order.color,
+        quantity: order.quantity,
+      })),
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
+      modifiersTotal,
       totalAmount,
       teamName: getFinalTeamName(),
-      vipPriceId: activeVip ? selectedVipId : undefined,
-      vipPriceName: activeVip?.name,
-      vipCustomFieldValue: activeVip?.customFieldLabel ? vipCustomFieldValue : undefined,
+      pricingVariantId: selectedPricingVariantId || undefined,
+      insuranceVariantId: selectedInsuranceVariantId || undefined,
     };
   };
 
@@ -390,10 +468,16 @@ export const useRegistrationForm = (event: Event) => {
     setSelectedExistingTeam,
     teamNameError,
     existingTeams,
-    selectedVipId,
-    setSelectedVipId,
-    vipCustomFieldValue,
-    setVipCustomFieldValue,
+    pricingVariants,
+    selectedPricingVariantId,
+    setSelectedPricingVariantId,
+    selectedPricingVariant,
+    variantPricePreview,
+    insuranceVariants,
+    singleInsuranceVariant,
+    selectedInsuranceVariantId,
+    setSelectedInsuranceVariantId,
+    selectedInsuranceVariant,
     isProfileComplete,
     selectedDistance,
     formCfg,
@@ -406,10 +490,11 @@ export const useRegistrationForm = (event: Event) => {
     relayTeamCompletionDeadline,
     relayTeamSizeLabel,
     age,
+    birthDate,
     insurancePrice,
-    activeVip,
     distancePrice,
     merchandiseTotal,
+    modifiersTotal,
     discountAmount,
     totalAmount,
     isStepInActiveSteps,
@@ -420,6 +505,5 @@ export const useRegistrationForm = (event: Event) => {
     buildSubmitData,
     isLastStep,
     isFirstStep,
-    insuranceSettings,
   };
 };
