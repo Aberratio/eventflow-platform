@@ -335,6 +335,44 @@ describe('useRegistrationForm', () => {
       expect(result.current.distancePrice).toBe(110);
     });
 
+    it("resolves a Wariant's own tier-discounted price when the tier has not expired", () => {
+      const futureDate = new Date(Date.now() + 86400000 * 30).toISOString();
+      const eventWithActiveTieredVariant = {
+        ...mockEvent,
+        distances: [
+          {
+            ...mockEvent.distances[0],
+            registeredCount: 100,
+            pricingVariants: [
+              {
+                id: 'v1',
+                name: 'Standard',
+                price: 110,
+                priceTiers: [
+                  {
+                    id: 't1',
+                    name: 'Early bird',
+                    endDate: futureDate,
+                    participantLimit: 200,
+                    discountType: 'fixed',
+                    discountValue: 30,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const { result } = renderHook(() => useRegistrationForm(eventWithActiveTieredVariant), {
+        wrapper,
+      });
+
+      // 100 registered < participantLimit 200 and endDate is in the future ->
+      // tier is still active -> price reflects the tier discount, not the base price.
+      expect(result.current.distancePrice).toBe(80);
+    });
+
     it('caps a discount code to the Wariant-resolved price, not the legacy distance price', () => {
       const eventWithVariantAndDiscount = {
         ...mockEvent,
