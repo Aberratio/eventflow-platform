@@ -1,9 +1,16 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
-import { PaymentConfig } from '@/types';
+import { PaymentConfig, Registration } from '@/types';
 
 interface SendRegistrationEmailParams {
   registrationData: RegistrationData;
+  /**
+   * The server's frozen registration response (E1.2), when available.
+   * Carries `transferTitle` (E1.8) — the deterministic `ZC-{id}` title that
+   * must be used instead of the legacy per-event template, see
+   * `resolveTransferTitle` below.
+   */
+  registration?: Registration;
   eventName: string;
   eventDate: string;
   eventCity: string;
@@ -32,18 +39,37 @@ export const useRegistrationEmail = () => {
     return `${amount.toFixed(2)} zł`;
   };
 
+  // E1.8: prefer the server-computed, deterministic `ZC-{id}` title — it is
+  // what actually gets matched against incoming bank transfers. The
+  // template-based title below is a legacy fallback for a registration that
+  // predates this field (same fallback idiom as EventSidebar.tsx and
+  // RegistrationSuccessPage.tsx).
+  const resolveTransferTitle = (
+    registration: Registration | undefined,
+    template: string | undefined,
+    eventName: string,
+    distanceName: string,
+    birthDate?: string,
+  ): string => {
+    if (registration?.transferTitle) {
+      return registration.transferTitle;
+    }
+    return generateTransferTitle(template, eventName, distanceName, birthDate);
+  };
+
   const sendRegistrationEmail = async ({
     registrationData,
+    registration,
     eventName,
     eventDate,
     eventCity,
     eventSlug,
     paymentConfig,
-  }: SendRegistrationEmailParams): Promise<void> => {
+  }: SendRegistrationEmailParams) => {
     const isBankTransfer = paymentConfig?.type === 'organizer_bank';
 
     // Build email payload (ready for real API integration)
-    const _emailData = {
+    const emailData = {
       to: user?.email || 'participant@example.com',
       subject: isBankTransfer
         ? `Rejestracja wstępna: ${eventName} - oczekuje na płatność`
@@ -83,7 +109,8 @@ export const useRegistrationEmail = () => {
           ? {
               accountNumber: paymentConfig.bankAccountNumber || '',
               accountHolder: paymentConfig.bankAccountHolder || '',
-              transferTitle: generateTransferTitle(
+              transferTitle: resolveTransferTitle(
+                registration,
                 paymentConfig.transferTitle,
                 eventName,
                 registrationData.distanceName || '',
@@ -106,6 +133,8 @@ export const useRegistrationEmail = () => {
 
     // Simulate async email sending (replace with real API call)
     await new Promise((resolve) => setTimeout(resolve, 100));
+
+    return emailData;
   };
 
   return { sendRegistrationEmail };

@@ -127,6 +127,7 @@ const RegistrationSuccessPage = () => {
       emailSentRef.current = true;
       sendRegistrationEmail({
         registrationData: state.registrationData,
+        registration: state.registration,
         eventName: state.eventName,
         eventDate: state.eventDate,
         eventCity: state.eventCity,
