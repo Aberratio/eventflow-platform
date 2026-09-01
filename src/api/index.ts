@@ -141,6 +141,8 @@ export const completeRefund: ApiAdapter['completeRefund'] = (...args) =>
   ensureAdapter().then((a) => a.completeRefund(...args));
 export const retryPayment: ApiAdapter['retryPayment'] = (...args) =>
   ensureAdapter().then((a) => a.retryPayment(...args));
+export const markRegistrationPaid: ApiAdapter['markRegistrationPaid'] = (...args) =>
+  ensureAdapter().then((a) => a.markRegistrationPaid(...args));
 
 // Results
 export const getResults: ApiAdapter['getResults'] = (...args) =>

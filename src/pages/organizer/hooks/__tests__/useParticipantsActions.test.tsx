@@ -7,10 +7,12 @@ import { Event, Registration } from '@/types';
 
 const approveRefund = vi.fn();
 const completeRefund = vi.fn();
+const markRegistrationPaid = vi.fn();
 
 vi.mock('@/api', () => ({
   approveRefund: (...args: unknown[]) => approveRefund(...args),
   completeRefund: (...args: unknown[]) => completeRefund(...args),
+  markRegistrationPaid: (...args: unknown[]) => markRegistrationPaid(...args),
 }));
 
 const mockEvent: Event = {
@@ -237,5 +239,49 @@ describe('useParticipantsActions', () => {
     const updated = result.current.localRegistrations.find((r) => r.id === 'reg-1');
     expect(updated?.refund?.status).toBe('refunded');
     expect(updated?.status).toBe('cancelled');
+  });
+
+  it('handleMarkPaid calls the API and updates local state from the response (E1.8, trasa B)', async () => {
+    const updatedRegistration: Registration = {
+      ...mockRegistrations[1],
+      status: 'confirmed',
+      paymentDetails: {
+        startFeePaid: true,
+        startFeeAmount: 80,
+        insurancePaid: false,
+        merchandisePayments: [],
+      },
+    };
+    markRegistrationPaid.mockResolvedValueOnce({ success: true, data: updatedRegistration });
+
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleMarkPaid(mockRegistrations[1]);
+    });
+
+    expect(markRegistrationPaid).toHaveBeenCalledWith('reg-2');
+    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-2');
+    expect(updated?.status).toBe('confirmed');
+    expect(updated?.paymentDetails?.startFeePaid).toBe(true);
+  });
+
+  it('handleMarkPaid surfaces a failure without crashing', async () => {
+    markRegistrationPaid.mockRejectedValueOnce(new Error('registration_not_manual_route'));
+
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    let outcome: Registration | undefined;
+    await act(async () => {
+      outcome = await result.current.handleMarkPaid(mockRegistrations[1]);
+    });
+
+    expect(outcome).toBeUndefined();
+    const unchanged = result.current.localRegistrations.find((r) => r.id === 'reg-2');
+    expect(unchanged?.status).toBe('pending');
   });
 });

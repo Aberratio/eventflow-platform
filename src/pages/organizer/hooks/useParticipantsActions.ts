@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
-import { approveRefund, completeRefund } from '@/api';
+import { approveRefund, completeRefund, markRegistrationPaid } from '@/api';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
@@ -150,6 +150,37 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     }
   };
 
+  /**
+   * E1.8: trasa B (przelew tradycyjny) — organizator ręcznie potwierdza wpłatę
+   * po zweryfikowaniu jej na koncie bankowym. Wykonuje realną tranzycję
+   * pending -> confirmed po stronie serwera (RegistrationRepository::
+   * markManualPaymentPaid(), ta sama ścieżka co webhook trasy A) — w
+   * odróżnieniu od handlePaymentUpdate() powyżej, który jest tylko lokalnym
+   * podglądem odznaczania pojedynczych pozycji Rozliczenia.
+   */
+  const handleMarkPaid = async (registration: Registration): Promise<Registration | undefined> => {
+    try {
+      const response = await markRegistrationPaid(registration.id);
+      if (response.data) {
+        setLocalRegistrations((prev) =>
+          prev.map((r) => (r.id === registration.id ? response.data! : r)),
+        );
+      }
+      toast({
+        title: 'Wpłata potwierdzona',
+        description: `Zapis ${registration.userName} oznaczono jako opłacony.`,
+      });
+      return response.data ?? undefined;
+    } catch {
+      toast({
+        title: 'Nie udało się potwierdzić wpłaty',
+        description: 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+      return undefined;
+    }
+  };
+
   const handleExportCSV = (filteredRegistrations: Registration[]) => {
     const data = filteredRegistrations.map((reg) => ({
       'Numer startowy': reg.bibNumber || '-',
@@ -207,6 +238,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     handlePaymentUpdate,
     handleApproveRefund,
     handleCompleteRefund,
+    handleMarkPaid,
     handleExportCSV,
     handleExportPDF,
     unpaidCount,

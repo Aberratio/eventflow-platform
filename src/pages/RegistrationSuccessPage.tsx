@@ -146,6 +146,15 @@ const RegistrationSuccessPage = () => {
   };
 
   const generateTransferTitle = () => {
+    // E1.8: the server-computed, deterministic `ZC-{id}` title is authoritative
+    // for matching bank transfers to this Zapis — prefer it whenever the
+    // registration response carried one. The template-based title below is a
+    // legacy fallback for the (now rare) case a registration response predates
+    // this field.
+    if (state?.registration.transferTitle) {
+      return state.registration.transferTitle;
+    }
+
     if (!state?.paymentConfig?.transferTitle) {
       return `${state?.eventName || 'Wydarzenie'} - ${user?.name || 'Uczestnik'}`;
     }

@@ -148,6 +148,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     handlePaymentUpdate,
     handleApproveRefund,
     handleCompleteRefund,
+    handleMarkPaid,
     handleExportCSV,
     handleExportPDF,
     unpaidCount,
@@ -301,6 +302,10 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
           }}
           onCompleteRefund={async () => {
             const updated = await handleCompleteRefund(paymentPanelRegistration);
+            if (updated) setPaymentPanelRegistration(updated);
+          }}
+          onMarkPaid={async () => {
+            const updated = await handleMarkPaid(paymentPanelRegistration);
             if (updated) setPaymentPanelRegistration(updated);
           }}
         />

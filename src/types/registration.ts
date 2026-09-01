@@ -66,4 +66,10 @@ export interface Registration {
   registeredById?: string;
   /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;
+  /**
+   * E1.8: server-computed, deterministic bank-transfer title for trasa B
+   * (`ZC-{id}`) — used to match incoming bank transfers to this Zapis.
+   * Always present regardless of payment route (trasa A ignores it).
+   */
+  transferTitle?: string;
 }

@@ -207,6 +207,12 @@ export interface ApiAdapter {
   completeRefund(id: string): Promise<ApiResponse<Registration>>;
   /** Jednoklikowe ponowienie płatności dla wygasłego Zapisu — otwiera nowe okno. */
   retryPayment(id: string): Promise<ApiResponse<Registration>>;
+  /**
+   * E1.8: organizator (własne Wydarzenie) lub admin ręcznie potwierdza wpłatę
+   * przelewem tradycyjnym (trasa B) — jedyna droga oznaczenia trasy B jako
+   * opłaconej; serwer odrzuci wywołanie dla Zapisu na trasie A (bramka).
+   */
+  markRegistrationPaid(id: string): Promise<ApiResponse<Registration>>;
 
   // ── Results ──
   getResults(filters?: ResultFilters): Promise<PaginatedResponse<Result>>;

@@ -80,6 +80,14 @@ type RegistrationCardState = {
 };
 
 const generateTransferTitle = (event: Event, registration: Registration): string => {
+  // E1.8: prefer the server-computed, deterministic `ZC-{id}` title — it is
+  // what actually gets matched against incoming bank transfers. The
+  // event-level template below is a legacy fallback for a registration that
+  // predates this field.
+  if (registration.transferTitle) {
+    return registration.transferTitle;
+  }
+
   const template =
     event.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}';
 

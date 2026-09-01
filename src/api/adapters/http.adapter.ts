@@ -293,6 +293,8 @@ export const httpAdapter: ApiAdapter = {
     request(`/registrations/${encodeURIComponent(id)}/refund-complete`, json('POST')),
   retryPayment: (id) =>
     request(`/registrations/${encodeURIComponent(id)}/retry-payment`, json('POST')),
+  markRegistrationPaid: (id) =>
+    request(`/registrations/${encodeURIComponent(id)}/mark-paid`, json('POST')),
 
   getResults: (filters) => paginated('/results', filters as Record<string, QueryValue>),
   getResultsByEvent: (eventId, distanceId) =>

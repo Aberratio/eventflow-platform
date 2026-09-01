@@ -19,6 +19,13 @@ interface PaymentDetailsPanelProps {
   onApproveRefund?: () => void;
   /** Trasa B: organizator ręcznie odznacza „zwrócono". Omitted hides the action. */
   onCompleteRefund?: () => void;
+  /**
+   * E1.8: trasa B — organizator ręcznie potwierdza wpłatę po zweryfikowaniu
+   * jej na koncie bankowym. Realna tranzycja pending -> confirmed po stronie
+   * serwera (nie lokalny checkbox jak startFeePaid poniżej). Omitted hides
+   * the action — shown only for a `pending` trasa-B Zapis.
+   */
+  onMarkPaid?: () => void;
 }
 
 export const PaymentDetailsPanel = ({
@@ -28,6 +35,7 @@ export const PaymentDetailsPanel = ({
   onClose,
   onApproveRefund,
   onCompleteRefund,
+  onMarkPaid,
 }: PaymentDetailsPanelProps) => {
   const { toast } = useToast();
   const [details, setDetails] = useState<PaymentDetails>(
@@ -150,6 +158,14 @@ export const PaymentDetailsPanel = ({
             <div className="text-xs text-muted-foreground">
               {event.paymentConfig.bankAccountHolder}
             </div>
+            {registration.transferTitle && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                Tytuł przelewu do dopasowania:{' '}
+                <span className="font-mono font-medium text-foreground">
+                  {registration.transferTitle}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
@@ -313,6 +329,14 @@ export const PaymentDetailsPanel = ({
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2 pt-2">
+          {event.paymentConfig?.type === 'organizer_bank' &&
+            registration.status === 'pending' &&
+            onMarkPaid && (
+              <Button variant="default" size="sm" onClick={onMarkPaid}>
+                <Check className="mr-1 h-4 w-4" />
+                Oznacz jako opłacone (przelew)
+              </Button>
+            )}
           {!isFullyPaid && (
             <>
               <Button variant="outline" size="sm" onClick={markAllPaid}>
