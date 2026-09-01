@@ -199,6 +199,14 @@ export interface ApiAdapter {
     id: string,
     paymentDetails: PaymentDetails,
   ): Promise<ApiResponse<Registration>>;
+  /** E1.5: zawodnik (właściciel Zapisu) prosi o zwrot — nigdy nie wyzwala go sam. */
+  requestRefund(id: string, reason?: string): Promise<ApiResponse<Registration>>;
+  /** Organizator (własne Wydarzenie) lub admin zatwierdza żądanie — "do zwrotu". */
+  approveRefund(id: string, amount?: number): Promise<ApiResponse<Registration>>;
+  /** Wykonuje zwrot (trasa B: organizator ręcznie odznacza „zwrócono"). */
+  completeRefund(id: string): Promise<ApiResponse<Registration>>;
+  /** Jednoklikowe ponowienie płatności dla wygasłego Zapisu — otwiera nowe okno. */
+  retryPayment(id: string): Promise<ApiResponse<Registration>>;
 
   // ── Results ──
   getResults(filters?: ResultFilters): Promise<PaginatedResponse<Result>>;

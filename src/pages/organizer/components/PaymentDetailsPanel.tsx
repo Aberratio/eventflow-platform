@@ -15,6 +15,10 @@ interface PaymentDetailsPanelProps {
   event: Event;
   onPaymentUpdate: (registrationId: string, updatedDetails: PaymentDetails) => void;
   onClose: () => void;
+  /** E1.5: zatwierdza żądanie zwrotu ("do zwrotu"). Omitted hides the action. */
+  onApproveRefund?: () => void;
+  /** Trasa B: organizator ręcznie odznacza „zwrócono". Omitted hides the action. */
+  onCompleteRefund?: () => void;
 }
 
 export const PaymentDetailsPanel = ({
@@ -22,6 +26,8 @@ export const PaymentDetailsPanel = ({
   event,
   onPaymentUpdate,
   onClose,
+  onApproveRefund,
+  onCompleteRefund,
 }: PaymentDetailsPanelProps) => {
   const { toast } = useToast();
   const [details, setDetails] = useState<PaymentDetails>(
@@ -245,6 +251,45 @@ export const PaymentDetailsPanel = ({
             </div>
           ))}
         </div>
+
+        {/* E1.5: refund cycle, if any — request/approve/complete state machine */}
+        {registration.refund && (
+          <>
+            <Separator />
+            <div className="rounded-lg bg-muted/50 p-3 text-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-medium">
+                  Zwrot:{' '}
+                  {registration.refund.status === 'requested'
+                    ? 'oczekuje na zatwierdzenie'
+                    : registration.refund.status === 'approved'
+                      ? 'do zwrotu'
+                      : 'zrealizowany'}
+                </span>
+                {typeof registration.refund.amount === 'number' && (
+                  <span className="font-medium">{registration.refund.amount} zł</span>
+                )}
+              </div>
+              {registration.refund.reason && (
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Powód: {registration.refund.reason}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {registration.refund.status === 'requested' && onApproveRefund && (
+                  <Button size="sm" variant="outline" onClick={onApproveRefund}>
+                    Zatwierdź zwrot
+                  </Button>
+                )}
+                {registration.refund.status === 'approved' && onCompleteRefund && (
+                  <Button size="sm" variant="outline" onClick={onCompleteRefund}>
+                    Oznacz zwrócono
+                  </Button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         <Separator />
 

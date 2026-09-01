@@ -1,9 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useParticipantsActions } from '../useParticipantsActions';
 import { Event, Registration } from '@/types';
+
+const approveRefund = vi.fn();
+const completeRefund = vi.fn();
+
+vi.mock('@/api', () => ({
+  approveRefund: (...args: unknown[]) => approveRefund(...args),
+  completeRefund: (...args: unknown[]) => completeRefund(...args),
+}));
 
 const mockEvent: Event = {
   id: 'evt-1',
@@ -187,5 +195,47 @@ describe('useParticipantsActions', () => {
 
     const updated = result.current.localRegistrations.find((r) => r.id === 'reg-1');
     expect(updated?.paymentDetails).toEqual(paymentDetails);
+  });
+
+  it('handleApproveRefund calls the API and updates local state from the response', async () => {
+    const updatedRegistration: Registration = {
+      ...mockRegistrations[0],
+      refund: { status: 'approved', amount: 80, route: 'manual' },
+    };
+    approveRefund.mockResolvedValueOnce({ success: true, data: updatedRegistration });
+
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleApproveRefund(mockRegistrations[0]);
+    });
+
+    expect(approveRefund).toHaveBeenCalledWith('reg-1');
+    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-1');
+    expect(updated?.refund?.status).toBe('approved');
+  });
+
+  it('handleCompleteRefund calls the API and updates local state from the response', async () => {
+    const updatedRegistration: Registration = {
+      ...mockRegistrations[0],
+      status: 'cancelled',
+      refund: { status: 'refunded', amount: 80, route: 'manual' },
+    };
+    completeRefund.mockResolvedValueOnce({ success: true, data: updatedRegistration });
+
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleCompleteRefund(mockRegistrations[0]);
+    });
+
+    expect(completeRefund).toHaveBeenCalledWith('reg-1');
+    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-1');
+    expect(updated?.refund?.status).toBe('refunded');
+    expect(updated?.status).toBe('cancelled');
   });
 });

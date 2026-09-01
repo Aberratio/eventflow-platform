@@ -1,4 +1,4 @@
-import { getEvents, getVirtualResultSubmissions } from '@/api';
+import { getEvents, getVirtualResultSubmissions, requestRefund } from '@/api';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { Registration, Event } from '@/types';
 import { ListContainer, ListEmptyState, RegistrationListRow } from '@/components/lists';
 import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog';
 import { QUERY_KEYS } from '@/constants';
+import { useToast } from '@/hooks/use-toast';
 
 interface ParticipantRegistrationsTabProps {
   registrations: Registration[];
@@ -18,6 +19,24 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string | undefined>(undefined);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const handleRequestRefund = async (registration: Registration) => {
+    try {
+      await requestRefund(registration.id);
+      toast({
+        title: 'Wysłano prośbę o zwrot',
+        description: 'Organizator lub administrator rozpatrzy Twoją prośbę.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+    } catch {
+      toast({
+        title: 'Nie udało się wysłać prośby',
+        description: 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    }
+  };
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-registrations'],
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
@@ -91,6 +110,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
             event={event}
             virtualSubmission={virtualSubmission}
             onSubmitResult={() => handleOpenSubmissionDialog(event, registration.distanceId)}
+            onRequestRefund={() => handleRequestRefund(registration)}
           />
         ))}
       </ListContainer>

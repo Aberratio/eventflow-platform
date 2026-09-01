@@ -285,6 +285,14 @@ export const httpAdapter: ApiAdapter = {
       `/registrations/${encodeURIComponent(id)}/payment-details`,
       json('PATCH', paymentDetails),
     ),
+  requestRefund: (id, reason) =>
+    request(`/registrations/${encodeURIComponent(id)}/refund-request`, json('POST', { reason })),
+  approveRefund: (id, amount) =>
+    request(`/registrations/${encodeURIComponent(id)}/refund-approve`, json('POST', { amount })),
+  completeRefund: (id) =>
+    request(`/registrations/${encodeURIComponent(id)}/refund-complete`, json('POST')),
+  retryPayment: (id) =>
+    request(`/registrations/${encodeURIComponent(id)}/retry-payment`, json('POST')),
 
   getResults: (filters) => paginated('/results', filters as Record<string, QueryValue>),
   getResultsByEvent: (eventId, distanceId) =>

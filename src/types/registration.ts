@@ -15,6 +15,27 @@ export interface SettlementItem {
   sortOrder: number;
 }
 
+/**
+ * E1.5: the refund cycle currently on file for this Zapis, if any — layered on top
+ * of `status` (opłacona/confirmed), not a replacement for it. `requested` (zawodnik
+ * poprosił) -> `approved` ("do zwrotu", organizator/admin zatwierdził) -> `refunded`
+ * (zwrócona — trasa A: bramka, jeszcze nie zbudowana, E1.6/E1.7; trasa B: organizator
+ * ręcznie, w pełni zbudowane tym tickietem). `amount` is the server-computed saldo
+ * (never client-supplied) — the client only ever displays it.
+ */
+export interface RefundState {
+  status: 'requested' | 'approved' | 'refunded';
+  requestedAt?: string;
+  requestedBy?: string;
+  reason?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  amount?: number;
+  route?: 'gateway' | 'manual';
+  completedAt?: string;
+  completedBy?: string;
+}
+
 export interface Registration {
   id: string;
   eventId: string;
@@ -28,7 +49,7 @@ export interface Registration {
   distanceName: string;
   category: string;
   registeredAt: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'removed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
   bibNumber?: string;
   teamName?: string;
   teamId?: string;
@@ -43,4 +64,6 @@ export interface Registration {
   removedAt?: string;
   paymentDetails?: PaymentDetails;
   registeredById?: string;
+  /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
+  refund?: RefundState | null;
 }

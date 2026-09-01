@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Registration, Event, VirtualResultSubmission } from '@/types';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Ticket, Globe, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
+import { Ticket, Globe, Clock, CheckCircle, XCircle, Send, RotateCcw } from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
@@ -13,6 +13,8 @@ interface RegistrationListRowProps {
   event: Event;
   virtualSubmission?: VirtualResultSubmission;
   onSubmitResult?: () => void;
+  /** E1.5: „poproś o zwrot" — omitted when the caller doesn't want the action offered here. */
+  onRequestRefund?: () => void;
 }
 
 export const RegistrationListRow = ({
@@ -20,6 +22,7 @@ export const RegistrationListRow = ({
   event,
   virtualSubmission,
   onSubmitResult,
+  onRequestRefund,
 }: RegistrationListRowProps) => {
   const now = new Date();
   const isVirtual = event.isVirtual;
@@ -51,7 +54,35 @@ export const RegistrationListRow = ({
       >
         {registration.status === 'confirmed' ? 'Potwierdzony' : 'Oczekuje'}
       </Badge>
+      {registration.refund && (
+        <Badge variant="outline" className="text-xs">
+          {registration.refund.status === 'refunded'
+            ? 'Zwrot zrealizowany'
+            : registration.refund.status === 'approved'
+              ? 'Zwrot: do zwrotu'
+              : 'Zwrot: oczekuje na zatwierdzenie'}
+        </Badge>
+      )}
     </div>
+  );
+
+  const canRequestRefund =
+    registration.status === 'confirmed' && !registration.refund && Boolean(onRequestRefund);
+
+  const refundButton = canRequestRefund && (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onRequestRefund?.();
+      }}
+      className="h-7 text-xs"
+    >
+      <RotateCcw className="mr-1 h-3 w-3" />
+      Poproś o zwrot
+    </Button>
   );
 
   const submitButton = (label: string, variant: 'default' | 'outline' = 'default') => (
@@ -163,6 +194,7 @@ export const RegistrationListRow = ({
         </span>
       )}
       {renderVirtualStatus()}
+      {refundButton}
     </div>
   );
 

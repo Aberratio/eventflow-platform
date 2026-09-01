@@ -116,3 +116,46 @@ describe('RegistrationListRow virtual result action', () => {
     expect(onSubmitResult).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('RegistrationListRow refund action (E1.5)', () => {
+  it('offers "Poproś o zwrot" for a paid registration with no refund cycle yet', () => {
+    const onRequestRefund = vi.fn();
+
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={event}
+        onRequestRefund={onRequestRefund}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Poproś o zwrot/ })[0]);
+
+    expect(onRequestRefund).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the refund action once a refund cycle is already in flight', () => {
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, refund: { status: 'requested' } }}
+        event={event}
+        onRequestRefund={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /Poproś o zwrot/ })).not.toBeInTheDocument();
+    expect(screen.getAllByText('Zwrot: oczekuje na zatwierdzenie').length).toBeGreaterThan(0);
+  });
+
+  it('does not offer the refund action for an unpaid (pending) registration', () => {
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, status: 'pending' }}
+        event={event}
+        onRequestRefund={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /Poproś o zwrot/ })).not.toBeInTheDocument();
+  });
+});

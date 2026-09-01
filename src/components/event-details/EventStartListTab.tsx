@@ -52,6 +52,7 @@ const statusLabels: Record<Registration['status'], string> = {
   confirmed: 'Potwierdzony',
   cancelled: 'Zrezygnowany',
   removed: 'Usunięty',
+  expired: 'Wygasły',
 };
 
 const statusClasses: Record<Registration['status'], string> = {
@@ -59,6 +60,7 @@ const statusClasses: Record<Registration['status'], string> = {
   confirmed: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
   cancelled: 'border-destructive/40 bg-destructive/10 text-destructive',
   removed: 'border-muted-foreground/30 bg-muted/20 text-muted-foreground',
+  expired: 'border-muted-foreground/30 bg-muted/20 text-muted-foreground',
 };
 
 const panelClass =

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+import { approveRefund, completeRefund } from '@/api';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
@@ -90,6 +91,65 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     );
   };
 
+  /**
+   * E1.5: organizator zatwierdza żądanie zwrotu ("do zwrotu"). Amount is always
+   * server-computed (the saldo ceiling) — the organizer never types a number here.
+   */
+  const handleApproveRefund = async (
+    registration: Registration,
+  ): Promise<Registration | undefined> => {
+    try {
+      const response = await approveRefund(registration.id);
+      if (response.data) {
+        setLocalRegistrations((prev) =>
+          prev.map((r) => (r.id === registration.id ? response.data! : r)),
+        );
+      }
+      toast({
+        title: 'Zwrot zatwierdzony',
+        description: `Zwrot dla ${registration.userName} oczekuje na wykonanie.`,
+      });
+      return response.data ?? undefined;
+    } catch {
+      toast({
+        title: 'Nie udało się zatwierdzić zwrotu',
+        description: 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+      return undefined;
+    }
+  };
+
+  /**
+   * Trasa B (przelew tradycyjny): organizator ręcznie odznacza „zwrócono" po
+   * oddaniu pieniędzy ze swojego konta — jedyna droga zwrotu, jaką platforma może
+   * wykonać technicznie za organizatora (trasa A/bramka: E1.6/E1.7).
+   */
+  const handleCompleteRefund = async (
+    registration: Registration,
+  ): Promise<Registration | undefined> => {
+    try {
+      const response = await completeRefund(registration.id);
+      if (response.data) {
+        setLocalRegistrations((prev) =>
+          prev.map((r) => (r.id === registration.id ? response.data! : r)),
+        );
+      }
+      toast({
+        title: 'Zwrot oznaczony jako zrealizowany',
+        description: `Zapis ${registration.userName} został zaktualizowany.`,
+      });
+      return response.data ?? undefined;
+    } catch {
+      toast({
+        title: 'Nie udało się oznaczyć zwrotu',
+        description: 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+      return undefined;
+    }
+  };
+
   const handleExportCSV = (filteredRegistrations: Registration[]) => {
     const data = filteredRegistrations.map((reg) => ({
       'Numer startowy': reg.bibNumber || '-',
@@ -145,6 +205,8 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     handleDeleteUnpaid,
     handleAssignBib,
     handlePaymentUpdate,
+    handleApproveRefund,
+    handleCompleteRefund,
     handleExportCSV,
     handleExportPDF,
     unpaidCount,

@@ -133,6 +133,14 @@ export const cancelRegistration: ApiAdapter['cancelRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.cancelRegistration(...args));
 export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args) =>
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
+export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>
+  ensureAdapter().then((a) => a.requestRefund(...args));
+export const approveRefund: ApiAdapter['approveRefund'] = (...args) =>
+  ensureAdapter().then((a) => a.approveRefund(...args));
+export const completeRefund: ApiAdapter['completeRefund'] = (...args) =>
+  ensureAdapter().then((a) => a.completeRefund(...args));
+export const retryPayment: ApiAdapter['retryPayment'] = (...args) =>
+  ensureAdapter().then((a) => a.retryPayment(...args));
 
 // Results
 export const getResults: ApiAdapter['getResults'] = (...args) =>
