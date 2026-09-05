@@ -325,6 +325,8 @@ export interface ApiAdapter {
     lastName: string,
     birthDate?: string,
   ): Promise<ApiResponse<Competitor[]>>;
+  /** E1.12: rotacja kodu tożsamości — wywołujący musi być Zawodnikiem albo mieć nad nim Opiekę. */
+  rotateIdentityCode(competitorId: string): Promise<ApiResponse<Competitor>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;

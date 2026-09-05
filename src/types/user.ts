@@ -48,6 +48,13 @@ export interface Competitor {
   email?: string;
   phone?: string;
   club?: string;
+  /**
+   * E1.12: kod tożsamości QR (`zqr_` + 48 hex) — generowany zawsze, przy
+   * utworzeniu Zawodnika, więc zawsze obecny (ta sama konwencja co
+   * Registration.qrCode z E1.11 — klient nigdy nie musi obsługiwać braku).
+   * Bez wygasania; rotuje wyłącznie na żądanie (zob. rotateIdentityCode()).
+   */
+  identityCode: string;
   userId?: string | null;
 }
 
@@ -63,6 +70,8 @@ export interface MyCompetitor {
   email?: string;
   phone?: string;
   club?: string;
+  /** E1.12: kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
+  identityCode: string;
   competitorUserId?: string | null;
 }
 
@@ -77,6 +86,13 @@ export interface Caregiver {
 }
 
 export interface CareResponse {
+  /**
+   * E1.12: własny profil Zawodnika wywołującego Konta (z identityCode) — każde
+   * Konto uczestnika dostaje go automatycznie przy rejestracji. Null tylko dla
+   * kont, które jeszcze nie mają swojego profilu Zawodnika (praktycznie nie
+   * zdarza się dla uczestników, ale typ zostaje szczery co do tego brzegu).
+   */
+  myProfile: Competitor | null;
   myCompetitors: MyCompetitor[];
   caregivers: Caregiver[];
 }

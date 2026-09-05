@@ -1,18 +1,121 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCare, grantCareByEmail, addCompetitor, revokeCare } from '@/api';
+import { QRCodeSVG } from 'qrcode.react';
+import { getCare, grantCareByEmail, addCompetitor, revokeCare, rotateIdentityCode } from '@/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Trash2, UserPlus, Users, ShieldCheck, Baby, AlertTriangle } from 'lucide-react';
+import {
+  Loader2,
+  Trash2,
+  UserPlus,
+  Users,
+  ShieldCheck,
+  Baby,
+  AlertTriangle,
+  QrCode,
+  RotateCw,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import type { MyCompetitor, Caregiver } from '@/types';
 
 function initials(firstName: string, lastName: string): string {
   return `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase();
+}
+
+/** E1.12: jedna "tożsamość" (własny profil albo Zawodnik pod opieką) w przełączniku kodów. */
+interface IdentityOption {
+  competitorId: string;
+  label: string;
+  identityCode: string;
+}
+
+/**
+ * E1.12 ("Kod tożsamości QR na Zawodniku"): duży kod QR + surowy token + przycisk
+ * "wygeneruj nowy", identyczny wzorzec renderowania QR co RegistrationListRow z
+ * E1.11 (qrcode.react, sam token jako czysty tekst — bez URL-a/danych osobowych,
+ * spec 11 pkt 5). Osobny komponent, bo ten sam widok obsługuje i "mój" kod,
+ * i kod każdego Zawodnika pod Opieką (spec 11 §5.1 — mama przełącza między
+ * swoim kodem, kodem Zosi i Antka).
+ */
+function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
+  const queryClient = useQueryClient();
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+
+  const activeId =
+    selectedId && options.some((o) => o.competitorId === selectedId)
+      ? selectedId
+      : options[0]?.competitorId;
+  const active = options.find((o) => o.competitorId === activeId);
+
+  const rotateMutation = useMutation({
+    mutationFn: (competitorId: string) => rotateIdentityCode(competitorId),
+    onSuccess: () => {
+      toast({ title: 'Nowy kod tożsamości', description: 'Poprzedni kod przestał działać.' });
+      queryClient.invalidateQueries({ queryKey: ['care'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  if (options.length === 0 || !active) {
+    return null;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <QrCode className="h-4 w-4" />
+          Kod tożsamości QR
+        </CardTitle>
+        <CardDescription>
+          Stały kod QR danej osoby — wystarcza do odprawy na zawodach z Biurem Zawodów.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {options.length > 1 && (
+          <div className="flex flex-wrap gap-2">
+            {options.map((o) => (
+              <Button
+                key={o.competitorId}
+                type="button"
+                size="sm"
+                variant={o.competitorId === activeId ? 'default' : 'outline'}
+                onClick={() => setSelectedId(o.competitorId)}
+              >
+                {o.label}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col items-center gap-3 rounded-md border bg-popover p-6 text-popover-foreground">
+          <QRCodeSVG value={active.identityCode} size={220} level="M" includeMargin />
+          <span className="break-all text-center font-mono text-sm text-muted-foreground">
+            {active.identityCode}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={rotateMutation.isPending}
+            onClick={() => rotateMutation.mutate(active.competitorId)}
+          >
+            {rotateMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RotateCw className="h-4 w-4" />
+            )}
+            <span className="ml-1.5">Wygeneruj nowy</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 const ParticipantAuthorizationsTab = () => {
@@ -93,6 +196,25 @@ const ParticipantAuthorizationsTab = () => {
 
   const myCompetitors: MyCompetitor[] = data?.myCompetitors ?? [];
   const caregivers: Caregiver[] = data?.caregivers ?? [];
+
+  // E1.12: przełącznik kodów tożsamości — "Ja" (własny profil Zawodnika, jeśli
+  // istnieje) plus każdy Zawodnik pod moją opieką, w kolejności jak w liście niżej.
+  const identityOptions = [
+    ...(data?.myProfile
+      ? [
+          {
+            competitorId: data.myProfile.id,
+            label: 'Ja',
+            identityCode: data.myProfile.identityCode,
+          },
+        ]
+      : []),
+    ...myCompetitors.map((c) => ({
+      competitorId: c.competitorId,
+      label: `${c.firstName} ${c.lastName}`,
+      identityCode: c.identityCode,
+    })),
+  ];
 
   return (
     <div className="space-y-6">
@@ -210,6 +332,9 @@ const ParticipantAuthorizationsTab = () => {
         </div>
       ) : (
         <>
+          {/* E1.12: kod tożsamości QR — mój i każdego Zawodnika pod opieką, z przełącznikiem */}
+          <IdentityCodeCard options={identityOptions} />
+
           {/* Zawodnicy pod moją opieką */}
           <Card>
             <CardHeader>

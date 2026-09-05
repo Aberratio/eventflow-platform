@@ -466,4 +466,6 @@ export const httpAdapter: ApiAdapter = {
         ...(birthDate ? { birthDate } : {}),
       }).toString()}`,
     ),
+  rotateIdentityCode: (competitorId) =>
+    request(`/competitors/${encodeURIComponent(competitorId)}/rotate-identity-code`, json('POST')),
 };

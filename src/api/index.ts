@@ -354,6 +354,8 @@ export const revokeCare: ApiAdapter['revokeCare'] = (...args) =>
   ensureAdapter().then((a) => a.revokeCare(...args));
 export const checkCompetitorDuplicates: ApiAdapter['checkCompetitorDuplicates'] = (...args) =>
   ensureAdapter().then((a) => a.checkCompetitorDuplicates(...args));
+export const rotateIdentityCode: ApiAdapter['rotateIdentityCode'] = (...args) =>
+  ensureAdapter().then((a) => a.rotateIdentityCode(...args));
 
 // Email Templates
 export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
