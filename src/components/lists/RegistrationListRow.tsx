@@ -1,8 +1,10 @@
+import { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Registration, Event, VirtualResultSubmission } from '@/types';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Ticket, Globe, Clock, CheckCircle, XCircle, Send, RotateCcw } from 'lucide-react';
+import { Ticket, Globe, Clock, CheckCircle, XCircle, Send, RotateCcw, QrCode } from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
@@ -24,6 +26,7 @@ export const RegistrationListRow = ({
   onSubmitResult,
   onRequestRefund,
 }: RegistrationListRowProps) => {
+  const [showStartCode, setShowStartCode] = useState(false);
   const now = new Date();
   const isVirtual = event.isVirtual;
   const startDate = event.startDate ? new Date(event.startDate) : null;
@@ -182,6 +185,39 @@ export const RegistrationListRow = ({
     return null;
   };
 
+  // E1.11: kod startowy QR — widoczny obok numeru startowego/dystansu, dokładnie
+  // tam, gdzie spec 11 pkt 5 każe pokazywać "Mój start". QR koduje sam token jako
+  // czysty tekst (bez URL-a/danych osobowych), zgodnie z rozstrzygnięciem — click
+  // to reveal zamiast renderować od razu w liście, żeby nie pokazywać cudzego
+  // sekretu przez ramię na współdzielonym ekranie.
+  const startCodeTrigger = registration.qrCode && (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowStartCode((open) => !open);
+      }}
+      className="h-7 text-xs"
+    >
+      <QrCode className="mr-1 h-3.5 w-3.5" />
+      Kod startowy
+    </Button>
+  );
+
+  const startCodeReveal = registration.qrCode && showStartCode && (
+    <div
+      className="flex w-full basis-full flex-col items-center gap-2 rounded-md border bg-popover p-4 text-popover-foreground"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <QRCodeSVG value={registration.qrCode} size={140} level="M" includeMargin />
+      <span className="break-all text-center font-mono text-xs text-muted-foreground">
+        {registration.qrCode}
+      </span>
+    </div>
+  );
+
   const meta = (
     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
       <Badge variant="outline" className="text-xs">
@@ -194,7 +230,9 @@ export const RegistrationListRow = ({
         </span>
       )}
       {renderVirtualStatus()}
+      {startCodeTrigger}
       {refundButton}
+      {startCodeReveal}
     </div>
   );
 

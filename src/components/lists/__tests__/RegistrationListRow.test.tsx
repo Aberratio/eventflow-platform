@@ -117,6 +117,37 @@ describe('RegistrationListRow virtual result action', () => {
   });
 });
 
+describe('RegistrationListRow start code (E1.11)', () => {
+  it('shows a "Kod startowy" trigger when the registration has a qrCode', () => {
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, qrCode: `pqr_${'a'.repeat(48)}` }}
+        event={event}
+      />,
+    );
+
+    expect(screen.getAllByRole('button', { name: /Kod startowy/ }).length).toBeGreaterThan(0);
+  });
+
+  it('reveals the raw token on click, next to the QR image', () => {
+    const qrCode = `pqr_${'b'.repeat(48)}`;
+
+    render(<RegistrationListRow registration={{ ...registration, qrCode }} event={event} />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Kod startowy/ })[0]);
+
+    expect(screen.getAllByText(qrCode).length).toBeGreaterThan(0);
+  });
+
+  it('does not render the trigger when the registration has no qrCode (older data)', () => {
+    render(
+      <RegistrationListRow registration={{ ...registration, qrCode: undefined }} event={event} />,
+    );
+
+    expect(screen.queryByRole('button', { name: /Kod startowy/ })).not.toBeInTheDocument();
+  });
+});
+
 describe('RegistrationListRow refund action (E1.5)', () => {
   it('offers "Poproś o zwrot" for a paid registration with no refund cycle yet', () => {
     const onRequestRefund = vi.fn();
