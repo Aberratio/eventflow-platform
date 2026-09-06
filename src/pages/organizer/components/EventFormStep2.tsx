@@ -1134,10 +1134,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <PriceTierPreview
                           basePrice={Number(dist.price) || 0}
                           tiers={dist.priceTiers}
-                          currentCount={
-                            existingEvent?.distances.find((d) => d.id === dist.id)
-                              ?.registeredCount || 0
-                          }
+                          currentCount={dist.registeredCount || 0}
                         />
 
                         {dist.priceTiers.length > 0 && (
@@ -1165,9 +1162,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                               const tierDateError = fe[`distance_${index}_tier_${j}_endDate`];
                               const tierLimitError =
                                 fe[`distance_${index}_tier_${j}_participantLimit`];
-                              const currentCount =
-                                existingEvent?.distances.find((d) => d.id === dist.id)
-                                  ?.registeredCount || 0;
+                              const currentCount = dist.registeredCount || 0;
                               const expired = isTierExpired(tier, currentCount);
                               return (
                                 <div

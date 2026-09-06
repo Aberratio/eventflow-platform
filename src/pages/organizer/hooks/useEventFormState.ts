@@ -67,6 +67,8 @@ export interface DistanceFormData {
   routeGpxUrl: string;
   routeFiles: DistanceRouteFile[];
   distanceDocuments: DistanceDocument[];
+  /** E1.3: liczba juz zarejestrowanych zawodnikow na ten dystans (z serwera, tylko do odczytu). */
+  registeredCount: number;
 }
 
 export interface GadgetFormData {
@@ -585,6 +587,7 @@ export const useEventFormState = () => {
       routeGpxUrl: d.routeGpxUrl || '',
       routeFiles: d.routeFiles || [],
       distanceDocuments: d.documents || [],
+      registeredCount: d.registeredCount || 0,
     })) || [],
   );
 
@@ -713,6 +716,7 @@ export const useEventFormState = () => {
         routeGpxUrl: d.routeGpxUrl || '',
         routeFiles: d.routeFiles || [],
         distanceDocuments: d.documents || [],
+        registeredCount: d.registeredCount || 0,
       })),
     );
   }, [existingEvent]);
@@ -796,6 +800,7 @@ export const useEventFormState = () => {
         routeGpxUrl: '',
         routeFiles: [],
         distanceDocuments: [],
+        registeredCount: 0,
       },
     ]);
   };
@@ -828,6 +833,7 @@ export const useEventFormState = () => {
         routeGpxUrl: '',
         routeFiles: [],
         distanceDocuments: [],
+        registeredCount: 0,
       },
     ]);
   };
@@ -1630,8 +1636,7 @@ export const useEventFormState = () => {
           participantLimit: parseNumberInput(tier.participantLimit) ?? undefined,
           endDate: tier.endDate || undefined,
         })),
-        registeredCount:
-          existingEvent?.distances.find((d) => d.id === dist.id)?.registeredCount || 0,
+        registeredCount: dist.registeredCount || 0,
         categories: categoriesEnabled
           ? allCategories
               .filter((cat) => !dist.disabledCategoryIds.includes(cat.id))
