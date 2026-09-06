@@ -94,6 +94,7 @@ import type {
   OrganizerEventLimit,
   EventBackground,
   EventBackgroundUsage,
+  FormFieldAggregate,
 } from '@/types';
 import type {
   EmailTemplate,
@@ -353,6 +354,9 @@ export interface ApiAdapter {
     eventId: string,
     filters?: EventActivityLogFilters,
   ): Promise<ApiResponse<AdminActivityLog[]>>;
+  // E2.5: automatic, no-opt-in answer-count aggregation for choice-type form fields
+  // (single_choice/multi_choice/consent) — organizer-scoped, same $canManageEvent gate.
+  getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;

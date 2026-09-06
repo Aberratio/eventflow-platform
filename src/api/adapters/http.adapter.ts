@@ -418,6 +418,8 @@ export const httpAdapter: ApiAdapter = {
     request(
       `/events/${encodeURIComponent(eventId)}/activity-logs${query(filters as Record<string, QueryValue>)}`,
     ),
+  getFormFieldAggregates: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),

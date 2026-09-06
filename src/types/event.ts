@@ -581,3 +581,22 @@ export interface GlobalInsuranceSettings {
 export interface GroupDiscountCode extends DiscountCode {
   minParticipants?: number;
 }
+
+/**
+ * E2.5: automatic answer-count tally for one choice-type custom form field
+ * (single_choice/multi_choice/consent) — server computes this live from
+ * FormFieldRepository::aggregatesForEvent(), no organizer configuration.
+ */
+export interface FormFieldAggregateCount {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface FormFieldAggregate {
+  formFieldId: string;
+  fieldKey: string;
+  label: string;
+  fieldType: 'single_choice' | 'multi_choice' | 'consent';
+  counts: FormFieldAggregateCount[];
+}

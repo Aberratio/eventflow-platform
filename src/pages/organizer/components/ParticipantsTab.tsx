@@ -65,6 +65,7 @@ import {
   Check,
   Clock,
   AlertCircle,
+  BarChart3,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -73,6 +74,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PaymentDetailsPanel } from './PaymentDetailsPanel';
+import { FormFieldAggregatesCard } from './FormFieldAggregatesCard';
 import { useParticipantsActions } from '../hooks/useParticipantsActions';
 
 interface ParticipantsTabProps {
@@ -384,6 +386,10 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
           <TabsTrigger value="numbers" className="h-[46px] px-6">
             <Hash className="mr-2 h-4 w-4" />
             Nadawanie numerów
+          </TabsTrigger>
+          <TabsTrigger value="aggregates" className="h-[46px] px-6">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Zestawienia
           </TabsTrigger>
         </TabsList>
 
@@ -697,6 +703,10 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             registrations={localRegistrations}
             onRegistrationsChange={setLocalRegistrations}
           />
+        </TabsContent>
+
+        <TabsContent value="aggregates" className="mt-0">
+          <FormFieldAggregatesCard eventId={event.id} />
         </TabsContent>
       </Tabs>
 
