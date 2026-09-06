@@ -509,9 +509,11 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
           <Label className="text-base font-medium">Data urodzenia</Label>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label className="text-xs text-muted-foreground">Dzień</Label>
+              <Label htmlFor="birth-day" className="text-xs text-muted-foreground">
+                Dzień
+              </Label>
               <Select value={form.birthDay} onValueChange={form.setBirthDay}>
-                <SelectTrigger>
+                <SelectTrigger id="birth-day">
                   <SelectValue placeholder="Dzień" />
                 </SelectTrigger>
                 <SelectContent>
@@ -524,9 +526,11 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Miesiąc</Label>
+              <Label htmlFor="birth-month" className="text-xs text-muted-foreground">
+                Miesiąc
+              </Label>
               <Select value={form.birthMonth} onValueChange={form.setBirthMonth}>
-                <SelectTrigger>
+                <SelectTrigger id="birth-month">
                   <SelectValue placeholder="Miesiąc" />
                 </SelectTrigger>
                 <SelectContent>
@@ -539,9 +543,11 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Rok</Label>
+              <Label htmlFor="birth-year" className="text-xs text-muted-foreground">
+                Rok
+              </Label>
               <Select value={form.birthYear} onValueChange={form.setBirthYear}>
-                <SelectTrigger>
+                <SelectTrigger id="birth-year">
                   <SelectValue placeholder="Rok" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1281,6 +1287,7 @@ const BankTransferDetails = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Kopiuj numer konta"
             onClick={() =>
               copyToClipboard(event.paymentConfig!.bankAccountNumber || '', 'Numer konta')
             }
@@ -1296,6 +1303,7 @@ const BankTransferDetails = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Kopiuj odbiorcę"
             onClick={() =>
               copyToClipboard(event.paymentConfig!.bankAccountHolder || '', 'Odbiorca')
             }
@@ -1311,6 +1319,7 @@ const BankTransferDetails = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Kopiuj tytuł przelewu"
             onClick={() => copyToClipboard(generateTransferTitle(), 'Tytuł przelewu')}
           >
             <Copy className="h-4 w-4" />
@@ -1324,6 +1333,7 @@ const BankTransferDetails = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Kopiuj kwotę"
             onClick={() => copyToClipboard(`${totalAmount.toFixed(2)}`, 'Kwota')}
           >
             <Copy className="h-4 w-4" />
@@ -1415,6 +1425,8 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
                       className={`h-8 w-8 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary ring-2 ring-primary ring-offset-2' : 'border-border'}`}
                       style={{ backgroundColor: color.hex }}
                       title={color.name}
+                      aria-label={`Kolor: ${color.name}`}
+                      aria-pressed={selectedColor === color.name}
                     />
                   ))}
                 </div>
@@ -1427,15 +1439,19 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
                 className="h-8 w-8"
                 onClick={() => handleQuantityChange(quantity - 1)}
                 disabled={quantity === 0}
+                aria-label={`Zmniejsz ilość: ${item.name}`}
               >
                 <Minus className="h-4 w-4" />
               </Button>
-              <span className="w-8 text-center font-semibold">{quantity}</span>
+              <span className="w-8 text-center font-semibold" aria-live="polite">
+                {quantity}
+              </span>
               <Button
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
                 onClick={() => handleQuantityChange(quantity + 1)}
+                aria-label={`Zwiększ ilość: ${item.name}`}
               >
                 <Plus className="h-4 w-4" />
               </Button>

@@ -679,7 +679,7 @@ const EventsPage = () => {
                     className="h-11 w-11 shrink-0 text-foreground hover:bg-white/[0.06]"
                     asChild
                   >
-                    <Link to="/">
+                    <Link to="/" aria-label="Wróć do strony głównej">
                       <ArrowLeft className="h-8 w-8" />
                     </Link>
                   </Button>

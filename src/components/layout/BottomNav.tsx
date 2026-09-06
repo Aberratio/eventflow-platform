@@ -93,6 +93,7 @@ export const BottomNav = () => {
           <Link
             key={item.href}
             to={item.href}
+            aria-current={item.active ? 'page' : undefined}
             className={cn(
               'relative flex h-full flex-1 flex-col items-center justify-center transition-colors',
               item.active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',

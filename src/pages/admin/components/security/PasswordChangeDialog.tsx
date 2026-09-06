@@ -110,6 +110,8 @@ export const PasswordChangeDialog = ({
           size="icon"
           className="absolute right-0 top-0 h-full px-3"
           onClick={() => setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }))}
+          aria-label={showPasswords[field] ? `Ukryj: ${label}` : `Pokaż: ${label}`}
+          aria-pressed={showPasswords[field]}
         >
           {showPasswords[field] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>

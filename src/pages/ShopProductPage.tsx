@@ -278,15 +278,19 @@ const ShopProductPage = () => {
                     size="icon"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
+                    aria-label="Zmniejsz ilość"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center text-lg font-bold">{quantity}</span>
+                  <span className="w-12 text-center text-lg font-bold" aria-live="polite">
+                    {quantity}
+                  </span>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={product.stockCount !== undefined && quantity >= product.stockCount}
+                    aria-label="Zwiększ ilość"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>

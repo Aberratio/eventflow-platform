@@ -278,6 +278,9 @@ export const Header = () => {
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -286,7 +289,10 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden">
+        <div
+          id="mobile-nav-menu"
+          className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-border/60 bg-[hsl(var(--header-bg)/0.97)] lg:hidden"
+        >
           <nav className="container flex flex-col gap-1 py-4">
             <Link
               to="/wydarzenia"

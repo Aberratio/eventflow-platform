@@ -411,6 +411,7 @@ const TransferDetail = ({ label, value }: { label: string; value: string }) => (
         size="icon"
         className="shrink-0"
         onClick={() => copyToClipboard(value)}
+        aria-label={`Kopiuj: ${label}`}
       >
         <Copy className="h-4 w-4" />
       </Button>

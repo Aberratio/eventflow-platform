@@ -47,15 +47,19 @@ export const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardP
             className="h-7 w-7 rounded-md hover:bg-background"
             onClick={() => onUpdateQuantity(item.quantity - 1)}
             disabled={item.quantity <= 1}
+            aria-label="Zmniejsz ilość"
           >
             <Minus className="h-3.5 w-3.5" />
           </Button>
-          <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
+          <span className="w-8 text-center text-sm font-semibold" aria-live="polite">
+            {item.quantity}
+          </span>
           <Button
             variant="ghost"
             size="icon"
             className="h-7 w-7 rounded-md hover:bg-background"
             onClick={() => onUpdateQuantity(item.quantity + 1)}
+            aria-label="Zwiększ ilość"
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>

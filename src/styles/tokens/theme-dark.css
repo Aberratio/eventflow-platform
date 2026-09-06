@@ -22,7 +22,10 @@
   /* Text hierarchy */
   --text-primary: 214 20% 96%; /* #F4F6F8 */
   --text-secondary: 214 9% 62%;
-  --text-muted: 214 8% 43%;
+  /* WCAG AA fix: raised from 43% lightness (~3.5:1, failed AA for normal text)
+     to 51% (~4.5-4.9:1 against page/card backgrounds) — muted-foreground is
+     used site-wide for body copy, not just large/decorative text. */
+  --text-muted: 214 8% 51%;
 
   /* Page background */
   --page-bg: #06101d;
