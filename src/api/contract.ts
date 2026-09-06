@@ -63,6 +63,7 @@ import type {
   ResultImportMode,
   PersonalRecord,
   TeamResult,
+  TeamClassificationEntry,
   EventResultDocument,
   EventSeries,
   ShopProduct,
@@ -225,6 +226,11 @@ export interface ApiAdapter {
   deleteResult(id: string): Promise<ApiResponse<void>>;
   getPersonalRecords(userId: string): Promise<ApiResponse<PersonalRecord[]>>;
   getTeamResults(eventId: string): Promise<ApiResponse<TeamResult[]>>;
+  /** E2.7: live-computed team/relay classification for one event+distance. */
+  getTeamClassification(
+    eventId: string,
+    distanceId: string,
+  ): Promise<ApiResponse<TeamClassificationEntry[]>>;
   getResultDocuments(eventId: string): Promise<ApiResponse<EventResultDocument[]>>;
   uploadResultDocument(
     data: Partial<EventResultDocument>,

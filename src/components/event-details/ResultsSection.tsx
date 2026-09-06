@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getResultDocuments, getTeamResults } from '@/api';
+import { getResultDocuments } from '@/api';
 import { QUERY_KEYS } from '@/constants';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,6 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   Trophy,
   Medal,
-  Users,
   ChevronDown,
   ChevronRight,
   Search,
@@ -31,6 +30,7 @@ import {
 } from 'lucide-react';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
 import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
+import { TeamClassificationCard } from '@/components/results/TeamClassificationCard';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { Event, Result } from '@/types';
@@ -433,12 +433,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
     queryKey: QUERY_KEYS.resultDocuments(event.id),
     queryFn: () => getResultDocuments(event.id),
   });
-  const { data: teamResultsResponse } = useQuery({
-    queryKey: QUERY_KEYS.teamResults(event.id),
-    queryFn: () => getTeamResults(event.id),
-  });
   const eventDocuments = documentsResponse?.data ?? [];
-  const eventTeamResults = teamResultsResponse?.data ?? [];
 
   const hasMultipleDistances = event.distances.length > 1;
 
@@ -548,13 +543,16 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
                   const distanceKm =
                     d.length != null ? (d.unit === 'm' ? d.length / 1000 : d.length) : undefined;
                   return (
-                    <TabsContent key={d.id} value={d.id}>
+                    <TabsContent key={d.id} value={d.id} className="space-y-4">
                       <DistancePanel
                         results={distResults}
                         searchQuery={searchQuery}
                         distanceKm={distanceKm}
                         currentUserId={currentUserId}
                       />
+                      {d.startType === 'relay' && (
+                        <TeamClassificationCard eventId={event.id} distanceId={d.id} />
+                      )}
                     </TabsContent>
                   );
                 })}
@@ -636,55 +634,11 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
         </Card>
       )}
 
-      {/* Team results */}
-      {eventTeamResults.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Klasyfikacja drużynowa
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Poz.</TableHead>
-                    <TableHead>Drużyna</TableHead>
-                    <TableHead className="hidden sm:table-cell">Członkowie</TableHead>
-                    <TableHead>Łączny czas</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {eventTeamResults
-                    .sort((a, b) => a.position - b.position)
-                    .map((team) => (
-                      <TableRow key={team.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            {getMedalIcon(team.position)}
-                            <span className="font-bold">{team.position}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">{team.teamName}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <div className="flex flex-wrap gap-1">
-                            {team.members.map((m) => (
-                              <Badge key={m.userId} variant="outline" className="text-xs">
-                                {m.userName}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-mono">{team.totalTime}</TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+      {/* E2.7: team/relay classification, single-distance case - the
+          multi-distance case renders one of these per relay TabsContent
+          above instead (each Dystans has its own classification). */}
+      {!hasMultipleDistances && event.distances[0]?.startType === 'relay' && (
+        <TeamClassificationCard eventId={event.id} distanceId={event.distances[0].id} />
       )}
 
       {eventDocuments.length > 0 && <ResultDocumentsList documents={eventDocuments} />}

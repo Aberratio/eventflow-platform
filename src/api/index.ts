@@ -161,6 +161,8 @@ export const getPersonalRecords: ApiAdapter['getPersonalRecords'] = (...args) =>
   ensureAdapter().then((a) => a.getPersonalRecords(...args));
 export const getTeamResults: ApiAdapter['getTeamResults'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamResults(...args));
+export const getTeamClassification: ApiAdapter['getTeamClassification'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamClassification(...args));
 export const getResultDocuments: ApiAdapter['getResultDocuments'] = (...args) =>
   ensureAdapter().then((a) => a.getResultDocuments(...args));
 export const uploadResultDocument: ApiAdapter['uploadResultDocument'] = (...args) =>

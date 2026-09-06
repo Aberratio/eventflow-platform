@@ -202,6 +202,7 @@ describe('useEventFormState event wizard validation', () => {
       result.current.updateDistance(0, 'relayMinTeamSize', '2');
       result.current.updateDistance(0, 'relayMaxTeamSize', '4');
       result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
+      result.current.updateDistance(0, 'teamAggregationRule', 'sum');
       result.current.updateDistance(0, 'officePrice', '120,50');
       result.current.updateDistance(0, 'limit', '250');
       result.current.addGadget();
@@ -236,6 +237,7 @@ describe('useEventFormState event wizard validation', () => {
             relayMinTeamSize: 2,
             relayMaxTeamSize: 4,
             relayTeamCompletionDeadline: '2027-05-05',
+            teamAggregationRule: 'sum',
           }),
         ],
         merchandise: [
@@ -297,5 +299,26 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(createEvent).not.toHaveBeenCalled();
     expect(result.current.fieldValidationErrors.distance_0_relayMaxTeamSize).toContain('Maksimum');
+  });
+
+  it('requires a team aggregation rule for a relay distance (E2.7)', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.updateDistance(0, 'startType', 'relay');
+      result.current.updateDistance(0, 'relayMinTeamSize', '2');
+      result.current.updateDistance(0, 'relayMaxTeamSize', '4');
+      result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).not.toHaveBeenCalled();
+    expect(result.current.fieldValidationErrors.distance_0_teamAggregationRule).toContain('regułę');
   });
 });

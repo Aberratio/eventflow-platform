@@ -42,6 +42,8 @@ import {
   type DistanceRouteFileType,
   type DistanceDocumentType,
   type DistanceDocument,
+  type TeamAggregationRule,
+  TEAM_AGGREGATION_RULE_LABELS,
 } from '@/types';
 import { formatDistanceName, type EventFormState, type SubStep } from '../hooks/useEventFormState';
 
@@ -916,6 +918,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           form.updateDistance(index, 'relayMinTeamSize', '');
                           form.updateDistance(index, 'relayMaxTeamSize', '');
                           form.updateDistance(index, 'relayTeamCompletionDeadline', '');
+                          form.updateDistance(index, 'teamAggregationRule', '');
                         }
                       }}
                     >
@@ -981,6 +984,33 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           )}
                         />
                         <FieldError message={fe[`distance_${index}_relayTeamCompletionDeadline`]} />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Sposob wyliczenia wyniku druzyny z wynikow indywidualnych jej czlonkow: suma czasow, czas najlepszego czlonka, albo srednia. Wynik druzynowy to osobna, zawsze liczona na zywo klasyfikacja obok indywidualnej.">
+                          Regula wyniku druzynowego *
+                        </HelpLabel>
+                        <Select
+                          value={dist.teamAggregationRule}
+                          onValueChange={(value: TeamAggregationRule) =>
+                            form.updateDistance(index, 'teamAggregationRule', value)
+                          }
+                        >
+                          <SelectTrigger
+                            className={inputError(!!fe[`distance_${index}_teamAggregationRule`])}
+                          >
+                            <SelectValue placeholder="Wybierz regule" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(
+                              Object.keys(TEAM_AGGREGATION_RULE_LABELS) as TeamAggregationRule[]
+                            ).map((rule) => (
+                              <SelectItem key={rule} value={rule}>
+                                {TEAM_AGGREGATION_RULE_LABELS[rule]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FieldError message={fe[`distance_${index}_teamAggregationRule`]} />
                       </div>
                     </>
                   )}

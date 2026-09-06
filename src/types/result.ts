@@ -118,6 +118,32 @@ export interface ResultImportBatch {
   rows: ResultImportRow[];
 }
 
+export type TeamAggregationRule = 'sum' | 'best' | 'average';
+
+export const TEAM_AGGREGATION_RULE_LABELS: Record<TeamAggregationRule, string> = {
+  sum: 'Suma czasów członków',
+  best: 'Czas najlepszego członka',
+  average: 'Średnia czasów członków',
+};
+
+/**
+ * E2.7 (spec 14 sekcja 4): live-computed row of the team/relay classification
+ * for one event+distance - see server ResultRepository::teamClassification()
+ * for the aggregation/edge-case rules this reflects (partial teams and teams
+ * with a dnf/dns/dsq member are excluded server-side, never sent here).
+ * Deliberately NOT the same shape as the legacy `TeamResult` below (which
+ * this table replaces in the UI - see ResultsSection.tsx/ResultsTab.tsx).
+ */
+export interface TeamClassificationEntry {
+  teamId: string;
+  teamName: string;
+  memberCount: number;
+  aggregationRule: TeamAggregationRule;
+  aggregatedTimeInSeconds: number;
+  position: number;
+}
+
+/** @deprecated LEGACY (E2.7) - see ResultRepository::teamResults()'s docblock on the server. No longer surfaced anywhere in the UI; kept only so the type of the still-existing GET /events/{eventId}/team-results endpoint has a home. */
 export interface TeamResult {
   id: string;
   eventId: string;

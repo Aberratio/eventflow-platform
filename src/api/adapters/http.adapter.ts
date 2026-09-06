@@ -343,6 +343,10 @@ export const httpAdapter: ApiAdapter = {
   deleteResult: (id) => request(`/results/${encodeURIComponent(id)}`, json('DELETE')),
   getPersonalRecords: (userId) => request(`/users/${encodeURIComponent(userId)}/personal-records`),
   getTeamResults: (eventId) => request(`/events/${encodeURIComponent(eventId)}/team-results`),
+  getTeamClassification: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/team-results`,
+    ),
   getResultDocuments: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/result-documents`),
   uploadResultDocument: (data) =>

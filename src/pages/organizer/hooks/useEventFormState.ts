@@ -39,6 +39,7 @@ import {
   GadgetQuantityMode,
   GadgetImage,
   DistanceStartType,
+  TeamAggregationRule,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -52,6 +53,8 @@ export interface DistanceFormData {
   relayMinTeamSize: string;
   relayMaxTeamSize: string;
   relayTeamCompletionDeadline: string;
+  /** E2.7: regula agregacji wyniku druzynowego - puste = brak wyboru (nie wysylane). */
+  teamAggregationRule: TeamAggregationRule | '';
   price: string;
   /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
   officePrice: string;
@@ -566,6 +569,7 @@ export const useEventFormState = () => {
       relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
       relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
       relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
+      teamAggregationRule: d.teamAggregationRule || '',
       price: d.price.toString(),
       officePrice: officeVariantOf(d)?.price?.toString() || '',
       limit: d.limit?.toString() || '',
@@ -693,6 +697,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
         relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
         relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
+        teamAggregationRule: d.teamAggregationRule || '',
         price: d.price.toString(),
         officePrice: officeVariantOf(d)?.price?.toString() || '',
         limit: d.limit?.toString() || '',
@@ -779,6 +784,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: '',
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
+        teamAggregationRule: '',
         price: '',
         officePrice: '',
         limit: '',
@@ -810,6 +816,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: '',
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
+        teamAggregationRule: '',
         price: '',
         officePrice: '',
         limit: '',
@@ -1200,6 +1207,9 @@ export const useEventFormState = () => {
             'Deadline kompletowania skladu sztafety nie moze byc pozniejszy niz data wydarzenia',
           );
         }
+        if (isBlank(dist.teamAggregationRule)) {
+          addError('distances', 'Wybierz regule agregacji wyniku druzynowego');
+        }
       }
       if (skipSystemPaymentConfig) continue;
 
@@ -1376,6 +1386,10 @@ export const useEventFormState = () => {
         } else if (date && dist.relayTeamCompletionDeadline > date) {
           errors[`distance_${i}_relayTeamCompletionDeadline`] =
             'Deadline nie może być późniejszy niż data wydarzenia';
+        }
+        if (isBlank(dist.teamAggregationRule)) {
+          errors[`distance_${i}_teamAggregationRule`] =
+            'Wybierz regułę agregacji wyniku drużynowego';
         }
       }
       if (registrationMode !== 'external_embed') {
@@ -1589,6 +1603,8 @@ export const useEventFormState = () => {
             : undefined,
         relayTeamCompletionDeadline:
           dist.startType === 'relay' ? dist.relayTeamCompletionDeadline || undefined : undefined,
+        teamAggregationRule:
+          dist.startType === 'relay' ? dist.teamAggregationRule || undefined : undefined,
         price: parseNumberInput(dist.price) ?? 0,
         pricingVariants: (() => {
           const officePrice = parseNumberInput(dist.officePrice);

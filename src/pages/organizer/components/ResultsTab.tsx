@@ -1,9 +1,4 @@
-import {
-  getResultsByEvent,
-  getTeamResults,
-  getResultDocuments,
-  publishOfficialResults,
-} from '@/api';
+import { getResultsByEvent, getResultDocuments, publishOfficialResults } from '@/api';
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,14 +13,14 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Event, Registration, TeamResult, EventResultDocument } from '@/types';
+import { Event, Registration, EventResultDocument } from '@/types';
 import { Plus, FileText, CheckCircle2, Trophy, Users, AlertCircle } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { AddResultDialog } from '@/components/organizer/AddResultDialog';
 import { UploadResultDocumentDialog } from '@/components/organizer/UploadResultDocumentDialog';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
-import { TeamResultsManager } from '@/components/organizer/TeamResultsManager';
 import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
+import { TeamClassificationCard } from '@/components/results/TeamClassificationCard';
 import { IndividualResultsCard } from './IndividualResultsCard';
 import { ResultDocumentsCard } from './ResultDocumentsCard';
 
@@ -57,10 +52,6 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     queryKey: ['event-results', event.id],
     queryFn: () => getResultsByEvent(event.id),
   });
-  const { data: teamResultsResp } = useQuery({
-    queryKey: ['event-team-results', event.id],
-    queryFn: () => getTeamResults(event.id),
-  });
   const { data: documentsResp } = useQuery({
     queryKey: ['event-result-documents', event.id],
     queryFn: () => getResultDocuments(event.id),
@@ -71,12 +62,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const distancePublicationStatus: 'preliminary' | 'official' =
     eventResults[0]?.publicationStatus ?? 'preliminary';
   const [localResults, setLocalResults] = useState<LocalResult[]>([]);
-  const [localTeamResults, setLocalTeamResults] = useState<TeamResult[]>([]);
   const [localDocuments, setLocalDocuments] = useState<EventResultDocument[]>([]);
-
-  useEffect(() => {
-    if (teamResultsResp?.data) setLocalTeamResults(teamResultsResp.data);
-  }, [teamResultsResp?.data]);
 
   useEffect(() => {
     if (documentsResp?.data) setLocalDocuments(documentsResp.data);
@@ -188,11 +174,6 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     toast({ title: 'Dokument usunięty', description: 'Dokument został usunięty' });
   };
 
-  const handleAddTeamResult = (team: Omit<TeamResult, 'id'>) =>
-    setLocalTeamResults([...localTeamResults, { ...team, id: `team-${Date.now()}` }]);
-  const handleDeleteTeamResult = (teamId: string) =>
-    setLocalTeamResults(localTeamResults.filter((t) => t.id !== teamId));
-
   return (
     <div className="space-y-6">
       {!canUploadResults && (
@@ -270,13 +251,16 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         </TabsContent>
 
         <TabsContent value="teams">
-          <TeamResultsManager
-            event={event}
-            individualResults={allApiResults}
-            teamResults={localTeamResults}
-            onAddTeamResult={handleAddTeamResult}
-            onDeleteTeamResult={handleDeleteTeamResult}
-          />
+          {selectedDistanceData?.startType === 'relay' ? (
+            <TeamClassificationCard eventId={event.id} distanceId={selectedDistance} />
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                Klasyfikacja drużynowa jest dostępna tylko dla dystansów sztafetowych. Zmień typ
+                startu tego dystansu w edycji Wydarzenia, aby ją włączyć.
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="documents">

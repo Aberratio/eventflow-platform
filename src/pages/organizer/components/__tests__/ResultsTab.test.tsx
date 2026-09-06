@@ -6,13 +6,13 @@ import { ResultsTab } from '../ResultsTab';
 import type { Event, Registration, Result } from '@/types';
 
 const getResultsByEvent = vi.fn();
-const getTeamResults = vi.fn();
+const getTeamClassification = vi.fn();
 const getResultDocuments = vi.fn();
 const publishOfficialResults = vi.fn();
 
 vi.mock('@/api', () => ({
   getResultsByEvent: (...args: unknown[]) => getResultsByEvent(...args),
-  getTeamResults: (...args: unknown[]) => getTeamResults(...args),
+  getTeamClassification: (...args: unknown[]) => getTeamClassification(...args),
   getResultDocuments: (...args: unknown[]) => getResultDocuments(...args),
   publishOfficialResults: (...args: unknown[]) => publishOfficialResults(...args),
 }));
@@ -67,7 +67,7 @@ const baseResult: Result = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getTeamResults.mockResolvedValue({ success: true, data: [] });
+  getTeamClassification.mockResolvedValue({ success: true, data: [] });
   getResultDocuments.mockResolvedValue({ success: true, data: [] });
 });
 
@@ -113,5 +113,52 @@ describe('ResultsTab publication status (E2.3)', () => {
     expect(
       screen.queryByRole('button', { name: /Oznacz jako oficjalne/i }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('ResultsTab team classification (E2.7)', () => {
+  it('shows a guidance message instead of the classification for a non-relay distance', async () => {
+    getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
+    const user = userEvent.setup();
+    render(<ResultsTab event={event} registrations={registrations} />);
+
+    const teamsTab = await screen.findByRole('tab', { name: /Klasyfikacja drużynowa/i });
+    await user.click(teamsTab);
+
+    expect(
+      await screen.findByText(/dostępna tylko dla dystansów sztafetowych/i),
+    ).toBeInTheDocument();
+    expect(getTeamClassification).not.toHaveBeenCalled();
+  });
+
+  it('fetches and shows the live-computed classification for a relay distance', async () => {
+    const relayEvent: Event = {
+      ...event,
+      distances: [{ ...event.distances[0], startType: 'relay', teamAggregationRule: 'sum' }],
+    };
+    getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
+    getTeamClassification.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          teamId: 'team-1',
+          teamName: 'Drużyna A',
+          memberCount: 2,
+          aggregationRule: 'sum',
+          aggregatedTimeInSeconds: 1200,
+          position: 1,
+        },
+      ],
+    });
+    const user = userEvent.setup();
+    render(<ResultsTab event={relayEvent} registrations={registrations} />);
+
+    const teamsTab = await screen.findByRole('tab', { name: /Klasyfikacja drużynowa/i });
+    await user.click(teamsTab);
+
+    expect(await screen.findByText('Drużyna A')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(getTeamClassification).toHaveBeenCalledWith('event-1', 'distance-1'),
+    );
   });
 });

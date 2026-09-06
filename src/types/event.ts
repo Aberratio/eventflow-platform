@@ -1,3 +1,5 @@
+import type { TeamAggregationRule } from './result';
+
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon' | 'multisport';
 
 export type RegistrationStatus = 'open' | 'closed' | 'none';
@@ -147,6 +149,14 @@ export interface Distance {
   relayMinTeamSize?: number;
   relayMaxTeamSize?: number;
   relayTeamCompletionDeadline?: string;
+  /**
+   * E2.7 (spec 14 sekcja 4): regula agregacji wyniku druzynowego z wynikow
+   * indywidualnych czlonkow, konfigurowalna per Dystans (relacja z
+   * `startType === 'relay'` tak sama jak reszta pol relay*: jest sens tylko
+   * dla dystansu sztafetowego, ale serwer jej nie wymusza - patrz
+   * ResultRepository::teamClassification() dla domyslnego fallbacku).
+   */
+  teamAggregationRule?: TeamAggregationRule;
   ageCategories?: AgeCategory[];
   specialCategories?: SpecialCategory[];
   limit?: number;

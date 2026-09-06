@@ -2,7 +2,7 @@ import { getCurrentPrice, applyDiscount, isTierExpired } from '@/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Event, Distance } from '@/types';
+import { Event, Distance, TEAM_AGGREGATION_RULE_LABELS } from '@/types';
 import { Download, Info, Tags, UsersRound } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { format } from 'date-fns';
@@ -78,6 +78,11 @@ const DistanceCard = ({
               {distance.startType === 'relay' && distance.relayTeamCompletionDeadline && (
                 <p className="mt-1 text-xs text-foreground/60">
                   Sklad druzyny trzeba uzupelnic do {distance.relayTeamCompletionDeadline}
+                </p>
+              )}
+              {distance.startType === 'relay' && distance.teamAggregationRule && (
+                <p className="mt-1 text-xs text-foreground/60">
+                  Wynik drużyny: {TEAM_AGGREGATION_RULE_LABELS[distance.teamAggregationRule]}
                 </p>
               )}
               {distance.length != null && (
