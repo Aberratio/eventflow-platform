@@ -39,7 +39,9 @@ const ShopProductPage = () => {
     queryFn: () => getShopCategories(),
   });
   const product = productData?.data;
-  const categoryLabels = Object.fromEntries((categoriesData?.data ?? []).map((item) => [item.id, item.name]));
+  const categoryLabels = Object.fromEntries(
+    (categoriesData?.data ?? []).map((item) => [item.id, item.name]),
+  );
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product?.sizes?.[0]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product?.colors?.[0]?.id);
@@ -56,7 +58,9 @@ const ShopProductPage = () => {
   if (productLoading) {
     return (
       <Layout>
-        <div className="container py-16 text-center text-muted-foreground">Ładowanie produktu...</div>
+        <div className="container py-16 text-center text-muted-foreground">
+          Ładowanie produktu...
+        </div>
       </Layout>
     );
   }
@@ -84,6 +88,8 @@ const ShopProductPage = () => {
   const handleAddToCart = () => {
     addItem({
       productId: product.id,
+      productName: product.name,
+      unitPrice: product.price,
       quantity,
       size: selectedSize,
       color: selectedColor,

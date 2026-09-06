@@ -324,7 +324,7 @@ describe('useRegistrationForm', () => {
             ],
           },
         ],
-      };
+      } as Event;
 
       const { result } = renderHook(() => useRegistrationForm(eventWithTieredVariant), {
         wrapper,
@@ -362,7 +362,7 @@ describe('useRegistrationForm', () => {
             ],
           },
         ],
-      };
+      } as Event;
 
       const { result } = renderHook(() => useRegistrationForm(eventWithActiveTieredVariant), {
         wrapper,

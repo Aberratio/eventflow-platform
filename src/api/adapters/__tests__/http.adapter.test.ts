@@ -177,9 +177,22 @@ describe('httpAdapter contract mapping', () => {
       ),
     );
 
-    await expect(httpAdapter.createEvent({ name: 'Bieg' })).rejects.toThrow(
-      'Wybierz aktywne konto organizatora',
-    );
+    await expect(
+      httpAdapter.createEvent({
+        name: 'Bieg',
+        slug: 'bieg',
+        discipline: 'running',
+        date: '2026-01-01',
+        location: 'Warszawa',
+        city: 'Warszawa',
+        description: 'Opis',
+        imageUrl: 'https://example.com/image.jpg',
+        distances: [],
+        organizerId: 'org-1',
+        organizerName: 'Organizator',
+        registrationDeadline: '2025-12-31',
+      }),
+    ).rejects.toThrow('Wybierz aktywne konto organizatora');
   });
 
   it('clears the stored token and emits an auth event on protected 401 responses', async () => {

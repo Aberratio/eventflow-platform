@@ -20,8 +20,8 @@ export const BankPaymentSummary = ({ event }: BankPaymentSummaryProps) => {
                 Konto: <span className="font-mono">{event.paymentConfig?.bankAccountNumber}</span>
               </div>
               <div>Właściciel: {event.paymentConfig?.bankAccountHolder}</div>
-              {event.paymentConfig?.bankTransferAddress && (
-                <div>{event.paymentConfig.bankTransferAddress}</div>
+              {event.paymentConfig?.transferTitle && (
+                <div>Tytuł przelewu: {event.paymentConfig.transferTitle}</div>
               )}
             </div>
           </div>

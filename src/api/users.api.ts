@@ -1,6 +1,7 @@
 import type { ApiResponse, PaginatedResponse, UserFilters } from './types';
 import { httpAdapter } from './adapters/http.adapter';
 import type { User, UserRole } from '@/types';
+import type { CreateUserPayload, UpdateUserPayload } from './payloads';
 
 export async function getUsers(filters?: UserFilters): Promise<PaginatedResponse<User>> {
   return httpAdapter.getUsers(filters);
@@ -14,11 +15,11 @@ export async function getUserByEmail(email: string): Promise<ApiResponse<User | 
   return httpAdapter.getUserByEmail(email);
 }
 
-export async function createUser(data: Partial<User>): Promise<ApiResponse<User>> {
+export async function createUser(data: CreateUserPayload): Promise<ApiResponse<User>> {
   return httpAdapter.createUser(data);
 }
 
-export async function updateUser(id: string, data: Partial<User>): Promise<ApiResponse<User>> {
+export async function updateUser(id: string, data: UpdateUserPayload): Promise<ApiResponse<User>> {
   return httpAdapter.updateUser(id, data);
 }
 

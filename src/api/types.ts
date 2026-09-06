@@ -74,6 +74,8 @@ export interface PublishOfficialResultsResponse {
 }
 
 export interface RegistrationFilters {
+  page?: number;
+  pageSize?: number;
   eventId?: string;
   userId?: string;
   status?: 'pending' | 'confirmed' | 'cancelled' | 'removed';

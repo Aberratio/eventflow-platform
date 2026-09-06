@@ -64,7 +64,7 @@ export const ActivityLogsSection = () => {
 
   const { data: logsResp } = useQuery({
     queryKey: ['activity-logs'],
-    queryFn: getActivityLogs,
+    queryFn: () => getActivityLogs(),
     select: (r) => r.data ?? [],
   });
 

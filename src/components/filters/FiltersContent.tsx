@@ -70,7 +70,7 @@ export const FiltersContent = ({
 }: FiltersContentProps) => {
   const { data: seriesList } = useQuery({
     queryKey: ['series'],
-    queryFn: getSeries,
+    queryFn: () => getSeries(),
     staleTime: 5 * 60 * 1000,
     select: (r) => r.data ?? [],
   });

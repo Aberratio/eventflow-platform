@@ -985,7 +985,6 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
           {LOGISTICS_FIELDS.map((f) => (
             <LogisticsRow
               key={f.key}
-              fieldKey={f.key}
               icon={f.icon}
               label={f.label}
               description={f.description}

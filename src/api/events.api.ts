@@ -1,6 +1,7 @@
 import type { ApiResponse, PaginatedResponse, EventFilters } from './types';
 import { httpAdapter } from './adapters/http.adapter';
 import type { Event, EventVisibility } from '@/types';
+import type { CreateEventPayload, UpdateEventPayload } from './payloads';
 
 export async function getEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>> {
   return httpAdapter.getEvents(filters);
@@ -14,11 +15,14 @@ export async function getEventById(id: string): Promise<ApiResponse<Event | null
   return httpAdapter.getEventById(id);
 }
 
-export async function createEvent(data: Partial<Event>): Promise<ApiResponse<Event>> {
+export async function createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>> {
   return httpAdapter.createEvent(data);
 }
 
-export async function updateEvent(id: string, data: Partial<Event>): Promise<ApiResponse<Event>> {
+export async function updateEvent(
+  id: string,
+  data: UpdateEventPayload,
+): Promise<ApiResponse<Event>> {
   return httpAdapter.updateEvent(id, data);
 }
 

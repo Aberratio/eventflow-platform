@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { CartProvider, useCart } from '@/contexts/CartContext';
 import type { CartItem } from '@/types';
@@ -9,6 +9,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) =>
 
 const makeItem = (overrides: Partial<CartItem> = {}): CartItem => ({
   productId: 'p1',
+  productName: 'Koszulka',
+  unitPrice: 99,
   quantity: 1,
   ...overrides,
 });
