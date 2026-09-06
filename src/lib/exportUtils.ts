@@ -77,6 +77,7 @@ const getResultStatusLabel = (status: string): string => {
   const labels: Record<string, string> = {
     finished: 'Ukończył',
     dnf: 'DNF',
+    dns: 'DNS',
     dsq: 'DSQ',
   };
   return labels[status] || status;

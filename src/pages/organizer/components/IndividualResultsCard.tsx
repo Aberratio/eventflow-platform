@@ -30,7 +30,7 @@ import {
 interface LocalResult {
   bibNumber: string;
   time: string;
-  status: 'finished' | 'dnf' | 'dsq';
+  status: 'finished' | 'dnf' | 'dns' | 'dsq';
   userName?: string;
   category?: string;
 }
@@ -41,6 +41,8 @@ const getStatusBadge = (status: string) => {
       return <Badge className="bg-success/10 text-success">Ukończył</Badge>;
     case 'dnf':
       return <Badge variant="secondary">DNF</Badge>;
+    case 'dns':
+      return <Badge variant="secondary">DNS</Badge>;
     case 'dsq':
       return <Badge variant="destructive">DSQ</Badge>;
     default:

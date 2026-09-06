@@ -11,9 +11,16 @@ export interface Result {
   category: string;
   time: string;
   timeInSeconds: number;
+  /**
+   * Czas netto (spec 14 sekcja 2) - opcjonalny, nie kazdy pomiar ma mate
+   * startowa. Serwer zwraca go od E2.1 (ResultRepository::COLUMNS), ale
+   * typ klienta dotad go nie odzwierciedlal.
+   */
+  netTime?: string | null;
+  netTimeInSeconds?: number | null;
   position: number;
   categoryPosition: number;
-  status: 'finished' | 'dnf' | 'dsq';
+  status: 'finished' | 'dnf' | 'dns' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;
 }
@@ -50,7 +57,7 @@ export interface ResultImportMappedData {
   bibNumber?: string;
   time?: string;
   timeInSeconds?: number | null;
-  status?: 'finished' | 'dnf' | 'dsq' | '';
+  status?: 'finished' | 'dnf' | 'dns' | 'dsq' | '';
   position?: string | number;
   category?: string;
   gender?: 'M' | 'K' | '';

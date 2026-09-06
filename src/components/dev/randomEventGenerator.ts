@@ -795,7 +795,7 @@ export interface GeneratedResult {
   timeInSeconds: number;
   position: number;
   categoryPosition: number;
-  status: 'finished' | 'dnf' | 'dsq';
+  status: 'finished' | 'dnf' | 'dns' | 'dsq';
 }
 
 const BASE_PACE_PER_KM: Record<string, number> = {
@@ -852,10 +852,13 @@ export function generateResults(
     const timings = assigned.map((p) => ({
       ...p,
       seconds: estimateTimeInSeconds(dist.name, dist.length),
-      status: (Math.random() < 0.08 ? 'dnf' : Math.random() < 0.02 ? 'dsq' : 'finished') as
-        | 'finished'
-        | 'dnf'
-        | 'dsq',
+      status: (Math.random() < 0.05
+        ? 'dnf'
+        : Math.random() < 0.05
+          ? 'dns'
+          : Math.random() < 0.02
+            ? 'dsq'
+            : 'finished') as 'finished' | 'dnf' | 'dns' | 'dsq',
     }));
 
     // Sort by time for position assignment (DNF/DSQ at end)

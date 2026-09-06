@@ -7,6 +7,7 @@ import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { formatTimeToWholeSeconds } from '@/lib/utils';
 
 interface ResultListRowProps {
   result: Result;
@@ -46,26 +47,30 @@ export const ResultListRow = ({
       ? `${format(new Date(event.date), 'd MMM yyyy', { locale: pl })} • ${result.distanceName}`
       : result.distanceName;
 
-  const badge =
-    finished ? (
-      medal ? (
-        <span className="flex items-center gap-1">
-          {medal}
-          <span className="text-xs font-medium">{result.categoryPosition}.</span>
-        </span>
-      ) : null
-    ) : (
-      <Badge variant="destructive" className="text-xs">
-        {result.status === 'dnf' ? 'DNF' : 'DSQ'}
-      </Badge>
-    );
+  const badge = finished ? (
+    medal ? (
+      <span className="flex items-center gap-1">
+        {medal}
+        <span className="text-xs font-medium">{result.categoryPosition}.</span>
+      </span>
+    ) : null
+  ) : (
+    <Badge variant="destructive" className="text-xs">
+      {result.status === 'dnf' ? 'DNF' : result.status === 'dns' ? 'DNS' : 'DSQ'}
+    </Badge>
+  );
 
   const meta = (
     <div className="flex items-center gap-3">
       <span className="flex items-center gap-1 font-mono text-sm font-bold sm:text-base">
         <Clock className="h-4 w-4 text-primary" />
-        {result.time}
+        {formatTimeToWholeSeconds(result.time)}
       </span>
+      {result.netTime && (
+        <span className="hidden font-mono text-xs text-muted-foreground sm:inline">
+          netto: {formatTimeToWholeSeconds(result.netTime)}
+        </span>
+      )}
       <span className="text-sm text-muted-foreground">
         OPEN: <strong>{finished ? result.position : '-'}</strong>
       </span>

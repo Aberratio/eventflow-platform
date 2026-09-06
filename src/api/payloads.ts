@@ -209,9 +209,11 @@ export interface CreateResultPayload {
   category: string;
   time: string;
   timeInSeconds: number;
+  netTime?: string | null;
+  netTimeInSeconds?: number | null;
   position: number;
   categoryPosition: number;
-  status: 'finished' | 'dnf' | 'dsq';
+  status: 'finished' | 'dnf' | 'dns' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;
 }

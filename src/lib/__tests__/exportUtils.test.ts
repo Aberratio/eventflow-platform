@@ -225,7 +225,31 @@ describe('exportToXML', () => {
   });
 });
 
-describe('prepareResultsExport – DNF/DSQ statuses', () => {
+describe('prepareResultsExport – DNF/DNS/DSQ statuses', () => {
+  it('labels dns status correctly', () => {
+    const results: Result[] = [
+      {
+        id: '4',
+        eventId: 'e1',
+        eventName: 'Bieg',
+        distanceId: 'd1',
+        distanceName: '10 km',
+        userId: 'u1',
+        userName: 'Ewa',
+        bibNumber: '9',
+        position: 0,
+        categoryPosition: 0,
+        time: 'DNS',
+        timeInSeconds: 0,
+        category: 'K30',
+        status: 'dns',
+      },
+    ];
+
+    const out = prepareResultsExport(results);
+    expect(out[0]['Status']).toBe('DNS');
+  });
+
   it('labels dnf status correctly', () => {
     const results: Result[] = [
       {
@@ -299,7 +323,9 @@ describe('prepareParticipantsExport – status labels', () => {
   });
 
   it('labels unknown status as-is', () => {
-    expect(prepareParticipantsExport([makeReg('unknown_status')])[0]['Status']).toBe('unknown_status');
+    expect(prepareParticipantsExport([makeReg('unknown_status')])[0]['Status']).toBe(
+      'unknown_status',
+    );
   });
 
   it('produces sequential Lp. numbering', () => {

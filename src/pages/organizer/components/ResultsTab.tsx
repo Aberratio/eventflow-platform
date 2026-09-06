@@ -31,7 +31,7 @@ interface ResultsTabProps {
 interface LocalResult {
   bibNumber: string;
   time: string;
-  status: 'finished' | 'dnf' | 'dsq';
+  status: 'finished' | 'dnf' | 'dns' | 'dsq';
   userName?: string;
   category?: string;
 }
@@ -116,7 +116,14 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       Uczestnik: r.userName || '-',
       Czas: r.time,
       Kategoria: r.category || '-',
-      Status: r.status === 'finished' ? 'Ukończył' : r.status === 'dnf' ? 'DNF' : 'DSQ',
+      Status:
+        r.status === 'finished'
+          ? 'Ukończył'
+          : r.status === 'dnf'
+            ? 'DNF'
+            : r.status === 'dns'
+              ? 'DNS'
+              : 'DSQ',
     }));
     exportToCSV(data, `wyniki-${event.slug}-${selectedDistanceData?.name || 'all'}`);
     toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
@@ -131,7 +138,13 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       r.userName || '-',
       r.time,
       r.category || '-',
-      r.status === 'finished' ? 'Ukończył' : r.status === 'dnf' ? 'DNF' : 'DSQ',
+      r.status === 'finished'
+        ? 'Ukończył'
+        : r.status === 'dnf'
+          ? 'DNF'
+          : r.status === 'dns'
+            ? 'DNS'
+            : 'DSQ',
     ]);
     generatePrintableHTML(
       `Wyniki - ${event.name} - ${selectedDistanceData?.name || ''}`,

@@ -14,3 +14,14 @@ export function resolveApiAssetUrl(url: string): string {
     : window.location.origin;
   return `${apiOrigin}${url}`;
 }
+
+/**
+ * Spec 14 sekcja 2: czas jest przechowywany z dokladnoscia do setnej sekundy
+ * (np. "0:41:10.55"), ale domyslnie wyswietlany zaokraglony do pelnej
+ * sekundy - organizator nie ma dzis (i ta zmiana tego nie wprowadza) ustawien
+ * precyzji, wiec zaokraglamy zawsze przy wyswietlaniu.
+ */
+export function formatTimeToWholeSeconds(time?: string | null): string {
+  if (!time) return '';
+  return time.replace(/\.\d+$/, '');
+}

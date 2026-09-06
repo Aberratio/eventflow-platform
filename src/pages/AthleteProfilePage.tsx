@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from 'lucide-react';
+import { formatTimeToWholeSeconds } from '@/lib/utils';
 
 const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -32,12 +33,11 @@ const AthleteProfilePage = () => {
   const userResults = resultsResponse?.data ?? [];
 
   const athleteResults = useMemo(() => {
-    return userResults
-      .sort((a, b) => {
-        const eventA = events.find((e) => e.id === a.eventId);
-        const eventB = events.find((e) => e.id === b.eventId);
-        return new Date(eventB?.date || 0).getTime() - new Date(eventA?.date || 0).getTime();
-      });
+    return userResults.sort((a, b) => {
+      const eventA = events.find((e) => e.id === a.eventId);
+      const eventB = events.find((e) => e.id === b.eventId);
+      return new Date(eventB?.date || 0).getTime() - new Date(eventA?.date || 0).getTime();
+    });
   }, [events, userResults]);
 
   const athleteName = athleteResults[0]?.userName || 'Nieznany zawodnik';
@@ -83,6 +83,8 @@ const AthleteProfilePage = () => {
         );
       case 'dnf':
         return <Badge variant="secondary">DNF</Badge>;
+      case 'dns':
+        return <Badge variant="secondary">DNS</Badge>;
       case 'dsq':
         return <Badge variant="destructive">DSQ</Badge>;
       default:
@@ -243,15 +245,25 @@ const AthleteProfilePage = () => {
                           <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
                         </div>
 
-                        {result.status === 'finished' && (
+                        {(result.status === 'finished' ||
+                          (result.status === 'dnf' && result.time)) && (
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-medium">{result.time}</span>
-                            <div className="flex items-center gap-1">
-                              {getPositionIcon(result.position)}
-                              <span className="text-muted-foreground">
-                                #{result.position} (kat. #{result.categoryPosition})
+                            <span className="font-mono font-medium">
+                              {formatTimeToWholeSeconds(result.time)}
+                            </span>
+                            {result.netTime && (
+                              <span className="font-mono text-xs text-muted-foreground">
+                                (netto {formatTimeToWholeSeconds(result.netTime)})
                               </span>
-                            </div>
+                            )}
+                            {result.status === 'finished' && (
+                              <div className="flex items-center gap-1">
+                                {getPositionIcon(result.position)}
+                                <span className="text-muted-foreground">
+                                  #{result.position} (kat. #{result.categoryPosition})
+                                </span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

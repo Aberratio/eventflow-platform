@@ -27,7 +27,8 @@ interface AddResultDialogProps {
   onAddResult: (result: {
     bibNumber: string;
     time: string;
-    status: 'finished' | 'dnf' | 'dsq';
+    netTime?: string;
+    status: 'finished' | 'dnf' | 'dns' | 'dsq';
     userName?: string;
     category?: string;
   }) => void;
@@ -42,7 +43,8 @@ export const AddResultDialog = ({
   const { toast } = useToast();
   const [bibNumber, setBibNumber] = useState('');
   const [time, setTime] = useState('');
-  const [status, setStatus] = useState<'finished' | 'dnf' | 'dsq'>('finished');
+  const [netTime, setNetTime] = useState('');
+  const [status, setStatus] = useState<'finished' | 'dnf' | 'dns' | 'dsq'>('finished');
 
   const handleSubmit = () => {
     if (!bibNumber) {
@@ -73,12 +75,22 @@ export const AddResultDialog = ({
       return;
     }
 
+    if (netTime && !/^\d{1,2}:\d{2}:\d{2}$/.test(netTime)) {
+      toast({
+        title: 'Błąd',
+        description: 'Nieprawidłowy format czasu netto (użyj HH:MM:SS)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Find registration to get user details
     const registration = registrations.find((r) => r.bibNumber === bibNumber);
 
     onAddResult({
       bibNumber,
-      time: status === 'finished' ? time : '-',
+      time: status === 'finished' || status === 'dnf' ? time : '-',
+      netTime: status === 'finished' && netTime ? netTime : undefined,
       status,
       userName: registration?.userName,
       category: registration?.category,
@@ -87,6 +99,7 @@ export const AddResultDialog = ({
     // Reset form
     setBibNumber('');
     setTime('');
+    setNetTime('');
     setStatus('finished');
     onOpenChange(false);
 
@@ -139,22 +152,26 @@ export const AddResultDialog = ({
           {/* Status */}
           <div className="space-y-2">
             <Label>Status</Label>
-            <Select value={status} onValueChange={(v: 'finished' | 'dnf' | 'dsq') => setStatus(v)}>
+            <Select
+              value={status}
+              onValueChange={(v: 'finished' | 'dnf' | 'dns' | 'dsq') => setStatus(v)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="finished">Ukończył</SelectItem>
                 <SelectItem value="dnf">DNF (nie ukończył)</SelectItem>
+                <SelectItem value="dns">DNS (nie wystartował)</SelectItem>
                 <SelectItem value="dsq">DSQ (dyskwalifikacja)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Time (only for finished) */}
-          {status === 'finished' && (
+          {/* Time (finished, or DNF with a partial time to the point of dropping out) */}
+          {(status === 'finished' || status === 'dnf') && (
             <div className="space-y-2">
-              <Label>Czas (HH:MM:SS)</Label>
+              <Label>Czas brutto (HH:MM:SS){status === 'dnf' && ' - opcjonalnie'}</Label>
               <Input
                 placeholder="01:23:45"
                 value={time}
@@ -162,6 +179,19 @@ export const AddResultDialog = ({
                 className="font-mono"
               />
               <p className="text-xs text-muted-foreground">Format: godziny:minuty:sekundy</p>
+            </div>
+          )}
+
+          {/* Net time (optional - not every timing setup has a start mat) */}
+          {status === 'finished' && (
+            <div className="space-y-2">
+              <Label>Czas netto (HH:MM:SS) - opcjonalnie</Label>
+              <Input
+                placeholder="01:23:45"
+                value={netTime}
+                onChange={(e) => setNetTime(e.target.value)}
+                className="font-mono"
+              />
             </div>
           )}
         </div>
