@@ -77,6 +77,7 @@ describe('prepareResultsExport', () => {
         timeInSeconds: 5025,
         category: 'M30',
         status: 'finished',
+        publicationStatus: 'official',
       },
     ];
 
@@ -243,6 +244,7 @@ describe('prepareResultsExport – DNF/DNS/DSQ statuses', () => {
         timeInSeconds: 0,
         category: 'K30',
         status: 'dns',
+        publicationStatus: 'preliminary',
       },
     ];
 
@@ -267,6 +269,7 @@ describe('prepareResultsExport – DNF/DNS/DSQ statuses', () => {
         timeInSeconds: 0,
         category: 'M30',
         status: 'dnf',
+        publicationStatus: 'preliminary',
       },
     ];
 
@@ -291,6 +294,7 @@ describe('prepareResultsExport – DNF/DNS/DSQ statuses', () => {
         timeInSeconds: 0,
         category: 'K30',
         status: 'dsq',
+        publicationStatus: 'preliminary',
       },
     ];
 

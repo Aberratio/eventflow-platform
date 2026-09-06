@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -243,6 +244,7 @@ const AthleteProfilePage = () => {
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">{result.distanceName}</Badge>
                           <Badge variant="secondary">{disciplineLabels[event.discipline]}</Badge>
+                          <PublicationStatusBadge status={result.publicationStatus} />
                         </div>
 
                         {(result.status === 'finished' ||

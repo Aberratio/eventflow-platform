@@ -65,6 +65,14 @@ export interface ResultFilters {
   search?: string;
 }
 
+/** Odpowiedz POST /events/{eventId}/distances/{distanceId}/results/publish-official (E2.3). */
+export interface PublishOfficialResultsResponse {
+  eventId: string;
+  distanceId: string;
+  publicationStatus: 'official';
+  updatedCount: number;
+}
+
 export interface RegistrationFilters {
   eventId?: string;
   userId?: string;

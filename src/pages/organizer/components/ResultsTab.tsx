@@ -1,6 +1,11 @@
-import { getResultsByEvent, getTeamResults, getResultDocuments } from '@/api';
+import {
+  getResultsByEvent,
+  getTeamResults,
+  getResultDocuments,
+  publishOfficialResults,
+} from '@/api';
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -14,12 +19,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Event, Registration, TeamResult, EventResultDocument } from '@/types';
-import { Plus, FileText, Save, Trophy, Users, AlertCircle } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, Trophy, Users, AlertCircle } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { AddResultDialog } from '@/components/organizer/AddResultDialog';
 import { UploadResultDocumentDialog } from '@/components/organizer/UploadResultDocumentDialog';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { TeamResultsManager } from '@/components/organizer/TeamResultsManager';
+import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
 import { IndividualResultsCard } from './IndividualResultsCard';
 import { ResultDocumentsCard } from './ResultDocumentsCard';
 
@@ -62,6 +68,8 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
 
   const allApiResults = resultsResp?.data ?? [];
   const eventResults = allApiResults.filter((r) => r.distanceId === selectedDistance);
+  const distancePublicationStatus: 'preliminary' | 'official' =
+    eventResults[0]?.publicationStatus ?? 'preliminary';
   const [localResults, setLocalResults] = useState<LocalResult[]>([]);
   const [localTeamResults, setLocalTeamResults] = useState<TeamResult[]>([]);
   const [localDocuments, setLocalDocuments] = useState<EventResultDocument[]>([]);
@@ -102,11 +110,24 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     );
   };
 
-  const handlePublishResults = () =>
-    toast({
-      title: 'Wyniki opublikowane',
-      description: 'Wyniki są teraz widoczne dla uczestników.',
-    });
+  const publishOfficialMutation = useMutation({
+    mutationFn: () => publishOfficialResults(event.id, selectedDistance),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['event-results', event.id] });
+      toast({
+        title: 'Wyniki oficjalne',
+        description: `Oznaczono ${response.data.updatedCount} wynik(ów) jako oficjalne.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Błąd',
+        description:
+          error instanceof Error ? error.message : 'Nie udało się oznaczyć wyników jako oficjalne',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const handleExportCSV = () => {
     const sorted = [...allResults].sort((a, b) => a.time.localeCompare(b.time));
@@ -235,6 +256,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         <TabsContent value="individual">
           <IndividualResultsCard
             distanceName={selectedDistanceData?.name}
+            publicationStatus={eventResults.length > 0 ? distancePublicationStatus : undefined}
             results={allResults}
             entryMode={entryMode}
             onEntryModeChange={setEntryMode}
@@ -267,19 +289,29 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         </TabsContent>
       </Tabs>
 
-      {(allResults.length > 0 || localDocuments.length > 0) && (
+      {eventResults.length > 0 && (
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <h3 className="font-medium">Publikacja wyników</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">Publikacja wyników</h3>
+                  <PublicationStatusBadge status={distancePublicationStatus} />
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Po opublikowaniu wyniki będą widoczne dla wszystkich uczestników
+                  {distancePublicationStatus === 'official'
+                    ? 'Wyniki tego dystansu są oficjalne. Korekta pojedynczego wyniku jest zawsze możliwa i nie zmienia tego statusu.'
+                    : 'Wyniki wstępne są już widoczne dla uczestników. Po rozpatrzeniu ewentualnych reklamacji oznacz je jako oficjalne.'}
                 </p>
               </div>
-              <Button onClick={handlePublishResults}>
-                <Save className="mr-2 h-4 w-4" /> Opublikuj wyniki
-              </Button>
+              {distancePublicationStatus === 'preliminary' && (
+                <Button
+                  onClick={() => publishOfficialMutation.mutate()}
+                  disabled={publishOfficialMutation.isPending}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" /> Oznacz jako oficjalne
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

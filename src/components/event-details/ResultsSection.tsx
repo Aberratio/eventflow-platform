@@ -30,6 +30,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { ResultDocumentsList } from '@/components/results/ResultDocumentsList';
+import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { Event, Result } from '@/types';
@@ -216,6 +217,8 @@ interface DistancePanelProps {
 
 const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: DistancePanelProps) => {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('time');
+  const publicationStatus: 'preliminary' | 'official' =
+    results[0]?.publicationStatus ?? 'preliminary';
   const filtered = useMemo(() => {
     return results.filter((r) => {
       if (!searchQuery) return true;
@@ -261,6 +264,9 @@ const DistancePanel = ({ results, searchQuery, distanceKm, currentUserId }: Dist
 
   return (
     <div className="space-y-2">
+      <div className="flex justify-end pb-1">
+        <PublicationStatusBadge status={publicationStatus} />
+      </div>
       {distanceKm && (
         <div className="flex justify-end pb-1">
           <ToggleGroup
@@ -513,7 +519,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-primary" />
-              Wyniki oficjalne
+              Wyniki
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -561,10 +567,15 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-primary" />
-              Wyniki oficjalne
+              Wyniki
               <Badge variant="secondary" className="ml-2">
                 {filteredResults.length}
               </Badge>
+              {filteredResults.length > 0 && (
+                <PublicationStatusBadge
+                  status={filteredResults[0]?.publicationStatus ?? 'preliminary'}
+                />
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>

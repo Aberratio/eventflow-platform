@@ -16,6 +16,7 @@ import type {
   EventFilters,
   UserFilters,
   ResultFilters,
+  PublishOfficialResultsResponse,
   RegistrationFilters,
   ShopProductFilters,
   ActivityLogFilters,
@@ -243,6 +244,15 @@ export interface ApiAdapter {
     data: Record<string, unknown>,
   ): Promise<ApiResponse<ResultImportBatch>>;
   commitResultImport(importId: string): Promise<ApiResponse<ResultImportBatch>>;
+  /**
+   * E2.3 (spec 14 Answer §6): oznacza wszystkie wyniki danego Wydarzenia+Dystansu
+   * jako oficjalne (nieodwracalne z poziomu klienta - serwer nie udostepnia
+   * cofniecia). Korekty pojedynczych wynikow pozostaja mozliwe zawsze.
+   */
+  publishOfficialResults(
+    eventId: string,
+    distanceId: string,
+  ): Promise<ApiResponse<PublishOfficialResultsResponse>>;
 
   // ── Series ──
   getSeries(filters?: SeriesFilters): Promise<PaginatedResponse<EventSeries>>;

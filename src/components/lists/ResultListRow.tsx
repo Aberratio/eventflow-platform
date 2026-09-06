@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
 import { Result, Event } from '@/types';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { Clock, Medal, Download, ExternalLink } from 'lucide-react';
@@ -77,6 +78,7 @@ export const ResultListRow = ({
       <span className="hidden text-sm text-muted-foreground sm:inline">
         {result.category}: <strong>{finished ? result.categoryPosition : '-'}</strong>
       </span>
+      <PublicationStatusBadge status={result.publicationStatus} className="text-[10px]" />
     </div>
   );
 

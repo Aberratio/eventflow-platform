@@ -109,6 +109,31 @@ describe('httpAdapter contract mapping', () => {
     expect(response.pageSize).toBe(25);
   });
 
+  it('posts to the publish-official endpoint for the given event and distance (E2.3)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({
+        success: true,
+        data: {
+          eventId: 'event-1',
+          distanceId: 'distance-1',
+          publicationStatus: 'official',
+          updatedCount: 42,
+        },
+      }),
+    );
+
+    const response = await httpAdapter.publishOfficialResults('event-1', 'distance-1');
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/events/event-1/distances/distance-1/results/publish-official',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(response).toEqual({
+      success: true,
+      data: expect.objectContaining({ publicationStatus: 'official', updatedCount: 42 }),
+    });
+  });
+
   it('maps backend discount error codes to user-facing messages', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse(

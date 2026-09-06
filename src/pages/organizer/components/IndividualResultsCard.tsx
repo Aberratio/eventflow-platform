@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -52,6 +53,8 @@ const getStatusBadge = (status: string) => {
 
 interface IndividualResultsCardProps {
   distanceName?: string;
+  /** Status publikacji klasyfikacji tego dystansu (E2.3); undefined - brak wynikow z API. */
+  publicationStatus?: 'preliminary' | 'official';
   results: LocalResult[];
   entryMode: 'manual' | 'import';
   onEntryModeChange: (mode: 'manual' | 'import') => void;
@@ -65,6 +68,7 @@ interface IndividualResultsCardProps {
 
 export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
   distanceName,
+  publicationStatus,
   results,
   entryMode,
   onEntryModeChange,
@@ -77,7 +81,10 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
 }) => (
   <Card>
     <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-      <CardTitle>Wyniki indywidualne - {distanceName}</CardTitle>
+      <CardTitle className="flex items-center gap-2">
+        Wyniki indywidualne - {distanceName}
+        {publicationStatus && <PublicationStatusBadge status={publicationStatus} />}
+      </CardTitle>
       <div className="flex gap-2">
         <Button
           variant={entryMode === 'manual' ? 'default' : 'outline'}

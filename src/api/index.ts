@@ -173,6 +173,8 @@ export const updateResultImportRow: ApiAdapter['updateResultImportRow'] = (...ar
   ensureAdapter().then((a) => a.updateResultImportRow(...args));
 export const commitResultImport: ApiAdapter['commitResultImport'] = (...args) =>
   ensureAdapter().then((a) => a.commitResultImport(...args));
+export const publishOfficialResults: ApiAdapter['publishOfficialResults'] = (...args) =>
+  ensureAdapter().then((a) => a.publishOfficialResults(...args));
 
 // Series
 export const getSeries: ApiAdapter['getSeries'] = (...args) =>
@@ -394,6 +396,7 @@ export type {
   ChallengeParticipationFilters,
   ChallengeFilters,
   SeriesFilters,
+  PublishOfficialResultsResponse,
 } from './types';
 export type { ApiAdapter } from './contract';
 export type {

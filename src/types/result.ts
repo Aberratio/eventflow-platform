@@ -23,6 +23,14 @@ export interface Result {
   status: 'finished' | 'dnf' | 'dns' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;
+  /**
+   * Publikacja wyników (spec 14 Answer §6, E2.3) - wstepne od razu po
+   * imporcie/recznym wpisaniu, oficjalne dopiero po weryfikacji organizatora.
+   * Granulacja: Wydarzenie+Dystans (klasyfikacja), nie pojedynczy wiersz -
+   * wszystkie wyniki tej samej klasyfikacji dziela ta sama wartosc. Korekta
+   * pojedynczego wyniku (PATCH /results/{id}) NIE zmienia tego pola.
+   */
+  publicationStatus: 'preliminary' | 'official';
 }
 
 export type ResultImportMode = 'replace' | 'upsert';

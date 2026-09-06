@@ -330,6 +330,11 @@ export const httpAdapter: ApiAdapter = {
     request(`/result-import-rows/${encodeURIComponent(rowId)}`, json('PATCH', data)),
   commitResultImport: (importId) =>
     request(`/result-imports/${encodeURIComponent(importId)}/commit`, json('POST')),
+  publishOfficialResults: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/results/publish-official`,
+      json('POST'),
+    ),
 
   getSeries: (filters) => paginated('/series', filters as Record<string, QueryValue>),
   getSeriesById: (id) => request(`/series/${encodeURIComponent(id)}`),
