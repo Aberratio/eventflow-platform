@@ -1,5 +1,4 @@
-import { renderHook } from '@testing-library/react';
-import { act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
