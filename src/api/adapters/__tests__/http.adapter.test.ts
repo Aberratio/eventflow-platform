@@ -278,3 +278,97 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 });
+
+// E2.6: start-list export — the one adapter method that downloads a file
+// instead of returning parsed JSON.
+describe('httpAdapter.exportStartList (E2.6)', () => {
+  let createObjectURLSpy: ReturnType<typeof vi.fn>;
+  let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
+  let clickSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+    createObjectURLSpy = vi.fn().mockReturnValue('blob:mock-url');
+    revokeObjectURLSpy = vi.fn();
+    vi.stubGlobal('URL', {
+      createObjectURL: createObjectURLSpy,
+      revokeObjectURL: revokeObjectURLSpy,
+    });
+    clickSpy = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      if (tag === 'a') {
+        return { click: clickSpy, href: '', download: '' } as unknown as HTMLAnchorElement;
+      }
+      return originalCreateElement(tag);
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function mockFileResponse(body: BlobPart, headers: Record<string, string> = {}): Response {
+    const headerMap = new Map(Object.entries(headers));
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => headerMap.get(name) ?? null },
+      blob: vi.fn().mockResolvedValue(new Blob([body])),
+      json: vi.fn().mockResolvedValue({}),
+    } as unknown as Response;
+  }
+
+  it('requests the correct URL and query params for a CSV export', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'jwt-token');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockFileResponse('id;name\n1;Jan', {
+        'Content-Disposition': 'attachment; filename="lista-startowa-10-km.csv"',
+      }),
+    );
+
+    await httpAdapter.exportStartList('event-1', 'distance-1', 'csv');
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/events/event-1/distances/distance-1/start-list-export?format=csv',
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer jwt-token' }),
+      }),
+    );
+  });
+
+  it('triggers a browser download named from the server Content-Disposition header', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockFileResponse('binary-xlsx-bytes', {
+        'Content-Disposition': 'attachment; filename="lista-startowa-10-km.xlsx"',
+      }),
+    );
+
+    await httpAdapter.exportStartList('event-1', 'distance-1', 'xlsx');
+
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
+  });
+
+  it('falls back to a generic filename when Content-Disposition is missing', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockFileResponse('id;name\n1;Jan'));
+
+    await httpAdapter.exportStartList('event-1', 'distance-1', 'csv');
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws a mapped error message on a failed export instead of downloading anything', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: false, error: { code: 'forbidden' } }, 403),
+    );
+
+    await expect(httpAdapter.exportStartList('event-1', 'distance-1', 'csv')).rejects.toThrow(
+      'Nie masz uprawnień do wykonania tej operacji.',
+    );
+    expect(clickSpy).not.toHaveBeenCalled();
+  });
+});

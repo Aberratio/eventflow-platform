@@ -8,11 +8,13 @@ import { Event, Registration } from '@/types';
 const approveRefund = vi.fn();
 const completeRefund = vi.fn();
 const markRegistrationPaid = vi.fn();
+const exportStartList = vi.fn();
 
 vi.mock('@/api', () => ({
   approveRefund: (...args: unknown[]) => approveRefund(...args),
   completeRefund: (...args: unknown[]) => completeRefund(...args),
   markRegistrationPaid: (...args: unknown[]) => markRegistrationPaid(...args),
+  exportStartList: (...args: unknown[]) => exportStartList(...args),
 }));
 
 const mockEvent: Event = {
@@ -283,5 +285,43 @@ describe('useParticipantsActions', () => {
     expect(outcome).toBeUndefined();
     const unchanged = result.current.localRegistrations.find((r) => r.id === 'reg-2');
     expect(unchanged?.status).toBe('pending');
+  });
+
+  // E2.6
+  it('handleExportStartList calls the API with the event, distance and requested format', async () => {
+    exportStartList.mockResolvedValueOnce(undefined);
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleExportStartList('d1', 'csv');
+    });
+
+    expect(exportStartList).toHaveBeenCalledWith('evt-1', 'd1', 'csv');
+  });
+
+  it('handleExportStartList also supports the xlsx format', async () => {
+    exportStartList.mockResolvedValueOnce(undefined);
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleExportStartList('d1', 'xlsx');
+    });
+
+    expect(exportStartList).toHaveBeenCalledWith('evt-1', 'd1', 'xlsx');
+  });
+
+  it('handleExportStartList does not throw when the download fails', async () => {
+    exportStartList.mockRejectedValueOnce(new Error('forbidden'));
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await expect(result.current.handleExportStartList('d1', 'csv')).resolves.toBeUndefined();
+    });
   });
 });

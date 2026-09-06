@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
-import { approveRefund, completeRefund, markRegistrationPaid } from '@/api';
+import { approveRefund, completeRefund, markRegistrationPaid, exportStartList } from '@/api';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
@@ -219,6 +219,29 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
   };
 
+  // E2.6: server-driven start-list export (all form fields + numer startowy +
+  // status płatności, Windows-1250 CSV or XLSX) for one Distance — distinct
+  // from handleExportCSV above, which is a client-side-only, fixed-column
+  // export of whatever rows are already loaded in the browser. This one
+  // hits GET /events/{id}/distances/{id}/start-list-export and leaves an
+  // activity-log entry server-side, per spec ("każdy eksport zostawia wpis
+  // w rejestrze aktywności").
+  const handleExportStartList = async (distanceId: string, format: 'csv' | 'xlsx') => {
+    try {
+      await exportStartList(event.id, distanceId, format);
+      toast({
+        title: `Eksport ${format.toUpperCase()}`,
+        description: 'Lista startowa została pobrana.',
+      });
+    } catch {
+      toast({
+        title: 'Nie udało się pobrać listy startowej',
+        description: 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const unpaidCount = useMemo(() => {
     return localRegistrations.filter((r) => r.status === 'pending').length;
   }, [localRegistrations]);
@@ -241,6 +264,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     handleMarkPaid,
     handleExportCSV,
     handleExportPDF,
+    handleExportStartList,
     unpaidCount,
     activeCount,
     removedCount,

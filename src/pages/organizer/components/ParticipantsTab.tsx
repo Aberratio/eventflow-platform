@@ -153,6 +153,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     handleMarkPaid,
     handleExportCSV,
     handleExportPDF,
+    handleExportStartList,
     unpaidCount,
     activeCount,
     removedCount,
@@ -523,6 +524,33 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                       <DropdownMenuItem onClick={() => handleExportPDF(filteredRegistrations)}>
                         <Printer className="mr-2 h-4 w-4" />
                         Drukuj PDF
+                      </DropdownMenuItem>
+                      {/* E2.6: server-side export (all form fields + numer startowy +
+                          status płatności) — one Distance at a time, so it requires
+                          a concrete selection from the Dystans filter above, not "all". */}
+                      <DropdownMenuItem
+                        disabled={distanceFilter === 'all'}
+                        title={
+                          distanceFilter === 'all'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            : undefined
+                        }
+                        onClick={() => handleExportStartList(distanceFilter, 'csv')}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Lista startowa (CSV, Windows-1250)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={distanceFilter === 'all'}
+                        title={
+                          distanceFilter === 'all'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            : undefined
+                        }
+                        onClick={() => handleExportStartList(distanceFilter, 'xlsx')}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Lista startowa (XLSX)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

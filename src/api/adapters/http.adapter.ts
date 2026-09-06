@@ -141,6 +141,44 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
   return payload as ApiResponse<T>;
 }
 
+/**
+ * E2.6: fetches a server-generated file (CSV/XLSX export) and triggers a
+ * real browser download — the one case in this adapter where the response
+ * body isn't JSON, so it can't go through request(). Mirrors the existing
+ * client-side download idiom (lib/exportUtils.ts's exportToCSV/exportToXML:
+ * createObjectURL -> anchor -> click -> revokeObjectURL) rather than
+ * inventing a new one, just fed by a server Blob instead of a locally-built
+ * string. The filename comes from the server's Content-Disposition header
+ * when present (it always is on a successful response here) so the
+ * server — which already knows the Distance name — stays the single source
+ * of truth for it; a fallback covers the unexpected case where that header
+ * is missing.
+ */
+async function downloadFile(endpoint: string, fallbackFilename: string): Promise<void> {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
+  }
+
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const filenameMatch = /filename="?([^";]+)"?/i.exec(disposition);
+  const filename = filenameMatch?.[1] ?? fallbackFilename;
+
+  const blob = await response.blob();
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
 async function paginated<T>(
   endpoint: string,
   params?: Record<string, QueryValue>,
@@ -420,6 +458,11 @@ export const httpAdapter: ApiAdapter = {
     ),
   getFormFieldAggregates: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
+  exportStartList: (eventId, distanceId, format) =>
+    downloadFile(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/start-list-export${query({ format })}`,
+      `lista-startowa.${format}`,
+    ),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),
