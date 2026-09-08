@@ -1607,6 +1607,52 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               )}
             </div>
 
+            {/* E3.2: Biuro Zawodów (BZ) integration toggle — pasted organization
+                token/identifier, issue 12 §3. The platform never creates a BZ
+                organization itself: the organizer sets one up in BZ beforehand
+                and pastes its token here. Distinct from the "Biuro zawodów"
+                logistics info elsewhere in this form (race-day office hours) —
+                this is the external systems integration. */}
+            <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="bzIntegrationEnabled"
+                  checked={form.bzIntegrationEnabled}
+                  onCheckedChange={(checked) => form.setBzIntegrationEnabled(checked === true)}
+                />
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <Link2 className="h-4 w-4 shrink-0 text-primary" />
+                  <Label htmlFor="bzIntegrationEnabled" className="cursor-pointer font-medium">
+                    Integracja z Biurem Zawodów (BZ)
+                  </Label>
+                  <FieldHelp description="Wlacza synchronizacje tego Wydarzenia z istniejaca organizacja w Biurze Zawodow. Platforma nie zaklada organizacji w BZ automatycznie — zalozenie jej lezy po stronie organizatora, poza tym systemem." />
+                </div>
+              </div>
+              {form.bzIntegrationEnabled && (
+                <div className="space-y-2 sm:pl-7">
+                  <p className="text-sm text-muted-foreground">
+                    Wklej identyfikator/token organizacji, ktora zalozyles wczesniej w Biurze
+                    Zawodow.
+                  </p>
+                  <HelpLabel
+                    htmlFor="bzOrganizationToken"
+                    description="Token/identyfikator organizacji w Biurze Zawodow. Wymagany do wlaczenia integracji — bez niego platforma nie wie, do ktorej organizacji w BZ przypisac to Wydarzenie."
+                  >
+                    Token organizacji BZ *
+                  </HelpLabel>
+                  <Input
+                    id="bzOrganizationToken"
+                    value={form.bzOrganizationToken}
+                    onChange={(e) => form.setBzOrganizationToken(e.target.value)}
+                    placeholder="np. bz-org-1234abcd"
+                    className={`font-mono ${inputError(!!fe['bzOrganizationToken'])}`}
+                    aria-invalid={!!fe['bzOrganizationToken']}
+                  />
+                  <FieldError message={fe['bzOrganizationToken']} />
+                </div>
+              )}
+            </div>
+
             {!form.isVirtual && (
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">

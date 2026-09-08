@@ -72,6 +72,8 @@ const existingEvent: Event = {
   publicationStatus: 'draft',
   registrationDeadline: '2027-05-01',
   featured: false,
+  bzIntegrationEnabled: true,
+  bzOrganizationToken: 'ORG-EXISTING-TOKEN',
   distances: [
     {
       id: 'dist-1',
@@ -124,5 +126,15 @@ describe('useEventFormState edit mode (TD.2)', () => {
     // as still active, which is exactly the regression this ticket fixes).
     expect(isTierExpired(tier, dist.registeredCount)).toBe(true);
     expect(isTierExpired(tier, 0)).toBe(false);
+  });
+
+  // E3.2: editing an existing Event must load its saved BZ integration
+  // toggle/token into the form state — the same round-trip other per-Event
+  // fields (e.g. registeredCount above) already get through this hook.
+  it('loads the existing event BZ integration toggle and token into the editable form state', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+
+    await waitFor(() => expect(result.current.bzIntegrationEnabled).toBe(true));
+    expect(result.current.bzOrganizationToken).toBe('ORG-EXISTING-TOKEN');
   });
 });

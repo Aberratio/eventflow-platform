@@ -284,6 +284,18 @@ export const useEventFormState = () => {
   const [isPrivate, setIsPrivate] = useState(existingEvent?.visibility === 'private');
   const [accessCode, setAccessCode] = useState(existingEvent?.accessCode || '');
 
+  // E3.2: "Biuro Zawodów" (BZ) integration toggle + pasted organization token
+  // (issue 12 §3). The platform never creates a BZ organization itself, so the
+  // token field only makes sense once the toggle is on — mirrors isPrivate/
+  // accessCode above. The token is never wiped locally when the toggle turns
+  // off, matching the server's "preserve on disable" contract.
+  const [bzIntegrationEnabled, setBzIntegrationEnabled] = useState(
+    existingEvent?.bzIntegrationEnabled ?? false,
+  );
+  const [bzOrganizationToken, setBzOrganizationToken] = useState(
+    existingEvent?.bzOrganizationToken || '',
+  );
+
   // Media
   const [bannerUrl, setBannerUrl] = useState(existingEvent?.bannerUrl || '');
   const [originalBannerUrl, setOriginalBannerUrl] = useState(
@@ -631,6 +643,8 @@ export const useEventFormState = () => {
     setEndDate(existingEvent.endDate || '');
     setIsPrivate(existingEvent.visibility === 'private');
     setAccessCode(existingEvent.accessCode || '');
+    setBzIntegrationEnabled(existingEvent.bzIntegrationEnabled ?? false);
+    setBzOrganizationToken(existingEvent.bzOrganizationToken || '');
     setBannerUrl(existingEvent.bannerUrl || '');
     setOriginalBannerUrl(existingEvent.originalBannerUrl || '');
     setBannerCropArea(existingEvent.bannerCropArea);
@@ -1115,6 +1129,9 @@ export const useEventFormState = () => {
     if (isPrivate && !accessCode.trim()) {
       addError('basic', 'Podaj kod dostepu dla wydarzenia prywatnego');
     }
+    if (bzIntegrationEnabled && !bzOrganizationToken.trim()) {
+      addError('basic', 'Podaj token organizacji Biura Zawodow, aby wlaczyc integracje');
+    }
     if (isVirtual && (!startDate || !endDate)) {
       addError('basic', 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego');
     }
@@ -1322,6 +1339,9 @@ export const useEventFormState = () => {
       errors['startDate'] = 'Data rozpoczęcia nie może być późniejsza niż data zakończenia';
     }
     if (isPrivate && !accessCode.trim()) errors['accessCode'] = 'Kod dostępu jest wymagany';
+    if (bzIntegrationEnabled && !bzOrganizationToken.trim()) {
+      errors['bzOrganizationToken'] = 'Token organizacji Biura Zawodów jest wymagany';
+    }
 
     if (registrationMode === 'external_embed') {
       const trimmedUrl = externalRegistrationUrl.trim();
@@ -1678,6 +1698,11 @@ export const useEventFormState = () => {
       requireFinalAcceptance,
       visibility: isPrivate ? ('private' as const) : ('public' as const),
       accessCode: accessCode || undefined,
+      bzIntegrationEnabled,
+      // Sent even while the toggle is off (not cleared from local state), so an
+      // already-saved token survives a disable-then-save round trip through this
+      // form the same way the server preserves it when the key is simply absent.
+      bzOrganizationToken: bzOrganizationToken.trim() || undefined,
       registrationEmbed: {
         enabled: registrationMode === 'external_embed',
         mode: registrationMode,
@@ -1875,6 +1900,10 @@ export const useEventFormState = () => {
     setIsPrivate,
     accessCode,
     setAccessCode,
+    bzIntegrationEnabled,
+    setBzIntegrationEnabled,
+    bzOrganizationToken,
+    setBzOrganizationToken,
     bannerUrl,
     setBannerUrl,
     originalBannerUrl,

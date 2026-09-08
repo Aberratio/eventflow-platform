@@ -404,6 +404,20 @@ export interface Event {
   displayOptions?: EventDisplayOptions;
   logisticsInfo?: EventLogisticsInfo;
   backgroundId?: string;
+  /**
+   * E3.2: "Biuro Zawodów" (BZ) integration toggle (issue 12 §3). The platform
+   * never creates a BZ organization itself — the organizer pastes an
+   * existing organization token/identifier when flipping this on.
+   */
+  bzIntegrationEnabled?: boolean;
+  /**
+   * The pasted BZ organization token/identifier. Never present on a public/
+   * anonymous read of an Event (server strips it for non-managers) — only
+   * the owning organizer or staff ever see the real value. Preserved when
+   * `bzIntegrationEnabled` is turned off, so re-enabling later doesn't
+   * require re-pasting it.
+   */
+  bzOrganizationToken?: string | null;
 }
 
 export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';

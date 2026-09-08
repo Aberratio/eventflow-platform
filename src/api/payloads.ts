@@ -82,6 +82,9 @@ export interface CreateEventPayload {
   organizerInfo?: OrganizerInfo;
   organizersHtml?: string;
   featured?: boolean;
+  /** E3.2: "Biuro Zawodów" integration toggle + pasted organization token. */
+  bzIntegrationEnabled?: boolean;
+  bzOrganizationToken?: string | null;
 }
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;

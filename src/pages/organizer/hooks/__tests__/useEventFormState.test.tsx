@@ -280,6 +280,80 @@ describe('useEventFormState event wizard validation', () => {
     );
   });
 
+  // E3.2 (issue 12 §3): the platform never creates a BZ organization itself, so
+  // enabling the toggle without a pasted token must be blocked client-side too —
+  // matching the server's hard 422 for the same case.
+  it('rejects submit when Biuro Zawodow is enabled without a token', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.setBzIntegrationEnabled(true);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).not.toHaveBeenCalled();
+    expect(result.current.fieldValidationErrors.bzOrganizationToken).toBeTruthy();
+  });
+
+  it('submits the Biuro Zawodow toggle and token once both are set', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.setBzIntegrationEnabled(true);
+      result.current.setBzOrganizationToken('ORG-XYZ-1');
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bzIntegrationEnabled: true,
+        bzOrganizationToken: 'ORG-XYZ-1',
+      }),
+    );
+  });
+
+  // Turning the toggle off must not silently drop an already-typed token from
+  // the submitted payload — the form never clears the field locally, so a
+  // disable-then-save round trip through this form preserves it exactly like
+  // the server does when the key is simply absent from a PATCH.
+  it('keeps a previously entered BZ token in the payload after disabling the toggle', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.setBzIntegrationEnabled(true);
+      result.current.setBzOrganizationToken('ORG-KEEP-1');
+    });
+    act(() => {
+      result.current.setBzIntegrationEnabled(false);
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bzIntegrationEnabled: false,
+        bzOrganizationToken: 'ORG-KEEP-1',
+      }),
+    );
+  });
+
   it('rejects invalid relay team size range', async () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
     await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
