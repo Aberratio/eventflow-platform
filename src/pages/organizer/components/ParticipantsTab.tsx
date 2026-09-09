@@ -66,6 +66,7 @@ import {
   Clock,
   AlertCircle,
   BarChart3,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -281,10 +282,11 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
         acc.collected += paidMerchandise;
 
         if (getPaymentStatus(reg) === 'full') acc.paid += 1;
+        if (reg.checkedInAt) acc.checkedIn += 1;
 
         return acc;
       },
-      { paid: 0, withoutNumber: 0, collected: 0, expected: 0 },
+      { paid: 0, withoutNumber: 0, collected: 0, expected: 0, checkedIn: 0 },
     );
   }, [localRegistrations]);
 
@@ -314,7 +316,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
         />
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
         <Card className="px-5 py-6">
           <div className="flex items-center gap-4">
             <div className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
@@ -373,6 +375,22 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                 {participantStats.withoutNumber}
               </div>
               <div className="text-sm text-muted-foreground">bez numeru</div>
+            </div>
+          </div>
+        </Card>
+        {/* E3.6 (issue 12 §4): "ilu uczestników odebrało pakiet" — the minimal
+            organizer-facing input this ticket scopes in, ahead of the full
+            reporting ticket (21/E2.5/E8.2). Counts registrations Biuro
+            Zawodów has reported checked in via return-sync, among the same
+            already-fetched registrations every other card above reads. */}
+        <Card className="px-5 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Odprawionych</div>
+              <div className="text-3xl font-bold leading-tight">{participantStats.checkedIn}</div>
             </div>
           </div>
         </Card>

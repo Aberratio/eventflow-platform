@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, MapPin, User, Hash } from 'lucide-react';
+import { Download, Calendar, MapPin, User, Hash, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Ticket } from '@/types';
 import { format } from 'date-fns';
@@ -75,6 +75,23 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
                 <span>Kategoria: {ticket.category}</span>
               </div>
             </div>
+
+            {/* E3.6 (issue 12 §4): "odprawiono Cię o 7:42" — the check-in fact
+                Biuro Zawodów reports back via return-sync, shown right on the
+                Bilet the moment it's known; absent while un-checked-in, so no
+                empty/placeholder row appears for the common not-yet case. */}
+            {ticket.checkedInAt && (
+              <Badge
+                variant="outline"
+                className="flex w-fit items-center gap-1.5 border-primary/40 bg-primary/10 py-1.5 text-primary"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>
+                  Odprawiono Cię o {format(new Date(ticket.checkedInAt), 'HH:mm', { locale: pl })}
+                  {ticket.checkedInBy ? ` (${ticket.checkedInBy})` : ''}
+                </span>
+              </Badge>
+            )}
 
             <div className="pt-2">
               <Button variant="outline" onClick={handleDownload} className="w-full sm:w-auto">

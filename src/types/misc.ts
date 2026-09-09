@@ -32,6 +32,13 @@ export interface Ticket {
   bibNumber: string;
   category: string;
   registrationId: string;
+  /**
+   * E3.6 (issue 12 §4): the Odprawa fact reported back by Biuro Zawodów —
+   * set once BZ confirms check-in, undefined/null beforehand. `checkedInBy`
+   * is BZ's own opaque identifier/name for whoever confirmed it.
+   */
+  checkedInAt?: string | null;
+  checkedInBy?: string | null;
 }
 
 export type NotificationType = 'registration' | 'moderation' | 'order' | 'message' | 'system';

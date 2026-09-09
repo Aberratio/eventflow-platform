@@ -148,6 +148,25 @@ describe('RegistrationListRow start code (E1.11)', () => {
   });
 });
 
+describe('RegistrationListRow check-in status (E3.6)', () => {
+  it('shows no check-in badge when the registration has never been checked in', () => {
+    render(<RegistrationListRow registration={registration} event={event} />);
+
+    expect(screen.queryByText(/Odprawiono/)).not.toBeInTheDocument();
+  });
+
+  it('shows "Odprawiono o HH:mm" once Biuro Zawodów reports a check-in timestamp', () => {
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, checkedInAt: '2026-06-01T07:42:00+02:00' }}
+        event={event}
+      />,
+    );
+
+    expect(screen.getAllByText(/Odprawiono o/).length).toBeGreaterThan(0);
+  });
+});
+
 describe('RegistrationListRow refund action (E1.5)', () => {
   it('offers "Poproś o zwrot" for a paid registration with no refund cycle yet', () => {
     const onRequestRefund = vi.fn();

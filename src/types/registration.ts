@@ -83,4 +83,13 @@ export interface Registration {
    * its absence — same convention as `transferTitle`.
    */
   qrCode?: string;
+  /**
+   * E3.6 (issue 12 §4): "BZ zwraca status odprawy przy każdej synchronizacji" —
+   * set once Biuro Zawodów reports back that this Zapis was checked in on-site
+   * (return-synced via PATCH /bz/participants/{registrationId}), undefined/null
+   * beforehand. `checkedInBy` is BZ's own opaque identifier/name for whoever
+   * confirmed it, not a platform user.
+   */
+  checkedInAt?: string | null;
+  checkedInBy?: string | null;
 }

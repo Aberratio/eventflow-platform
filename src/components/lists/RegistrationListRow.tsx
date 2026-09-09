@@ -4,7 +4,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Registration, Event, VirtualResultSubmission } from '@/types';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { Ticket, Globe, Clock, CheckCircle, XCircle, Send, RotateCcw, QrCode } from 'lucide-react';
+import {
+  Ticket,
+  Globe,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Send,
+  RotateCcw,
+  QrCode,
+  CheckCircle2,
+} from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
@@ -64,6 +74,17 @@ export const RegistrationListRow = ({
             : registration.refund.status === 'approved'
               ? 'Zwrot: do zwrotu'
               : 'Zwrot: oczekuje na zatwierdzenie'}
+        </Badge>
+      )}
+      {/* E3.6 (issue 12 §4): "odprawiono Cię o 7:42" — the Odprawa fact Biuro
+          Zawodów reports back via return-sync, shown in the Zawodnik's own
+          registration history right next to the other status badges; absent
+          while un-checked-in, so no empty/placeholder badge appears for the
+          common not-yet case. */}
+      {registration.checkedInAt && (
+        <Badge variant="outline" className="border-primary/40 bg-primary/10 text-xs text-primary">
+          <CheckCircle2 className="mr-1 h-3 w-3" aria-hidden="true" />
+          Odprawiono o {format(new Date(registration.checkedInAt), 'HH:mm', { locale: pl })}
         </Badge>
       )}
     </div>
