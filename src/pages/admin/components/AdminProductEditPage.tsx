@@ -304,8 +304,10 @@ export const AdminProductEditPage = () => {
                 <CardTitle>Warianty</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Dostępne rozmiary</Label>
+                <fieldset className="m-0 space-y-2 border-0 p-0">
+                  <legend className="text-xs font-semibold leading-none text-foreground">
+                    Dostępne rozmiary
+                  </legend>
                   <div className="flex flex-wrap gap-3">
                     {availableSizes.map((size) => (
                       <div key={size} className="flex items-center space-x-2">
@@ -320,10 +322,12 @@ export const AdminProductEditPage = () => {
                       </div>
                     ))}
                   </div>
-                </div>
+                </fieldset>
 
-                <div className="space-y-2">
-                  <Label>Dostępne kolory</Label>
+                <fieldset className="m-0 space-y-2 border-0 p-0">
+                  <legend className="text-xs font-semibold leading-none text-foreground">
+                    Dostępne kolory
+                  </legend>
                   <div className="mb-2 flex flex-wrap gap-2">
                     {(form.colors ?? []).map((color) => (
                       <Badge key={color.id} variant="outline" className="flex items-center gap-2">
@@ -362,7 +366,7 @@ export const AdminProductEditPage = () => {
                       Dodaj kolor
                     </Button>
                   </div>
-                </div>
+                </fieldset>
               </CardContent>
             </Card>
           )}
