@@ -56,7 +56,11 @@ vi.mock('@/api', async () => {
   return {
     ...actual,
     getDeliveryMethods: vi.fn().mockResolvedValue({
-      data: [{ id: 'courier', name: 'Kurier', price: 15, estimatedDays: '2-3 dni' }],
+      data: [
+        { id: 'courier', name: 'Kurier', price: 15, estimatedDays: '2-3 dni' },
+        { id: 'paczkomat', name: 'Paczkomat', price: 12, estimatedDays: '1-2 dni' },
+        { id: 'pickup', name: 'Odbior osobisty', price: 0, estimatedDays: 'w dniu zawodow' },
+      ],
       success: true,
     }),
     getShopPaymentMethods: vi.fn().mockResolvedValue({
@@ -118,6 +122,11 @@ const renderPage = () => {
 
 const selectDeliveryAndPayment = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(await screen.findByText('Kurier'));
+  // E5.3: courier requires a shipping address before checkout is enabled.
+  await user.type(screen.getByLabelText('Imię i nazwisko'), 'Jan Kowalski');
+  await user.type(screen.getByLabelText('Ulica i numer'), 'Testowa 1');
+  await user.type(screen.getByLabelText('Kod pocztowy'), '00-001');
+  await user.type(screen.getByLabelText('Miejscowość'), 'Warszawa');
   await user.click(screen.getByText('Karta'));
 };
 
@@ -141,6 +150,12 @@ describe('CartPage checkout', () => {
         items: [expect.objectContaining({ productId: 'p1', quantity: 2, price: 100 })],
         deliveryMethod: expect.objectContaining({ id: 'courier' }),
         paymentMethod: expect.objectContaining({ id: 'card' }),
+        shippingAddress: {
+          fullName: 'Jan Kowalski',
+          street: 'Testowa 1',
+          city: 'Warszawa',
+          postalCode: '00-001',
+        },
       }),
     );
 
@@ -155,7 +170,7 @@ describe('CartPage checkout', () => {
     );
     expect(mockClearCart).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/order-success');
-  });
+  }, 15000);
 
   it('shows an error toast and keeps the cart on failure', async () => {
     mockCreateOrder.mockRejectedValue(new Error('Brak towaru na stanie'));
@@ -177,5 +192,85 @@ describe('CartPage checkout', () => {
     expect(mockClearCart).not.toHaveBeenCalled();
     expect(mockSetLastOrder).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalledWith('/order-success');
+  }, 15000);
+
+  // E5.3: courier/paczkomat need a shipping address before checkout is
+  // possible at all — these assert the button stays disabled (canCheckout
+  // false) rather than letting an incomplete request reach the server.
+  it('keeps checkout disabled for courier until the shipping address is complete', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Kurier'));
+    await user.click(screen.getByText('Karta'));
+
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+
+    await user.type(screen.getByLabelText('Imię i nazwisko'), 'Jan Kowalski');
+    await user.type(screen.getByLabelText('Ulica i numer'), 'Testowa 1');
+    await user.type(screen.getByLabelText('Miejscowość'), 'Warszawa');
+    // postal code left out entirely — still incomplete.
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+    expect(mockCreateOrder).not.toHaveBeenCalled();
+  }, 15000);
+
+  it('rejects a malformed postal code and keeps checkout disabled', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Kurier'));
+    await user.type(screen.getByLabelText('Imię i nazwisko'), 'Jan Kowalski');
+    await user.type(screen.getByLabelText('Ulica i numer'), 'Testowa 1');
+    await user.type(screen.getByLabelText('Miejscowość'), 'Warszawa');
+    await user.type(screen.getByLabelText('Kod pocztowy'), '00001');
+    await user.click(screen.getByText('Karta'));
+
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+    expect(mockCreateOrder).not.toHaveBeenCalled();
+  }, 15000);
+
+  it('requires a paczkomat number when paczkomat delivery is selected, and sends it once filled', async () => {
+    mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Paczkomat'));
+    await user.type(screen.getByLabelText('Imię i nazwisko'), 'Jan Kowalski');
+    await user.type(screen.getByLabelText('Ulica i numer'), 'Testowa 1');
+    await user.type(screen.getByLabelText('Kod pocztowy'), '00-001');
+    await user.type(screen.getByLabelText('Miejscowość'), 'Warszawa');
+    await user.click(screen.getByText('Karta'));
+
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+    expect(mockCreateOrder).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText('Numer paczkomatu'), 'WAW01A');
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+    await waitFor(() => expect(mockCreateOrder).toHaveBeenCalledTimes(1));
+    expect(mockCreateOrder).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shippingAddress: expect.objectContaining({ paczkomatId: 'WAW01A' }),
+      }),
+    );
+  }, 15000);
+
+  it('never shows or requires a shipping address for pickup delivery', async () => {
+    mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Odbior osobisty'));
+    expect(screen.queryByLabelText('Imię i nazwisko')).not.toBeInTheDocument();
+
+    await user.click(screen.getByText('Karta'));
+    expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeEnabled();
+
+    await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+    await waitFor(() => expect(mockCreateOrder).toHaveBeenCalledTimes(1));
+    expect(mockCreateOrder).toHaveBeenCalledWith(
+      expect.objectContaining({ shippingAddress: undefined }),
+    );
   });
 });

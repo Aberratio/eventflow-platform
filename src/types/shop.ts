@@ -85,6 +85,7 @@ export interface OrderDetails {
   totalPrice: number;
   estimatedDelivery: string;
   createdAt: string;
+  shippingAddress?: ShopOrderAddress;
 }
 
 export interface ShopOrderAddress {

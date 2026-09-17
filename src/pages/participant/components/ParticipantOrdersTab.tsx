@@ -156,6 +156,32 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                         </div>
                       )}
                     </div>
+
+                    {/* E5.3: shipping address, only present for courier/paczkomat orders */}
+                    {order.shippingAddress && (
+                      <>
+                        <Separator />
+                        <div className="space-y-0.5 text-sm">
+                          <p className="mb-1 text-muted-foreground">Adres dostawy</p>
+                          <p>{order.shippingAddress.fullName}</p>
+                          <p>{order.shippingAddress.street}</p>
+                          <p>
+                            {order.shippingAddress.postalCode} {order.shippingAddress.city}
+                          </p>
+                          {order.shippingAddress.phone && (
+                            <p className="text-muted-foreground">
+                              Tel: {order.shippingAddress.phone}
+                            </p>
+                          )}
+                          {order.shippingAddress.paczkomatId && (
+                            <p className="text-muted-foreground">
+                              Paczkomat:{' '}
+                              <span className="font-mono">{order.shippingAddress.paczkomatId}</span>
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

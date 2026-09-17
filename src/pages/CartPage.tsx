@@ -23,19 +23,47 @@ import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
-import { OrderDetails } from '@/types';
+import { OrderDetails, ShopOrderAddress } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {
   card: <CreditCard className="h-4 w-4" />,
   blik: <Smartphone className="h-4 w-4" />,
   transfer: <Building className="h-4 w-4" />,
   cod: <Banknote className="h-4 w-4" />,
+};
+
+// E5.3: courier and paczkomat are the two delivery methods that ship to a
+// physical address (spec issue 16 §5). `pickup` (Biuro Zawodow, E5.4) and
+// any future digital/service-only checkout never need one — this list is
+// the client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
+// on the server, which is the actual source of truth; this copy only drives
+// UX (which fields to show, when to disable checkout early).
+const DELIVERY_METHODS_REQUIRING_ADDRESS = ['courier', 'paczkomat'];
+const POSTAL_CODE_PATTERN = /^\d{2}-\d{3}$/;
+
+type AddressFormState = {
+  fullName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  phone: string;
+  paczkomatId: string;
+};
+
+const emptyAddress: AddressFormState = {
+  fullName: '',
+  street: '',
+  city: '',
+  postalCode: '',
+  phone: '',
+  paczkomatId: '',
 };
 
 const CartPage = () => {
@@ -71,13 +99,30 @@ const CartPage = () => {
 
   const [selectedDelivery, setSelectedDelivery] = useState<string>('');
   const [selectedPayment, setSelectedPayment] = useState<string>('');
+  const [address, setAddress] = useState<AddressFormState>(emptyAddress);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const updateAddressField =
+    (field: keyof AddressFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setAddress((prev) => ({ ...prev, [field]: e.target.value }));
 
   const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
   const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
 
   // Services have no physical delivery
   const hasOnlyServices = false;
+
+  const requiresShippingAddress = DELIVERY_METHODS_REQUIRING_ADDRESS.includes(selectedDelivery);
+  const requiresPaczkomatId = selectedDelivery === 'paczkomat';
+  // Mirrors the server's validateShippingAddress() (E5.3) for UX only — the
+  // server is the source of truth and re-validates regardless of this.
+  const isAddressValid =
+    !requiresShippingAddress ||
+    (address.fullName.trim() !== '' &&
+      address.street.trim() !== '' &&
+      address.city.trim() !== '' &&
+      POSTAL_CODE_PATTERN.test(address.postalCode.trim()) &&
+      (!requiresPaczkomatId || address.paczkomatId.trim() !== ''));
 
   const deliveryPrice = hasOnlyServices ? 0 : deliveryMethod?.price || 0;
   const paymentSurcharge = paymentMethod?.surcharge || 0;
@@ -93,10 +138,25 @@ const CartPage = () => {
       : undefined);
 
   const canCheckout =
-    items.length > 0 && (hasOnlyServices || !!selectedDelivery) && !!selectedPayment && !!user;
+    items.length > 0 &&
+    (hasOnlyServices || !!selectedDelivery) &&
+    !!selectedPayment &&
+    !!user &&
+    isAddressValid;
 
   const handleCheckout = async () => {
     if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod || !user) return;
+
+    const shippingAddress: ShopOrderAddress | undefined = requiresShippingAddress
+      ? {
+          fullName: address.fullName.trim(),
+          street: address.street.trim(),
+          city: address.city.trim(),
+          postalCode: address.postalCode.trim(),
+          ...(address.phone.trim() ? { phone: address.phone.trim() } : {}),
+          ...(requiresPaczkomatId ? { paczkomatId: address.paczkomatId.trim() } : {}),
+        }
+      : undefined;
 
     setIsProcessing(true);
     try {
@@ -112,6 +172,7 @@ const CartPage = () => {
         })),
         deliveryMethod: effectiveDeliveryMethod,
         paymentMethod,
+        shippingAddress,
       });
 
       const order = response.data;
@@ -131,6 +192,7 @@ const CartPage = () => {
         totalPrice: order.totalPrice,
         estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
         createdAt: order.createdAt,
+        shippingAddress: order.shippingAddress,
       };
 
       setLastOrder(orderDetails);
@@ -219,52 +281,130 @@ const CartPage = () => {
                   Dostawa
                 </h2>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
-                  <div className="mb-5 flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                      <Truck className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-semibold">Wybierz metodę dostawy</span>
-                  </div>
+                  {/* E5.1 hit this exact WCAG 1.3.1 gap for a grouped-choice
+                      UI: a plain <span>/<Label> above a set of radios isn't
+                      programmatically associated with the group. fieldset/
+                      legend fixes it for courier/paczkomat/pickup here. */}
+                  <fieldset>
+                    <legend className="mb-5 flex items-center gap-3 font-semibold">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                        <Truck className="h-5 w-5 text-primary" />
+                      </div>
+                      Wybierz metodę dostawy
+                    </legend>
 
-                  <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
-                    <div className="space-y-2">
-                      {deliveryMethods.map((method) => (
-                        <div
-                          key={method.id}
-                          className={`flex cursor-pointer items-start space-x-3 rounded-lg border p-3 transition-all ${
-                            selectedDelivery === method.id
-                              ? 'border-primary/50 bg-primary/5 shadow-sm'
-                              : 'border-transparent hover:bg-muted/50'
-                          }`}
-                          onClick={() => setSelectedDelivery(method.id)}
-                        >
-                          <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
-                          <Label htmlFor={method.id} className="flex-1 cursor-pointer">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <div className="flex items-center gap-2 font-medium">
-                                  <Package className="h-4 w-4 text-muted-foreground" />
-                                  {method.name}
+                    <RadioGroup value={selectedDelivery} onValueChange={setSelectedDelivery}>
+                      <div className="space-y-2">
+                        {deliveryMethods.map((method) => (
+                          <div
+                            key={method.id}
+                            className={`flex cursor-pointer items-start space-x-3 rounded-lg border p-3 transition-all ${
+                              selectedDelivery === method.id
+                                ? 'border-primary/50 bg-primary/5 shadow-sm'
+                                : 'border-transparent hover:bg-muted/50'
+                            }`}
+                            onClick={() => setSelectedDelivery(method.id)}
+                          >
+                            <RadioGroupItem value={method.id} id={method.id} className="mt-1" />
+                            <Label htmlFor={method.id} className="flex-1 cursor-pointer">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2 font-medium">
+                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                    {method.name}
+                                  </div>
+                                  <div className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Clock className="h-3 w-3" />
+                                    {method.estimatedDays}
+                                  </div>
                                 </div>
-                                <div className="mt-0.5 flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Clock className="h-3 w-3" />
-                                  {method.estimatedDays}
-                                </div>
+                                <Badge
+                                  variant={method.price === 0 ? 'default' : 'secondary'}
+                                  className={
+                                    method.price === 0 ? 'border-0 bg-success/20 text-success' : ''
+                                  }
+                                >
+                                  {method.price === 0 ? 'Gratis' : `${method.price.toFixed(2)} zł`}
+                                </Badge>
                               </div>
-                              <Badge
-                                variant={method.price === 0 ? 'default' : 'secondary'}
-                                className={
-                                  method.price === 0 ? 'border-0 bg-success/20 text-success' : ''
-                                }
-                              >
-                                {method.price === 0 ? 'Gratis' : `${method.price.toFixed(2)} zł`}
-                              </Badge>
-                            </div>
-                          </Label>
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </RadioGroup>
+                  </fieldset>
+
+                  {/* E5.3: shipping address, only for courier/paczkomat — a
+                      pickup-at-office or digital-only order never shows this. */}
+                  {requiresShippingAddress && (
+                    <div className="mt-6 space-y-4 border-t pt-6">
+                      <h3 className="text-sm font-semibold">Adres dostawy</h3>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="shipping-full-name">Imię i nazwisko</Label>
+                          <Input
+                            id="shipping-full-name"
+                            value={address.fullName}
+                            onChange={updateAddressField('fullName')}
+                            autoComplete="name"
+                            required
+                          />
                         </div>
-                      ))}
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="shipping-street">Ulica i numer</Label>
+                          <Input
+                            id="shipping-street"
+                            value={address.street}
+                            onChange={updateAddressField('street')}
+                            autoComplete="street-address"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="shipping-postal-code">Kod pocztowy</Label>
+                          <Input
+                            id="shipping-postal-code"
+                            value={address.postalCode}
+                            onChange={updateAddressField('postalCode')}
+                            placeholder="00-000"
+                            autoComplete="postal-code"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="shipping-city">Miejscowość</Label>
+                          <Input
+                            id="shipping-city"
+                            value={address.city}
+                            onChange={updateAddressField('city')}
+                            autoComplete="address-level2"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="shipping-phone">Telefon (opcjonalnie)</Label>
+                          <Input
+                            id="shipping-phone"
+                            value={address.phone}
+                            onChange={updateAddressField('phone')}
+                            autoComplete="tel"
+                          />
+                        </div>
+                        {requiresPaczkomatId && (
+                          <div className="space-y-1.5">
+                            <Label htmlFor="shipping-paczkomat-id">Numer paczkomatu</Label>
+                            <Input
+                              id="shipping-paczkomat-id"
+                              value={address.paczkomatId}
+                              onChange={updateAddressField('paczkomatId')}
+                              placeholder="np. WAW01A"
+                              required
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </RadioGroup>
+                  )}
                 </div>
               </div>
             ) : (

@@ -43,7 +43,8 @@ const OrderSuccessPage = () => {
         borderless={false}
         className="border-b"
         style={{
-          background: 'linear-gradient(to bottom right, hsl(var(--success) / 0.1), hsl(var(--primary) / 0.05), hsl(var(--warning) / 0.05))',
+          background:
+            'linear-gradient(to bottom right, hsl(var(--success) / 0.1), hsl(var(--primary) / 0.05), hsl(var(--warning) / 0.05))',
         }}
       >
         <div className="mx-auto max-w-2xl text-center">
@@ -163,6 +164,34 @@ const OrderSuccessPage = () => {
               </div>
             </div>
           </div>
+
+          {/* E5.3: shipping address, only present for courier/paczkomat orders */}
+          {lastOrder.shippingAddress && (
+            <div className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Package className="h-5 w-5 text-primary" />
+                </div>
+                <div className="space-y-0.5 text-sm">
+                  <h3 className="mb-1 font-semibold">Adres dostawy</h3>
+                  <p>{lastOrder.shippingAddress.fullName}</p>
+                  <p>{lastOrder.shippingAddress.street}</p>
+                  <p>
+                    {lastOrder.shippingAddress.postalCode} {lastOrder.shippingAddress.city}
+                  </p>
+                  {lastOrder.shippingAddress.phone && (
+                    <p className="text-muted-foreground">Tel: {lastOrder.shippingAddress.phone}</p>
+                  )}
+                  {lastOrder.shippingAddress.paczkomatId && (
+                    <p className="text-muted-foreground">
+                      Paczkomat:{' '}
+                      <span className="font-mono">{lastOrder.shippingAddress.paczkomatId}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Email Confirmation Notice */}
           <InfoBanner
