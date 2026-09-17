@@ -1,8 +1,14 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { renderHook, act, render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
 import React from 'react';
 import { CartProvider, useCart } from '@/contexts/CartContext';
 import type { CartItem } from '@/types';
+
+// Cart items now persist to localStorage (E5.2), so every test must start
+// from a clean store or state leaks between tests.
+beforeEach(() => {
+  localStorage.clear();
+});
 
 const wrapper = ({ children }: { children: React.ReactNode }) =>
   React.createElement(CartProvider, null, children);
@@ -98,3 +104,51 @@ describe('CartContext', () => {
     expect(result.current.items[0].size).toBe('L');
   });
 });
+
+// E5.2: the cart must survive a page reload, so items are persisted to
+// localStorage and rehydrated on mount — guarded so a disabled/corrupt store
+// never crashes the provider.
+describe('CartContext localStorage persistence', () => {
+  it('persists items to localStorage and restores them on remount', () => {
+    const { result, unmount } = renderHook(() => useCart(), { wrapper });
+    act(() => {
+      result.current.addItem(makeItem());
+    });
+    expect(result.current.items).toHaveLength(1);
+    unmount();
+
+    const { result: result2 } = renderHook(() => useCart(), { wrapper });
+    expect(result2.current.items).toHaveLength(1);
+    expect(result2.current.items[0].productId).toBe('p1');
+  });
+
+  it('starts with an empty cart when localStorage content is corrupt', () => {
+    localStorage.setItem('shop-cart-items', '{not valid json');
+
+    expect(() =>
+      render(React.createElement(CartProvider, null, React.createElement(Probe))),
+    ).not.toThrow();
+    expect(screen.getByTestId('items-count').textContent).toBe('0');
+  });
+
+  it('starts with an empty cart when localStorage.getItem throws', () => {
+    const original = window.localStorage.getItem;
+    window.localStorage.getItem = () => {
+      throw new Error('storage disabled');
+    };
+
+    try {
+      expect(() =>
+        render(React.createElement(CartProvider, null, React.createElement(Probe))),
+      ).not.toThrow();
+      expect(screen.getByTestId('items-count').textContent).toBe('0');
+    } finally {
+      window.localStorage.getItem = original;
+    }
+  });
+});
+
+const Probe = () => {
+  const { items } = useCart();
+  return React.createElement('div', { 'data-testid': 'items-count' }, items.length);
+};

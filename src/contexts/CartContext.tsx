@@ -1,7 +1,23 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { CartItem, ShopProduct, OrderDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { appLogger } from '@/lib/logger';
+
+const CART_STORAGE_KEY = 'shop-cart-items';
+
+function loadStoredCartItems(): CartItem[] {
+  try {
+    const saved = localStorage.getItem(CART_STORAGE_KEY);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    appLogger.shop('cart_storage_read_failed', 'Nie udało się odczytać koszyka z localStorage', {
+      metadata: { error: e instanceof Error ? e.message : String(e) },
+    });
+    return [];
+  }
+}
 
 interface CartContextType {
   items: CartItem[];
@@ -21,9 +37,19 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => loadStoredCartItems());
   const [lastOrder, setLastOrder] = useState<OrderDetails | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      appLogger.shop('cart_storage_write_failed', 'Nie udało się zapisać koszyka w localStorage', {
+        metadata: { error: e instanceof Error ? e.message : String(e) },
+      });
+    }
+  }, [items]);
 
   const addItem = useCallback(
     (item: CartItem) => {
@@ -45,21 +71,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Dodano do koszyka',
         description: item.productName,
       });
-      appLogger.shop('cart_add', `Dodano do koszyka: ${item.productName} (ilość: ${item.quantity})`, {
-        targetType: 'product', targetId: item.productId, targetName: item.productName,
-        metadata: { quantity: item.quantity, size: item.size, color: item.color },
-      });
+      appLogger.shop(
+        'cart_add',
+        `Dodano do koszyka: ${item.productName} (ilość: ${item.quantity})`,
+        {
+          targetType: 'product',
+          targetId: item.productId,
+          targetName: item.productName,
+          metadata: { quantity: item.quantity, size: item.size, color: item.color },
+        },
+      );
     },
     [toast],
   );
 
-  const removeItem = useCallback((productId: string) => {
-    const item = items.find((i) => i.productId === productId);
-    appLogger.shop('cart_remove', `Usunięto z koszyka: ${item?.productName ?? productId}`, {
-      targetType: 'product', targetId: productId, targetName: item?.productName,
-    });
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
-  }, [items]);
+  const removeItem = useCallback(
+    (productId: string) => {
+      const item = items.find((i) => i.productId === productId);
+      appLogger.shop('cart_remove', `Usunięto z koszyka: ${item?.productName ?? productId}`, {
+        targetType: 'product',
+        targetId: productId,
+        targetName: item?.productName,
+      });
+      setItems((prev) => prev.filter((i) => i.productId !== productId));
+    },
+    [items],
+  );
 
   const removeItemByVariant = useCallback((productId: string, size?: string, color?: string) => {
     setItems((prev) =>

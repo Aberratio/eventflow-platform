@@ -1,4 +1,4 @@
-import { getDeliveryMethods, getShopPaymentMethods } from '@/api';
+import { createOrder, getDeliveryMethods, getShopPaymentMethods } from '@/api';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -25,6 +25,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
 import { OrderDetails } from '@/types';
@@ -46,6 +48,8 @@ const CartPage = () => {
     totalItems,
     setLastOrder,
   } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const { data: deliveryMethodsResp } = useQuery({
@@ -89,44 +93,58 @@ const CartPage = () => {
       : undefined);
 
   const canCheckout =
-    items.length > 0 && (hasOnlyServices || !!selectedDelivery) && !!selectedPayment;
+    items.length > 0 && (hasOnlyServices || !!selectedDelivery) && !!selectedPayment && !!user;
 
   const handleCheckout = async () => {
-    if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod) return;
+    if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod || !user) return;
 
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await createOrder({
+        userId: user.id,
+        items: items.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          size: item.size,
+          color: item.color,
+          price: item.unitPrice,
+        })),
+        deliveryMethod: effectiveDeliveryMethod,
+        paymentMethod,
+      });
 
-    const orderNumber = `ORD-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const deliveryDaysMatch = effectiveDeliveryMethod.estimatedDays.match(/\d+/);
-    const maxDeliveryDays = deliveryDaysMatch ? parseInt(deliveryDaysMatch[0]) + 1 : 3;
-    const estimatedDeliveryDate = addDays(new Date(), maxDeliveryDays);
+      const order = response.data;
+      const deliveryDaysMatch = order.deliveryMethod.estimatedDays.match(/\d+/);
+      const maxDeliveryDays = deliveryDaysMatch ? parseInt(deliveryDaysMatch[0]) + 1 : 3;
+      const estimatedDeliveryDate = addDays(new Date(order.createdAt), maxDeliveryDays);
 
-    const orderDetails: OrderDetails = {
-      orderId: crypto.randomUUID(),
-      orderNumber,
-      items: items.map((item) => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color,
-        price: item.unitPrice,
-      })),
-      deliveryMethod: effectiveDeliveryMethod,
-      paymentMethod,
-      productTotal: totalPrice,
-      deliveryPrice,
-      paymentSurcharge,
-      totalPrice: totalPrice + deliveryPrice + paymentSurcharge,
-      estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
-      createdAt: new Date().toISOString(),
-    };
+      const orderDetails: OrderDetails = {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        items: order.items,
+        deliveryMethod: order.deliveryMethod,
+        paymentMethod: order.paymentMethod,
+        productTotal: order.productTotal,
+        deliveryPrice: order.deliveryPrice,
+        paymentSurcharge: order.paymentSurcharge,
+        totalPrice: order.totalPrice,
+        estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
+        createdAt: order.createdAt,
+      };
 
-    setLastOrder(orderDetails);
-    clearCart();
-    navigate('/order-success');
-    setIsProcessing(false);
+      setLastOrder(orderDetails);
+      clearCart();
+      navigate('/order-success');
+    } catch (error) {
+      toast({
+        title: 'Nie udało się złożyć zamówienia',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {
