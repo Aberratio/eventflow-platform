@@ -117,9 +117,19 @@ export interface ChallengeParticipation {
   isCompleted: boolean;
   rewardGranted: boolean;
   rewardGrantedAt?: string;
+  /**
+   * E6.5 (issue 15 §4-5): written by ChallengeRepository::claimReward() the
+   * moment a reward order is created — one entry per claim (today always at
+   * most one, since a challenge unlocks a single reward claim per
+   * participation; the array shape matches the DB column's JSON so it can
+   * grow without a migration if that ever changes).
+   */
   selectedRewards?: Array<{
-    rewardId: string;
-    size?: string;
+    productId: string;
+    orderId: string;
+    size?: string | null;
+    color?: string | null;
+    claimedAt: string;
   }>;
   assignedNumber?: number;
 }

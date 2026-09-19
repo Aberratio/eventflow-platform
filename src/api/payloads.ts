@@ -261,6 +261,23 @@ export type CreateChallengePayload = Omit<Challenge, 'id' | 'rewards'> & {
 
 export type UpdateChallengePayload = Partial<CreateChallengePayload>;
 
+/**
+ * E6.5 (issue 15 §4-5): payload for POST /challenges/{id}/claim-reward.
+ * Deliberately mirrors CreateOrderPayload's shape (minus `userId`/`items` —
+ * the server derives the buyer from the JWT and the single reward item from
+ * `productId`/`size`/`color`) since this is the same order-creation flow
+ * with one line item instead of a cart.
+ */
+export interface ClaimChallengeRewardPayload {
+  productId: string;
+  size?: string;
+  color?: string;
+  deliveryMethod: ShopOrder['deliveryMethod'];
+  paymentMethod: ShopOrder['paymentMethod'];
+  shippingAddress?: ShopOrder['shippingAddress'];
+  invoiceData?: ShopOrder['invoiceData'];
+}
+
 // ──────────────── CMS ────────────────
 
 export interface CreateInfoPagePayload {

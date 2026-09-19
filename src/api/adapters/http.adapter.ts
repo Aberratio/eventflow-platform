@@ -426,6 +426,8 @@ export const httpAdapter: ApiAdapter = {
       `/challenge-entries/${encodeURIComponent(entryId)}/review`,
       json('PATCH', { status, reason }),
     ),
+  claimChallengeReward: (challengeId, data) =>
+    request(`/challenges/${encodeURIComponent(challengeId)}/claim-reward`, json('POST', data)),
 
   getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
   getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),

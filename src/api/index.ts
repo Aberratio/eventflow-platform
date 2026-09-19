@@ -249,6 +249,8 @@ export const submitChallengeEntry: ApiAdapter['submitChallengeEntry'] = (...args
   ensureAdapter().then((a) => a.submitChallengeEntry(...args));
 export const reviewChallengeEntry: ApiAdapter['reviewChallengeEntry'] = (...args) =>
   ensureAdapter().then((a) => a.reviewChallengeEntry(...args));
+export const claimChallengeReward: ApiAdapter['claimChallengeReward'] = (...args) =>
+  ensureAdapter().then((a) => a.claimChallengeReward(...args));
 
 // Messages
 export const getMessages: ApiAdapter['getMessages'] = (...args) =>

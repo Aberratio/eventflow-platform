@@ -47,6 +47,7 @@ import type {
   UpdateSeriesPayload,
   CreateChallengePayload,
   UpdateChallengePayload,
+  ClaimChallengeRewardPayload,
   CreateInfoPagePayload,
   UpdateInfoPagePayload,
   CreatePartnerPayload,
@@ -326,6 +327,20 @@ export interface ApiAdapter {
     status: ChallengeEntryStatus,
     reason?: string,
   ): Promise<ApiResponse<ChallengeEntry>>;
+  /**
+   * E6.5 (issue 15 §4-5): claims a completed Wyzwanie's reward Product,
+   * creating a real shop order through the existing checkout flow —
+   * `deliveryMethod`/`paymentMethod` are required exactly like
+   * `createOrder()` (a free reward still goes through the same order
+   * mechanism, "bez kroku płatności" meaning no charge, not no method
+   * selection). Returns the updated participation (`rewardGranted` flips to
+   * true) or rejects with a `challenge_*`/`order_*` error code — see
+   * ChallengeRepository::claimReward()'s doc comment server-side.
+   */
+  claimChallengeReward(
+    challengeId: string,
+    data: ClaimChallengeRewardPayload,
+  ): Promise<ApiResponse<ChallengeParticipation>>;
 
   // ── Messages ──
   getMessages(userId: string): Promise<ApiResponse<Message[]>>;
