@@ -172,7 +172,7 @@ const CartPage = () => {
     totalItems,
     setLastOrder,
   } = useCart();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -346,6 +346,14 @@ const CartPage = () => {
 
       setLastOrder(orderDetails);
       clearCart();
+      // E5.7: an organizer-package purchase grants the Organizer role
+      // server-side in the same transaction as the order (see
+      // OrderRepository::grantOrganizerRoleIfNeeded()); AuthContext otherwise
+      // only re-fetches /users/me on mount/login, so without this the
+      // Organizer-only nav item (Header.tsx) would stay hidden until the
+      // next reload even though the purchase already succeeded. Cheap and
+      // safe to do unconditionally for every order, not just service ones.
+      void refreshUser();
       navigate('/order-success');
     } catch (error) {
       toast({

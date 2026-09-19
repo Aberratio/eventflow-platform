@@ -24,6 +24,7 @@ interface AuthContextType {
   loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateCurrentUser: (data: UpdateUserPayload) => Promise<User | null>;
+  refreshUser: () => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -166,6 +167,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return response.data;
   };
 
+  // E5.7 (issue 16 §2 "Samoobsluga"): the only trigger this context had for
+  // re-fetching /users/me was mount + login — nothing re-pulled the logged-in
+  // user after an action taken *during* the session that changes their role
+  // server-side, like a self-service organizer-package purchase (server:
+  // OrderRepository::grantOrganizerRoleIfNeeded()). Without this, the
+  // Organizer-only nav item (Header.tsx, `user?.role === 'organizer'`) stays
+  // hidden until the next full reload/re-login even though the purchase
+  // already succeeded. Exposed as an explicit opt-in call (checkout calls it
+  // after a successful order) rather than polling, since role changes mid-
+  // session are otherwise rare.
+  const refreshUser = useCallback(async (): Promise<User | null> => {
+    if (!getStorage()?.getItem(STORAGE_KEYS.API_TOKEN)) return null;
+    try {
+      const response = await getCurrentUser();
+      if (!response.data) return null;
+      setUser(response.data);
+      getStorage()?.setItem(AUTH_STORAGE_KEY, JSON.stringify(response.data));
+      return response.data;
+    } catch {
+      return null;
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -175,6 +199,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loginWithCredentials,
         logout,
         updateCurrentUser,
+        refreshUser,
       }}
     >
       {children}

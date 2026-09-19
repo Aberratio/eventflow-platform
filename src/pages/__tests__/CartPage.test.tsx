@@ -13,22 +13,30 @@ import type { CartItem } from '@/types';
 // navigation only on success; an error toast and an untouched cart on
 // failure).
 
-const { cartItems, mockClearCart, mockSetLastOrder, mockToast, mockNavigate, mockCreateOrder } =
-  vi.hoisted(() => ({
-    cartItems: [
-      {
-        productId: 'p1',
-        productName: 'Koszulka biegowa',
-        unitPrice: 100,
-        quantity: 2,
-      },
-    ],
-    mockClearCart: vi.fn(),
-    mockSetLastOrder: vi.fn(),
-    mockToast: vi.fn(),
-    mockNavigate: vi.fn(),
-    mockCreateOrder: vi.fn(),
-  }));
+const {
+  cartItems,
+  mockClearCart,
+  mockSetLastOrder,
+  mockToast,
+  mockNavigate,
+  mockCreateOrder,
+  mockRefreshUser,
+} = vi.hoisted(() => ({
+  cartItems: [
+    {
+      productId: 'p1',
+      productName: 'Koszulka biegowa',
+      unitPrice: 100,
+      quantity: 2,
+    },
+  ],
+  mockClearCart: vi.fn(),
+  mockSetLastOrder: vi.fn(),
+  mockToast: vi.fn(),
+  mockNavigate: vi.fn(),
+  mockCreateOrder: vi.fn(),
+  mockRefreshUser: vi.fn(),
+}));
 
 const fakeOrder = {
   id: 'order-1',
@@ -94,7 +102,7 @@ vi.mock('@/contexts/AuthContext', async () => {
     await vi.importActual<typeof import('@/contexts/AuthContext')>('@/contexts/AuthContext');
   return {
     ...actual,
-    useAuth: () => ({ user: { id: 'user-1' } }),
+    useAuth: () => ({ user: { id: 'user-1' }, refreshUser: mockRefreshUser }),
   };
 });
 
@@ -171,6 +179,10 @@ describe('CartPage checkout', () => {
     );
     expect(mockClearCart).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/order-success');
+    // E5.7: a successful checkout may have granted the Organizer role
+    // server-side (organizer-package purchase) — refetch /users/me so the
+    // Organizer-only nav item can appear without a manual reload.
+    expect(mockRefreshUser).toHaveBeenCalledTimes(1);
   }, 15000);
 
   it('shows an error toast and keeps the cart on failure', async () => {
@@ -193,6 +205,7 @@ describe('CartPage checkout', () => {
     expect(mockClearCart).not.toHaveBeenCalled();
     expect(mockSetLastOrder).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalledWith('/order-success');
+    expect(mockRefreshUser).not.toHaveBeenCalled();
   }, 15000);
 
   // E5.3: courier/paczkomat need a shipping address before checkout is

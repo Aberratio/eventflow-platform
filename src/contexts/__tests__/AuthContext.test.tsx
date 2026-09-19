@@ -130,6 +130,38 @@ describe('AuthContext', () => {
     expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBeNull();
   });
 
+  it('refreshUser re-fetches /users/me and updates the stored user (e.g. after a role change mid-session)', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'jwt-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[0]));
+    vi.mocked(getCurrentUser).mockResolvedValueOnce({ data: testUsers[0], success: true });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.user?.role).toBe('participant');
+
+    const promotedUser: User = { ...testUsers[0], role: 'organizer' };
+    vi.mocked(getCurrentUser).mockResolvedValueOnce({ data: promotedUser, success: true });
+
+    await act(async () => {
+      await result.current.refreshUser();
+    });
+
+    expect(result.current.user?.role).toBe('organizer');
+    expect(JSON.parse(localStorage.getItem('zmierzymyczas_auth')!).role).toBe('organizer');
+  });
+
+  it('refreshUser is a no-op when there is no session', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    let refreshed: User | null = null;
+    await act(async () => {
+      refreshed = await result.current.refreshUser();
+    });
+
+    expect(refreshed).toBeNull();
+    expect(result.current.isAuthenticated).toBe(false);
+  });
+
   it('ignores expired-session events for a token that is no longer current', async () => {
     localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'fresh-token');
     localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
