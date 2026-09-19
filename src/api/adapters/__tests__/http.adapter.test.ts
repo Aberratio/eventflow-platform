@@ -195,6 +195,39 @@ describe('httpAdapter contract mapping', () => {
     ).rejects.toThrow('Wybierz aktywne konto organizatora');
   });
 
+  it('posts to /events/external for a barebones external event (E6.4)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({
+        success: true,
+        data: { id: 'evt-ext-1', name: 'Polmaraton Korony', isExternal: true },
+      }),
+    );
+
+    const response = await httpAdapter.createExternalEvent({
+      name: 'Polmaraton Korony',
+      date: '2019-09-01',
+      location: 'Rynek',
+      city: 'Krakow',
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/events/external',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          name: 'Polmaraton Korony',
+          date: '2019-09-01',
+          location: 'Rynek',
+          city: 'Krakow',
+        }),
+      }),
+    );
+    expect(response).toEqual({
+      success: true,
+      data: expect.objectContaining({ id: 'evt-ext-1', isExternal: true }),
+    });
+  });
+
   it('clears the stored token and emits an auth event on protected 401 responses', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'expired-token');
     const onExpired = vi.fn();

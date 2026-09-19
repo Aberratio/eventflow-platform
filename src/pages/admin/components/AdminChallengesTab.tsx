@@ -13,10 +13,42 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Archive, CheckCircle2, Clock, Pencil, Plus, Trophy, Users, XCircle } from 'lucide-react';
-import { ChallengeEntryStatus } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Archive,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Pencil,
+  Plus,
+  Trophy,
+  Users,
+  XCircle,
+} from 'lucide-react';
+import { ChallengeEntry, ChallengeEntryStatus } from '@/types';
 import { toast } from 'sonner';
 
 const statusLabels = {
@@ -40,7 +72,13 @@ interface AdminChallengesTabProps {
 export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
+    'all',
+  );
+  const [rejectingEntry, setRejectingEntry] = useState<
+    (ChallengeEntry & { userName: string }) | null
+  >(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   const { data: challengesData, isLoading } = useQuery({
     queryKey: [...QUERY_KEYS.challenges, 'staff'],
@@ -57,7 +95,8 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
   };
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => updateChallenge(id, { status: status as any }),
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      updateChallenge(id, { status: status as any }),
     onSuccess: () => {
       invalidate();
       toast.success('Status wyzwania został zmieniony');
@@ -73,11 +112,20 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
   });
 
   const reviewMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: ChallengeEntryStatus }) =>
-      reviewChallengeEntry(id, status),
+    mutationFn: ({
+      id,
+      status,
+      reason,
+    }: {
+      id: string;
+      status: ChallengeEntryStatus;
+      reason?: string;
+    }) => reviewChallengeEntry(id, status, reason),
     onSuccess: () => {
       invalidate();
       toast.success('Zgłoszenie zostało zweryfikowane');
+      setRejectingEntry(null);
+      setRejectionReason('');
     },
   });
 
@@ -86,7 +134,9 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
   const entries = participations.flatMap((participation) =>
     participation.entries.map((entry) => ({ ...entry, userName: participation.userName })),
   );
-  const visibleEntries = entries.filter((entry) => statusFilter === 'all' || entry.status === statusFilter);
+  const visibleEntries = entries.filter(
+    (entry) => statusFilter === 'all' || entry.status === statusFilter,
+  );
 
   return (
     <div className="space-y-6">
@@ -105,7 +155,9 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
       ) : (
         <div className="space-y-3">
           {challenges.map((challenge) => {
-            const challengeParticipations = participations.filter((p) => p.challengeId === challenge.id);
+            const challengeParticipations = participations.filter(
+              (p) => p.challengeId === challenge.id,
+            );
             return (
               <Card key={challenge.id}>
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -115,17 +167,25 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                       {challenge.name}
                       <Badge variant="outline">{statusLabels[challenge.status]}</Badge>
                     </h3>
-                    <p className="line-clamp-1 text-sm text-muted-foreground">{challenge.description}</p>
+                    <p className="line-clamp-1 text-sm text-muted-foreground">
+                      {challenge.description}
+                    </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {challenge.rule.minCompleted}/{challenge.events.length} wydarzeń · {challengeParticipations.length} uczestników · {challenge.rewards.length} produktów
+                      {challenge.rule.minCompleted}/{challenge.events.length} wydarzeń ·{' '}
+                      {challengeParticipations.length} uczestników · {challenge.rewards.length}{' '}
+                      produktów
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Select
                       value={challenge.status}
-                      onValueChange={(status) => statusMutation.mutate({ id: challenge.id, status })}
+                      onValueChange={(status) =>
+                        statusMutation.mutate({ id: challenge.id, status })
+                      }
                     >
-                      <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-9 w-[150px]">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="upcoming">Nadchodzące</SelectItem>
                         <SelectItem value="active">Aktywne</SelectItem>
@@ -133,11 +193,19 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                         <SelectItem value="archived">Archiwalne</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`${basePath}/challenges/${challenge.id}/edit`)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`${basePath}/challenges/${challenge.id}/edit`)}
+                    >
                       <Pencil className="mr-1 h-4 w-4" /> Edytuj
                     </Button>
                     {challenge.status !== 'archived' && (
-                      <Button variant="outline" size="sm" onClick={() => archiveMutation.mutate(challenge.id)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => archiveMutation.mutate(challenge.id)}
+                      >
                         <Archive className="mr-1 h-4 w-4" /> Archiwizuj
                       </Button>
                     )}
@@ -164,7 +232,9 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
               >
                 {status === 'all' ? 'Wszystkie' : entryLabels[status]}{' '}
                 <Badge variant="secondary" className="ml-1">
-                  {status === 'all' ? entries.length : entries.filter((entry) => entry.status === status).length}
+                  {status === 'all'
+                    ? entries.length
+                    : entries.filter((entry) => entry.status === status).length}
                 </Badge>
               </Button>
             ))}
@@ -178,6 +248,7 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                 <TableHead>Wydarzenie</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Czas</TableHead>
+                <TableHead>Dowód</TableHead>
                 <TableHead className="text-right">Akcje</TableHead>
               </TableRow>
             </TableHeader>
@@ -189,16 +260,49 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                   <TableRow key={entry.id}>
                     <TableCell>{entry.userName}</TableCell>
                     <TableCell>{event?.eventName ?? entry.eventId}</TableCell>
-                    <TableCell>{entryLabels[entry.status]}</TableCell>
+                    <TableCell>
+                      {entryLabels[entry.status]}
+                      {entry.status === 'rejected' && entry.rejectionReason && (
+                        <p className="text-xs text-muted-foreground">
+                          Powód: {entry.rejectionReason}
+                        </p>
+                      )}
+                    </TableCell>
                     <TableCell className="font-mono">{entry.submittedTime ?? '-'}</TableCell>
+                    <TableCell>
+                      {entry.proofUrl ? (
+                        <a
+                          href={entry.proofUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-primary underline"
+                        >
+                          Zobacz dowód <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       {entry.status === 'pending' ? (
                         <div className="flex justify-end gap-2">
-                          <Button size="sm" onClick={() => reviewMutation.mutate({ id: entry.id, status: 'approved' })}>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              reviewMutation.mutate({ id: entry.id, status: 'approved' })
+                            }
+                          >
                             <CheckCircle2 className="mr-1 h-4 w-4" /> Zatwierdź
                           </Button>
-                          <Button variant="destructive" size="sm" onClick={() => reviewMutation.mutate({ id: entry.id, status: 'rejected' })}>
-                            <XCircle className="h-4 w-4" />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setRejectingEntry(entry);
+                              setRejectionReason('');
+                            }}
+                          >
+                            <XCircle className="mr-1 h-4 w-4" /> Odrzuć
                           </Button>
                         </div>
                       ) : null}
@@ -212,22 +316,90 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Users className="h-4 w-4" /> Uczestnicy</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="h-4 w-4" /> Uczestnicy
+          </CardTitle>
+        </CardHeader>
         <CardContent className="space-y-2">
           {participations.map((participation) => {
             const challenge = challenges.find((item) => item.id === participation.challengeId);
             return (
-              <div key={participation.id} className="flex items-center justify-between rounded border p-3 text-sm">
-                <span>{participation.userName} · {challenge?.name ?? participation.challengeId}</span>
+              <div
+                key={participation.id}
+                className="flex items-center justify-between rounded border p-3 text-sm"
+              >
+                <span>
+                  {participation.userName} · {challenge?.name ?? participation.challengeId}
+                </span>
                 <div className="flex items-center gap-2">
-                  <Progress value={(participation.completedCount / Math.max(1, challenge?.rule.minCompleted ?? 1)) * 100} className="h-2 w-24" />
-                  <span>{participation.completedCount}/{challenge?.rule.minCompleted ?? 1}</span>
+                  <Progress
+                    value={
+                      (participation.completedCount /
+                        Math.max(1, challenge?.rule.minCompleted ?? 1)) *
+                      100
+                    }
+                    className="h-2 w-24"
+                  />
+                  <span>
+                    {participation.completedCount}/{challenge?.rule.minCompleted ?? 1}
+                  </span>
                 </div>
               </div>
             );
           })}
         </CardContent>
       </Card>
+
+      <Dialog
+        open={rejectingEntry !== null}
+        onOpenChange={(open) => !open && setRejectingEntry(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Odrzuć zgłoszenie{rejectingEntry ? ` — ${rejectingEntry.userName}` : ''}
+            </DialogTitle>
+            <DialogDescription>
+              Powód odrzucenia jest opcjonalny, ale pomaga zawodnikowi poprawić zgłoszenie.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (rejectingEntry) {
+                reviewMutation.mutate({
+                  id: rejectingEntry.id,
+                  status: 'rejected',
+                  reason: rejectionReason || undefined,
+                });
+              }
+            }}
+          >
+            <fieldset className="space-y-3" disabled={reviewMutation.isPending}>
+              <legend className="sr-only">Powód odrzucenia zgłoszenia</legend>
+              <div>
+                <Label htmlFor="rejection-reason">Powód odrzucenia (opcjonalnie)</Label>
+                <Textarea
+                  id="rejection-reason"
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Np. dowód nieczytelny, brak potwierdzenia miejsca"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="destructive"
+                className="w-full"
+                disabled={reviewMutation.isPending}
+              >
+                Odrzuć zgłoszenie
+              </Button>
+            </fieldset>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

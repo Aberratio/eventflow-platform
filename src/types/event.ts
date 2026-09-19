@@ -352,6 +352,13 @@ export interface Event {
   publicationStatus: EventPublicationStatus;
   /** Only meaningful/editable while `publicationStatus === 'draft'`; cleared and locked once submitted. */
   isTest?: boolean;
+  /**
+   * E6.4 (issue 15 §3): "Wydarzenie zewnętrzne" — a barebones Event with no
+   * Dystansy and no registrations, created by a Moderator/Admin purely as the
+   * reference point a Zawodnik's manual challenge-entry proof points at (a
+   * pre-platform completion, or a race that never ran on this platform).
+   */
+  isExternal?: boolean;
   rejectionReason?: string;
   submittedAt?: string;
   approvedAt?: string;

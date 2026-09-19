@@ -209,6 +209,7 @@ export const httpAdapter: ApiAdapter = {
     ),
   setEventIsTest: (id, isTest) =>
     request(`/events/${encodeURIComponent(id)}/is-test`, json('PATCH', { isTest })),
+  createExternalEvent: (data) => request('/events/external', json('POST', data)),
   getFeaturedEvents: () => request('/events/featured'),
   getLiveEvents: () => request('/events/live'),
   getEventsByOrganizer: (organizerId) =>
@@ -455,7 +456,8 @@ export const httpAdapter: ApiAdapter = {
   updateGlobalInsuranceSettings: (data) => request('/insurance/settings', json('PATCH', data)),
 
   getChallengePointsSettings: () => request('/challenge-points-settings'),
-  updateChallengePointsSettings: (data) => request('/challenge-points-settings', json('PATCH', data)),
+  updateChallengePointsSettings: (data) =>
+    request('/challenge-points-settings', json('PATCH', data)),
 
   getActivityLogs: (filters) =>
     request(`/admin/activity-logs${query(filters as Record<string, QueryValue>)}`),

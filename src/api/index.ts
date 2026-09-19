@@ -61,6 +61,8 @@ export const setEventVisibility: ApiAdapter['setEventVisibility'] = (...args) =>
   ensureAdapter().then((a) => a.setEventVisibility(...args));
 export const setEventIsTest: ApiAdapter['setEventIsTest'] = (...args) =>
   ensureAdapter().then((a) => a.setEventIsTest(...args));
+export const createExternalEvent: ApiAdapter['createExternalEvent'] = (...args) =>
+  ensureAdapter().then((a) => a.createExternalEvent(...args));
 export const getFeaturedEvents: ApiAdapter['getFeaturedEvents'] = (...args) =>
   ensureAdapter().then((a) => a.getFeaturedEvents(...args));
 export const getLiveEvents: ApiAdapter['getLiveEvents'] = (...args) =>

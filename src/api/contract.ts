@@ -136,6 +136,19 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<Event>>;
   /** Only valid while publicationStatus === 'draft'. */
   setEventIsTest(id: string, isTest: boolean): Promise<ApiResponse<Event>>;
+  /**
+   * E6.4 (issue 15 §3): creates a barebones "Wydarzenie zewnętrzne" — no
+   * Dystansy, no registrations — as the reference point for a Zawodnik's
+   * manual challenge-entry proof (a pre-platform completion, or a race
+   * that never ran on this platform). Moderator-or-above.
+   */
+  createExternalEvent(data: {
+    name: string;
+    date: string;
+    location: string;
+    city: string;
+    description?: string;
+  }): Promise<ApiResponse<Event>>;
   getFeaturedEvents(): Promise<ApiResponse<Event[]>>;
   getLiveEvents(): Promise<ApiResponse<Event[]>>;
   getEventsByOrganizer(organizerId: string): Promise<ApiResponse<Event[]>>;

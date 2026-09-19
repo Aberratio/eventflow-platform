@@ -1,5 +1,6 @@
 import {
   createChallenge,
+  createExternalEvent,
   getChallengeById,
   getChallenges,
   getEvents,
@@ -26,7 +27,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Trophy } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Plus, Save, Trophy } from 'lucide-react';
 import { Challenge, ChallengeConditionNode } from '@/types';
 import { toast } from 'sonner';
 import { ChallengeConditionTreeSection, defaultNodeForType } from './ChallengeConditionTreeEditor';
@@ -115,6 +125,37 @@ export const AdminChallengeEditPage = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.challenges });
       toast.success(isNew ? 'Wyzwanie zostało utworzone' : 'Wyzwanie zostało zapisane');
       navigate(basePath);
+    },
+  });
+
+  // E6.4 (issue 15 §3): "Wydarzenie zewnętrzne" quick-create, right where an
+  // event gets linked into a Wyzwanie — for a Korona half-marathon that never
+  // ran on this platform, or a pre-platform completion, there is no real
+  // Event to pick from `events` until one is created here.
+  const [externalEventDialogOpen, setExternalEventDialogOpen] = useState(false);
+  const [externalEventForm, setExternalEventForm] = useState({
+    name: '',
+    date: '',
+    location: '',
+    city: '',
+  });
+  const createExternalEventMutation = useMutation({
+    mutationFn: () => createExternalEvent(externalEventForm),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
+      const created = response.data;
+      if (created) {
+        setForm((prev) => ({
+          ...prev,
+          events: [
+            ...(prev.events ?? []),
+            { eventId: created.id, eventName: created.name, eventDate: created.date },
+          ],
+        }));
+      }
+      setExternalEventDialogOpen(false);
+      setExternalEventForm({ name: '', date: '', location: '', city: '' });
+      toast.success('Wydarzenie zewnętrzne zostało utworzone i dodane do wyzwania');
     },
   });
 
@@ -301,8 +342,94 @@ export const AdminChallengeEditPage = () => {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
               <CardTitle>Wydarzenia</CardTitle>
+              <Dialog open={externalEventDialogOpen} onOpenChange={setExternalEventDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button type="button" variant="outline" size="sm">
+                    <Plus className="mr-1 h-4 w-4" /> Wydarzenie zewnętrzne
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Nowe wydarzenie zewnętrzne</DialogTitle>
+                    <DialogDescription>
+                      Wydarzenie bez Dystansów i zapisów na platformie — służy wyłącznie jako punkt
+                      odniesienia dla ręcznie zgłaszanego dowodu ukończenia (np. bieg sprzed
+                      istnienia platformy).
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form
+                    className="space-y-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      createExternalEventMutation.mutate();
+                    }}
+                  >
+                    <fieldset
+                      className="space-y-3"
+                      disabled={createExternalEventMutation.isPending}
+                    >
+                      <legend className="sr-only">Dane wydarzenia zewnętrznego</legend>
+                      <div>
+                        <Label htmlFor="external-event-name">Nazwa</Label>
+                        <Input
+                          id="external-event-name"
+                          required
+                          value={externalEventForm.name}
+                          onChange={(e) =>
+                            setExternalEventForm((prev) => ({ ...prev, name: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="external-event-date">Data</Label>
+                        <DateInput
+                          id="external-event-date"
+                          value={externalEventForm.date}
+                          onValueChange={(value) =>
+                            setExternalEventForm((prev) => ({ ...prev, date: value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="external-event-location">Miejsce</Label>
+                        <Input
+                          id="external-event-location"
+                          required
+                          value={externalEventForm.location}
+                          onChange={(e) =>
+                            setExternalEventForm((prev) => ({ ...prev, location: e.target.value }))
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="external-event-city">Miasto</Label>
+                        <Input
+                          id="external-event-city"
+                          required
+                          value={externalEventForm.city}
+                          onChange={(e) =>
+                            setExternalEventForm((prev) => ({ ...prev, city: e.target.value }))
+                          }
+                        />
+                      </div>
+                      {createExternalEventMutation.isError && (
+                        <p role="alert" className="text-sm text-destructive">
+                          Nie udało się utworzyć wydarzenia zewnętrznego.
+                        </p>
+                      )}
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={createExternalEventMutation.isPending}
+                      >
+                        Utwórz i dodaj do wyzwania
+                      </Button>
+                    </fieldset>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent className="grid gap-2">
               {events.map((event) => (
@@ -316,6 +443,11 @@ export const AdminChallengeEditPage = () => {
                   />
                   <span>
                     {event.name} · {event.date}
+                    {event.isExternal && (
+                      <Badge variant="outline" className="ml-2">
+                        Zewnętrzne
+                      </Badge>
+                    )}
                   </span>
                 </label>
               ))}
