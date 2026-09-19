@@ -602,6 +602,18 @@ export interface GlobalInsuranceSettings {
   maxAge: number;
 }
 
+/**
+ * E6.2 (issue 15 §2, "Punktacja: za miejsce, N najlepszych startow"): global,
+ * admin-configurable points-per-place table a Wyzwanie's `point_threshold`
+ * condition node converts an Event classification place into points with.
+ * `pointsTable[i]` is the points for place `i + 1`; `floorPoints` is awarded
+ * for any place beyond the table's length.
+ */
+export interface ChallengePointsSettings {
+  pointsTable: number[];
+  floorPoints: number;
+}
+
 export interface GroupDiscountCode extends DiscountCode {
   minParticipants?: number;
 }

@@ -84,6 +84,7 @@ import type {
   GrantCareResult,
   AddCompetitorPayload,
   GlobalInsuranceSettings,
+  ChallengePointsSettings,
   AdminActivityLog,
   SecuritySettings,
   OnlineSession,
@@ -350,6 +351,12 @@ export interface ApiAdapter {
   updateGlobalInsuranceSettings(
     data: Partial<GlobalInsuranceSettings>,
   ): Promise<ApiResponse<GlobalInsuranceSettings>>;
+
+  // ── Challenge points settings (E6.2) ──
+  getChallengePointsSettings(): Promise<ApiResponse<ChallengePointsSettings>>;
+  updateChallengePointsSettings(
+    data: Partial<ChallengePointsSettings>,
+  ): Promise<ApiResponse<ChallengePointsSettings>>;
 
   // ── Admin ──
   // E0.8: global list — admin/superadmin only, enforced server-side.

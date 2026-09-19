@@ -454,6 +454,9 @@ export const httpAdapter: ApiAdapter = {
   getGlobalInsuranceSettings: () => request('/insurance/settings'),
   updateGlobalInsuranceSettings: (data) => request('/insurance/settings', json('PATCH', data)),
 
+  getChallengePointsSettings: () => request('/challenge-points-settings'),
+  updateChallengePointsSettings: (data) => request('/challenge-points-settings', json('PATCH', data)),
+
   getActivityLogs: (filters) =>
     request(`/admin/activity-logs${query(filters as Record<string, QueryValue>)}`),
   getEventActivityLogs: (eventId, filters) =>

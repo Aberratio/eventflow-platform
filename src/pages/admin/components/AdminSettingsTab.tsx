@@ -3,6 +3,8 @@ import {
   updateGlobalInsuranceSettings,
   getCalendarSettings,
   updateCalendarSettings,
+  getChallengePointsSettings,
+  updateChallengePointsSettings,
 } from '@/api';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -13,10 +15,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Shield, Save, Calculator, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  Shield,
+  Save,
+  Calculator,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  Trophy,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import type { GlobalInsuranceSettings, GoogleCalendarSettings } from '@/types';
+import type {
+  ChallengePointsSettings,
+  GlobalInsuranceSettings,
+  GoogleCalendarSettings,
+} from '@/types';
 
 export const AdminSettingsTab = () => {
   const queryClient = useQueryClient();
@@ -33,11 +49,21 @@ export const AdminSettingsTab = () => {
     select: (r) => r.data,
   });
 
+  const { data: remoteChallengePoints } = useQuery({
+    queryKey: ['challenge-points-settings'],
+    queryFn: getChallengePointsSettings,
+    select: (r) => r.data,
+  });
+
   const [localInsurance, setLocalInsurance] = useState<GlobalInsuranceSettings | null>(null);
   const [localCalendar, setLocalCalendar] = useState<GoogleCalendarSettings | null>(null);
+  const [localChallengePoints, setLocalChallengePoints] = useState<ChallengePointsSettings | null>(
+    null,
+  );
 
   const ins = localInsurance ?? remoteInsurance;
   const cal = localCalendar ?? remoteCalendar;
+  const pts = localChallengePoints ?? remoteChallengePoints;
 
   const insuranceMutation = useMutation({
     mutationFn: updateGlobalInsuranceSettings,
@@ -60,9 +86,47 @@ export const AdminSettingsTab = () => {
     },
   });
 
+  const challengePointsMutation = useMutation({
+    mutationFn: updateChallengePointsSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenge-points-settings'] });
+      setLocalChallengePoints(null);
+      appLogger.settings('challenge_points_save', 'Zapisano tabelę punktacji Wyzwań', {
+        targetType: 'settings',
+      });
+      toast({ title: 'Zapisano', description: 'Tabela punktacji Wyzwań została zaktualizowana' });
+    },
+  });
+
   const handleSaveInsurance = () => {
     if (!ins) return;
     insuranceMutation.mutate(ins);
+  };
+
+  const handleSaveChallengePoints = () => {
+    if (!pts) return;
+    challengePointsMutation.mutate(pts);
+  };
+
+  const updatePointsTablePlace = (index: number, value: number) => {
+    if (!pts) return;
+    const pointsTable = [...pts.pointsTable];
+    pointsTable[index] = Math.max(0, value);
+    setLocalChallengePoints({ ...pts, pointsTable });
+  };
+
+  const addPointsTablePlace = () => {
+    if (!pts) return;
+    const last = pts.pointsTable[pts.pointsTable.length - 1] ?? pts.floorPoints;
+    setLocalChallengePoints({ ...pts, pointsTable: [...pts.pointsTable, Math.max(0, last)] });
+  };
+
+  const removePointsTablePlace = (index: number) => {
+    if (!pts) return;
+    setLocalChallengePoints({
+      ...pts,
+      pointsTable: pts.pointsTable.filter((_, i) => i !== index),
+    });
   };
 
   const handleConnectCalendar = () => {
@@ -251,6 +315,95 @@ export const AdminSettingsTab = () => {
         )}
       </Card>
 
+      {/* E6.2 (issue 15 §2): global points-per-place table for Wyzwania */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Punktacja Wyzwań
+          </CardTitle>
+          <CardDescription>
+            Globalna tabela punktów za miejsce w klasyfikacji, używana przez próg punktowy w
+            regułach ukończenia Wyzwania (Korona / Grand Prix)
+          </CardDescription>
+        </CardHeader>
+        {pts && (
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Punkty wg miejsca</Label>
+              <p className="text-sm text-muted-foreground">
+                Miejsce 1. daje najwięcej punktów, każde kolejne wiersz niżej. Miejsca spoza tabeli
+                dostają punktację awaryjną (poniżej).
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                {pts.pointsTable.map((points, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Label htmlFor={`challenge-points-place-${index}`} className="w-20 shrink-0">
+                      Miejsce {index + 1}
+                    </Label>
+                    <Input
+                      id={`challenge-points-place-${index}`}
+                      type="number"
+                      min={0}
+                      value={points}
+                      onChange={(e) =>
+                        updatePointsTablePlace(index, parseInt(e.target.value, 10) || 0)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Usuń miejsce ${index + 1}`}
+                      onClick={() => removePointsTablePlace(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={addPointsTablePlace}>
+                <Plus className="mr-2 h-4 w-4" /> Dodaj miejsce
+              </Button>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label htmlFor="challenge-points-floor">
+                Punkty za miejsce poza tabelą (wartość awaryjna)
+              </Label>
+              <Input
+                id="challenge-points-floor"
+                type="number"
+                min={0}
+                value={pts.floorPoints}
+                onChange={(e) =>
+                  setLocalChallengePoints({
+                    ...pts,
+                    floorPoints: Math.max(0, parseInt(e.target.value, 10) || 0),
+                  })
+                }
+                className="max-w-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                Zawodnik na miejscu dalszym niż długość tabeli powyżej otrzymuje tyle punktów.
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button
+                onClick={handleSaveChallengePoints}
+                disabled={challengePointsMutation.isPending}
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {challengePointsMutation.isPending ? 'Zapisywanie...' : 'Zapisz tabelę punktacji'}
+              </Button>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Google Calendar Integration */}
       <Card>
         <CardHeader>
@@ -284,8 +437,7 @@ export const AdminSettingsTab = () => {
                   </p>
                   {cal.connected && cal.lastSyncAt && (
                     <p className="text-sm text-muted-foreground">
-                      Ostatnia synchronizacja:{' '}
-                      {new Date(cal.lastSyncAt).toLocaleString('pl-PL')}
+                      Ostatnia synchronizacja: {new Date(cal.lastSyncAt).toLocaleString('pl-PL')}
                     </p>
                   )}
                 </div>

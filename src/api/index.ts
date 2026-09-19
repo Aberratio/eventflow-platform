@@ -287,6 +287,13 @@ export const updateGlobalInsuranceSettings: ApiAdapter['updateGlobalInsuranceSet
   ...args
 ) => ensureAdapter().then((a) => a.updateGlobalInsuranceSettings(...args));
 
+// Challenge points settings (E6.2)
+export const getChallengePointsSettings: ApiAdapter['getChallengePointsSettings'] = (...args) =>
+  ensureAdapter().then((a) => a.getChallengePointsSettings(...args));
+export const updateChallengePointsSettings: ApiAdapter['updateChallengePointsSettings'] = (
+  ...args
+) => ensureAdapter().then((a) => a.updateChallengePointsSettings(...args));
+
 // Admin
 export const getActivityLogs: ApiAdapter['getActivityLogs'] = (...args) =>
   ensureAdapter().then((a) => a.getActivityLogs(...args));

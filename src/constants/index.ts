@@ -133,6 +133,7 @@ export const QUERY_KEYS = {
   salesStats: ['salesStats'] as const,
   calendarSettings: ['calendarSettings'] as const,
   insuranceSettings: ['insuranceSettings'] as const,
+  challengePointsSettings: ['challengePointsSettings'] as const,
 } as const;
 
 export const DEFAULT_PAGE_SIZE = 20;
