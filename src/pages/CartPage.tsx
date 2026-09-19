@@ -66,6 +66,41 @@ const emptyAddress: AddressFormState = {
   paczkomatId: '',
 };
 
+// E5.3 WCAG fix (SC 3.3.1 Error Identification / 3.3.3 Error Suggestion):
+// the disabled-until-valid submit button gave no visible or accessible
+// reason why checkout wouldn't proceed. These are the per-field error
+// messages shown once a field has been touched (or submit was attempted),
+// wired via aria-invalid/aria-describedby on the corresponding input.
+type AddressFieldErrors = Partial<Record<keyof AddressFormState, string>>;
+
+const getAddressFieldErrors = (
+  address: AddressFormState,
+  requiresPaczkomatId: boolean,
+): AddressFieldErrors => {
+  const errors: AddressFieldErrors = {};
+
+  if (address.fullName.trim() === '') {
+    errors.fullName = 'Podaj imię i nazwisko.';
+  }
+  if (address.street.trim() === '') {
+    errors.street = 'Podaj ulicę i numer domu/mieszkania.';
+  }
+  if (address.city.trim() === '') {
+    errors.city = 'Podaj miejscowość.';
+  }
+  const postalCode = address.postalCode.trim();
+  if (postalCode === '') {
+    errors.postalCode = 'Podaj kod pocztowy.';
+  } else if (!POSTAL_CODE_PATTERN.test(postalCode)) {
+    errors.postalCode = 'Nieprawidłowy format. Użyj formatu NN-NNN, np. 00-001.';
+  }
+  if (requiresPaczkomatId && address.paczkomatId.trim() === '') {
+    errors.paczkomatId = 'Podaj numer paczkomatu.';
+  }
+
+  return errors;
+};
+
 const CartPage = () => {
   const {
     items,
@@ -101,10 +136,17 @@ const CartPage = () => {
   const [selectedPayment, setSelectedPayment] = useState<string>('');
   const [address, setAddress] = useState<AddressFormState>(emptyAddress);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [touchedAddressFields, setTouchedAddressFields] = useState<
+    Partial<Record<keyof AddressFormState, boolean>>
+  >({});
+  const [addressSubmitAttempted, setAddressSubmitAttempted] = useState(false);
 
   const updateAddressField =
     (field: keyof AddressFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
       setAddress((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const markAddressFieldTouched = (field: keyof AddressFormState) => () =>
+    setTouchedAddressFields((prev) => ({ ...prev, [field]: true }));
 
   const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
   const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
@@ -116,13 +158,12 @@ const CartPage = () => {
   const requiresPaczkomatId = selectedDelivery === 'paczkomat';
   // Mirrors the server's validateShippingAddress() (E5.3) for UX only — the
   // server is the source of truth and re-validates regardless of this.
-  const isAddressValid =
-    !requiresShippingAddress ||
-    (address.fullName.trim() !== '' &&
-      address.street.trim() !== '' &&
-      address.city.trim() !== '' &&
-      POSTAL_CODE_PATTERN.test(address.postalCode.trim()) &&
-      (!requiresPaczkomatId || address.paczkomatId.trim() !== ''));
+  const addressFieldErrors = requiresShippingAddress
+    ? getAddressFieldErrors(address, requiresPaczkomatId)
+    : {};
+  const isAddressValid = !requiresShippingAddress || Object.keys(addressFieldErrors).length === 0;
+  const shouldShowAddressFieldError = (field: keyof AddressFormState) =>
+    (touchedAddressFields[field] || addressSubmitAttempted) && !!addressFieldErrors[field];
 
   const deliveryPrice = hasOnlyServices ? 0 : deliveryMethod?.price || 0;
   const paymentSurcharge = paymentMethod?.surcharge || 0;
@@ -145,7 +186,10 @@ const CartPage = () => {
     isAddressValid;
 
   const handleCheckout = async () => {
-    if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod || !user) return;
+    if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod || !user) {
+      setAddressSubmitAttempted(true);
+      return;
+    }
 
     const shippingAddress: ShopOrderAddress | undefined = requiresShippingAddress
       ? {
@@ -346,9 +390,25 @@ const CartPage = () => {
                             id="shipping-full-name"
                             value={address.fullName}
                             onChange={updateAddressField('fullName')}
+                            onBlur={markAddressFieldTouched('fullName')}
                             autoComplete="name"
                             required
+                            aria-invalid={shouldShowAddressFieldError('fullName') || undefined}
+                            aria-describedby={
+                              shouldShowAddressFieldError('fullName')
+                                ? 'shipping-full-name-error'
+                                : undefined
+                            }
                           />
+                          {shouldShowAddressFieldError('fullName') && (
+                            <p
+                              id="shipping-full-name-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {addressFieldErrors.fullName}
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-1.5 sm:col-span-2">
                           <Label htmlFor="shipping-street">Ulica i numer</Label>
@@ -356,9 +416,25 @@ const CartPage = () => {
                             id="shipping-street"
                             value={address.street}
                             onChange={updateAddressField('street')}
+                            onBlur={markAddressFieldTouched('street')}
                             autoComplete="street-address"
                             required
+                            aria-invalid={shouldShowAddressFieldError('street') || undefined}
+                            aria-describedby={
+                              shouldShowAddressFieldError('street')
+                                ? 'shipping-street-error'
+                                : undefined
+                            }
                           />
+                          {shouldShowAddressFieldError('street') && (
+                            <p
+                              id="shipping-street-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {addressFieldErrors.street}
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="shipping-postal-code">Kod pocztowy</Label>
@@ -366,10 +442,33 @@ const CartPage = () => {
                             id="shipping-postal-code"
                             value={address.postalCode}
                             onChange={updateAddressField('postalCode')}
+                            onBlur={markAddressFieldTouched('postalCode')}
                             placeholder="00-000"
                             autoComplete="postal-code"
                             required
+                            aria-invalid={shouldShowAddressFieldError('postalCode') || undefined}
+                            aria-describedby={
+                              shouldShowAddressFieldError('postalCode')
+                                ? 'shipping-postal-code-error'
+                                : 'shipping-postal-code-hint'
+                            }
                           />
+                          {shouldShowAddressFieldError('postalCode') ? (
+                            <p
+                              id="shipping-postal-code-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {addressFieldErrors.postalCode}
+                            </p>
+                          ) : (
+                            <p
+                              id="shipping-postal-code-hint"
+                              className="text-sm text-muted-foreground"
+                            >
+                              Format: NN-NNN, np. 00-001.
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="shipping-city">Miejscowość</Label>
@@ -377,9 +476,25 @@ const CartPage = () => {
                             id="shipping-city"
                             value={address.city}
                             onChange={updateAddressField('city')}
+                            onBlur={markAddressFieldTouched('city')}
                             autoComplete="address-level2"
                             required
+                            aria-invalid={shouldShowAddressFieldError('city') || undefined}
+                            aria-describedby={
+                              shouldShowAddressFieldError('city')
+                                ? 'shipping-city-error'
+                                : undefined
+                            }
                           />
+                          {shouldShowAddressFieldError('city') && (
+                            <p
+                              id="shipping-city-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {addressFieldErrors.city}
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-1.5">
                           <Label htmlFor="shipping-phone">Telefon (opcjonalnie)</Label>
@@ -397,9 +512,25 @@ const CartPage = () => {
                               id="shipping-paczkomat-id"
                               value={address.paczkomatId}
                               onChange={updateAddressField('paczkomatId')}
+                              onBlur={markAddressFieldTouched('paczkomatId')}
                               placeholder="np. WAW01A"
                               required
+                              aria-invalid={shouldShowAddressFieldError('paczkomatId') || undefined}
+                              aria-describedby={
+                                shouldShowAddressFieldError('paczkomatId')
+                                  ? 'shipping-paczkomat-id-error'
+                                  : undefined
+                              }
                             />
+                            {shouldShowAddressFieldError('paczkomatId') && (
+                              <p
+                                id="shipping-paczkomat-id-error"
+                                role="alert"
+                                className="text-sm text-destructive"
+                              >
+                                {addressFieldErrors.paczkomatId}
+                              </p>
+                            )}
                           </div>
                         )}
                       </div>

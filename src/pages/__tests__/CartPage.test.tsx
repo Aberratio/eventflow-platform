@@ -229,6 +229,70 @@ describe('CartPage checkout', () => {
     expect(mockCreateOrder).not.toHaveBeenCalled();
   }, 15000);
 
+  // E5.3 WCAG fix: the disabled button alone isn't an accessible error
+  // identification (SC 3.3.1) — each invalid field needs its own visible
+  // message wired via aria-invalid/aria-describedby.
+  it('shows a visible, accessible error for an empty required field once it has been touched', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Kurier'));
+    const fullNameInput = screen.getByLabelText('Imię i nazwisko');
+
+    // Not yet touched — no error should be shown.
+    expect(screen.queryByText('Podaj imię i nazwisko.')).not.toBeInTheDocument();
+
+    await user.click(fullNameInput);
+    await user.tab(); // blur without typing anything
+
+    const error = await screen.findByText('Podaj imię i nazwisko.');
+    expect(error).toBeInTheDocument();
+    expect(fullNameInput).toHaveAttribute('aria-invalid', 'true');
+    expect(fullNameInput).toHaveAttribute('aria-describedby', error.id);
+  }, 15000);
+
+  it('shows a format hint and error suggestion for a malformed postal code once touched', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Kurier'));
+    const postalCodeInput = screen.getByLabelText('Kod pocztowy');
+
+    // Untouched, empty field: format hint visible, no error yet.
+    expect(screen.getByText('Format: NN-NNN, np. 00-001.')).toBeInTheDocument();
+
+    await user.type(postalCodeInput, '00001');
+    await user.tab();
+
+    const error = await screen.findByText('Nieprawidłowy format. Użyj formatu NN-NNN, np. 00-001.');
+    expect(error).toBeInTheDocument();
+    expect(postalCodeInput).toHaveAttribute('aria-invalid', 'true');
+    expect(postalCodeInput).toHaveAttribute('aria-describedby', error.id);
+
+    await user.clear(postalCodeInput);
+    await user.type(postalCodeInput, '00-001');
+    expect(
+      screen.queryByText('Nieprawidłowy format. Użyj formatu NN-NNN, np. 00-001.'),
+    ).not.toBeInTheDocument();
+    expect(postalCodeInput).not.toHaveAttribute('aria-invalid');
+  }, 15000);
+
+  it('shows a visible error for a missing paczkomat number once touched', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByText('Paczkomat'));
+    const paczkomatInput = screen.getByLabelText('Numer paczkomatu');
+
+    await user.click(paczkomatInput);
+    await user.tab();
+
+    const error = await screen.findByText('Podaj numer paczkomatu.');
+    expect(error).toBeInTheDocument();
+    expect(paczkomatInput).toHaveAttribute('aria-invalid', 'true');
+    expect(paczkomatInput).toHaveAttribute('aria-describedby', error.id);
+  }, 15000);
+
   it('requires a paczkomat number when paczkomat delivery is selected, and sends it once filled', async () => {
     mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
     const user = userEvent.setup();
