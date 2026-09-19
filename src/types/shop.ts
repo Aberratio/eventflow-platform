@@ -53,7 +53,10 @@ export interface ShopProduct {
   serviceDetails?: string;
   validityDays?: number;
   visibleToRoles?: UserRole[];
-  serviceKind?: 'organizer_license';
+  // E5.6: 'organizer_package' is the "pakiet organizatora" digital product
+  // (issue 16 §2, umowa §5.5) — matches the server's
+  // OrderRepository::SERVICE_KIND_ORGANIZER_PACKAGE constant exactly.
+  serviceKind?: 'organizer_package';
   status?: 'active' | 'archived';
 }
 
@@ -64,6 +67,13 @@ export interface CartItem {
   quantity: number;
   size?: string;
   color?: string;
+  // E5.6: carried over from ShopProduct.isService at add-to-cart time
+  // (ShopProductPage.tsx) so CartPage can tell a fully-digital cart (e.g. the
+  // "pakiet organizatora") apart from a physical one without re-fetching
+  // every product. Undefined (items added before this field existed, still
+  // in a returning visitor's localStorage) is treated as "not a service" —
+  // see CartPage's hasOnlyServices.
+  isService?: boolean;
 }
 
 export interface OrderDetails {

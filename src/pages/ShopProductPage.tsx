@@ -93,6 +93,7 @@ const ShopProductPage = () => {
       quantity,
       size: selectedSize,
       color: selectedColor,
+      isService: product.isService,
     });
   };
 

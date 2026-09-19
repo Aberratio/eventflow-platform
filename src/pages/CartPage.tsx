@@ -226,8 +226,13 @@ const CartPage = () => {
   const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
   const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
 
-  // Services have no physical delivery
-  const hasOnlyServices = false;
+  // E5.6 (issue 16 §2/§5): a cart made entirely of digital products — e.g.
+  // the "pakiet organizatora" — has no physical delivery step at all, and
+  // must not force a delivery-method choice or an address. Mirrors the
+  // server's OrderRepository::isDigitalOnlyCart() (same "every item is a
+  // service product" rule); this is UX only, the server re-derives it from
+  // the authoritative catalog regardless of what the client sends.
+  const hasOnlyServices = items.length > 0 && items.every((item) => !!item.isService);
 
   const requiresShippingAddress = DELIVERY_METHODS_REQUIRING_ADDRESS.includes(selectedDelivery);
   const requiresPaczkomatId = selectedDelivery === 'paczkomat';
@@ -315,7 +320,12 @@ const CartPage = () => {
       });
 
       const order = response.data;
-      const deliveryDaysMatch = order.deliveryMethod.estimatedDays.match(/\d+/);
+      // E5.6: a digital-only order's deliveryMethod comes back as an empty
+      // object/array (OrderRepository persists the column's own '{}' default
+      // — there is no delivery method at all), not a DeliveryMethod with an
+      // estimatedDays string — guard with optional chaining instead of
+      // assuming the field is always populated.
+      const deliveryDaysMatch = order.deliveryMethod?.estimatedDays?.match(/\d+/);
       const maxDeliveryDays = deliveryDaysMatch ? parseInt(deliveryDaysMatch[0]) + 1 : 3;
       const estimatedDeliveryDate = addDays(new Date(order.createdAt), maxDeliveryDays);
 
