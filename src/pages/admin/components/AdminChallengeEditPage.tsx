@@ -1,6 +1,7 @@
 import {
   createChallenge,
   getChallengeById,
+  getChallenges,
   getEvents,
   getProducts,
   getSeries,
@@ -26,8 +27,9 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Save, Trophy } from 'lucide-react';
-import { Challenge } from '@/types';
+import { Challenge, ChallengeConditionNode } from '@/types';
 import { toast } from 'sonner';
+import { ChallengeConditionTreeSection, defaultNodeForType } from './ChallengeConditionTreeEditor';
 
 const slugify = (value: string) =>
   value
@@ -61,6 +63,13 @@ export const AdminChallengeEditPage = () => {
     queryKey: [...QUERY_KEYS.products, 'staff'],
     queryFn: () => getProducts({ includeArchived: true }),
   });
+  // E6.1: the sub-challenge-threshold node picker may only offer Wyzwania
+  // that already exist/are saved (spec: "referencja idzie tylko w dół" — no
+  // cycle, and the referenced Wyzwanie's tree must already be on disk).
+  const { data: challengesData } = useQuery({
+    queryKey: [...QUERY_KEYS.challenges, 'staff', 'condition-tree-picker'],
+    queryFn: () => getChallenges({ includeArchived: true }),
+  });
 
   const [form, setForm] = useState<Partial<Challenge>>({
     name: '',
@@ -76,6 +85,7 @@ export const AdminChallengeEditPage = () => {
     startDate: '',
     endDate: '',
     createdBy: '',
+    conditionTree: defaultNodeForType('event_threshold'),
   });
 
   useEffect(() => {
@@ -85,6 +95,8 @@ export const AdminChallengeEditPage = () => {
   const events = eventsData?.data ?? [];
   const series = seriesData?.data ?? [];
   const products = productsData?.data ?? [];
+  const otherChallenges = (challengesData?.data ?? []).filter((challenge) => challenge.id !== id);
+  const conditionTree = form.conditionTree ?? defaultNodeForType('event_threshold');
   const selectedEventIds = useMemo(
     () => new Set((form.events ?? []).map((event) => event.eventId)),
     [form.events],
@@ -307,6 +319,27 @@ export const AdminChallengeEditPage = () => {
                   </span>
                 </label>
               ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Reguła ukończenia (drzewo warunków)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-3 text-sm text-muted-foreground">
+                Wyzwanie ma dokładnie jeden korzeń drzewa warunków ukończenia — może to być
+                pojedynczy próg (najczęstszy przypadek) albo grupa łącząca kilka warunków
+                (AND/próg).
+              </p>
+              <ChallengeConditionTreeSection
+                tree={conditionTree}
+                onChange={(next: ChallengeConditionNode) =>
+                  setForm({ ...form, conditionTree: next })
+                }
+                events={events}
+                otherChallenges={otherChallenges}
+              />
             </CardContent>
           </Card>
 
