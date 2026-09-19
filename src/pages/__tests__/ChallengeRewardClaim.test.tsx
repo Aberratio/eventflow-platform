@@ -73,6 +73,10 @@ vi.mock('@/api', async () => {
     ...actual,
     getChallengeBySlug: vi.fn().mockResolvedValue({ data: baseChallenge, success: true }),
     getChallengeParticipations: vi.fn(),
+    getChallengeRanking: vi.fn().mockResolvedValue({
+      data: { hasPoints: true, entries: [] },
+      success: true,
+    }),
     getDeliveryMethods: vi.fn().mockResolvedValue({
       data: [{ id: 'pickup', name: 'Odbior osobisty', price: 0, estimatedDays: 'w dniu zawodow' }],
       success: true,

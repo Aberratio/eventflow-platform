@@ -106,6 +106,30 @@ export interface ChallengeEntry {
   rejectionReason?: string;
 }
 
+/**
+ * E6.6 (issue 15 §6, "Ranking: publiczny, z respektowaniem anonimizacji"):
+ * one row of a Wyzwanie's or Serii's public ranking. `hasPoints` on the
+ * parent response distinguishes a real point total from the binary
+ * completed/not-completed fallback used when the Wyzwanie has no
+ * `point_threshold` node anywhere in its condition tree (see
+ * ChallengeRankingCalculator's doc comment server-side) — the UI labels the
+ * points column differently depending on which case it got.
+ */
+export interface ChallengeRankingEntry {
+  rank: number;
+  userId: string;
+  /** Real name, or the fixed anonymization label — never both. */
+  name: string;
+  isAnonymized: boolean;
+  points: number;
+  isCompleted: boolean;
+}
+
+export interface ChallengeRanking {
+  hasPoints: boolean;
+  entries: ChallengeRankingEntry[];
+}
+
 export interface ChallengeParticipation {
   id: string;
   challengeId: string;

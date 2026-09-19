@@ -251,6 +251,10 @@ export const reviewChallengeEntry: ApiAdapter['reviewChallengeEntry'] = (...args
   ensureAdapter().then((a) => a.reviewChallengeEntry(...args));
 export const claimChallengeReward: ApiAdapter['claimChallengeReward'] = (...args) =>
   ensureAdapter().then((a) => a.claimChallengeReward(...args));
+export const getChallengeRanking: ApiAdapter['getChallengeRanking'] = (...args) =>
+  ensureAdapter().then((a) => a.getChallengeRanking(...args));
+export const getSeriesRanking: ApiAdapter['getSeriesRanking'] = (...args) =>
+  ensureAdapter().then((a) => a.getSeriesRanking(...args));
 
 // Messages
 export const getMessages: ApiAdapter['getMessages'] = (...args) =>

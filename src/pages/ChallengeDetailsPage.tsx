@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { ChallengeRankingCard } from '@/pages/challenges/ChallengeRankingCard';
 
 // E5.3's client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
 // (same duplication CartPage.tsx already carries — the server stays
@@ -512,6 +513,8 @@ const ChallengeDetailsPage = () => {
             </CardContent>
           )}
         </Card>
+
+        <ChallengeRankingCard challengeId={challenge.id} />
 
         <Card>
           <CardHeader>

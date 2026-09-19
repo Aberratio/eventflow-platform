@@ -76,6 +76,7 @@ import type {
   ChallengeParticipation,
   ChallengeEntry,
   ChallengeEntryStatus,
+  ChallengeRanking,
   Message,
   Ticket,
   Certificate,
@@ -341,6 +342,13 @@ export interface ApiAdapter {
     challengeId: string,
     data: ClaimChallengeRewardPayload,
   ): Promise<ApiResponse<ChallengeParticipation>>;
+  /**
+   * E6.6 (issue 15 §6): public, unauthenticated — descending points, ties
+   * sharing a rank ("1,1,3"), anonymized competitors masked server-side.
+   */
+  getChallengeRanking(challengeId: string): Promise<ApiResponse<ChallengeRanking>>;
+  /** E6.6 (issue 15 §6): "Klasyfikacja Serii" — the union of a Series's linked Wyzwania's rankings. */
+  getSeriesRanking(seriesId: string): Promise<ApiResponse<ChallengeRanking>>;
 
   // ── Messages ──
   getMessages(userId: string): Promise<ApiResponse<Message[]>>;

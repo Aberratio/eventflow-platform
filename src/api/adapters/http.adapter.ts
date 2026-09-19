@@ -428,6 +428,9 @@ export const httpAdapter: ApiAdapter = {
     ),
   claimChallengeReward: (challengeId, data) =>
     request(`/challenges/${encodeURIComponent(challengeId)}/claim-reward`, json('POST', data)),
+  getChallengeRanking: (challengeId) =>
+    request(`/challenges/${encodeURIComponent(challengeId)}/ranking`),
+  getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
   getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
   getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),

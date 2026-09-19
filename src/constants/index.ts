@@ -123,6 +123,8 @@ export const QUERY_KEYS = {
   challenge: (id: string) => ['challenges', id] as const,
   challengeBySlug: (slug: string) => ['challenges', 'slug', slug] as const,
   challengeParticipations: ['challengeParticipations'] as const,
+  challengeRanking: (challengeId: string) => ['challenges', challengeId, 'ranking'] as const,
+  seriesRanking: (seriesId: string) => ['series', seriesId, 'ranking'] as const,
   messages: ['messages'] as const,
   tickets: ['tickets'] as const,
   orders: ['orders'] as const,
