@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CartPage from '../CartPage';
+import type { CartItem } from '@/types';
 
 // E5.2: `handleCheckout` used to fabricate an order locally (Math.random order
 // number, crypto.randomUUID id, a fake delay) and never call the backend.
@@ -471,6 +472,128 @@ describe('CartPage checkout', () => {
           },
         }),
       );
+    }, 15000);
+  });
+
+  // E5.6 (issue 16 §2/§5): hasOnlyServices gates the whole delivery-method /
+  // shipping-address block off for a cart made entirely of digital/service
+  // items (e.g. "pakiet organizatora"). These cover the client-side gating
+  // itself (.every(), not .some() — a mixed cart still needs delivery/address)
+  // and the empty-cart edge case (`items.length > 0` guard: `[].every(...)`
+  // is vacuously true, which would otherwise misclassify an empty cart as
+  // "all services"). The last test is a regression test for the crash fix in
+  // handleCheckout, where a digital-only order's `deliveryMethod` comes back
+  // from the server as `{}` rather than a populated DeliveryMethod.
+  describe('digital-only cart gating (E5.6)', () => {
+    const originalCartItems: CartItem[] = cartItems.map((item) => ({ ...item }));
+
+    const setCartItems = (newItems: CartItem[]) => {
+      cartItems.length = 0;
+      cartItems.push(...newItems);
+    };
+
+    afterEach(() => {
+      setCartItems(originalCartItems);
+    });
+
+    it('hides delivery method and address selection for an all-services cart, and checkout proceeds without either', async () => {
+      setCartItems([
+        {
+          productId: 'svc-1',
+          productName: 'Pakiet organizatora',
+          unitPrice: 199,
+          quantity: 1,
+          isService: true,
+        },
+      ]);
+      mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
+      const user = userEvent.setup();
+      renderPage();
+
+      expect(screen.getByText('Usługa cyfrowa')).toBeInTheDocument();
+      expect(screen.queryByText('Wybierz metodę dostawy')).not.toBeInTheDocument();
+      expect(screen.queryByText('Kurier')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Imię i nazwisko')).not.toBeInTheDocument();
+
+      await user.click(await screen.findByText('Karta'));
+      expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeEnabled();
+
+      await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+      await waitFor(() => expect(mockCreateOrder).toHaveBeenCalledTimes(1));
+      expect(mockCreateOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          shippingAddress: undefined,
+          deliveryMethod: expect.objectContaining({ id: 'digital', price: 0 }),
+        }),
+      );
+    }, 15000);
+
+    it('does not treat a mixed cart as digital-only — delivery method and address selection still apply', async () => {
+      setCartItems([
+        {
+          productId: 'svc-1',
+          productName: 'Pakiet organizatora',
+          unitPrice: 199,
+          quantity: 1,
+          isService: true,
+        },
+        {
+          productId: 'p1',
+          productName: 'Koszulka biegowa',
+          unitPrice: 100,
+          quantity: 1,
+          isService: false,
+        },
+      ]);
+      const user = userEvent.setup();
+      renderPage();
+
+      expect(screen.queryByText('Usługa cyfrowa')).not.toBeInTheDocument();
+      expect(await screen.findByText('Wybierz metodę dostawy')).toBeInTheDocument();
+
+      await user.click(screen.getByText('Karta'));
+      // Delivery method was never selected, and courier/paczkomat need an
+      // address too — checkout must stay disabled, same as for a purely
+      // physical cart.
+      expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+      expect(mockCreateOrder).not.toHaveBeenCalled();
+    }, 15000);
+
+    it('does not treat an empty cart as all-services', () => {
+      setCartItems([]);
+      renderPage();
+
+      expect(screen.getByText('Twój koszyk jest pusty')).toBeInTheDocument();
+      expect(screen.queryByText('Usługa cyfrowa')).not.toBeInTheDocument();
+    });
+
+    it('does not crash rendering order details when the digital-only order comes back with deliveryMethod: {}', async () => {
+      setCartItems([
+        {
+          productId: 'svc-1',
+          productName: 'Pakiet organizatora',
+          unitPrice: 199,
+          quantity: 1,
+          isService: true,
+        },
+      ]);
+      mockCreateOrder.mockResolvedValue({
+        data: { ...fakeOrder, deliveryMethod: {} },
+        success: true,
+      });
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(await screen.findByText('Karta'));
+      await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+
+      await waitFor(() => expect(mockSetLastOrder).toHaveBeenCalledTimes(1));
+      expect(mockNavigate).toHaveBeenCalledWith('/order-success');
+
+      const orderDetailsArg = mockSetLastOrder.mock.calls[0][0];
+      expect(orderDetailsArg.deliveryMethod).toEqual({});
+      expect(typeof orderDetailsArg.estimatedDelivery).toBe('string');
+      expect(orderDetailsArg.estimatedDelivery).not.toMatch(/undefined|NaN/);
     }, 15000);
   });
 });
