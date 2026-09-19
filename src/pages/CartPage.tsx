@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   RotateCcw,
   Clock,
+  FileText,
 } from 'lucide-react';
 import { addDays, format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -24,13 +25,14 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { OrderSummary } from '@/components/cart/OrderSummary';
-import { OrderDetails, ShopOrderAddress } from '@/types';
+import { OrderDetails, ShopOrderAddress, ShopOrderInvoice } from '@/types';
 
 const paymentIcons: Record<string, React.ReactNode> = {
   card: <CreditCard className="h-4 w-4" />,
@@ -101,6 +103,65 @@ const getAddressFieldErrors = (
   return errors;
 };
 
+// E5.5: "Dane do faktury przy zamówieniu" (spec issue 16 pkt 1 — "dane
+// adresowe, faktura z NIP"; §6 — "dane do faktury" is part of the minimal
+// required shop scope). This is data capture only, mirroring the shipping
+// address block above: same fieldset/legend grouping, same per-field
+// visible-error-after-blur pattern, same aria-invalid/aria-describedby
+// wiring. Sending invoiceData at all is itself the "chcę fakturę" signal on
+// the wire — when the toggle is off nothing here is required or sent.
+type InvoiceFormState = {
+  companyName: string;
+  nip: string;
+  street: string;
+  city: string;
+  postalCode: string;
+};
+
+const emptyInvoice: InvoiceFormState = {
+  companyName: '',
+  nip: '',
+  street: '',
+  city: '',
+  postalCode: '',
+};
+
+// Mirrors the server's validateNip() format check (OrderRepository::validateNip,
+// E5.5) — 10 digits, dashes/spaces allowed in the submitted form. The
+// server additionally verifies the checksum; this client-side check only
+// covers digit count/format, which is enough for early UX feedback.
+const NIP_DIGITS_PATTERN = /^\d{10}$/;
+
+type InvoiceFieldErrors = Partial<Record<keyof InvoiceFormState, string>>;
+
+const getInvoiceFieldErrors = (invoice: InvoiceFormState): InvoiceFieldErrors => {
+  const errors: InvoiceFieldErrors = {};
+
+  if (invoice.companyName.trim() === '') {
+    errors.companyName = 'Podaj nazwę firmy.';
+  }
+  const nipDigits = invoice.nip.replace(/[\s-]/g, '');
+  if (nipDigits === '') {
+    errors.nip = 'Podaj NIP.';
+  } else if (!NIP_DIGITS_PATTERN.test(nipDigits)) {
+    errors.nip = 'NIP musi mieć 10 cyfr.';
+  }
+  if (invoice.street.trim() === '') {
+    errors.street = 'Podaj ulicę i numer domu/mieszkania.';
+  }
+  if (invoice.city.trim() === '') {
+    errors.city = 'Podaj miejscowość.';
+  }
+  const postalCode = invoice.postalCode.trim();
+  if (postalCode === '') {
+    errors.postalCode = 'Podaj kod pocztowy.';
+  } else if (!POSTAL_CODE_PATTERN.test(postalCode)) {
+    errors.postalCode = 'Nieprawidłowy format. Użyj formatu NN-NNN, np. 00-001.';
+  }
+
+  return errors;
+};
+
 const CartPage = () => {
   const {
     items,
@@ -141,12 +202,26 @@ const CartPage = () => {
   >({});
   const [addressSubmitAttempted, setAddressSubmitAttempted] = useState(false);
 
+  const [wantsInvoice, setWantsInvoice] = useState(false);
+  const [invoice, setInvoice] = useState<InvoiceFormState>(emptyInvoice);
+  const [touchedInvoiceFields, setTouchedInvoiceFields] = useState<
+    Partial<Record<keyof InvoiceFormState, boolean>>
+  >({});
+  const [invoiceSubmitAttempted, setInvoiceSubmitAttempted] = useState(false);
+
   const updateAddressField =
     (field: keyof AddressFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
       setAddress((prev) => ({ ...prev, [field]: e.target.value }));
 
   const markAddressFieldTouched = (field: keyof AddressFormState) => () =>
     setTouchedAddressFields((prev) => ({ ...prev, [field]: true }));
+
+  const updateInvoiceField =
+    (field: keyof InvoiceFormState) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setInvoice((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const markInvoiceFieldTouched = (field: keyof InvoiceFormState) => () =>
+    setTouchedInvoiceFields((prev) => ({ ...prev, [field]: true }));
 
   const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
   const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
@@ -164,6 +239,13 @@ const CartPage = () => {
   const isAddressValid = !requiresShippingAddress || Object.keys(addressFieldErrors).length === 0;
   const shouldShowAddressFieldError = (field: keyof AddressFormState) =>
     (touchedAddressFields[field] || addressSubmitAttempted) && !!addressFieldErrors[field];
+
+  // Mirrors the server's validateInvoiceData()/validateNip() (E5.5) for UX
+  // only — the server is the source of truth and re-validates regardless.
+  const invoiceFieldErrors = wantsInvoice ? getInvoiceFieldErrors(invoice) : {};
+  const isInvoiceValid = !wantsInvoice || Object.keys(invoiceFieldErrors).length === 0;
+  const shouldShowInvoiceFieldError = (field: keyof InvoiceFormState) =>
+    (touchedInvoiceFields[field] || invoiceSubmitAttempted) && !!invoiceFieldErrors[field];
 
   const deliveryPrice = hasOnlyServices ? 0 : deliveryMethod?.price || 0;
   const paymentSurcharge = paymentMethod?.surcharge || 0;
@@ -183,11 +265,13 @@ const CartPage = () => {
     (hasOnlyServices || !!selectedDelivery) &&
     !!selectedPayment &&
     !!user &&
-    isAddressValid;
+    isAddressValid &&
+    isInvoiceValid;
 
   const handleCheckout = async () => {
     if (!canCheckout || !effectiveDeliveryMethod || !paymentMethod || !user) {
       setAddressSubmitAttempted(true);
+      setInvoiceSubmitAttempted(true);
       return;
     }
 
@@ -199,6 +283,16 @@ const CartPage = () => {
           postalCode: address.postalCode.trim(),
           ...(address.phone.trim() ? { phone: address.phone.trim() } : {}),
           ...(requiresPaczkomatId ? { paczkomatId: address.paczkomatId.trim() } : {}),
+        }
+      : undefined;
+
+    const invoiceData: ShopOrderInvoice | undefined = wantsInvoice
+      ? {
+          companyName: invoice.companyName.trim(),
+          nip: invoice.nip.trim(),
+          street: invoice.street.trim(),
+          city: invoice.city.trim(),
+          postalCode: invoice.postalCode.trim(),
         }
       : undefined;
 
@@ -217,6 +311,7 @@ const CartPage = () => {
         deliveryMethod: effectiveDeliveryMethod,
         paymentMethod,
         shippingAddress,
+        invoiceData,
       });
 
       const order = response.data;
@@ -604,6 +699,182 @@ const CartPage = () => {
                     ))}
                   </div>
                 </RadioGroup>
+              </div>
+            </div>
+
+            {/* Invoice Data (E5.5) */}
+            <div>
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Faktura
+              </h2>
+              <div className="rounded-xl border bg-card p-6 shadow-sm">
+                <fieldset>
+                  <legend className="mb-5 flex items-center gap-3 font-semibold">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    Dane do faktury
+                  </legend>
+
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="wants-invoice"
+                      checked={wantsInvoice}
+                      onCheckedChange={(checked) => setWantsInvoice(checked === true)}
+                      className="mt-1"
+                    />
+                    <Label htmlFor="wants-invoice" className="cursor-pointer">
+                      Chcę fakturę (dane firmy)
+                    </Label>
+                  </div>
+
+                  {wantsInvoice && (
+                    <div className="mt-6 space-y-4 border-t pt-6">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="invoice-company-name">Nazwa firmy</Label>
+                          <Input
+                            id="invoice-company-name"
+                            value={invoice.companyName}
+                            onChange={updateInvoiceField('companyName')}
+                            onBlur={markInvoiceFieldTouched('companyName')}
+                            autoComplete="organization"
+                            required
+                            aria-invalid={shouldShowInvoiceFieldError('companyName') || undefined}
+                            aria-describedby={
+                              shouldShowInvoiceFieldError('companyName')
+                                ? 'invoice-company-name-error'
+                                : undefined
+                            }
+                          />
+                          {shouldShowInvoiceFieldError('companyName') && (
+                            <p
+                              id="invoice-company-name-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {invoiceFieldErrors.companyName}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="invoice-nip">NIP</Label>
+                          <Input
+                            id="invoice-nip"
+                            value={invoice.nip}
+                            onChange={updateInvoiceField('nip')}
+                            onBlur={markInvoiceFieldTouched('nip')}
+                            placeholder="000-000-00-00"
+                            required
+                            aria-invalid={shouldShowInvoiceFieldError('nip') || undefined}
+                            aria-describedby={
+                              shouldShowInvoiceFieldError('nip')
+                                ? 'invoice-nip-error'
+                                : 'invoice-nip-hint'
+                            }
+                          />
+                          {shouldShowInvoiceFieldError('nip') ? (
+                            <p
+                              id="invoice-nip-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {invoiceFieldErrors.nip}
+                            </p>
+                          ) : (
+                            <p id="invoice-nip-hint" className="text-sm text-muted-foreground">
+                              10 cyfr, z myślnikami lub bez, np. 000-000-00-00.
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <Label htmlFor="invoice-street">Ulica i numer</Label>
+                          <Input
+                            id="invoice-street"
+                            value={invoice.street}
+                            onChange={updateInvoiceField('street')}
+                            onBlur={markInvoiceFieldTouched('street')}
+                            autoComplete="street-address"
+                            required
+                            aria-invalid={shouldShowInvoiceFieldError('street') || undefined}
+                            aria-describedby={
+                              shouldShowInvoiceFieldError('street')
+                                ? 'invoice-street-error'
+                                : undefined
+                            }
+                          />
+                          {shouldShowInvoiceFieldError('street') && (
+                            <p
+                              id="invoice-street-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {invoiceFieldErrors.street}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="invoice-postal-code">Kod pocztowy</Label>
+                          <Input
+                            id="invoice-postal-code"
+                            value={invoice.postalCode}
+                            onChange={updateInvoiceField('postalCode')}
+                            onBlur={markInvoiceFieldTouched('postalCode')}
+                            placeholder="00-000"
+                            autoComplete="postal-code"
+                            required
+                            aria-invalid={shouldShowInvoiceFieldError('postalCode') || undefined}
+                            aria-describedby={
+                              shouldShowInvoiceFieldError('postalCode')
+                                ? 'invoice-postal-code-error'
+                                : 'invoice-postal-code-hint'
+                            }
+                          />
+                          {shouldShowInvoiceFieldError('postalCode') ? (
+                            <p
+                              id="invoice-postal-code-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {invoiceFieldErrors.postalCode}
+                            </p>
+                          ) : (
+                            <p
+                              id="invoice-postal-code-hint"
+                              className="text-sm text-muted-foreground"
+                            >
+                              Format: NN-NNN, np. 00-001.
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="invoice-city">Miejscowość</Label>
+                          <Input
+                            id="invoice-city"
+                            value={invoice.city}
+                            onChange={updateInvoiceField('city')}
+                            onBlur={markInvoiceFieldTouched('city')}
+                            autoComplete="address-level2"
+                            required
+                            aria-invalid={shouldShowInvoiceFieldError('city') || undefined}
+                            aria-describedby={
+                              shouldShowInvoiceFieldError('city') ? 'invoice-city-error' : undefined
+                            }
+                          />
+                          {shouldShowInvoiceFieldError('city') && (
+                            <p
+                              id="invoice-city-error"
+                              role="alert"
+                              className="text-sm text-destructive"
+                            >
+                              {invoiceFieldErrors.city}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </fieldset>
               </div>
             </div>
 

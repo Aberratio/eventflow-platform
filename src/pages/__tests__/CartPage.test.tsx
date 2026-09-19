@@ -337,4 +337,140 @@ describe('CartPage checkout', () => {
       expect.objectContaining({ shippingAddress: undefined }),
     );
   });
+
+  // E5.5: "Dane do faktury przy zamówieniu" — the "Chcę fakturę" toggle
+  // shows/hides a fieldset (companyName/nip/street/city/postalCode),
+  // mirroring the E5.3 shipping-address accessible-error pattern.
+  describe('invoice data (E5.5)', () => {
+    it('does not show the invoice fieldset by default, and never requires or sends invoice data', async () => {
+      mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
+      const user = userEvent.setup();
+      renderPage();
+
+      expect(screen.queryByLabelText('Nazwa firmy')).not.toBeInTheDocument();
+
+      await selectDeliveryAndPayment(user);
+      await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+
+      await waitFor(() => expect(mockCreateOrder).toHaveBeenCalledTimes(1));
+      expect(mockCreateOrder).toHaveBeenCalledWith(
+        expect.objectContaining({ invoiceData: undefined }),
+      );
+    }, 15000);
+
+    it('shows the invoice fieldset once the toggle is checked, and hides it again when unchecked', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      expect(screen.getByLabelText('Nazwa firmy')).toBeInTheDocument();
+      expect(screen.getByLabelText('NIP')).toBeInTheDocument();
+
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      expect(screen.queryByLabelText('Nazwa firmy')).not.toBeInTheDocument();
+    }, 15000);
+
+    it('keeps checkout disabled until invoice fields are complete once the toggle is on', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await selectDeliveryAndPayment(user);
+      expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeEnabled();
+
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeDisabled();
+
+      await user.type(screen.getByLabelText('Nazwa firmy'), 'Testowa Sp. z o.o.');
+      await user.type(screen.getByLabelText('NIP'), '525-234-40-78');
+      await user.type(
+        screen.getByLabelText('Ulica i numer', { selector: '#invoice-street' }),
+        'Faktury 1',
+      );
+      await user.type(
+        screen.getByLabelText('Kod pocztowy', { selector: '#invoice-postal-code' }),
+        '00-002',
+      );
+      await user.type(
+        screen.getByLabelText('Miejscowość', { selector: '#invoice-city' }),
+        'Warszawa',
+      );
+
+      expect(screen.getByRole('button', { name: /Przejdź do płatności/ })).toBeEnabled();
+    }, 15000);
+
+    it('shows a visible, accessible error for an empty required invoice field once touched', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      const companyNameInput = screen.getByLabelText('Nazwa firmy');
+
+      expect(screen.queryByText('Podaj nazwę firmy.')).not.toBeInTheDocument();
+
+      await user.click(companyNameInput);
+      await user.tab();
+
+      const error = await screen.findByText('Podaj nazwę firmy.');
+      expect(error).toBeInTheDocument();
+      expect(companyNameInput).toHaveAttribute('aria-invalid', 'true');
+      expect(companyNameInput).toHaveAttribute('aria-describedby', error.id);
+    }, 15000);
+
+    it('shows a distinct format hint and error for a malformed NIP once touched', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      const nipInput = screen.getByLabelText('NIP');
+
+      expect(
+        screen.getByText('10 cyfr, z myślnikami lub bez, np. 000-000-00-00.'),
+      ).toBeInTheDocument();
+
+      await user.type(nipInput, '12345');
+      await user.tab();
+
+      const error = await screen.findByText('NIP musi mieć 10 cyfr.');
+      expect(error).toBeInTheDocument();
+      expect(nipInput).toHaveAttribute('aria-invalid', 'true');
+      expect(nipInput).toHaveAttribute('aria-describedby', error.id);
+    }, 15000);
+
+    it('sends invoiceData with the right payload once the toggle is on and fields are complete', async () => {
+      mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
+      const user = userEvent.setup();
+      renderPage();
+
+      await selectDeliveryAndPayment(user);
+      await user.click(screen.getByLabelText('Chcę fakturę (dane firmy)'));
+      await user.type(screen.getByLabelText('Nazwa firmy'), 'Testowa Sp. z o.o.');
+      await user.type(screen.getByLabelText('NIP'), '525-234-40-78');
+      await user.type(
+        screen.getByLabelText('Ulica i numer', { selector: '#invoice-street' }),
+        'Faktury 1',
+      );
+      await user.type(
+        screen.getByLabelText('Kod pocztowy', { selector: '#invoice-postal-code' }),
+        '00-002',
+      );
+      await user.type(
+        screen.getByLabelText('Miejscowość', { selector: '#invoice-city' }),
+        'Warszawa',
+      );
+
+      await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
+      await waitFor(() => expect(mockCreateOrder).toHaveBeenCalledTimes(1));
+      expect(mockCreateOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceData: {
+            companyName: 'Testowa Sp. z o.o.',
+            nip: '525-234-40-78',
+            street: 'Faktury 1',
+            city: 'Warszawa',
+            postalCode: '00-002',
+          },
+        }),
+      );
+    }, 15000);
+  });
 });
