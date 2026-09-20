@@ -103,6 +103,7 @@ import type {
   EventBackground,
   EventBackgroundUsage,
   FormFieldAggregate,
+  RegistrationStats,
 } from '@/types';
 import type {
   EmailTemplate,
@@ -440,6 +441,11 @@ export interface ApiAdapter {
   // E2.5: automatic, no-opt-in answer-count aggregation for choice-type form fields
   // (single_choice/multi_choice/consent) — organizer-scoped, same $canManageEvent gate.
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
+  // E8.2: built-in cross-sections from the Zapis record itself (distance,
+  // payment status, signup curve, plus gender/club/age-category when
+  // configured) — complements getFormFieldAggregates above. Same
+  // $canManageEvent gate.
+  getRegistrationStats(eventId: string): Promise<ApiResponse<RegistrationStats>>;
   // E2.6: organizer-facing start-list export (CSV/XLSX) for one Distance —
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.

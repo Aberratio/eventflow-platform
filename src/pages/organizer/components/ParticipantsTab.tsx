@@ -76,6 +76,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { PaymentDetailsPanel } from './PaymentDetailsPanel';
 import { FormFieldAggregatesCard } from './FormFieldAggregatesCard';
+import { RegistrationStatsCard } from './RegistrationStatsCard';
 import { useParticipantsActions } from '../hooks/useParticipantsActions';
 
 interface ParticipantsTabProps {
@@ -751,7 +752,8 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
           />
         </TabsContent>
 
-        <TabsContent value="aggregates" className="mt-0">
+        <TabsContent value="aggregates" className="mt-0 space-y-6">
+          <RegistrationStatsCard eventId={event.id} />
           <FormFieldAggregatesCard eventId={event.id} />
         </TabsContent>
       </Tabs>

@@ -2234,6 +2234,19 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 </SelectContent>
               </Select>
             </div>
+            <div className="flex cursor-pointer items-start gap-2">
+              <Checkbox
+                id="showFreeSlots"
+                checked={form.displayOptions.showFreeSlots ?? true}
+                onCheckedChange={(checked) =>
+                  form.setDisplayOptions({ ...form.displayOptions, showFreeSlots: !!checked })
+                }
+              />
+              <Label htmlFor="showFreeSlots" className="cursor-pointer text-sm leading-5">
+                Pokazuj licznik wolnych miejsc na stronie wydarzenia
+              </Label>
+              <FieldHelp description="Domyślnie widoczny jako narzędzie sprzedażowe ('zostało 30 miejsc'). Wyłącz, jeśli słaba frekwencja byłaby niekorzystnym sygnałem." />
+            </div>
           </CardContent>
         </Card>
       )}

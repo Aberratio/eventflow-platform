@@ -489,6 +489,8 @@ export const httpAdapter: ApiAdapter = {
     ),
   getFormFieldAggregates: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
+  getRegistrationStats: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/registration-stats`),
   exportStartList: (eventId, distanceId, format) =>
     downloadFile(
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/start-list-export${query({ format })}`,

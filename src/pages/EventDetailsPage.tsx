@@ -235,6 +235,19 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   };
 
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
+  // E8.2 (spec 21 Answer §4): "X miejsc pozostało" — only shown when the
+  // organizer's `showFreeSlots` toggle is on. The server omits `slotsRemaining`
+  // entirely (not null) from every Distance when it's off, so presence of the
+  // key on at least one Distance is the actual signal, not a value check.
+  // Distances with no limit at all carry `slotsRemaining: null` (nothing to
+  // sum), so those are excluded from the total rather than treated as zero.
+  const distancesWithSlotsRemaining = event.distances.filter(
+    (d) => d.slotsRemaining !== undefined && d.slotsRemaining !== null,
+  );
+  const totalSlotsRemaining =
+    distancesWithSlotsRemaining.length > 0
+      ? distancesWithSlotsRemaining.reduce((acc, d) => acc + (d.slotsRemaining ?? 0), 0)
+      : null;
   const manageSettingsUrl =
     user?.role === 'admin' || user?.role === 'superadmin'
       ? `/admin/events/${event.id}?tab=settings`
@@ -338,6 +351,13 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
                       locale: pl,
                     })}
                   />
+                  {totalSlotsRemaining !== null && (
+                    <StatItem
+                      icon={<Users className="h-5 w-5 text-warning" />}
+                      label="Wolne miejsca"
+                      value={`${totalSlotsRemaining.toLocaleString()}`}
+                    />
+                  )}
                 </div>
 
                 {registrationStatusBadge && (

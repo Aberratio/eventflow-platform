@@ -313,6 +313,8 @@ export const getEventActivityLogs: ApiAdapter['getEventActivityLogs'] = (...args
   ensureAdapter().then((a) => a.getEventActivityLogs(...args));
 export const getFormFieldAggregates: ApiAdapter['getFormFieldAggregates'] = (...args) =>
   ensureAdapter().then((a) => a.getFormFieldAggregates(...args));
+export const getRegistrationStats: ApiAdapter['getRegistrationStats'] = (...args) =>
+  ensureAdapter().then((a) => a.getRegistrationStats(...args));
 export const exportStartList: ApiAdapter['exportStartList'] = (...args) =>
   ensureAdapter().then((a) => a.exportStartList(...args));
 export const getSecuritySettings: ApiAdapter['getSecuritySettings'] = (...args) =>

@@ -162,6 +162,15 @@ export interface Distance {
   limit?: number;
   registeredCount: number;
   paidCount?: number;
+  /**
+   * E8.2 (spec 21 Answer §4): live-computed remaining capacity (limit -
+   * registeredCount, null when the Distance has no limit). Present only when
+   * the Event's `displayOptions.showFreeSlots` toggle is on for a
+   * non-manager reader — the server omits the key entirely when hidden
+   * (routes.php's `$stripBzToken`), so absence, not `null`, is what "hidden"
+   * looks like here. Always present for the owning organizer/staff.
+   */
+  slotsRemaining?: number | null;
   price: number;
   pricingVariants?: DistancePricingVariant[];
   infoHtml?: string;
@@ -273,6 +282,13 @@ export interface EventDisplayOptions {
   uppercaseNames: boolean;
   hideUnpaid: boolean; // @deprecated - use showParticipants
   showParticipants: 'all' | 'paid_only';
+  /**
+   * E8.2 (spec 21 Answer §4): "ten sam wzorzec przełącznika co przy liście
+   * startowej publicznej/ukrytej" (showParticipants above) — free-slots
+   * counter, visible by default (undefined/true), organizer can hide it per
+   * Event. Same JSON blob, same generic PATCH /events/{id} write path.
+   */
+  showFreeSlots?: boolean;
 }
 
 export interface BannerCropArea {
@@ -642,4 +658,51 @@ export interface FormFieldAggregate {
   label: string;
   fieldType: 'single_choice' | 'multi_choice' | 'consent';
   counts: FormFieldAggregateCount[];
+}
+
+/**
+ * E8.2 (spec 21 Answer §2): built-in organizer cross-sections computed
+ * live from the Zapis record itself (RegistrationRepository::organizerStats()),
+ * complementing FormFieldAggregate above (which covers configurable form
+ * fields, E2.5). `byGender`/`byClub`/`ageCategories` are genuinely absent
+ * (key missing, not an empty array) whenever the underlying field/config
+ * isn't set up for this Event — mirror this on render: check for the key,
+ * don't render an empty chart for a present-but-empty array vs an absent key.
+ */
+export interface RegistrationStatsDistanceCount {
+  distanceId: string;
+  distanceName: string;
+  count: number;
+}
+
+export interface RegistrationStatsPaymentStatusCount {
+  status: 'paid' | 'pending' | 'expired' | 'cancelled' | 'refunded';
+  label: string;
+  count: number;
+}
+
+export interface RegistrationStatsSignupDay {
+  date: string;
+  count: number;
+}
+
+export interface RegistrationStatsFieldCount {
+  key: string;
+  label: string;
+  count: number;
+}
+
+export interface RegistrationStatsAgeCategoryBreakdown {
+  distanceId: string;
+  distanceName: string;
+  counts: RegistrationStatsFieldCount[];
+}
+
+export interface RegistrationStats {
+  byDistance: RegistrationStatsDistanceCount[];
+  byPaymentStatus: RegistrationStatsPaymentStatusCount[];
+  signupCurve: RegistrationStatsSignupDay[];
+  byGender?: RegistrationStatsFieldCount[];
+  byClub?: RegistrationStatsFieldCount[];
+  ageCategories?: RegistrationStatsAgeCategoryBreakdown[];
 }
