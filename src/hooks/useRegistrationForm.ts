@@ -6,6 +6,7 @@ import {
   validateDiscountCode,
   validateTeamName,
   getRegistrationsByEvent,
+  getTeamsForDistance,
 } from '@/api';
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -159,17 +160,47 @@ export const useRegistrationForm = (event: Event) => {
   const { data: eventRegsData } = useQuery({
     queryKey: ['registrations', 'event', event.id],
     queryFn: () => getRegistrationsByEvent(event.id),
-    enabled: hasTeamOption,
+    // E7.1: only the legacy, non-relay `collectTeam` classification path
+    // still needs this (grouping registrations by their free-text
+    // `teamName`) — a relay Dystans reads real Drużyny from
+    // `getTeamsForDistance` below instead.
+    enabled: hasTeamOption && !isRelayDistance,
     select: (r) => r.data ?? [],
   });
 
-  const existingTeams = useMemo(
-    () =>
-      getExistingTeamsForEvent(eventRegsData ?? [], event.id, selectedDistanceId).filter(
-        (team) => !relayMaxTeamSize || team.memberCount < relayMaxTeamSize,
-      ),
-    [eventRegsData, event.id, selectedDistanceId, relayMaxTeamSize],
-  );
+  // E7.1 (issue 23 Answer §1): for a relay Dystans, "which teams can I
+  // join" is now a server-validated read (real `teams` rows + derived
+  // completeness) rather than the client grouping registrations by a raw
+  // text label — the server is the actual source of truth once
+  // RegistrationRepository::create() validates a join against it.
+  const { data: relayTeamsData } = useQuery({
+    queryKey: ['teams', 'distance', event.id, selectedDistanceId],
+    queryFn: () => getTeamsForDistance(event.id, selectedDistanceId),
+    enabled: hasTeamOption && isRelayDistance && !!selectedDistanceId,
+    select: (r) => r.data ?? [],
+  });
+
+  const existingTeams = useMemo((): Array<{
+    id?: string;
+    name: string;
+    memberCount: number;
+  }> => {
+    if (isRelayDistance) {
+      return (relayTeamsData ?? [])
+        .filter((team) => team.maxSize === null || team.memberCount < team.maxSize)
+        .map((team) => ({ id: team.id, name: team.name, memberCount: team.memberCount }));
+    }
+    return getExistingTeamsForEvent(eventRegsData ?? [], event.id, selectedDistanceId).filter(
+      (team) => !relayMaxTeamSize || team.memberCount < relayMaxTeamSize,
+    );
+  }, [
+    isRelayDistance,
+    relayTeamsData,
+    eventRegsData,
+    event.id,
+    selectedDistanceId,
+    relayMaxTeamSize,
+  ]);
 
   // Build steps dynamically
   const activeSteps = useMemo(() => {
@@ -197,11 +228,13 @@ export const useRegistrationForm = (event: Event) => {
     if (
       teamMode === 'join' &&
       selectedExistingTeam &&
-      !existingTeams.some((team) => team.name === selectedExistingTeam)
+      !existingTeams.some((team) =>
+        isRelayDistance ? team.id === selectedExistingTeam : team.name === selectedExistingTeam,
+      )
     ) {
       setSelectedExistingTeam('');
     }
-  }, [existingTeams, selectedExistingTeam, teamMode]);
+  }, [existingTeams, selectedExistingTeam, teamMode, isRelayDistance]);
 
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
   const birthDate =
@@ -295,8 +328,37 @@ export const useRegistrationForm = (event: Event) => {
 
   const getFinalTeamName = (): string | undefined => {
     if (!wantsTeam) return undefined;
-    return teamMode === 'create' ? teamName.trim() || undefined : selectedExistingTeam || undefined;
+    if (teamMode === 'create') return teamName.trim() || undefined;
+    // E7.1: for a relay Dystans `selectedExistingTeam` now holds the real
+    // team id (see existingTeams above), not its label — resolve the label
+    // back out for display purposes. The server ignores this field anyway
+    // once `teamId` is set (RegistrationRepository::resolveTeamForRegistration
+    // derives the name from the real team, never from client-sent text).
+    if (isRelayDistance) {
+      return existingTeams.find((team) => team.id === selectedExistingTeam)?.name;
+    }
+    return selectedExistingTeam || undefined;
   };
+
+  /**
+   * E7.1: the real server-assigned team id to join — only meaningful for a
+   * relay Dystans, where `existingTeams` is backed by real `teams` rows
+   * (see `getTeamsForDistance` above). The unrelated, non-relay
+   * `collectTeam` classification path never sends a `teamId` — it keeps
+   * working exactly as before, a plain `teamName` string.
+   */
+  const getFinalTeamId = (): string | undefined => {
+    if (!wantsTeam || teamMode !== 'join' || !isRelayDistance) return undefined;
+    return selectedExistingTeam || undefined;
+  };
+
+  /**
+   * E7.1: explicit "create a new Drużyna" intent, sent to the server only
+   * for a relay Dystans — see `CreateRegistrationPayload.createTeam`'s own
+   * docblock for why this flag (not just a non-empty `teamName`) is what
+   * the server keys team creation off of.
+   */
+  const getCreateTeamFlag = (): boolean => wantsTeam && teamMode === 'create' && isRelayDistance;
 
   const handleApplyDiscount = () => {
     if (!discountCode.trim()) {
@@ -421,6 +483,8 @@ export const useRegistrationForm = (event: Event) => {
       modifiersTotal,
       totalAmount,
       teamName: getFinalTeamName(),
+      teamId: getFinalTeamId(),
+      createTeam: getCreateTeamFlag() || undefined,
       pricingVariantId: selectedPricingVariantId || undefined,
       insuranceVariantId: selectedInsuranceVariantId || undefined,
     };
@@ -502,6 +566,8 @@ export const useRegistrationForm = (event: Event) => {
     handleNext,
     handleBack,
     getFinalTeamName,
+    getFinalTeamId,
+    getCreateTeamFlag,
     buildSubmitData,
     isLastStep,
     isFirstStep,

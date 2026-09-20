@@ -174,6 +174,16 @@ export interface CreateRegistrationPayload {
   category: string;
   teamName?: string;
   teamId?: string;
+  /**
+   * E7.1: explicit intent to create a brand-new, server-validated Drużyna
+   * (`teamName` becomes its label) rather than just a free-text
+   * classification label — the server only creates a real `teams` row and
+   * rejects the request outright when this is set on a non-relay Dystans.
+   * Omitted (or `teamId` set instead) keeps every pre-existing behavior:
+   * a plain `teamName` with neither flag is still the legacy, unvalidated
+   * classification-only label some organizers collect via `collectTeam`.
+   */
+  createTeam?: boolean;
   pricingVariantId?: string;
   discountCode?: string;
   merchandise?: RegistrationMerchandiseSelection[];

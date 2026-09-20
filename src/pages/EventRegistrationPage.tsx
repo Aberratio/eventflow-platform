@@ -270,6 +270,8 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         distanceName: data.distanceName,
         category: data.category,
         teamName: data.teamName,
+        teamId: data.teamId,
+        createTeam: data.createTeam,
         pricingVariantId: data.pricingVariantId,
         discountCode: data.discountCode,
         merchandise: data.merchandise,

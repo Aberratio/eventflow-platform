@@ -1,11 +1,44 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useRegistrationForm } from '@/hooks/useRegistrationForm';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import type { Event } from '@/types';
+
+vi.mock('@/api', async () => {
+  const actual = await vi.importActual<typeof import('@/api')>('@/api');
+  return {
+    ...actual,
+    getTeamsForDistance: vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'team-real-1',
+          eventId: 'e1',
+          distanceId: 'd1',
+          name: 'Błyskawice',
+          memberCount: 1,
+          minSize: 2,
+          maxSize: 4,
+          complete: false,
+        },
+        {
+          id: 'team-real-2',
+          eventId: 'e1',
+          distanceId: 'd1',
+          name: 'Pełna',
+          memberCount: 4,
+          minSize: 2,
+          maxSize: 4,
+          complete: true,
+        },
+      ],
+      success: true,
+    }),
+    getRegistrationsByEvent: vi.fn().mockResolvedValue({ data: [], success: true }),
+  };
+});
 
 const mockEvent: Event = {
   id: 'e1',
@@ -452,6 +485,81 @@ describe('useRegistrationForm', () => {
     it('exposes an explicit zero-value Modyfikatory placeholder (step 4 not built yet)', () => {
       const { result } = renderHook(() => useRegistrationForm(mockEvent), { wrapper });
       expect(result.current.modifiersTotal).toBe(0);
+    });
+  });
+
+  describe('E7.1 relay team creation/join wiring', () => {
+    const relayEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          startType: 'relay',
+          relayMinTeamSize: 2,
+          relayMaxTeamSize: 4,
+        },
+      ],
+    } as unknown as Event;
+
+    it('forces wantsTeam on and sends createTeam: true + the typed name for a new Drużyna', () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+
+      expect(result.current.isRelayDistance).toBe(true);
+      expect(result.current.wantsTeam).toBe(true);
+      expect(result.current.teamMode).toBe('create');
+
+      act(() => {
+        result.current.setTeamName('Błyskawice');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data).not.toBeNull();
+      expect(data!.createTeam).toBe(true);
+      expect(data!.teamName).toBe('Błyskawice');
+      expect(data!.teamId).toBeUndefined();
+    });
+
+    it('lists only non-full teams (from the server) to join, and sends the real team id, not its label', async () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.existingTeams).toHaveLength(1);
+      });
+      expect(result.current.existingTeams[0]).toMatchObject({
+        id: 'team-real-1',
+        name: 'Błyskawice',
+      });
+
+      act(() => {
+        result.current.setTeamMode('join');
+        result.current.setSelectedExistingTeam('team-real-1');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data).not.toBeNull();
+      expect(data!.teamId).toBe('team-real-1');
+      expect(data!.teamName).toBe('Błyskawice');
+      expect(data!.createTeam).toBeUndefined();
+    });
+
+    it('never sends teamId/createTeam for the unrelated, non-relay classification-label path', () => {
+      const { result } = renderHook(() => useRegistrationForm(mockEvent), { wrapper });
+
+      act(() => {
+        result.current.setSelectedDistanceId('d1');
+        result.current.setWantsTeam(true);
+        result.current.setTeamMode('create');
+        result.current.setTeamName('Firma XYZ');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data).not.toBeNull();
+      expect(data!.teamName).toBe('Firma XYZ');
+      expect(data!.teamId).toBeUndefined();
+      expect(data!.createTeam).toBeUndefined();
     });
   });
 

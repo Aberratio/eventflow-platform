@@ -59,6 +59,7 @@ import type {
   User,
   UserRole,
   Registration,
+  RelayTeam,
   Result,
   ResultImportBatch,
   ResultImportMode,
@@ -206,6 +207,14 @@ export interface ApiAdapter {
   // ── Registrations ──
   getRegistrations(filters?: RegistrationFilters): Promise<PaginatedResponse<Registration>>;
   getRegistrationsByEvent(eventId: string): Promise<ApiResponse<Registration[]>>;
+  /**
+   * E7.1: joinable Drużyny (with server-derived completeness) for one relay
+   * Dystans — the source of truth the "join an existing team" registration
+   * step reads from, instead of its old purely client-side text-grouping
+   * heuristic (`getExistingTeamsForEvent`, kept for the unrelated
+   * non-relay `collectTeam` classification case).
+   */
+  getTeamsForDistance(eventId: string, distanceId: string): Promise<ApiResponse<RelayTeam[]>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<Registration[]>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;

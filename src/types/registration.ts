@@ -36,6 +36,25 @@ export interface RefundState {
   completedBy?: string;
 }
 
+/**
+ * E7.1 (issue 23 Answer §1): a real, server-validated Drużyna — the roster
+ * entity behind `Registration.teamId`/`teamName` for a relay Dystans.
+ * `memberCount`/`complete` are derived server-side on every read (never a
+ * settable field): a Drużyna with fewer Zapisy than `maxSize` is a legal,
+ * "incomplete" state, not an error — see TeamRepository (server) for the
+ * exact completeness rule (`memberCount >= maxSize`).
+ */
+export interface RelayTeam {
+  id: string;
+  eventId: string;
+  distanceId: string;
+  name: string;
+  memberCount: number;
+  minSize: number | null;
+  maxSize: number | null;
+  complete: boolean | null;
+}
+
 export interface Registration {
   id: string;
   eventId: string;

@@ -86,6 +86,10 @@ export interface RegistrationData {
   modifiersTotal: number;
   totalAmount: number;
   teamName?: string;
+  /** E7.1: real server-assigned team id when joining an existing relay Drużyna. */
+  teamId?: string;
+  /** E7.1: explicit "create a new Drużyna" intent (relay Dystans only). */
+  createTeam?: boolean;
   pricingVariantId?: string;
   insuranceVariantId?: string;
 }
@@ -840,7 +844,13 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                     </SelectTrigger>
                     <SelectContent>
                       {form.existingTeams.map((team) => (
-                        <SelectItem key={team.name} value={team.name}>
+                        // E7.1: a relay Dystans's existingTeams entries carry
+                        // a real server-assigned `id` (from getTeamsForDistance)
+                        // — select on that so the join is validated against
+                        // the real team, not its (potentially non-unique)
+                        // display name; the legacy non-relay classification
+                        // path has no `id` and keeps selecting on `name`.
+                        <SelectItem key={team.id ?? team.name} value={team.id ?? team.name}>
                           <div className="flex items-center gap-2">
                             <span>{team.name}</span>
                             <Badge variant="secondary" className="text-xs">
