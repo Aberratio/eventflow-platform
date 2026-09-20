@@ -330,6 +330,8 @@ export const httpAdapter: ApiAdapter = {
     ),
   getTeamById: (teamId) => request(`/teams/${encodeURIComponent(teamId)}`),
   getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
+  getEventEmbedPublicConfig: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/embed/public`),
   getRegistrationsByUser: (userId) => request(`/users/${encodeURIComponent(userId)}/registrations`),
   createRegistration: (data) => request('/registrations', json('POST', data)),
   updateRegistration: (id, data) =>

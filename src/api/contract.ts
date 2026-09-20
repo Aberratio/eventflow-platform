@@ -231,6 +231,17 @@ export interface ApiAdapter {
    */
   getTeamById(teamId: string): Promise<ApiResponse<RelayTeam>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<Registration[]>>;
+  /**
+   * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)
+   * calls this before rendering the form, to check whether embedding is
+   * enabled for the event and what origins are allowlisted. Mirrors the
+   * server's own "returns 200 with enabled:false rather than 404" contract
+   * for an event that exists but isn't embeddable; only a nonexistent event
+   * 404s.
+   */
+  getEventEmbedPublicConfig(
+    eventId: string,
+  ): Promise<ApiResponse<{ enabled: boolean; allowedOrigins: string[] }>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;
   updateRegistration(

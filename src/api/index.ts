@@ -43,6 +43,8 @@ export const getEventBySlug: ApiAdapter['getEventBySlug'] = (...args) =>
   ensureAdapter().then((a) => a.getEventBySlug(...args));
 export const getEventById: ApiAdapter['getEventById'] = (...args) =>
   ensureAdapter().then((a) => a.getEventById(...args));
+export const getEventEmbedPublicConfig: ApiAdapter['getEventEmbedPublicConfig'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventEmbedPublicConfig(...args));
 export const createEvent: ApiAdapter['createEvent'] = (...args) =>
   ensureAdapter().then((a) => a.createEvent(...args));
 export const updateEvent: ApiAdapter['updateEvent'] = (...args) =>

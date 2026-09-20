@@ -85,6 +85,9 @@ export interface CreateEventPayload {
   /** E3.2: "Biuro Zawodów" integration toggle + pasted organization token. */
   bzIntegrationEnabled?: boolean;
   bzOrganizationToken?: string | null;
+  /** E8.11: embed our own registration form on an external site via iframe. */
+  embedEnabled?: boolean;
+  embedAllowedOrigins?: string[];
 }
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;

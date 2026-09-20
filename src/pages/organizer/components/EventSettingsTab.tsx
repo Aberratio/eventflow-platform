@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { PrivacyChangeConfirmDialog } from './PrivacyChangeConfirmDialog';
 import { EventActivityLogCard } from './EventActivityLogCard';
+import { EventEmbedSettingsCard } from './EventEmbedSettingsCard';
 
 interface EventSettingsTabProps {
   event: Event;
@@ -500,6 +501,12 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* E8.11: same organizer-owns-event-or-admin gate the write endpoint
+          itself enforces server-side (`isOwnerOrAdmin`, already used above
+          for the cancel action) — a moderator can view this tab but should
+          not see/manage embed configuration. */}
+      {isOwnerOrAdmin && <EventEmbedSettingsCard event={event} />}
 
       <EventActivityLogCard eventId={event.id} />
 
