@@ -6,6 +6,19 @@ export type RegistrationStatus = 'open' | 'closed' | 'none';
 
 export type PriceTierDiscountType = 'percent' | 'fixed';
 export type DistanceStartType = 'individual' | 'relay';
+/**
+ * TD.8 (spec 07 rozstrzygniecie 10): sposob naliczania oplaty startowej dla
+ * Dystansu sztafetowego. `per_person` (domyslne, jedyne dotychczasowe
+ * zachowanie) - kazdy czlonek zespolu placi osobno. `per_team` - kapitan
+ * placi cala oplate za druzyne, pozostali czlonkowie maja oplate zerowa.
+ * Ma sens tylko dla `startType === 'relay'`, ale serwer tego nie wymusza.
+ */
+export type TeamPricingMode = 'per_person' | 'per_team';
+
+export const TEAM_PRICING_MODE_LABELS: Record<TeamPricingMode, string> = {
+  per_person: 'Za osobę (każdy płaci osobno)',
+  per_team: 'Za drużynę (cała opłata na Zapisie kapitana)',
+};
 
 export interface VipPrice {
   id: string;
@@ -149,6 +162,7 @@ export interface Distance {
   relayMinTeamSize?: number;
   relayMaxTeamSize?: number;
   relayTeamCompletionDeadline?: string;
+  teamPricingMode?: TeamPricingMode;
   /**
    * E2.7 (spec 14 sekcja 4): regula agregacji wyniku druzynowego z wynikow
    * indywidualnych czlonkow, konfigurowalna per Dystans (relacja z
@@ -441,6 +455,21 @@ export interface Event {
    * require re-pasting it.
    */
   bzOrganizationToken?: string | null;
+  /**
+   * E8.11 ("Zewnętrzny formularz w iframe"): lets the organizer embed THIS
+   * platform's own registration form on an external (organizer-owned) site
+   * via `<iframe>`. Deliberately separate from `registrationEmbed` above,
+   * which is the opposite direction — embedding an EXTERNAL registration
+   * provider INTO this site.
+   */
+  embedEnabled?: boolean;
+  /**
+   * Origin allowlist checked (client-side, defense-in-depth only — see the
+   * comment in `src/pages/EmbedEventRegistrationPage.tsx`) before the embed
+   * page renders the form. Each entry is a bare `http(s)://host[:port]`
+   * origin — no path/query/fragment (enforced server-side on write).
+   */
+  embedAllowedOrigins?: string[];
 }
 
 export type PaymentConfigType = 'organizer_bank' | 'admin_gateway';

@@ -40,6 +40,7 @@ import {
   GadgetImage,
   DistanceStartType,
   TeamAggregationRule,
+  TeamPricingMode,
 } from '@/types';
 
 export interface DistanceFormData {
@@ -55,6 +56,8 @@ export interface DistanceFormData {
   relayTeamCompletionDeadline: string;
   /** E2.7: regula agregacji wyniku druzynowego - puste = brak wyboru (nie wysylane). */
   teamAggregationRule: TeamAggregationRule | '';
+  /** TD.8 (spec 07 rozstrzygniecie 10): sposob naliczania oplaty startowej dla Dystansu sztafetowego. */
+  teamPricingMode: TeamPricingMode;
   price: string;
   /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
   officePrice: string;
@@ -584,6 +587,7 @@ export const useEventFormState = () => {
       relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
       relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
       teamAggregationRule: d.teamAggregationRule || '',
+      teamPricingMode: d.teamPricingMode || 'per_person',
       price: d.price.toString(),
       officePrice: officeVariantOf(d)?.price?.toString() || '',
       limit: d.limit?.toString() || '',
@@ -715,6 +719,7 @@ export const useEventFormState = () => {
         relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
         relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
         teamAggregationRule: d.teamAggregationRule || '',
+        teamPricingMode: d.teamPricingMode || 'per_person',
         price: d.price.toString(),
         officePrice: officeVariantOf(d)?.price?.toString() || '',
         limit: d.limit?.toString() || '',
@@ -803,6 +808,7 @@ export const useEventFormState = () => {
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
         teamAggregationRule: '',
+        teamPricingMode: 'per_person',
         price: '',
         officePrice: '',
         limit: '',
@@ -836,6 +842,7 @@ export const useEventFormState = () => {
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
         teamAggregationRule: '',
+        teamPricingMode: 'per_person',
         price: '',
         officePrice: '',
         limit: '',
@@ -1631,6 +1638,7 @@ export const useEventFormState = () => {
           dist.startType === 'relay' ? dist.relayTeamCompletionDeadline || undefined : undefined,
         teamAggregationRule:
           dist.startType === 'relay' ? dist.teamAggregationRule || undefined : undefined,
+        teamPricingMode: dist.teamPricingMode,
         price: parseNumberInput(dist.price) ?? 0,
         pricingVariants: (() => {
           const officePrice = parseNumberInput(dist.officePrice);

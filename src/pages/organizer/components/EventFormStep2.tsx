@@ -44,6 +44,8 @@ import {
   type DistanceDocument,
   type TeamAggregationRule,
   TEAM_AGGREGATION_RULE_LABELS,
+  type TeamPricingMode,
+  TEAM_PRICING_MODE_LABELS,
 } from '@/types';
 import { formatDistanceName, type EventFormState, type SubStep } from '../hooks/useEventFormState';
 
@@ -919,6 +921,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           form.updateDistance(index, 'relayMaxTeamSize', '');
                           form.updateDistance(index, 'relayTeamCompletionDeadline', '');
                           form.updateDistance(index, 'teamAggregationRule', '');
+                          form.updateDistance(index, 'teamPricingMode', 'per_person');
                         }
                       }}
                     >
@@ -1011,6 +1014,30 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           </SelectContent>
                         </Select>
                         <FieldError message={fe[`distance_${index}_teamAggregationRule`]} />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Okresla, czy oplata startowa jest naliczana osobno kazdemu czlonkowi druzyny, czy w calosci kapitanowi (pozostali czlonkowie maja wtedy oplate zerowa).">
+                          Sposób naliczania opłaty
+                        </HelpLabel>
+                        <Select
+                          value={dist.teamPricingMode}
+                          onValueChange={(value: TeamPricingMode) =>
+                            form.updateDistance(index, 'teamPricingMode', value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(Object.keys(TEAM_PRICING_MODE_LABELS) as TeamPricingMode[]).map(
+                              (mode) => (
+                                <SelectItem key={mode} value={mode}>
+                                  {TEAM_PRICING_MODE_LABELS[mode]}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </>
                   )}

@@ -93,6 +93,20 @@ const existingEvent: Event = {
         },
       ],
     },
+    {
+      id: 'dist-2',
+      name: 'Sztafeta 4x100',
+      length: 0.4,
+      unit: 'km',
+      categories: [],
+      registeredCount: 5,
+      price: 200,
+      startType: 'relay',
+      relayMinTeamSize: 4,
+      relayMaxTeamSize: 4,
+      teamAggregationRule: 'sum',
+      teamPricingMode: 'per_team',
+    },
   ],
 };
 
@@ -110,7 +124,7 @@ describe('useEventFormState edit mode (TD.2)', () => {
   it('threads the loaded distance registeredCount into the editable form distances', async () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
 
-    await waitFor(() => expect(result.current.distances).toHaveLength(1));
+    await waitFor(() => expect(result.current.distances).toHaveLength(2));
     await waitFor(() => expect(result.current.distances[0].registeredCount).toBe(37));
   });
 
@@ -136,5 +150,15 @@ describe('useEventFormState edit mode (TD.2)', () => {
 
     await waitFor(() => expect(result.current.bzIntegrationEnabled).toBe(true));
     expect(result.current.bzOrganizationToken).toBe('ORG-EXISTING-TOKEN');
+  });
+
+  // TD.8 (spec 07 rozstrzygniecie 10): teamPricingMode must round-trip through
+  // the same explicit-field-list load site as startType/relayMinTeamSize, or
+  // it silently resets to the default on the organizer's next edit.
+  it('loads the existing relay distance teamPricingMode into the editable form state', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+
+    await waitFor(() => expect(result.current.distances).toHaveLength(2));
+    expect(result.current.distances[1].teamPricingMode).toBe('per_team');
   });
 });

@@ -203,6 +203,7 @@ describe('useEventFormState event wizard validation', () => {
       result.current.updateDistance(0, 'relayMaxTeamSize', '4');
       result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
       result.current.updateDistance(0, 'teamAggregationRule', 'sum');
+      result.current.updateDistance(0, 'teamPricingMode', 'per_team');
       result.current.updateDistance(0, 'officePrice', '120,50');
       result.current.updateDistance(0, 'limit', '250');
       result.current.addGadget();
@@ -238,6 +239,7 @@ describe('useEventFormState event wizard validation', () => {
             relayMaxTeamSize: 4,
             relayTeamCompletionDeadline: '2027-05-05',
             teamAggregationRule: 'sum',
+            teamPricingMode: 'per_team',
           }),
         ],
         merchandise: [
@@ -373,6 +375,34 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(createEvent).not.toHaveBeenCalled();
     expect(result.current.fieldValidationErrors.distance_0_relayMaxTeamSize).toContain('Maksimum');
+  });
+
+  // TD.8 (spec 07 rozstrzygniecie 10): the server's own default is
+  // 'per_person' - a fresh relay distance the organizer never touches this
+  // field on must submit that same default, not omit the key.
+  it('defaults a fresh relay distance to per_person team pricing on submit', async () => {
+    const { result } = renderHook(() => useEventFormState(), { wrapper });
+    await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
+
+    act(() => {
+      fillRequiredBasics(result.current);
+      addValidDistance(result.current);
+      result.current.updateDistance(0, 'startType', 'relay');
+      result.current.updateDistance(0, 'relayMinTeamSize', '2');
+      result.current.updateDistance(0, 'relayMaxTeamSize', '4');
+      result.current.updateDistance(0, 'relayTeamCompletionDeadline', '2027-05-05');
+      result.current.updateDistance(0, 'teamAggregationRule', 'sum');
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit();
+    });
+
+    expect(createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        distances: [expect.objectContaining({ teamPricingMode: 'per_person' })],
+      }),
+    );
   });
 
   it('requires a team aggregation rule for a relay distance (E2.7)', async () => {
