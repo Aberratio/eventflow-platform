@@ -596,6 +596,22 @@ export const EventStartListTab = ({
                             >
                               {formatTeamCompleteness(block.team)}
                             </Badge>
+                            {/*
+                              E7.5 (issue 23 Answer §7): the captain's
+                              manually declared Kategoria specjalna, shown as
+                              a cheap extension of the existing team-group
+                              header (E7.4) — never recomputed from the
+                              members listed below it, so it may legitimately
+                              look stale after a roster change.
+                            */}
+                            {block.team.specialCategory && (
+                              <Badge
+                                variant="outline"
+                                className="border-primary/30 bg-primary/10 text-[11px] font-normal text-primary"
+                              >
+                                {block.team.specialCategory}
+                              </Badge>
+                            )}
                           </span>
                         </TableHead>
                       </TableRow>,

@@ -344,6 +344,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         teamName: data.teamName,
         teamId: data.teamId,
         createTeam: data.createTeam,
+        specialCategory: data.teamSpecialCategory,
         pricingVariantId: data.pricingVariantId,
         discountCode: data.discountCode,
         merchandise: data.merchandise,

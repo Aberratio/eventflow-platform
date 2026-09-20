@@ -92,6 +92,11 @@ export interface RegistrationData {
   teamId?: string;
   /** E7.1: explicit "create a new Drużyna" intent (relay Dystans only). */
   createTeam?: boolean;
+  /**
+   * E7.5: the captain's manually declared Kategoria specjalna for a
+   * newly-created Drużyna — only meaningful together with `createTeam`.
+   */
+  teamSpecialCategory?: string;
   pricingVariantId?: string;
   insuranceVariantId?: string;
 }
@@ -828,6 +833,44 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                   <p className="text-xs text-muted-foreground">
                     3-50 znaków. Użyj tej samej nazwy co pozostali członkowie drużyny.
                   </p>
+                  {/*
+                    E7.5 (issue 23 Answer §7, "Kategoria specjalna: deklaracja
+                    ręczna kapitana"): a manual, one-time choice from the same
+                    per-Dystans configured list as the individual "Kategorie
+                    specjalne" checkboxes below (ticket 10) — never derived
+                    from who ends up on the roster, and not re-asked at join
+                    time (only the captain, creating the team, declares it).
+                  */}
+                  {(form.selectedDistance?.specialCategories?.length ?? 0) > 0 && (
+                    <fieldset className="space-y-2 pt-2">
+                      <legend className="text-sm font-medium text-foreground">
+                        Kategoria specjalna drużyny (opcjonalnie)
+                      </legend>
+                      <Label htmlFor="teamSpecialCategory" className="sr-only">
+                        Kategoria specjalna drużyny
+                      </Label>
+                      <Select
+                        value={form.teamSpecialCategory || 'none'}
+                        onValueChange={(v) => form.setTeamSpecialCategory(v === 'none' ? '' : v)}
+                      >
+                        <SelectTrigger id="teamSpecialCategory">
+                          <SelectValue placeholder="Brak kategorii specjalnej" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Brak kategorii specjalnej</SelectItem>
+                          {form.selectedDistance?.specialCategories?.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.name}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Deklaracja jednorazowa — skład drużyny może się później zmienić (wymiana
+                        zawodnika), ale kategoria specjalna nie jest przeliczana automatycznie.
+                      </p>
+                    </fieldset>
+                  )}
                 </div>
               )}
             </div>

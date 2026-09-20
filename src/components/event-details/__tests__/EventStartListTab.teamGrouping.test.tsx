@@ -19,6 +19,7 @@ vi.mock('@/api', async () => {
           minSize: 2,
           maxSize: 4,
           complete: false,
+          specialCategory: 'Drużyna mieszana',
         },
         {
           id: 'team-real-2',
@@ -83,9 +84,27 @@ const baseReg = (overrides: Partial<Registration>): Registration => ({
 describe('EventStartListTab team grouping (E7.4)', () => {
   it('clusters registrations sharing a real teamId under one labeled group with a completeness indicator', async () => {
     const registrations: Registration[] = [
-      baseReg({ id: 'r1', userName: 'Adam Kowalski', bibNumber: '101', teamId: 'team-real-1', teamName: 'Błyskawice' }),
-      baseReg({ id: 'r2', userName: 'Bartek Nowak', bibNumber: '102', teamId: 'team-real-1', teamName: 'Błyskawice' }),
-      baseReg({ id: 'r3', userName: 'Celina Lis', bibNumber: '103', teamId: 'team-real-2', teamName: 'Sokoły' }),
+      baseReg({
+        id: 'r1',
+        userName: 'Adam Kowalski',
+        bibNumber: '101',
+        teamId: 'team-real-1',
+        teamName: 'Błyskawice',
+      }),
+      baseReg({
+        id: 'r2',
+        userName: 'Bartek Nowak',
+        bibNumber: '102',
+        teamId: 'team-real-1',
+        teamName: 'Błyskawice',
+      }),
+      baseReg({
+        id: 'r3',
+        userName: 'Celina Lis',
+        bibNumber: '103',
+        teamId: 'team-real-2',
+        teamName: 'Sokoły',
+      }),
       baseReg({ id: 'r4', userName: 'Darek Wolny', bibNumber: '104' }),
     ];
 
@@ -98,10 +117,18 @@ describe('EventStartListTab team grouping (E7.4)', () => {
     const partialHeader = await screen.findByText(/Drużyna: Błyskawice/);
     const partialGroup = partialHeader.closest('th') as HTMLElement;
     expect(within(partialGroup).getByText('3/4 zawodników')).toBeInTheDocument();
+    // E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+    // specjalna is shown alongside the completeness badge, as a cheap
+    // extension of the existing E7.4 team-group header.
+    expect(within(partialGroup).getByText('Drużyna mieszana')).toBeInTheDocument();
 
     const fullHeader = screen.getByText(/Drużyna: Sokoły/);
     const fullGroup = fullHeader.closest('th') as HTMLElement;
     expect(within(fullGroup).getByText('4/4 zawodników')).toBeInTheDocument();
+    // Sokoły has no declared special category in the mock — no badge for it.
+    expect(
+      within(fullGroup).queryByText(/Drużyna mieszana|Drużyna kobieca/),
+    ).not.toBeInTheDocument();
 
     // Both members of the Błyskawice team are still individually rendered
     // (own bib number each, per Answer §4 — grouping is a view, not a merge).
@@ -115,7 +142,13 @@ describe('EventStartListTab team grouping (E7.4)', () => {
 
   it('does not group registrations whose teamId does not resolve to a real team, or that only share a legacy free-text teamName', async () => {
     const registrations: Registration[] = [
-      baseReg({ id: 'r1', userName: 'Ewa Stale', bibNumber: '201', teamId: 'stale-team-id', teamName: 'Klub X' }),
+      baseReg({
+        id: 'r1',
+        userName: 'Ewa Stale',
+        bibNumber: '201',
+        teamId: 'stale-team-id',
+        teamName: 'Klub X',
+      }),
       baseReg({ id: 'r2', userName: 'Filip Klub', bibNumber: '202', teamName: 'Klub X' }),
     ];
 

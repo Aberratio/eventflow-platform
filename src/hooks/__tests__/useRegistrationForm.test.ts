@@ -563,6 +563,68 @@ describe('useRegistrationForm', () => {
     });
   });
 
+  describe('E7.5 team special category (issue 23 Answer §7)', () => {
+    const relayEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          startType: 'relay',
+          relayMinTeamSize: 2,
+          relayMaxTeamSize: 4,
+          specialCategories: [
+            { id: 'mixed', name: 'Drużyna mieszana' },
+            { id: 'women', name: 'Drużyna kobieca' },
+          ],
+        },
+      ],
+    } as unknown as Event;
+
+    it('sends the captain-declared special category only when creating a team', () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+
+      expect(result.current.teamMode).toBe('create');
+
+      act(() => {
+        result.current.setTeamName('Tęcza');
+        result.current.setTeamSpecialCategory('Drużyna mieszana');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data!.createTeam).toBe(true);
+      expect(data!.teamSpecialCategory).toBe('Drużyna mieszana');
+    });
+
+    it('never sends a special category on the "join an existing team" path', () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+
+      act(() => {
+        result.current.setTeamSpecialCategory('Drużyna mieszana');
+        result.current.setTeamMode('join');
+        result.current.setSelectedExistingTeam('team-real-1');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data!.createTeam).toBeUndefined();
+      expect(data!.teamSpecialCategory).toBeUndefined();
+    });
+
+    it('omits teamSpecialCategory entirely when the captain leaves it unset', () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+
+      act(() => {
+        result.current.setTeamName('Bez Kategorii');
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data!.createTeam).toBe(true);
+      expect(data!.teamSpecialCategory).toBeUndefined();
+    });
+  });
+
   describe('E7.2 invitation link (`?joinTeam=`) pre-selection', () => {
     const relayEvent = {
       ...mockEvent,

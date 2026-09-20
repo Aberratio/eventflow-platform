@@ -1,8 +1,23 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { render, screen } from '@/test/test-utils';
 import { RegistrationForm } from '../RegistrationForm';
 import type { Event, MerchandiseOrder } from '@/types';
+
+// Radix Select relies on pointer-capture APIs jsdom doesn't implement —
+// same workaround already used by AddDiscountCodeDialog.test.tsx.
+Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
+  value: () => false,
+});
+Object.defineProperty(HTMLElement.prototype, 'setPointerCapture', {
+  value: () => undefined,
+});
+Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
+  value: () => undefined,
+});
+Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+  value: () => undefined,
+});
 
 const submitData = {
   distanceId: 'd1',
@@ -51,6 +66,8 @@ const formState = {
   selectedExistingTeam: '',
   setSelectedExistingTeam: vi.fn(),
   teamNameError: '',
+  teamSpecialCategory: '',
+  setTeamSpecialCategory: vi.fn(),
   existingTeams: [],
   selectedVipId: '',
   setSelectedVipId: vi.fn(),
@@ -87,8 +104,11 @@ const formState = {
   isFirstStep: false,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let currentFormState: any = formState;
+
 vi.mock('@/hooks/useRegistrationForm', () => ({
-  useRegistrationForm: () => formState,
+  useRegistrationForm: () => currentFormState,
 }));
 
 const event = {
@@ -125,5 +145,77 @@ describe('RegistrationForm preview mode', () => {
 
     await user.click(screen.getByRole('button', { name: /Zakończ testowo, bez płatności/i }));
     expect(onComplete).toHaveBeenCalledWith(submitData);
+  });
+});
+
+describe('RegistrationForm team special category (E7.5, issue 23 Answer §7)', () => {
+  afterEach(() => {
+    currentFormState = formState;
+  });
+
+  it('offers the configured special-category selector while creating a new Drużyna', () => {
+    currentFormState = {
+      ...formState,
+      step: 25,
+      isStepInActiveSteps: (stepId: number) => stepId === 25,
+      activeSteps: [{ id: 25, name: 'Drużyna' }],
+      wantsTeam: true,
+      hasTeamOption: true,
+      teamMode: 'create',
+      selectedDistance: {
+        ...formState.selectedDistance,
+        specialCategories: [
+          { id: 'mixed', name: 'Drużyna mieszana' },
+          { id: 'women', name: 'Drużyna kobieca' },
+        ],
+      },
+    };
+
+    render(<RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} />);
+
+    expect(screen.getByText('Kategoria specjalna drużyny (opcjonalnie)')).toBeInTheDocument();
+    expect(screen.getByText('Brak kategorii specjalnej')).toBeInTheDocument();
+  });
+
+  it('does not render a special-category selector when the distance has none configured', () => {
+    currentFormState = {
+      ...formState,
+      step: 25,
+      isStepInActiveSteps: (stepId: number) => stepId === 25,
+      activeSteps: [{ id: 25, name: 'Drużyna' }],
+      wantsTeam: true,
+      hasTeamOption: true,
+      teamMode: 'create',
+    };
+
+    render(<RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} />);
+
+    expect(screen.queryByText('Kategoria specjalna drużyny (opcjonalnie)')).not.toBeInTheDocument();
+  });
+
+  it('calls setTeamSpecialCategory when the captain picks a value', async () => {
+    const setTeamSpecialCategory = vi.fn();
+    const user = userEvent.setup();
+    currentFormState = {
+      ...formState,
+      step: 25,
+      isStepInActiveSteps: (stepId: number) => stepId === 25,
+      activeSteps: [{ id: 25, name: 'Drużyna' }],
+      wantsTeam: true,
+      hasTeamOption: true,
+      teamMode: 'create',
+      setTeamSpecialCategory,
+      selectedDistance: {
+        ...formState.selectedDistance,
+        specialCategories: [{ id: 'mixed', name: 'Drużyna mieszana' }],
+      },
+    };
+
+    render(<RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} />);
+
+    await user.click(screen.getByRole('combobox', { name: /Kategoria specjalna drużyny/i }));
+    await user.click(await screen.findByText('Drużyna mieszana'));
+
+    expect(setTeamSpecialCategory).toHaveBeenCalledWith('Drużyna mieszana');
   });
 });

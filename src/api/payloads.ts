@@ -184,6 +184,16 @@ export interface CreateRegistrationPayload {
    * classification-only label some organizers collect via `collectTeam`.
    */
   createTeam?: boolean;
+  /**
+   * E7.5 (issue 23 Answer §7, "Kategoria specjalna: deklaracja ręczna
+   * kapitana"): only meaningful together with `createTeam` — the captain's
+   * one-time, manually chosen Kategoria specjalna for the new Drużyna, from
+   * the same per-Dystans configured list (`distance.specialCategories`)
+   * ticket 10's individual `category` free text is picked from. The server
+   * validates it against that list and rejects an unconfigured value; a
+   * later roster change never recomputes or touches this value.
+   */
+  specialCategory?: string;
   pricingVariantId?: string;
   discountCode?: string;
   merchandise?: RegistrationMerchandiseSelection[];

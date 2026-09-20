@@ -53,6 +53,14 @@ export interface RelayTeam {
   minSize: number | null;
   maxSize: number | null;
   complete: boolean | null;
+  /** E7.1: the user who created the team — the "captain" for permission checks (E7.5). */
+  createdByUserId?: string | null;
+  /**
+   * E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+   * specjalna, e.g. "Drużyna mieszana" — set once at creation, optionally
+   * changed later by the captain, and NEVER recomputed from the roster.
+   */
+  specialCategory?: string | null;
 }
 
 export interface Registration {

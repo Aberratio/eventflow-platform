@@ -59,6 +59,10 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
   const [teamName, setTeamName] = useState('');
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
+  // E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+  // specjalna for a brand-new Drużyna — only sent to the server together
+  // with `createTeam`, never re-derived from the roster.
+  const [teamSpecialCategory, setTeamSpecialCategory] = useState('');
 
   // Wariant opłaty (E1.2, step 1-2 of the "Rozliczenie" algorithm)
   const [selectedPricingVariantId, setSelectedPricingVariantId] = useState<string>('');
@@ -368,6 +372,20 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
     }
   }, [teamName, wantsTeam, teamMode]);
 
+  // E7.5: a stale selection could otherwise survive a mode/distance switch
+  // and get silently resubmitted against a different Dystans's (different)
+  // configured list — clear it whenever it's no longer the "create a team"
+  // path, or the distance (and therefore the configured list) changes.
+  useEffect(() => {
+    if (!wantsTeam || teamMode !== 'create') {
+      if (teamSpecialCategory) setTeamSpecialCategory('');
+    }
+  }, [wantsTeam, teamMode, teamSpecialCategory]);
+
+  useEffect(() => {
+    setTeamSpecialCategory('');
+  }, [selectedDistanceId]);
+
   const getFinalTeamName = (): string | undefined => {
     if (!wantsTeam) return undefined;
     if (teamMode === 'create') return teamName.trim() || undefined;
@@ -527,6 +545,7 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
       teamName: getFinalTeamName(),
       teamId: getFinalTeamId(),
       createTeam: getCreateTeamFlag() || undefined,
+      teamSpecialCategory: getCreateTeamFlag() ? teamSpecialCategory || undefined : undefined,
       pricingVariantId: selectedPricingVariantId || undefined,
       insuranceVariantId: selectedInsuranceVariantId || undefined,
     };
@@ -573,6 +592,8 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
     selectedExistingTeam,
     setSelectedExistingTeam,
     teamNameError,
+    teamSpecialCategory,
+    setTeamSpecialCategory,
     existingTeams,
     pricingVariants,
     selectedPricingVariantId,
