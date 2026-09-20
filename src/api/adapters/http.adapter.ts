@@ -549,4 +549,12 @@ export const httpAdapter: ApiAdapter = {
     ),
   rotateIdentityCode: (competitorId) =>
     request(`/competitors/${encodeURIComponent(competitorId)}/rotate-identity-code`, json('POST')),
+
+  searchCompetitorsForMerge: (q) =>
+    request(`/admin/competitors/search?${new URLSearchParams({ q }).toString()}`),
+  getCompetitorMergeComparison: (competitorIdA, competitorIdB) =>
+    request(
+      `/admin/competitors/${encodeURIComponent(competitorIdA)}/merge-comparison/${encodeURIComponent(competitorIdB)}`,
+    ),
+  mergeCompetitors: (payload) => request('/admin/competitors/merge', json('POST', payload)),
 };

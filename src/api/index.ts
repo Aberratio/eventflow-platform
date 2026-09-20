@@ -384,6 +384,14 @@ export const checkCompetitorDuplicates: ApiAdapter['checkCompetitorDuplicates'] 
 export const rotateIdentityCode: ApiAdapter['rotateIdentityCode'] = (...args) =>
   ensureAdapter().then((a) => a.rotateIdentityCode(...args));
 
+// E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin)
+export const searchCompetitorsForMerge: ApiAdapter['searchCompetitorsForMerge'] = (...args) =>
+  ensureAdapter().then((a) => a.searchCompetitorsForMerge(...args));
+export const getCompetitorMergeComparison: ApiAdapter['getCompetitorMergeComparison'] = (...args) =>
+  ensureAdapter().then((a) => a.getCompetitorMergeComparison(...args));
+export const mergeCompetitors: ApiAdapter['mergeCompetitors'] = (...args) =>
+  ensureAdapter().then((a) => a.mergeCompetitors(...args));
+
 // Email Templates
 export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
   ensureAdapter().then((a) => a.getEmailTemplates(...args));

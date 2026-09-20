@@ -9,6 +9,7 @@ import { ModeratorDiscountCodesTab } from './components/ModeratorDiscountCodesTa
 import { ModeratorChallengesTab } from './components/ModeratorChallengesTab';
 import { AdminFeaturedEventsTab } from '@/pages/admin/components/AdminFeaturedEventsTab';
 import { AdminSeriesTab } from '@/pages/admin/components/AdminSeriesTab';
+import { CompetitorMergeTab } from '@/pages/admin/components/CompetitorMergeTab';
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +20,7 @@ import {
   Tag,
   Trophy,
   Star,
+  GitMerge,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -55,6 +57,7 @@ const navGroups: NavGroup[] = [
       { id: 'series', label: 'Serie', icon: Trophy },
       { id: 'participants', label: 'Uczestnicy', icon: Users },
       { id: 'organizers', label: 'Organizatorzy', icon: Building2 },
+      { id: 'competitor-merge', label: 'Scalanie Zawodników', icon: GitMerge },
     ],
   },
   {
@@ -90,6 +93,8 @@ const ModeratorDashboard = () => {
         return <UsersReadOnlyTab userType="participant" />;
       case 'organizers':
         return <UsersReadOnlyTab userType="organizer" />;
+      case 'competitor-merge':
+        return <CompetitorMergeTab />;
       case 'discounts':
         return <ModeratorDiscountCodesTab />;
       case 'orders':

@@ -136,6 +136,9 @@ export const QUERY_KEYS = {
   calendarSettings: ['calendarSettings'] as const,
   insuranceSettings: ['insuranceSettings'] as const,
   challengePointsSettings: ['challengePointsSettings'] as const,
+  competitorMergeSearch: (q: string) => ['competitors', 'merge-search', q] as const,
+  competitorMergeComparison: (idA: string, idB: string) =>
+    ['competitors', 'merge-comparison', idA, idB] as const,
 } as const;
 
 export const DEFAULT_PAGE_SIZE = 20;

@@ -86,6 +86,9 @@ import type {
   Competitor,
   GrantCareResult,
   AddCompetitorPayload,
+  CompetitorMergeComparison,
+  CompetitorMergePayload,
+  CompetitorMergeResult,
   GlobalInsuranceSettings,
   ChallengePointsSettings,
   AdminActivityLog,
@@ -401,6 +404,17 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<Competitor[]>>;
   /** E1.12: rotacja kodu tożsamości — wywołujący musi być Zawodnikiem albo mieć nad nim Opiekę. */
   rotateIdentityCode(competitorId: string): Promise<ApiResponse<Competitor>>;
+
+  // ── E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin) ──
+  /** Wyszukiwanie kandydatów do scalenia po imieniu/nazwisku/kodzie tożsamości. */
+  searchCompetitorsForMerge(q: string): Promise<ApiResponse<Competitor[]>>;
+  /** Widok "obok siebie" dwóch profili, wraz z listą konfliktów Zapisów, przed wskazaniem profilu przeżywającego. */
+  getCompetitorMergeComparison(
+    competitorIdA: string,
+    competitorIdB: string,
+  ): Promise<ApiResponse<CompetitorMergeComparison>>;
+  /** Wykonuje (albo wstrzymuje) scalenie — patrz CompetitorMergeResult.status. */
+  mergeCompetitors(payload: CompetitorMergePayload): Promise<ApiResponse<CompetitorMergeResult>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
