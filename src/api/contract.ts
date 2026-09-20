@@ -215,6 +215,17 @@ export interface ApiAdapter {
    * non-relay `collectTeam` classification case).
    */
   getTeamsForDistance(eventId: string, distanceId: string): Promise<ApiResponse<RelayTeam[]>>;
+  /**
+   * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
+   * resolves a single Drużyna by its own id — the read side of a captain's
+   * shareable invitation link (`/events/{eventSlug}/register?joinTeam=
+   * {teamId}`). The team's own server-generated UUID doubles as the
+   * invitation token (see TeamRepository on the server); this lets the
+   * landing page show a clear "team full"/"link invalid" message before the
+   * invitee ever opens the registration form. Rejects (404) for an unknown
+   * id — callers must catch, not assume success.
+   */
+  getTeamById(teamId: string): Promise<ApiResponse<RelayTeam>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<Registration[]>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;

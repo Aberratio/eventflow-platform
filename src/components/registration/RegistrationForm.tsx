@@ -49,7 +49,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
-import { useRegistrationForm } from '@/hooks/useRegistrationForm';
+import { useRegistrationForm, type InitialTeamJoin } from '@/hooks/useRegistrationForm';
 import { appLogger } from '@/lib/logger';
 import { formatMoney } from '@/lib/discountValue';
 
@@ -59,6 +59,8 @@ interface RegistrationFormProps {
   onCancel: () => void;
   previewMode?: boolean;
   disabled?: boolean;
+  /** E7.2: pre-fills "join this exact team" when arriving via an invitation link. */
+  initialTeamJoin?: InitialTeamJoin | null;
 }
 
 /**
@@ -133,8 +135,9 @@ export const RegistrationForm = ({
   onCancel,
   previewMode = false,
   disabled = false,
+  initialTeamJoin = null,
 }: RegistrationFormProps) => {
-  const form = useRegistrationForm(event);
+  const form = useRegistrationForm(event, initialTeamJoin);
 
   const handleSubmit = () => {
     const data = form.buildSubmitData();
@@ -753,6 +756,16 @@ const TeamStep = ({ form }: { form: FormHook }) => (
       </CardDescription>
     </CardHeader>
     <CardContent className="space-y-6">
+      {form.hasInvitationLink && (
+        <Alert className="border-primary/30 bg-primary/5">
+          <Users className="h-4 w-4" />
+          <AlertTitle>Dołączasz przez link zaproszenia</AlertTitle>
+          <AlertDescription>
+            Kapitan drużyny wysłał Ci link, więc Twoja drużyna jest już wybrana poniżej. Wypełnij
+            swoje dane, aby dokończyć własny zapis.
+          </AlertDescription>
+        </Alert>
+      )}
       <div
         className={`cursor-pointer rounded-lg border-2 p-4 transition-all ${form.wantsTeam ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
         onClick={() => {

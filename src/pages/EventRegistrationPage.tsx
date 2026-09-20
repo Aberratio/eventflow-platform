@@ -1,5 +1,5 @@
-import { createRegistration, disciplineLabels, getEventBySlug, getCare } from '@/api';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { createRegistration, disciplineLabels, getEventBySlug, getCare, getTeamById } from '@/api';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
-import { ArrowLeft, Calendar, CheckCircle2, MapPin, UserCheck } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Calendar, CheckCircle2, MapPin, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,6 +81,38 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   });
 
   const event = eventResponse?.data ?? null;
+
+  // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
+  // a captain's shareable invitation link is `?joinTeam={teamId}` on this
+  // same registration route. Resolve it up front — before the invitee ever
+  // sees the multi-step form — so a full/unknown/wrong-event team shows one
+  // clear message instead of silently falling back to the generic "browse
+  // teams" picker or a confusing mid-form error.
+  const [searchParams] = useSearchParams();
+  const joinTeamId = searchParams.get('joinTeam');
+  const {
+    data: joinTeamResponse,
+    isLoading: isJoinTeamLoading,
+    isError: isJoinTeamError,
+  } = useQuery({
+    queryKey: ['team-invite', joinTeamId],
+    queryFn: () => getTeamById(joinTeamId as string),
+    enabled: Boolean(joinTeamId),
+    retry: false,
+  });
+  const joinTeam = joinTeamResponse?.data ?? null;
+  const joinTeamEventMismatch = Boolean(
+    joinTeamId && joinTeam && event && joinTeam.eventId !== event.id,
+  );
+  const joinTeamFull = Boolean(
+    joinTeam && joinTeam.maxSize !== null && joinTeam.memberCount >= joinTeam.maxSize,
+  );
+  const joinTeamInvalid = Boolean(joinTeamId) && (isJoinTeamError || joinTeamEventMismatch);
+  const initialTeamJoin =
+    joinTeamId && joinTeam && !joinTeamEventMismatch && !joinTeamFull
+      ? { teamId: joinTeam.id, distanceId: joinTeam.distanceId }
+      : null;
+
   const isUnpublished = event && event.publicationStatus === 'draft';
   const canManagePreview =
     user?.role === 'admin' ||
@@ -135,7 +167,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     }
   }, [event, isRegistrationOpen, navigate, previewMode, slug]);
 
-  if (isLoading) {
+  if (isLoading || (Boolean(joinTeamId) && isJoinTeamLoading)) {
     return (
       <Layout>
         <div className="container py-12 text-center">
@@ -153,6 +185,46 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           <Button asChild>
             <Link to="/events">Wróć do listy wydarzeń</Link>
           </Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  // E7.2: a `?joinTeam=` link that doesn't resolve to a real, joinable team
+  // for THIS event — unknown id, wrong event, or already-full roster. Shown
+  // as its own clear message rather than crashing, or silently falling back
+  // to the generic "browse teams" picker as if nothing was wrong.
+  if (joinTeamId && (joinTeamInvalid || joinTeamFull)) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <div className="mx-auto max-w-xl">
+            <Card className="border-destructive/30">
+              <CardContent className="space-y-4 pt-8 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+                  <AlertTriangle className="h-8 w-8 text-destructive" />
+                </div>
+                <h1 className="text-xl font-bold">
+                  {joinTeamFull ? 'Drużyna jest już pełna' : 'Nieprawidłowy link zaproszenia'}
+                </h1>
+                <p className="text-muted-foreground">
+                  {joinTeamFull
+                    ? 'Ta drużyna ma już komplet zawodników. Poproś kapitana o nowy link albo dołącz do innej drużyny podczas zapisu.'
+                    : joinTeamEventMismatch
+                      ? 'Ten link zaproszenia dotyczy innego wydarzenia.'
+                      : 'Nie znaleziono tej drużyny. Link zaproszenia mógł wygasnąć lub jest nieprawidłowy.'}
+                </p>
+                <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                  <Button asChild>
+                    <Link to={`/events/${slug}/register`}>Zapisz się bez linku</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to={`/events/${slug}`}>Wróć do wydarzenia</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </Layout>
     );
@@ -476,6 +548,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           onCancel={handleCancel}
           previewMode={isPreviewAvailable}
           disabled={registeringForOther && !selectedGrantor}
+          initialTeamJoin={initialTeamJoin}
         />
       </div>
     </Layout>

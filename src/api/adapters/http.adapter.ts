@@ -31,6 +31,18 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
   discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
   registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
+  // E7.2: surfaced both when submitting the registration form (existing E7.1
+  // 409/404s from RegistrationRepository::resolveTeamForRegistration) and
+  // when resolving a `?joinTeam=` invitation link up front (GET /teams/{id},
+  // `team_not_found`) — same wording either way, so an invitee sees one
+  // consistent message regardless of when the check happened to fire.
+  registration_team_full: 'Ta drużyna ma już komplet zawodników. Poproś kapitana o inny link.',
+  registration_team_not_found: 'Nie znaleziono tej drużyny. Link zaproszenia mógł wygasnąć.',
+  team_not_found: 'Nie znaleziono tej drużyny. Link zaproszenia mógł wygasnąć.',
+  registration_team_distance_mismatch: 'Ten link zaproszenia dotyczy innego dystansu.',
+  registration_team_requires_relay_distance:
+    'Drużyny można tworzyć tylko dla dystansów sztafetowych.',
+  registration_team_name_required: 'Podaj nazwę drużyny.',
   virtual_event_required: 'Wynik można zgłosić tylko dla wydarzenia wirtualnego.',
   virtual_result_window_closed: 'Wynik można zgłosić tylko w aktywnym oknie startowym.',
   virtual_result_registration_required: 'Nie znaleziono aktywnej rejestracji na ten dystans.',
@@ -316,6 +328,7 @@ export const httpAdapter: ApiAdapter = {
     request(
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/teams`,
     ),
+  getTeamById: (teamId) => request(`/teams/${encodeURIComponent(teamId)}`),
   getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getRegistrationsByUser: (userId) => request(`/users/${encodeURIComponent(userId)}/registrations`),
   createRegistration: (data) => request('/registrations', json('POST', data)),

@@ -563,6 +563,55 @@ describe('useRegistrationForm', () => {
     });
   });
 
+  describe('E7.2 invitation link (`?joinTeam=`) pre-selection', () => {
+    const relayEvent = {
+      ...mockEvent,
+      distances: [
+        {
+          ...mockEvent.distances[0],
+          startType: 'relay',
+          relayMinTeamSize: 2,
+          relayMaxTeamSize: 4,
+        },
+        mockEvent.distances[1],
+      ],
+    } as unknown as Event;
+
+    it('pre-selects the distance and "join this team" when an invitation link target is given', () => {
+      const { result } = renderHook(
+        () => useRegistrationForm(relayEvent, { teamId: 'team-real-1', distanceId: 'd1' }),
+        { wrapper },
+      );
+
+      expect(result.current.selectedDistanceId).toBe('d1');
+      expect(result.current.wantsTeam).toBe(true);
+      expect(result.current.teamMode).toBe('join');
+      expect(result.current.selectedExistingTeam).toBe('team-real-1');
+      expect(result.current.hasInvitationLink).toBe(true);
+    });
+
+    it('still submits the invitation-link team id like any other join, once terms are agreed', () => {
+      const { result } = renderHook(
+        () => useRegistrationForm(relayEvent, { teamId: 'team-real-1', distanceId: 'd1' }),
+        { wrapper },
+      );
+
+      act(() => {
+        result.current.setAgreedToTerms(true);
+      });
+
+      const data = result.current.buildSubmitData();
+      expect(data).not.toBeNull();
+      expect(data!.teamId).toBe('team-real-1');
+      expect(data!.createTeam).toBeUndefined();
+    });
+
+    it('does not report an invitation link when none was given', () => {
+      const { result } = renderHook(() => useRegistrationForm(relayEvent), { wrapper });
+      expect(result.current.hasInvitationLink).toBe(false);
+    });
+  });
+
   describe('E1.2 buildSubmitData contract fields', () => {
     it('populates pricingVariantId/discountCode/merchandise/insuranceVariantId for submission', () => {
       const eventWithVariant = {

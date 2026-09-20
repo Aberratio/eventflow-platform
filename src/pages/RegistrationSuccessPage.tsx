@@ -9,11 +9,13 @@ import {
   Mail,
   CreditCard,
   User,
+  Users,
 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
@@ -199,6 +201,19 @@ const RegistrationSuccessPage = () => {
   const distanceName = registration.distanceName || registrationData.distanceName;
   const category = registration.category || registrationData.category;
 
+  // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
+  // this Zapis just created a brand-new relay Drużyna (E7.1's `createTeam`
+  // intent) — surface the shareable invitation link for the still-missing
+  // teammates right here, the natural "what happens next" moment. The
+  // team's own server-generated id (`registration.teamId`) doubles as the
+  // invitation token; joining it still goes through
+  // RegistrationRepository::resolveTeamForRegistration() in full at submit
+  // time, this link only skips the "browse and pick" step for the invitee.
+  const teamInviteLink =
+    registrationData.createTeam && registration.teamId
+      ? `${window.location.origin}/events/${slug}/register?joinTeam=${registration.teamId}`
+      : null;
+
   return (
     <Layout>
       <div className="container py-12">
@@ -361,6 +376,44 @@ const RegistrationSuccessPage = () => {
                       </ul>
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Team Invitation Link (E7.2) — only for the Zapis that just created a new relay Drużyna */}
+          {teamInviteLink && (
+            <Card className="mb-6 border-primary/20 bg-primary/5">
+              <CardContent className="space-y-3 pt-6">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold">Zaproś resztę drużyny</h2>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Wyślij ten link pozostałym osobom z Twojej drużyny — po kliknięciu od razu dołączą
+                  do <span className="font-medium text-foreground">{registration.teamName}</span> i
+                  wypełnią własny zapis.
+                </p>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="team-invite-link" className="sr-only">
+                    Link zaproszenia do drużyny
+                  </label>
+                  <Input
+                    id="team-invite-link"
+                    readOnly
+                    value={teamInviteLink}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="font-mono text-xs sm:text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    aria-label="Skopiuj link zaproszenia"
+                    onClick={() => copyToClipboard(teamInviteLink, 'Link zaproszenia')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

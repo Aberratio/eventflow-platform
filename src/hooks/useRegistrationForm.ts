@@ -8,7 +8,7 @@ import {
   getRegistrationsByEvent,
   getTeamsForDistance,
 } from '@/api';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +17,22 @@ import { roundToCents } from '@/lib/discountValue';
 
 const currentYear = new Date().getFullYear();
 
-export const useRegistrationForm = (event: Event) => {
+/**
+ * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
+ * the resolved target of a `?joinTeam={teamId}` invitation link — already
+ * validated (exists, belongs to this event, not full) by the caller
+ * (`EventRegistrationPage`, via `getTeamById`) before this hook ever sees
+ * it. Applying it here only pre-fills the form's own state (distance +
+ * "join this team"); the actual join is still fully re-validated by the
+ * server at submit time (RegistrationRepository::resolveTeamForRegistration),
+ * same as the picker-based "join an existing team" path.
+ */
+export interface InitialTeamJoin {
+  teamId: string;
+  distanceId: string;
+}
+
+export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJoin | null) => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
@@ -58,6 +73,9 @@ export const useRegistrationForm = (event: Event) => {
   }, [user]);
 
   useEffect(() => {
+    // E7.2: an invitation link already dictates the distance — don't let the
+    // "only one distance available" convenience auto-select fight it.
+    if (initialTeamJoin) return;
     const availableDistances = event.distances.filter(
       (distance) => distance.limit == null || distance.registeredCount < distance.limit,
     );
@@ -65,7 +83,20 @@ export const useRegistrationForm = (event: Event) => {
     if (availableDistances.length === 1 && selectedDistanceId !== availableDistances[0].id) {
       setSelectedDistanceId(availableDistances[0].id);
     }
-  }, [event.distances, selectedDistanceId]);
+  }, [event.distances, selectedDistanceId, initialTeamJoin]);
+
+  // E7.2: apply the invitation link's target exactly once — after this, the
+  // invitee can still freely change distance/team mode like anyone else
+  // (this only sets the initial defaults, it never re-forces them).
+  const appliedInitialTeamJoinRef = useRef(false);
+  useEffect(() => {
+    if (!initialTeamJoin || appliedInitialTeamJoinRef.current) return;
+    appliedInitialTeamJoinRef.current = true;
+    setSelectedDistanceId(initialTeamJoin.distanceId);
+    setWantsTeam(true);
+    setTeamMode('join');
+    setSelectedExistingTeam(initialTeamJoin.teamId);
+  }, [initialTeamJoin]);
 
   useEffect(() => {
     if (isProfileComplete && user?.birthYear) {
@@ -224,8 +255,19 @@ export const useRegistrationForm = (event: Event) => {
     }
   }, [formCfg?.collectTeam, isRelayDistance]);
 
+  // E7.2: whether the relevant "which teams exist" query has actually
+  // resolved at least once — guards the clearing effect below so a
+  // selection made before that first response lands (in particular, the
+  // invitation-link pre-selection above, which sets a team id before its
+  // own list request has had a chance to complete) isn't wiped out just
+  // because the list looked empty for one render.
+  const existingTeamsLoaded = isRelayDistance
+    ? relayTeamsData !== undefined
+    : eventRegsData !== undefined;
+
   useEffect(() => {
     if (
+      existingTeamsLoaded &&
       teamMode === 'join' &&
       selectedExistingTeam &&
       !existingTeams.some((team) =>
@@ -234,7 +276,7 @@ export const useRegistrationForm = (event: Event) => {
     ) {
       setSelectedExistingTeam('');
     }
-  }, [existingTeams, selectedExistingTeam, teamMode, isRelayDistance]);
+  }, [existingTeams, existingTeamsLoaded, selectedExistingTeam, teamMode, isRelayDistance]);
 
   const age = birthYear ? currentYear - parseInt(birthYear) : null;
   const birthDate =
@@ -548,6 +590,11 @@ export const useRegistrationForm = (event: Event) => {
     hasMerchandise,
     hasInsurance,
     hasTeamOption,
+    // E7.2: true whenever this render was reached via a `?joinTeam=`
+    // invitation link — used purely for the "you're joining via invite
+    // link" banner text, never to change validation (the join is still
+    // fully server-validated at submit time regardless of this flag).
+    hasInvitationLink: Boolean(initialTeamJoin),
     isRelayDistance,
     relayMinTeamSize,
     relayMaxTeamSize,
