@@ -325,6 +325,8 @@ export const getOnlineSessions: ApiAdapter['getOnlineSessions'] = (...args) =>
   ensureAdapter().then((a) => a.getOnlineSessions(...args));
 export const getSalesStats: ApiAdapter['getSalesStats'] = (...args) =>
   ensureAdapter().then((a) => a.getSalesStats(...args));
+export const getPlatformStats: ApiAdapter['getPlatformStats'] = (...args) =>
+  ensureAdapter().then((a) => a.getPlatformStats(...args));
 
 // CMS
 export const getInfoPages: ApiAdapter['getInfoPages'] = (...args) =>

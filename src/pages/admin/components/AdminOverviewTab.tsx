@@ -17,6 +17,7 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from 'recharts';
 import { OnlineStaffCard } from './OnlineStaffCard';
+import { PlatformStatsCard } from './PlatformStatsCard';
 
 export const AdminOverviewTab = () => {
   const { data: eventsResponse } = useQuery({
@@ -167,6 +168,11 @@ export const AdminOverviewTab = () => {
           </Card>
         ))}
       </div>
+
+      {/* E8.3 (spec 21 Answer §6): exact platform-admin cross-section —
+          Events by publication_status, Organizer count, active package
+          credits — complements the approximate tiles above. */}
+      <PlatformStatsCard />
 
       {/* Revenue Chart */}
       <Card>

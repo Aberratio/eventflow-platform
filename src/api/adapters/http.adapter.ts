@@ -500,6 +500,7 @@ export const httpAdapter: ApiAdapter = {
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),
   getSalesStats: () => request('/admin/sales-stats'),
+  getPlatformStats: () => request('/admin/platform-stats'),
 
   getInfoPages: () => request('/info-pages'),
   getInfoPageBySlug: (slug) => request(`/info-pages/slug/${encodeURIComponent(slug)}`),

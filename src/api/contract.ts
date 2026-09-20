@@ -113,7 +113,7 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
 } from '@/types/email';
-import type { SalesStats } from '@/types/admin';
+import type { SalesStats, PlatformStats } from '@/types/admin';
 
 // ─────────────────────────────────────────────────────────
 // API Adapter Interface
@@ -455,6 +455,9 @@ export interface ApiAdapter {
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;
   getSalesStats(): Promise<ApiResponse<SalesStats>>;
+  // E8.3: minimal platform-admin cross-section — Events by publication_status,
+  // Organizer count, active package-credit total. Admin-only (not moderator).
+  getPlatformStats(): Promise<ApiResponse<PlatformStats>>;
 
   // ── CMS ──
   getInfoPages(): Promise<ApiResponse<InfoPage[]>>;
