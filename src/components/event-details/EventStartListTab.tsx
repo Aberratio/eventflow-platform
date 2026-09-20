@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useQueries } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,7 +20,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Event, Registration } from '@/types';
+import { Event, Registration, RelayTeam } from '@/types';
+import { getTeamsForDistance } from '@/api';
+import { formatTeamCompleteness, groupStartListByTeam } from '@/lib/teamGrouping';
 import {
   ArrowDownUp,
   CheckCircle2,
@@ -85,9 +88,8 @@ export const EventStartListTab = ({
   const [rowsPerPage, setRowsPerPage] = useState('20');
   const [currentPage, setCurrentPage] = useState(1);
   const [sidebarSlot, setSidebarSlot] = useState<HTMLElement | null>(null);
-  const [activeStatuses, setActiveStatuses] = useState<RegistrationStatusFilter[]>(
-    ALL_ACTIVE_STATUSES,
-  );
+  const [activeStatuses, setActiveStatuses] =
+    useState<RegistrationStatusFilter[]>(ALL_ACTIVE_STATUSES);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   useEffect(() => {
@@ -180,7 +182,15 @@ export const EventStartListTab = ({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, distanceFilter, categoryFilter, packageFilter, clubQuery, activeStatuses, genderFilter]);
+  }, [
+    query,
+    distanceFilter,
+    categoryFilter,
+    packageFilter,
+    clubQuery,
+    activeStatuses,
+    genderFilter,
+  ]);
 
   const pendingCount = visibleRegistrations.filter((r) => r.status === 'pending').length;
   const confirmedCount = visibleRegistrations.filter((r) => r.status === 'confirmed').length;
@@ -255,13 +265,127 @@ export const EventStartListTab = ({
     clubQuery !== '' ||
     !allStatusesSelected;
 
+  // E7.4 (issue 23 Answer §4): "lista startowa pogrupowana po Drużynie" is a
+  // VIEW concern layered on top of the existing per-member Zapisy — every
+  // member already has its own bibNumber/qrCode (RegistrationRepository::
+  // create(), unconditional, no team special-case). Real Drużyny (E7.1/E7.2)
+  // are fetched per relay Dystans actually present among these
+  // registrations, never derived from the free-text `teamName` the older,
+  // unrelated `collectTeam` classification feature also writes.
+  const relayDistanceIds = useMemo(
+    () => Array.from(new Set(registrations.filter((r) => r.teamId).map((r) => r.distanceId))),
+    [registrations],
+  );
+  const teamQueries = useQueries({
+    queries: relayDistanceIds.map((distanceId) => ({
+      queryKey: ['teams', 'distance', event.id, distanceId],
+      queryFn: () => getTeamsForDistance(event.id, distanceId),
+      select: (r: Awaited<ReturnType<typeof getTeamsForDistance>>) => r.data ?? [],
+    })),
+  });
+  const teamsById = useMemo(() => {
+    const map: Record<string, RelayTeam> = {};
+    for (const query of teamQueries) {
+      for (const team of (query.data as RelayTeam[] | undefined) ?? []) {
+        map[team.id] = team;
+      }
+    }
+    return map;
+  }, [teamQueries]);
+
+  const startListBlocks = useMemo(
+    () => groupStartListByTeam(pageItems, teamsById),
+    [pageItems, teamsById],
+  );
+
+  /**
+   * One member row, optionally associated with a team group's header cell
+   * via the `headers` attribute (WCAG technique H43) — the group header
+   * itself is a real `<th scope="colgroup">` elsewhere in the table, not
+   * just a visually-styled row, so assistive tech announces the Drużyna a
+   * member row belongs to.
+   */
+  const renderRegistrationRow = (reg: Registration, groupHeaderId?: string) => {
+    const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
+    return (
+      <TableRow key={reg.id} className="border-white/10 hover:bg-white/[0.035]">
+        <TableCell className="font-mono text-sm text-foreground" headers={groupHeaderId}>
+          {reg.bibNumber || '-'}
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-xs font-semibold text-rose-100">
+              {reg.userName
+                .split(' ')
+                .map((part) => part[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+            <div>
+              <Link
+                to={`/athlete/${reg.userId}`}
+                className="font-medium transition-colors hover:text-primary hover:underline"
+              >
+                {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
+              </Link>
+              <p className="text-xs text-foreground/55">{reg.teamName || 'Klub niepodany'}</p>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <p className="text-sm text-foreground">{reg.distanceName}</p>
+        </TableCell>
+        <TableCell>
+          <p className="text-sm text-foreground">{reg.category}</p>
+        </TableCell>
+        {showAll && (
+          <TableCell>
+            <Badge
+              variant="outline"
+              className={`rounded-md px-2 py-0.5 text-xs ${statusClasses[reg.status]}`}
+            >
+              {statusLabels[reg.status]}
+            </Badge>
+          </TableCell>
+        )}
+        <TableCell>
+          <span className="inline-flex items-center gap-2 text-sm text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {packageName}
+          </span>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   /** Inline stats strip — shown above the table when sidebar is not available */
   const statsStrip = !sidebarEnabled && (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      <MiniStat icon={<Users className="h-4 w-4" />} label="Zapisanych" value={visibleRegistrations.length} tone="emerald" />
-      <MiniStat icon={<CheckCircle2 className="h-4 w-4" />} label="Potwierdzonych" value={confirmedCount} tone="emerald" />
-      <MiniStat icon={<Clock3 className="h-4 w-4" />} label="Oczekujących" value={pendingCount} tone="warning" />
-      <MiniStat icon={<XCircle className="h-4 w-4" />} label="Zrezygnowanych" value={cancelledCount + removedCount} tone="destructive" />
+      <MiniStat
+        icon={<Users className="h-4 w-4" />}
+        label="Zapisanych"
+        value={visibleRegistrations.length}
+        tone="emerald"
+      />
+      <MiniStat
+        icon={<CheckCircle2 className="h-4 w-4" />}
+        label="Potwierdzonych"
+        value={confirmedCount}
+        tone="emerald"
+      />
+      <MiniStat
+        icon={<Clock3 className="h-4 w-4" />}
+        label="Oczekujących"
+        value={pendingCount}
+        tone="warning"
+      />
+      <MiniStat
+        icon={<XCircle className="h-4 w-4" />}
+        label="Zrezygnowanych"
+        value={cancelledCount + removedCount}
+        tone="destructive"
+      />
     </div>
   );
 
@@ -377,16 +501,37 @@ export const EventStartListTab = ({
                   <div>
                     <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
                     <div className="space-y-2">
-                      <StatusCheckbox label="Wszyscy" checked={allStatusesSelected} onClick={handleAllStatuses} />
-                      <StatusCheckbox label="Oczekujący" checked={activeStatuses.includes('pending')} onClick={() => toggleStatus('pending')} />
-                      <StatusCheckbox label="Potwierdzony" checked={activeStatuses.includes('confirmed')} onClick={() => toggleStatus('confirmed')} />
-                      <StatusCheckbox label="Zrezygnowany" checked={activeStatuses.includes('cancelled')} onClick={() => toggleStatus('cancelled')} />
+                      <StatusCheckbox
+                        label="Wszyscy"
+                        checked={allStatusesSelected}
+                        onClick={handleAllStatuses}
+                      />
+                      <StatusCheckbox
+                        label="Oczekujący"
+                        checked={activeStatuses.includes('pending')}
+                        onClick={() => toggleStatus('pending')}
+                      />
+                      <StatusCheckbox
+                        label="Potwierdzony"
+                        checked={activeStatuses.includes('confirmed')}
+                        onClick={() => toggleStatus('confirmed')}
+                      />
+                      <StatusCheckbox
+                        label="Zrezygnowany"
+                        checked={activeStatuses.includes('cancelled')}
+                        onClick={() => toggleStatus('cancelled')}
+                      />
                     </div>
                   </div>
                 )}
                 {hasActiveFilters && (
                   <div className="sm:col-span-2">
-                    <Button variant="outline" size="sm" className="border-white/10" onClick={resetFilters}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-white/10"
+                      onClick={resetFilters}
+                    >
                       Wyczyść filtry
                     </Button>
                   </div>
@@ -425,60 +570,37 @@ export const EventStartListTab = ({
               </TableHeader>
               <TableBody>
                 {pageItems.length > 0 ? (
-                  pageItems.map((reg) => {
-                    const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
-                    return (
-                      <TableRow key={reg.id} className="border-white/10 hover:bg-white/[0.035]">
-                        <TableCell className="font-mono text-sm text-foreground">
-                          {reg.bibNumber || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-xs font-semibold text-rose-100">
-                              {reg.userName
-                                .split(' ')
-                                .map((part) => part[0])
-                                .join('')
-                                .slice(0, 2)
-                                .toUpperCase()}
-                            </div>
-                            <div>
-                              <Link
-                                to={`/athlete/${reg.userId}`}
-                                className="font-medium transition-colors hover:text-primary hover:underline"
-                              >
-                                {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
-                              </Link>
-                              <p className="text-xs text-foreground/55">
-                                {reg.teamName || 'Klub niepodany'}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm text-foreground">{reg.distanceName}</p>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm text-foreground">{reg.category}</p>
-                        </TableCell>
-                        {showAll && (
-                          <TableCell>
+                  startListBlocks.flatMap((block) => {
+                    if (block.type === 'individual') {
+                      return [renderRegistrationRow(block.registration)];
+                    }
+
+                    const headerId = `team-group-${block.teamId}`;
+                    return [
+                      <TableRow
+                        key={headerId}
+                        className="border-white/10 bg-white/[0.05] hover:bg-white/[0.05]"
+                      >
+                        <TableHead
+                          id={headerId}
+                          scope="colgroup"
+                          colSpan={showAll ? 6 : 5}
+                          className="h-auto py-2.5 text-xs font-semibold text-foreground"
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <Users className="h-3.5 w-3.5 text-primary" />
+                            Drużyna: {block.team.name}
                             <Badge
                               variant="outline"
-                              className={`rounded-md px-2 py-0.5 text-xs ${statusClasses[reg.status]}`}
+                              className="border-white/10 bg-white/[0.06] text-[11px] font-normal text-foreground/70"
                             >
-                              {statusLabels[reg.status]}
+                              {formatTeamCompleteness(block.team)}
                             </Badge>
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <span className="inline-flex items-center gap-2 text-sm text-foreground">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            {packageName}
                           </span>
-                        </TableCell>
-                      </TableRow>
-                    );
+                        </TableHead>
+                      </TableRow>,
+                      ...block.members.map((reg) => renderRegistrationRow(reg, headerId)),
+                    ];
                   })
                 ) : (
                   <TableRow>
@@ -504,7 +626,9 @@ export const EventStartListTab = ({
                             </>
                           ) : (
                             <>
-                              <h3 className="mt-5 text-lg font-semibold">Więcej uczestników wkrótce!</h3>
+                              <h3 className="mt-5 text-lg font-semibold">
+                                Więcej uczestników wkrótce!
+                              </h3>
                               <p className="mt-2 text-sm text-foreground/65">
                                 Lista startowa będzie widoczna gdy zapisze się więcej osób.
                               </p>
@@ -661,10 +785,26 @@ export const EventStartListTab = ({
                     <div>
                       <p className="mb-2 text-xs font-medium text-foreground">Status zapisu</p>
                       <div className="space-y-2">
-                        <StatusCheckbox label="Wszyscy" checked={allStatusesSelected} onClick={handleAllStatuses} />
-                        <StatusCheckbox label="Oczekujący" checked={activeStatuses.includes('pending')} onClick={() => toggleStatus('pending')} />
-                        <StatusCheckbox label="Potwierdzony" checked={activeStatuses.includes('confirmed')} onClick={() => toggleStatus('confirmed')} />
-                        <StatusCheckbox label="Zrezygnowany" checked={activeStatuses.includes('cancelled')} onClick={() => toggleStatus('cancelled')} />
+                        <StatusCheckbox
+                          label="Wszyscy"
+                          checked={allStatusesSelected}
+                          onClick={handleAllStatuses}
+                        />
+                        <StatusCheckbox
+                          label="Oczekujący"
+                          checked={activeStatuses.includes('pending')}
+                          onClick={() => toggleStatus('pending')}
+                        />
+                        <StatusCheckbox
+                          label="Potwierdzony"
+                          checked={activeStatuses.includes('confirmed')}
+                          onClick={() => toggleStatus('confirmed')}
+                        />
+                        <StatusCheckbox
+                          label="Zrezygnowany"
+                          checked={activeStatuses.includes('cancelled')}
+                          onClick={() => toggleStatus('cancelled')}
+                        />
                       </div>
                     </div>
                   )}
@@ -691,11 +831,36 @@ export const EventStartListTab = ({
             <section className={`${panelClass} p-5`}>
               <h3 className="text-base font-semibold">Statystyki</h3>
               <div className="mt-4 space-y-3">
-                <StatRow icon={<Users className="h-4 w-4" />} label="Zapisanych" value={visibleRegistrations.length} tone="emerald" />
-                <StatRow icon={<CheckCircle2 className="h-4 w-4" />} label="Potwierdzonych" value={confirmedCount} tone="emerald" />
-                <StatRow icon={<Clock3 className="h-4 w-4" />} label="Oczekujących" value={pendingCount} tone="warning" />
-                <StatRow icon={<Circle className="h-4 w-4" />} label="Lista rezerwowa" value={0} tone="violet" />
-                <StatRow icon={<XCircle className="h-4 w-4" />} label="Zrezygnowanych" value={cancelledCount + removedCount} tone="destructive" />
+                <StatRow
+                  icon={<Users className="h-4 w-4" />}
+                  label="Zapisanych"
+                  value={visibleRegistrations.length}
+                  tone="emerald"
+                />
+                <StatRow
+                  icon={<CheckCircle2 className="h-4 w-4" />}
+                  label="Potwierdzonych"
+                  value={confirmedCount}
+                  tone="emerald"
+                />
+                <StatRow
+                  icon={<Clock3 className="h-4 w-4" />}
+                  label="Oczekujących"
+                  value={pendingCount}
+                  tone="warning"
+                />
+                <StatRow
+                  icon={<Circle className="h-4 w-4" />}
+                  label="Lista rezerwowa"
+                  value={0}
+                  tone="violet"
+                />
+                <StatRow
+                  icon={<XCircle className="h-4 w-4" />}
+                  label="Zrezygnowanych"
+                  value={cancelledCount + removedCount}
+                  tone="destructive"
+                />
               </div>
               {maxParticipants > 0 && (
                 <div className="mt-5 flex items-end justify-between border-t border-white/10 pt-4">
