@@ -3,7 +3,6 @@ import {
   roundToCents,
   formatDiscountValue,
   formatDiscountBadge,
-  formatMoney,
   parseDiscountValueInput,
   isDiscountInputAllowed,
 } from '../discountValue';
@@ -56,17 +55,6 @@ describe('formatDiscountBadge', () => {
 
   it('appends % suffix for percent type', () => {
     expect(formatDiscountBadge(10, 'percent')).toBe('10%');
-  });
-});
-
-describe('formatMoney', () => {
-  it('formats value as Polish currency', () => {
-    expect(formatMoney(80)).toBe('80,00 zł');
-    expect(formatMoney(0)).toBe('0,00 zł');
-  });
-
-  it('handles null', () => {
-    expect(formatMoney(null)).toBe('0,00 zł');
   });
 });
 

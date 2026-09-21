@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
+import { formatDate } from '@/lib/format';
 import { approveRefund, completeRefund, markRegistrationPaid, exportStartList } from '@/api';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
@@ -197,7 +198,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
               ? 'Anulowany'
               : 'Usunięty',
       Drużyna: reg.teamName || '-',
-      'Data zapisu': new Date(reg.registeredAt).toLocaleDateString('pl-PL'),
+      'Data zapisu': formatDate(reg.registeredAt),
     }));
     exportToCSV(data, `lista-startowa-${event.slug}`);
     toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });

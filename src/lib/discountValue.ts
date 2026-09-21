@@ -25,9 +25,6 @@ export const formatDiscountBadge = (
   return `${formatDiscountValue(value, type)}%`;
 };
 
-export const formatMoney = (value: number | string | null | undefined): string =>
-  `${formatDiscountValue(value, 'fixed')} zł`;
-
 export const parseDiscountValueInput = (
   input: string,
   type: PriceTierDiscountType,

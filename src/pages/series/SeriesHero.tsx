@@ -2,6 +2,7 @@ import { seriesTypeLabels } from '@/api';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Globe, Target, Trophy } from 'lucide-react';
 import type { EventSeries } from '@/types';
+import { formatDate } from '@/lib/format';
 
 const seriesTypeColors: Record<string, string> = {
   virtual: 'bg-info/10 text-info border-info/20',
@@ -50,8 +51,7 @@ export const SeriesHero: React.FC<SeriesHeroProps> = ({ series }) => (
       {series.startDate && series.endDate && (
         <span className="flex items-center gap-1">
           <Calendar className="h-4 w-4" />
-          {new Date(series.startDate).toLocaleDateString('pl-PL')} -{' '}
-          {new Date(series.endDate).toLocaleDateString('pl-PL')}
+          {formatDate(series.startDate)} - {formatDate(series.endDate)}
         </span>
       )}
     </div>

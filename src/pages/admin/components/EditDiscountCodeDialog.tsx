@@ -21,10 +21,10 @@ import {
 import { DiscountCode, Distance } from '@/types';
 import {
   formatDiscountValue,
-  formatMoney,
   isDiscountInputAllowed,
   parseDiscountValueInput,
 } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 import { toast } from 'sonner';
 import { AlertTriangle } from 'lucide-react';
 

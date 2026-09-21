@@ -10,7 +10,11 @@ interface PriceTierPreviewProps {
   className?: string;
 }
 
-const formatPrice = (price: number) => `${price.toFixed(2).replace(/\.00$/, '')} PLN`;
+// TD.21: intentionally NOT `formatMoney` from '@/lib/format' — this preview
+// strips trailing ".00" (e.g. "50 zł" instead of "50,00 zł"), a genuinely
+// different display rule from the rest of the app, kept as-is. Only the
+// unit suffix is unified here to match the app-wide "zł" standard.
+const formatPrice = (price: number) => `${price.toFixed(2).replace(/\.00$/, '')} zł`;
 
 const getTierPrice = (basePrice: number, tier: PriceTier) =>
   tier.price != null

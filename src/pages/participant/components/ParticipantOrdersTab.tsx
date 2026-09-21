@@ -7,6 +7,7 @@ import { Package, ChevronDown, ChevronUp, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useState } from 'react';
+import { formatMoney } from '@/lib/format';
 
 interface ParticipantOrdersTabProps {
   orders: ShopOrder[];
@@ -76,7 +77,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-semibold">{order.totalPrice.toFixed(2)} zł</span>
+                      <span className="font-semibold">{formatMoney(order.totalPrice)}</span>
                       {isExpanded ? (
                         <ChevronUp className="h-4 w-4 text-muted-foreground" />
                       ) : (
@@ -102,7 +103,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                             )}
                             <span className="ml-1 text-muted-foreground">x{item.quantity}</span>
                           </div>
-                          <span>{(item.price * item.quantity).toFixed(2)} zł</span>
+                          <span>{formatMoney(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
@@ -113,27 +114,25 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Produkty</span>
-                        <span>{order.productTotal.toFixed(2)} zł</span>
+                        <span>{formatMoney(order.productTotal)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
                           Dostawa ({order.deliveryMethod.name})
                         </span>
                         <span>
-                          {order.deliveryPrice > 0
-                            ? `${order.deliveryPrice.toFixed(2)} zł`
-                            : 'Gratis'}
+                          {order.deliveryPrice > 0 ? formatMoney(order.deliveryPrice) : 'Gratis'}
                         </span>
                       </div>
                       {order.paymentSurcharge > 0 && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Opłata za płatność</span>
-                          <span>{order.paymentSurcharge.toFixed(2)} zł</span>
+                          <span>{formatMoney(order.paymentSurcharge)}</span>
                         </div>
                       )}
                       <div className="flex justify-between pt-2 font-semibold">
                         <span>Razem</span>
-                        <span>{order.totalPrice.toFixed(2)} zł</span>
+                        <span>{formatMoney(order.totalPrice)}</span>
                       </div>
                     </div>
 

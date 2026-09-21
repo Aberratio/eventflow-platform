@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Lock, Tag } from 'lucide-react';
+import { formatMoney } from '@/lib/format';
 
 interface OrderSummaryProps {
   productTotal: number;
@@ -37,20 +38,20 @@ export const OrderSummary = ({
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Produkty ({itemCount} szt.)</span>
-            <span className="font-medium">{productTotal.toFixed(2)} zł</span>
+            <span className="font-medium">{formatMoney(productTotal)}</span>
           </div>
 
           <div className="flex justify-between">
             <span className="text-muted-foreground">Dostawa</span>
             <span className={`font-medium ${deliveryPrice === 0 ? 'text-success' : ''}`}>
-              {deliveryPrice === 0 ? 'Gratis' : `${deliveryPrice.toFixed(2)} zł`}
+              {deliveryPrice === 0 ? 'Gratis' : formatMoney(deliveryPrice)}
             </span>
           </div>
 
           {paymentSurcharge > 0 && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Dopłata za płatność</span>
-              <span className="font-medium">{paymentSurcharge.toFixed(2)} zł</span>
+              <span className="font-medium">{formatMoney(paymentSurcharge)}</span>
             </div>
           )}
         </div>
@@ -60,7 +61,7 @@ export const OrderSummary = ({
         <div className="flex items-center justify-between">
           <span className="text-base font-bold">Do zapłaty</span>
           <div className="text-right">
-            <span className="text-2xl font-bold text-primary">{total.toFixed(2)} zł</span>
+            <span className="text-2xl font-bold text-primary">{formatMoney(total)}</span>
           </div>
         </div>
 

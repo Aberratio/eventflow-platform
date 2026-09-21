@@ -43,6 +43,7 @@ import { ShopOrder } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { exportToCSV, exportToXML } from '@/lib/exportUtils';
+import { formatMoney } from '@/lib/format';
 
 const orderStatusLabels: Record<ShopOrder['status'], string> = {
   pending: 'Oczekujące',
@@ -137,7 +138,7 @@ export const AdminOrdersTab = () => {
       Email: getCustomerEmail(order.userId),
       Data: format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
       Produkty: order.items.map((i) => `${i.quantity}x ${i.productName}`).join(', '),
-      Kwota: `${order.totalPrice.toFixed(2)} PLN`,
+      Kwota: formatMoney(order.totalPrice),
       Status: orderStatusLabels[order.status],
       'Nr przesyłki': order.trackingNumber || '-',
     }));
@@ -337,7 +338,7 @@ export const AdminOrdersTab = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {order.totalPrice.toFixed(2)} zł
+                      {formatMoney(order.totalPrice)}
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge variant="outline" className={orderStatusColors[order.status]}>

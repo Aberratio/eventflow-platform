@@ -2,6 +2,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CartItem } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface CartItemCardProps {
   item: CartItem;
@@ -34,7 +35,7 @@ export const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardP
         )}
 
         <div className="mt-2 text-sm font-medium text-muted-foreground">
-          {item.unitPrice.toFixed(2)} zł / szt.
+          {formatMoney(item.unitPrice)} / szt.
         </div>
       </div>
 
@@ -65,7 +66,7 @@ export const CartItemCard = ({ item, onUpdateQuantity, onRemove }: CartItemCardP
           </Button>
         </div>
 
-        <div className="text-right text-base font-bold">{itemTotal.toFixed(2)} zł</div>
+        <div className="text-right text-base font-bold">{formatMoney(itemTotal)}</div>
 
         <Button
           variant="ghost"

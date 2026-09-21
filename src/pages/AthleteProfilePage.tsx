@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { ArrowLeft, Trophy, Medal, Target, Calendar, MapPin } from 'lucide-react';
 import { formatTimeToWholeSeconds } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 
 const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -234,7 +235,7 @@ const AthleteProfilePage = () => {
                             <MapPin className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{event.city}</span>
                             <span>•</span>
-                            <span>{new Date(event.date).toLocaleDateString('pl-PL')}</span>
+                            <span>{formatDate(event.date)}</span>
                           </div>
                         </div>
                         {getStatusBadge(result.status)}

@@ -24,10 +24,10 @@ import { DiscountCode, Distance } from '@/types';
 import { toast } from 'sonner';
 import {
   formatDiscountValue,
-  formatMoney,
   isDiscountInputAllowed,
   parseDiscountValueInput,
 } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 
 const generateRandomCode = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

@@ -51,7 +51,7 @@ import { toast } from '@/hooks/use-toast';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { useRegistrationForm, type InitialTeamJoin } from '@/hooks/useRegistrationForm';
 import { appLogger } from '@/lib/logger';
-import { formatMoney } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 
 interface RegistrationFormProps {
   event: Event;
@@ -1394,7 +1394,7 @@ const BankTransferDetails = ({
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted-foreground">Kwota</p>
-            <p className="text-lg font-bold">{totalAmount.toFixed(2)} PLN</p>
+            <p className="text-lg font-bold">{formatMoney(totalAmount)}</p>
           </div>
           <Button
             variant="ghost"

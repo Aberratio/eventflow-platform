@@ -41,6 +41,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { OrderHistoryTimeline } from '@/components/admin/OrderHistoryTimeline';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { formatMoney } from '@/lib/format';
 import { toast } from 'sonner';
 import { appLogger } from '@/lib/logger';
 
@@ -184,7 +185,7 @@ export const AdminOrderEditPage = () => {
         userId,
         userName,
         action: 'price_adjustment',
-        description: `Zastosowano korektę cenową: ${priceAdjustment.toFixed(2)} zł`,
+        description: `Zastosowano korektę cenową: ${formatMoney(priceAdjustment)}`,
         newValue: priceAdjustment.toString(),
       });
     }
@@ -376,9 +377,9 @@ export const AdminOrderEditPage = () => {
                             className="mx-auto w-20 text-center"
                           />
                         </TableCell>
-                        <TableCell className="text-right">{item.price.toFixed(2)} zł</TableCell>
+                        <TableCell className="text-right">{formatMoney(item.price)}</TableCell>
                         <TableCell className="text-right font-medium">
-                          {(item.price * item.quantity).toFixed(2)} zł
+                          {formatMoney(item.price * item.quantity)}
                         </TableCell>
                         <TableCell>
                           <Button
@@ -474,15 +475,15 @@ export const AdminOrderEditPage = () => {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span>Produkty</span>
-                <span>{productTotal.toFixed(2)} zł</span>
+                <span>{formatMoney(productTotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Dostawa ({originalOrder.deliveryMethod.name})</span>
-                <span>{originalOrder.deliveryPrice.toFixed(2)} zł</span>
+                <span>{formatMoney(originalOrder.deliveryPrice)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Dopłata za płatność ({originalOrder.paymentMethod.name})</span>
-                <span>{originalOrder.paymentSurcharge.toFixed(2)} zł</span>
+                <span>{formatMoney(originalOrder.paymentSurcharge)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <Label htmlFor="adjustment" className="text-sm font-normal">
@@ -503,7 +504,7 @@ export const AdminOrderEditPage = () => {
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
                 <span>SUMA</span>
-                <span>{totalPrice.toFixed(2)} zł</span>
+                <span>{formatMoney(totalPrice)}</span>
               </div>
             </CardContent>
           </Card>

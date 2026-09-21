@@ -78,6 +78,7 @@ import { PaymentDetailsPanel } from './PaymentDetailsPanel';
 import { FormFieldAggregatesCard } from './FormFieldAggregatesCard';
 import { RegistrationStatsCard } from './RegistrationStatsCard';
 import { useParticipantsActions } from '../hooks/useParticipantsActions';
+import { formatDate } from '@/lib/format';
 
 interface ParticipantsTabProps {
   event: Event;
@@ -664,8 +665,8 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                           )}
                           <TableCell className="text-muted-foreground">
                             {viewMode === 'removed' && reg.removedAt
-                              ? new Date(reg.removedAt).toLocaleDateString('pl-PL')
-                              : new Date(reg.registeredAt).toLocaleDateString('pl-PL')}
+                              ? formatDate(reg.removedAt)
+                              : formatDate(reg.registeredAt)}
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">

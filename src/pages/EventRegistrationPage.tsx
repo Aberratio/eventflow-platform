@@ -23,7 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
-import { formatMoney } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 import {
   ExternalRegistrationFrame,
   isExternalRegistrationActive,

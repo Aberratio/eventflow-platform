@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { CheckCircle2, XCircle, Clock, Mail } from 'lucide-react';
 import type { EmailSendLog } from '@/types/email';
+import { formatDate } from '@/lib/format';
 
 interface EmailSendLogsTableProps {
   logs: EmailSendLog[];
@@ -98,7 +99,7 @@ export const EmailSendLogsTable: React.FC<EmailSendLogsTableProps> = ({ logs }) 
                     </p>
                     {log.scheduledFor && (
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        Zapl.: {new Date(log.scheduledFor).toLocaleDateString('pl-PL')}
+                        Zapl.: {formatDate(log.scheduledFor)}
                       </p>
                     )}
                   </div>

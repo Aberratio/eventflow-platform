@@ -20,8 +20,10 @@ describe('CartItemCard', () => {
     expect(screen.getByText('Koszulka biegowa')).toBeInTheDocument();
     expect(screen.getByText('M')).toBeInTheDocument();
     expect(screen.getByText('Czarny')).toBeInTheDocument();
-    expect(screen.getByText('50.00 zł / szt.')).toBeInTheDocument();
-    expect(screen.getByText('100.00 zł')).toBeInTheDocument();
+    // TD.21: unified money formatting now uses pl-PL locale formatting
+    // (comma decimal separator) via the shared formatMoney utility.
+    expect(screen.getByText('50,00 zł / szt.')).toBeInTheDocument();
+    expect(screen.getByText('100,00 zł')).toBeInTheDocument();
   });
 
   it('calls onUpdateQuantity with quantity - 1 when decreasing', async () => {

@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PageHero } from '@/components/ui/page-hero';
 import { InfoBanner } from '@/components/ui/info-banner';
 import { useCart } from '@/contexts/CartContext';
+import { formatMoney } from '@/lib/format';
 
 const OrderSuccessPage = () => {
   const { lastOrder } = useCart();
@@ -99,7 +100,7 @@ const OrderSuccessPage = () => {
                       <span className="text-muted-foreground"> × {item.quantity}</span>
                     </div>
                     <span className="whitespace-nowrap font-semibold">
-                      {(item.price * item.quantity).toFixed(2)} zł
+                      {formatMoney(item.price * item.quantity)}
                     </span>
                   </div>
                 ))}
@@ -110,7 +111,7 @@ const OrderSuccessPage = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Produkty</span>
-                  <span>{lastOrder.productTotal.toFixed(2)} zł</span>
+                  <span>{formatMoney(lastOrder.productTotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
@@ -119,13 +120,13 @@ const OrderSuccessPage = () => {
                   <span className={lastOrder.deliveryPrice === 0 ? 'font-medium text-success' : ''}>
                     {lastOrder.deliveryPrice === 0
                       ? 'Gratis'
-                      : `${lastOrder.deliveryPrice.toFixed(2)} zł`}
+                      : formatMoney(lastOrder.deliveryPrice)}
                   </span>
                 </div>
                 {lastOrder.paymentSurcharge > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Dopłata za płatność</span>
-                    <span>{lastOrder.paymentSurcharge.toFixed(2)} zł</span>
+                    <span>{formatMoney(lastOrder.paymentSurcharge)}</span>
                   </div>
                 )}
               </div>
@@ -133,7 +134,7 @@ const OrderSuccessPage = () => {
               <div className="flex items-center justify-between rounded-lg border border-primary/10 bg-primary/5 p-3">
                 <span className="font-bold">Razem</span>
                 <span className="text-xl font-bold text-primary">
-                  {lastOrder.totalPrice.toFixed(2)} zł
+                  {formatMoney(lastOrder.totalPrice)}
                 </span>
               </div>
             </div>

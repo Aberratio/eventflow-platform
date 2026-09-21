@@ -31,6 +31,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { CartItemCard } from '@/components/cart/CartItemCard';
+import { formatMoney } from '@/lib/format';
 import { OrderSummary } from '@/components/cart/OrderSummary';
 import { OrderDetails, ShopOrderAddress, ShopOrderInvoice } from '@/types';
 
@@ -403,7 +404,7 @@ const CartPage = () => {
             variant="secondary"
             className="border-0 bg-primary/10 px-4 py-2 text-base text-primary"
           >
-            {totalPrice.toFixed(2)} zł
+            {formatMoney(totalPrice)}
           </Badge>
         </div>
       </PageHero>
@@ -481,7 +482,7 @@ const CartPage = () => {
                                     method.price === 0 ? 'border-0 bg-success/20 text-success' : ''
                                   }
                                 >
-                                  {method.price === 0 ? 'Gratis' : `${method.price.toFixed(2)} zł`}
+                                  {method.price === 0 ? 'Gratis' : formatMoney(method.price)}
                                 </Badge>
                               </div>
                             </Label>
@@ -708,7 +709,7 @@ const CartPage = () => {
                             </div>
                             {method.surcharge && method.surcharge > 0 && (
                               <Badge variant="secondary" className="text-xs">
-                                +{method.surcharge.toFixed(2)} zł
+                                +{formatMoney(method.surcharge)}
                               </Badge>
                             )}
                           </div>

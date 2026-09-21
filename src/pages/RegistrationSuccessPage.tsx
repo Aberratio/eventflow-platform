@@ -24,7 +24,7 @@ import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig, Registration } from '@/types';
 import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
 import { useEffect, useRef } from 'react';
-import { formatMoney } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface RegistrationSuccessState {
@@ -350,7 +350,7 @@ const RegistrationSuccessPage = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs text-muted-foreground">Kwota</p>
-                      <p className="text-lg font-bold">{totalAmount.toFixed(2)} PLN</p>
+                      <p className="text-lg font-bold">{formatMoney(totalAmount)}</p>
                     </div>
                     <Button
                       variant="ghost"

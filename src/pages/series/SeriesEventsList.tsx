@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin } from 'lucide-react';
 import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import type { Event } from '@/types';
+import { formatDate } from '@/lib/format';
 
 interface SeriesEventsListProps {
   events: Event[];
@@ -45,7 +46,7 @@ export const SeriesEventsList: React.FC<SeriesEventsListProps> = ({ events }) =>
                     <div className="mt-1 flex flex-wrap gap-2 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(event.date).toLocaleDateString('pl-PL')}
+                        {formatDate(event.date)}
                       </span>
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />

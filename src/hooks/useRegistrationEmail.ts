@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig, Registration } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface SendRegistrationEmailParams {
   registrationData: RegistrationData;
@@ -33,10 +34,6 @@ export const useRegistrationEmail = () => {
       .replace('{participantName}', user?.name || 'Uczestnik')
       .replace('{distanceName}', distanceName)
       .replace('{birthDate}', birthDate || '');
-  };
-
-  const formatPrice = (amount: number): string => {
-    return `${amount.toFixed(2)} zł`;
   };
 
   // E1.8: prefer the server-computed, deterministic `ZC-{id}` title — it is
@@ -83,26 +80,26 @@ export const useRegistrationEmail = () => {
       registrationDetails: {
         distanceName: registrationData.distanceName,
         category: registrationData.category,
-        basePrice: formatPrice(registrationData.price),
+        basePrice: formatMoney(registrationData.price),
         discountAmount:
           registrationData.discountAmount && registrationData.discountAmount > 0
-            ? formatPrice(registrationData.discountAmount)
+            ? formatMoney(registrationData.discountAmount)
             : null,
         discountCode: registrationData.discountCode || null,
         insurance:
           registrationData.insurancePrice && registrationData.insurancePrice > 0
             ? {
                 name: 'Ubezpieczenie NNW',
-                price: formatPrice(registrationData.insurancePrice),
+                price: formatMoney(registrationData.insurancePrice),
               }
             : null,
         merchandise:
           registrationData.merchandiseOrders?.map((item) => ({
             name: `${item.merchandiseName} (${[item.size, item.color].filter(Boolean).join(', ') || 'bez rozmiaru'})`,
             quantity: item.quantity,
-            price: formatPrice(item.price),
+            price: formatMoney(item.price),
           })) || [],
-        totalAmount: formatPrice(registrationData.totalAmount),
+        totalAmount: formatMoney(registrationData.totalAmount),
       },
       bankTransfer:
         isBankTransfer && paymentConfig
@@ -116,7 +113,7 @@ export const useRegistrationEmail = () => {
                 registrationData.distanceName || '',
                 registrationData.birthDate,
               ),
-              amount: formatPrice(registrationData.totalAmount),
+              amount: formatMoney(registrationData.totalAmount),
               instructions: [
                 'Wpłać dokładną kwotę na podane konto',
                 'Użyj podanego tytułu przelewu',

@@ -37,7 +37,7 @@ import { Link } from 'react-router-dom';
 import { getEditUrl } from '@/components/event-details';
 import { isExternalRegistrationEvent } from './ExternalRegistrationFrame';
 import { getCurrentPrice } from '@/api';
-import { formatMoney } from '@/lib/discountValue';
+import { formatMoney } from '@/lib/format';
 import { toast } from '@/hooks/use-toast';
 
 interface EventSidebarProps {
@@ -802,11 +802,11 @@ const EventGadgetsCard = ({ gadgets }: { gadgets: EventMerchandise[] }) => {
               <p className="truncate text-sm font-medium">{g.name}</p>
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                 <span className="text-xs font-semibold text-primary">
-                  {Number(g.price).toFixed(2)} PLN
+                  {formatMoney(g.price)}
                 </span>
                 {g.originalPrice != null && Number(g.originalPrice) > Number(g.price) && (
                   <span className="text-xs text-foreground/40 line-through">
-                    {Number(g.originalPrice).toFixed(2)} PLN
+                    {formatMoney(g.originalPrice)}
                   </span>
                 )}
                 {g.sizes && g.sizes.length > 0 && (
