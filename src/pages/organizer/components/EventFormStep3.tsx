@@ -5,6 +5,7 @@ import { FieldHelp } from '@/components/ui/field-help';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Eye, Globe, CreditCard, Building2 } from 'lucide-react';
 import type { EventFormState } from '../hooks/useEventFormState';
+import { formatMoney } from '@/lib/format';
 
 interface EventFormStep3Props {
   form: EventFormState;
@@ -108,7 +109,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
             <div className="flex flex-wrap gap-2">
               {form.distances.map((dist) => (
                 <Badge key={dist.id} variant="secondary">
-                  {dist.name}{!dist.noLength && dist.length ? ` - ${dist.length} ${dist.unit}` : ''} ({dist.price} PLN)
+                  {dist.name}{!dist.noLength && dist.length ? ` - ${dist.length} ${dist.unit}` : ''} ({formatMoney(dist.price)})
                 </Badge>
               ))}
             </div>

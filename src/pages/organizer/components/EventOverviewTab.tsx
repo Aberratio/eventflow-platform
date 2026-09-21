@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { Event, Registration } from '@/types';
+import { formatMoney } from '@/lib/format';
 import {
   Calendar,
   Clock,
@@ -213,7 +214,7 @@ export const EventOverviewTab = ({ event }: EventOverviewTabProps) => {
                     )}
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-sm font-semibold">{distance.price} PLN</div>
+                    <div className="text-sm font-semibold">{formatMoney(distance.price)}</div>
                     <div className="text-xs text-muted-foreground">
                       limit: {distance.limit || 'bez limitu'}
                     </div>

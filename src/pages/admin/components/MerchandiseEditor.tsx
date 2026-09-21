@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EventMerchandise, MerchandiseColor } from '@/types';
+import { formatMoney } from '@/lib/format';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -278,7 +279,7 @@ export const MerchandiseEditor = ({ merchandise, onChange }: MerchandiseEditorPr
                       )}
                     </div>
                     <div className="text-right">
-                      <span className="font-semibold">{item.price} PLN</span>
+                      <span className="font-semibold">{formatMoney(item.price)}</span>
                       {!item.available && (
                         <Badge variant="outline" className="ml-2 text-destructive">
                           Niedostępny

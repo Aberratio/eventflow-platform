@@ -1,5 +1,5 @@
 import { Registration, Result } from '@/types';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatMoney } from '@/lib/format';
 
 // CSV Export Utility
 export const exportToCSV = (data: Record<string, unknown>[], filename: string) => {
@@ -47,7 +47,7 @@ export const prepareParticipantsExport = (registrations: Registration[]) => {
     Drużyna: reg.teamName || '-',
     Status: getStatusLabel(reg.status),
     'Data zapisu': formatDate(reg.registeredAt),
-    Kwota: reg.pricePaid ? `${reg.pricePaid} PLN` : '-',
+    Kwota: reg.pricePaid ? formatMoney(reg.pricePaid) : '-',
   }));
 };
 
