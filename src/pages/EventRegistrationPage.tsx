@@ -153,7 +153,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       });
       navigate('/login', { state: { returnTo: `/events/${slug}/register` } });
     }
-  }, [event, isAuthenticated, isLoading, navigate, previewMode]);
+  }, [event, isAuthenticated, isLoading, navigate, previewMode, slug]);
 
   useEffect(() => {
     if (event && isExternalRegistrationEvent(event)) return;
