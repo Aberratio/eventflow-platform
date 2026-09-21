@@ -1,6 +1,6 @@
 import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
-import type { ResultImportBatch, User } from '@/types';
+import type { ResultImportBatch, ShopOrder, User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { resolveApiAssetUrl } from '@/lib/utils';
 
@@ -127,6 +127,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
   }
   return payload as ApiResponse<T>;
+}
+
+// TD.18: PHP/PDO returns DECIMAL columns as numeric strings ("45.00"), not
+// JSON numbers — `shop_orders`' money columns (productTotal/deliveryPrice/
+// paymentSurcharge/totalPrice) come back that way from every one of these
+// endpoints. `ShopOrder`'s TypeScript type says `number`, so nothing else in
+// the app defensively re-parses them — every consumer (CartPage's
+// order-success handoff, the participant/admin/moderator orders tabs) calls
+// `.toFixed()` straight on the field and crashes. Normalized once, here, at
+// the one seam every order response passes through, rather than patched at
+// each of those call sites (found live: a real checkout run crashed
+// OrderSuccessPage with `lastOrder.productTotal.toFixed is not a
+// function`).
+function normalizeShopOrder(order: ShopOrder): ShopOrder {
+  return {
+    ...order,
+    productTotal: Number(order.productTotal),
+    deliveryPrice: Number(order.deliveryPrice),
+    paymentSurcharge: Number(order.paymentSurcharge),
+    totalPrice: Number(order.totalPrice),
+  };
 }
 
 async function requestForm<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
@@ -419,14 +440,26 @@ export const httpAdapter: ApiAdapter = {
   deleteShopCategory: (id) => request(`/shop/categories/${encodeURIComponent(id)}`, json('DELETE')),
   getDeliveryMethods: () => request('/shop/delivery-methods'),
   getShopPaymentMethods: () => request('/shop/payment-methods'),
-  getOrders: (userId) => request(`/shop/orders${query({ userId })}`),
-  getOrderById: (id) => request(`/shop/orders/${encodeURIComponent(id)}`),
-  createOrder: (data) => request('/shop/orders', json('POST', data)),
+  getOrders: (userId) =>
+    request<ShopOrder[]>(`/shop/orders${query({ userId })}`).then((r) => ({
+      ...r,
+      data: r.data.map(normalizeShopOrder),
+    })),
+  getOrderById: (id) =>
+    request<ShopOrder | null>(`/shop/orders/${encodeURIComponent(id)}`).then((r) => ({
+      ...r,
+      data: r.data ? normalizeShopOrder(r.data) : r.data,
+    })),
+  createOrder: (data) =>
+    request<ShopOrder>('/shop/orders', json('POST', data)).then((r) => ({
+      ...r,
+      data: normalizeShopOrder(r.data),
+    })),
   updateOrderStatus: (id, status, trackingNumber) =>
-    request(
+    request<ShopOrder>(
       `/shop/orders/${encodeURIComponent(id)}/status`,
       json('PATCH', { status, trackingNumber }),
-    ),
+    ).then((r) => ({ ...r, data: normalizeShopOrder(r.data) })),
 
   getChallenges: (filters) => request(`/challenges${query(filters as Record<string, QueryValue>)}`),
   getChallengeBySlug: (slug) => request(`/challenges/slug/${encodeURIComponent(slug)}`),
