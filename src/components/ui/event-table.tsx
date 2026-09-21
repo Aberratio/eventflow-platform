@@ -19,11 +19,12 @@ const EventTable = React.forwardRef<HTMLDivElement, EventTableProps>(
   ({ header, children, className }, ref) => (
     <div
       ref={ref}
-      className={cn('overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]', className)}
-    >
-      {header && (
-        <div className="hidden border-b border-white/[0.08] md:block">{header}</div>
+      className={cn(
+        'overflow-hidden rounded-lg border border-white/10 bg-white/[0.025]',
+        className,
       )}
+    >
+      {header && <div className="hidden border-b border-white/[0.08] md:block">{header}</div>}
       <div className="divide-y divide-white/[0.08]">{children}</div>
     </div>
   ),
@@ -54,7 +55,8 @@ const EventTableRow = React.forwardRef<HTMLAnchorElement, EventTableRowProps>(
         className,
       )}
     >
-      <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded border border-white/10"
+      <div
+        className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded border border-white/10"
         style={{ backgroundColor: 'var(--page-bg-surface)' }}
       >
         <span className="text-base font-bold leading-none text-white">{dateTile.day}</span>
@@ -65,9 +67,7 @@ const EventTableRow = React.forwardRef<HTMLAnchorElement, EventTableRowProps>(
 
       <div className="min-w-0 flex-1">
         <div className="line-clamp-1 text-sm font-bold text-white">{title}</div>
-        {mobileMeta && (
-          <div className="mt-1 text-xs text-white/[0.42] md:hidden">{mobileMeta}</div>
-        )}
+        {mobileMeta && <div className="mt-1 text-xs text-white/[0.42] md:hidden">{mobileMeta}</div>}
       </div>
 
       {children}

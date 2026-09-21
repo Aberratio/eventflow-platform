@@ -40,8 +40,7 @@ export function AdminEventBackgroundsTab() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      createEventBackground({ name: newName.trim(), imageUrl: uploadedUrl }),
+    mutationFn: () => createEventBackground({ name: newName.trim(), imageUrl: uploadedUrl }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event-backgrounds'] });
       setAddOpen(false);
@@ -233,8 +232,7 @@ export function AdminEventBackgroundsTab() {
                 {deleteUsages.map((u) => (
                   <li key={u.id} className="flex items-center justify-between text-sm">
                     <span>
-                      {u.name}{' '}
-                      <span className="text-xs text-muted-foreground">({u.status})</span>
+                      {u.name} <span className="text-xs text-muted-foreground">({u.status})</span>
                     </span>
                     <a
                       href={`/events/${u.slug}`}

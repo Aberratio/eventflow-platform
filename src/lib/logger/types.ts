@@ -25,7 +25,15 @@ export interface LogEntry {
   userId?: string;
   userRole?: string;
   userName?: string;
-  targetType?: 'user' | 'event' | 'order' | 'product' | 'page' | 'challenge' | 'registration' | 'settings';
+  targetType?:
+    | 'user'
+    | 'event'
+    | 'order'
+    | 'product'
+    | 'page'
+    | 'challenge'
+    | 'registration'
+    | 'settings';
   targetId?: string;
   targetName?: string;
   metadata?: Record<string, unknown>;

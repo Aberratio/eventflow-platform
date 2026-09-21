@@ -93,7 +93,9 @@ export const EventHeroBanner = ({ event, isPast }: EventHeroBannerProps) => {
           alt={event.name}
           className="absolute inset-0 h-full w-full object-cover"
           style={getBannerStyle()}
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,12,0.96)_0%,rgba(3,7,12,0.72)_38%,rgba(3,7,12,0.24)_72%),linear-gradient(180deg,rgba(3,7,12,0.24)_0%,rgba(3,7,12,0.48)_42%,hsl(var(--background))_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
@@ -103,7 +105,9 @@ export const EventHeroBanner = ({ event, isPast }: EventHeroBannerProps) => {
               src={event.organizerLogoUrl}
               alt={event.organizerName}
               className={getOrganizerLogoClassName(event.organizerLogoShape)}
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
         )}

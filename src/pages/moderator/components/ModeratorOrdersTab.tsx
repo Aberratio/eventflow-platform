@@ -84,8 +84,15 @@ export const ModeratorOrdersTab = () => {
   const users = usersResponse?.data ?? [];
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, status, trackingNumber }: { id: string; status: ShopOrder['status']; trackingNumber?: string }) =>
-      updateOrderStatus(id, status, trackingNumber),
+    mutationFn: ({
+      id,
+      status,
+      trackingNumber,
+    }: {
+      id: string;
+      status: ShopOrder['status'];
+      trackingNumber?: string;
+    }) => updateOrderStatus(id, status, trackingNumber),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shop-orders'] }),
   });
 

@@ -72,7 +72,12 @@ export const ResultDocumentsCard: React.FC<ResultDocumentsCardProps> = ({
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => onDelete(doc.id)} disabled={!canUpload}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(doc.id)}
+                disabled={!canUpload}
+              >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </div>

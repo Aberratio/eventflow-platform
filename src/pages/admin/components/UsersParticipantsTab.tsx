@@ -266,10 +266,16 @@ export const UsersParticipantsTab = () => {
                 </Button>
                 <Button
                   onClick={() => {
-                    appLogger.user('role_change', `Zmieniono rolę użytkownika ${selectedUser.name} na ${selectedRole}`, {
-                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
-                      metadata: { oldRole: selectedUser.role, newRole: selectedRole },
-                    });
+                    appLogger.user(
+                      'role_change',
+                      `Zmieniono rolę użytkownika ${selectedUser.name} na ${selectedRole}`,
+                      {
+                        targetType: 'user',
+                        targetId: selectedUser.id,
+                        targetName: selectedUser.name,
+                        metadata: { oldRole: selectedUser.role, newRole: selectedRole },
+                      },
+                    );
                     toast.success(
                       `Rola użytkownika ${selectedUser.name} zmieniona na ${selectedRole}`,
                     );
@@ -334,10 +340,17 @@ export const UsersParticipantsTab = () => {
                     else next.add(selectedUser.id);
                     return next;
                   });
-                  appLogger.user(blocked ? 'user_unblock' : 'user_block',
-                    blocked ? `Odblokowano użytkownika ${selectedUser.name}` : `Zablokowano użytkownika ${selectedUser.name}`, {
-                      targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
-                    });
+                  appLogger.user(
+                    blocked ? 'user_unblock' : 'user_block',
+                    blocked
+                      ? `Odblokowano użytkownika ${selectedUser.name}`
+                      : `Zablokowano użytkownika ${selectedUser.name}`,
+                    {
+                      targetType: 'user',
+                      targetId: selectedUser.id,
+                      targetName: selectedUser.name,
+                    },
+                  );
                   toast.success(
                     blocked
                       ? `Użytkownik ${selectedUser.name} został odblokowany`
@@ -369,7 +382,9 @@ export const UsersParticipantsTab = () => {
               onClick={() => {
                 if (selectedUser) {
                   appLogger.user('user_delete', `Usunięto użytkownika ${selectedUser.name}`, {
-                    targetType: 'user', targetId: selectedUser.id, targetName: selectedUser.name,
+                    targetType: 'user',
+                    targetId: selectedUser.id,
+                    targetName: selectedUser.name,
                   });
                 }
                 toast.success(`Użytkownik ${selectedUser?.name} został usunięty`);

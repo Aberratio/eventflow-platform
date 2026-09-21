@@ -142,11 +142,20 @@ export const PageEditorPage = () => {
       isNewPage ? createInfoPage(data) : updateInfoPage(data.id, data),
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: ['info-pages'] });
-      appLogger.cms(isNewPage ? 'page_create' : 'page_update',
-        isNewPage ? `Utworzono stronę «${data.title}»` : `Zaktualizowano stronę «${data.title}»`, {
-          targetType: 'page', targetId: data.id, targetName: data.title,
-          metadata: { slug: data.slug, sectionsCount: data.content.length, published: data.published },
-        });
+      appLogger.cms(
+        isNewPage ? 'page_create' : 'page_update',
+        isNewPage ? `Utworzono stronę «${data.title}»` : `Zaktualizowano stronę «${data.title}»`,
+        {
+          targetType: 'page',
+          targetId: data.id,
+          targetName: data.title,
+          metadata: {
+            slug: data.slug,
+            sectionsCount: data.content.length,
+            published: data.published,
+          },
+        },
+      );
       toast({
         title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
         description: `Strona "${data.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,

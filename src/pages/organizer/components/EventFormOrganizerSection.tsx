@@ -190,7 +190,12 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
   const { user } = useAuth();
 
   const selectedOrganizer = form.organizers.find((o) => o.id === form.selectedOrganizerId);
-  const organizerName = selectedOrganizer?.companyName || selectedOrganizer?.name || user?.companyName || user?.name || '—';
+  const organizerName =
+    selectedOrganizer?.companyName ||
+    selectedOrganizer?.name ||
+    user?.companyName ||
+    user?.name ||
+    '—';
   const organizerWebsite = selectedOrganizer?.website || user?.website;
 
   return (
@@ -218,8 +223,13 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            Nazwa i strona organizatora pobierana jest automatycznie z profilu. Aby je zmienić, zaktualizuj{' '}
-            <a href="/organizer/settings" className="text-primary underline-offset-4 hover:underline" target="_blank">
+            Nazwa i strona organizatora pobierana jest automatycznie z profilu. Aby je zmienić,
+            zaktualizuj{' '}
+            <a
+              href="/organizer/settings"
+              className="text-primary underline-offset-4 hover:underline"
+              target="_blank"
+            >
               dane profilu
             </a>
             .
@@ -236,8 +246,8 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
         </CardHeader>
         <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <p className="text-sm text-muted-foreground">
-            Adresy e-mail i numery telefonu, pod którymi uczestnicy mogą się skontaktować.
-            Możesz dodać kilka wpisów, np. osobny kontakt dla każdej osoby z organizacji.
+            Adresy e-mail i numery telefonu, pod którymi uczestnicy mogą się skontaktować. Możesz
+            dodać kilka wpisów, np. osobny kontakt dla każdej osoby z organizacji.
           </p>
 
           {form.organizerContacts.length === 0 && (
@@ -325,8 +335,13 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
           <Alert className="border-blue-200/40 bg-blue-500/5">
             <Info className="h-4 w-4 text-blue-500" />
             <AlertDescription className="text-xs text-muted-foreground">
-              Dane kontaktowe wpisane tutaj dotyczą tylko tego wydarzenia. Jeśli chcesz, aby były dostępne przy każdym nowym wydarzeniu, warto je uzupełnić w{' '}
-              <a href="/organizer/settings" className="text-primary underline-offset-4 hover:underline" target="_blank">
+              Dane kontaktowe wpisane tutaj dotyczą tylko tego wydarzenia. Jeśli chcesz, aby były
+              dostępne przy każdym nowym wydarzeniu, warto je uzupełnić w{' '}
+              <a
+                href="/organizer/settings"
+                className="text-primary underline-offset-4 hover:underline"
+                target="_blank"
+              >
                 profilu organizatora
               </a>
               .
@@ -344,7 +359,8 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
         </CardHeader>
         <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <p className="text-sm text-muted-foreground">
-            Dodaj współorganizatorów wydarzenia. Podaj nazwę (wymagana) oraz opcjonalnie dane kontaktowe i logo.
+            Dodaj współorganizatorów wydarzenia. Podaj nazwę (wymagana) oraz opcjonalnie dane
+            kontaktowe i logo.
           </p>
 
           {form.coOrganizers.length === 0 && (
@@ -360,7 +376,9 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                 className="relative rounded-lg border border-border/60 bg-card p-3"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Współorganizator {idx + 1}</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Współorganizator {idx + 1}
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"
@@ -391,7 +409,9 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                       <Input
                         type="email"
                         value={coOrg.email || ''}
-                        onChange={(e) => form.updateCoOrganizer(coOrg.id, { email: e.target.value })}
+                        onChange={(e) =>
+                          form.updateCoOrganizer(coOrg.id, { email: e.target.value })
+                        }
                         placeholder="kontakt@example.com"
                         className="h-8 text-sm"
                       />
@@ -403,7 +423,9 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                       <Input
                         type="tel"
                         value={coOrg.phone || ''}
-                        onChange={(e) => form.updateCoOrganizer(coOrg.id, { phone: e.target.value })}
+                        onChange={(e) =>
+                          form.updateCoOrganizer(coOrg.id, { phone: e.target.value })
+                        }
                         placeholder="+48 123 456 789"
                         className="h-8 text-sm"
                       />
@@ -415,7 +437,9 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                     </Label>
                     <Input
                       value={coOrg.address || ''}
-                      onChange={(e) => form.updateCoOrganizer(coOrg.id, { address: e.target.value })}
+                      onChange={(e) =>
+                        form.updateCoOrganizer(coOrg.id, { address: e.target.value })
+                      }
                       placeholder="ul. Sportowa 1, 00-001 Warszawa"
                       className="h-8 text-sm"
                     />
@@ -474,7 +498,9 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                 className="relative rounded-lg border border-border/60 bg-card p-3"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Sponsor {idx + 1}</span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Sponsor {idx + 1}
+                  </span>
                   <Button
                     type="button"
                     variant="ghost"

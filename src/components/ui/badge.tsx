@@ -11,8 +11,7 @@ const badgeVariants = cva(
         default: 'border border-primary/40 bg-primary text-primary-foreground',
         secondary:
           'border border-[color:var(--glass-border)] bg-[var(--glass-bg-hover)] text-muted-foreground',
-        destructive:
-          'border border-destructive/30 bg-destructive/15 text-destructive',
+        destructive: 'border border-destructive/30 bg-destructive/15 text-destructive',
         outline: 'border border-[color:var(--glass-border-strong)] text-muted-foreground',
         muted: 'border border-border/60 bg-[var(--glass-bg)] text-muted-foreground',
         accent: 'border border-primary/25 bg-primary/10 text-[hsl(var(--primary-glow))]',

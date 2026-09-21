@@ -87,7 +87,9 @@ test.describe('Interakcje — Sklep i koszyk', () => {
       await page.waitForTimeout(1000);
 
       // Look for "add to cart" button
-      const addBtn = page.locator('button:has-text("Dodaj do koszyka"), button:has-text("koszyk")').first();
+      const addBtn = page
+        .locator('button:has-text("Dodaj do koszyka"), button:has-text("koszyk")')
+        .first();
       if (await addBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await addBtn.click();
         await page.waitForTimeout(500);
@@ -147,7 +149,9 @@ test.describe('Interakcje — Filtrowanie wydarzeń', () => {
     await page.goto('/events');
     await page.waitForTimeout(1500);
 
-    const searchInput = page.locator('input[placeholder*="Szukaj"], input[placeholder*="szukaj"]').first();
+    const searchInput = page
+      .locator('input[placeholder*="Szukaj"], input[placeholder*="szukaj"]')
+      .first();
     if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
       await searchInput.fill('Bieg');
       await page.waitForTimeout(500);
@@ -213,7 +217,15 @@ test.describe('Interakcje — Panel uczestnika', () => {
   });
 
   test('przełączanie wszystkich zakładek', async ({ page }) => {
-    const tabNames = ['Rejestracje', 'Wyniki', 'Zamówienia', 'Wiadomości', 'Bilety', 'Wyzwania', 'Profil'];
+    const tabNames = [
+      'Rejestracje',
+      'Wyniki',
+      'Zamówienia',
+      'Wiadomości',
+      'Bilety',
+      'Wyzwania',
+      'Profil',
+    ];
     for (const tabName of tabNames) {
       const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
       if (await tab.isVisible({ timeout: 2000 }).catch(() => false)) {

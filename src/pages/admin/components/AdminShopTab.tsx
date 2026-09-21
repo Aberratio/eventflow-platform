@@ -14,9 +14,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, Infinity as InfinityIcon, Package, Pencil, Plus, Search, Tags, Trash2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Box,
+  Infinity as InfinityIcon,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  Tags,
+  Trash2,
+} from 'lucide-react';
 import { ShopCategory } from '@/types';
 import { toast } from 'sonner';
 
@@ -97,22 +119,34 @@ export const AdminShopTab = () => {
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <Package className="h-5 w-5 text-primary" />
-            <div><p className="text-2xl font-bold">{products.length}</p><p className="text-xs text-muted-foreground">Produktów</p></div>
+            <div>
+              <p className="text-2xl font-bold">{products.length}</p>
+              <p className="text-xs text-muted-foreground">Produktów</p>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <Box className="h-5 w-5 text-success" />
-            <div><p className="text-2xl font-bold">{products.filter((p) => p.inStock).length}</p><p className="text-xs text-muted-foreground">Dostępnych</p></div>
+            <div>
+              <p className="text-2xl font-bold">{products.filter((p) => p.inStock).length}</p>
+              <p className="text-xs text-muted-foreground">Dostępnych</p>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <div className="flex gap-2">
-        <Button variant={activeTab === 'products' ? 'default' : 'outline'} onClick={() => setActiveTab('products')}>
+        <Button
+          variant={activeTab === 'products' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('products')}
+        >
           <Package className="mr-2 h-4 w-4" /> Produkty
         </Button>
-        <Button variant={activeTab === 'categories' ? 'default' : 'outline'} onClick={() => setActiveTab('categories')}>
+        <Button
+          variant={activeTab === 'categories' ? 'default' : 'outline'}
+          onClick={() => setActiveTab('categories')}
+        >
           <Tags className="mr-2 h-4 w-4" /> Kategorie
         </Button>
       </div>
@@ -123,24 +157,42 @@ export const AdminShopTab = () => {
             <div className="flex flex-col gap-3 lg:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Szukaj produktów..." className="pl-10" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Szukaj produktów..."
+                  className="pl-10"
+                />
               </div>
               <Select value={category} onValueChange={(value) => setCategory(value)}>
-                <SelectTrigger className="lg:w-[180px]"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="lg:w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Wszystkie</SelectItem>
-                  {categories.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
+                  {categories.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <Select value={availability} onValueChange={(value) => setAvailability(value as typeof availability)}>
-                <SelectTrigger className="lg:w-[160px]"><SelectValue /></SelectTrigger>
+              <Select
+                value={availability}
+                onValueChange={(value) => setAvailability(value as typeof availability)}
+              >
+                <SelectTrigger className="lg:w-[160px]">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Wszystkie</SelectItem>
                   <SelectItem value="inStock">Dostępne</SelectItem>
                   <SelectItem value="outOfStock">Niedostępne</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => navigate('/admin/shop/products/new')}><Plus className="mr-2 h-4 w-4" /> Dodaj</Button>
+              <Button onClick={() => navigate('/admin/shop/products/new')}>
+                <Plus className="mr-2 h-4 w-4" /> Dodaj
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -160,17 +212,62 @@ export const AdminShopTab = () => {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img src={product.imageUrl} alt={product.name} className="h-11 w-11 rounded object-cover" />
-                        <div><p className="font-medium">{product.name}</p><p className="text-sm text-muted-foreground">{product.brand}</p></div>
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="h-11 w-11 rounded object-cover"
+                        />
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-muted-foreground">{product.brand}</p>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell><Badge variant="outline">{categoryLabels[product.category] ?? product.category}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {categoryLabels[product.category] ?? product.category}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-right">{product.price} zł</TableCell>
-                    <TableCell className="text-center">{product.isService ? <InfinityIcon className="mx-auto h-4 w-4" /> : product.stockCount ?? '-'}</TableCell>
-                    <TableCell><Badge variant={product.status === 'archived' ? 'secondary' : product.inStock ? 'default' : 'outline'}>{product.status === 'archived' ? 'Archiwalny' : product.inStock ? 'Dostępny' : 'Niedostępny'}</Badge></TableCell>
+                    <TableCell className="text-center">
+                      {product.isService ? (
+                        <InfinityIcon className="mx-auto h-4 w-4" />
+                      ) : (
+                        (product.stockCount ?? '-')
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          product.status === 'archived'
+                            ? 'secondary'
+                            : product.inStock
+                              ? 'default'
+                              : 'outline'
+                        }
+                      >
+                        {product.status === 'archived'
+                          ? 'Archiwalny'
+                          : product.inStock
+                            ? 'Dostępny'
+                            : 'Niedostępny'}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/shop/products/${product.id}/edit`)}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => deleteProductMutation.mutate(product.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(`/admin/shop/products/${product.id}/edit`)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteProductMutation.mutate(product.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -180,10 +277,19 @@ export const AdminShopTab = () => {
         </Card>
       ) : (
         <Card>
-          <CardHeader><CardTitle>Kategorie produktów</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Kategorie produktów</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <Table>
-              <TableHeader><TableRow><TableHead>Klucz</TableHead><TableHead>Nazwa</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Akcje</TableHead></TableRow></TableHeader>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Klucz</TableHead>
+                  <TableHead>Nazwa</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Akcje</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {categories.map((item) => (
                   <TableRow key={item.id}>
@@ -191,16 +297,44 @@ export const AdminShopTab = () => {
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.status === 'archived' ? 'Archiwalna' : 'Aktywna'}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => deleteCategoryMutation.mutate(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteCategoryMutation.mutate(item.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
             <div className="grid gap-3 rounded border p-4 md:grid-cols-[1fr_1fr_auto]">
-              <div><Label>Klucz</Label><Input value={newCategoryId} onChange={(e) => setNewCategoryId(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))} /></div>
-              <div><Label>Nazwa</Label><Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} /></div>
-              <Button className="self-end" disabled={!newCategoryId || !newCategoryName} onClick={() => createCategoryMutation.mutate({ id: newCategoryId, name: newCategoryName })}>Dodaj</Button>
+              <div>
+                <Label>Klucz</Label>
+                <Input
+                  value={newCategoryId}
+                  onChange={(e) =>
+                    setNewCategoryId(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+                  }
+                />
+              </div>
+              <div>
+                <Label>Nazwa</Label>
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                />
+              </div>
+              <Button
+                className="self-end"
+                disabled={!newCategoryId || !newCategoryName}
+                onClick={() =>
+                  createCategoryMutation.mutate({ id: newCategoryId, name: newCategoryName })
+                }
+              >
+                Dodaj
+              </Button>
             </div>
           </CardContent>
         </Card>

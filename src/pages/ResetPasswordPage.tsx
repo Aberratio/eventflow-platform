@@ -90,87 +90,86 @@ const ResetPasswordPage = () => {
       maxWidth="max-w-md"
       accent={isSuccess ? 'success' : 'primary'}
     >
-
-            <Card className="border-border/50 shadow-lg">
-              <CardContent className="pt-6">
-                {isSuccess ? (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-success/20 bg-success/5 p-4 text-center">
-                      <CheckCircle className="mx-auto mb-2 h-6 w-6 text-success" />
-                      <p className="text-sm text-muted-foreground">
-                        Hasło zostało pomyślnie zaktualizowane
-                      </p>
-                    </div>
-                    <Button asChild className="w-full" size="lg">
-                      <Link to="/login">Przejdź do logowania</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nowe hasło</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                  type={showPassword ? 'text' : 'password'}
-                                  placeholder="Min. 8 znaków"
-                                  className="pl-10 pr-10"
-                                  {...field}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                  aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
-                                  aria-pressed={showPassword}
-                                >
-                                  {showPassword ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Potwierdź nowe hasło</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                  type="password"
-                                  placeholder="Powtórz hasło"
-                                  className="pl-10"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                        {isLoading ? 'Zapisywanie...' : 'Zmień hasło'}
-                      </Button>
-                    </form>
-                  </Form>
-                )}
-              </CardContent>
-          </Card>
+      <Card className="border-border/50 shadow-lg">
+        <CardContent className="pt-6">
+          {isSuccess ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-success/20 bg-success/5 p-4 text-center">
+                <CheckCircle className="mx-auto mb-2 h-6 w-6 text-success" />
+                <p className="text-sm text-muted-foreground">
+                  Hasło zostało pomyślnie zaktualizowane
+                </p>
+              </div>
+              <Button asChild className="w-full" size="lg">
+                <Link to="/login">Przejdź do logowania</Link>
+              </Button>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nowe hasło</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Min. 8 znaków"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                            aria-pressed={showPassword}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Potwierdź nowe hasło</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type="password"
+                            placeholder="Powtórz hasło"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                  {isLoading ? 'Zapisywanie...' : 'Zmień hasło'}
+                </Button>
+              </form>
+            </Form>
+          )}
+        </CardContent>
+      </Card>
     </AuthPageShell>
   );
 };

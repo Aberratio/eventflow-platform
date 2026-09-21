@@ -67,9 +67,17 @@ const RegisterPage = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
 
-    appLogger.auth('register', `Zarejestrowano nowe konto: ${data.firstName} ${data.lastName} (${data.role})`, {
-      metadata: { email: data.email, role: data.role, name: `${data.firstName} ${data.lastName}` },
-    });
+    appLogger.auth(
+      'register',
+      `Zarejestrowano nowe konto: ${data.firstName} ${data.lastName} (${data.role})`,
+      {
+        metadata: {
+          email: data.email,
+          role: data.role,
+          name: `${data.firstName} ${data.lastName}`,
+        },
+      },
+    );
     toast({
       title: 'Konto zostało utworzone!',
       description: 'Na podany adres email wysłaliśmy link aktywacyjny.',
@@ -88,199 +96,198 @@ const RegisterPage = () => {
       title="Utwórz konto"
       subtitle="Dołącz do platformy ZmierzymyCzas"
     >
+      <Card className="border-border/50 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl">Dane rejestracyjne</CardTitle>
+          <CardDescription>Wypełnij formularz, aby utworzyć nowe konto</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Imię</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Jan" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nazwisko</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Kowalski" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Dane rejestracyjne</CardTitle>
-                <CardDescription>Wypełnij formularz, aby utworzyć nowe konto</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Imię</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Jan" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nazwisko</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Kowalski" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="email"
+                          placeholder="jan@example.com"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                              <Input
-                                type="email"
-                                placeholder="jan@example.com"
-                                className="pl-10"
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hasło</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Min. 8 znaków"
+                          className="pl-10 pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                          aria-pressed={showPassword}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Hasło</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                              <Input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Min. 8 znaków"
-                                className="pl-10 pr-10"
-                                {...field}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
-                                aria-pressed={showPassword}
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Potwierdź hasło</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="password"
+                          placeholder="Powtórz hasło"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Potwierdź hasło</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                              <Input
-                                type="password"
-                                placeholder="Powtórz hasło"
-                                className="pl-10"
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Typ konta</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-2 gap-4"
+                      >
+                        <div>
+                          <RadioGroupItem
+                            value="participant"
+                            id="participant"
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor="participant"
+                            className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                              selectedRole === 'participant'
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-muted bg-card hover:bg-accent/5'
+                            }`}
+                          >
+                            <User className="mb-2 h-6 w-6" />
+                            <span className="text-sm font-medium">Zawodnik</span>
+                            <span className="mt-1 text-xs text-muted-foreground">
+                              Startuj w zawodach
+                            </span>
+                          </Label>
+                        </div>
+                        <div>
+                          <RadioGroupItem
+                            value="organizer"
+                            id="organizer"
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor="organizer"
+                            className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                              selectedRole === 'organizer'
+                                ? 'border-primary bg-primary/5 shadow-sm'
+                                : 'border-muted bg-card hover:bg-accent/5'
+                            }`}
+                          >
+                            <Briefcase className="mb-2 h-6 w-6" />
+                            <span className="text-sm font-medium">Organizator</span>
+                            <span className="mt-1 text-xs text-muted-foreground">
+                              Twórz wydarzenia
+                            </span>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Typ konta</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="grid grid-cols-2 gap-4"
-                            >
-                              <div>
-                                <RadioGroupItem
-                                  value="participant"
-                                  id="participant"
-                                  className="peer sr-only"
-                                />
-                                <Label
-                                  htmlFor="participant"
-                                  className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                                    selectedRole === 'participant'
-                                      ? 'border-primary bg-primary/5 shadow-sm'
-                                      : 'border-muted bg-card hover:bg-accent/5'
-                                  }`}
-                                >
-                                  <User className="mb-2 h-6 w-6" />
-                                  <span className="text-sm font-medium">Zawodnik</span>
-                                  <span className="mt-1 text-xs text-muted-foreground">
-                                    Startuj w zawodach
-                                  </span>
-                                </Label>
-                              </div>
-                              <div>
-                                <RadioGroupItem
-                                  value="organizer"
-                                  id="organizer"
-                                  className="peer sr-only"
-                                />
-                                <Label
-                                  htmlFor="organizer"
-                                  className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                                    selectedRole === 'organizer'
-                                      ? 'border-primary bg-primary/5 shadow-sm'
-                                      : 'border-muted bg-card hover:bg-accent/5'
-                                  }`}
-                                >
-                                  <Briefcase className="mb-2 h-6 w-6" />
-                                  <span className="text-sm font-medium">Organizator</span>
-                                  <span className="mt-1 text-xs text-muted-foreground">
-                                    Twórz wydarzenia
-                                  </span>
-                                </Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                      {isLoading ? 'Tworzenie konta...' : 'Zarejestruj się'}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-              <CardFooter className="flex flex-col gap-3 border-t pt-6">
-                <p className="text-sm text-muted-foreground">
-                  Masz już konto?{' '}
-                  <Link to="/login" className="font-medium text-primary hover:underline">
-                    Zaloguj się
-                  </Link>
-                </p>
-              </CardFooter>
-          </Card>
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? 'Tworzenie konta...' : 'Zarejestruj się'}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-3 border-t pt-6">
+          <p className="text-sm text-muted-foreground">
+            Masz już konto?{' '}
+            <Link to="/login" className="font-medium text-primary hover:underline">
+              Zaloguj się
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </AuthPageShell>
   );
 };

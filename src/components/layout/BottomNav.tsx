@@ -1,12 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Calendar,
-  Home,
-  LogIn,
-  ShoppingCart,
-  User,
-  Trophy,
-} from 'lucide-react';
+import { Calendar, Home, LogIn, ShoppingCart, User, Trophy } from 'lucide-react';
 import { useAuthSafe } from '@/contexts/AuthContext';
 import { useCartSafe } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
@@ -82,9 +75,7 @@ export const BottomNav = () => {
     },
   ];
 
-  const navItems = totalItems > 0
-    ? [...baseItems, cartItem, panelItem]
-    : [...baseItems, panelItem];
+  const navItems = totalItems > 0 ? [...baseItems, cartItem, panelItem] : [...baseItems, panelItem];
 
   return (
     <nav className="safe-area-bottom fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background backdrop-blur-xl lg:hidden">

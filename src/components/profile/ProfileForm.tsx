@@ -187,7 +187,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
               id="street"
               value={formData.address.street}
               onChange={(e) =>
-                setFormData({ ...formData, address: { ...formData.address, street: e.target.value } })
+                setFormData({
+                  ...formData,
+                  address: { ...formData.address, street: e.target.value },
+                })
               }
               placeholder="ul. Przykładowa 1/2"
             />
@@ -213,7 +216,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
                 id="city"
                 value={formData.address.city}
                 onChange={(e) =>
-                  setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })
+                  setFormData({
+                    ...formData,
+                    address: { ...formData.address, city: e.target.value },
+                  })
                 }
                 placeholder="Warszawa"
               />
@@ -240,7 +246,11 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
       {children}
 
       <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-        {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+        {saving ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <Save className="mr-2 h-4 w-4" />
+        )}
         Zapisz zmiany
       </Button>
     </form>

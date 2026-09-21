@@ -76,8 +76,14 @@ const SeriesListPage = () => {
           accent="warning"
         />
         <div className="mt-5 flex items-center gap-4">
-          <StatPill icon={<Target className="h-4 w-4 text-success" />} label={`${activeCount} aktywnych`} />
-          <StatPill icon={<Calendar className="h-4 w-4 text-warning" />} label={`${allSeries.length} łącznie`} />
+          <StatPill
+            icon={<Target className="h-4 w-4 text-success" />}
+            label={`${activeCount} aktywnych`}
+          />
+          <StatPill
+            icon={<Calendar className="h-4 w-4 text-warning" />}
+            label={`${allSeries.length} łącznie`}
+          />
         </div>
       </PageHero>
 

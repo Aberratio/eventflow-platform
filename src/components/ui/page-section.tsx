@@ -17,11 +17,7 @@ const PageSection = React.forwardRef<HTMLElement, PageSectionProps>(
   ({ muted = false, compact = false, className, children, ...props }, ref) => (
     <section
       ref={ref}
-      className={cn(
-        compact ? 'py-6 md:py-8' : 'py-10 md:py-14',
-        muted && 'bg-muted/40',
-        className,
-      )}
+      className={cn(compact ? 'py-6 md:py-8' : 'py-10 md:py-14', muted && 'bg-muted/40', className)}
       {...props}
     >
       <div className="container mx-auto px-4">{children}</div>

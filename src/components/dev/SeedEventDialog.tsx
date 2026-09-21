@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -33,7 +45,8 @@ interface SeedLog {
 export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const isStaff = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
+  const isStaff =
+    user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
   const isOrganizer = user?.role === 'organizer';
   const canRun = isStaff || isOrganizer;
 
@@ -79,7 +92,10 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
 
     try {
       addLog('info', `Wywołuję endpoint /dev/seed-event...`);
-      addLog('info', `Parametry: ${participantCount} uczestników | dyscyplina: ${discipline} | wirtualne: ${isVirtual} | prywatne: ${isPrivate}`);
+      addLog(
+        'info',
+        `Parametry: ${participantCount} uczestników | dyscyplina: ${discipline} | wirtualne: ${isVirtual} | prywatne: ${isPrivate}`,
+      );
 
       const token = localStorage.getItem(STORAGE_KEYS.API_TOKEN);
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
@@ -107,7 +123,14 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
       }
 
       const data = json.data as {
-        event: { id: string; name: string; slug: string; discipline: string; date: string; city: string };
+        event: {
+          id: string;
+          name: string;
+          slug: string;
+          discipline: string;
+          date: string;
+          city: string;
+        };
         organizerEmail?: string;
         participantsCreated: number;
         registrationsCreated: number;
@@ -115,7 +138,10 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
         eventUrl: string;
       };
 
-      addLog('success', `Wydarzenie: "${data.event.name}" | ${data.event.city} | ${data.event.date}`);
+      addLog(
+        'success',
+        `Wydarzenie: "${data.event.name}" | ${data.event.city} | ${data.event.date}`,
+      );
       addLog('success', `Dyscyplina: ${data.event.discipline} | Status: past`);
       if (data.organizerEmail) {
         addLog('success', `Organizator: ${data.organizerEmail} (hasło: demo123)`);
@@ -159,14 +185,14 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
             key={v}
             type="button"
             onClick={() => onChange(v)}
-            className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+            className={`rounded border px-2 py-0.5 text-xs font-medium transition-colors ${
               value === v
                 ? v === 'yes'
-                  ? 'bg-green-500 text-white border-green-500'
+                  ? 'border-green-500 bg-green-500 text-white'
                   : v === 'no'
-                    ? 'bg-red-500 text-white border-red-500'
-                    : 'bg-blue-500 text-white border-blue-500'
-                : 'bg-muted border-border text-foreground hover:bg-accent'
+                    ? 'border-red-500 bg-red-500 text-white'
+                    : 'border-blue-500 bg-blue-500 text-white'
+                : 'border-border bg-muted text-foreground hover:bg-accent'
             }`}
           >
             {v === 'yes' ? 'Tak' : v === 'no' ? 'Nie' : 'Losuj'}
@@ -183,59 +209,72 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
     return 'text-foreground/70';
   };
 
-  const sectionLabel = 'text-xs font-semibold uppercase tracking-wide text-foreground/60 mb-2 block';
+  const sectionLabel =
+    'text-xs font-semibold uppercase tracking-wide text-foreground/60 mb-2 block';
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o && !running) onClose(); }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col gap-0 p-0 bg-background text-foreground">
-        <DialogHeader className="px-6 pt-6 pb-3 border-b">
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o && !running) onClose();
+      }}
+    >
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0 bg-background p-0 text-foreground">
+        <DialogHeader className="border-b px-6 pb-3 pt-6">
           <DialogTitle className="flex items-center gap-2 text-foreground">
             <span>Wygeneruj przeszłe wydarzenie</span>
-            <Badge variant="outline" className="text-xs font-mono border-amber-400 text-amber-500">DEV</Badge>
+            <Badge variant="outline" className="border-amber-400 font-mono text-xs text-amber-500">
+              DEV
+            </Badge>
           </DialogTitle>
           <DialogDescription asChild>
-            <div className="space-y-2 mt-1">
-              <p className="text-foreground/70 text-sm">
-                Tworzy losowe wydarzenie z przeszłości, uczestnikami, zapisami i wynikami.
-                Nowe konta mają hasło <code className="bg-muted text-foreground px-1 py-0.5 rounded font-mono text-xs">demo123</code>.
+            <div className="mt-1 space-y-2">
+              <p className="text-sm text-foreground/70">
+                Tworzy losowe wydarzenie z przeszłości, uczestnikami, zapisami i wynikami. Nowe
+                konta mają hasło{' '}
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
+                  demo123
+                </code>
+                .
               </p>
-              <div className={`flex items-start gap-2 text-xs rounded-md px-3 py-2 ${
-                !user
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                  : isStaff
-                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                    : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-              }`}>
-                <span className="mt-0.5">
-                  {!user ? '✕' : isStaff ? '✓' : '⚠'}
-                </span>
+              <div
+                className={`flex items-start gap-2 rounded-md px-3 py-2 text-xs ${
+                  !user
+                    ? 'border border-red-500/20 bg-red-500/10 text-red-400'
+                    : isStaff
+                      ? 'border border-green-500/20 bg-green-500/10 text-green-400'
+                      : 'border border-yellow-500/20 bg-yellow-500/10 text-yellow-400'
+                }`}
+              >
+                <span className="mt-0.5">{!user ? '✕' : isStaff ? '✓' : '⚠'}</span>
                 <span>
                   {!user
                     ? 'Nie jesteś zalogowany/a. Zaloguj się, żeby użyć tego narzędzia.'
                     : isStaff
                       ? `Zalogowano jako ${user.role} (${user.name}) — pełny dostęp: tworzenie kont, ustawianie statusu "past".`
-                      : `Zalogowano jako organizer (${user.name}) — ograniczony tryb: wydarzenie zostanie zapisane jako draft (status "past" wymaga admina/moderatora), nowe konta uczestników będą tworzone przez rejestrację.`
-                  }
+                      : `Zalogowano jako organizer (${user.name}) — ograniczony tryb: wydarzenie zostanie zapisane jako draft (status "past" wymaga admina/moderatora), nowe konta uczestników będą tworzone przez rejestrację.`}
                 </span>
               </div>
             </div>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-1 overflow-hidden divide-x divide-border">
+        <div className="flex flex-1 divide-x divide-border overflow-hidden">
           {/* Left: Config */}
           <ScrollArea className="w-72 shrink-0 bg-muted/20">
-            <div className="px-5 py-4 space-y-4">
+            <div className="space-y-4 px-5 py-4">
               {/* Participants */}
               <div>
                 <Label className={sectionLabel}>Liczba uczestników</Label>
-                <div className="flex items-center gap-2 mt-1.5">
+                <div className="mt-1.5 flex items-center gap-2">
                   <Input
                     type="number"
                     min={5}
                     max={500}
                     value={participantCount}
-                    onChange={(e) => setParticipantCount(Math.max(5, Math.min(500, Number(e.target.value))))}
+                    onChange={(e) =>
+                      setParticipantCount(Math.max(5, Math.min(500, Number(e.target.value))))
+                    }
                     className="h-8 w-24 bg-background text-foreground"
                   />
                   <span className="text-xs text-foreground/60">osób (5–500)</span>
@@ -248,7 +287,7 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
               <div>
                 <Label className={sectionLabel}>Dyscyplina</Label>
                 <Select value={discipline} onValueChange={setDiscipline}>
-                  <SelectTrigger className="h-8 mt-1.5 bg-background text-foreground">
+                  <SelectTrigger className="mt-1.5 h-8 bg-background text-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -277,7 +316,11 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
                 <Label className={sectionLabel}>Elementy logistyki</Label>
                 <TriStateToggle value={parking} onChange={setParking} label="Parking" />
                 <TriStateToggle value={raceOffice} onChange={setRaceOffice} label="Biuro zawodów" />
-                <TriStateToggle value={changingRooms} onChange={setChangingRooms} label="Przebieralnie" />
+                <TriStateToggle
+                  value={changingRooms}
+                  onChange={setChangingRooms}
+                  label="Przebieralnie"
+                />
                 <TriStateToggle value={buffet} onChange={setBuffet} label="Bufet/żywienie" />
                 <TriStateToggle value={medical} onChange={setMedical} label="Punkt med." />
                 <TriStateToggle value={showers} onChange={setShowers} label="Prysznice" />
@@ -288,11 +331,27 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
               {/* Registration features */}
               <div>
                 <Label className={sectionLabel}>Rejestracja i wyniki</Label>
-                <TriStateToggle value={ageCategories} onChange={setAgeCategories} label="Kategorie wiekowe" />
+                <TriStateToggle
+                  value={ageCategories}
+                  onChange={setAgeCategories}
+                  label="Kategorie wiekowe"
+                />
                 <TriStateToggle value={priceTiers} onChange={setPriceTiers} label="Progi cenowe" />
-                <TriStateToggle value={merchandise} onChange={setMerchandise} label="Gadżety (merch)" />
-                <TriStateToggle value={discountCodes} onChange={setDiscountCodes} label="Kody rabatowe" />
-                <TriStateToggle value={paymentMethods} onChange={setPaymentMethods} label="Metody płatności" />
+                <TriStateToggle
+                  value={merchandise}
+                  onChange={setMerchandise}
+                  label="Gadżety (merch)"
+                />
+                <TriStateToggle
+                  value={discountCodes}
+                  onChange={setDiscountCodes}
+                  label="Kody rabatowe"
+                />
+                <TriStateToggle
+                  value={paymentMethods}
+                  onChange={setPaymentMethods}
+                  label="Metody płatności"
+                />
               </div>
 
               <Separator />
@@ -300,21 +359,25 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
               {/* Content */}
               <div>
                 <Label className={sectionLabel}>Treści</Label>
-                <TriStateToggle value={organizersHtml} onChange={setOrganizersHtml} label="Organizatorzy" />
+                <TriStateToggle
+                  value={organizersHtml}
+                  onChange={setOrganizersHtml}
+                  label="Organizatorzy"
+                />
                 <TriStateToggle value={rulesHtml} onChange={setRulesHtml} label="Regulamin" />
               </div>
             </div>
           </ScrollArea>
 
           {/* Right: Log output */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="px-4 py-2.5 border-b bg-muted/20">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="border-b bg-muted/20 px-4 py-2.5">
               <span className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
                 {running ? 'Generowanie...' : done ? 'Gotowe' : 'Konsola'}
               </span>
             </div>
             <ScrollArea className="flex-1 bg-muted/10">
-              <div className="p-4 font-mono text-xs space-y-0.5">
+              <div className="space-y-0.5 p-4 font-mono text-xs">
                 {logs.length === 0 && !running && (
                   <p className="text-foreground/50">
                     Skonfiguruj opcje i kliknij &quot;Generuj&quot; aby stworzyć losowe wydarzenie.
@@ -327,7 +390,7 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
                   </div>
                 ))}
                 {running && (
-                  <div className="flex items-center gap-2 text-blue-500 mt-1">
+                  <div className="mt-1 flex items-center gap-2 text-blue-500">
                     <span className="animate-pulse">▶</span>
                     <span>Pracuję...</span>
                   </div>
@@ -335,7 +398,7 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
               </div>
             </ScrollArea>
             {done && createdEventUrl && (
-              <div className="px-4 py-3 border-t border-green-500/30 bg-green-500/10">
+              <div className="border-t border-green-500/30 bg-green-500/10 px-4 py-3">
                 <a
                   href={createdEventUrl}
                   target="_blank"
@@ -350,22 +413,19 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/10">
+        <div className="flex items-center justify-between border-t bg-muted/10 px-6 py-4">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => { reset(); }}
+            onClick={() => {
+              reset();
+            }}
             disabled={running}
           >
             Wyczyść log
           </Button>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={running}
-            >
+            <Button variant="outline" size="sm" onClick={onClose} disabled={running}>
               Zamknij
             </Button>
             <Button

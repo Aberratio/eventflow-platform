@@ -10,7 +10,8 @@ interface ExternalRegistrationFrameProps {
 }
 
 export const isExternalRegistrationEvent = (event: Event): boolean =>
-  event.registrationEmbed?.mode === 'external_embed' && Boolean(event.registrationEmbed.externalUrl);
+  event.registrationEmbed?.mode === 'external_embed' &&
+  Boolean(event.registrationEmbed.externalUrl);
 
 export const isExternalRegistrationActive = (event: Event): boolean => {
   if (!isExternalRegistrationEvent(event)) return false;

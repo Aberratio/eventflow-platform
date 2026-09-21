@@ -49,13 +49,17 @@ test.describe('Admin Dashboard – events tab', () => {
   test('events tab renders a table or list of events', async ({ page }) => {
     await clickTab(page, 'Wydarzenia');
     // Expect either a table row, a list item, or an empty-state element
-    const content = page.locator('table, [role="row"], [data-testid="empty-state"], .event-list-row').first();
+    const content = page
+      .locator('table, [role="row"], [data-testid="empty-state"], .event-list-row')
+      .first();
     await expect(content).toBeVisible({ timeout: 8000 });
   });
 
   test('events tab contains a search or filter control', async ({ page }) => {
     await clickTab(page, 'Wydarzenia');
-    const searchOrFilter = page.locator('input[type="search"], input[placeholder*="Szukaj"], input[placeholder*="szukaj"]').first();
+    const searchOrFilter = page
+      .locator('input[type="search"], input[placeholder*="Szukaj"], input[placeholder*="szukaj"]')
+      .first();
     await expect(searchOrFilter).toBeVisible({ timeout: 5000 });
   });
 });
@@ -67,7 +71,9 @@ test.describe('Admin Dashboard – shop tab', () => {
 
   test('shop tab renders product list or empty state', async ({ page }) => {
     await clickTab(page, 'Sklep');
-    const content = page.locator('table, [role="row"], [data-testid="empty-state"], h2, h3').first();
+    const content = page
+      .locator('table, [role="row"], [data-testid="empty-state"], h2, h3')
+      .first();
     await expect(content).toBeVisible({ timeout: 8000 });
   });
 });
@@ -79,7 +85,9 @@ test.describe('Admin Dashboard – orders tab', () => {
 
   test('orders tab renders a list or empty state', async ({ page }) => {
     await clickTab(page, 'Zamówienia');
-    const content = page.locator('table, [role="row"], [data-testid="empty-state"], h2, h3').first();
+    const content = page
+      .locator('table, [role="row"], [data-testid="empty-state"], h2, h3')
+      .first();
     await expect(content).toBeVisible({ timeout: 8000 });
   });
 });
@@ -121,7 +129,9 @@ test.describe('Admin Dashboard – challenges tab', () => {
 
   test('challenges tab renders content', async ({ page }) => {
     await clickTab(page, 'Wyzwania');
-    const content = page.locator('table, [role="row"], [data-testid="empty-state"], h2, h3').first();
+    const content = page
+      .locator('table, [role="row"], [data-testid="empty-state"], h2, h3')
+      .first();
     await expect(content).toBeVisible({ timeout: 8000 });
   });
 });
@@ -197,6 +207,11 @@ test.describe('Admin Sub-Pages', () => {
   });
 
   test('admin page title is visible on dashboard', async ({ page }) => {
-    await expect(page.locator('h1, h2').filter({ hasText: /Admin|Dashboard|Panel/i }).first()).toBeVisible({ timeout: 5000 });
+    await expect(
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /Admin|Dashboard|Panel/i })
+        .first(),
+    ).toBeVisible({ timeout: 5000 });
   });
 });

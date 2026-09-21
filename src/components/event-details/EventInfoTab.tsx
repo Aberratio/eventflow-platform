@@ -1,4 +1,10 @@
-import { Event, EventLogisticsInfo, EventDocumentType, EVENT_DOCUMENT_TYPE_LABELS, EventSponsor } from '@/types';
+import {
+  Event,
+  EventLogisticsInfo,
+  EventDocumentType,
+  EVENT_DOCUMENT_TYPE_LABELS,
+  EventSponsor,
+} from '@/types';
 import { Result } from '@/types/result';
 import {
   Mail,
@@ -47,21 +53,89 @@ const LOGISTICS_DISPLAY: {
   label: string;
   locationLabel: string;
 }[] = [
-  { key: 'parking', icon: <ParkingSquare className="h-4 w-4" />, label: 'Parkingi', locationLabel: 'Parking' },
-  { key: 'changingRooms', icon: <ShirtIcon className="h-4 w-4" />, label: 'Szatnie', locationLabel: 'Szatnia' },
-  { key: 'luggage', icon: <Briefcase className="h-4 w-4" />, label: 'Depozyty bagażu', locationLabel: 'Depozyt' },
-  { key: 'toilets', icon: <Toilet className="h-4 w-4" />, label: 'Toalety', locationLabel: 'Punkt toaletowy' },
-  { key: 'buffet', icon: <Coffee className="h-4 w-4" />, label: 'Bufet / napoje', locationLabel: 'Punkt odżywczy' },
-  { key: 'meals', icon: <Utensils className="h-4 w-4" />, label: 'Posiłki / catering', locationLabel: 'Punkt' },
-  { key: 'medicalPoint', icon: <HeartPulse className="h-4 w-4" />, label: 'Punkt medyczny', locationLabel: 'Punkt medyczny' },
-  { key: 'showers', icon: <ShowerHead className="h-4 w-4" />, label: 'Prysznice', locationLabel: 'Prysznice' },
-  { key: 'merchandise', icon: <ShoppingBag className="h-4 w-4" />, label: 'Gadżety / merchandise', locationLabel: 'Strefa' },
-  { key: 'timeMeasurement', icon: <Timer className="h-4 w-4" />, label: 'Pomiar czasu', locationLabel: 'Punkt' },
-  { key: 'awardsClassifications', icon: <Trophy className="h-4 w-4" />, label: 'Nagrody i klasyfikacje', locationLabel: 'Punkt' },
-  { key: 'additionalInfo', icon: <Info className="h-4 w-4" />, label: 'Dodatkowe informacje', locationLabel: 'Punkt' },
+  {
+    key: 'parking',
+    icon: <ParkingSquare className="h-4 w-4" />,
+    label: 'Parkingi',
+    locationLabel: 'Parking',
+  },
+  {
+    key: 'changingRooms',
+    icon: <ShirtIcon className="h-4 w-4" />,
+    label: 'Szatnie',
+    locationLabel: 'Szatnia',
+  },
+  {
+    key: 'luggage',
+    icon: <Briefcase className="h-4 w-4" />,
+    label: 'Depozyty bagażu',
+    locationLabel: 'Depozyt',
+  },
+  {
+    key: 'toilets',
+    icon: <Toilet className="h-4 w-4" />,
+    label: 'Toalety',
+    locationLabel: 'Punkt toaletowy',
+  },
+  {
+    key: 'buffet',
+    icon: <Coffee className="h-4 w-4" />,
+    label: 'Bufet / napoje',
+    locationLabel: 'Punkt odżywczy',
+  },
+  {
+    key: 'meals',
+    icon: <Utensils className="h-4 w-4" />,
+    label: 'Posiłki / catering',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'medicalPoint',
+    icon: <HeartPulse className="h-4 w-4" />,
+    label: 'Punkt medyczny',
+    locationLabel: 'Punkt medyczny',
+  },
+  {
+    key: 'showers',
+    icon: <ShowerHead className="h-4 w-4" />,
+    label: 'Prysznice',
+    locationLabel: 'Prysznice',
+  },
+  {
+    key: 'merchandise',
+    icon: <ShoppingBag className="h-4 w-4" />,
+    label: 'Gadżety / merchandise',
+    locationLabel: 'Strefa',
+  },
+  {
+    key: 'timeMeasurement',
+    icon: <Timer className="h-4 w-4" />,
+    label: 'Pomiar czasu',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'awardsClassifications',
+    icon: <Trophy className="h-4 w-4" />,
+    label: 'Nagrody i klasyfikacje',
+    locationLabel: 'Punkt',
+  },
+  {
+    key: 'additionalInfo',
+    icon: <Info className="h-4 w-4" />,
+    label: 'Dodatkowe informacje',
+    locationLabel: 'Punkt',
+  },
 ];
 
-type InfoSectionTone = 'amber' | 'sky' | 'emerald' | 'violet' | 'rose' | 'slate' | 'indigo' | 'orange';
+type InfoSectionTone =
+  | 'amber'
+  | 'sky'
+  | 'emerald'
+  | 'violet'
+  | 'rose'
+  | 'slate'
+  | 'indigo'
+  | 'orange';
 
 const INFO_SECTION_TONES: Record<InfoSectionTone, string> = {
   amber: 'border-l-amber-400 shadow-[inset_3px_0_0_rgba(251,191,36,0.95)]',
@@ -168,7 +242,11 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
   if (visible.length === 0) return null;
 
   return (
-    <InfoSection title="Logistyka zawodów" icon={<ClipboardList className="h-4 w-4" />} tone="emerald">
+    <InfoSection
+      title="Logistyka zawodów"
+      icon={<ClipboardList className="h-4 w-4" />}
+      tone="emerald"
+    >
       <div className="grid gap-2 sm:grid-cols-2">
         {visible.map((f) => {
           const field = info[f.key]!;
@@ -218,11 +296,7 @@ const MEDAL_COLORS = [
   'text-amber-600 drop-shadow-[0_0_4px_rgba(217,119,6,0.5)]',
 ];
 
-const ResultsAnnouncementBanner = ({
-  onGoToResults,
-}: {
-  onGoToResults?: () => void;
-}) => (
+const ResultsAnnouncementBanner = ({ onGoToResults }: { onGoToResults?: () => void }) => (
   <div className="relative overflow-hidden rounded-xl border border-yellow-400/25 bg-gradient-to-br from-yellow-400/10 via-amber-500/5 to-transparent p-5 shadow-[0_0_40px_rgba(250,204,21,0.08)]">
     <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 opacity-[0.07]">
       <Trophy className="h-28 w-28 text-yellow-400" />
@@ -243,7 +317,7 @@ const ResultsAnnouncementBanner = ({
         <button
           type="button"
           onClick={onGoToResults}
-          className="shrink-0 flex items-center gap-1.5 rounded-lg border border-yellow-400/30 bg-yellow-400/10 px-3 py-2 text-sm font-semibold text-yellow-300 transition-colors hover:bg-yellow-400/20"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-yellow-400/30 bg-yellow-400/10 px-3 py-2 text-sm font-semibold text-yellow-300 transition-colors hover:bg-yellow-400/20"
         >
           Zobacz wyniki
           <ChevronRight className="h-4 w-4" />
@@ -259,8 +333,7 @@ const WinnersWidget = ({ results }: { results: Result[] }) => {
 
   const distances = Array.from(new Set(finished.map((r) => r.distanceName)));
   const manyDistancesOrCategories =
-    distances.length > 2 ||
-    Array.from(new Set(finished.map((r) => r.category))).length > 4;
+    distances.length > 2 || Array.from(new Set(finished.map((r) => r.category))).length > 4;
 
   if (manyDistancesOrCategories) {
     // Jedno pierwsze miejsce z klasyfikacji generalnej każdego dystansu
@@ -304,9 +377,7 @@ const WinnersWidget = ({ results }: { results: Result[] }) => {
     const top3 = [...finished].sort((a, b) => a.position - b.position).slice(0, 3);
     return (
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
-          Podium
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">Podium</p>
         <div className="space-y-2">
           {top3.map((r, i) => (
             <div
@@ -316,9 +387,7 @@ const WinnersWidget = ({ results }: { results: Result[] }) => {
               <Medal className={`h-4 w-4 shrink-0 ${MEDAL_COLORS[i]}`} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
-                {r.distanceName && (
-                  <p className="text-xs text-foreground/50">{r.distanceName}</p>
-                )}
+                {r.distanceName && <p className="text-xs text-foreground/50">{r.distanceName}</p>}
               </div>
               <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
             </div>
@@ -371,9 +440,8 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
 
   const scheduleDoc = event.documents?.find((d) => d.type === 'harmonogram');
   const rulesDoc = event.documents?.find((d) => d.type === 'regulamin');
-  const otherDocs = event.documents?.filter(
-    (d) => d.type !== 'harmonogram' && d.type !== 'regulamin',
-  ) ?? [];
+  const otherDocs =
+    event.documents?.filter((d) => d.type !== 'harmonogram' && d.type !== 'regulamin') ?? [];
 
   const hasRulesContent = event.rulesHtml || rulesDoc;
   const hasDocuments = event.documents && event.documents.length > 0;
@@ -387,9 +455,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
 
   return (
     <div className="space-y-6">
-      {hasResults && (
-        <ResultsAnnouncementBanner onGoToResults={onGoToResults} />
-      )}
+      {hasResults && <ResultsAnnouncementBanner onGoToResults={onGoToResults} />}
 
       {/* ── Najważniejsze przed startem ──────────────────────── */}
       <InfoSection
@@ -423,7 +489,11 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">{event.location}</p>
                 <p className="text-xs text-foreground/60">{event.city}</p>
-                {(event.locationMapsUrl || (raceOffice?.status === 'yes' && raceOffice.locations && raceOffice.locations.length > 0 && raceOffice.locations[0].mapsUrl)) && (
+                {(event.locationMapsUrl ||
+                  (raceOffice?.status === 'yes' &&
+                    raceOffice.locations &&
+                    raceOffice.locations.length > 0 &&
+                    raceOffice.locations[0].mapsUrl)) && (
                   <a
                     href={event.locationMapsUrl || raceOffice!.locations![0].mapsUrl}
                     target="_blank"
@@ -530,7 +600,10 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
               <div>
                 <p className="mb-2 text-sm font-semibold text-foreground/80">Biuro zawodów</p>
                 {raceOffice.infoHtml && (
-                  <RichTextDisplay html={raceOffice.infoHtml} className="mb-2 text-sm text-foreground/70" />
+                  <RichTextDisplay
+                    html={raceOffice.infoHtml}
+                    className="mb-2 text-sm text-foreground/70"
+                  />
                 )}
                 <LocationDetail
                   label="Biuro zawodów"
@@ -541,9 +614,14 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
             )}
             {baggage?.status === 'yes' && (
               <div>
-                <p className="mb-2 text-sm font-semibold text-foreground/80">Odbiór pakietów startowych</p>
+                <p className="mb-2 text-sm font-semibold text-foreground/80">
+                  Odbiór pakietów startowych
+                </p>
                 {baggage.infoHtml && (
-                  <RichTextDisplay html={baggage.infoHtml} className="mb-2 text-sm text-foreground/70" />
+                  <RichTextDisplay
+                    html={baggage.infoHtml}
+                    className="mb-2 text-sm text-foreground/70"
+                  />
                 )}
                 <LocationDetail
                   label="Pakiety startowe"
@@ -564,18 +642,14 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
           tone="slate"
         >
           <div className="space-y-4">
-            {event.rulesHtml && (
-              <RichTextDisplay html={event.rulesHtml} />
-            )}
+            {event.rulesHtml && <RichTextDisplay html={event.rulesHtml} />}
             {(rulesDoc || otherDocs.length > 0) && (
               <div className={event.rulesHtml ? 'border-t border-white/10 pt-4' : ''}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-foreground/50">
                   Pliki do pobrania
                 </p>
                 <div className="space-y-1.5">
-                  {rulesDoc && (
-                    <DocumentRow doc={rulesDoc} />
-                  )}
+                  {rulesDoc && <DocumentRow doc={rulesDoc} />}
                   {otherDocs.map((doc) => (
                     <DocumentRow key={doc.id} doc={doc} />
                   ))}
@@ -588,11 +662,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
 
       {/* Dokumenty bez regulaminu gdy nie ma rulesHtml */}
       {!hasRulesContent && hasDocuments && (
-        <InfoSection
-          title="Dokumenty"
-          icon={<FileText className="h-4 w-4" />}
-          tone="slate"
-        >
+        <InfoSection title="Dokumenty" icon={<FileText className="h-4 w-4" />} tone="slate">
           <div className="space-y-1.5">
             {event.documents!.map((doc) => (
               <DocumentRow key={doc.id} doc={doc} />
@@ -621,38 +691,46 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
       )}
 
       {/* ── Gadżety przy rejestracji ─────────────────────────── */}
-      {event.enableMerchandiseInRegistration && event.merchandise && event.merchandise.length > 0 && (
-        <InfoSection
-          title="Gadżety dostępne przy rejestracji"
-          icon={<ShoppingBag className="h-4 w-4" />}
-          tone="violet"
-        >
-          <div className="grid gap-2 sm:grid-cols-2">
-            {event.merchandise.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  {item.imageUrl && (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      className="h-12 w-12 shrink-0 rounded-md object-cover bg-black"
-                      onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                    />
-                  )}
-                  <span className="truncate text-sm">{item.name}</span>
+      {event.enableMerchandiseInRegistration &&
+        event.merchandise &&
+        event.merchandise.length > 0 && (
+          <InfoSection
+            title="Gadżety dostępne przy rejestracji"
+            icon={<ShoppingBag className="h-4 w-4" />}
+            tone="violet"
+          >
+            <div className="grid gap-2 sm:grid-cols-2">
+              {event.merchandise.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-2"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="h-12 w-12 shrink-0 rounded-md bg-black object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.visibility = 'hidden';
+                        }}
+                      />
+                    )}
+                    <span className="truncate text-sm">{item.name}</span>
+                  </div>
+                  <Badge variant="secondary">{item.price} zł</Badge>
                 </div>
-                <Badge variant="secondary">{item.price} zł</Badge>
-              </div>
-            ))}
-          </div>
-        </InfoSection>
-      )}
+              ))}
+            </div>
+          </InfoSection>
+        )}
 
       {/* ── Kontakt ──────────────────────────────────────────── */}
-      <InfoSection title="Kontakt z organizatorem" icon={<Mail className="h-4 w-4" />} tone="indigo">
+      <InfoSection
+        title="Kontakt z organizatorem"
+        icon={<Mail className="h-4 w-4" />}
+        tone="indigo"
+      >
         {!event.organizersHtml && <p className="mb-3 font-medium">{event.organizerName}</p>}
 
         {/* New multi-contact list */}
@@ -724,7 +802,11 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
 
       {/* ── Sponsorzy ────────────────────────────────────────── */}
       {event.organizerInfo?.sponsors && event.organizerInfo.sponsors.length > 0 && (
-        <InfoSection title="Sponsorzy i partnerzy" icon={<Link2 className="h-4 w-4" />} tone="violet">
+        <InfoSection
+          title="Sponsorzy i partnerzy"
+          icon={<Link2 className="h-4 w-4" />}
+          tone="violet"
+        >
           <div className="flex flex-wrap gap-3">
             {event.organizerInfo.sponsors.map((sponsor, idx) => (
               <SponsorBadge key={idx} sponsor={sponsor} />
@@ -744,7 +826,9 @@ const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
           src={sponsor.logoUrl}
           alt={sponsor.name}
           className="h-6 w-auto max-w-[60px] object-contain opacity-90"
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
       )}
       <span className="text-sm font-medium text-foreground/80">{sponsor.name}</span>

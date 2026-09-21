@@ -52,9 +52,8 @@ export const UsersAdminsTab = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [createdAdmins, setCreatedAdmins] = useState<User[]>([]);
   const [roleOverrides, setRoleOverrides] = useState<Record<string, UserRole>>({});
-  const [selectedRole, setSelectedRole] = useState<Extract<UserRole, 'admin' | 'superadmin'>>(
-    'admin',
-  );
+  const [selectedRole, setSelectedRole] =
+    useState<Extract<UserRole, 'admin' | 'superadmin'>>('admin');
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', phone: '' });
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'admins'],
@@ -125,7 +124,9 @@ export const UsersAdminsTab = () => {
         admin.id === selectedUser.id ? { ...admin, role: selectedRole } : admin,
       ),
     );
-    toast.success(`Rola konta ${selectedUser.name} zostala zmieniona na ${roleLabels[selectedRole]}`);
+    toast.success(
+      `Rola konta ${selectedUser.name} zostala zmieniona na ${roleLabels[selectedRole]}`,
+    );
     setRoleDialogOpen(false);
     setSelectedUser(null);
   };
@@ -272,7 +273,10 @@ export const UsersAdminsTab = () => {
           </DialogHeader>
           <div className="space-y-2">
             <Label>Nowa rola</Label>
-            <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as typeof selectedRole)}>
+            <Select
+              value={selectedRole}
+              onValueChange={(value) => setSelectedRole(value as typeof selectedRole)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

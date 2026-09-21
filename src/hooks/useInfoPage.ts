@@ -17,7 +17,13 @@ export const useInfoPage = (slug: string | undefined): InfoPageResponse => {
   });
 
   const page = data ?? null;
-  const error = isError ? 'Nie udało się załadować strony' : (!slug ? 'Brak adresu strony' : (!isLoading && page === null ? 'Strona nie istnieje' : null));
+  const error = isError
+    ? 'Nie udało się załadować strony'
+    : !slug
+      ? 'Brak adresu strony'
+      : !isLoading && page === null
+        ? 'Strona nie istnieje'
+        : null;
 
   return { page, isLoading, error };
 };

@@ -1,16 +1,7 @@
 import { getInfoPages } from '@/api';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import {
-  Timer,
-  Facebook,
-  Instagram,
-  Youtube,
-  Twitter,
-  Cookie,
-  Mail,
-  Phone,
-} from 'lucide-react';
+import { Timer, Facebook, Instagram, Youtube, Twitter, Cookie, Mail, Phone } from 'lucide-react';
 
 export const Footer = () => {
   const { data: pagesResp } = useQuery({
@@ -25,10 +16,12 @@ export const Footer = () => {
     .sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="mt-auto border-t border-white/8 bg-[#070b12]" style={{ containIntrinsicSize: '0 260px', contentVisibility: 'auto' }}>
+    <footer
+      className="border-white/8 mt-auto border-t bg-[#070b12]"
+      style={{ containIntrinsicSize: '0 260px', contentVisibility: 'auto' }}
+    >
       <div className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8 md:grid md:grid-cols-4 md:gap-10">
-
           {/* Logo & description */}
           <div className="space-y-3 md:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2">
@@ -82,17 +75,26 @@ export const Footer = () => {
               </h4>
               <ul className="space-y-2.5 text-sm">
                 <li>
-                  <Link to="/info/regulamin" className="text-white/50 transition-colors hover:text-white/80">
+                  <Link
+                    to="/info/regulamin"
+                    className="text-white/50 transition-colors hover:text-white/80"
+                  >
                     Regulamin
                   </Link>
                 </li>
                 <li>
-                  <Link to="/info/polityka-prywatnosci" className="text-white/50 transition-colors hover:text-white/80">
+                  <Link
+                    to="/info/polityka-prywatnosci"
+                    className="text-white/50 transition-colors hover:text-white/80"
+                  >
                     Polityka prywatności
                   </Link>
                 </li>
                 <li>
-                  <Link to="/info/rodo" className="text-white/50 transition-colors hover:text-white/80">
+                  <Link
+                    to="/info/rodo"
+                    className="text-white/50 transition-colors hover:text-white/80"
+                  >
                     RODO
                   </Link>
                 </li>
@@ -150,7 +152,7 @@ export const Footer = () => {
         </div>
 
         {/* Bottom row */}
-        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-white/8 pt-5 sm:flex-row">
+        <div className="border-white/8 mt-8 flex flex-col items-center justify-between gap-2 border-t pt-5 sm:flex-row">
           <p className="text-xs text-white/25">
             © {new Date().getFullYear()} ZmierzymyCzas. Wszystkie prawa zastrzeżone.
           </p>

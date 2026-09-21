@@ -22,8 +22,7 @@ export default {
         /* === BRAND STATIC TOKENS === */
         brand: {
           navy: 'hsl(var(--color-brand-navy) / <alpha-value>)' /* primary brand navy */,
-          'navy-light':
-            'hsl(var(--color-brand-navy-light) / <alpha-value>)' /* emphasis / glow */,
+          'navy-light': 'hsl(var(--color-brand-navy-light) / <alpha-value>)' /* emphasis / glow */,
           'navy-dark': 'hsl(var(--color-brand-navy-dark) / <alpha-value>)' /* hover state */,
           black: 'hsl(var(--color-brand-black) / <alpha-value>)',
           gray: {

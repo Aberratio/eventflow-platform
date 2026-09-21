@@ -113,7 +113,11 @@ class AppLogger {
     this.log('audit', 'settings', action, description, options);
   }
 
-  registration(action: string, description: string, options?: Parameters<AppLogger['log']>[4]): void {
+  registration(
+    action: string,
+    description: string,
+    options?: Parameters<AppLogger['log']>[4],
+  ): void {
     this.log('info', 'registration', action, description, options);
   }
 
@@ -134,7 +138,6 @@ class AppLogger {
     try {
       await this.transport.send(batch);
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('[AppLogger] Błąd wysyłki logów:', err);
       // Przywróć logi do bufora w razie błędu
       this.buffer.unshift(...batch);

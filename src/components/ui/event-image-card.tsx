@@ -44,7 +44,9 @@ const EventImageCard = React.forwardRef<HTMLAnchorElement, EventImageCardProps>(
   ) => {
     const isClosing = mode === 'closing';
     const borderHover = isClosing ? 'hover:border-orange-500/40' : 'hover:border-emerald-500/40';
-    const btnBorder = isClosing ? 'border-orange-500/60 group-hover:bg-orange-500/10' : 'border-emerald-500/60 group-hover:bg-emerald-500/10';
+    const btnBorder = isClosing
+      ? 'border-orange-500/60 group-hover:bg-orange-500/10'
+      : 'border-emerald-500/60 group-hover:bg-emerald-500/10';
     const defaultLabel = isClosing ? 'Zapisz się' : 'Zobacz wyniki';
 
     return (
@@ -62,7 +64,9 @@ const EventImageCard = React.forwardRef<HTMLAnchorElement, EventImageCardProps>(
             src={imageSrc}
             alt={imageAlt}
             className="h-full w-full object-cover opacity-[0.62] transition duration-500 group-hover:scale-105"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
           />
           <div
             className="absolute inset-0"

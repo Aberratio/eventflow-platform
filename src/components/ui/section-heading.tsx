@@ -33,9 +33,7 @@ const SectionHeading = React.forwardRef<HTMLDivElement, SectionHeadingProps>(
             <h2 className="text-xl font-bold leading-tight md:text-2xl">{title}</h2>
             {badge}
           </div>
-          {subtitle && (
-            <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
-          )}
+          {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
       {action}

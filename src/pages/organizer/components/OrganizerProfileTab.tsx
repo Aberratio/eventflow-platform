@@ -99,7 +99,12 @@ const OrganizerProfileTab = () => {
             </div>
 
             <div className="flex justify-end">
-              <Button type="button" variant="secondary" onClick={handleSaveOrganizer} disabled={saving}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSaveOrganizer}
+                disabled={saving}
+              >
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Zapisz dane organizatora
               </Button>

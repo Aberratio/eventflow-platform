@@ -104,41 +104,32 @@ export const Header = () => {
         <nav className="hidden items-center gap-0.5 lg:flex">
           <Link
             to="/wydarzenia"
-            className={navLinkClass(
-              isActive('/wydarzenia') || isActivePrefix('/events'),
-            )}
+            className={navLinkClass(isActive('/wydarzenia') || isActivePrefix('/events'))}
           >
             Kalendarz
           </Link>
 
-          <Link
-            to="/series"
-            className={navLinkClass(isActivePrefix('/series'))}
-          >
+          <Link to="/series" className={navLinkClass(isActivePrefix('/series'))}>
             Serie
           </Link>
 
           <Link
             to="/wyniki/live"
-            className={cn(
-              navLinkClass(isActivePrefix('/wyniki')),
-              'flex items-center gap-1.5',
-            )}
+            className={cn(navLinkClass(isActivePrefix('/wyniki')), 'flex items-center gap-1.5')}
           >
             <Radio className="h-3 w-3 text-destructive" />
             Wyniki live
           </Link>
 
-          <Link
-            to="/challenges"
-            className={navLinkClass(isActivePrefix('/challenges'))}
-          >
+          <Link to="/challenges" className={navLinkClass(isActivePrefix('/challenges'))}>
             Wyzwania
           </Link>
 
           <Link
             to="/shop"
-            className={navLinkClass(isActive('/sklep') || isActive('/shop') || isActivePrefix('/shop'))}
+            className={navLinkClass(
+              isActive('/sklep') || isActive('/shop') || isActivePrefix('/shop'),
+            )}
           >
             Sklep
           </Link>

@@ -3,9 +3,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 /* ─── Wrapper z Layout (header + footer widoczne od razu) ─── */
-const LayoutShell = ({ children }: { children: React.ReactNode }) => (
-  <Layout>{children}</Layout>
-);
+const LayoutShell = ({ children }: { children: React.ReactNode }) => <Layout>{children}</Layout>;
 
 /* ─── Hero skeleton (PageHero-style) ───────────────────────── */
 const HeroSkeleton = ({ stats = 0 }: { stats?: number }) => (
@@ -54,7 +52,10 @@ export const EventsPageSkeleton = () => (
             <Skeleton className="h-9 w-24 rounded-md lg:hidden" />
           </div>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 rounded-lg border border-border/50 bg-card p-4">
+            <div
+              key={i}
+              className="flex items-center gap-4 rounded-lg border border-border/50 bg-card p-4"
+            >
               <Skeleton className="h-12 w-12 rounded-lg" />
               <div className="min-w-0 flex-1 space-y-2">
                 <Skeleton className="h-5 w-3/5" />
@@ -203,7 +204,10 @@ export const DashboardSkeleton = () => (
       {/* Content area */}
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 rounded-lg border border-border/50 bg-card p-4">
+          <div
+            key={i}
+            className="flex items-center gap-4 rounded-lg border border-border/50 bg-card p-4"
+          >
             <Skeleton className="h-10 w-10 rounded-lg" />
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-5 w-2/3" />

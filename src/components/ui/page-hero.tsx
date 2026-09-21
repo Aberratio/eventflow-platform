@@ -17,7 +17,10 @@ interface PageHeroProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const PageHero = React.forwardRef<HTMLDivElement, PageHeroProps>(
-  ({ className, variant = 'default', glow = false, borderless = false, children, ...props }, ref) => (
+  (
+    { className, variant = 'default', glow = false, borderless = false, children, ...props },
+    ref,
+  ) => (
     <div
       ref={ref}
       className={cn(
@@ -27,17 +30,12 @@ const PageHero = React.forwardRef<HTMLDivElement, PageHeroProps>(
       )}
       style={{
         background:
-          variant === 'warm'
-            ? 'var(--gradient-page-hero-alt)'
-            : 'var(--gradient-page-hero)',
+          variant === 'warm' ? 'var(--gradient-page-hero-alt)' : 'var(--gradient-page-hero)',
       }}
       {...props}
     >
       {glow && (
-        <div
-          className="absolute inset-0"
-          style={{ background: 'var(--gradient-radial-glow)' }}
-        />
+        <div className="absolute inset-0" style={{ background: 'var(--gradient-radial-glow)' }} />
       )}
       <div className="container relative py-[var(--page-hero-py)] md:py-[var(--page-hero-py-md)]">
         {children}
@@ -77,16 +75,10 @@ const PageHeroTitle = ({
   accent = 'primary',
 }: PageHeroTitleProps) => (
   <div className={cn('mb-2 flex items-center gap-3', className)}>
-    {icon && (
-      <div className={cn('rounded-xl border p-2.5', accentMap[accent])}>
-        {icon}
-      </div>
-    )}
+    {icon && <div className={cn('rounded-xl border p-2.5', accentMap[accent])}>{icon}</div>}
     <div>
       <h1 className="text-2xl font-bold sm:text-3xl md:text-4xl">{title}</h1>
-      {subtitle && (
-        <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
-      )}
+      {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
       {children}
     </div>
   </div>

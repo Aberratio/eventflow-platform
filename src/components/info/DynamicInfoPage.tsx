@@ -58,7 +58,10 @@ export const DynamicInfoPage = () => {
     return (
       <Layout>
         <div className="min-h-screen">
-          <PageHero borderless className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16">
+          <PageHero
+            borderless
+            className="bg-gradient-to-b from-secondary/80 to-background py-10 md:py-16"
+          >
             <div className="mx-auto max-w-3xl space-y-3 text-center">
               <Skeleton className="mx-auto h-6 w-24 rounded-full" />
               <Skeleton className="mx-auto h-9 w-3/4" />

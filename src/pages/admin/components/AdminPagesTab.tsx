@@ -88,7 +88,9 @@ export const AdminPagesTab = () => {
       const page = pages.find((p) => p.id === vars.id);
       toast({
         title: vars.published ? 'Strona opublikowana' : 'Strona ukryta',
-        description: page ? `"${page.title}" jest teraz ${vars.published ? 'widoczna publicznie' : 'ukryta'}.` : undefined,
+        description: page
+          ? `"${page.title}" jest teraz ${vars.published ? 'widoczna publicznie' : 'ukryta'}.`
+          : undefined,
       });
     },
   });
@@ -206,7 +208,9 @@ export const AdminPagesTab = () => {
                       </a>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => toggleMutation.mutate({ id: page.id, published: !page.published })}
+                      onClick={() =>
+                        toggleMutation.mutate({ id: page.id, published: !page.published })
+                      }
                     >
                       {page.published ? (
                         <>

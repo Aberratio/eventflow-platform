@@ -231,10 +231,18 @@ export const AdminOrderEditPage = () => {
       setHistory((prev) => [...prev, ...newEntries]);
     }
 
-    appLogger.log('audit', 'shop', 'order_edit', `Zaktualizowano zamówienie ${originalOrder.orderNumber}`, {
-      targetType: 'order', targetId: originalOrder.id, targetName: originalOrder.orderNumber,
-      metadata: { changesCount: newEntries.length, newStatus: status },
-    });
+    appLogger.log(
+      'audit',
+      'shop',
+      'order_edit',
+      `Zaktualizowano zamówienie ${originalOrder.orderNumber}`,
+      {
+        targetType: 'order',
+        targetId: originalOrder.id,
+        targetName: originalOrder.orderNumber,
+        metadata: { changesCount: newEntries.length, newStatus: status },
+      },
+    );
     toast.success('Zamówienie zostało zaktualizowane');
     navigate(-1);
   };

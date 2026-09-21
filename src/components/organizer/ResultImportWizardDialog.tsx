@@ -87,11 +87,13 @@ function rowValue(
 }
 
 function statusBadge(row: ResultImportRow) {
-  if (row.ignoreRow || row.status === 'ignored') return <Badge variant="secondary">Ignorowany</Badge>;
+  if (row.ignoreRow || row.status === 'ignored')
+    return <Badge variant="secondary">Ignorowany</Badge>;
   if (row.status === 'ready') return <Badge className="bg-success/10 text-success">Gotowy</Badge>;
   if (row.status === 'ambiguous') return <Badge variant="secondary">Duplikat</Badge>;
   if (row.status === 'needs_match') return <Badge variant="outline">Do dopasowania</Badge>;
-  if (row.status === 'committed') return <Badge className="bg-success/10 text-success">Zapisany</Badge>;
+  if (row.status === 'committed')
+    return <Badge className="bg-success/10 text-success">Zapisany</Badge>;
   return <Badge variant="destructive">Do poprawy</Badge>;
 }
 
@@ -116,7 +118,8 @@ export function ResultImportWizardDialog({
 
   const selectedDistance = distances.find((d) => d.id === distanceId);
   const summary = batch?.summary;
-  const blockingCount = (summary?.invalid ?? 0) + (summary?.needsMatch ?? 0) + (summary?.ambiguous ?? 0);
+  const blockingCount =
+    (summary?.invalid ?? 0) + (summary?.needsMatch ?? 0) + (summary?.ambiguous ?? 0);
   const canCommit = !!batch && blockingCount === 0 && (summary?.ready ?? 0) > 0;
 
   const candidateRows = useMemo(
@@ -137,7 +140,11 @@ export function ResultImportWizardDialog({
 
   const handleUpload = async () => {
     if (!file) {
-      toast({ title: 'Brak pliku', description: 'Wybierz plik CSV, XLSX albo PDF.', variant: 'destructive' });
+      toast({
+        title: 'Brak pliku',
+        description: 'Wybierz plik CSV, XLSX albo PDF.',
+        variant: 'destructive',
+      });
       return;
     }
     setBusy(true);
@@ -148,7 +155,11 @@ export function ResultImportWizardDialog({
       setSheetName(response.data.sheetName ?? null);
       toast({ title: 'Import przygotowany', description: 'Sprawdz mapowanie i podglad wynikow.' });
     } catch (error) {
-      toast({ title: 'Import nieudany', description: error instanceof Error ? error.message : 'Nie udalo sie wgrac pliku.', variant: 'destructive' });
+      toast({
+        title: 'Import nieudany',
+        description: error instanceof Error ? error.message : 'Nie udalo sie wgrac pliku.',
+        variant: 'destructive',
+      });
     } finally {
       setBusy(false);
     }
@@ -161,9 +172,17 @@ export function ResultImportWizardDialog({
       const response = await updateResultImportMapping(batch.id, mapping, sheetName);
       setBatch(response.data);
       setDrafts({});
-      toast({ title: 'Podglad zaktualizowany', description: 'Mozesz poprawic pojedyncze wiersze przed zatwierdzeniem.' });
+      toast({
+        title: 'Podglad zaktualizowany',
+        description: 'Mozesz poprawic pojedyncze wiersze przed zatwierdzeniem.',
+      });
     } catch (error) {
-      toast({ title: 'Analiza nieudana', description: error instanceof Error ? error.message : 'Nie udalo sie przeanalizowac importu.', variant: 'destructive' });
+      toast({
+        title: 'Analiza nieudana',
+        description:
+          error instanceof Error ? error.message : 'Nie udalo sie przeanalizowac importu.',
+        variant: 'destructive',
+      });
     } finally {
       setBusy(false);
     }
@@ -180,7 +199,11 @@ export function ResultImportWizardDialog({
         return next;
       });
     } catch (error) {
-      toast({ title: 'Nie zapisano wiersza', description: error instanceof Error ? error.message : 'Sprobuj ponownie.', variant: 'destructive' });
+      toast({
+        title: 'Nie zapisano wiersza',
+        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        variant: 'destructive',
+      });
     } finally {
       setBusy(false);
     }
@@ -191,12 +214,19 @@ export function ResultImportWizardDialog({
     setBusy(true);
     try {
       await commitResultImport(batch.id);
-      toast({ title: 'Wyniki zapisane', description: 'Wyniki sa juz widoczne w wydarzeniu i profilach uczestnikow.' });
+      toast({
+        title: 'Wyniki zapisane',
+        description: 'Wyniki sa juz widoczne w wydarzeniu i profilach uczestnikow.',
+      });
       onCommitted();
       reset();
       onOpenChange(false);
     } catch (error) {
-      toast({ title: 'Nie zatwierdzono importu', description: error instanceof Error ? error.message : 'Rozwiaz problematyczne wiersze.', variant: 'destructive' });
+      toast({
+        title: 'Nie zatwierdzono importu',
+        description: error instanceof Error ? error.message : 'Rozwiaz problematyczne wiersze.',
+        variant: 'destructive',
+      });
     } finally {
       setBusy(false);
     }
@@ -221,7 +251,8 @@ export function ResultImportWizardDialog({
           <DialogHeader>
             <DialogTitle>Import wynikow z pliku</DialogTitle>
             <DialogDescription>
-              Wgraj CSV/XLSX albo eksperymentalnie odczytaj PDF dla jednego dystansu, popraw dane w podgladzie i zatwierdz oficjalne wyniki.
+              Wgraj CSV/XLSX albo eksperymentalnie odczytaj PDF dla jednego dystansu, popraw dane w
+              podgladzie i zatwierdz oficjalne wyniki.
             </DialogDescription>
           </DialogHeader>
 
@@ -244,7 +275,11 @@ export function ResultImportWizardDialog({
               </div>
               <div className="space-y-2">
                 <Label>Tryb</Label>
-                <Select value={mode} onValueChange={(v) => setMode(v as ResultImportMode)} disabled={!!batch}>
+                <Select
+                  value={mode}
+                  onValueChange={(v) => setMode(v as ResultImportMode)}
+                  disabled={!!batch}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -264,7 +299,11 @@ export function ResultImportWizardDialog({
                 />
               </div>
               <Button onClick={handleUpload} disabled={busy || !!batch || !distanceId}>
-                {busy && !batch ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                {busy && !batch ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-4 w-4" />
+                )}
                 Wgraj
               </Button>
             </div>
@@ -327,7 +366,9 @@ export function ResultImportWizardDialog({
 
                 <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
                   <Badge variant="outline">Razem: {summary?.total ?? 0}</Badge>
-                  <Badge className="bg-success/10 text-success">Gotowe: {summary?.ready ?? 0}</Badge>
+                  <Badge className="bg-success/10 text-success">
+                    Gotowe: {summary?.ready ?? 0}
+                  </Badge>
                   <Badge variant="outline">Dopasuj: {summary?.needsMatch ?? 0}</Badge>
                   <Badge variant="secondary">Duplikaty: {summary?.ambiguous ?? 0}</Badge>
                   <Badge variant="destructive">Bledy: {summary?.invalid ?? 0}</Badge>
@@ -339,7 +380,8 @@ export function ResultImportWizardDialog({
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Import wymaga decyzji</AlertTitle>
                     <AlertDescription>
-                      Popraw czas/status albo dopasuj uczestnikow w problematycznych wierszach przed zatwierdzeniem.
+                      Popraw czas/status albo dopasuj uczestnikow w problematycznych wierszach przed
+                      zatwierdzeniem.
                     </AlertDescription>
                   </Alert>
                 ) : (
@@ -347,7 +389,8 @@ export function ResultImportWizardDialog({
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Import gotowy</AlertTitle>
                     <AlertDescription>
-                      Wszystkie aktywne wiersze dla dystansu {selectedDistance?.name} sa gotowe do zapisu.
+                      Wszystkie aktywne wiersze dla dystansu {selectedDistance?.name} sa gotowe do
+                      zapisu.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -370,12 +413,16 @@ export function ResultImportWizardDialog({
                     <TableBody>
                       {batch.rows.map((row) => (
                         <TableRow key={row.id}>
-                          <TableCell className="align-top font-mono text-xs">{row.rowNumber}</TableCell>
+                          <TableCell className="align-top font-mono text-xs">
+                            {row.rowNumber}
+                          </TableCell>
                           <TableCell className="align-top">
                             <div className="space-y-1">
                               <Input
                                 value={rowValue(row, drafts, 'fullName')}
-                                onChange={(event) => setDraft(row.id, 'fullName', event.target.value)}
+                                onChange={(event) =>
+                                  setDraft(row.id, 'fullName', event.target.value)
+                                }
                                 className="h-8"
                               />
                               <div className="flex flex-wrap gap-1">
@@ -387,18 +434,33 @@ export function ResultImportWizardDialog({
                                 ))}
                               </div>
                               {row.selectedRegistrationId && (
-                                <p className="text-xs text-muted-foreground">Przypisano zapis: {row.selectedRegistrationId}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Przypisano zapis: {row.selectedRegistrationId}
+                                </p>
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="align-top">
-                            <Input value={rowValue(row, drafts, 'bibNumber')} onChange={(event) => setDraft(row.id, 'bibNumber', event.target.value)} className="h-8 font-mono" />
+                            <Input
+                              value={rowValue(row, drafts, 'bibNumber')}
+                              onChange={(event) =>
+                                setDraft(row.id, 'bibNumber', event.target.value)
+                              }
+                              className="h-8 font-mono"
+                            />
                           </TableCell>
                           <TableCell className="align-top">
-                            <Input value={rowValue(row, drafts, 'time')} onChange={(event) => setDraft(row.id, 'time', event.target.value)} className="h-8 font-mono" />
+                            <Input
+                              value={rowValue(row, drafts, 'time')}
+                              onChange={(event) => setDraft(row.id, 'time', event.target.value)}
+                              className="h-8 font-mono"
+                            />
                           </TableCell>
                           <TableCell className="align-top">
-                            <Select value={rowValue(row, drafts, 'status') || 'finished'} onValueChange={(value) => setDraft(row.id, 'status', value)}>
+                            <Select
+                              value={rowValue(row, drafts, 'status') || 'finished'}
+                              onValueChange={(value) => setDraft(row.id, 'status', value)}
+                            >
                               <SelectTrigger className="h-8">
                                 <SelectValue />
                               </SelectTrigger>
@@ -410,26 +472,54 @@ export function ResultImportWizardDialog({
                             </Select>
                           </TableCell>
                           <TableCell className="align-top">
-                            <Input value={rowValue(row, drafts, 'position')} onChange={(event) => setDraft(row.id, 'position', event.target.value)} className="h-8 font-mono" />
+                            <Input
+                              value={rowValue(row, drafts, 'position')}
+                              onChange={(event) => setDraft(row.id, 'position', event.target.value)}
+                              className="h-8 font-mono"
+                            />
                           </TableCell>
                           <TableCell className="align-top">
-                            <Input value={rowValue(row, drafts, 'category')} onChange={(event) => setDraft(row.id, 'category', event.target.value)} className="h-8" />
+                            <Input
+                              value={rowValue(row, drafts, 'category')}
+                              onChange={(event) => setDraft(row.id, 'category', event.target.value)}
+                              className="h-8"
+                            />
                           </TableCell>
                           <TableCell className="align-top">
-                            <Checkbox checked={row.ignoreRow} onCheckedChange={(checked) => patchRow(row, { ignoreRow: !!checked })} />
+                            <Checkbox
+                              checked={row.ignoreRow}
+                              onCheckedChange={(checked) => patchRow(row, { ignoreRow: !!checked })}
+                            />
                           </TableCell>
                           <TableCell className="align-top">
                             <div className="flex flex-wrap gap-1">
-                              <Button size="sm" variant="outline" onClick={() => patchRow(row, drafts[row.id] ?? {})} disabled={busy}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => patchRow(row, drafts[row.id] ?? {})}
+                                disabled={busy}
+                              >
                                 Zapisz
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => setCandidateRow(row)}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setCandidateRow(row)}
+                              >
                                 Dopasuj
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => patchRow(row, { status: 'dnf', time: 'DNF' })}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => patchRow(row, { status: 'dnf', time: 'DNF' })}
+                              >
                                 DNF
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => patchRow(row, { status: 'dsq', time: 'DSQ' })}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => patchRow(row, { status: 'dsq', time: 'DSQ' })}
+                              >
                                 DSQ
                               </Button>
                             </div>
@@ -442,7 +532,11 @@ export function ResultImportWizardDialog({
 
                 {candidateRows.length > 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Najpierw sprawdz problematyczne wiersze: {candidateRows.map((row) => row.rowNumber).slice(0, 8).join(', ')}
+                    Najpierw sprawdz problematyczne wiersze:{' '}
+                    {candidateRows
+                      .map((row) => row.rowNumber)
+                      .slice(0, 8)
+                      .join(', ')}
                     {candidateRows.length > 8 ? '...' : ''}
                   </p>
                 )}
@@ -482,13 +576,16 @@ export function ResultImportWizardDialog({
               >
                 <div className="font-medium">{candidate.userName}</div>
                 <div className="text-sm text-muted-foreground">
-                  Nr {candidate.bibNumber || '-'} - {candidate.category} - {candidate.gender || '-'} - {candidate.birthYear || '-'} - {candidate.club || '-'}
+                  Nr {candidate.bibNumber || '-'} - {candidate.category} - {candidate.gender || '-'}{' '}
+                  - {candidate.birthYear || '-'} - {candidate.club || '-'}
                 </div>
                 <div className="text-xs text-muted-foreground">{candidate.userEmail}</div>
               </button>
             ))}
             {(candidateRow?.candidates ?? []).length === 0 && (
-              <p className="py-6 text-center text-sm text-muted-foreground">Brak kandydatow dla tego wiersza.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Brak kandydatow dla tego wiersza.
+              </p>
             )}
           </div>
         </DialogContent>
