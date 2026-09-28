@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildCsp, buildHtaccess, originOf, splitList, type HtaccessOptions } from './securityHeaders';
+import {
+  buildCsp,
+  buildHtaccess,
+  originOf,
+  splitList,
+  type HtaccessOptions,
+} from './securityHeaders';
 
 function baseOptions(overrides: Partial<HtaccessOptions> = {}): HtaccessOptions {
   return {
@@ -80,7 +86,10 @@ describe('buildCsp', () => {
 
   it('rejects http CSP_CONNECT_SRC_EXTRA entries in staging/production', () => {
     expect(() =>
-      buildCsp(baseOptions({ mode: 'staging', extraConnectSrc: ['http://extra.example.test'] }), "'self'"),
+      buildCsp(
+        baseOptions({ mode: 'staging', extraConnectSrc: ['http://extra.example.test'] }),
+        "'self'",
+      ),
     ).toThrow(/https/);
   });
 
@@ -104,7 +113,10 @@ describe('buildCsp', () => {
   it('rejects relative or http apiUrl in staging and production', () => {
     expect(() => buildCsp(baseOptions({ apiUrl: '/api/v1' }), "'self'")).toThrow();
     expect(() =>
-      buildCsp(baseOptions({ mode: 'staging', apiUrl: 'http://api.example.test/api/v1' }), "'self'"),
+      buildCsp(
+        baseOptions({ mode: 'staging', apiUrl: 'http://api.example.test/api/v1' }),
+        "'self'",
+      ),
     ).toThrow(/https/);
     expect(() =>
       buildCsp(
@@ -116,7 +128,10 @@ describe('buildCsp', () => {
 
   it('accepts http apiUrl in development', () => {
     expect(() =>
-      buildCsp(baseOptions({ mode: 'development', apiUrl: 'http://localhost:8104/api/v1' }), "'self'"),
+      buildCsp(
+        baseOptions({ mode: 'development', apiUrl: 'http://localhost:8104/api/v1' }),
+        "'self'",
+      ),
     ).not.toThrow();
   });
 });
@@ -147,7 +162,9 @@ describe('buildHtaccess', () => {
   });
 
   it('HSTS only for staging and production modes', () => {
-    const dev = buildHtaccess(baseOptions({ mode: 'development', apiUrl: 'http://localhost:8104/api/v1' }));
+    const dev = buildHtaccess(
+      baseOptions({ mode: 'development', apiUrl: 'http://localhost:8104/api/v1' }),
+    );
     expect(dev).not.toContain('Strict-Transport-Security');
 
     const staging = buildHtaccess(baseOptions({ mode: 'staging' }));
