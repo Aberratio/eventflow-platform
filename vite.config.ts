@@ -1,16 +1,30 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+import { securityHeadersPlugin } from './build/securityHeadersPlugin';
+import { splitList } from './build/securityHeaders';
 
-export default defineConfig({
-  server: {
-    host: '::',
-    port: 8080,
-  },
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), ''); // process env (CI) wins over .env.<mode>
+  return {
+    server: {
+      host: '::',
+      port: 8080,
     },
-  },
+    plugins: [
+      react(),
+      securityHeadersPlugin({
+        mode,
+        apiUrl: env.VITE_API_URL || 'http://localhost:8081/api/v1', // same fallback as src/api/client.ts:3
+        googleCalendarApiUrl: env.VITE_GOOGLE_CALENDAR_API_URL || undefined,
+        extraConnectSrc: splitList(env.CSP_CONNECT_SRC_EXTRA),
+        reportOnly: env.CSP_REPORT_ONLY === 'true',
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+  };
 });
