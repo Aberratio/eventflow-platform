@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 interface RichTextDisplayProps {
   html: string;
@@ -6,7 +8,9 @@ interface RichTextDisplayProps {
 }
 
 export const RichTextDisplay = ({ html, className }: RichTextDisplayProps) => {
-  if (!html || html === '<p></p>') return null;
+  const safeHtml = useMemo(() => sanitizeHtml(html), [html]);
+
+  if (!safeHtml || safeHtml === '<p></p>') return null;
 
   return (
     <div
@@ -25,7 +29,7 @@ export const RichTextDisplay = ({ html, className }: RichTextDisplayProps) => {
         '[&_p]:my-1',
         className,
       )}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
 };

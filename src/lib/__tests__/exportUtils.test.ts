@@ -3,6 +3,7 @@ import {
   prepareParticipantsExport,
   prepareResultsExport,
   generateHTMLTable,
+  generatePrintableHTML,
   exportToCSV,
   exportToXML,
 } from '../exportUtils';
@@ -112,6 +113,47 @@ describe('generateHTMLTable', () => {
     const html = generateHTMLTable(data);
     expect(html).toContain('<td>1</td>');
     expect(html).toContain('<td>2</td>');
+  });
+
+  it('escapes cell and header values', () => {
+    const data = [{ '<b>h': '<img src=x onerror=alert(1)>' }];
+    const html = generateHTMLTable(data);
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).toContain('&lt;b&gt;h');
+    expect(html).not.toContain('<img');
+  });
+});
+
+describe('generatePrintableHTML', () => {
+  it('escapes title, columns and cells', () => {
+    let written = '';
+    const fakeDocument = {
+      write: (s: string) => {
+        written += s;
+      },
+      close: () => {},
+    };
+    const fakePrintWindow = {
+      document: fakeDocument,
+      focus: () => {},
+      print: () => {},
+    } as unknown as Window;
+
+    vi.useFakeTimers();
+    vi.spyOn(window, 'open').mockReturnValue(fakePrintWindow);
+
+    generatePrintableHTML(
+      '<script>alert(1)</script>',
+      ['<img src=x onerror=alert(1)>'],
+      [['<img src=x onerror=alert(1)>']],
+    );
+    vi.runAllTimers();
+    vi.useRealTimers();
+
+    expect(written).not.toContain('<img src=x');
+    expect(written).not.toContain('<script>alert(1)</script>');
+    expect(written).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(written).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
   });
 });
 

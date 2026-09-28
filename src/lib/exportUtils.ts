@@ -1,5 +1,6 @@
 import { Registration, Result } from '@/types';
 import { formatDate, formatMoney } from '@/lib/format';
+import { escapeHtml } from '@/lib/sanitizeHtml';
 
 // CSV Export Utility
 export const exportToCSV = (data: Record<string, unknown>[], filename: string) => {
@@ -96,7 +97,7 @@ export const printToPDF = (title: string, content: HTMLElement | string) => {
     <html lang="pl">
     <head>
       <meta charset="UTF-8">
-      <title>${title}</title>
+      <title>${escapeHtml(title)}</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -154,7 +155,7 @@ export const printToPDF = (title: string, content: HTMLElement | string) => {
     <body>
       <div class="header">
         <div>
-          <h1>${title}</h1>
+          <h1>${escapeHtml(title)}</h1>
           <h2>Wygenerowano: ${new Date().toLocaleDateString('pl-PL', {
             year: 'numeric',
             month: 'long',
@@ -191,7 +192,7 @@ export const generateHTMLTable = (data: Record<string, unknown>[]): string => {
     <table>
       <thead>
         <tr>
-          ${headers.map((h) => `<th>${h}</th>`).join('')}
+          ${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
@@ -199,7 +200,7 @@ export const generateHTMLTable = (data: Record<string, unknown>[]): string => {
           .map(
             (row) => `
           <tr>
-            ${headers.map((h) => `<td>${row[h] ?? '-'}</td>`).join('')}
+            ${headers.map((h) => `<td>${escapeHtml(row[h] ?? '-')}</td>`).join('')}
           </tr>
         `,
           )
@@ -219,7 +220,7 @@ export const generatePrintableHTML = (
     <table>
       <thead>
         <tr>
-          ${columns.map((col) => `<th>${col}</th>`).join('')}
+          ${columns.map((col) => `<th>${escapeHtml(col)}</th>`).join('')}
         </tr>
       </thead>
       <tbody>
@@ -227,7 +228,7 @@ export const generatePrintableHTML = (
           .map(
             (row) => `
           <tr>
-            ${row.map((cell) => `<td>${cell ?? '-'}</td>`).join('')}
+            ${row.map((cell) => `<td>${escapeHtml(cell ?? '-')}</td>`).join('')}
           </tr>
         `,
           )

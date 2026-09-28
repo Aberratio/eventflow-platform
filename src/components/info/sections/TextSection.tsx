@@ -2,14 +2,11 @@ import { InfoPageSection } from '@/types';
 import { CheckCircle } from 'lucide-react';
 import { PageSection } from '@/components/ui/page-section';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { renderInlineMarkdown } from '@/lib/inlineMarkdown';
 
 interface TextSectionProps {
   section: InfoPageSection;
 }
-
-const parseMarkdown = (text: string): string => {
-  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-};
 
 export const TextSection = ({ section }: TextSectionProps) => {
   const renderContent = (content: string) => {
@@ -24,10 +21,9 @@ export const TextSection = ({ section }: TextSectionProps) => {
             {currentList.map((item, i) => (
               <li key={i} className="flex items-start gap-2.5 text-muted-foreground">
                 <CheckCircle className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                <span
-                  className="text-sm leading-relaxed md:text-base"
-                  dangerouslySetInnerHTML={{ __html: parseMarkdown(item) }}
-                />
+                <span className="text-sm leading-relaxed md:text-base">
+                  {renderInlineMarkdown(item)}
+                </span>
               </li>
             ))}
           </ul>,
@@ -47,8 +43,9 @@ export const TextSection = ({ section }: TextSectionProps) => {
             <p
               key={`p-${index}`}
               className="text-sm leading-relaxed text-muted-foreground md:text-base"
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(trimmed) }}
-            />,
+            >
+              {renderInlineMarkdown(trimmed)}
+            </p>,
           );
         }
       }

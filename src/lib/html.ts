@@ -1,10 +1,11 @@
 export const htmlToPlainText = (html: string): string => {
   if (!html) return '';
 
-  if (typeof document !== 'undefined') {
-    const element = document.createElement('div');
-    element.innerHTML = html;
-    return element.textContent?.trim() ?? '';
+  if (typeof DOMParser !== 'undefined') {
+    // DOMParser documents are inert: no script execution, no resource loads
+    // (unlike innerHTML on a live-document node).
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent?.trim() ?? '';
   }
 
   return html
