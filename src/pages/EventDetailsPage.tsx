@@ -4,6 +4,7 @@ import {
   getRegistrationsByEvent,
   getResultsByEvent,
 } from '@/api';
+import { toPublicStartListEntry } from '@/lib/publicStartList';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -84,7 +85,9 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     enabled: Boolean(event?.id) && !previewMode,
   });
   const startListRegistrations = previewMode
-    ? eventRegistrations.filter((r) => r.status !== 'removed' && r.status !== 'cancelled')
+    ? eventRegistrations
+        .filter((r) => r.status !== 'removed' && r.status !== 'cancelled')
+        .map(toPublicStartListEntry)
     : (startListResponse?.data ?? []);
 
   const { data: resultsResponse } = useQuery({

@@ -59,6 +59,7 @@ import type {
   User,
   UserRole,
   Registration,
+  PublicStartListEntry,
   RelayTeam,
   Result,
   ResultImportBatch,
@@ -230,7 +231,7 @@ export interface ApiAdapter {
    * id — callers must catch, not assume success.
    */
   getTeamById(teamId: string): Promise<ApiResponse<RelayTeam>>;
-  getPublicStartList(eventId: string): Promise<ApiResponse<Registration[]>>;
+  getPublicStartList(eventId: string): Promise<ApiResponse<PublicStartListEntry[]>>;
   /**
    * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)
    * calls this before rendering the form, to check whether embedding is

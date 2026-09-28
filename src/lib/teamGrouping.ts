@@ -38,7 +38,7 @@ export type StartListBlock<T> =
  *   typically the combined results of `getTeamsForDistance()` for every
  *   distinct `distanceId` present in `items`
  */
-export function groupStartListByTeam<T extends { teamId?: string }>(
+export function groupStartListByTeam<T extends { teamId?: string | null }>(
   items: T[],
   teamsById: Record<string, RelayTeam>,
 ): StartListBlock<T>[] {

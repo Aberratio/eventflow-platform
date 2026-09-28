@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@/test/test-utils';
 import { EventStartListTab } from '../EventStartListTab';
-import type { Event, Registration } from '@/types';
+import type { Event, PublicStartListEntry, Registration } from '@/types';
+import { toPublicStartListEntry } from '@/lib/publicStartList';
 
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');
@@ -65,25 +66,26 @@ const mockEvent: Event = {
   featured: false,
 };
 
-const baseReg = (overrides: Partial<Registration>): Registration => ({
-  id: overrides.id ?? 'r',
-  eventId: 'event-1',
-  eventName: 'Sztafeta Testowa',
-  userId: `u-${overrides.id}`,
-  userName: overrides.userName ?? 'Zawodnik Testowy',
-  userEmail: 'test@example.com',
-  distanceId: 'd1',
-  distanceName: 'Sztafeta 4x5km',
-  category: 'Open',
-  registeredAt: '2026-09-01T10:00:00Z',
-  status: 'confirmed',
-  bibNumber: overrides.bibNumber,
-  ...overrides,
-});
+const baseReg = (overrides: Partial<Registration>): PublicStartListEntry =>
+  toPublicStartListEntry({
+    id: overrides.id ?? 'r',
+    eventId: 'event-1',
+    eventName: 'Sztafeta Testowa',
+    userId: `u-${overrides.id}`,
+    userName: overrides.userName ?? 'Zawodnik Testowy',
+    userEmail: 'test@example.com',
+    distanceId: 'd1',
+    distanceName: 'Sztafeta 4x5km',
+    category: 'Open',
+    registeredAt: '2026-09-01T10:00:00Z',
+    status: 'confirmed',
+    bibNumber: overrides.bibNumber,
+    ...overrides,
+  });
 
 describe('EventStartListTab team grouping (E7.4)', () => {
   it('clusters registrations sharing a real teamId under one labeled group with a completeness indicator', async () => {
-    const registrations: Registration[] = [
+    const registrations: PublicStartListEntry[] = [
       baseReg({
         id: 'r1',
         userName: 'Adam Kowalski',
@@ -141,7 +143,7 @@ describe('EventStartListTab team grouping (E7.4)', () => {
   });
 
   it('does not group registrations whose teamId does not resolve to a real team, or that only share a legacy free-text teamName', async () => {
-    const registrations: Registration[] = [
+    const registrations: PublicStartListEntry[] = [
       baseReg({
         id: 'r1',
         userName: 'Ewa Stale',

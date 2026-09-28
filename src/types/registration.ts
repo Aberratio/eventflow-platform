@@ -120,3 +120,33 @@ export interface Registration {
   checkedInAt?: string | null;
   checkedInBy?: string | null;
 }
+
+/** PP.3: one organizer-opted public form field on a start-list entry. */
+export interface PublicStartListField {
+  fieldKey: string;
+  label: string;
+  value: unknown;
+}
+
+/**
+ * PP.3: the only shape `GET /events/{id}/start-list` returns — a hard
+ * allowlist (server: RegistrationRepository::PUBLIC_START_LIST_FIELDS), never
+ * userEmail/qrCode/discountCode/checkedInBy or any other financial/PII field
+ * a full Registration carries.
+ */
+export interface PublicStartListEntry {
+  id: string;
+  distanceId: string;
+  distanceName: string;
+  category: string;
+  /** null for an anonymized competitor — never link to their profile. */
+  userId: string | null;
+  userName: string;
+  bibNumber?: string | null;
+  teamName?: string | null;
+  teamId?: string | null;
+  status: Registration['status'];
+  registeredAt: string;
+  hasMerchandise: boolean;
+  formFields: PublicStartListField[];
+}

@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Event, Registration, RelayTeam } from '@/types';
+import { Event, PublicStartListEntry, RelayTeam } from '@/types';
 import { getTeamsForDistance } from '@/api';
 import { formatTeamCompleteness, groupStartListByTeam } from '@/lib/teamGrouping';
 import {
@@ -42,7 +42,7 @@ import { Link } from 'react-router-dom';
 
 interface EventStartListTabProps {
   event: Event;
-  registrations: Registration[];
+  registrations: PublicStartListEntry[];
   overrideShowAll?: boolean;
   sidebarEnabled?: boolean;
 }
@@ -50,7 +50,7 @@ interface EventStartListTabProps {
 type RegistrationStatusFilter = 'pending' | 'confirmed' | 'cancelled';
 type GenderFilter = 'all' | 'K' | 'M';
 
-const statusLabels: Record<Registration['status'], string> = {
+const statusLabels: Record<PublicStartListEntry['status'], string> = {
   pending: 'Oczekujący',
   confirmed: 'Potwierdzony',
   cancelled: 'Zrezygnowany',
@@ -58,7 +58,7 @@ const statusLabels: Record<Registration['status'], string> = {
   expired: 'Wygasły',
 };
 
-const statusClasses: Record<Registration['status'], string> = {
+const statusClasses: Record<PublicStartListEntry['status'], string> = {
   pending: 'border-warning/40 bg-warning/10 text-warning',
   confirmed: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
   cancelled: 'border-destructive/40 bg-destructive/10 text-destructive',
@@ -128,10 +128,7 @@ export const EventStartListTab = ({
     [sorted],
   );
   const packageOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(sorted.map((r) => (r.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard'))),
-      ),
+    () => Array.from(new Set(sorted.map((r) => (r.hasMerchandise ? 'Z dodatkami' : 'Standard')))),
     [sorted],
   );
 
@@ -139,7 +136,7 @@ export const EventStartListTab = ({
     return sorted.filter((reg) => {
       const normalizedQuery = query.trim().toLowerCase();
       const normalizedClub = clubQuery.trim().toLowerCase();
-      const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
+      const packageName = reg.hasMerchandise ? 'Z dodatkami' : 'Standard';
       const teamName = reg.teamName || '';
 
       const matchesQuery =
@@ -305,8 +302,8 @@ export const EventStartListTab = ({
    * just a visually-styled row, so assistive tech announces the Drużyna a
    * member row belongs to.
    */
-  const renderRegistrationRow = (reg: Registration, groupHeaderId?: string) => {
-    const packageName = reg.merchandiseOrders?.length ? 'Z dodatkami' : 'Standard';
+  const renderRegistrationRow = (reg: PublicStartListEntry, groupHeaderId?: string) => {
+    const packageName = reg.hasMerchandise ? 'Z dodatkami' : 'Standard';
     return (
       <TableRow key={reg.id} className="border-white/10 hover:bg-white/[0.035]">
         <TableCell className="font-mono text-sm text-foreground" headers={groupHeaderId}>
@@ -323,12 +320,18 @@ export const EventStartListTab = ({
                 .toUpperCase()}
             </div>
             <div>
-              <Link
-                to={`/athlete/${reg.userId}`}
-                className="font-medium transition-colors hover:text-primary hover:underline"
-              >
-                {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
-              </Link>
+              {reg.userId ? (
+                <Link
+                  to={`/athlete/${reg.userId}`}
+                  className="font-medium transition-colors hover:text-primary hover:underline"
+                >
+                  {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
+                </Link>
+              ) : (
+                <span className="font-medium">
+                  {uppercaseNames ? reg.userName.toUpperCase() : reg.userName}
+                </span>
+              )}
               <p className="text-xs text-foreground/55">{reg.teamName || 'Klub niepodany'}</p>
             </div>
           </div>
