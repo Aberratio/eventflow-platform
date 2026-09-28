@@ -86,6 +86,8 @@ jobs:
           API_URL: ${{ secrets.API_URL }}
           VITE_APP_ENV: staging
           VITE_STAGING_GATE_PASSWORD: ${{ secrets.VITE_STAGING_GATE_PASSWORD }}
+          CSP_REPORT_ONLY: ${{ vars.CSP_REPORT_ONLY }}
+          CSP_CONNECT_SRC_EXTRA: ${{ vars.CSP_CONNECT_SRC_EXTRA }}
         run: |
           set -Eeuo pipefail
           if [ -z "$API_URL" ]; then
@@ -96,6 +98,14 @@ jobs:
           export VITE_APP_RELEASE="${GITHUB_SHA}"
           echo "Building staging frontend with API_URL from the staging GitHub Environment."
           npm run build:staging
+
+      - name: Verify generated .htaccess
+        run: |
+          set -Eeuo pipefail
+          test -f dist/.htaccess
+          test -f dist/embed.html
+          grep -q "Content-Security-Policy" dist/.htaccess
+          cmp -s dist/index.html dist/embed.html
 
       - name: Deploy by FTP
         if: env.DEPLOY_METHOD == 'ftp'
@@ -312,6 +322,8 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL }}
           VITE_APP_ENV: production
+          CSP_REPORT_ONLY: ${{ vars.CSP_REPORT_ONLY }}
+          CSP_CONNECT_SRC_EXTRA: ${{ vars.CSP_CONNECT_SRC_EXTRA }}
         run: |
           set -Eeuo pipefail
           if [ -z "$API_URL" ]; then
@@ -322,6 +334,14 @@ jobs:
           export VITE_APP_RELEASE="${GITHUB_SHA}"
           echo "Building production frontend with API_URL from the production GitHub Environment."
           npm run build
+
+      - name: Verify generated .htaccess
+        run: |
+          set -Eeuo pipefail
+          test -f dist/.htaccess
+          test -f dist/embed.html
+          grep -q "Content-Security-Policy" dist/.htaccess
+          cmp -s dist/index.html dist/embed.html
 
       - name: Deploy by FTP
         if: env.DEPLOY_METHOD == 'ftp'
