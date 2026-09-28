@@ -185,11 +185,13 @@ const EmbedEventRegistrationPage = () => {
             <p className="text-muted-foreground">
               Zaloguj się na koncie Zmierzymy Czas, aby dokończyć zapis.
             </p>
-            {/* Plain link, not a top-level breakout: logging in can stay
-                inside the iframe (unlike a payment-gateway checkout page,
-                the login page doesn't refuse to be framed). */}
+            {/* /login is not frameable (PP.9 frame-ancestors 'self'), and
+                third-party-iframe storage is partitioned anyway, so log in
+                top-level on our site. */}
             <Button asChild>
-              <a href="/login">Zaloguj się</a>
+              <a href="/login" target="_top">
+                Zaloguj się
+              </a>
             </Button>
           </CardContent>
         </Card>

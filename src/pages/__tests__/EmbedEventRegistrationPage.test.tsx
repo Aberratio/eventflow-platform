@@ -48,15 +48,19 @@ vi.mock('@/api', async () => {
   };
 });
 
+const { mockUseAuth } = vi.hoisted(() => ({
+  mockUseAuth: vi.fn(() => ({
+    user: { id: 'u1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
+    isAuthenticated: true,
+  })),
+}));
+
 vi.mock('@/contexts/AuthContext', async () => {
   const actual =
     await vi.importActual<typeof import('@/contexts/AuthContext')>('@/contexts/AuthContext');
   return {
     ...actual,
-    useAuth: () => ({
-      user: { id: 'u1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
-      isAuthenticated: true,
-    }),
+    useAuth: mockUseAuth,
   };
 });
 
@@ -78,6 +82,10 @@ describe('EmbedEventRegistrationPage', () => {
   beforeEach(() => {
     mockGetEventEmbedPublicConfig.mockReset();
     mockGetEventById.mockClear();
+    mockUseAuth.mockReturnValue({
+      user: { id: 'u1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
+      isAuthenticated: true,
+    });
     Object.defineProperty(document, 'referrer', { value: '', configurable: true });
   });
 
@@ -151,5 +159,18 @@ describe('EmbedEventRegistrationPage', () => {
     expect(
       await screen.findByText('Ta strona nie jest uprawniona do osadzenia tego formularza.'),
     ).toBeInTheDocument();
+  });
+
+  it('login link breaks out of the iframe (target=_top) because /login is not frameable', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockUseAuth.mockReturnValue({ user: null, isAuthenticated: false });
+
+    render(<EmbedEventRegistrationPage />);
+
+    const loginLink = await screen.findByRole('link', { name: 'Zaloguj się' });
+    expect(loginLink).toHaveAttribute('href', '/login');
+    expect(loginLink).toHaveAttribute('target', '_top');
   });
 });
