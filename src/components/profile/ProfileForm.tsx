@@ -77,9 +77,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
     setSaving(true);
     try {
       const address = Object.values(formData.address).some(Boolean) ? formData.address : undefined;
+      // PP.1: e-mail is never sent from here — the server rejects a self
+      // e-mail change (email_change_not_allowed). The input stays read-only.
       const updated = await updateCurrentUser({
         name: formData.name,
-        email: formData.email,
         phone: formData.phone || undefined,
         address,
       });
@@ -157,9 +158,13 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              readOnly
+              aria-describedby="email-hint"
               placeholder="jan@example.com"
             />
+            <p id="email-hint" className="text-xs text-muted-foreground">
+              Zmiana adresu e-mail nie jest jeszcze dostępna — skontaktuj się z obsługą.
+            </p>
           </div>
 
           <div className="space-y-2">

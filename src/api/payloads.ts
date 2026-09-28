@@ -116,6 +116,30 @@ export type UpdateUserPayload = Partial<CreateUserPayload> & {
   avatar?: string;
 };
 
+/**
+ * PP.1: the narrower payload for a user editing their OWN Account through
+ * `PATCH /users/{id}`. The server's UserUpdatePolicy rejects everything
+ * outside this list for a self-edit (role, status, eventLimit,
+ * organizerPackageCredits, password fields, email, avatar) with 422
+ * field_not_editable — those fields are deliberately absent from this type
+ * so a caller can't accidentally send them from a self-service form.
+ */
+export type SelfUpdateUserPayload = Pick<
+  UpdateUserPayload,
+  | 'name'
+  | 'phone'
+  | 'address'
+  | 'birthDate'
+  | 'birthYear'
+  | 'gender'
+  | 'club'
+  | 'sosContacts'
+  | 'companyName'
+  | 'nip'
+  | 'website'
+  | 'description'
+>;
+
 // ──────────────── Auth ────────────────
 
 export interface LoginCredentials {

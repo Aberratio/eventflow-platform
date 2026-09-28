@@ -13,7 +13,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { User } from '@/types';
-import { UpdateUserPayload } from '@/api/payloads';
+import { SelfUpdateUserPayload } from '@/api/payloads';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
 
@@ -23,7 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateCurrentUser: (data: UpdateUserPayload) => Promise<User | null>;
+  updateCurrentUser: (data: SelfUpdateUserPayload) => Promise<User | null>;
   refreshUser: () => Promise<User | null>;
 }
 
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     clearSession();
   };
 
-  const updateCurrentUser = async (data: UpdateUserPayload): Promise<User | null> => {
+  const updateCurrentUser = async (data: SelfUpdateUserPayload): Promise<User | null> => {
     if (!user) return null;
     const response = await apiUpdateUser(user.id, data);
     if (!response.data) return null;
