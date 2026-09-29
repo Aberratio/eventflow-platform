@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import {
   archiveChallenge,
   getChallengeParticipations,
@@ -270,11 +271,11 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                     </TableCell>
                     <TableCell className="font-mono">{entry.submittedTime ?? '-'}</TableCell>
                     <TableCell>
-                      {entry.proofUrl ? (
+                      {safeUrl(entry.proofUrl) ? (
                         <a
-                          href={entry.proofUrl}
+                          href={safeUrl(entry.proofUrl)}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-primary underline"
                         >
                           Zobacz dowód <ExternalLink className="h-3 w-3" />

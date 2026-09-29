@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -131,7 +132,7 @@ const RouteUrlOrUploadField = ({
       </div>
       {value && (
         <a
-          href={value}
+          href={safeUrl(value)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1 text-xs text-primary hover:underline"

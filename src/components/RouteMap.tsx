@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -99,7 +100,7 @@ export const RouteMap = ({ mapUrl, elevationProfileUrl, gpxUrl, distanceInfo }: 
       {/* GPX download button */}
       {gpxUrl && (
         <Button variant="outline" className="w-full" asChild>
-          <a href={gpxUrl} download>
+          <a href={safeUrl(gpxUrl)} download>
             <Download className="mr-2 h-4 w-4" />
             Pobierz plik GPX
           </a>

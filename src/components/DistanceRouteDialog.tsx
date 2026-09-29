@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { useState } from 'react';
 import {
   Dialog,
@@ -95,7 +96,7 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
             {distance.routeGpxUrl && (
               <div>
                 <Button variant="outline" size="sm" asChild>
-                  <a href={distance.routeGpxUrl} download className="gap-2">
+                  <a href={safeUrl(distance.routeGpxUrl)} download className="gap-2">
                     <Download className="h-4 w-4" />
                     Pobierz plik GPX
                   </a>
@@ -120,7 +121,7 @@ export const DistanceRouteDialog = ({ distance, trigger }: DistanceRouteDialogPr
                         </Button>
                       ) : (
                         <Button variant="ghost" size="sm" asChild>
-                          <a href={file.url} download>
+                          <a href={safeUrl(file.url)} download>
                             Pobierz
                           </a>
                         </Button>

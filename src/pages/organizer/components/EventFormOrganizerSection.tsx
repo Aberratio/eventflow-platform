@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadEventImage } from '@/api';
@@ -210,17 +211,23 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
         <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-sm">
             <p className="font-medium text-foreground">{organizerName}</p>
-            {organizerWebsite && (
-              <a
-                href={organizerWebsite}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-1 flex items-center gap-1 text-primary hover:underline"
-              >
-                <Globe className="h-3.5 w-3.5" />
-                {organizerWebsite.replace('https://', '')}
-              </a>
-            )}
+            {organizerWebsite &&
+              (safeUrl(organizerWebsite) ? (
+                <a
+                  href={safeUrl(organizerWebsite)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 flex items-center gap-1 text-primary hover:underline"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {organizerWebsite.replace('https://', '')}
+                </a>
+              ) : (
+                <span className="mt-1 flex items-center gap-1 text-muted-foreground">
+                  <Globe className="h-3.5 w-3.5" />
+                  {organizerWebsite}
+                </span>
+              ))}
           </div>
           <p className="text-sm text-muted-foreground">
             Nazwa i strona organizatora pobierana jest automatycznie z profilu. Aby je zmienić,

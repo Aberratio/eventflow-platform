@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { GalleryAlbum, GalleryPlatform } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Facebook, Instagram, ExternalLink, Image } from 'lucide-react';
@@ -40,7 +41,7 @@ export const GalleryAlbumsList = ({ albums }: GalleryAlbumsListProps) => {
             return (
               <a
                 key={album.id}
-                href={album.url}
+                href={safeUrl(album.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"

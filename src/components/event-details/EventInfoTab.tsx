@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import {
   Event,
   EventLogisticsInfo,
@@ -209,9 +210,9 @@ const LocationDetail = ({
               </div>
             )}
             {loc.note && <p className="mt-1 text-xs text-foreground/65">{loc.note}</p>}
-            {loc.mapsUrl && (
+            {safeUrl(loc.mapsUrl) && (
               <a
-                href={loc.mapsUrl}
+                href={safeUrl(loc.mapsUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
@@ -437,6 +438,9 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
   const hasResults = isPast && eventResults && eventResults.length > 0;
   const raceOffice = event.logisticsInfo?.raceOffice;
   const baggage = event.logisticsInfo?.baggage;
+  const locationMapsHref =
+    safeUrl(event.locationMapsUrl) ??
+    (raceOffice?.status === 'yes' ? safeUrl(raceOffice.locations?.[0]?.mapsUrl) : undefined);
 
   const scheduleDoc = event.documents?.find((d) => d.type === 'harmonogram');
   const rulesDoc = event.documents?.find((d) => d.type === 'regulamin');
@@ -489,13 +493,9 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">{event.location}</p>
                 <p className="text-xs text-foreground/60">{event.city}</p>
-                {(event.locationMapsUrl ||
-                  (raceOffice?.status === 'yes' &&
-                    raceOffice.locations &&
-                    raceOffice.locations.length > 0 &&
-                    raceOffice.locations[0].mapsUrl)) && (
+                {locationMapsHref && (
                   <a
-                    href={event.locationMapsUrl || raceOffice!.locations![0].mapsUrl}
+                    href={locationMapsHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-1.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
@@ -569,7 +569,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                   Harmonogram
                 </p>
                 <a
-                  href={scheduleDoc.fileUrl}
+                  href={safeUrl(scheduleDoc.fileUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
@@ -783,17 +783,23 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                 {event.organizerContact.phone}
               </a>
             )}
-            {event.organizerContact.website && (
-              <a
-                href={event.organizerContact.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
-              >
-                <Globe className="h-4 w-4" />
-                {event.organizerContact.website.replace('https://', '')}
-              </a>
-            )}
+            {event.organizerContact.website &&
+              (safeUrl(event.organizerContact.website) ? (
+                <a
+                  href={safeUrl(event.organizerContact.website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-foreground/70 transition-colors hover:text-foreground"
+                >
+                  <Globe className="h-4 w-4" />
+                  {event.organizerContact.website.replace('https://', '')}
+                </a>
+              ) : (
+                <span className="flex items-center gap-2 text-sm text-foreground/70">
+                  <Globe className="h-4 w-4" />
+                  {event.organizerContact.website}
+                </span>
+              ))}
           </div>
         ) : (
           <p className="text-sm text-foreground/60">{event.organizerName}</p>
@@ -819,6 +825,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
 };
 
 const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
+  const sponsorHref = safeUrl(sponsor.url);
   const inner = (
     <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2 transition-colors hover:bg-white/[0.06]">
       {sponsor.logoUrl && (
@@ -832,13 +839,13 @@ const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
         />
       )}
       <span className="text-sm font-medium text-foreground/80">{sponsor.name}</span>
-      {sponsor.url && <Link2 className="h-3.5 w-3.5 shrink-0 text-foreground/40" />}
+      {sponsorHref && <Link2 className="h-3.5 w-3.5 shrink-0 text-foreground/40" />}
     </div>
   );
 
-  if (sponsor.url) {
+  if (sponsorHref) {
     return (
-      <a href={sponsor.url} target="_blank" rel="noopener noreferrer">
+      <a href={sponsorHref} target="_blank" rel="noopener noreferrer">
         {inner}
       </a>
     );
@@ -848,7 +855,7 @@ const SponsorBadge = ({ sponsor }: { sponsor: EventSponsor }) => {
 
 const DocumentRow = ({ doc }: { doc: NonNullable<Event['documents']>[number] }) => (
   <a
-    href={doc.fileUrl}
+    href={safeUrl(doc.fileUrl)}
     target="_blank"
     rel="noopener noreferrer"
     className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-2.5 transition-colors hover:bg-white/[0.06]"

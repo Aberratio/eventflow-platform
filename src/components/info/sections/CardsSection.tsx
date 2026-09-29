@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { Card, CardContent } from '@/components/ui/card';
 import { InfoPageSection } from '@/types';
 import { PageSection } from '@/components/ui/page-section';
@@ -82,9 +83,9 @@ export const CardsSection = ({ section }: CardsSectionProps) => {
               )}
               <h3 className="mb-1.5 text-base font-semibold">{item.title}</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-              {item.link && (
+              {safeUrl(item.link) && (
                 <a
-                  href={item.link}
+                  href={safeUrl(item.link)}
                   className="mt-2.5 inline-block text-sm font-medium text-primary hover:underline"
                 >
                   Dowiedz się więcej →

@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { getVirtualResultSubmissions, reviewVirtualResult } from '@/api';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -338,17 +339,22 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
                       </div>
                     </div>
 
-                    {submission.proofUrl && (
-                      <a
-                        href={submission.proofUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Zobacz dowód
-                      </a>
-                    )}
+                    {submission.proofUrl &&
+                      (safeUrl(submission.proofUrl) ? (
+                        <a
+                          href={safeUrl(submission.proofUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Zobacz dowód
+                        </a>
+                      ) : (
+                        <span className="mt-2 text-sm text-muted-foreground">
+                          Nieprawidłowy link do dowodu
+                        </span>
+                      ))}
 
                     {submission.notes && (
                       <p className="mt-2 text-sm italic text-muted-foreground">

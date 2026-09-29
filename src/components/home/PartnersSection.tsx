@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { PageSection } from '@/components/ui/page-section';
 import { Handshake } from 'lucide-react';
@@ -29,7 +30,7 @@ export const PartnersSection = ({ partners }: PartnersSectionProps) => {
         {featuredPartners.map((partner) => (
           <a
             key={partner.id}
-            href={partner.websiteUrl}
+            href={safeUrl(partner.websiteUrl)}
             target="_blank"
             rel="noopener noreferrer"
             title={partner.name}

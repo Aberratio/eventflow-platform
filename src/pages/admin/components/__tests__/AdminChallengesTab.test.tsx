@@ -123,3 +123,26 @@ describe('AdminChallengesTab manual verification review (E6.4)', () => {
     });
   });
 });
+
+describe('AdminChallengesTab proof link safety (PP.50)', () => {
+  it('does not render a link for a javascript: proofUrl', async () => {
+    const entry = participation.entries[0];
+    const original = entry.proofUrl;
+    entry.proofUrl = 'javascript:window.__xss=1';
+    try {
+      const { container } = renderTab();
+      await screen.findByText('Jan Kowalski');
+      expect(container.querySelector('a[href^="javascript" i]')).toBeNull();
+      expect(screen.queryByRole('link', { name: /zobacz dow[oó]d/i })).toBeNull();
+    } finally {
+      entry.proofUrl = original;
+    }
+  });
+
+  it('renders a noopener link for an https proofUrl', async () => {
+    renderTab();
+    const proofLink = await screen.findByRole('link', { name: /zobacz dow[oó]d/i });
+    expect(proofLink).toHaveAttribute('href', 'https://example.test/dowod.jpg');
+    expect(proofLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+});

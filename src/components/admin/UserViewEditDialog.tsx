@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -255,14 +256,18 @@ export const UserViewEditDialog = ({
                   {user.website && (
                     <>
                       <span className="text-muted-foreground">Strona www</span>
-                      <a
-                        href={user.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {user.website}
-                      </a>
+                      {safeUrl(user.website) ? (
+                        <a
+                          href={safeUrl(user.website)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {user.website}
+                        </a>
+                      ) : (
+                        <span>{user.website}</span>
+                      )}
                     </>
                   )}
                 </>

@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { useEffect, useState } from 'react';
 import { deletePartner, getPartners } from '@/api';
 import { useNavigate } from 'react-router-dom';
@@ -38,7 +39,7 @@ const PartnersBannerPreview = ({ partners, variant }: PartnersBannerPreviewProps
             return (
               <a
                 key={`${variant}-${partner.id}`}
-                href={partner.websiteUrl}
+                href={safeUrl(partner.websiteUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group block"
@@ -166,9 +167,9 @@ export const AdminPartnersTab = () => {
                     </div>
                     <div>
                       <h4 className="font-medium">{partner.name}</h4>
-                      {partner.websiteUrl && (
+                      {safeUrl(partner.websiteUrl) && (
                         <a
-                          href={partner.websiteUrl}
+                          href={safeUrl(partner.websiteUrl)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-primary"

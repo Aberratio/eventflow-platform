@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,8 +46,8 @@ export const ResultDocumentsList = ({ documents, showHeader = true }: ResultDocu
   if (documents.length === 0) return null;
 
   const handleDownload = (doc: EventResultDocument) => {
-    // In a real app, this would trigger a download
-    window.open(doc.fileUrl, '_blank');
+    const href = safeUrl(doc.fileUrl);
+    if (href) window.open(href, '_blank', 'noopener,noreferrer');
   };
 
   return (

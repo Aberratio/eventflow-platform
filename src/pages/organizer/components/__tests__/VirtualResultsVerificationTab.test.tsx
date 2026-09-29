@@ -81,3 +81,31 @@ describe('VirtualResultsVerificationTab', () => {
     });
   });
 });
+
+describe('VirtualResultsVerificationTab proof link safety (PP.50)', () => {
+  it('shows plain text instead of a link for a javascript: proofUrl', async () => {
+    getVirtualResultSubmissions.mockResolvedValue({
+      success: true,
+      data: [{ ...submission, proofUrl: 'javascript:window.__xss=1' }],
+    });
+
+    const { container } = render(<VirtualResultsVerificationTab event={event} />);
+
+    expect(await screen.findByText('Anna Testowa')).toBeInTheDocument();
+    expect(screen.getByText('Nieprawidłowy link do dowodu')).toBeInTheDocument();
+    expect(container.querySelector('a[href^="javascript" i]')).toBeNull();
+    expect(screen.queryByRole('link', { name: /zobacz dowód/i })).toBeNull();
+  });
+
+  it('links an https proofUrl', async () => {
+    getVirtualResultSubmissions.mockResolvedValue({
+      success: true,
+      data: [{ ...submission, proofUrl: 'https://strava.com/activities/1' }],
+    });
+
+    render(<VirtualResultsVerificationTab event={event} />);
+
+    const link = await screen.findByRole('link', { name: /zobacz dowód/i });
+    expect(link).toHaveAttribute('href', 'https://strava.com/activities/1');
+  });
+});

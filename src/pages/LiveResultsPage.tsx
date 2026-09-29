@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { getLiveEvents } from '@/api';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -76,10 +77,10 @@ const LiveResultsPage = () => {
                         </div>
 
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {event.liveResultsUrl && (
+                          {safeUrl(event.liveResultsUrl) && (
                             <Button asChild>
                               <a
-                                href={event.liveResultsUrl}
+                                href={safeUrl(event.liveResultsUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >

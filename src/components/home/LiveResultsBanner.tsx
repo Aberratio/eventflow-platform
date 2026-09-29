@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { Button } from '@/components/ui/button';
 import { Radio, ExternalLink, ArrowRight } from 'lucide-react';
 import { Event } from '@/types';
@@ -15,6 +16,7 @@ export const LiveResultsBanner = ({ events }: LiveResultsBannerProps) => {
   if (liveEvents.length === 0) return null;
 
   const firstLive = liveEvents[0];
+  const liveHref = safeUrl(firstLive.liveResultsUrl);
 
   return (
     <section className="py-4">
@@ -41,14 +43,9 @@ export const LiveResultsBanner = ({ events }: LiveResultsBannerProps) => {
               </div>
             </div>
             <div className="flex gap-2">
-              {liveEvents.length === 1 && firstLive.liveResultsUrl ? (
+              {liveEvents.length === 1 && liveHref ? (
                 <Button size="sm" asChild>
-                  <a
-                    href={firstLive.liveResultsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="gap-1.5"
-                  >
+                  <a href={liveHref} target="_blank" rel="noopener noreferrer" className="gap-1.5">
                     Zobacz wyniki LIVE
                     <ExternalLink className="h-3 w-3" />
                   </a>

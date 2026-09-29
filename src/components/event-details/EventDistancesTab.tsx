@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { getCurrentPrice, applyDiscount, isTierExpired } from '@/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -293,7 +294,7 @@ const DistanceCard = ({
               )}
               {distance.routeGpxUrl && (
                 <Button variant="outline" size="sm" asChild>
-                  <a href={distance.routeGpxUrl} download className="gap-1.5">
+                  <a href={safeUrl(distance.routeGpxUrl)} download className="gap-1.5">
                     <Download className="h-3.5 w-3.5" />
                     GPX
                   </a>

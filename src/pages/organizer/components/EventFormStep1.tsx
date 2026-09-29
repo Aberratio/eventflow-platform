@@ -1,4 +1,5 @@
 ﻿import { disciplineLabels, uploadEventImage, getEventBackgrounds } from '@/api';
+import { safeUrl } from '@/lib/safeUrl';
 import {
   EVENT_DOCUMENT_TYPE_LABELS,
   EventDocumentType,
@@ -1616,7 +1617,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   </div>
                   {form.locationMapsUrl && (
                     <a
-                      href={form.locationMapsUrl}
+                      href={safeUrl(form.locationMapsUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"

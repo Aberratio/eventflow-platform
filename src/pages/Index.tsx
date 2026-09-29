@@ -1,3 +1,4 @@
+import { safeUrl } from '@/lib/safeUrl';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -411,7 +412,7 @@ const PartnersStrip = ({ partners }: { partners: Partner[] }) => {
         {featured.map((partner) => (
           <a
             key={partner.id}
-            href={partner.websiteUrl}
+            href={safeUrl(partner.websiteUrl)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex h-12 items-center justify-center opacity-45 grayscale transition duration-200 hover:-translate-y-0.5 hover:opacity-80"
