@@ -1052,6 +1052,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     onChange={(html) => form.updateDistance(index, 'infoHtml', html)}
                     placeholder="Wpisz informacje widoczne dla uczestników przy tym dystansie..."
                     minHeight="90px"
+                    ariaLabel="Dodatkowe informacje o dystansie"
                   />
                 </div>
 

@@ -21,12 +21,15 @@ describe('normalizeLinkHref', () => {
     expect(result).toEqual({ kind: 'ok', href: expected });
   });
 
-  it.each(['javascript:alert(1)', 'JavaScript:alert(1)', 'data:text/html,x', 'vbscript:x', 'ftp://a.pl'])(
-    'rejects dangerous/unknown scheme %s',
-    (input) => {
-      expect(normalizeLinkHref(input)).toEqual({ kind: 'rejected' });
-    },
-  );
+  it.each([
+    'javascript:alert(1)',
+    'JavaScript:alert(1)',
+    'data:text/html,x',
+    'vbscript:x',
+    'ftp://a.pl',
+  ])('rejects dangerous/unknown scheme %s', (input) => {
+    expect(normalizeLinkHref(input)).toEqual({ kind: 'rejected' });
+  });
 
   it.each(['', '   '])('treats blank input %j as empty', (input) => {
     expect(normalizeLinkHref(input)).toEqual({ kind: 'empty' });

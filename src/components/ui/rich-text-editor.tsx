@@ -286,7 +286,8 @@ export const RichTextEditor = ({
                 }}
               />
               <p id={`${urlInputId}-hint`} className="text-xs text-muted-foreground">
-                Możesz też wpisać adres e-mail lub numer telefonu — dodamy mailto:/tel: automatycznie.
+                Możesz też wpisać adres e-mail lub numer telefonu — dodamy mailto:/tel:
+                automatycznie.
               </p>
               {linkError && (
                 <p id={`${urlInputId}-error`} role="alert" className="text-xs text-destructive">

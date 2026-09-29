@@ -198,6 +198,7 @@ export const AdminSettingsTab = () => {
                   setLocalInsurance((prev) => ({ ...(prev ?? ins), infoHtml: html }))
                 }
                 placeholder="Opisz szczegóły ubezpieczenia NNW..."
+                ariaLabel="Tekst informacyjny o ubezpieczeniu"
               />
             </div>
 

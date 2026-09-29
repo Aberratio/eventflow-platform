@@ -57,7 +57,7 @@ if (typeof Range.prototype.getClientRects !== 'function') {
     return {
       length: 0,
       item: () => null,
-      [Symbol.iterator]: function* () {},
+      *[Symbol.iterator]() {},
     } as unknown as DOMRectList;
   };
 }

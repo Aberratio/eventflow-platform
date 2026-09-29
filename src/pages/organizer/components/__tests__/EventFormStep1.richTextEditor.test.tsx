@@ -114,9 +114,7 @@ describe('EventFormStep1 description editor (PP.16)', () => {
     vi.useRealTimers();
 
     await waitFor(() => {
-      expect(
-        document.querySelector('.ProseMirror a[href="mailto:biuro@example.pl"]'),
-      ).toBeTruthy();
+      expect(document.querySelector('.ProseMirror a[href="mailto:biuro@example.pl"]')).toBeTruthy();
     });
   });
 

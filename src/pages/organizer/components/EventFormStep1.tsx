@@ -3,7 +3,6 @@ import {
   EVENT_DOCUMENT_TYPE_LABELS,
   EventDocumentType,
   EventLogisticsInfo,
-  SportDiscipline,
   PaymentConfigType,
   OrganizerLogoShape,
   EventBackground,
@@ -28,15 +27,6 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import {
   Image,
   Upload,
@@ -58,9 +48,6 @@ import {
   MapPin,
   Info,
   ChevronDown,
-  ChevronsUpDown,
-  Check,
-  X,
   RectangleHorizontal,
   RectangleVertical,
   Square,
@@ -88,6 +75,7 @@ import { DisciplineIcon } from '@/components/icons/DisciplineIcon';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { EventFormState, SubStep } from '../hooks/useEventFormState';
 import { EventFormOrganizerSection } from './EventFormOrganizerSection';
+import { DisciplineMultiSelect } from './DisciplineMultiSelect';
 
 const FieldError = ({ message }: { message?: string }) =>
   message ? (
@@ -730,6 +718,7 @@ const LogisticsRow = ({
             onChange={onInfoChange}
             placeholder="Wpisz szczegółowe informacje dla uczestników..."
             minHeight="80px"
+            ariaLabel={`${label} — dodatkowe informacje`}
           />
         </div>
 
@@ -1010,87 +999,6 @@ const LogisticsSection = ({ form }: { form: EventFormState }) => {
           ))}
         </CardContent>
       </Card>
-    </div>
-  );
-};
-
-const DisciplineMultiSelect = ({
-  selected,
-  onChange,
-}: {
-  selected: SportDiscipline[];
-  onChange: (v: SportDiscipline[]) => void;
-}) => {
-  const [open, setOpen] = useState(false);
-  const allEntries = Object.entries(disciplineLabels) as [SportDiscipline, string][];
-
-  const toggle = (key: SportDiscipline) => {
-    const next = selected.includes(key) ? selected.filter((d) => d !== key) : [...selected, key];
-    if (next.length > 0) onChange(next);
-  };
-
-  return (
-    <div className="space-y-2">
-      <HelpLabel description="Określa typy sportów. Wpływa na ikony, filtry wydarzeń i sposób prezentacji wydarzenia w serwisie. Można wybrać kilka.">
-        Dyscyplina *
-      </HelpLabel>
-
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="h-auto min-h-10 w-full justify-between border-input bg-background px-3 py-2 text-left font-normal hover:bg-background"
-          >
-            <span className="flex min-w-0 flex-wrap gap-1">
-              {selected.length === 0 ? (
-                <span className="text-muted-foreground">Wybierz dyscypliny…</span>
-              ) : (
-                selected.map((key) => (
-                  <span
-                    key={key}
-                    className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-                  >
-                    <DisciplineIcon discipline={key} size="sm" className="h-3 w-3 shrink-0" />
-                    {disciplineLabels[key]}
-                    <button
-                      type="button"
-                      className="ml-0.5 shrink-0 rounded-sm opacity-60 hover:opacity-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggle(key);
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))
-              )}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Szukaj dyscypliny…" />
-            <CommandList>
-              <CommandEmpty>Brak wyników.</CommandEmpty>
-              <CommandGroup>
-                {allEntries.map(([key, label]) => (
-                  <CommandItem key={key} value={label} onSelect={() => toggle(key)}>
-                    <Check
-                      className={`mr-2 h-4 w-4 ${selected.includes(key) ? 'opacity-100' : 'opacity-0'}`}
-                    />
-                    <DisciplineIcon discipline={key} size="sm" className="mr-2 h-4 w-4 shrink-0" />
-                    {label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
     </div>
   );
 };
@@ -1733,6 +1641,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 onChange={form.setDescription}
                 placeholder="Opisz szczegóły wydarzenia, trasę, atrakcje..."
                 minHeight="140px"
+                ariaLabel="Opis wydarzenia"
               />
             </div>
 
@@ -2067,6 +1976,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   onChange={form.setRulesHtml}
                   placeholder="Wpisz regulamin lub dodaj linki do dokumentów..."
                   minHeight="72px"
+                  ariaLabel="Regulamin"
                 />
               </div>
               <div className="space-y-4">
@@ -2095,6 +2005,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       onChange={form.setFinalAcceptanceHtml}
                       placeholder="Oświadczam, że zapoznałem się z regulaminem..."
                       minHeight="100px"
+                      ariaLabel="Tekst akceptacji"
                     />
                   </div>
                 )}

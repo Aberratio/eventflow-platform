@@ -362,6 +362,7 @@ const GadgetCard = ({
               onChange={(v) => onUpdate({ descriptionHtml: v })}
               placeholder="Opisz gadżet: materiał, skład, przeznaczenie, tabela rozmiarów..."
               minHeight="120px"
+              ariaLabel="Opis gadżetu"
             />
           </div>
 

@@ -4,7 +4,10 @@
  * Kept in sync with SAFE_URI in src/lib/sanitizeHtml.ts (http(s)/mailto/tel/relative):
  * whatever this function accepts is exactly what RichTextDisplay keeps after sanitization.
  */
-export type LinkHrefResult = { kind: 'empty' } | { kind: 'ok'; href: string } | { kind: 'rejected' };
+export type LinkHrefResult =
+  | { kind: 'empty' }
+  | { kind: 'ok'; href: string }
+  | { kind: 'rejected' };
 
 const ALLOWED_SCHEME = /^(?:https?:\/\/|mailto:|tel:)/i;
 // "localhost:3000" is host:port, not a scheme (a scheme is never followed by a digit).
