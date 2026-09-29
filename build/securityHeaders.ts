@@ -213,7 +213,7 @@ ${embedCspLines.join('\n')}
     Header always unset X-Frame-Options
   </Files>
   <FilesMatch "-[A-Za-z0-9_-]{8}\\.(js|css)$">
-    Header always set Cache-Control "public, max-age=31536000, immutable"
+    Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 </IfModule>
 `;

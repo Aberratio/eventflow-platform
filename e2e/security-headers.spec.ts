@@ -7,8 +7,14 @@ import { dismissCookies, loginAs } from './helpers';
  * SECURITY_HEADERS_BASE_URL so the default suite and @smoke are unaffected —
  * dev/CI runs of `npx playwright test` never talk to a static Apache build.
  *
- * Run with: SECURITY_HEADERS_BASE_URL=http://localhost:5304 npx playwright
- * test e2e/security-headers.spec.ts
+ * Run with: PLAYWRIGHT_BASE_URL=http://localhost:5304 SECURITY_HEADERS_BASE_URL=http://localhost:5304
+ * npx playwright test e2e/security-headers.spec.ts
+ * (PLAYWRIGHT_BASE_URL is also required, otherwise playwright.config.ts tries to boot its dev stack.)
+ *
+ * Run it against BOTH a development build and a STAGING-mode build
+ * (`VITE_API_URL=https://... npm run build:staging`). HSTS is emitted only in
+ * staging/production builds, so serving only the dev build cannot catch an
+ * .htaccess line that Apache rejects (that once returned 500 on every path).
  */
 // Top-level: `launchOptions` in `test.use` forces a new worker and Playwright
 // refuses that inside a nested `test.describe`, so both the skip guard and the
@@ -70,13 +76,11 @@ test.describe('@headers security headers (served by Apache)', () => {
     });
 
     test('/api paths are not rewritten to index.html', async ({ request, baseURL }) => {
-      const response = await request.get(`${baseURL}/api/x`, { maxRedirects: 0 }).catch((e) => e);
-      // Apache has no /api directory in the SPA docroot, so this must not
-      // come back as the SPA's index.html (200 with the app shell).
-      if (response && typeof response.status === 'function') {
-        const body = await response.text().catch(() => '');
-        expect(body).not.toContain('<div id="root">');
-      }
+      // No /api directory exists in the SPA docroot, so Apache must answer 404 itself
+      // instead of handing the request to the SPA fallback (200 + app shell).
+      const response = await request.get(`${baseURL}/api/x`, { maxRedirects: 0 });
+      expect(response.status()).toBe(404);
+      expect(await response.text()).not.toContain('<div id="root">');
     });
   });
 
@@ -106,13 +110,15 @@ test.describe('@headers security headers (served by Apache)', () => {
       await page.waitForLoadState('networkidle');
       await expectNoViolations(page);
 
-      // Open one Radix dialog (e.g. a "add" button opening a modal) if present.
-      const dialogTrigger = page.getByRole('button', { name: /dodaj|nowy|edytuj/i }).first();
-      if (await dialogTrigger.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await dialogTrigger.click();
-        await page.waitForTimeout(500);
-        await expectNoViolations(page);
-      }
+      // Open one Radix dialog and require that it really opens (no silent skip).
+      await page.goto('/admin/organizers');
+      await page.waitForLoadState('networkidle');
+      await page
+        .getByRole('button', { name: /dodaj organizatora/i })
+        .first()
+        .click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expectNoViolations(page);
     });
   });
 
