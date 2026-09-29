@@ -61,6 +61,7 @@ import type {
   Registration,
   PublicStartListEntry,
   RelayTeam,
+  TeamInvite,
   Result,
   ResultImportBatch,
   ResultImportMode,
@@ -224,13 +225,20 @@ export interface ApiAdapter {
    * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
    * resolves a single Drużyna by its own id — the read side of a captain's
    * shareable invitation link (`/events/{eventSlug}/register?joinTeam=
-   * {teamId}`). The team's own server-generated UUID doubles as the
-   * invitation token (see TeamRepository on the server); this lets the
-   * landing page show a clear "team full"/"link invalid" message before the
-   * invitee ever opens the registration form. Rejects (404) for an unknown
-   * id — callers must catch, not assume success.
+   * {teamId}&invite={token}`). PP.54: the team id is public and is NOT the
+   * invitation — the secret is the separate `inviteToken` (see
+   * `getTeamInvite`). This lets the landing page show a clear "team
+   * full"/"link invalid" message before the invitee ever opens the
+   * registration form. Rejects (404) for an unknown id — callers must catch,
+   * not assume success.
    */
   getTeamById(teamId: string): Promise<ApiResponse<RelayTeam>>;
+  /**
+   * PP.54: the invitation token of a Drużyna, for building the link
+   * (`buildTeamInviteLink`). Authenticated; the server answers 403 unless the
+   * caller is the team's captain or manages the event, 404 for an unknown id.
+   */
+  getTeamInvite(teamId: string): Promise<ApiResponse<TeamInvite>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<PublicStartListEntry[]>>;
   /**
    * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)

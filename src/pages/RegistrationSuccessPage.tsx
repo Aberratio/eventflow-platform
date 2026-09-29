@@ -24,6 +24,9 @@ import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig, Registration } from '@/types';
 import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
 import { useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getTeamInvite } from '@/api';
+import { buildTeamInviteLink } from '@/lib/teamInvite';
 import { formatMoney } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -123,6 +126,20 @@ const RegistrationSuccessPage = () => {
 
   const state = location.state as RegistrationSuccessState | null;
 
+  // PP.54: the invitation token is the captain's secret (the team id is public), so it is fetched
+  // from the server (captain-only) instead of being derived from the Zapis. Only the Zapis that
+  // just created a brand-new relay Drużyna is the captain and gets the link here.
+  const inviteTeamId =
+    state?.registrationData.createTeam && state.registration.teamId
+      ? state.registration.teamId
+      : null;
+  const teamInviteQuery = useQuery({
+    queryKey: ['team-invite-token', inviteTeamId],
+    queryFn: () => getTeamInvite(inviteTeamId as string),
+    enabled: Boolean(inviteTeamId),
+    retry: false,
+  });
+
   // Send confirmation email on mount (only once)
   useEffect(() => {
     if (state && !emailSentRef.current) {
@@ -206,15 +223,16 @@ const RegistrationSuccessPage = () => {
   // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
   // this Zapis just created a brand-new relay Drużyna (E7.1's `createTeam`
   // intent) — surface the shareable invitation link for the still-missing
-  // teammates right here, the natural "what happens next" moment. The
-  // team's own server-generated id (`registration.teamId`) doubles as the
-  // invitation token; joining it still goes through
-  // RegistrationRepository::resolveTeamForRegistration() in full at submit
-  // time, this link only skips the "browse and pick" step for the invitee.
+  // teammates right here, the natural "what happens next" moment. PP.54: the
+  // link carries the captain's secret `invite` token (fetched above); joining
+  // still goes through RegistrationRepository::resolveTeamForRegistration()
+  // in full at submit time, which refuses a join without that token.
+  const teamInviteToken = teamInviteQuery.data?.data.inviteToken;
   const teamInviteLink =
-    registrationData.createTeam && registration.teamId
-      ? `${window.location.origin}/events/${slug}/register?joinTeam=${registration.teamId}`
+    inviteTeamId && teamInviteToken
+      ? buildTeamInviteLink(window.location.origin, slug ?? '', inviteTeamId, teamInviteToken)
       : null;
+  const teamInviteUnavailable = Boolean(inviteTeamId) && teamInviteQuery.isError;
 
   return (
     <Layout>
@@ -391,39 +409,48 @@ const RegistrationSuccessPage = () => {
           )}
 
           {/* Team Invitation Link (E7.2) — only for the Zapis that just created a new relay Drużyna */}
-          {teamInviteLink && (
+          {(teamInviteLink || teamInviteUnavailable) && (
             <Card className="mb-6 border-primary/20 bg-primary/5">
               <CardContent className="space-y-3 pt-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
                   <h2 className="font-semibold">Zaproś resztę drużyny</h2>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Wyślij ten link pozostałym osobom z Twojej drużyny — po kliknięciu od razu dołączą
-                  do <span className="font-medium text-foreground">{registration.teamName}</span> i
-                  wypełnią własny zapis.
-                </p>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="team-invite-link" className="sr-only">
-                    Link zaproszenia do drużyny
-                  </label>
-                  <Input
-                    id="team-invite-link"
-                    readOnly
-                    value={teamInviteLink}
-                    onFocus={(e) => e.currentTarget.select()}
-                    className="font-mono text-xs sm:text-sm"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    aria-label="Skopiuj link zaproszenia"
-                    onClick={() => copyToClipboard(teamInviteLink, 'Link zaproszenia')}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
+                {teamInviteLink ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Wyślij ten link pozostałym osobom z Twojej drużyny — po kliknięciu od razu
+                      dołączą do{' '}
+                      <span className="font-medium text-foreground">{registration.teamName}</span> i
+                      wypełnią własny zapis.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="team-invite-link" className="sr-only">
+                        Link zaproszenia do drużyny
+                      </label>
+                      <Input
+                        id="team-invite-link"
+                        readOnly
+                        value={teamInviteLink}
+                        onFocus={(e) => e.currentTarget.select()}
+                        className="font-mono text-xs sm:text-sm"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        aria-label="Skopiuj link zaproszenia"
+                        onClick={() => copyToClipboard(teamInviteLink, 'Link zaproszenia')}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Link zaproszenia znajdziesz w panelu uczestnika, w zakładce Rejestracje.
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}

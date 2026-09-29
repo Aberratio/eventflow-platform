@@ -350,6 +350,7 @@ export const httpAdapter: ApiAdapter = {
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/teams`,
     ),
   getTeamById: (teamId) => request(`/teams/${encodeURIComponent(teamId)}`),
+  getTeamInvite: (teamId) => request(`/teams/${encodeURIComponent(teamId)}/invite`),
   getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getEventEmbedPublicConfig: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/embed/public`),

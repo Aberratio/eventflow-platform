@@ -63,6 +63,18 @@ export interface RelayTeam {
   specialCategory?: string | null;
 }
 
+/**
+ * PP.54 (spec 23 §1): the captain's invitation for one Drużyna — read only by the captain and by
+ * staff who manage the event (`GET /teams/{teamId}/invite`). `inviteToken` is a bearer secret,
+ * separate from the (public) team id.
+ */
+export interface TeamInvite {
+  teamId: string;
+  eventId: string;
+  distanceId: string;
+  inviteToken: string;
+}
+
 /** PP.52: returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
 export interface PaymentSession {
   transactionId: string;

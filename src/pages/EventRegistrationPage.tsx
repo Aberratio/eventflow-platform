@@ -84,13 +84,15 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   const event = eventResponse?.data ?? null;
 
   // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
-  // a captain's shareable invitation link is `?joinTeam={teamId}` on this
-  // same registration route. Resolve it up front — before the invitee ever
+  // a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}`
+  // on this same registration route (PP.54: the team id is public, the
+  // `invite` token is the secret the server requires to join). Resolve it up front — before the invitee ever
   // sees the multi-step form — so a full/unknown/wrong-event team shows one
   // clear message instead of silently falling back to the generic "browse
   // teams" picker or a confusing mid-form error.
   const [searchParams] = useSearchParams();
   const joinTeamId = searchParams.get('joinTeam');
+  const inviteToken = searchParams.get('invite');
   const {
     data: joinTeamResponse,
     isLoading: isJoinTeamLoading,
@@ -109,9 +111,12 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     joinTeam && joinTeam.maxSize !== null && joinTeam.memberCount >= joinTeam.maxSize,
   );
   const joinTeamInvalid = Boolean(joinTeamId) && (isJoinTeamError || joinTeamEventMismatch);
+  // PP.54: links shared before invitation tokens existed (`?joinTeam=` only) can no
+  // longer join — the server would refuse them — so say so instead of showing the form.
+  const joinTeamOutdated = Boolean(joinTeamId) && !inviteToken;
   const initialTeamJoin =
-    joinTeamId && joinTeam && !joinTeamEventMismatch && !joinTeamFull
-      ? { teamId: joinTeam.id, distanceId: joinTeam.distanceId }
+    joinTeamId && inviteToken && joinTeam && !joinTeamEventMismatch && !joinTeamFull
+      ? { teamId: joinTeam.id, distanceId: joinTeam.distanceId, inviteToken }
       : null;
 
   const isUnpublished = event && event.publicationStatus === 'draft';
@@ -195,7 +200,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   // for THIS event — unknown id, wrong event, or already-full roster. Shown
   // as its own clear message rather than crashing, or silently falling back
   // to the generic "browse teams" picker as if nothing was wrong.
-  if (joinTeamId && (joinTeamInvalid || joinTeamFull)) {
+  if (joinTeamId && (joinTeamOutdated || joinTeamInvalid || joinTeamFull)) {
     return (
       <Layout>
         <div className="container py-12">
@@ -206,14 +211,18 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
                   <AlertTriangle className="h-8 w-8 text-destructive" />
                 </div>
                 <h1 className="text-xl font-bold">
-                  {joinTeamFull ? 'Drużyna jest już pełna' : 'Nieprawidłowy link zaproszenia'}
+                  {joinTeamFull && !joinTeamOutdated
+                    ? 'Drużyna jest już pełna'
+                    : 'Nieprawidłowy link zaproszenia'}
                 </h1>
                 <p className="text-muted-foreground">
-                  {joinTeamFull
-                    ? 'Ta drużyna ma już komplet zawodników. Poproś kapitana o nowy link albo dołącz do innej drużyny podczas zapisu.'
-                    : joinTeamEventMismatch
-                      ? 'Ten link zaproszenia dotyczy innego wydarzenia.'
-                      : 'Nie znaleziono tej drużyny. Link zaproszenia mógł wygasnąć lub jest nieprawidłowy.'}
+                  {joinTeamOutdated
+                    ? 'Ten link zaproszenia jest nieaktualny. Poproś kapitana drużyny o nowy link.'
+                    : joinTeamFull
+                      ? 'Ta drużyna ma już komplet zawodników. Poproś kapitana o nowy link albo dołącz do innej drużyny podczas zapisu.'
+                      : joinTeamEventMismatch
+                        ? 'Ten link zaproszenia dotyczy innego wydarzenia.'
+                        : 'Nie znaleziono tej drużyny. Link zaproszenia mógł wygasnąć lub jest nieprawidłowy.'}
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild>
@@ -344,6 +353,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         category: data.category,
         teamName: data.teamName,
         teamId: data.teamId,
+        teamInviteToken: data.teamInviteToken,
         createTeam: data.createTeam,
         specialCategory: data.teamSpecialCategory,
         pricingVariantId: data.pricingVariantId,

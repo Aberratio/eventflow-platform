@@ -129,6 +129,8 @@ export const getTeamsForDistance: ApiAdapter['getTeamsForDistance'] = (...args) 
   ensureAdapter().then((a) => a.getTeamsForDistance(...args));
 export const getTeamById: ApiAdapter['getTeamById'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamById(...args));
+export const getTeamInvite: ApiAdapter['getTeamInvite'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamInvite(...args));
 export const getPublicStartList: ApiAdapter['getPublicStartList'] = (...args) =>
   ensureAdapter().then((a) => a.getPublicStartList(...args));
 export const getRegistrationsByUser: ApiAdapter['getRegistrationsByUser'] = (...args) =>

@@ -90,6 +90,8 @@ export interface RegistrationData {
   teamName?: string;
   /** E7.1: real server-assigned team id when joining an existing relay Drużyna. */
   teamId?: string;
+  /** PP.54: the captain's invitation token (from the `&invite=` link) — required to join someone else's Drużyna. */
+  teamInviteToken?: string;
   /** E7.1: explicit "create a new Drużyna" intent (relay Dystans only). */
   createTeam?: boolean;
   /**
@@ -883,7 +885,9 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                   <span className="font-medium">Dołącz do istniejącej drużyny</span>
                   {form.existingTeams.length === 0 && (
                     <p className="text-xs text-muted-foreground">
-                      Brak drużyn zapisanych na te zawody
+                      {form.isRelayDistance
+                        ? 'Do drużyny innej osoby dołączysz przez link zaproszenia od jej kapitana.'
+                        : 'Brak drużyn zapisanych na te zawody'}
                     </p>
                   )}
                 </div>

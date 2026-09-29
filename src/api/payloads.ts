@@ -204,6 +204,12 @@ export interface CreateRegistrationPayload {
   teamName?: string;
   teamId?: string;
   /**
+   * PP.54: the captain's invitation token (from the `&invite=` link parameter). The server
+   * requires it to join someone else's existing Drużyna (403 `registration_team_invite_required`
+   * otherwise); the captain themself needs none. Never shown or logged in the UI.
+   */
+  teamInviteToken?: string;
+  /**
    * E7.1: explicit intent to create a brand-new, server-validated Drużyna
    * (`teamName` becomes its label) rather than just a free-text
    * classification label — the server only creates a real `teams` row and

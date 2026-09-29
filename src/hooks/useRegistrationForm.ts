@@ -19,17 +19,20 @@ const currentYear = new Date().getFullYear();
 
 /**
  * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
- * the resolved target of a `?joinTeam={teamId}` invitation link — already
+ * the resolved target of a `?joinTeam={teamId}&invite={token}` invitation link — already
  * validated (exists, belongs to this event, not full) by the caller
  * (`EventRegistrationPage`, via `getTeamById`) before this hook ever sees
  * it. Applying it here only pre-fills the form's own state (distance +
  * "join this team"); the actual join is still fully re-validated by the
- * server at submit time (RegistrationRepository::resolveTeamForRegistration),
- * same as the picker-based "join an existing team" path.
+ * server at submit time (RegistrationRepository::resolveTeamForRegistration).
+ * PP.54: `inviteToken` is the captain's secret from the link; the server
+ * refuses to let anyone join someone else's team without it, so it is sent
+ * as `teamInviteToken` whenever this invited team is the one being joined.
  */
 export interface InitialTeamJoin {
   teamId: string;
   distanceId: string;
+  inviteToken: string;
 }
 
 export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJoin | null) => {
@@ -221,7 +224,15 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
     memberCount: number;
   }> => {
     if (isRelayDistance) {
+      // PP.54: the server only lets a Zapis into a team through the captain's invitation, or the
+      // captain themself — so the picker offers only the user's own teams plus the invited team.
+      const invitedTeamId = initialTeamJoin?.teamId;
       return (relayTeamsData ?? [])
+        .filter(
+          (team) =>
+            (!!team.createdByUserId && team.createdByUserId === user?.id) ||
+            team.id === invitedTeamId,
+        )
         .filter((team) => team.maxSize === null || team.memberCount < team.maxSize)
         .map((team) => ({ id: team.id, name: team.name, memberCount: team.memberCount }));
     }
@@ -235,6 +246,8 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
     event.id,
     selectedDistanceId,
     relayMaxTeamSize,
+    initialTeamJoin?.teamId,
+    user?.id,
   ]);
 
   // Build steps dynamically
@@ -544,6 +557,10 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
       totalAmount,
       teamName: getFinalTeamName(),
       teamId: getFinalTeamId(),
+      teamInviteToken:
+        initialTeamJoin && getFinalTeamId() === initialTeamJoin.teamId
+          ? initialTeamJoin.inviteToken
+          : undefined,
       createTeam: getCreateTeamFlag() || undefined,
       teamSpecialCategory: getCreateTeamFlag() ? teamSpecialCategory || undefined : undefined,
       pricingVariantId: selectedPricingVariantId || undefined,

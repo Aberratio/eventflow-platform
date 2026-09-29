@@ -7,6 +7,7 @@ import { Ticket } from 'lucide-react';
 import { Registration, Event } from '@/types';
 import { ListContainer, ListEmptyState, RegistrationListRow } from '@/components/lists';
 import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog';
+import CaptainTeamInvites from './CaptainTeamInvites';
 import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
 
@@ -88,6 +89,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
 
   return (
     <>
+      <CaptainTeamInvites items={registrationsWithEvents} />
       <ListContainer
         isEmpty={registrationsWithEvents.length === 0}
         emptyState={
