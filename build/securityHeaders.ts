@@ -164,8 +164,14 @@ export function buildHtaccess(o: HtaccessOptions): string {
     embedCspLines.push(`    Header always set Content-Security-Policy "${embedCsp}"`);
   }
 
+  // Apache/mod_headers has no trailing-comment syntax: a `#` after the directive's
+  // closing quote is parsed as an extra argument to Header, which makes every
+  // staging/production request answer 500 ("Header has too many arguments").
+  // Any note about when this line is emitted must live on its own '#'-prefixed
+  // line, never appended to the directive.
   const hstsLine = hsts
-    ? '  Header always set Strict-Transport-Security "max-age=31536000"      # staging/production only\n'
+    ? '  # HSTS is emitted only for staging/production modes.\n' +
+      '  Header always set Strict-Transport-Security "max-age=31536000"\n'
     : '';
 
   const apiOrigin = originOf(o.apiUrl);
