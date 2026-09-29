@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, resetQueryClient, screen, waitFor } from '@/test/test-utils';
 import RegistrationSuccessPage from '../RegistrationSuccessPage';
 import type { Registration } from '@/types';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
@@ -9,8 +9,20 @@ import type { RegistrationData } from '@/components/registration/RegistrationFor
  * once a captain's Zapis creates a brand-new relay Drużyna
  * (`registrationData.createTeam`), the success page is the natural
  * "what happens next" moment to hand them the shareable invitation link for
- * the still-missing teammates (`registration.teamId` doubles as the token).
+ * the still-missing teammates. PP.54: the link carries the captain's secret invite token, which
+ * the page fetches from the server (`getTeamInvite`) — the team id alone is public and is no
+ * longer an invitation.
  */
+
+const mockGetTeamInvite = vi.fn();
+
+vi.mock('@/api', async () => {
+  const actual = await vi.importActual<typeof import('@/api')>('@/api');
+  return {
+    ...actual,
+    getTeamInvite: (...args: unknown[]) => mockGetTeamInvite(...args),
+  };
+});
 
 vi.mock('@/contexts/AuthContext', async () => {
   const actual =
@@ -72,6 +84,14 @@ const baseState = {
 };
 
 describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
+  beforeEach(() => {
+    resetQueryClient();
+    mockGetTeamInvite.mockReset();
+    mockGetTeamInvite.mockResolvedValue({
+      data: { teamId: 'team-1', eventId: 'e1', distanceId: 'd1', inviteToken: 'tok-1' },
+    });
+  });
+
   it('shows a copyable invitation link when this Zapis just created a new Drużyna', async () => {
     mockLocationState = {
       ...baseState,
@@ -83,9 +103,28 @@ describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
 
     expect(await screen.findByText('Zaproś resztę drużyny')).toBeInTheDocument();
     const input = screen.getByLabelText('Link zaproszenia do drużyny') as HTMLInputElement;
-    expect(input.value).toBe(
-      `${window.location.origin}/events/test-event/register?joinTeam=team-1`,
+    await waitFor(() =>
+      expect(input.value).toBe(
+        `${window.location.origin}/events/test-event/register?joinTeam=team-1&invite=tok-1`,
+      ),
     );
+    expect(mockGetTeamInvite).toHaveBeenCalledWith('team-1');
+  });
+
+  it('points to the participant dashboard, without an input, when the token cannot be fetched', async () => {
+    mockGetTeamInvite.mockRejectedValue(new Error('team_not_captain'));
+    mockLocationState = {
+      ...baseState,
+      registration: { ...baseRegistration, teamId: 'team-1', teamName: 'Błyskawice' },
+      registrationData: { ...baseRegistrationData, createTeam: true },
+    };
+
+    render(<RegistrationSuccessPage />);
+
+    expect(
+      await screen.findByText(/Link zaproszenia znajdziesz w panelu uczestnika/),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText('Link zaproszenia do drużyny')).not.toBeInTheDocument();
   });
 
   it('does not show the invitation link when this Zapis only joined an existing team', async () => {
@@ -99,6 +138,7 @@ describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
 
     expect(await screen.findByText('Rejestracja zakończona!')).toBeInTheDocument();
     expect(screen.queryByText('Zaproś resztę drużyny')).not.toBeInTheDocument();
+    expect(mockGetTeamInvite).not.toHaveBeenCalled();
   });
 
   it('does not show the invitation link for a non-team registration', async () => {

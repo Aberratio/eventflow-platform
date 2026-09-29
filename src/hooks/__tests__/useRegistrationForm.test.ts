@@ -7,6 +7,19 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import type { Event } from '@/types';
 
+// PP.54: the relay picker offers only the user's own teams (captain consent) plus the invited team.
+vi.mock('@/contexts/AuthContext', async () => {
+  const actual =
+    await vi.importActual<typeof import('@/contexts/AuthContext')>('@/contexts/AuthContext');
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: { id: 'u1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
+      isAuthenticated: true,
+    }),
+  };
+});
+
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');
   return {
@@ -22,6 +35,7 @@ vi.mock('@/api', async () => {
           minSize: 2,
           maxSize: 4,
           complete: false,
+          createdByUserId: 'u1',
         },
         {
           id: 'team-real-2',
@@ -32,6 +46,29 @@ vi.mock('@/api', async () => {
           minSize: 2,
           maxSize: 4,
           complete: true,
+          createdByUserId: 'u1',
+        },
+        {
+          id: 'team-foreign',
+          eventId: 'e1',
+          distanceId: 'd1',
+          name: 'Cudza',
+          memberCount: 2,
+          minSize: 2,
+          maxSize: 4,
+          complete: false,
+          createdByUserId: 'someone-else',
+        },
+        {
+          id: 'team-invited',
+          eventId: 'e1',
+          distanceId: 'd1',
+          name: 'Zaproszona',
+          memberCount: 1,
+          minSize: 2,
+          maxSize: 4,
+          complete: false,
+          createdByUserId: 'captain-2',
         },
       ],
       success: true,
@@ -641,7 +678,12 @@ describe('useRegistrationForm', () => {
 
     it('pre-selects the distance and "join this team" when an invitation link target is given', () => {
       const { result } = renderHook(
-        () => useRegistrationForm(relayEvent, { teamId: 'team-real-1', distanceId: 'd1' }),
+        () =>
+          useRegistrationForm(relayEvent, {
+            teamId: 'team-real-1',
+            distanceId: 'd1',
+            inviteToken: 'tok-1',
+          }),
         { wrapper },
       );
 
@@ -654,7 +696,12 @@ describe('useRegistrationForm', () => {
 
     it('still submits the invitation-link team id like any other join, once terms are agreed', () => {
       const { result } = renderHook(
-        () => useRegistrationForm(relayEvent, { teamId: 'team-real-1', distanceId: 'd1' }),
+        () =>
+          useRegistrationForm(relayEvent, {
+            teamId: 'team-real-1',
+            distanceId: 'd1',
+            inviteToken: 'tok-1',
+          }),
         { wrapper },
       );
 
@@ -665,7 +712,57 @@ describe('useRegistrationForm', () => {
       const data = result.current.buildSubmitData();
       expect(data).not.toBeNull();
       expect(data!.teamId).toBe('team-real-1');
+      expect(data!.teamInviteToken).toBe('tok-1');
       expect(data!.createTeam).toBeUndefined();
+    });
+
+    it('lists only the own teams plus the invited team in the relay picker', async () => {
+      const { result } = renderHook(
+        () =>
+          useRegistrationForm(relayEvent, {
+            teamId: 'team-invited',
+            distanceId: 'd1',
+            inviteToken: 'tok-2',
+          }),
+        { wrapper },
+      );
+
+      await waitFor(() => {
+        expect(result.current.existingTeams.map((t) => t.id).sort()).toEqual([
+          'team-invited',
+          'team-real-1',
+        ]);
+      });
+      // A foreign team (not ours, not the invited one) and the full own team never show up.
+      expect(result.current.existingTeams.some((t) => t.id === 'team-foreign')).toBe(false);
+      expect(result.current.existingTeams.some((t) => t.id === 'team-real-2')).toBe(false);
+    });
+
+    it('sends the invite token for the invited team, but not when the user picks their own team', async () => {
+      const { result } = renderHook(
+        () =>
+          useRegistrationForm(relayEvent, {
+            teamId: 'team-invited',
+            distanceId: 'd1',
+            inviteToken: 'tok-2',
+          }),
+        { wrapper },
+      );
+      await waitFor(() => {
+        expect(result.current.existingTeams).toHaveLength(2);
+      });
+
+      act(() => {
+        result.current.setAgreedToTerms(true);
+      });
+      expect(result.current.buildSubmitData()!.teamInviteToken).toBe('tok-2');
+
+      act(() => {
+        result.current.setSelectedExistingTeam('team-real-1');
+      });
+      const own = result.current.buildSubmitData();
+      expect(own!.teamId).toBe('team-real-1');
+      expect(own!.teamInviteToken).toBeUndefined();
     });
 
     it('does not report an invitation link when none was given', () => {

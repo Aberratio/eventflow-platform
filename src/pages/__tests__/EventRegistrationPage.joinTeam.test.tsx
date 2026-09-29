@@ -1,11 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@/test/test-utils';
+import { act, render, screen, waitFor } from '@/test/test-utils';
 import EventRegistrationPage from '../EventRegistrationPage';
 
 /**
  * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
- * a captain's shareable invitation link is `?joinTeam={teamId}` on the same
- * registration route. `EventRegistrationPage` resolves it via
+ * a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}` on the same
+ * registration route (PP.54: the team id is public, the `invite` token is the secret the server
+ * requires to join; a link without it is outdated). `EventRegistrationPage` resolves it via
  * `GET /teams/{teamId}` (`getTeamById`) before the invitee ever sees the
  * form — these tests cover the three outcomes: valid link pre-fills the
  * form, a full team shows a clear message, an invalid/mismatched team shows
@@ -14,6 +15,7 @@ import EventRegistrationPage from '../EventRegistrationPage';
  */
 
 const mockGetTeamById = vi.fn();
+const mockCreateRegistration = vi.fn();
 
 const { relayEvent } = vi.hoisted(() => {
   const future = (daysFromNow: number) =>
@@ -59,6 +61,7 @@ vi.mock('@/api', async () => {
     getEventBySlug: vi.fn().mockResolvedValue({ data: relayEvent }),
     getCare: vi.fn().mockResolvedValue({ data: { myCompetitors: [] } }),
     getTeamById: (...args: unknown[]) => mockGetTeamById(...args),
+    createRegistration: (...args: unknown[]) => mockCreateRegistration(...args),
   };
 });
 
@@ -83,9 +86,14 @@ vi.mock('react-router-dom', async () => {
 });
 
 let capturedInitialTeamJoin: unknown;
+let capturedOnComplete: ((data: Record<string, unknown>) => Promise<void>) | undefined;
 vi.mock('@/components/registration/RegistrationForm', () => ({
-  RegistrationForm: (props: { initialTeamJoin?: unknown }) => {
+  RegistrationForm: (props: {
+    initialTeamJoin?: unknown;
+    onComplete: (data: Record<string, unknown>) => Promise<void>;
+  }) => {
     capturedInitialTeamJoin = props.initialTeamJoin;
+    capturedOnComplete = props.onComplete;
     return <div>form-rendered</div>;
   },
 }));
@@ -94,10 +102,12 @@ const setUrl = (search: string) => {
   window.history.pushState({}, '', `/events/test-event/register${search}`);
 };
 
-describe('EventRegistrationPage — E7.2 `?joinTeam=` invitation link', () => {
+describe('EventRegistrationPage — E7.2 `?joinTeam=&invite=` invitation link', () => {
   beforeEach(() => {
     mockGetTeamById.mockReset();
+    mockCreateRegistration.mockReset();
     capturedInitialTeamJoin = undefined;
+    capturedOnComplete = undefined;
     setUrl('');
   });
 
@@ -120,13 +130,17 @@ describe('EventRegistrationPage — E7.2 `?joinTeam=` invitation link', () => {
         complete: false,
       },
     });
-    setUrl('?joinTeam=team-1');
+    setUrl('?joinTeam=team-1&invite=tok-1');
 
     render(<EventRegistrationPage />);
 
     expect(await screen.findByText('form-rendered')).toBeInTheDocument();
     await waitFor(() => {
-      expect(capturedInitialTeamJoin).toEqual({ teamId: 'team-1', distanceId: 'd1' });
+      expect(capturedInitialTeamJoin).toEqual({
+        teamId: 'team-1',
+        distanceId: 'd1',
+        inviteToken: 'tok-1',
+      });
     });
   });
 
@@ -143,7 +157,7 @@ describe('EventRegistrationPage — E7.2 `?joinTeam=` invitation link', () => {
         complete: true,
       },
     });
-    setUrl('?joinTeam=team-full');
+    setUrl('?joinTeam=team-full&invite=tok-1');
 
     render(<EventRegistrationPage />);
 
@@ -153,7 +167,7 @@ describe('EventRegistrationPage — E7.2 `?joinTeam=` invitation link', () => {
 
   it('shows a clear message, not the form, when the linked team id does not exist', async () => {
     mockGetTeamById.mockRejectedValue(new Error('team_not_found'));
-    setUrl('?joinTeam=does-not-exist');
+    setUrl('?joinTeam=does-not-exist&invite=tok-1');
 
     render(<EventRegistrationPage />);
 
@@ -174,12 +188,67 @@ describe('EventRegistrationPage — E7.2 `?joinTeam=` invitation link', () => {
         complete: false,
       },
     });
-    setUrl('?joinTeam=team-other-event');
+    setUrl('?joinTeam=team-other-event&invite=tok-1');
 
     render(<EventRegistrationPage />);
 
     expect(await screen.findByText('Nieprawidłowy link zaproszenia')).toBeInTheDocument();
     expect(screen.getByText('Ten link zaproszenia dotyczy innego wydarzenia.')).toBeInTheDocument();
     expect(screen.queryByText('form-rendered')).not.toBeInTheDocument();
+  });
+
+  const joinableTeam = {
+    data: {
+      id: 'team-1',
+      eventId: 'e1',
+      distanceId: 'd1',
+      name: 'Błyskawice',
+      memberCount: 2,
+      minSize: 2,
+      maxSize: 4,
+      complete: false,
+    },
+  };
+
+  it('shows the outdated-link message, not the form, when the invite token is missing', async () => {
+    mockGetTeamById.mockResolvedValue(joinableTeam);
+    setUrl('?joinTeam=team-1');
+
+    render(<EventRegistrationPage />);
+
+    expect(await screen.findByText('Nieprawidłowy link zaproszenia')).toBeInTheDocument();
+    expect(screen.getByText(/Ten link zaproszenia jest nieaktualny/)).toBeInTheDocument();
+    expect(screen.queryByText('form-rendered')).not.toBeInTheDocument();
+    expect(capturedInitialTeamJoin).toBeUndefined();
+  });
+
+  it('submits the invite token together with the team id when joining', async () => {
+    mockGetTeamById.mockResolvedValue(joinableTeam);
+    mockCreateRegistration.mockResolvedValue({
+      data: { id: 'r1', teamId: 'team-1', status: 'confirmed' },
+    });
+    setUrl('?joinTeam=team-1&invite=tok-1');
+
+    render(<EventRegistrationPage />);
+    expect(await screen.findByText('form-rendered')).toBeInTheDocument();
+    await waitFor(() => expect(capturedOnComplete).toBeDefined());
+
+    await act(async () => {
+      await capturedOnComplete!({
+        distanceId: 'd1',
+        distanceName: 'Sztafeta 4x400m',
+        category: 'Open',
+        teamId: 'team-1',
+        teamInviteToken: 'tok-1',
+        merchandise: [],
+        merchandiseOrders: [],
+        modifiersTotal: 0,
+        totalAmount: 80,
+      });
+    });
+
+    expect(mockCreateRegistration).toHaveBeenCalledWith(
+      expect.objectContaining({ teamId: 'team-1', teamInviteToken: 'tok-1' }),
+    );
   });
 });
