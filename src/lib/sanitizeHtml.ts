@@ -1,6 +1,7 @@
 import DOMPurify, { type Config } from 'dompurify';
+import { RICH_TEXT_URI_REGEXP } from './safeUrl';
 
-// Keep in sync with zmierzymy_czas_server src/Support/HtmlSanitizer.php (HtmlSanitizer::ALLOWED).
+// Keep in sync with zmierzymy_czas_server src/Support/HtmlSanitizer.php (HtmlSanitizer::ALLOWED; schemes: safeUrl.ts LINK_SCHEMES).
 // Mirrors the TipTap schema in src/components/ui/rich-text-editor.tsx.
 export const RICH_TEXT_ALLOWED_TAGS = [
   'p',
@@ -24,14 +25,12 @@ export const RICH_TEXT_ALLOWED_TAGS = [
 ];
 export const RICH_TEXT_ALLOWED_ATTR = ['href', 'target', 'rel', 'start'];
 
-// http(s)/mailto/tel or scheme-less (relative) URLs only. DOMPurify strips whitespace/control chars before matching.
-const SAFE_URI = /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 const ALLOWED_REL = ['noopener', 'noreferrer', 'nofollow'];
 
 const CONFIG: Config = {
   ALLOWED_TAGS: RICH_TEXT_ALLOWED_TAGS,
   ALLOWED_ATTR: RICH_TEXT_ALLOWED_ATTR,
-  ALLOWED_URI_REGEXP: SAFE_URI,
+  ALLOWED_URI_REGEXP: RICH_TEXT_URI_REGEXP,
   ALLOW_DATA_ATTR: false,
   ALLOW_ARIA_ATTR: false,
 };
