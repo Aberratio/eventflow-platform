@@ -1,7 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Underline from '@tiptap/extension-underline';
 import {
   Bold,
   Italic,
@@ -18,10 +16,11 @@ import {
 import { Button } from './button';
 import { Separator } from './separator';
 import { cn } from '@/lib/utils';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useId } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './dialog';
 import { Input } from './input';
 import { Label } from './label';
+import { normalizeLinkHref } from '@/lib/linkHref';
 
 interface RichTextEditorProps {
   value: string;
@@ -29,6 +28,8 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  /** Accessible name of the editing surface. Falls back to `placeholder` when omitted. */
+  ariaLabel?: string;
 }
 
 interface ToolbarButtonProps {
@@ -53,30 +54,45 @@ const ToolbarButton = ({ icon: Icon, active, onClick, title, disabled }: Toolbar
   </Button>
 );
 
+// Module-level: same extension instances on every render (useEditor compares them by identity and
+// otherwise calls setOptions on every render). StarterKit v3 already bundles Link + Underline: configure
+// them here, never register them twice (a duplicate registration would keep StarterKit's default
+// openOnClick: true handler active alongside this one).
+const EDITOR_EXTENSIONS = [
+  StarterKit.configure({
+    heading: { levels: [2, 3] },
+    link: {
+      openOnClick: false,
+      defaultProtocol: 'https',
+      HTMLAttributes: {
+        class: 'text-primary underline hover:no-underline',
+      },
+    },
+  }),
+];
+
 export const RichTextEditor = ({
   value,
   onChange,
   placeholder = 'Rozpocznij pisanie...',
   className,
   minHeight = '120px',
+  ariaLabel,
 }: RichTextEditorProps) => {
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [linkError, setLinkError] = useState('');
+  const urlInputId = useId();
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3] },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-primary underline hover:no-underline',
-        },
-      }),
-      Underline,
-    ],
-    content: value,
+    // Create the editor in useEditor's own effect, not during render. With immediate rendering the
+    // instance is built during render and its 1ms destroy timer (see @tiptap/react useEditor.ts) races
+    // React's passive-effect flush on heavy pages: if the flush lands after the timer, the editor gets
+    // destroyed (schema = null) before this component's own sync effect calls editor.getHTML() on it
+    // (PP.16 — "Cannot read properties of null (reading 'cached')").
+    immediatelyRender: false,
+    extensions: EDITOR_EXTENSIONS,
+    content: value ?? '',
     editorProps: {
       attributes: {
         class: cn(
@@ -87,6 +103,9 @@ export const RichTextEditor = ({
           '[&_li]:my-0.5',
         ),
         style: `min-height: ${minHeight}`,
+        role: 'textbox',
+        'aria-multiline': 'true',
+        'aria-label': ariaLabel ?? placeholder,
       },
     },
     onUpdate: ({ editor }) => {
@@ -94,42 +113,62 @@ export const RichTextEditor = ({
     },
   });
 
-  // Sync external value changes
+  // Sync external value changes (e.g. event loaded for edit) without echoing them back through onChange.
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (!editor || editor.isDestroyed) return; // defence in depth: never touch a destroyed instance
+    const html = value ?? ''; // some hosts pass undefined (e.g. dist.infoHtml)
+    if (html === '' && editor.isEmpty) return; // '' vs '<p></p>' is not a change
+    if (html !== editor.getHTML()) {
+      editor.commands.setContent(html, { emitUpdate: false });
     }
   }, [value, editor]);
 
   const handleAddLink = useCallback(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
 
     const previousUrl = editor.getAttributes('link').href;
     setLinkUrl(previousUrl || '');
+    setLinkError('');
     setShowLinkDialog(true);
   }, [editor]);
 
   const confirmLink = useCallback(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
 
-    if (linkUrl === '') {
+    const result = normalizeLinkHref(linkUrl);
+    if (result.kind === 'rejected') {
+      setLinkError('Nieobsługiwany adres. Użyj http(s)://, mailto: lub tel:.');
+      return;
+    }
+
+    if (result.kind === 'empty') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
     } else {
-      // Add https:// if missing
-      const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
-      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+      editor.chain().focus().extendMarkRange('link').setLink({ href: result.href }).run();
     }
 
     setShowLinkDialog(false);
     setLinkUrl('');
+    setLinkError('');
   }, [editor, linkUrl]);
 
   const removeLink = useCallback(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
     editor.chain().focus().unsetLink().run();
   }, [editor]);
 
-  if (!editor) return null;
+  if (!editor) {
+    // The editor is created in an effect (see immediatelyRender above), so it does not exist on the
+    // first render. Render a placeholder with the same frame to avoid layout shift; 41px is the
+    // toolbar height.
+    return (
+      <div
+        className={cn('overflow-hidden rounded-md border bg-black/10', className)}
+        style={{ minHeight: `calc(${minHeight} + 41px)` }}
+        aria-busy="true"
+      />
+    );
+  }
 
   return (
     <div className={cn('overflow-hidden rounded-md border bg-black/10', className)}>
@@ -215,19 +254,30 @@ export const RichTextEditor = ({
       <EditorContent editor={editor} />
 
       {/* Link Dialog */}
-      <Dialog open={showLinkDialog} onOpenChange={setShowLinkDialog}>
+      <Dialog
+        open={showLinkDialog}
+        onOpenChange={(open) => {
+          setShowLinkDialog(open);
+          if (!open) setLinkError('');
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Dodaj link</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="url">Adres URL</Label>
+              <Label htmlFor={urlInputId}>Adres URL</Label>
               <Input
-                id="url"
+                id={urlInputId}
                 value={linkUrl}
-                onChange={(e) => setLinkUrl(e.target.value)}
+                onChange={(e) => {
+                  setLinkUrl(e.target.value);
+                  if (linkError) setLinkError('');
+                }}
                 placeholder="https://example.com"
+                aria-invalid={linkError ? true : undefined}
+                aria-describedby={`${urlInputId}-hint${linkError ? ` ${urlInputId}-error` : ''}`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -235,9 +285,14 @@ export const RichTextEditor = ({
                   }
                 }}
               />
-              <p className="text-xs text-muted-foreground">
-                Możesz też wpisać adres email (mailto:) lub telefon (tel:)
+              <p id={`${urlInputId}-hint`} className="text-xs text-muted-foreground">
+                Możesz też wpisać adres e-mail lub numer telefonu — dodamy mailto:/tel: automatycznie.
               </p>
+              {linkError && (
+                <p id={`${urlInputId}-error`} role="alert" className="text-xs text-destructive">
+                  {linkError}
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
