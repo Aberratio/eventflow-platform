@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Event } from '@/types';
+import { safeUrl } from '@/lib/safeUrl';
 import { ExternalLink } from 'lucide-react';
 
 interface ExternalRegistrationFrameProps {
@@ -29,6 +30,7 @@ export const ExternalRegistrationFrame = ({
   closedReason,
 }: ExternalRegistrationFrameProps) => {
   const externalUrl = event.registrationEmbed?.externalUrl;
+  const frameUrl = safeUrl(externalUrl, 'frame');
 
   if (!externalUrl) return null;
 
@@ -46,18 +48,20 @@ export const ExternalRegistrationFrame = ({
                 Formularz pochodzi z zewnętrznego systemu organizatora.
               </p>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <a href={externalUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Otwórz w nowej karcie
-              </a>
-            </Button>
+            {frameUrl && (
+              <Button asChild variant="outline" size="sm">
+                <a href={frameUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Otwórz w nowej karcie
+                </a>
+              </Button>
+            )}
           </div>
         </div>
         <CardContent className="p-0">
-          {active ? (
+          {frameUrl && active ? (
             <iframe
-              src={externalUrl}
+              src={frameUrl}
               title={`Zapisy - ${event.name}`}
               className="h-[760px] w-full border-0 bg-background"
               loading="lazy"
@@ -68,7 +72,9 @@ export const ExternalRegistrationFrame = ({
               <div>
                 <p className="text-lg font-semibold">Zapisy są niedostępne</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {closedReason || 'Zewnętrzny formularz zapisów nie jest teraz aktywny.'}
+                  {!frameUrl
+                    ? 'Adres zewnętrznego formularza zapisów jest nieprawidłowy.'
+                    : closedReason || 'Zewnętrzny formularz zapisów nie jest teraz aktywny.'}
                 </p>
               </div>
             </div>
