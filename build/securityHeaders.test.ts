@@ -174,6 +174,30 @@ describe('buildHtaccess', () => {
     expect(production).toContain('Strict-Transport-Security "max-age=31536000"');
   });
 
+  it('never emits a directive line with a trailing comment (Apache has no trailing-comment syntax)', () => {
+    // Regression for the HSTS line shipping as
+    // `Header always set Strict-Transport-Security "max-age=31536000"      # staging/production only`:
+    // Apache's mod_headers parses `#...` as extra arguments to `Header`, not a comment, and
+    // answers "Header has too many arguments" -- a 500 on every path -- on any staging/production
+    // build. A directive line must never carry a trailing ` #comment`; a note about a directive
+    // belongs on its own line that starts with '#'.
+    for (const mode of ['development', 'staging', 'production']) {
+      for (const reportOnly of [false, true]) {
+        const out = buildHtaccess(baseOptions({ mode, reportOnly }));
+        for (const line of out.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed === '' || trimmed.startsWith('#')) {
+            continue; // blank lines and whole-line comments are fine
+          }
+          expect(line, `line has a trailing comment: ${JSON.stringify(line)}`).not.toMatch(/\s#/);
+        }
+      }
+    }
+
+    const staging = buildHtaccess(baseOptions({ mode: 'staging' }));
+    expect(staging).toContain('  Header always set Strict-Transport-Security "max-age=31536000"\n');
+  });
+
   it('report-only mode keeps frame-ancestors enforced', () => {
     const out = buildHtaccess(baseOptions({ reportOnly: true }));
     expect(out).toContain('Content-Security-Policy-Report-Only');
