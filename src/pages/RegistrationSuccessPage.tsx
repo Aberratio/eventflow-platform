@@ -196,6 +196,8 @@ const RegistrationSuccessPage = () => {
 
   const { registration, registrationData, eventName, eventDate, eventCity, paymentConfig } = state;
   const isBankTransfer = paymentConfig?.type === 'organizer_bank';
+  // PP.52: paid or not comes from the server's Zapis status, never from the payment route.
+  const isPaid = registration.status === 'confirmed';
   const receiptLines = buildReceiptLines(registration, registrationData);
   const totalAmount = registration.totalAmount ?? registrationData.totalAmount;
   const distanceName = registration.distanceName || registrationData.distanceName;
@@ -224,7 +226,7 @@ const RegistrationSuccessPage = () => {
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
             <h1 className="mb-2 text-2xl font-bold">
-              {isBankTransfer ? 'Rejestracja wstępna zakończona!' : 'Rejestracja zakończona!'}
+              {isPaid ? 'Rejestracja zakończona!' : 'Rejestracja wstępna zakończona!'}
             </h1>
             <p className="text-muted-foreground">
               Zapisałeś się na wydarzenie{' '}
@@ -273,14 +275,21 @@ const RegistrationSuccessPage = () => {
                 <Separator className="my-4" />
 
                 <div className="flex justify-between text-lg font-semibold">
-                  <span>{isBankTransfer ? 'Do zapłaty' : 'Razem zapłacono'}</span>
+                  <span>{isPaid ? 'Razem zapłacono' : 'Do zapłaty'}</span>
                   <span>{formatMoney(totalAmount)}</span>
                 </div>
 
-                {!isBankTransfer && (
+                {isPaid && !isBankTransfer && (
                   <div className="mt-2 flex items-center gap-2 text-sm text-primary">
                     <CreditCard className="h-4 w-4" />
                     <span>Płatność zrealizowana automatycznie</span>
+                  </div>
+                )}
+
+                {!isPaid && !isBankTransfer && (
+                  <div className="mt-3 rounded-md border border-amber-200 bg-amber-50/50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
+                    Płatność nie została jeszcze zrealizowana. Zapis zostanie potwierdzony po
+                    zaksięgowaniu wpłaty — status sprawdzisz w panelu uczestnika.
                   </div>
                 )}
               </div>
@@ -288,7 +297,7 @@ const RegistrationSuccessPage = () => {
           </Card>
 
           {/* Bank Transfer Details (only for bank transfer) */}
-          {isBankTransfer && paymentConfig && (
+          {isBankTransfer && !isPaid && paymentConfig && (
             <Card className="mb-6 border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
               <CardContent className="space-y-4 pt-6">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">

@@ -8,15 +8,8 @@
  * would silently fail (a blank/error frame) rather than showing the
  * checkout page.
  *
- * NOTE: as of this ticket, this client has no actual PayNow/Tpay checkout
- * redirect implemented yet — `EventRegistrationPage.handleComplete` only
- * branches on `paymentConfig.type !== 'organizer_bank'` to mark fees as
- * "paid" immediately; there is no code anywhere that receives a gateway
- * `redirectUrl` and navigates to it (grepped the whole client — zero hits).
- * That's a separate, not-yet-built feature. This helper exists so that when
- * that flow lands, it has a ready-made, already-tested breakout primitive to
- * call instead of a bare `window.location.href = url` — see the E8.11
- * ticket report for this judgment call.
+ * NOTE: PP.52: called by EventRegistrationPage and EmbedEventRegistrationPage
+ * when POST /registrations returns a `paymentSession`.
  */
 export function navigateToPaymentGateway(url: string): void {
   const isFramed = window.self !== window.top;

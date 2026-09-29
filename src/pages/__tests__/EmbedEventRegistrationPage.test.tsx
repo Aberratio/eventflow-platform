@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
+import userEvent from '@testing-library/user-event';
 import EmbedEventRegistrationPage from '../EmbedEventRegistrationPage';
 
 const { testEvent } = vi.hoisted(() => {
@@ -38,6 +39,12 @@ const { testEvent } = vi.hoisted(() => {
 
 const mockGetEventEmbedPublicConfig = vi.fn();
 const mockGetEventById = vi.fn().mockResolvedValue({ data: testEvent });
+const mockCreateRegistration = vi.fn();
+const mockNavigateToPaymentGateway = vi.fn();
+
+vi.mock('@/lib/paymentGatewayNavigation', () => ({
+  navigateToPaymentGateway: (...args: unknown[]) => mockNavigateToPaymentGateway(...args),
+}));
 
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');
@@ -45,6 +52,7 @@ vi.mock('@/api', async () => {
     ...actual,
     getEventEmbedPublicConfig: (...args: unknown[]) => mockGetEventEmbedPublicConfig(...args),
     getEventById: (...args: unknown[]) => mockGetEventById(...args),
+    createRegistration: (...args: unknown[]) => mockCreateRegistration(...args),
   };
 });
 
@@ -73,7 +81,16 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/components/registration/RegistrationForm', () => ({
-  RegistrationForm: () => <div>registration-form-fixture</div>,
+  RegistrationForm: ({ onComplete }: { onComplete?: (data: Record<string, unknown>) => void }) => (
+    <div>
+      registration-form-fixture
+      <button
+        onClick={() => onComplete?.({ distanceId: 'd1', distanceName: '10 km', category: 'Open' })}
+      >
+        submit-fixture
+      </button>
+    </div>
+  ),
 }));
 
 describe('EmbedEventRegistrationPage', () => {
@@ -86,6 +103,8 @@ describe('EmbedEventRegistrationPage', () => {
       user: { id: 'u1', name: 'Jan Kowalski', email: 'jan@example.com', role: 'participant' },
       isAuthenticated: true,
     });
+    mockCreateRegistration.mockReset();
+    mockNavigateToPaymentGateway.mockReset();
     Object.defineProperty(document, 'referrer', { value: '', configurable: true });
   });
 
@@ -172,5 +191,42 @@ describe('EmbedEventRegistrationPage', () => {
     const loginLink = await screen.findByRole('link', { name: 'Zaloguj się' });
     expect(loginLink).toHaveAttribute('href', '/login');
     expect(loginLink).toHaveAttribute('target', '_top');
+  });
+
+  it('does not claim any payment when creating the registration (PP.52)', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockCreateRegistration.mockResolvedValue({ data: { id: 'r1', status: 'pending' } });
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('submit-fixture'));
+
+    await vi.waitFor(() => expect(mockCreateRegistration).toHaveBeenCalledTimes(1));
+    const payload = mockCreateRegistration.mock.calls[0][0];
+    expect(payload.paymentDetails).toBeUndefined();
+    expect(payload.distanceId).toBe('d1');
+  });
+
+  it('redirects to the payment gateway when the server opened a session (PP.52)', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockCreateRegistration.mockResolvedValue({
+      data: {
+        id: 'r1',
+        status: 'pending',
+        paymentSession: { transactionId: 't', redirectUrl: 'https://gw.example/pay' },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('submit-fixture'));
+
+    await vi.waitFor(() =>
+      expect(mockNavigateToPaymentGateway).toHaveBeenCalledWith('https://gw.example/pay'),
+    );
   });
 });

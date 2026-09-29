@@ -24,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 import { formatMoney } from '@/lib/format';
+import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
 import {
   ExternalRegistrationFrame,
   isExternalRegistrationActive,
@@ -349,16 +350,6 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         discountCode: data.discountCode,
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
-        paymentDetails: {
-          startFeePaid: event.paymentConfig?.type !== 'organizer_bank',
-          startFeePaidAt:
-            event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
-          insurancePaid: event.paymentConfig?.type !== 'organizer_bank',
-          insurancePaidAt:
-            event.paymentConfig?.type !== 'organizer_bank' && data.insuranceVariantId
-              ? new Date().toISOString()
-              : undefined,
-        },
       });
       registration = response.data;
     } catch (error) {
@@ -368,6 +359,13 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         variant: 'destructive',
       });
       setIsSubmitting(false);
+      return;
+    }
+
+    // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — the
+    // payment happens there. The page is leaving, so `isSubmitting` stays true.
+    if (registration.status === 'pending' && registration.paymentSession?.redirectUrl) {
+      navigateToPaymentGateway(registration.paymentSession.redirectUrl);
       return;
     }
 

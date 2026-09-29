@@ -63,6 +63,12 @@ export interface RelayTeam {
   specialCategory?: string | null;
 }
 
+/** PP.52: returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
+export interface PaymentSession {
+  transactionId: string;
+  redirectUrl: string;
+}
+
 export interface Registration {
   id: string;
   eventId: string;
@@ -90,6 +96,8 @@ export interface Registration {
   settlementItems?: SettlementItem[];
   removedAt?: string;
   paymentDetails?: PaymentDetails;
+  /** PP.52: present only on the POST /registrations response, when a gateway session was opened. */
+  paymentSession?: PaymentSession | null;
   registeredById?: string;
   /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;

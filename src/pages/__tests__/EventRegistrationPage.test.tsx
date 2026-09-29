@@ -11,6 +11,11 @@ import type { RegistrationData } from '@/components/registration/RegistrationFor
 
 const mockCreateRegistration = vi.fn().mockResolvedValue({ data: { id: 'r1' } });
 const mockNavigate = vi.fn();
+const mockNavigateToPaymentGateway = vi.fn();
+
+vi.mock('@/lib/paymentGatewayNavigation', () => ({
+  navigateToPaymentGateway: (...args: unknown[]) => mockNavigateToPaymentGateway(...args),
+}));
 
 const { testEvent } = vi.hoisted(() => {
   const future = (daysFromNow: number) =>
@@ -113,6 +118,8 @@ vi.mock('@/components/registration/RegistrationForm', () => ({
 describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () => {
   beforeEach(() => {
     mockCreateRegistration.mockClear();
+    mockNavigate.mockClear();
+    mockNavigateToPaymentGateway.mockClear();
   });
 
   it('forwards only IDs/selections to createRegistration, never computed money', async () => {
@@ -140,8 +147,45 @@ describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () 
     expect(payload.totalAmount).toBeUndefined();
     expect(payload.insurancePrice).toBeUndefined();
     expect(payload.merchandiseOrders).toBeUndefined();
-    expect(payload.paymentDetails?.startFeeAmount).toBeUndefined();
-    expect(payload.paymentDetails?.insuranceAmount).toBeUndefined();
-    expect(payload.paymentDetails?.merchandisePayments).toBeUndefined();
+    // PP.52: the client never claims a payment either — the server owns the status.
+    expect(payload.paymentDetails).toBeUndefined();
+  });
+
+  it('redirects to the payment gateway when the server opened a session', async () => {
+    mockCreateRegistration.mockResolvedValueOnce({
+      data: {
+        id: 'r1',
+        status: 'pending',
+        paymentSession: { transactionId: 't', redirectUrl: 'https://gw.example/pay' },
+      },
+    });
+    const user = userEvent.setup();
+    render(<EventRegistrationPage />);
+
+    await user.click(await screen.findByText('submit-fixture'));
+
+    await vi.waitFor(() =>
+      expect(mockNavigateToPaymentGateway).toHaveBeenCalledWith('https://gw.example/pay'),
+    );
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      expect.stringContaining('/register/success'),
+      expect.anything(),
+    );
+  });
+
+  it('goes to the success page when no gateway session is returned', async () => {
+    mockCreateRegistration.mockResolvedValueOnce({ data: { id: 'r1', status: 'pending' } });
+    const user = userEvent.setup();
+    render(<EventRegistrationPage />);
+
+    await user.click(await screen.findByText('submit-fixture'));
+
+    await vi.waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/events/test-event/register/success',
+        expect.anything(),
+      ),
+    );
+    expect(mockNavigateToPaymentGateway).not.toHaveBeenCalled();
   });
 });

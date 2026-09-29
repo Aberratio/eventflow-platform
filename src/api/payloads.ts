@@ -194,8 +194,10 @@ export interface CreateRegistrationPayload {
   userId: string;
   /** Zawodnik będący źródłem tożsamości zapisu (E0.1) — identyfikator, nie kopiowana nazwa. */
   competitorId?: string;
-  userName: string;
-  userEmail: string;
+  /** Ignored by the server since PP.52 — identity is derived from the JWT and `competitorId`. Still sent for older servers. */
+  userName?: string;
+  /** Ignored by the server since PP.52 — see `userName`. */
+  userEmail?: string;
   distanceId: string;
   distanceName: string;
   category: string;
@@ -225,11 +227,7 @@ export interface CreateRegistrationPayload {
   discountCode?: string;
   merchandise?: RegistrationMerchandiseSelection[];
   insuranceVariantId?: string;
-  /** Payment-method UX booleans only — never the amount fields (E1.2). */
-  paymentDetails?: Pick<
-    NonNullable<Registration['paymentDetails']>,
-    'startFeePaid' | 'startFeePaidAt' | 'insurancePaid' | 'insurancePaidAt'
-  >;
+  /** Ignored by the server since PP.52 (derived from the caller and `competitorId`). */
   registeredById?: string;
 }
 

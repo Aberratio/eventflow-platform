@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 import type { Registration } from '@/types';
+import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
 
 /**
  * E8.11 ("Zewnętrzny formularz w iframe", contract §5.3): the dedicated,
@@ -106,17 +107,13 @@ const EmbedEventRegistrationPage = () => {
         discountCode: data.discountCode,
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
-        paymentDetails: {
-          startFeePaid: event.paymentConfig?.type !== 'organizer_bank',
-          startFeePaidAt:
-            event.paymentConfig?.type !== 'organizer_bank' ? new Date().toISOString() : undefined,
-          insurancePaid: event.paymentConfig?.type !== 'organizer_bank',
-          insurancePaidAt:
-            event.paymentConfig?.type !== 'organizer_bank' && data.insuranceVariantId
-              ? new Date().toISOString()
-              : undefined,
-        },
       });
+      // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — pay there
+      // (the helper breaks out of the iframe, E8.11).
+      if (response.data.status === 'pending' && response.data.paymentSession?.redirectUrl) {
+        navigateToPaymentGateway(response.data.paymentSession.redirectUrl);
+        return;
+      }
       // No navigation to the normal `/events/:slug/register/success` page —
       // that page renders inside `<Layout>` (full site chrome), which would
       // look broken crammed into a small third-party iframe. Show a minimal
