@@ -53,6 +53,10 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   pdf_table_not_detected:
     'Odczytano tekst z PDF, ale nie wykryto wierszy wynikow. Wgraj CSV/XLSX albo popraw dane po konwersji.',
   validation_error: 'Sprawdź poprawność danych i spróbuj ponownie.',
+  invalid_current_password: 'Obecne hasło jest nieprawidłowe.',
+  password_too_short: 'Nowe hasło musi mieć co najmniej 8 znaków.',
+  password_too_long: 'Nowe hasło jest za długie.',
+  password_unchanged: 'Nowe hasło musi różnić się od obecnego.',
   file_too_large: 'Plik jest za duży. Maksymalny rozmiar to 5 MB.',
   unsupported_file_type: 'Nieobsługiwany format pliku. Dozwolone są JPG, PNG i WebP.',
   invalid_image_dimensions: 'Nie udało się odczytać wymiarów obrazu. Wybierz inny plik.',
