@@ -9,7 +9,7 @@ import {
 } from '@/api';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,16 +36,18 @@ import ParticipantTicketsTab from './components/ParticipantTicketsTab';
 import ParticipantOrdersTab from './components/ParticipantOrdersTab';
 import ParticipantChallengesTab from './components/ParticipantChallengesTab';
 import ParticipantAuthorizationsTab from './components/ParticipantAuthorizationsTab';
+import { resolveParticipantTab, type ParticipantTabId } from './participantTabs';
 
 const ParticipantDashboard = () => {
   const { user } = useAuth();
+  const { '*': splat } = useParams();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<string>(() => resolveParticipantTab(tabParam, splat));
 
   useEffect(() => {
-    const tab = searchParams.get('tab');
-    if (tab) setActiveTab(tab);
-  }, [searchParams]);
+    setActiveTab(resolveParticipantTab(tabParam, splat));
+  }, [tabParam, splat]);
 
   const { data: registrationsResp } = useQuery({
     queryKey: ['registrations-by-user', user?.id],
@@ -93,7 +95,12 @@ const ParticipantDashboard = () => {
   const userOrders = ordersResp?.data ?? [];
   const userTickets = ticketsResp?.data ?? [];
 
-  const tabs = [
+  const tabs: Array<{
+    id: ParticipantTabId;
+    label: string;
+    icon: typeof LayoutDashboard;
+    badge?: number;
+  }> = [
     { id: 'overview', label: 'Przegląd', icon: LayoutDashboard },
     { id: 'registrations', label: 'Rejestracje', icon: Ticket, badge: userRegistrations.length },
     { id: 'history', label: 'Historia', icon: History, badge: userResults.length },
@@ -171,6 +178,10 @@ const ParticipantDashboard = () => {
 
           <TabsContent value="orders" className="mt-0">
             <ParticipantOrdersTab orders={userOrders} />
+          </TabsContent>
+
+          <TabsContent value="profile" className="mt-0">
+            <ParticipantProfileTab />
           </TabsContent>
 
           <TabsContent value="authorizations" className="mt-0">
