@@ -1,6 +1,6 @@
 import { test, expect } from '../playwright-fixture';
 import type { ConsoleMessage, Page } from '@playwright/test';
-import { loginAs } from './helpers';
+import { loginAs, pickDate } from './helpers';
 
 // PP.16: the event wizard crashed on step 1 (both create and edit) because RichTextEditor's TipTap
 // instance could be destroyed by its own 1ms timer before the component's sync effect ran, throwing
@@ -22,50 +22,6 @@ function trackConsoleIssues(page: Page) {
 
 async function assertNoErrorScreen(page: Page) {
   await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);
-}
-
-const POLISH_MONTHS = [
-  'styczeń',
-  'luty',
-  'marzec',
-  'kwiecień',
-  'maj',
-  'czerwiec',
-  'lipiec',
-  'sierpień',
-  'wrzesień',
-  'październik',
-  'listopad',
-  'grudzień',
-];
-
-// The date fields (#date, #deadline) are a react-day-picker popover, not a fillable text input (a UI
-// drift from the older event-workflows.spec.ts, which still calls .fill() on them — out of scope for
-// PP.16, see event-workflows.spec.ts note below). Open the popover, page to the target month, then
-// click the day cell that is not an "outside" (adjacent month) day.
-async function pickDate(page: Page, triggerId: string, isoDate: string) {
-  const [year, month, day] = isoDate.split('-').map(Number);
-
-  await page.locator(`#${triggerId}`).click();
-  const dialog = page.getByRole('dialog').last();
-  const caption = dialog.locator('[aria-live="polite"]');
-  const initialText = (await caption.textContent())?.trim() ?? '';
-  const [initMonthName, initYearStr] = initialText.split(' ');
-  const initMonthIndex = POLISH_MONTHS.indexOf(initMonthName);
-  const initYear = Number(initYearStr);
-  const diffMonths = year * 12 + (month - 1) - (initYear * 12 + initMonthIndex);
-
-  const button = dialog.getByRole('button', {
-    name: diffMonths >= 0 ? 'Go to next month' : 'Go to previous month',
-  });
-  for (let i = 0; i < Math.abs(diffMonths); i++) {
-    await button.click();
-  }
-
-  await dialog
-    .locator('button[role="gridcell"]:not(.day-outside)', { hasText: new RegExp(`^${day}$`) })
-    .click();
-  await expect(dialog).toHaveCount(0);
 }
 
 async function advanceThroughWizard(page: Page, finalButtonName: RegExp, maxIterations = 25) {
