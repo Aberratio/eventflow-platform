@@ -1,8 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-
-const useMockApi =
-  process.env.PLAYWRIGHT_USE_MOCKS ??
-  (process.env.npm_lifecycle_event === 'test:e2e:smoke' ? 'true' : 'false');
+import { API_URL, FRONTEND_PORT, FRONTEND_URL } from './e2e/env';
 
 export default defineConfig({
   testDir: './e2e',
@@ -13,14 +10,17 @@ export default defineConfig({
       maxDiffPixelRatio: 0.05,
     },
   },
-  fullyParallel: true,
+  // The API under test is `php -S`, which serves one request at a time; specs also share one seeded
+  // database and some mutate it in a fixed order (event-workflows lifecycle). Serial and no retries,
+  // so a red run is a real signal (PP.15).
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'list',
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
-    trace: 'on-first-retry',
+    baseURL: FRONTEND_URL,
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
   projects: [
@@ -32,32 +32,22 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : [
-        // e2e/helpers.ts logs in with accounts seeded by
-        // database/seeders/001_demo.sql in the server repo, so the API needs
-        // to be migrated and seeded before any spec runs (E0.4). Skipped
-        // when the suite runs against mocks (test:e2e:smoke), since there is
-        // no real backend to talk to in that mode.
-        ...(useMockApi === 'true'
-          ? []
-          : [
-              {
-                command: 'node e2e/start-backend.mjs',
-                url: 'http://localhost:8081/api/v1/health',
-                reuseExistingServer: true,
-                timeout: 180000,
-                stdout: 'pipe' as const,
-                stderr: 'pipe' as const,
-              },
-            ]),
+        // e2e/helpers.ts logs in with accounts seeded by database/seeders/001_demo.sql in the
+        // server repo, so the API is migrated and seeded before any spec runs (see
+        // e2e/start-backend.mjs). There is no mock mode: the specs need the real API.
         {
-          command: 'npm run dev -- --host 127.0.0.1 --port 5173',
-          port: 5173,
-          reuseExistingServer: true,
-          env: {
-            ...process.env,
-            VITE_API_URL: '',
-            VITE_ENABLE_MOCKS: useMockApi,
-          },
+          command: 'node e2e/start-backend.mjs',
+          url: `${API_URL}/health`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180000,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
+        {
+          command: `npm run dev -- --host 127.0.0.1 --port ${FRONTEND_PORT} --strictPort`,
+          url: FRONTEND_URL,
+          reuseExistingServer: !process.env.CI,
+          env: { ...process.env, VITE_API_URL: API_URL },
         },
       ],
 });
