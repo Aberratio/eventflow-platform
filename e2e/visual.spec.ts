@@ -7,6 +7,9 @@ async function loginAs(page: any, email: string) {
   await page.click('button[type="submit"]');
 }
 
+// The baselines include the cookie banner, so these specs must not pre-accept it (PP.15).
+test.use({ preAcceptCookies: false });
+
 test.describe('Visual Snapshots - Public Pages', () => {
   test('strona główna — desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
