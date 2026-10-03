@@ -116,7 +116,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
 
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e19');
-    await expect(page.getByText(e19.rejectionReason as string)).toBeVisible();
+    await expect(page.getByText(/Powod odrzucenia:/)).toContainText(e19.rejectionReason as string);
     const submit = page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' });
     await expect(submit).toBeVisible();
     await submit.click();
@@ -160,7 +160,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
   }) => {
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e2e-pending');
-    await expect(page.getByText(SEND_BACK_REASON)).toBeVisible();
+    await expect(page.getByText(/Powod odrzucenia:/)).toContainText(SEND_BACK_REASON);
     await page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' }).click();
 
     await expect(page.getByText('Wydarzenie oddane do sprawdzenia', { exact: true })).toBeVisible();

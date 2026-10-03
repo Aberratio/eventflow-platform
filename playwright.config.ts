@@ -3,7 +3,9 @@ import { API_URL, FRONTEND_PORT, FRONTEND_URL } from './e2e/env';
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30000,
+  // 60 s: `php -S` serves one request at a time, so a slow request left behind by the previous test
+  // can delay the next login by tens of seconds.
+  timeout: 60000,
   expect: {
     timeout: 10000,
     toHaveScreenshot: {

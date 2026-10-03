@@ -1,5 +1,6 @@
 import { test, expect } from '../playwright-fixture';
 
+import { seededEvent } from './api';
 import { loginAs, openDashboardSection } from './helpers';
 
 test.describe('Interakcje — Logowanie', () => {
@@ -111,9 +112,11 @@ test.describe('Interakcje — Nawigacja z eventów', () => {
     await expect(page.getByRole('tab').first()).toBeVisible();
   });
 
-  test('przełączanie zakładek na stronie wydarzenia', async ({ page }) => {
-    await page.goto('/events');
-    await page.getByRole('main').locator('a[href^="/events/"]:visible').first().click();
+  test('przełączanie zakładek na stronie wydarzenia', async ({ page, request }) => {
+    // A fixed upcoming event: "Lista startowa" is hidden on past events that have results, so the
+    // first card of the list is not a stable choice once the lifecycle spec publishes events.
+    const event = await seededEvent(request, 'e2e-registration-open');
+    await page.goto(`/events/${event.slug}`);
     await expect(page.getByRole('tab', { name: /Informacje/ })).toBeVisible();
 
     for (const tabName of ['Dystanse', 'Lista startowa']) {
