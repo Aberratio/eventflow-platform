@@ -17,7 +17,7 @@ test.describe('Organizer Dashboard', () => {
     const tab = page.getByRole('tab', { name: /Moje wydarzenia/ });
     await tab.click();
     await expect(tab).toHaveAttribute('data-state', 'active');
-    await expect(page.getByText('Wszystkie wydarzenia')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Wszystkie wydarzenia' })).toBeVisible();
   });
 
   test('can access events list page', async ({ page }) => {
@@ -35,9 +35,9 @@ test.describe('Organizer Dashboard', () => {
   test('draft event page button opens participant preview URL', async ({ page, request }) => {
     const draft = await seededEvent(request, 'e19');
     await page.goto('/organizer/events/e19');
-    await page.getByRole('link', { name: /Zobacz stronę wydarzenia/i }).click();
+    await page.getByRole('link', { name: 'Podgląd', exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/events/${draft.slug}/preview$`));
-    await expect(page.getByText('Tryb podglądu szkicu')).toBeVisible();
+    await expect(page.getByText(/To jest tylko podgląd strony wydarzenia/)).toBeVisible();
     await expect(page.getByRole('button', { name: /Przetestuj formularz/i })).toBeVisible();
   });
 });

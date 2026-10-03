@@ -4,15 +4,15 @@ test.describe('Events', () => {
   test('events page lists events', async ({ page }) => {
     await page.goto('/events');
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-    // Should have event cards
-    const cards = page.locator('[class*="card"]');
-    await expect(cards.first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('main').locator('a[href^="/events/"]:visible').first()).toBeVisible(
+      { timeout: 5000 },
+    );
   });
 
   test('event details page loads', async ({ page }) => {
     await page.goto('/events');
     // Click first event link
-    const firstLink = page.getByRole('main').locator('a[href^="/events/"]').first();
+    const firstLink = page.getByRole('main').locator('a[href^="/events/"]:visible').first();
     await firstLink.click();
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   });

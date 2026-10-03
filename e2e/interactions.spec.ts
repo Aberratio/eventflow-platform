@@ -90,7 +90,7 @@ test.describe('Interakcje — Sklep i koszyk', () => {
         await addBtn.click();
         await page.waitForTimeout(500);
         // Toast should appear
-        const toastMsg = page.locator('text=Dodano do koszyka');
+        const toastMsg = page.getByText('Dodano do koszyka', { exact: true });
         await expect(toastMsg).toBeVisible({ timeout: 3000 });
       }
     }
@@ -106,14 +106,14 @@ test.describe('Interakcje — Sklep i koszyk', () => {
 test.describe('Interakcje — Nawigacja z eventów', () => {
   test('kliknięcie w wydarzenie otwiera szczegóły', async ({ page }) => {
     await page.goto('/events');
-    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await page.getByRole('main').locator('a[href^="/events/"]:visible').first().click();
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await expect(page.getByRole('tab').first()).toBeVisible();
   });
 
   test('przełączanie zakładek na stronie wydarzenia', async ({ page }) => {
     await page.goto('/events');
-    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await page.getByRole('main').locator('a[href^="/events/"]:visible').first().click();
     await expect(page.getByRole('tab', { name: /Informacje/ })).toBeVisible();
 
     for (const tabName of ['Dystanse', 'Lista startowa']) {

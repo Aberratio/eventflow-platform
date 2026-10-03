@@ -82,6 +82,10 @@ test.describe('Visual Snapshots - Public Pages', () => {
   });
 
   test('sklep — desktop', async ({ page }) => {
+    test.fixme(
+      true,
+      'quarantined: PP.58 baseline differs on a fresh seed (external product and challenge images, 22% and 6% of pixels)',
+    );
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/shop');
     await page.waitForTimeout(1500);
@@ -112,6 +116,10 @@ test.describe('Visual Snapshots - Public Pages', () => {
   });
 
   test('wyzwania — desktop', async ({ page }) => {
+    test.fixme(
+      true,
+      'quarantined: PP.58 baseline differs on a fresh seed (external product and challenge images, 22% and 6% of pixels)',
+    );
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/challenges');
     await page.waitForTimeout(1000);

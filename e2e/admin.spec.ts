@@ -143,8 +143,7 @@ test.describe('Admin Dashboard – CMS pages tab', () => {
 
   test('pages tab renders page list or empty state', async ({ page }) => {
     await openDashboardSection(page, 'Strony');
-    const content = page.locator('table, [role="row"], [data-testid="empty-state"], h2').first();
-    await expect(content).toBeVisible({ timeout: 8000 });
+    await expect(page.getByText('Strony informacyjne')).toBeVisible({ timeout: 8000 });
   });
 });
 

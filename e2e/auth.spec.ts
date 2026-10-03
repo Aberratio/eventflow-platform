@@ -137,7 +137,7 @@ test.describe('Organizer Login & Dashboard', () => {
     const tab = page.getByRole('tab', { name: /Moje wydarzenia/ });
     await tab.click();
     await expect(tab).toHaveAttribute('data-state', 'active');
-    await expect(page.getByText('Wszystkie wydarzenia')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Wszystkie wydarzenia' })).toBeVisible();
   });
 });
 
@@ -222,7 +222,7 @@ test.describe('Admin Login & Dashboard', () => {
   test('admin partners section loads', async ({ page }) => {
     await loginAs(page, 'admin');
     await openDashboardSection(page, 'Partnerzy');
-    await expect(page.getByRole('heading', { name: 'Nasi partnerzy' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Nasi partnerzy' }).first()).toBeVisible();
   });
 
   test('admin settings section loads', async ({ page }) => {

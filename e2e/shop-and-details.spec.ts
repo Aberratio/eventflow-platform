@@ -155,14 +155,14 @@ test.describe('Event Filtering & Details', () => {
 
   test('event details page shows tabs', async ({ page }) => {
     await page.goto('/events');
-    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await page.getByRole('main').locator('a[href^="/events/"]:visible').first().click();
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await expect(page.getByRole('tab', { name: /Informacje/ })).toBeVisible();
   });
 
   test('event details shows distances tab', async ({ page }) => {
     await page.goto('/events');
-    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await page.getByRole('main').locator('a[href^="/events/"]:visible').first().click();
     const distTab = page.getByRole('tab', { name: /Dystanse/ });
     await expect(distTab).toBeVisible();
     await distTab.click();

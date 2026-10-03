@@ -24,7 +24,7 @@ test.describe('Moderator Dashboard', () => {
   });
 
   test('can open event preview registration card', async ({ page, request }) => {
-    const event = await seededEvent(request, 'e-krakow-bike');
+    const event = await seededEvent(request, 'e2e-registration-open');
     await page.goto(`/events/${event.slug}/preview`);
     await expect(page.getByText(event.name).first()).toBeVisible();
     await expect(page.getByRole('button', { name: /Przetestuj formularz/i })).toBeVisible();
