@@ -1,10 +1,11 @@
 import { test, expect } from '../playwright-fixture';
+import { API_URL } from './api';
 import { loginAs } from './helpers';
 
 test.describe('Shop & Cart Flow', () => {
   test('shop page lists products with prices', async ({ page }) => {
     await page.goto('/shop');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     const productCards = page.locator('[class*="card"]');
     await expect(productCards.first()).toBeVisible({ timeout: 5000 });
   });
@@ -15,13 +16,13 @@ test.describe('Shop & Cart Flow', () => {
     const productLink = page.locator('a[href^="/shop/"]').first();
     if (await productLink.isVisible({ timeout: 3000 }).catch(() => false)) {
       await productLink.click();
-      await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
     }
   });
 
   test('cart shows empty state when no items', async ({ page }) => {
     await page.goto('/cart');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     // Should show empty cart or 0 items
     await expect(page.locator('body')).not.toBeEmpty();
   });
@@ -112,7 +113,7 @@ test.describe('Shop checkout via bank transfer (TD.18)', () => {
     // out of TD.18's scope to fix (it's a server-repo authorization gap,
     // not a client checkout-flow bug), but real, so it's asserted around
     // here rather than asserted ON, and reported alongside this ticket.
-    const apiBaseUrl = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8081/api/v1';
+    const apiBaseUrl = API_URL;
     const adminLogin = await request.post(`${apiBaseUrl}/auth/login`, {
       data: { email: 'admin@zmierzymyczas.pl', password: 'demo1234' },
     });
@@ -149,43 +150,30 @@ test.describe('Shop checkout via bank transfer (TD.18)', () => {
 test.describe('Event Filtering & Details', () => {
   test('events page shows filter controls', async ({ page }) => {
     await page.goto('/events');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('event details page shows tabs', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForTimeout(1000);
-    const eventLink = page.locator('a[href^="/events/"]').first();
-    if (await eventLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await eventLink.click();
-      await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
-      // Check tabs are present
-      const tabs = page.locator('[role="tab"]');
-      await expect(tabs.first()).toBeVisible();
-    }
+    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Informacje/ })).toBeVisible();
   });
 
   test('event details shows distances tab', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForTimeout(1000);
-    const eventLink = page.locator('a[href^="/events/"]').first();
-    if (await eventLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await eventLink.click();
-      await page.waitForTimeout(500);
-      const distTab = page.locator('[role="tab"]:has-text("Dystans")');
-      if (await distTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await distTab.click();
-        await page.waitForTimeout(500);
-        await expect(page.locator('body')).not.toBeEmpty();
-      }
-    }
+    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    const distTab = page.getByRole('tab', { name: /Dystanse/ });
+    await expect(distTab).toBeVisible();
+    await distTab.click();
+    await expect(distTab).toHaveAttribute('data-state', 'active');
   });
 });
 
 test.describe('Series Pages', () => {
   test('series list page shows series', async ({ page }) => {
     await page.goto('/series');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('series details page loads', async ({ page }) => {
@@ -194,7 +182,7 @@ test.describe('Series Pages', () => {
     const seriesLink = page.locator('a[href^="/series/"]').first();
     if (await seriesLink.isVisible({ timeout: 3000 }).catch(() => false)) {
       await seriesLink.click();
-      await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
     }
   });
 });

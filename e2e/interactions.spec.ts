@@ -1,11 +1,6 @@
 import { test, expect } from '../playwright-fixture';
 
-async function loginAs(page: any, email: string) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', 'demo1234');
-  await page.click('button[type="submit"]');
-}
+import { loginAs, openDashboardSection } from './helpers';
 
 test.describe('Interakcje — Logowanie', () => {
   test('wypełnienie formularza przez kartę testową', async ({ page }) => {
@@ -26,9 +21,9 @@ test.describe('Interakcje — Logowanie', () => {
   });
 
   test('poprawne logowanie i przekierowanie', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
-    await expect(page.locator('text=Jan Kowalski')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/Witaj, Jan/).first()).toBeVisible();
   });
 
   test('walidacja email w formularzu logowania', async ({ page }) => {
@@ -36,9 +31,10 @@ test.describe('Interakcje — Logowanie', () => {
     await page.fill('input[type="email"]', 'niepoprawny-email');
     await page.fill('input[type="password"]', 'demo1234');
     await page.click('button[type="submit"]');
-    await page.waitForTimeout(500);
-    // Should show validation error
-    await expect(page.locator('text=Nieprawidłowy')).toBeVisible({ timeout: 3000 });
+    // The browser's native type=email validation stops the submit before zod runs (the Polish
+    // message UX is tracked under PP.26).
+    await expect(page.locator('input[type="email"]:invalid')).toHaveCount(1);
+    await expect(page).toHaveURL(/\/login/);
   });
 });
 
@@ -110,36 +106,21 @@ test.describe('Interakcje — Sklep i koszyk', () => {
 test.describe('Interakcje — Nawigacja z eventów', () => {
   test('kliknięcie w wydarzenie otwiera szczegóły', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForTimeout(1500);
-
-    const eventLink = page.locator('a[href^="/events/"]').first();
-    if (await eventLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await eventLink.click();
-      await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
-
-      // Tabs should be present
-      const tabs = page.locator('[role="tab"]');
-      await expect(tabs.first()).toBeVisible({ timeout: 3000 });
-    }
+    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await expect(page.getByRole('tab').first()).toBeVisible();
   });
 
   test('przełączanie zakładek na stronie wydarzenia', async ({ page }) => {
     await page.goto('/events');
-    await page.waitForTimeout(1500);
+    await page.getByRole('main').locator('a[href^="/events/"]').first().click();
+    await expect(page.getByRole('tab', { name: /Informacje/ })).toBeVisible();
 
-    const eventLink = page.locator('a[href^="/events/"]').first();
-    if (await eventLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await eventLink.click();
-      await page.waitForTimeout(1000);
-
-      const tabNames = ['Dystanse', 'Lista startowa', 'Wyniki'];
-      for (const tabName of tabNames) {
-        const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
-        if (await tab.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await tab.click();
-          await page.waitForTimeout(300);
-        }
-      }
+    for (const tabName of ['Dystanse', 'Lista startowa']) {
+      const tab = page.getByRole('tab', { name: new RegExp(tabName) });
+      await expect(tab).toBeVisible();
+      await tab.click();
+      await expect(tab).toHaveAttribute('data-state', 'active');
     }
   });
 });
@@ -161,65 +142,45 @@ test.describe('Interakcje — Filtrowanie wydarzeń', () => {
 
 test.describe('Interakcje — Panel admina', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
+    await loginAs(page, 'admin');
   });
 
   test('wyszukiwanie w zakładce wydarzeń', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Wydarzenia")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-
-      const searchInput = page.locator('input[placeholder*="Szukaj"]').first();
-      if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await searchInput.fill('Bieg');
-        await page.waitForTimeout(500);
-      }
-    }
+    await openDashboardSection(page, 'Wydarzenia');
+    const searchInput = page.locator('input[placeholder*="Szukaj"]').first();
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('Bieg');
+    await expect(searchInput).toHaveValue('Bieg');
   });
 
   test('wyszukiwanie w zakładce zamówień', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Zamówienia")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-
-      const searchInput = page.locator('input[placeholder*="Szukaj"]').first();
-      if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await searchInput.fill('ZAM');
-        await page.waitForTimeout(500);
-      }
-    }
+    await openDashboardSection(page, 'Zamówienia');
+    const searchInput = page.locator('input[placeholder*="Szukaj"]').first();
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('ZAM');
+    await expect(searchInput).toHaveValue('ZAM');
   });
 
   test('przełączanie zakładek użytkowników', async ({ page }) => {
-    const participantsTab = page.locator('[role="tab"]:has-text("Uczestnicy")');
-    if (await participantsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await participantsTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    await openDashboardSection(page, 'Uczestnicy');
+    await expect(page).toHaveURL(/\/admin\/participants/);
+    await expect(page.locator('table, [data-testid="empty-state"]').first()).toBeVisible();
 
-    const organizersTab = page.locator('[role="tab"]:has-text("Organizatorzy")');
-    if (await organizersTab.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await organizersTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    await openDashboardSection(page, 'Organizatorzy');
+    await expect(page).toHaveURL(/\/admin\/organizers/);
+    await expect(page.locator('table, [data-testid="empty-state"]').first()).toBeVisible();
   });
 });
 
 test.describe('Interakcje — Panel uczestnika', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
-    await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
+    await loginAs(page, 'participant');
   });
 
   test('przełączanie wszystkich zakładek', async ({ page }) => {
     const tabNames = [
       'Rejestracje',
-      'Wyniki',
+      'Historia',
       'Zamówienia',
       'Wiadomości',
       'Bilety',
@@ -227,22 +188,19 @@ test.describe('Interakcje — Panel uczestnika', () => {
       'Profil',
     ];
     for (const tabName of tabNames) {
-      const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
-      if (await tab.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await tab.click();
-        await page.waitForTimeout(300);
-        await expect(page.locator('body')).not.toBeEmpty();
-      }
+      const tab = page.getByRole('tab', { name: new RegExp(tabName) });
+      await expect(tab).toBeVisible();
+      await tab.click();
+      await expect(tab).toHaveAttribute('data-state', 'active');
+      await expect(page.getByRole('tabpanel')).toBeVisible();
     }
   });
 
   test('historia zakładka wyświetla dane', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Historia")');
-    if (await tab.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Historia/ });
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 });
 
