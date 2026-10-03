@@ -92,3 +92,84 @@ export async function pickDate(page: Page, triggerId: string, isoDate: string): 
     .click();
   await expect(dialog).toHaveCount(0);
 }
+
+export const WIZARD_NEXT_BUTTON = 'Zapisz i przejdź dalej';
+
+export async function wizardSubStep(page: Page): Promise<string> {
+  return (await page.getByTestId('event-form-step').getAttribute('data-substep')) ?? '';
+}
+
+async function readWizardPosition(page: Page): Promise<string> {
+  const form = page.getByTestId('event-form-step');
+  return `${await form.getAttribute('data-step')}/${await form.getAttribute('data-substep')}`;
+}
+
+// Clicks "Zapisz i przejdź dalej" and waits until the wizard moved to another step/sub-step. A blind
+// click walk raced the step transition (PP.15). When the section blocks (validation), the wait times
+// out and the error names the validation toast, if any.
+export async function clickNextAndSettle(page: Page): Promise<void> {
+  await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);
+  const before = await readWizardPosition(page);
+  await page.getByRole('button', { name: WIZARD_NEXT_BUTTON }).click();
+  try {
+    await expect(async () => {
+      expect(await readWizardPosition(page)).not.toBe(before);
+    }).toPass({ timeout: 10000 });
+  } catch (error) {
+    const blocked = await page
+      .getByText('Uzupełnij tę sekcję')
+      .first()
+      .isVisible()
+      .catch(() => false);
+    throw new Error(
+      `Wizard stayed on ${before} after "${WIZARD_NEXT_BUTTON}"${blocked ? ' (blocked by validation)' : ''}: ${error}`,
+    );
+  }
+  await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);
+}
+
+export async function addFirstDistance(page: Page, price = '60'): Promise<void> {
+  await page
+    .getByRole('button', { name: /Dodaj pierwszy dystans|Dodaj dystans/i })
+    .first()
+    .click();
+  await page.getByPlaceholder('np. Maraton').first().fill('5K');
+  await page.getByPlaceholder('42.195').first().fill('5');
+  await page.getByPlaceholder('150').first().fill(price);
+  await page.getByPlaceholder('500').first().fill('200');
+}
+
+// Walks the wizard with "Zapisz i przejdź dalej" until the final button is visible, adding one distance
+// when the create flow reaches the empty distances sub-step (the edit flow's seeded event has some).
+export async function advanceThroughWizard(
+  page: Page,
+  finalButtonName: RegExp,
+  maxIterations = 25,
+): Promise<void> {
+  for (let i = 0; i < maxIterations; i++) {
+    if (
+      await page
+        .getByRole('button', { name: finalButtonName })
+        .isVisible()
+        .catch(() => false)
+    ) {
+      return;
+    }
+
+    if (
+      (await wizardSubStep(page)) === 'distances' &&
+      (await page
+        .getByRole('button', { name: /Dodaj pierwszy dystans/i })
+        .isVisible()
+        .catch(() => false))
+    ) {
+      await addFirstDistance(page);
+    }
+
+    await clickNextAndSettle(page);
+  }
+
+  throw new Error(
+    `Wizard did not reach the "${finalButtonName}" step within ${maxIterations} clicks`,
+  );
+}
