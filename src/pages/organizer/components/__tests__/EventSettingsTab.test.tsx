@@ -80,6 +80,25 @@ describe('EventSettingsTab', () => {
     ).toBeInTheDocument();
   });
 
+  it("shows the moderator's reason on a draft that was sent back", () => {
+    render(
+      <EventSettingsTab
+        event={{ ...baseEvent, publicationStatus: 'draft', rejectionReason: 'Brak mapy' }}
+      />,
+    );
+    expect(screen.getByText(/Powod odrzucenia:/)).toBeInTheDocument();
+    expect(screen.getByText(/Brak mapy/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Popraw i oddaj ponownie do sprawdzenia/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the plain submit label on a never-reviewed draft', () => {
+    render(<EventSettingsTab event={{ ...baseEvent, publicationStatus: 'draft' }} />);
+    expect(screen.getByRole('button', { name: 'Oddaj do sprawdzenia' })).toBeInTheDocument();
+    expect(screen.queryByText(/Powod odrzucenia/)).not.toBeInTheDocument();
+  });
+
   it('only shows the visibility card once the event is published', () => {
     const { rerender } = render(<EventSettingsTab event={baseEvent} />);
     expect(screen.queryByText('Widocznosc')).not.toBeInTheDocument();

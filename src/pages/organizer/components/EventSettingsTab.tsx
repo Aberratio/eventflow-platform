@@ -75,6 +75,9 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
     !hasRegistrations;
   const canSubmitReview =
     event.publicationStatus === 'draft' || event.publicationStatus === 'rejected';
+  // The server never rests an event in 'rejected': reject() writes 'draft' and keeps the reason
+  // (PP.15), so a draft with a reason is a draft the moderator sent back.
+  const wasSentBack = Boolean(event.rejectionReason) && canSubmitReview;
   // Cancelling is restricted to the owning organizer or an admin/superadmin — never a
   // moderator (spec 08, "Co widzi każda rola").
   const isOwnerOrAdmin =
@@ -316,7 +319,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
             Po oddaniu do sprawdzenia admin lub moderator zatwierdza wydarzenie — zatwierdzenie
             publikuje je od razu, bez dodatkowego kroku po stronie organizatora.
           </p>
-          {event.publicationStatus === 'rejected' && event.rejectionReason && (
+          {wasSentBack && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <strong>Powod odrzucenia:</strong> {event.rejectionReason}
             </div>
@@ -327,7 +330,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
                 <Send className="mr-2 h-4 w-4" />
                 {isSubmittingReview
                   ? 'Wysylanie...'
-                  : event.publicationStatus === 'rejected'
+                  : wasSentBack
                     ? 'Popraw i oddaj ponownie do sprawdzenia'
                     : 'Oddaj do sprawdzenia'}
               </Button>

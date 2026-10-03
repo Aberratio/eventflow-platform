@@ -19,6 +19,8 @@ const API_ERROR_MESSAGES: Record<string, string> = {
     'Limit wydarzeń został wyczerpany. Skontaktuj się z administratorem, aby zwiększyć limit.',
   event_limit_below_usage: 'Limit nie może być niższy niż aktualna liczba wydarzeń organizatora.',
   invalid_organizer: 'Wybierz aktywne konto organizatora wydarzenia.',
+  event_submit_no_organizer_credit:
+    'Brak dostępnego pakietu organizatora. Kup pakiet, aby oddać wydarzenie do sprawdzenia.',
   published_organizer_locked:
     'Nie mozna przeniesc opublikowanego wydarzenia do innego organizatora.',
   event_delete_forbidden:
