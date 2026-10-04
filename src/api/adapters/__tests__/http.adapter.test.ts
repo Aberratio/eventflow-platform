@@ -432,6 +432,31 @@ describe('httpAdapter contract mapping', () => {
       'Obraz ma zbyt dużą rozdzielczość',
     );
   });
+
+  it('requests own orders from /me/orders and normalizes money fields (PP.17)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({
+        success: true,
+        data: [
+          {
+            id: 'o1',
+            productTotal: '45.00',
+            deliveryPrice: '0.00',
+            paymentSurcharge: '0.00',
+            totalPrice: '45.00',
+            items: [],
+          },
+        ],
+      }),
+    );
+
+    const result = await httpAdapter.getMyOrders();
+
+    const url = String(vi.mocked(fetch).mock.calls[0][0]);
+    expect(url.endsWith('/me/orders')).toBe(true);
+    expect(url).not.toContain('userId');
+    expect(result.data[0].totalPrice).toBe(45);
+  });
 });
 
 // E2.6: start-list export — the one adapter method that downloads a file

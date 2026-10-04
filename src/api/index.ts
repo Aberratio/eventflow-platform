@@ -239,6 +239,8 @@ export const getShopPaymentMethods: ApiAdapter['getShopPaymentMethods'] = (...ar
   ensureAdapter().then((a) => a.getShopPaymentMethods(...args));
 export const getOrders: ApiAdapter['getOrders'] = (...args) =>
   ensureAdapter().then((a) => a.getOrders(...args));
+export const getMyOrders: ApiAdapter['getMyOrders'] = (...args) =>
+  ensureAdapter().then((a) => a.getMyOrders(...args));
 export const getOrderById: ApiAdapter['getOrderById'] = (...args) =>
   ensureAdapter().then((a) => a.getOrderById(...args));
 export const createOrder: ApiAdapter['createOrder'] = (...args) =>

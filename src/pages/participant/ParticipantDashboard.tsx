@@ -5,7 +5,7 @@ import {
   getMessages,
   getTickets,
   getCertificates,
-  getOrders,
+  getMyOrders,
 } from '@/api';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -80,8 +80,8 @@ const ParticipantDashboard = () => {
     enabled: Boolean(user?.id),
   });
   const { data: ordersResp } = useQuery({
-    queryKey: ['orders', user?.id],
-    queryFn: () => getOrders(user?.id),
+    queryKey: ['my-orders', user?.id],
+    queryFn: () => getMyOrders(),
     enabled: Boolean(user?.id),
   });
 

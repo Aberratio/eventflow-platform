@@ -354,6 +354,7 @@ export interface ApiAdapter {
   getDeliveryMethods(): Promise<ApiResponse<DeliveryMethod[]>>;
   getShopPaymentMethods(): Promise<ApiResponse<ShopPaymentMethod[]>>;
   getOrders(userId?: string): Promise<ApiResponse<ShopOrder[]>>;
+  getMyOrders(): Promise<ApiResponse<ShopOrder[]>>;
   getOrderById(id: string): Promise<ApiResponse<ShopOrder | null>>;
   createOrder(data: CreateOrderPayload): Promise<ApiResponse<ShopOrder>>;
   updateOrderStatus(

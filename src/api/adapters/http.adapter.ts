@@ -482,6 +482,11 @@ export const httpAdapter: ApiAdapter = {
       ...r,
       data: r.data.map(normalizeShopOrder),
     })),
+  getMyOrders: () =>
+    request<ShopOrder[]>('/me/orders').then((r) => ({
+      ...r,
+      data: r.data.map(normalizeShopOrder),
+    })),
   getOrderById: (id) =>
     request<ShopOrder | null>(`/shop/orders/${encodeURIComponent(id)}`).then((r) => ({
       ...r,
