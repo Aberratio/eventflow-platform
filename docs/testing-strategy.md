@@ -22,12 +22,12 @@ The suite runs serially (`workers: 1`, `fullyParallel: false`) with `retries: 0`
 
 Environment variables (defaults match CI):
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `PLAYWRIGHT_API_URL` | `http://127.0.0.1:8081/api/v1` | API base URL; host and port are used for `php -S` |
-| `PLAYWRIGHT_FRONTEND_PORT` | `5173` | Vite port (strict) |
-| `PLAYWRIGHT_BASE_URL` | derived from the port | When set, no web server is started (run against an already running stack) |
-| `PLAYWRIGHT_SERVER_DIR` | `../zmierzymy_czas_server` | Server repo checkout |
+| Variable                   | Default                        | Meaning                                                                   |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `PLAYWRIGHT_API_URL`       | `http://127.0.0.1:8081/api/v1` | API base URL; host and port are used for `php -S`                         |
+| `PLAYWRIGHT_FRONTEND_PORT` | `5173`                         | Vite port (strict)                                                        |
+| `PLAYWRIGHT_BASE_URL`      | derived from the port          | When set, no web server is started (run against an already running stack) |
+| `PLAYWRIGHT_SERVER_DIR`    | `../zmierzymy_czas_server`     | Server repo checkout                                                      |
 
 The server needs its own environment (read through `getenv`, no `.env` required): `APP_ENV=local` (the seed refuses production), `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`, `APP_URL`, and `APP_CORS_ORIGIN` listing the exact browser origin (`http://127.0.0.1:<frontend port>`).
 
@@ -58,10 +58,10 @@ The `Client Test` workflow has two jobs. `Frontend fast gate` runs typecheck, li
 
 Every non-passing test of the full suite is listed here with a ticket, or the table says none.
 
-| Test | Ticket | Reason |
-|---|---|---|
-| `visual.spec.ts` "sklep — desktop" | PP.58 | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (product images, 22% of pixels) |
-| `visual.spec.ts` "wyzwania — desktop" | PP.58 | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (challenge images, 6% of pixels) |
+| Test                                  | Ticket | Reason                                                                                                        |
+| ------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
+| `visual.spec.ts` "sklep — desktop"    | PP.58  | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (product images, 22% of pixels)  |
+| `visual.spec.ts` "wyzwania — desktop" | PP.58  | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (challenge images, 6% of pixels) |
 
 Skipped by design: `e2e/security-headers.spec.ts` (opt-in via `SECURITY_HEADERS_BASE_URL`, 8 tests).
 

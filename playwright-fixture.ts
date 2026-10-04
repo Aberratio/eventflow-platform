@@ -4,7 +4,7 @@ import { test as base, expect } from '@playwright/test';
 // their baselines include the banner.
 export const test = base.extend<{ preAcceptCookies: boolean }>({
   preAcceptCookies: [true, { option: true }],
-  page: async ({ page, preAcceptCookies }, use) => {
+  page: async ({ page, preAcceptCookies }, provide) => {
     if (preAcceptCookies) {
       await page.addInitScript(() => {
         window.localStorage.setItem(
@@ -19,7 +19,7 @@ export const test = base.extend<{ preAcceptCookies: boolean }>({
         );
       });
     }
-    await use(page);
+    await provide(page);
   },
 });
 export { expect };
