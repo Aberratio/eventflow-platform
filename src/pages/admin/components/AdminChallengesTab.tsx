@@ -73,6 +73,8 @@ interface AdminChallengesTabProps {
 export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  // Challenge configuration is admin-only (macierz uprawnien); the moderator only reviews entries.
+  const canConfigure = basePath === '/admin';
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
     'all',
   );
@@ -146,9 +148,11 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
           <h2 className="text-2xl font-bold">Wyzwania</h2>
           <p className="text-muted-foreground">Konfiguracja, uczestnicy i weryfikacja zgłoszeń</p>
         </div>
-        <Button onClick={() => navigate(`${basePath}/challenges/new`)}>
-          <Plus className="mr-2 h-4 w-4" /> Nowe wyzwanie
-        </Button>
+        {canConfigure && (
+          <Button onClick={() => navigate(`${basePath}/challenges/new`)}>
+            <Plus className="mr-2 h-4 w-4" /> Nowe wyzwanie
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -178,37 +182,41 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Select
-                      value={challenge.status}
-                      onValueChange={(status) =>
-                        statusMutation.mutate({ id: challenge.id, status })
-                      }
-                    >
-                      <SelectTrigger className="h-9 w-[150px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="upcoming">Nadchodzące</SelectItem>
-                        <SelectItem value="active">Aktywne</SelectItem>
-                        <SelectItem value="completed">Zakończone</SelectItem>
-                        <SelectItem value="archived">Archiwalne</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate(`${basePath}/challenges/${challenge.id}/edit`)}
-                    >
-                      <Pencil className="mr-1 h-4 w-4" /> Edytuj
-                    </Button>
-                    {challenge.status !== 'archived' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => archiveMutation.mutate(challenge.id)}
-                      >
-                        <Archive className="mr-1 h-4 w-4" /> Archiwizuj
-                      </Button>
+                    {canConfigure && (
+                      <>
+                        <Select
+                          value={challenge.status}
+                          onValueChange={(status) =>
+                            statusMutation.mutate({ id: challenge.id, status })
+                          }
+                        >
+                          <SelectTrigger className="h-9 w-[150px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="upcoming">Nadchodzące</SelectItem>
+                            <SelectItem value="active">Aktywne</SelectItem>
+                            <SelectItem value="completed">Zakończone</SelectItem>
+                            <SelectItem value="archived">Archiwalne</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`${basePath}/challenges/${challenge.id}/edit`)}
+                        >
+                          <Pencil className="mr-1 h-4 w-4" /> Edytuj
+                        </Button>
+                        {challenge.status !== 'archived' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => archiveMutation.mutate(challenge.id)}
+                          >
+                            <Archive className="mr-1 h-4 w-4" /> Archiwizuj
+                          </Button>
+                        )}
+                      </>
                     )}
                   </div>
                 </CardContent>

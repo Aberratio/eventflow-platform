@@ -67,12 +67,12 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-const renderTab = () => {
+const renderTab = (basePath: '/admin' | '/moderator' = '/moderator') => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <AdminChallengesTab basePath="/moderator" />
+        <AdminChallengesTab basePath={basePath} />
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -144,5 +144,28 @@ describe('AdminChallengesTab proof link safety (PP.50)', () => {
     const proofLink = await screen.findByRole('link', { name: /zobacz dow[oó]d/i });
     expect(proofLink).toHaveAttribute('href', 'https://example.test/dowod.jpg');
     expect(proofLink).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+});
+
+describe('AdminChallengesTab configuration actions (PP.4)', () => {
+  it('hides configuration actions for the moderator but keeps entry review', async () => {
+    renderTab('/moderator');
+
+    await screen.findByText('Jan Kowalski');
+    expect(screen.queryByRole('button', { name: /nowe wyzwanie/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /edytuj/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /archiwizuj/i })).toBeNull();
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.getByRole('button', { name: /^Zatwierdź$/i })).toBeInTheDocument();
+  });
+
+  it('keeps configuration actions for the admin', async () => {
+    renderTab('/admin');
+
+    await screen.findByText('Jan Kowalski');
+    expect(screen.getByRole('button', { name: /nowe wyzwanie/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /edytuj/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /archiwizuj/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 });

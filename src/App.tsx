@@ -535,26 +535,6 @@ const AppShell = () => {
             }
           />
           <Route
-            path="/moderator/challenges/new"
-            element={
-              <Lazy fallback={<FormPageSkeleton />}>
-                <ProtectedRoute roles={moderatorRoles}>
-                  <AdminChallengeEditPage />
-                </ProtectedRoute>
-              </Lazy>
-            }
-          />
-          <Route
-            path="/moderator/challenges/:id/edit"
-            element={
-              <Lazy fallback={<FormPageSkeleton />}>
-                <ProtectedRoute roles={moderatorRoles}>
-                  <AdminChallengeEditPage />
-                </ProtectedRoute>
-              </Lazy>
-            }
-          />
-          <Route
             path="/moderator/events/:id"
             element={
               <Lazy fallback={<DashboardSkeleton />}>
