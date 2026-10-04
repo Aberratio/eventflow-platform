@@ -6,13 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChangeEmailCard } from '@/components/profile/ChangeEmailCard';
+import { ChangePasswordCard } from '@/components/profile/ChangePasswordCard';
 import { toast } from 'sonner';
 import { User, Mail, Phone, Lock, Save } from 'lucide-react';
 
 export const ModeratorProfileTab = () => {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
 
   const handleSave = () => {
@@ -24,8 +24,7 @@ export const ModeratorProfileTab = () => {
       <Alert className="border-muted bg-muted/50">
         <Lock className="h-4 w-4" />
         <AlertDescription>
-          Możesz edytować tylko podstawowe dane profilu. Ustawienia bezpieczeństwa są zarządzane
-          przez administratora.
+          Możesz edytować podstawowe dane profilu i zmienić hasło.
         </AlertDescription>
       </Alert>
 
@@ -54,13 +53,7 @@ export const ModeratorProfileTab = () => {
             <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-              />
+              <Input id="email" type="email" value={user?.email || ''} readOnly className="pl-10" />
             </div>
           </div>
 
@@ -87,20 +80,7 @@ export const ModeratorProfileTab = () => {
 
       <ChangeEmailCard />
 
-      <Card className="border-destructive/30 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Lock className="h-5 w-5" />
-            Ustawienia bezpieczeństwa
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Nie masz dostępu do ustawień bezpieczeństwa. W razie potrzeby zmiany hasła lub włączenia
-            2FA, skontaktuj się z administratorem systemu.
-          </p>
-        </CardContent>
-      </Card>
+      <ChangePasswordCard />
     </div>
   );
 };

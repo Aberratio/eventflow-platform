@@ -10,9 +10,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { appLogger } from '@/lib/logger';
+import { changePassword } from '@/api';
 
 interface PasswordChangeDialogProps {
   open: boolean;
@@ -63,6 +64,7 @@ export const PasswordChangeDialog = ({
   onPasswordChanged,
 }: PasswordChangeDialogProps) => {
   const [form, setForm] = useState({ current: '', new: '', confirm: '' });
+  const [saving, setSaving] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -71,18 +73,43 @@ export const PasswordChangeDialog = ({
 
   const { strength, checks } = calculatePasswordStrength(form.new);
 
-  const handleSubmit = () => {
+  // PP.7: the server rule (at least 8 characters, different from the current one) is the only
+  // gate. The strength meter below is advisory and never blocks a submit.
+  const handleSubmit = async () => {
     if (form.new !== form.confirm) {
       toast({ title: 'Błąd', description: 'Hasła nie są identyczne.', variant: 'destructive' });
       return;
     }
-    if (strength < 4) {
+    if (form.new.length < 8) {
       toast({
-        title: 'Słabe hasło',
-        description: 'Hasło nie spełnia wymagań bezpieczeństwa.',
+        title: 'Błąd',
+        description: 'Nowe hasło musi mieć co najmniej 8 znaków.',
         variant: 'destructive',
       });
       return;
+    }
+    if (form.new === form.current) {
+      toast({
+        title: 'Błąd',
+        description: 'Nowe hasło musi różnić się od obecnego.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // The adapter stores the rotated session token the server returns.
+      await changePassword({ oldPassword: form.current, newPassword: form.new });
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zmienić hasła',
+        description: error instanceof Error ? error.message : undefined,
+        variant: 'destructive',
+      });
+      return;
+    } finally {
+      setSaving(false);
     }
     appLogger.auth('password_change', 'Zmieniono hasło użytkownika');
     onPasswordChanged();
@@ -170,7 +197,11 @@ export const PasswordChangeDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Anuluj
           </Button>
-          <Button onClick={handleSubmit} disabled={!form.current || !form.new || !form.confirm}>
+          <Button
+            onClick={handleSubmit}
+            disabled={saving || !form.current || !form.new || !form.confirm}
+          >
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Zmień hasło
           </Button>
         </DialogFooter>

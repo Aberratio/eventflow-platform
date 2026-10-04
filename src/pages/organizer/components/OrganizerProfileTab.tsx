@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { ChangeEmailCard } from '@/components/profile/ChangeEmailCard';
+import { ChangePasswordCard } from '@/components/profile/ChangePasswordCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -114,6 +115,7 @@ const OrganizerProfileTab = () => {
         </Card>
       </ProfileForm>
       <ChangeEmailCard />
+      <ChangePasswordCard />
     </div>
   );
 };
