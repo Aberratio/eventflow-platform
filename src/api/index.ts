@@ -121,6 +121,14 @@ export const changePassword: ApiAdapter['changePassword'] = (...args) =>
   ensureAdapter().then((a) => a.changePassword(...args));
 export const confirmPasswordReset: ApiAdapter['confirmPasswordReset'] = (...args) =>
   ensureAdapter().then((a) => a.confirmPasswordReset(...args));
+export const verifyEmail: ApiAdapter['verifyEmail'] = (...args) =>
+  ensureAdapter().then((a) => a.verifyEmail(...args));
+export const resendEmailVerification: ApiAdapter['resendEmailVerification'] = (...args) =>
+  ensureAdapter().then((a) => a.resendEmailVerification(...args));
+export const requestEmailChange: ApiAdapter['requestEmailChange'] = (...args) =>
+  ensureAdapter().then((a) => a.requestEmailChange(...args));
+export const confirmEmailChange: ApiAdapter['confirmEmailChange'] = (...args) =>
+  ensureAdapter().then((a) => a.confirmEmailChange(...args));
 
 // Registrations
 export const getRegistrations: ApiAdapter['getRegistrations'] = (...args) =>
@@ -452,6 +460,8 @@ export type {
   ResetPasswordPayload,
   ChangePasswordPayload,
   ConfirmPasswordResetPayload,
+  TokenPayload,
+  EmailChangePayload,
   CreateRegistrationPayload,
   RegistrationMerchandiseSelection,
   UpdateRegistrationPayload,

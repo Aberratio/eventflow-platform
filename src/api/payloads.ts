@@ -169,6 +169,17 @@ export interface ConfirmPasswordResetPayload {
   newPassword: string;
 }
 
+/** PP.7: the opaque one-time token of an e-mail link (verification, e-mail change). */
+export interface TokenPayload {
+  token: string;
+}
+
+/** PP.7: self-service e-mail change; the new address is confirmed by a link mailed to it. */
+export interface EmailChangePayload {
+  newEmail: string;
+  currentPassword: string;
+}
+
 // ──────────────── Registrations ────────────────
 
 /**

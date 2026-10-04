@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileForm } from '@/components/profile/ProfileForm';
+import { ChangeEmailCard } from '@/components/profile/ChangeEmailCard';
 import { ChangePasswordCard } from '@/components/profile/ChangePasswordCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DateInput } from '@/components/ui/date-time-input';
@@ -259,7 +260,8 @@ const ParticipantProfileTab = () => {
         </Card>
       </ProfileForm>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-6">
+        <ChangeEmailCard />
         <ChangePasswordCard />
       </div>
     </div>

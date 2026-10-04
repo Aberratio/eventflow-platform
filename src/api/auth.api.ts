@@ -6,7 +6,7 @@ import type {
   ResetPasswordPayload,
   ChangePasswordPayload,
 } from './types';
-import type { ConfirmPasswordResetPayload } from './payloads';
+import type { ConfirmPasswordResetPayload, EmailChangePayload, TokenPayload } from './payloads';
 import type { User, UserRole } from '@/types';
 
 export async function login(credentials: LoginCredentials): Promise<ApiResponse<User | null>> {
@@ -43,4 +43,24 @@ export async function confirmPasswordReset(
   payload: ConfirmPasswordResetPayload,
 ): Promise<ApiResponse<void>> {
   return httpAdapter.confirmPasswordReset(payload);
+}
+
+export async function verifyEmail(payload: TokenPayload): Promise<ApiResponse<void>> {
+  return httpAdapter.verifyEmail(payload);
+}
+
+export async function resendEmailVerification(): Promise<
+  ApiResponse<{ alreadyVerified: boolean }>
+> {
+  return httpAdapter.resendEmailVerification();
+}
+
+export async function requestEmailChange(
+  payload: EmailChangePayload,
+): Promise<ApiResponse<{ pendingEmail: string }>> {
+  return httpAdapter.requestEmailChange(payload);
+}
+
+export async function confirmEmailChange(payload: TokenPayload): Promise<ApiResponse<void>> {
+  return httpAdapter.confirmEmailChange(payload);
 }

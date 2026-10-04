@@ -34,6 +34,8 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
+const ConfirmEmailChangePage = lazy(() => import('./pages/ConfirmEmailChangePage'));
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const EventDetailsPage = lazy(() => import('./pages/EventDetailsPage'));
 const EventRegistrationPage = lazy(() => import('./pages/EventRegistrationPage'));
@@ -250,6 +252,22 @@ const AppShell = () => {
             element={
               <Lazy fallback={<AuthPageSkeleton />}>
                 <ResetPasswordPage />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/verify-email"
+            element={
+              <Lazy fallback={<AuthPageSkeleton />}>
+                <VerifyEmailPage />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/confirm-email-change"
+            element={
+              <Lazy fallback={<AuthPageSkeleton />}>
+                <ConfirmEmailChangePage />
               </Lazy>
             }
           />

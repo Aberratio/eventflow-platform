@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
 import { Camera, Loader2, Save } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { uploadAvatar } from '@/api';
+import { resendEmailVerification, uploadAvatar } from '@/api';
 
 interface ProfileFormProps {
   user: User;
@@ -34,6 +35,7 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatar || null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const getInitials = (name: string) =>
     name
@@ -44,6 +46,22 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
       .slice(0, 2);
 
   const handleAvatarClick = () => fileInputRef.current?.click();
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      await resendEmailVerification();
+      toast({ title: 'Wysłaliśmy link weryfikacyjny.' });
+    } catch (error) {
+      toast({
+        title: 'Nie udało się wysłać linku',
+        description: error instanceof Error ? error.message : undefined,
+        variant: 'destructive',
+      });
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,7 +171,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="email">Email</Label>
+              {user.emailVerified === false && <Badge variant="outline">niezweryfikowany</Badge>}
+            </div>
             <Input
               id="email"
               type="email"
@@ -163,8 +184,20 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
               placeholder="jan@example.com"
             />
             <p id="email-hint" className="text-xs text-muted-foreground">
-              Zmiana adresu e-mail nie jest jeszcze dostępna — skontaktuj się z obsługą.
+              Aby zmienić adres e-mail, użyj sekcji „Zmień adres e-mail”.
             </p>
+            {user.emailVerified === false && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResendVerification}
+                disabled={resending}
+              >
+                {resending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Wyślij link weryfikacyjny
+              </Button>
+            )}
           </div>
 
           <div className="space-y-2">

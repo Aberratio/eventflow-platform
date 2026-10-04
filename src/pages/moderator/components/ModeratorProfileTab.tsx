@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import { ChangeEmailCard } from '@/components/profile/ChangeEmailCard';
 import { toast } from 'sonner';
 import { User, Mail, Phone, Lock, Save } from 'lucide-react';
 
@@ -83,6 +84,8 @@ export const ModeratorProfileTab = () => {
           </Button>
         </CardContent>
       </Card>
+
+      <ChangeEmailCard />
 
       <Card className="border-destructive/30 bg-destructive/5">
         <CardHeader>

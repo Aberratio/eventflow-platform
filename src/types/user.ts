@@ -33,6 +33,8 @@ export interface User {
   isNewUser?: boolean;
   status?: 'active' | 'blocked';
   eventLimit?: number;
+  /** PP.7: informational only; absent on older API responses. */
+  emailVerified?: boolean;
 }
 
 /**

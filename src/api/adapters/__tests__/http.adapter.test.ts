@@ -167,6 +167,39 @@ describe('httpAdapter contract mapping', () => {
     });
   });
 
+  it.each([
+    ['verifyEmail', '/auth/email/verify', { token: 'a'.repeat(64) }],
+    ['confirmEmailChange', '/auth/email/change/confirm', { token: 'b'.repeat(64) }],
+    [
+      'requestEmailChange',
+      '/auth/email/change',
+      { newEmail: 'nowy@example.test', currentPassword: 'demo1234' },
+    ],
+  ] as const)('%s posts its payload to %s (PP.7)', async (method, path, payload) => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
+
+    await (httpAdapter[method] as (p: unknown) => Promise<unknown>)(payload);
+
+    expect(fetch).toHaveBeenCalledWith(
+      `http://localhost:8081/api/v1${path}`,
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(payload) }),
+    );
+  });
+
+  it('posts the verification resend without a body (PP.7)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: true, data: { alreadyVerified: false } }),
+    );
+
+    const response = await httpAdapter.resendEmailVerification();
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/auth/email/verification/resend',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(response.data).toEqual({ alreadyVerified: false });
+  });
+
   it('preserves paginated response shape for list endpoints', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({

@@ -363,6 +363,10 @@ export const httpAdapter: ApiAdapter = {
   register: (data) => request('/auth/register', json('POST', data)),
   resetPassword: (payload) => request('/auth/password/reset', json('POST', payload)),
   confirmPasswordReset: (payload) => request('/auth/password/reset/confirm', json('POST', payload)),
+  verifyEmail: (payload) => request('/auth/email/verify', json('POST', payload)),
+  resendEmailVerification: () => request('/auth/email/verification/resend', json('POST')),
+  requestEmailChange: (payload) => request('/auth/email/change', json('POST', payload)),
+  confirmEmailChange: (payload) => request('/auth/email/change/confirm', json('POST', payload)),
   async changePassword(payload) {
     // PP.7: a password change ends every session, including this device's old token; the server answers
     // with a fresh one. Store it before the next request so this device stays signed in.
