@@ -34,6 +34,7 @@ import type {
   RegisterPayload,
   ResetPasswordPayload,
   ChangePasswordPayload,
+  ConfirmPasswordResetPayload,
   CreateRegistrationPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
@@ -209,6 +210,7 @@ export interface ApiAdapter {
   register(data: RegisterPayload): Promise<ApiResponse<User>>;
   resetPassword(payload: ResetPasswordPayload): Promise<ApiResponse<void>>;
   changePassword(payload: ChangePasswordPayload): Promise<ApiResponse<void>>;
+  confirmPasswordReset(payload: ConfirmPasswordResetPayload): Promise<ApiResponse<void>>;
 
   // ── Registrations ──
   getRegistrations(filters?: RegistrationFilters): Promise<PaginatedResponse<Registration>>;

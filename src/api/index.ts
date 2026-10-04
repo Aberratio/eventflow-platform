@@ -119,6 +119,8 @@ export const resetPassword: ApiAdapter['resetPassword'] = (...args) =>
   ensureAdapter().then((a) => a.resetPassword(...args));
 export const changePassword: ApiAdapter['changePassword'] = (...args) =>
   ensureAdapter().then((a) => a.changePassword(...args));
+export const confirmPasswordReset: ApiAdapter['confirmPasswordReset'] = (...args) =>
+  ensureAdapter().then((a) => a.confirmPasswordReset(...args));
 
 // Registrations
 export const getRegistrations: ApiAdapter['getRegistrations'] = (...args) =>
@@ -449,6 +451,7 @@ export type {
   RegisterPayload,
   ResetPasswordPayload,
   ChangePasswordPayload,
+  ConfirmPasswordResetPayload,
   CreateRegistrationPayload,
   RegistrationMerchandiseSelection,
   UpdateRegistrationPayload,

@@ -3,6 +3,7 @@ import type { ApiResponse, PaginatedResponse } from '../types';
 import type { ResultImportBatch, ShopOrder, User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { resolveApiAssetUrl } from '@/lib/utils';
+import { ApiRequestError } from '../errors';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const TOKEN_STORAGE_KEY = STORAGE_KEYS.API_TOKEN;
@@ -64,6 +65,10 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   upload_dir_unavailable: 'Nie można teraz zapisać pliku na serwerze.',
   upload_failed: 'Nie udało się wgrać pliku. Spróbuj ponownie.',
 };
+
+function apiErrorCode(payload: unknown): string | undefined {
+  return (payload as { error?: { code?: string } })?.error?.code;
+}
 
 function apiErrorMessage(payload: unknown, fallback: string): string {
   const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
@@ -128,7 +133,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       }
     }
 
-    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
+    throw new ApiRequestError(
+      apiErrorMessage(payload, `Błąd API ${response.status}`),
+      apiErrorCode(payload),
+      response.status,
+    );
   }
   return payload as ApiResponse<T>;
 }
@@ -173,7 +182,11 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
       }
     }
 
-    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
+    throw new ApiRequestError(
+      apiErrorMessage(payload, `Błąd API ${response.status}`),
+      apiErrorCode(payload),
+      response.status,
+    );
   }
   return payload as ApiResponse<T>;
 }
@@ -201,7 +214,11 @@ async function downloadFile(endpoint: string, fallbackFilename: string): Promise
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(apiErrorMessage(payload, `Błąd API ${response.status}`));
+    throw new ApiRequestError(
+      apiErrorMessage(payload, `Błąd API ${response.status}`),
+      apiErrorCode(payload),
+      response.status,
+    );
   }
 
   const disposition = response.headers.get('Content-Disposition') ?? '';
@@ -345,6 +362,7 @@ export const httpAdapter: ApiAdapter = {
   getCurrentUser: () => request('/auth/me'),
   register: (data) => request('/auth/register', json('POST', data)),
   resetPassword: (payload) => request('/auth/password/reset', json('POST', payload)),
+  confirmPasswordReset: (payload) => request('/auth/password/reset/confirm', json('POST', payload)),
   async changePassword(payload) {
     // PP.7: a password change ends every session, including this device's old token; the server answers
     // with a fresh one. Store it before the next request so this device stays signed in.

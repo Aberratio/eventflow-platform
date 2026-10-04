@@ -6,6 +6,7 @@ import type {
   ResetPasswordPayload,
   ChangePasswordPayload,
 } from './types';
+import type { ConfirmPasswordResetPayload } from './payloads';
 import type { User, UserRole } from '@/types';
 
 export async function login(credentials: LoginCredentials): Promise<ApiResponse<User | null>> {
@@ -36,4 +37,10 @@ export async function resetPassword(_payload: ResetPasswordPayload): Promise<Api
 
 export async function changePassword(_payload: ChangePasswordPayload): Promise<ApiResponse<void>> {
   return httpAdapter.changePassword(_payload);
+}
+
+export async function confirmPasswordReset(
+  payload: ConfirmPasswordResetPayload,
+): Promise<ApiResponse<void>> {
+  return httpAdapter.confirmPasswordReset(payload);
 }

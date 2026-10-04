@@ -5,6 +5,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
+import { confirmPasswordReset } from '@/api';
+import { apiErrorCode } from '@/api/errors';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +38,7 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [linkInvalid, setLinkInvalid] = useState(false);
 
   const token = searchParams.get('token');
 
@@ -44,15 +47,32 @@ const ResetPasswordPage = () => {
     defaultValues: { password: '', confirmPassword: '' },
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async ({ password }: ResetPasswordFormData) => {
+    if (!token) return;
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSuccess(true);
-    toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zmienione.' });
-    setIsLoading(false);
+    try {
+      await confirmPasswordReset({ token, newPassword: password });
+      setIsSuccess(true);
+      toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zmienione.' });
+    } catch (error) {
+      const code = apiErrorCode(error);
+      if (code === 'invalid_token') {
+        setLinkInvalid(true);
+      } else if (code === 'password_too_short' || code === 'password_too_long') {
+        form.setError('password', { message: (error as Error).message });
+      } else {
+        toast({
+          title: 'Błąd',
+          description: 'Nie udało się zmienić hasła. Spróbuj ponownie.',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!token && !isSuccess) {
+  if ((!token || linkInvalid) && !isSuccess) {
     return (
       <AuthPageShell
         icon={<AlertTriangle className="h-8 w-8 text-destructive" />}
@@ -119,6 +139,7 @@ const ResetPasswordPage = () => {
                           <Input
                             type={showPassword ? 'text' : 'password'}
                             placeholder="Min. 8 znaków"
+                            autoComplete="new-password"
                             className="pl-10 pr-10"
                             {...field}
                           />
@@ -153,6 +174,7 @@ const ResetPasswordPage = () => {
                           <Input
                             type="password"
                             placeholder="Powtórz hasło"
+                            autoComplete="new-password"
                             className="pl-10"
                             {...field}
                           />

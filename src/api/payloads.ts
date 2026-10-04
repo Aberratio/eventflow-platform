@@ -163,6 +163,12 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+/** PP.7: sets a new password from the one-time link of the reset e-mail. */
+export interface ConfirmPasswordResetPayload {
+  token: string;
+  newPassword: string;
+}
+
 // ──────────────── Registrations ────────────────
 
 /**

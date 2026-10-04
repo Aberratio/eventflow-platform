@@ -94,7 +94,11 @@ describe('httpAdapter contract mapping', () => {
   it('stores the rotated token returned by a password change (PP.7)', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
     vi.mocked(fetch).mockResolvedValueOnce(
-      mockJsonResponse({ success: true, data: { token: 'fresh-token' }, message: 'Password changed' }),
+      mockJsonResponse({
+        success: true,
+        data: { token: 'fresh-token' },
+        message: 'Password changed',
+      }),
     );
 
     await httpAdapter.changePassword({ oldPassword: 'demo1234', newPassword: 'NoweHaslo123' });
@@ -124,6 +128,43 @@ describe('httpAdapter contract mapping', () => {
     ).rejects.toThrow('Obecne hasło jest nieprawidłowe.');
 
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('old-token');
+  });
+
+  it('posts the reset token and new password to the confirm endpoint (PP.7)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
+
+    await httpAdapter.confirmPasswordReset({ token: 'a'.repeat(64), newPassword: 'NoweHaslo123' });
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/auth/password/reset/confirm',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ token: 'a'.repeat(64), newPassword: 'NoweHaslo123' }),
+      }),
+    );
+  });
+
+  it('carries the API error code and status on thrown errors (PP.7)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'invalid_token', message: 'Link jest nieprawidłowy lub wygasł.' },
+        },
+        400,
+      ),
+    );
+
+    const error = await httpAdapter
+      .confirmPasswordReset({ token: 'bad', newPassword: 'NoweHaslo123' })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toMatchObject({
+      message: 'Link jest nieprawidłowy lub wygasł.',
+      code: 'invalid_token',
+      status: 400,
+    });
   });
 
   it('preserves paginated response shape for list endpoints', async () => {
