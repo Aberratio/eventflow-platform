@@ -7,8 +7,11 @@ export async function getEvents(filters?: EventFilters): Promise<PaginatedRespon
   return httpAdapter.getEvents(filters);
 }
 
-export async function getEventBySlug(slug: string): Promise<ApiResponse<Event | null>> {
-  return httpAdapter.getEventBySlug(slug);
+export async function getEventBySlug(
+  slug: string,
+  accessCode?: string,
+): Promise<ApiResponse<Event | null>> {
+  return httpAdapter.getEventBySlug(slug, accessCode);
 }
 
 export async function getEventById(id: string): Promise<ApiResponse<Event | null>> {

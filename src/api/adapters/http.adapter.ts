@@ -229,7 +229,8 @@ function json(method: string, data?: unknown): RequestInit {
 
 export const httpAdapter: ApiAdapter = {
   getEvents: (filters) => paginated('/events', filters as Record<string, QueryValue>),
-  getEventBySlug: (slug) => request(`/events/slug/${encodeURIComponent(slug)}`),
+  getEventBySlug: (slug, accessCode) =>
+    request(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`),
   getEventById: (id) => request(`/events/${encodeURIComponent(id)}`),
   createEvent: (data) => request('/events', json('POST', data)),
   updateEvent: (id, data) => request(`/events/${encodeURIComponent(id)}`, json('PATCH', data)),

@@ -124,7 +124,7 @@ import type { SalesStats, PlatformStats } from '@/types/admin';
 export interface ApiAdapter {
   // ── Events ──
   getEvents(filters?: EventFilters): Promise<PaginatedResponse<Event>>;
-  getEventBySlug(slug: string): Promise<ApiResponse<Event | null>>;
+  getEventBySlug(slug: string, accessCode?: string): Promise<ApiResponse<Event | null>>;
   getEventById(id: string): Promise<ApiResponse<Event | null>>;
   createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>>;
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;

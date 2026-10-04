@@ -5,6 +5,7 @@ import {
   getResultsByEvent,
 } from '@/api';
 import { toPublicStartListEntry } from '@/lib/publicStartList';
+import { useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -54,6 +55,22 @@ interface EventDetailsPageProps {
   previewMode?: boolean;
 }
 
+function readStoredAccessCode(key: string): string | undefined {
+  try {
+    return sessionStorage.getItem(key) || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function storeAccessCode(key: string, code: string): void {
+  try {
+    sessionStorage.setItem(key, code);
+  } catch {
+    // sessionStorage can throw in private mode; the code then lives in the URL only.
+  }
+}
+
 const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const { slug, tab } = useParams();
   const navigate = useNavigate();
@@ -65,12 +82,23 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     const base = previewMode ? `/events/${slug}/preview` : `/events/${slug}`;
     navigate(`${base}/${value}`, { replace: true });
   };
+  // PP.55: the server is the only gate for private Events — forward the link's code
+  // (or the one it already accepted in this tab) and trust its 200/404.
+  const accessCodeFromUrl = searchParams.get('access') || undefined;
+  const accessStorageKey = `private-event-code:${slug ?? ''}`;
+  const accessCode = accessCodeFromUrl ?? readStoredAccessCode(accessStorageKey);
   const { data: eventResponse, isLoading } = useQuery({
-    queryKey: ['event-by-slug', slug],
-    queryFn: () => getEventBySlug(slug || ''),
+    queryKey: ['event-by-slug', slug, accessCode ?? null],
+    queryFn: () => getEventBySlug(slug || '', accessCode),
     enabled: Boolean(slug),
   });
   const event = eventResponse?.data ?? null;
+
+  useEffect(() => {
+    if (event?.visibility === 'private' && accessCodeFromUrl) {
+      storeAccessCode(accessStorageKey, accessCodeFromUrl);
+    }
+  }, [event?.visibility, accessCodeFromUrl, accessStorageKey]);
 
   const { data: registrationsResponse } = useQuery({
     queryKey: ['event-registrations', event?.id],
@@ -108,22 +136,8 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     (user?.role === 'moderator' && event?.publicationStatus !== 'draft') ||
     (user?.role === 'organizer' && event?.organizerId === user?.id);
 
-  const accessCodeFromUrl = searchParams.get('access');
   const isPrivateEvent = event?.visibility === 'private';
   const isCancelled = event?.publicationStatus === 'cancelled';
-
-  const hasPrivateAccess = (() => {
-    if (!isPrivateEvent || !event) return !isPrivateEvent;
-    if (isAdminLike || user?.role === 'moderator') return true;
-    if (user?.role === 'organizer' && event.organizerId === user?.id) return true;
-    if (isAuthenticated && eventRegistrations.some((r) => r.userId === user?.id)) return true;
-    if (accessCodeFromUrl && accessCodeFromUrl === event.accessCode) {
-      sessionStorage.setItem(`private-event-${event.id}`, accessCodeFromUrl);
-      return true;
-    }
-    const storedCode = sessionStorage.getItem(`private-event-${event.id}`);
-    return storedCode === event.accessCode;
-  })();
 
   if (isLoading) {
     return (
@@ -138,8 +152,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   if (
     !event ||
     (previewMode && !canViewDraft) ||
-    (isUnpublished && !canViewDraft) ||
-    (isPrivateEvent && !hasPrivateAccess)
+    (isUnpublished && !canViewDraft)
   ) {
     return (
       <Layout>
