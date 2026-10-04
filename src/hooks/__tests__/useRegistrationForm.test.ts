@@ -801,4 +801,41 @@ describe('useRegistrationForm', () => {
       expect(data!.insuranceVariantId).toBeUndefined();
     });
   });
+
+  describe('ward (Opieka) participant', () => {
+    it('prefills the birth date from the ward, not the logged-in user', () => {
+      const { result } = renderHook(
+        () =>
+          useRegistrationForm(mockEvent, null, {
+            key: 'c-zosia',
+            name: 'Zosia Kowalska',
+            birthDate: '2016-05-10',
+          }),
+        { wrapper },
+      );
+      expect(result.current.birthYear).toBe('2016');
+      expect(result.current.birthMonth).toBe('05');
+      expect(result.current.birthDay).toBe('10');
+      expect(result.current.isProfileComplete).toBe(true);
+      expect(result.current.isWard).toBe(true);
+      expect(result.current.participant.name).toBe('Zosia Kowalska');
+    });
+
+    it('leaves birth fields empty for a ward without a birth date', () => {
+      const { result } = renderHook(
+        () => useRegistrationForm(mockEvent, null, { key: 'c-zosia', name: 'Zosia Kowalska' }),
+        { wrapper },
+      );
+      expect(result.current.birthYear).toBe('');
+      expect(result.current.birthMonth).toBe('');
+      expect(result.current.birthDay).toBe('');
+      expect(result.current.isProfileComplete).toBe(false);
+    });
+
+    it('keeps the self path unchanged without a ward', () => {
+      const { result } = renderHook(() => useRegistrationForm(mockEvent), { wrapper });
+      expect(result.current.isWard).toBe(false);
+      expect(result.current.participant.name).toBe('Jan Kowalski');
+    });
+  });
 });

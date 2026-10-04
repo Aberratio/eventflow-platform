@@ -23,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
+import type { RegistrationParticipant } from '@/hooks/useRegistrationForm';
 import { formatMoney } from '@/lib/format';
 import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
 import {
@@ -74,6 +75,20 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   }, [myCompetitors, grantorSearch]);
 
   const selectedGrantor = myCompetitors.find((g) => g.id === selectedCompetitorRelId) ?? null;
+
+  // PP.44: the form must describe the person being registered, not the logged-in guardian.
+  const wardParticipant = useMemo<RegistrationParticipant | null>(
+    () =>
+      registeringForOther && selectedGrantor
+        ? {
+            key: selectedGrantor.competitorId,
+            name: `${selectedGrantor.firstName} ${selectedGrantor.lastName}`.trim(),
+            birthDate: selectedGrantor.birthDate ?? undefined,
+            gender: selectedGrantor.gender ?? undefined,
+          }
+        : null,
+    [registeringForOther, selectedGrantor],
+  );
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event-by-slug', slug],
@@ -552,7 +567,9 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         )}
 
         <RegistrationForm
+          key={wardParticipant?.key ?? 'self'}
           event={event}
+          participant={wardParticipant}
           onComplete={handleComplete}
           onCancel={handleCancel}
           previewMode={isPreviewAvailable}

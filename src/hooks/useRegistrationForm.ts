@@ -35,8 +35,28 @@ export interface InitialTeamJoin {
   inviteToken: string;
 }
 
-export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJoin | null) => {
+/**
+ * PP.44: the Zawodnik under the caller's Opieka being registered ("Zapisuję kogoś innego").
+ * When given, the personal-data step is filled from THIS person, never from the logged-in Konto.
+ */
+export interface RegistrationParticipant {
+  /** Zawodnik id (competitorId) — also used by the page as the form's React key. */
+  key: string;
+  /** "Imię Nazwisko" of the ward, for display and the transfer-title preview. */
+  name: string;
+  /** `YYYY-MM-DD` (competitors.birth_date) when known. */
+  birthDate?: string;
+  gender?: 'M' | 'K';
+}
+
+export const useRegistrationForm = (
+  event: Event,
+  initialTeamJoin?: InitialTeamJoin | null,
+  ward?: RegistrationParticipant | null,
+) => {
   const { user } = useAuth();
+  const wardKey = ward?.key ?? null;
+  const wardBirthDate = ward?.birthDate ?? '';
   const [step, setStep] = useState(1);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -75,9 +95,10 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
 
   // Profile completeness
   const isProfileComplete = useMemo(() => {
+    if (ward) return /^\d{4}-\d{2}-\d{2}/.test(ward.birthDate ?? '');
     if (!user) return false;
     return !!(user.birthYear && user.gender);
-  }, [user]);
+  }, [ward, user]);
 
   useEffect(() => {
     // E7.2: an invitation link already dictates the distance — don't let the
@@ -106,12 +127,33 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
   }, [initialTeamJoin]);
 
   useEffect(() => {
+    if (wardKey !== null) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(wardBirthDate);
+      if (match) {
+        setBirthYear(match[1]);
+        setBirthMonth(match[2]);
+        setBirthDay(match[3]);
+      }
+      return;
+    }
     if (isProfileComplete && user?.birthYear) {
       setBirthYear(String(user.birthYear));
       setBirthMonth('01');
       setBirthDay('01');
     }
-  }, [isProfileComplete, user]);
+  }, [wardKey, wardBirthDate, isProfileComplete, user]);
+
+  const participant = useMemo(
+    () =>
+      ward
+        ? {
+            name: ward.name,
+            birthYear: ward.birthDate ? parseInt(ward.birthDate.slice(0, 4), 10) : undefined,
+            gender: ward.gender,
+          }
+        : { name: user?.name ?? '', birthYear: user?.birthYear, gender: user?.gender },
+    [ward, user],
+  );
 
   const selectedDistance = event.distances.find((d) => d.id === selectedDistanceId);
   const formCfg = event.registrationFormConfig;
@@ -573,6 +615,8 @@ export const useRegistrationForm = (event: Event, initialTeamJoin?: InitialTeamJ
 
   return {
     user,
+    participant,
+    isWard: Boolean(ward),
     step,
     activeSteps,
     selectedDistanceId,

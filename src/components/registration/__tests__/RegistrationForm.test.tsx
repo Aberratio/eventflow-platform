@@ -30,6 +30,8 @@ const submitData = {
 
 const formState = {
   user: null,
+  participant: { name: 'Jan Kowalski', birthYear: undefined, gender: undefined },
+  isWard: false,
   step: 6,
   activeSteps: [{ id: 6, name: 'Podsumowanie' }],
   selectedDistanceId: 'd1',

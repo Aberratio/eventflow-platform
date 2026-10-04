@@ -3,6 +3,7 @@ import { render, screen } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import EventRegistrationPage from '../EventRegistrationPage';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
+import { getCare } from '@/api';
 
 // E1.2: the client must never send computed money amounts to the server as
 // authoritative — this test exercises the real `handleComplete` in
@@ -11,6 +12,8 @@ import type { RegistrationData } from '@/components/registration/RegistrationFor
 
 const mockCreateRegistration = vi.fn().mockResolvedValue({ data: { id: 'r1' } });
 const mockNavigate = vi.fn();
+// PP.44: records the props the page hands to the (mocked) RegistrationForm.
+const mockFormProps: { current: Record<string, unknown> | null } = { current: null };
 const mockNavigateToPaymentGateway = vi.fn();
 
 vi.mock('@/lib/paymentGatewayNavigation', () => ({
@@ -110,9 +113,10 @@ const fixedSubmitData: RegistrationData = {
 };
 
 vi.mock('@/components/registration/RegistrationForm', () => ({
-  RegistrationForm: ({ onComplete }: { onComplete: (data: RegistrationData) => void }) => (
-    <button onClick={() => onComplete(fixedSubmitData)}>submit-fixture</button>
-  ),
+  RegistrationForm: (props: { onComplete: (data: RegistrationData) => void }) => {
+    mockFormProps.current = props as unknown as Record<string, unknown>;
+    return <button onClick={() => props.onComplete(fixedSubmitData)}>submit-fixture</button>;
+  },
 }));
 
 describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () => {
@@ -187,5 +191,40 @@ describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () 
       ),
     );
     expect(mockNavigateToPaymentGateway).not.toHaveBeenCalled();
+  });
+
+  it('passes the selected ward to the form and registers the ward', async () => {
+    vi.mocked(getCare).mockResolvedValueOnce({
+      data: {
+        myCompetitors: [
+          {
+            id: 'rel-1',
+            competitorId: 'c-zosia',
+            firstName: 'Zosia',
+            lastName: 'Kowalska',
+            birthDate: '2016-05-10',
+            identityCode: 'zqr_x',
+            createdAt: '2026-01-01',
+          },
+        ],
+      },
+    } as Awaited<ReturnType<typeof getCare>>);
+    const user = userEvent.setup();
+    render(<EventRegistrationPage />);
+
+    await user.click(await screen.findByLabelText('Zapisuję kogoś innego'));
+
+    await vi.waitFor(() =>
+      expect(mockFormProps.current?.participant).toEqual({
+        key: 'c-zosia',
+        name: 'Zosia Kowalska',
+        birthDate: '2016-05-10',
+        gender: undefined,
+      }),
+    );
+
+    await user.click(await screen.findByText('submit-fixture'));
+    expect(mockCreateRegistration).toHaveBeenCalledTimes(1);
+    expect(mockCreateRegistration.mock.calls[0][0].competitorId).toBe('c-zosia');
   });
 });

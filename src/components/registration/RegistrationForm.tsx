@@ -49,7 +49,11 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { toast } from '@/hooks/use-toast';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
-import { useRegistrationForm, type InitialTeamJoin } from '@/hooks/useRegistrationForm';
+import {
+  useRegistrationForm,
+  type InitialTeamJoin,
+  type RegistrationParticipant,
+} from '@/hooks/useRegistrationForm';
 import { appLogger } from '@/lib/logger';
 import { formatMoney } from '@/lib/format';
 
@@ -61,6 +65,8 @@ interface RegistrationFormProps {
   disabled?: boolean;
   /** E7.2: pre-fills "join this exact team" when arriving via an invitation link. */
   initialTeamJoin?: InitialTeamJoin | null;
+  /** PP.44: the ward being registered; null/undefined = the logged-in user themself. */
+  participant?: RegistrationParticipant | null;
 }
 
 /**
@@ -105,6 +111,8 @@ export interface RegistrationData {
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 63 }, (_, i) => currentYear - 18 - i);
+/** PP.44: a ward is often a child — offer every year back from the current one. */
+const wardYears = Array.from({ length: 101 }, (_, i) => currentYear - i);
 const mutedWarningCallout =
   'border-warning/20 bg-warning/[0.06] text-foreground [&>svg]:text-warning/70';
 const mutedWarningDescription = 'text-muted-foreground';
@@ -143,8 +151,9 @@ export const RegistrationForm = ({
   previewMode = false,
   disabled = false,
   initialTeamJoin = null,
+  participant = null,
 }: RegistrationFormProps) => {
-  const form = useRegistrationForm(event, initialTeamJoin);
+  const form = useRegistrationForm(event, initialTeamJoin, participant);
 
   const handleSubmit = () => {
     const data = form.buildSubmitData();
@@ -450,7 +459,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
 const PersonalDataStep = ({ form }: { form: FormHook }) => {
   const selectedDistance = form.selectedDistance!;
   const ageCategories = selectedDistance.ageCategories ?? [];
-  const userGender = form.user?.gender;
+  const userGender = form.participant.gender;
   const userBirthYear = form.birthYear ? parseInt(form.birthYear) : null;
   const categoriesMatchingBirthYear = userBirthYear
     ? ageCategories.filter((cat) => {
@@ -479,6 +488,9 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
     categoriesMatchingBirthYear.length > 0 &&
     categoriesMatchingBirthYear.every((cat) => cat.gender != null && cat.gender !== userGender);
 
+  const genderLabel =
+    userGender === 'M' ? 'Mężczyzna' : userGender === 'K' ? 'Kobieta' : 'nie podano';
+
   useEffect(() => {
     if (autoCategory && form.selectedCategory !== autoCategory.name) {
       form.setSelectedCategory(autoCategory.name);
@@ -489,17 +501,32 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
     <Card>
       <CardHeader>
         <CardTitle>Dane osobowe</CardTitle>
-        <CardDescription>Podaj swoją datę urodzenia i wybierz kategorię wiekową</CardDescription>
+        <CardDescription>
+          {form.isWard
+            ? `Data urodzenia i kategoria: ${form.participant.name}`
+            : 'Podaj swoją datę urodzenia i wybierz kategorię wiekową'}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {form.isProfileComplete ? (
           <Alert className="border-success/30 bg-success/10">
             <CheckCircle2 className="h-4 w-4 text-success" />
-            <AlertTitle className="text-success">Dane pobrane z profilu</AlertTitle>
+            <AlertTitle className="text-success">
+              {form.isWard ? 'Dane podopiecznego' : 'Dane pobrane z profilu'}
+            </AlertTitle>
             <AlertDescription className="text-success/80">
-              Rok urodzenia: <strong>{form.user?.birthYear}</strong> (
-              {currentYear - (form.user?.birthYear || 0)} lat) • Płeć:{' '}
-              <strong>{form.user?.gender === 'M' ? 'Mężczyzna' : 'Kobieta'}</strong>
+              {form.isWard && <>{form.participant.name} • </>}
+              Rok urodzenia: <strong>{form.participant.birthYear}</strong> (
+              {currentYear - (form.participant.birthYear || 0)} lat) • Płeć:{' '}
+              <strong>{genderLabel}</strong>
+            </AlertDescription>
+          </Alert>
+        ) : form.isWard ? (
+          <Alert className={mutedWarningCallout}>
+            <UserCog className="h-4 w-4" />
+            <AlertTitle>Brak daty urodzenia podopiecznego</AlertTitle>
+            <AlertDescription className={mutedWarningDescription}>
+              Podaj datę urodzenia poniżej, aby dobrać kategorię.
             </AlertDescription>
           </Alert>
         ) : (
@@ -565,7 +592,7 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
                   <SelectValue placeholder="Rok" />
                 </SelectTrigger>
                 <SelectContent>
-                  {years.map((y) => (
+                  {(form.isWard ? wardYears : years).map((y) => (
                     <SelectItem key={y} value={String(y)}>
                       {y}
                     </SelectItem>
@@ -576,7 +603,8 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
           </div>
           {form.age && (
             <p className="text-sm text-muted-foreground">
-              Twój wiek: <span className="font-medium text-foreground">{form.age} lat</span>
+              {form.isWard ? 'Wiek:' : 'Twój wiek:'}{' '}
+              <span className="font-medium text-foreground">{form.age} lat</span>
             </p>
           )}
         </div>
@@ -608,21 +636,36 @@ const PersonalDataStep = ({ form }: { form: FormHook }) => {
               ) : genderMismatch ? (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Nie możesz zapisać się na to wydarzenie</AlertTitle>
+                  <AlertTitle>
+                    {form.isWard
+                      ? 'Nie można zapisać tej osoby na ten dystans'
+                      : 'Nie możesz zapisać się na to wydarzenie'}
+                  </AlertTitle>
                   <AlertDescription className="space-y-1">
-                    <p>
-                      Twój profil nie pasuje do żadnej z dostępnych kategorii tego dystansu. Aby
-                      wziąć udział, możesz:
-                    </p>
-                    <ul className="ml-4 list-disc space-y-0.5">
-                      <li>
-                        zmienić dane (płeć, rok urodzenia) w swoim profilu, jeśli zawierają błąd,
-                      </li>
-                      <li>
-                        zalogować się na właściwe konto — zapisy możliwe tylko z własnego profilu,
-                      </li>
-                      <li>skontaktować się z organizatorem, jeśli uważasz, że to pomyłka.</li>
-                    </ul>
+                    {form.isWard ? (
+                      <p>
+                        Dane podopiecznego nie pasują do żadnej kategorii tego dystansu. Skontaktuj
+                        się z organizatorem, jeśli uważasz, że to pomyłka.
+                      </p>
+                    ) : (
+                      <>
+                        <p>
+                          Twój profil nie pasuje do żadnej z dostępnych kategorii tego dystansu. Aby
+                          wziąć udział, możesz:
+                        </p>
+                        <ul className="ml-4 list-disc space-y-0.5">
+                          <li>
+                            zmienić dane (płeć, rok urodzenia) w swoim profilu, jeśli zawierają
+                            błąd,
+                          </li>
+                          <li>
+                            zalogować się na właściwe konto — zapisy możliwe tylko z własnego
+                            profilu,
+                          </li>
+                          <li>skontaktować się z organizatorem, jeśli uważasz, że to pomyłka.</li>
+                        </ul>
+                      </>
+                    )}
                   </AlertDescription>
                 </Alert>
               ) : userBirthYear && categoriesMatchingBirthYear.length > 0 ? (
@@ -1263,7 +1306,7 @@ const SummaryStep = ({
         {!previewMode && event.paymentConfig?.type === 'organizer_bank' && (
           <BankTransferDetails
             event={event}
-            user={form.user}
+            user={{ name: form.participant.name }}
             selectedDistance={selectedDistance}
             birthDate={
               form.birthYear && form.birthMonth && form.birthDay
