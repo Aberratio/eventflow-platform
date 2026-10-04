@@ -345,7 +345,16 @@ export const httpAdapter: ApiAdapter = {
   getCurrentUser: () => request('/auth/me'),
   register: (data) => request('/auth/register', json('POST', data)),
   resetPassword: (payload) => request('/auth/password/reset', json('POST', payload)),
-  changePassword: (payload) => request('/auth/password/change', json('POST', payload)),
+  async changePassword(payload) {
+    // PP.7: a password change ends every session, including this device's old token; the server answers
+    // with a fresh one. Store it before the next request so this device stays signed in.
+    const raw = await request<{ token?: string } | null>(
+      '/auth/password/change',
+      json('POST', payload),
+    );
+    if (raw.data?.token) localStorage.setItem(TOKEN_STORAGE_KEY, raw.data.token);
+    return { data: undefined, success: raw.success, message: raw.message };
+  },
 
   getRegistrations: (filters) => paginated('/registrations', filters as Record<string, QueryValue>),
   getRegistrationsByEvent: (eventId) =>

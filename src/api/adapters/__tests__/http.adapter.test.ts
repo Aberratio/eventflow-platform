@@ -91,6 +91,41 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
+  it('stores the rotated token returned by a password change (PP.7)', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: true, data: { token: 'fresh-token' }, message: 'Password changed' }),
+    );
+
+    await httpAdapter.changePassword({ oldPassword: 'demo1234', newPassword: 'NoweHaslo123' });
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/auth/password/change',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ oldPassword: 'demo1234', newPassword: 'NoweHaslo123' }),
+        headers: expect.objectContaining({ Authorization: 'Bearer old-token' }),
+      }),
+    );
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('fresh-token');
+  });
+
+  it('keeps the stored token when a password change fails (PP.7)', async () => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        { success: false, error: { code: 'invalid_current_password', message: 'x' } },
+        422,
+      ),
+    );
+
+    await expect(
+      httpAdapter.changePassword({ oldPassword: 'bad', newPassword: 'NoweHaslo123' }),
+    ).rejects.toThrow('Obecne hasło jest nieprawidłowe.');
+
+    expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('old-token');
+  });
+
   it('preserves paginated response shape for list endpoints', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
