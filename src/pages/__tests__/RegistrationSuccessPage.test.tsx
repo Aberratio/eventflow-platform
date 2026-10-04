@@ -149,4 +149,22 @@ describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
     expect(await screen.findByText('Rejestracja zakończona!')).toBeInTheDocument();
     expect(screen.queryByText('Zaproś resztę drużyny')).not.toBeInTheDocument();
   });
+
+  it('names the registered participant in the legacy transfer title', async () => {
+    mockLocationState = {
+      ...baseState,
+      registration: { ...baseRegistration, userName: 'Zosia Kowalska', status: 'pending' },
+      paymentConfig: {
+        type: 'organizer_bank',
+        bankAccountNumber: '11 1111 1111 1111 1111 1111 1111',
+        bankAccountHolder: 'Organizator',
+        transferTitle: '{eventName} - {participantName}',
+      },
+    };
+
+    render(<RegistrationSuccessPage />);
+
+    expect(await screen.findByText('Test Event - Zosia Kowalska')).toBeInTheDocument();
+    expect(screen.queryByText(/Jan Kowalski/)).not.toBeInTheDocument();
+  });
 });

@@ -175,13 +175,16 @@ const RegistrationSuccessPage = () => {
       return state.registration.transferTitle;
     }
 
+    // PP.44: the registered participant (the ward for an Opieka Zapis), not the logged-in guardian.
+    const participantName = state?.registration.userName || user?.name || 'Uczestnik';
+
     if (!state?.paymentConfig?.transferTitle) {
-      return `${state?.eventName || 'Wydarzenie'} - ${user?.name || 'Uczestnik'}`;
+      return `${state?.eventName || 'Wydarzenie'} - ${participantName}`;
     }
 
     return state.paymentConfig.transferTitle
       .replace('{eventName}', state.eventName)
-      .replace('{participantName}', user?.name || 'Uczestnik')
+      .replace('{participantName}', participantName)
       .replace(
         '{distanceName}',
         state.registration.distanceName || state.registrationData.distanceName,
