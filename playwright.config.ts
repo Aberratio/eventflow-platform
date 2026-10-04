@@ -7,7 +7,9 @@ export default defineConfig({
   // can delay the next login by tens of seconds.
   timeout: 60000,
   expect: {
-    timeout: 10000,
+    // The moderation queue fetches the whole event list from a single-threaded `php -S`; 10 s was
+    // not enough when it ran right after other specs.
+    timeout: 20000,
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.05,
     },
