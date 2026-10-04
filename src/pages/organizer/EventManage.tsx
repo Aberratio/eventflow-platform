@@ -83,7 +83,7 @@ const EventManage = () => {
   const activeTab: EventManageTab =
     isDraft && ['participants', 'results'].includes(requestedTab) ? 'overview' : requestedTab;
 
-  const { data: registrationsResponse } = useQuery({
+  const { data: registrationsResponse, isError: registrationsFailed } = useQuery({
     queryKey: ['event-registrations', id],
     queryFn: () => getRegistrationsByEvent(id!),
     enabled: Boolean(id),
@@ -246,7 +246,13 @@ const EventManage = () => {
 
           {!isDraft && (
             <TabsContent value="participants">
-              <ParticipantsTab event={visibleEvent} registrations={registrations} />
+              {registrationsResponse ? (
+                <ParticipantsTab event={visibleEvent} registrations={registrations} />
+              ) : registrationsFailed ? (
+                <p className="text-destructive">Nie udało się wczytać listy uczestników.</p>
+              ) : (
+                <p className="text-muted-foreground">Ładowanie uczestników...</p>
+              )}
             </TabsContent>
           )}
 
