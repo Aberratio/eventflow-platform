@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
-import { getCurrentUser } from '@/api';
+import { getCurrentUser, login } from '@/api';
+import { ApiRequestError } from '@/api/errors';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import type { User, UserRole } from '@/types';
 
@@ -65,6 +66,43 @@ describe('AuthContext', () => {
       ok = await result.current.loginWithCredentials('wrong@test.com', 'wrong');
     });
     expect(ok!).toBe(false);
+    expect(result.current.isAuthenticated).toBe(false);
+  });
+
+  it('loginWithCredentials rejects with account_blocked for a blocked account', async () => {
+    const message =
+      'Twoje konto zostało zablokowane. Jeśli uważasz, że to pomyłka, napisz do nas: kontakt@zmierzymyczas.pl.';
+    vi.mocked(login).mockRejectedValueOnce(new ApiRequestError(message, 'account_blocked', 403));
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    let error: unknown;
+    await act(async () => {
+      try {
+        await result.current.loginWithCredentials('jan@example.com', 'demo1234');
+      } catch (e) {
+        error = e;
+      }
+    });
+
+    expect(error).toBeInstanceOf(ApiRequestError);
+    expect((error as ApiRequestError).code).toBe('account_blocked');
+    expect((error as ApiRequestError).message).toBe(message);
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(localStorage.getItem('zmierzymyczas_auth')).toBeNull();
+  });
+
+  it('loginWithCredentials still resolves false for other API errors', async () => {
+    vi.mocked(login).mockRejectedValueOnce(
+      new ApiRequestError('Invalid email or password', 'invalid_credentials', 401),
+    );
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    let ok: boolean | undefined;
+    await act(async () => {
+      ok = await result.current.loginWithCredentials('jan@example.com', 'bad');
+    });
+
+    expect(ok).toBe(false);
     expect(result.current.isAuthenticated).toBe(false);
   });
 

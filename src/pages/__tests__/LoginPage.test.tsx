@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
+import { ApiRequestError } from '@/api/errors';
 import LoginPage from '../LoginPage';
 
 const mockLoginWithCredentials = vi.fn();
 const mockNavigate = vi.fn();
+const mockToast = vi.fn();
 
 vi.mock('@/contexts/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -29,7 +31,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: vi.fn() }),
+  useToast: () => ({ toast: mockToast }),
 }));
 
 describe('LoginPage', () => {
@@ -88,6 +90,47 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(mockLoginWithCredentials).toHaveBeenCalledWith('jan@example.com', 'demo1234');
+    });
+  });
+
+  it('pokazuje komunikat serwera dla zablokowanego konta', async () => {
+    const message =
+      'Twoje konto zostało zablokowane. Jeśli uważasz, że to pomyłka, napisz do nas: kontakt@zmierzymyczas.pl.';
+    mockLoginWithCredentials.mockRejectedValueOnce(
+      new ApiRequestError(message, 'account_blocked', 403),
+    );
+    render(<LoginPage />);
+
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'jan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'demo1234');
+    fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Konto zablokowane',
+        description: message,
+        variant: 'destructive',
+      });
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Zaloguj się' })).toBeEnabled();
+    });
+  });
+
+  it('dla błędnych danych nadal pokazuje ogólny komunikat', async () => {
+    mockLoginWithCredentials.mockResolvedValueOnce(false);
+    render(<LoginPage />);
+
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'jan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'zle-haslo');
+    fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Błąd logowania',
+        description: 'Nieprawidłowy email lub hasło.',
+        variant: 'destructive',
+      });
     });
   });
 

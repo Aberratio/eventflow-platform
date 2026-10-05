@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
+import { ApiRequestError } from '@/api/errors';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,17 +70,26 @@ const LoginPage = () => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    const success = await loginWithCredentials(data.email, data.password);
-    if (success) {
-      toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
-    } else {
-      toast({
-        title: 'Błąd logowania',
-        description: 'Nieprawidłowy email lub hasło.',
-        variant: 'destructive',
-      });
+    try {
+      const success = await loginWithCredentials(data.email, data.password);
+      if (success) {
+        toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
+      } else {
+        toast({
+          title: 'Błąd logowania',
+          description: 'Nieprawidłowy email lub hasło.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.code === 'account_blocked') {
+        toast({ title: 'Konto zablokowane', description: error.message, variant: 'destructive' });
+      } else {
+        throw error;
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

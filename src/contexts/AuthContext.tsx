@@ -16,11 +16,13 @@ import { User } from '@/types';
 import { SelfUpdateUserPayload } from '@/api/payloads';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
+import { ApiRequestError } from '@/api/errors';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** Resolves false for bad credentials; rejects with ApiRequestError (code 'account_blocked') for a blocked account. */
   loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateCurrentUser: (data: SelfUpdateUserPayload) => Promise<User | null>;
@@ -146,8 +148,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         metadata: { method: 'api' },
       });
       return true;
-    } catch {
+    } catch (error) {
       appLogger.auth('login_failed', `Failed login for ${email}`, { metadata: { email } });
+      // PP.70: a blocked account is not a credentials problem; the page shows the server message.
+      if (error instanceof ApiRequestError && error.code === 'account_blocked') throw error;
       return false;
     }
   };
