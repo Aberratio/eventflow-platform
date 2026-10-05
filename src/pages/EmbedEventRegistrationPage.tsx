@@ -117,8 +117,8 @@ const EmbedEventRegistrationPage = () => {
       // No navigation to the normal `/events/:slug/register/success` page —
       // that page renders inside `<Layout>` (full site chrome), which would
       // look broken crammed into a small third-party iframe. Show a minimal
-      // inline confirmation instead; the registration confirmation e-mail
-      // carries the full details.
+      // inline confirmation instead. The server sends the confirmation mail when
+      // Central Mailer is configured; the UI makes no claim about it.
       setRegistration(response.data);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Spróbuj ponownie.');
@@ -204,8 +204,8 @@ const EmbedEventRegistrationPage = () => {
             <CheckCircle2 className="mx-auto h-9 w-9 text-primary" />
             <h1 className="text-lg font-bold">Zapisano się!</h1>
             <p className="text-muted-foreground">
-              Zapisano na wydarzenie „{event.name}", dystans {registration.distanceName}.
-              Potwierdzenie i dalsze instrukcje wysłaliśmy na e-mail.
+              Zapisano na wydarzenie „{event.name}", dystans {registration.distanceName}. Szczegóły
+              zapisu znajdziesz po zalogowaniu w panelu uczestnika.
             </p>
           </CardContent>
         </Card>

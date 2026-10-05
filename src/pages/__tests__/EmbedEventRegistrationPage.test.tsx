@@ -229,4 +229,23 @@ describe('EmbedEventRegistrationPage', () => {
       expect(mockNavigateToPaymentGateway).toHaveBeenCalledWith('https://gw.example/pay'),
     );
   });
+
+  it('confirmation does not claim an e-mail was sent', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockCreateRegistration.mockResolvedValue({
+      data: { id: 'r1', status: 'confirmed', distanceName: '10 km' },
+    });
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('submit-fixture'));
+
+    expect(await screen.findByText('Zapisano się!')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Szczegóły zapisu znajdziesz po zalogowaniu w panelu uczestnika\./),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/wysłaliśmy/i)).not.toBeInTheDocument();
+  });
 });

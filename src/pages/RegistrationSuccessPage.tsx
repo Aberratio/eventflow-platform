@@ -6,7 +6,7 @@ import {
   Building2,
   Copy,
   AlertTriangle,
-  Mail,
+  ClipboardList,
   CreditCard,
   User,
   Users,
@@ -22,8 +22,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig, Registration } from '@/types';
-import { useRegistrationEmail } from '@/hooks/useRegistrationEmail';
-import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTeamInvite } from '@/api';
 import { buildTeamInviteLink } from '@/lib/teamInvite';
@@ -121,8 +119,6 @@ const RegistrationSuccessPage = () => {
   const { slug } = useParams();
   const location = useLocation();
   const { user } = useAuth();
-  const { sendRegistrationEmail } = useRegistrationEmail();
-  const emailSentRef = useRef(false);
 
   const state = location.state as RegistrationSuccessState | null;
 
@@ -139,22 +135,6 @@ const RegistrationSuccessPage = () => {
     enabled: Boolean(inviteTeamId),
     retry: false,
   });
-
-  // Send confirmation email on mount (only once)
-  useEffect(() => {
-    if (state && !emailSentRef.current) {
-      emailSentRef.current = true;
-      sendRegistrationEmail({
-        registrationData: state.registrationData,
-        registration: state.registration,
-        eventName: state.eventName,
-        eventDate: state.eventDate,
-        eventCity: state.eventCity,
-        eventSlug: state.eventSlug,
-        paymentConfig: state.paymentConfig,
-      });
-    }
-  }, [state, sendRegistrationEmail]);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -458,14 +438,14 @@ const RegistrationSuccessPage = () => {
             </Card>
           )}
 
-          {/* Email Confirmation Notice */}
+          {/* Where to find the registration details (the server sends the confirmation mail itself) */}
           <Card className="mb-6">
             <CardContent className="py-4">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Mail className="h-5 w-5 flex-shrink-0" />
+                <ClipboardList className="h-5 w-5 flex-shrink-0" />
                 <p>
-                  Na podany adres email wysłaliśmy potwierdzenie rejestracji
-                  {isBankTransfer && ' z danymi do przelewu'}.
+                  Szczegóły zapisu i status płatności znajdziesz w panelu uczestnika, w zakładce
+                  „Moje rejestracje".
                 </p>
               </div>
             </CardContent>

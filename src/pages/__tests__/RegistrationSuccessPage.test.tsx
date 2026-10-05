@@ -167,4 +167,17 @@ describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
     expect(await screen.findByText('Test Event - Zosia Kowalska')).toBeInTheDocument();
     expect(screen.queryByText(/Jan Kowalski/)).not.toBeInTheDocument();
   });
+
+  it('does not claim a confirmation e-mail was sent', async () => {
+    mockLocationState = { ...baseState };
+
+    render(<RegistrationSuccessPage />);
+
+    expect(
+      await screen.findByText(
+        /Szczegóły zapisu i status płatności znajdziesz w panelu uczestnika, w zakładce „Moje rejestracje"/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/wysłaliśmy/i)).not.toBeInTheDocument();
+  });
 });
