@@ -5,6 +5,7 @@ import { getCurrentUser, login } from '@/api';
 import { ApiRequestError } from '@/api/errors';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import type { User, UserRole } from '@/types';
+import { toast } from '@/hooks/use-toast';
 
 const testUsers: User[] = [
   { id: 'u-participant', name: 'Participant', email: 'jan@example.com', role: 'participant' },
@@ -35,6 +36,16 @@ vi.mock('@/api', () => ({
   logout: vi.fn(async () => ({ data: undefined, success: true })),
 }));
 
+vi.mock('@/hooks/use-toast', () => ({ toast: vi.fn() }));
+
+/** Behaves like http.adapter.ts on a protected 401: drops the token, announces it, rejects. */
+const fakeAdapterRejects = async (token: string): Promise<never> => {
+  await Promise.resolve(); // a real request answers asynchronously, after the listeners are mounted
+  localStorage.removeItem(STORAGE_KEYS.API_TOKEN);
+  window.dispatchEvent(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token } }));
+  throw new ApiRequestError('Twoja sesja wygasła. Zaloguj się ponownie.', 'unauthorized', 401);
+};
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
@@ -42,6 +53,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('AuthContext', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.mocked(toast).mockClear();
   });
 
   it('starts unauthenticated', () => {
@@ -166,6 +178,85 @@ describe('AuthContext', () => {
     expect(result.current.isAuthenticated).toBe(false);
     expect(localStorage.getItem(STORAGE_KEYS.AUTH)).toBeNull();
     expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBeNull();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('logs out when the adapter removed the token before announcing the expired session', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'jwt-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+    vi.mocked(getCurrentUser).mockResolvedValueOnce({ data: testUsers[2], success: true });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.isAuthenticated).toBe(true);
+
+    await act(async () => {
+      localStorage.removeItem(STORAGE_KEYS.API_TOKEN);
+      window.dispatchEvent(
+        new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token: 'jwt-token' } }),
+      );
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(localStorage.getItem(STORAGE_KEYS.AUTH)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBeNull();
+    expect(toast).toHaveBeenCalledTimes(1);
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sesja zakończona' }));
+  });
+
+  it('clears the session when mount-time validation is rejected by the adapter', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'jwt-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+    vi.mocked(getCurrentUser).mockImplementationOnce(() => fakeAdapterRejects('jwt-token'));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(localStorage.getItem(STORAGE_KEYS.AUTH)).toBeNull();
+    expect(toast).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a newer session when a stale validation for an old token fails after re-login', async () => {
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'old-token');
+    localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(testUsers[2]));
+    let rejectStale: (error: Error) => void = () => undefined;
+    vi.mocked(getCurrentUser).mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectStale = reject;
+        }),
+    );
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    localStorage.setItem(STORAGE_KEYS.API_TOKEN, 'fresh-token');
+    await act(async () => {
+      await result.current.loginWithCredentials('organizer@test.com', 'demo1234');
+    });
+    await act(async () => {
+      // The adapter does not drop or announce a token that is no longer current.
+      rejectStale(
+        new ApiRequestError('Twoja sesja wygasła. Zaloguj się ponownie.', 'unauthorized', 401),
+      );
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBe('fresh-token');
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('does not toast for an anonymous 401', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent(AUTH_SESSION_EXPIRED_EVENT, { detail: { token: null } }),
+      );
+    });
+
+    expect(result.current.isAuthenticated).toBe(false);
+    expect(toast).not.toHaveBeenCalled();
   });
 
   it('refreshUser re-fetches /users/me and updates the stored user (e.g. after a role change mid-session)', async () => {
@@ -216,5 +307,6 @@ describe('AuthContext', () => {
     expect(result.current.isAuthenticated).toBe(true);
     expect(localStorage.getItem(STORAGE_KEYS.AUTH)).not.toBeNull();
     expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBe('fresh-token');
+    expect(toast).not.toHaveBeenCalled();
   });
 });

@@ -17,6 +17,7 @@ import { SelfUpdateUserPayload } from '@/api/payloads';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
 import { ApiRequestError } from '@/api/errors';
+import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -70,12 +71,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const clearSessionForToken = useCallback(
-    (token?: string | null) => {
-      const storage = getStorage();
-      if (token && storage?.getItem(STORAGE_KEYS.API_TOKEN) !== token) {
-        return;
+    (token?: string | null): boolean => {
+      const current = getStorage()?.getItem(STORAGE_KEYS.API_TOKEN);
+      // A 401 for an older token must not end a newer session (re-login while an old request was
+      // in flight). An empty slot means the adapter already dropped this token: clear the session.
+      if (token && current && current !== token) {
+        return false;
       }
       clearSession();
+      return true;
     },
     [clearSession],
   );
@@ -122,7 +126,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const handleSessionExpired = (event: Event) => {
       const token = isAuthSessionExpiredEvent(event) ? event.detail?.token : undefined;
-      clearSessionForToken(token);
+      const cleared = clearSessionForToken(token);
+      // Only a real token the server rejected is a session ending; an anonymous 401 (no token) is not.
+      if (cleared && token) {
+        toast({
+          title: 'Sesja zakończona',
+          description: 'Twoja sesja wygasła lub została zakończona. Zaloguj się ponownie.',
+        });
+      }
     };
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
     return () => window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);

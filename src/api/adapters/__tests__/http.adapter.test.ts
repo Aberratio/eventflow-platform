@@ -339,7 +339,13 @@ describe('httpAdapter contract mapping', () => {
 
   it('clears the stored token and emits an auth event on protected 401 responses', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'expired-token');
-    const onExpired = vi.fn();
+    // AuthContext relies on this order: the slot is already empty when the event announces the token.
+    let announced: unknown;
+    let slotAtDispatch: string | null | undefined;
+    const onExpired = vi.fn((event: Event) => {
+      announced = (event as CustomEvent).detail;
+      slotAtDispatch = localStorage.getItem(TOKEN_STORAGE_KEY);
+    });
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse(
@@ -355,6 +361,8 @@ describe('httpAdapter contract mapping', () => {
 
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBeNull();
     expect(onExpired).toHaveBeenCalledTimes(1);
+    expect(announced).toEqual({ token: 'expired-token' });
+    expect(slotAtDispatch).toBeNull();
     window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, onExpired);
   });
 
