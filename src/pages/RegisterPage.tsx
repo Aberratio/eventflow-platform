@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { appLogger } from '@/lib/logger';
+import { register } from '@/api';
+import { ApiRequestError } from '@/api/errors';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,7 +14,6 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -26,8 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { User, Briefcase, UserPlus, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react';
+import { UserPlus, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react';
 
 const registerSchema = z
   .object({
@@ -36,7 +36,6 @@ const registerSchema = z
     email: z.string().email('Nieprawidłowy adres email'),
     password: z.string().min(8, 'Hasło musi mieć minimum 8 znaków'),
     confirmPassword: z.string(),
-    role: z.enum(['participant', 'organizer']),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Hasła muszą być identyczne',
@@ -60,35 +59,57 @@ const RegisterPage = () => {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'participant',
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
+    try {
+      // PP.101: self-registration always creates a participant; the server ignores any role in the body.
+      await register({
+        name: `${data.firstName.trim()} ${data.lastName.trim()}`,
+        email: data.email,
+        password: data.password,
+      });
+    } catch (error) {
+      // The adapter turns the server's Polish message (409 email taken, 422 invalid data) into the error text.
+      const message =
+        error instanceof ApiRequestError
+          ? error.message
+          : 'Nie udało się utworzyć konta. Spróbuj ponownie.';
+      if (error instanceof ApiRequestError) {
+        if (error.code === 'email_taken' || error.code === 'invalid_email') {
+          form.setError('email', { message });
+        } else if (error.code === 'password_too_short' || error.code === 'password_too_long') {
+          form.setError('password', { message });
+        }
+      }
+      toast({
+        title: 'Nie udało się utworzyć konta',
+        description: message,
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
 
-    appLogger.auth(
-      'register',
-      `Zarejestrowano nowe konto: ${data.firstName} ${data.lastName} (${data.role})`,
-      {
-        metadata: {
-          email: data.email,
-          role: data.role,
-          name: `${data.firstName} ${data.lastName}`,
-        },
-      },
-    );
+    // No name or e-mail in the log: the account exists, nothing else is worth keeping here.
+    appLogger.auth('register', 'Zarejestrowano nowe konto', { metadata: { role: 'participant' } });
     toast({
       title: 'Konto zostało utworzone!',
-      description: 'Na podany adres email wysłaliśmy link aktywacyjny.',
+      description:
+        'Link do potwierdzenia adresu e-mail jest wysyłany na podany adres. Jeśli nie dotrze, możesz poprosić o ponowne wysłanie w swoim profilu.',
     });
-    await loginWithCredentials(data.email, data.password);
-    const redirectPath = data.role === 'organizer' ? '/organizer' : '/participant';
-    navigate(redirectPath);
-    setIsLoading(false);
-  };
 
-  const selectedRole = form.watch('role');
+    try {
+      const loggedIn = await loginWithCredentials(data.email, data.password);
+      navigate(loggedIn ? '/participant' : '/login');
+    } catch {
+      navigate('/login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthPageShell
@@ -206,67 +227,6 @@ const RegisterPage = () => {
                           {...field}
                         />
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Typ konta</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-2 gap-4"
-                      >
-                        <div>
-                          <RadioGroupItem
-                            value="participant"
-                            id="participant"
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor="participant"
-                            className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                              selectedRole === 'participant'
-                                ? 'border-primary bg-primary/5 shadow-sm'
-                                : 'border-muted bg-card hover:bg-accent/5'
-                            }`}
-                          >
-                            <User className="mb-2 h-6 w-6" />
-                            <span className="text-sm font-medium">Zawodnik</span>
-                            <span className="mt-1 text-xs text-muted-foreground">
-                              Startuj w zawodach
-                            </span>
-                          </Label>
-                        </div>
-                        <div>
-                          <RadioGroupItem
-                            value="organizer"
-                            id="organizer"
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor="organizer"
-                            className={`flex cursor-pointer flex-col items-center justify-between rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                              selectedRole === 'organizer'
-                                ? 'border-primary bg-primary/5 shadow-sm'
-                                : 'border-muted bg-card hover:bg-accent/5'
-                            }`}
-                          >
-                            <Briefcase className="mb-2 h-6 w-6" />
-                            <span className="text-sm font-medium">Organizator</span>
-                            <span className="mt-1 text-xs text-muted-foreground">
-                              Twórz wydarzenia
-                            </span>
-                          </Label>
-                        </div>
-                      </RadioGroup>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

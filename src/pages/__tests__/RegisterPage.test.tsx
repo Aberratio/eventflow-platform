@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
+import { ApiRequestError } from '@/api/errors';
 import RegisterPage from '../RegisterPage';
 
 const mockLoginWithCredentials = vi.fn();
 const mockNavigate = vi.fn();
 const mockToast = vi.fn();
+const mockRegister = vi.fn();
+
+vi.mock('@/api', async () => ({
+  ...(await vi.importActual<typeof import('@/api')>('@/api')),
+  register: (...args: unknown[]) => mockRegister(...args),
+}));
 
 vi.mock('@/contexts/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -36,23 +43,23 @@ vi.mock('@/lib/logger', () => ({
   appLogger: { auth: vi.fn() },
 }));
 
-async function fillValidForm(role: 'participant' | 'organizer' = 'participant') {
+async function fillValidForm() {
   await userEvent.type(screen.getByPlaceholderText('Jan'), 'Jan');
   await userEvent.type(screen.getByPlaceholderText('Kowalski'), 'Kowalski');
   await userEvent.type(screen.getByPlaceholderText('jan@example.com'), 'jan.kowalski@example.com');
   await userEvent.type(screen.getByPlaceholderText('Min. 8 znaków'), 'haslo1234');
   await userEvent.type(screen.getByPlaceholderText('Powtórz hasło'), 'haslo1234');
-
-  if (role === 'organizer') {
-    // Kliknij label "Organizator" (RadioGroupItem używa sr-only input)
-    fireEvent.click(screen.getByText('Organizator').closest('label')!);
-  }
 }
 
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoginWithCredentials.mockResolvedValue(false);
+    mockRegister.mockResolvedValue({
+      success: true,
+      data: { id: 'u1' },
+      message: 'User registered',
+    });
   });
 
   it('renderuje wszystkie pola formularza', () => {
@@ -65,21 +72,16 @@ describe('RegisterPage', () => {
     expect(screen.getByRole('button', { name: 'Zarejestruj się' })).toBeInTheDocument();
   });
 
-  it('wyświetla opcje wyboru roli', () => {
+  it('nie oferuje wyboru roli (rejestracja tworzy wyłącznie zawodnika)', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('Zawodnik')).toBeInTheDocument();
-    expect(screen.getByText('Organizator')).toBeInTheDocument();
+    expect(screen.queryByText('Organizator')).not.toBeInTheDocument();
+    expect(screen.queryByText('Typ konta')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
   });
 
   it('wyświetla link do logowania', () => {
     render(<RegisterPage />);
     expect(screen.getByRole('link', { name: 'Zaloguj się' })).toBeInTheDocument();
-  });
-
-  it('domyślnie zaznaczona jest rola Zawodnik', () => {
-    render(<RegisterPage />);
-    const participantRadio = screen.getByDisplayValue('participant');
-    expect(participantRadio).toBeChecked();
   });
 
   it('pokazuje błąd gdy imię ma mniej niż 2 znaki', async () => {
@@ -139,13 +141,21 @@ describe('RegisterPage', () => {
     });
   });
 
-  it('poprawna rejestracja wywołuje loginWithCredentials i przekierowuje uczestnika', async () => {
+  it('poprawna rejestracja wywołuje API bez roli, loguje i przekierowuje do /participant', async () => {
     mockLoginWithCredentials.mockResolvedValueOnce(true);
     render(<RegisterPage />);
 
-    await fillValidForm('participant');
+    await fillValidForm();
     fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
 
+    await waitFor(() => {
+      expect(mockRegister).toHaveBeenCalledWith({
+        name: 'Jan Kowalski',
+        email: 'jan.kowalski@example.com',
+        password: 'haslo1234',
+      });
+    });
+    expect(mockRegister.mock.calls[0][0]).not.toHaveProperty('role');
     await waitFor(() => {
       expect(mockLoginWithCredentials).toHaveBeenCalledWith(
         'jan.kowalski@example.com',
@@ -157,19 +167,7 @@ describe('RegisterPage', () => {
     });
   });
 
-  it('rejestracja organizatora przekierowuje do /organizer', async () => {
-    mockLoginWithCredentials.mockResolvedValueOnce(true);
-    render(<RegisterPage />);
-
-    await fillValidForm('organizer');
-    fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
-
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/organizer');
-    });
-  });
-
-  it('wyświetla toast z potwierdzeniem po rejestracji', async () => {
+  it('toast po rejestracji nie obiecuje wysłanego maila, tylko opisuje stan', async () => {
     mockLoginWithCredentials.mockResolvedValueOnce(true);
     render(<RegisterPage />);
 
@@ -181,6 +179,48 @@ describe('RegisterPage', () => {
         expect.objectContaining({ title: 'Konto zostało utworzone!' }),
       );
     });
+    const description = mockToast.mock.calls[0][0].description as string;
+    expect(description).not.toMatch(/wysłaliśmy/i);
+  });
+
+  it('409 z serwera: pokazuje polski komunikat, nie loguje i nie pokazuje sukcesu', async () => {
+    mockRegister.mockRejectedValueOnce(
+      new ApiRequestError('Ten adres e-mail jest już zajęty.', 'email_taken', 409),
+    );
+    render(<RegisterPage />);
+
+    await fillValidForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'Ten adres e-mail jest już zajęty.',
+          variant: 'destructive',
+        }),
+      );
+    });
+    expect(await screen.findAllByText('Ten adres e-mail jest już zajęty.')).not.toHaveLength(0);
+    expect(mockLoginWithCredentials).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Konto zostało utworzone!' }),
+    );
+    expect(screen.getByRole('button', { name: 'Zarejestruj się' })).toBeEnabled();
+  });
+
+  it('przycisk jest zablokowany w trakcie wysyłania', async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    mockRegister.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+    mockLoginWithCredentials.mockResolvedValueOnce(true);
+    render(<RegisterPage />);
+
+    await fillValidForm();
+    fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
+
+    expect(await screen.findByRole('button', { name: 'Tworzenie konta...' })).toBeDisabled();
+    finish({ success: true, data: {} });
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/participant'));
   });
 
   it('nie zawiera hardkodowanych adresów email jako mock danych', () => {

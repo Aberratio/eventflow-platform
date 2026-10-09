@@ -14,6 +14,9 @@ import {
 import { UserPlus, Check } from 'lucide-react';
 import type { User } from '@/types';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { createUser, updateUserRole } from '@/api';
+import { ApiRequestError } from '@/api/errors';
 
 interface AddOrganizerDialogProps {
   open: boolean;
@@ -33,6 +36,8 @@ export const AddOrganizerDialog: React.FC<AddOrganizerDialogProps> = ({
   const [newNip, setNewNip] = useState('');
   const [searchEmail, setSearchEmail] = useState('');
   const [matchedUser, setMatchedUser] = useState<User | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const emailMatches =
     searchEmail.length >= 2
@@ -49,19 +54,48 @@ export const AddOrganizerDialog: React.FC<AddOrganizerDialogProps> = ({
     setMatchedUser(null);
   };
 
-  const handleAdd = () => {
-    if (newName && newEmail) {
-      toast.success(`Organizator ${newName} został dodany`);
+  const errorText = (error: unknown) =>
+    error instanceof ApiRequestError
+      ? error.message
+      : 'Nie udało się zapisać zmian. Spróbuj ponownie.';
+
+  // PP.101: POST /users creates the account; the server reports whether the password-set link went out.
+  const handleAdd = async () => {
+    if (!newName.trim() || !newEmail.trim() || isSaving) return;
+    setIsSaving(true);
+    try {
+      const response = await createUser({
+        name: newName.trim(),
+        email: newEmail.trim(),
+        role: 'organizer',
+        ...(newPhone.trim() && { phone: newPhone.trim() }),
+        ...(newCompany.trim() && { companyName: newCompany.trim() }),
+        ...(newNip.trim() && { nip: newNip.trim() }),
+      });
+      toast.success(response.message ?? `Organizator ${newName.trim()} został dodany`);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       resetForm();
       onOpenChange(false);
+    } catch (error) {
+      toast.error(errorText(error));
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handlePromote = () => {
-    if (matchedUser) {
+  const handlePromote = async () => {
+    if (!matchedUser || isSaving) return;
+    setIsSaving(true);
+    try {
+      await updateUserRole(matchedUser.id, 'organizer');
       toast.success(`Użytkownik ${matchedUser.name} otrzymał rolę organizatora`);
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       resetForm();
       onOpenChange(false);
+    } catch (error) {
+      toast.error(errorText(error));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -135,7 +169,7 @@ export const AddOrganizerDialog: React.FC<AddOrganizerDialogProps> = ({
                     {matchedUser.role}
                   </Badge>
                 </div>
-                <Button onClick={handlePromote} className="w-full">
+                <Button onClick={handlePromote} className="w-full" disabled={isSaving}>
                   <Check className="mr-2 h-4 w-4" />
                   Nadaj rolę organizatora
                 </Button>
@@ -188,7 +222,11 @@ export const AddOrganizerDialog: React.FC<AddOrganizerDialogProps> = ({
                 />
               </div>
             </div>
-            <Button onClick={handleAdd} className="w-full" disabled={!newName || !newEmail}>
+            <Button
+              onClick={handleAdd}
+              className="w-full"
+              disabled={!newName.trim() || !newEmail.trim() || isSaving}
+            >
               <UserPlus className="mr-2 h-4 w-4" />
               Dodaj organizatora
             </Button>
