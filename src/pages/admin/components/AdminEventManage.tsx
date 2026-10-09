@@ -6,8 +6,10 @@ import {
   updateEvent,
 } from '@/api';
 import { QUERY_KEYS } from '@/constants';
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { buildChildIdMap, remapChildIds } from '@/api/eventChildren';
+import type { ApiResponse } from '@/api/types';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,7 +28,7 @@ import { PriceTiersEditor } from './PriceTiersEditor';
 import { DiscountCodesEditor } from './DiscountCodesEditor';
 import { ArrowLeft, Save, Radio, Users, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
-import { EventMerchandise, PaymentMethod, Distance, DiscountCode } from '@/types';
+import type { EventMerchandise, PaymentMethod, Distance, DiscountCode, Event } from '@/types';
 import {
   Select,
   SelectContent,
@@ -40,6 +42,7 @@ export const AdminEventManage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: id ? QUERY_KEYS.event(id) : ['events', 'missing'],
@@ -76,8 +79,29 @@ export const AdminEventManage = () => {
     event?.enableMerchandiseInRegistration || false,
   );
 
+  const [isSaving, setIsSaving] = useState(false);
+  // Unsaved edits must survive a background refetch of the event, so the form is only
+  // re-hydrated while it is clean (or when another event is opened).
+  const dirtyRef = useRef(false);
+  const editVersionRef = useRef(0);
+  const hydratedEventIdRef = useRef<string | undefined>(undefined);
+
+  const markDirty = () => {
+    dirtyRef.current = true;
+    editVersionRef.current += 1;
+  };
+  const edited =
+    <T,>(setter: (value: T) => void) =>
+    (value: T) => {
+      markDirty();
+      setter(value);
+    };
+
   useEffect(() => {
     if (!event) return;
+    if (dirtyRef.current && hydratedEventIdRef.current === event.id) return;
+    hydratedEventIdRef.current = event.id;
+    dirtyRef.current = false;
     setMerchandise(event.merchandise || []);
     setPaymentMethods(event.paymentMethods || defaultPaymentMethods);
     setLiveResultsUrl(event.liveResultsUrl || '');
@@ -159,21 +183,52 @@ export const AdminEventManage = () => {
   };
 
   const handleSaveAdvanced = async () => {
-    if (!validateAdvancedDistances()) return;
+    if (isSaving || !validateAdvancedDistances()) return;
 
+    const submitted = { distances, discountCodes, merchandise, paymentMethods };
+    const versionAtSend = editVersionRef.current;
+    setIsSaving(true);
     try {
-      await updateEvent(event.id, {
+      const response = await updateEvent(event.id, {
         organizerId: selectedOrganizer,
-        distances,
-        discountCodes,
-        merchandise,
-        paymentMethods,
+        ...submitted,
         liveResultsUrl,
         enableMerchandiseInRegistration: enableMerchandise,
       });
+      if (response.success === false) {
+        throw new Error(response.message || 'Nie udało się zapisać zmian');
+      }
+      const saved: Event = response.data;
+      const idMap = buildChildIdMap(submitted, saved);
+      // Adopt the server rows (real ids, server-owned counters). A collection the user changed
+      // while the save was in flight keeps those edits, only its temporary ids are remapped.
+      setDistances((local) =>
+        local === submitted.distances ? (saved.distances ?? local) : remapChildIds(local, idMap),
+      );
+      setDiscountCodes((local) =>
+        local === submitted.discountCodes
+          ? (saved.discountCodes ?? local)
+          : remapChildIds(local, idMap),
+      );
+      setMerchandise((local) =>
+        local === submitted.merchandise
+          ? (saved.merchandise ?? local)
+          : remapChildIds(local, idMap),
+      );
+      setPaymentMethods((local) =>
+        local === submitted.paymentMethods
+          ? (saved.paymentMethods ?? local)
+          : remapChildIds(local, idMap),
+      );
+      if (editVersionRef.current === versionAtSend) dirtyRef.current = false;
+      queryClient.setQueryData<ApiResponse<Event>>(QUERY_KEYS.event(event.id), response);
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
+      void queryClient.invalidateQueries({ queryKey: ['event', event.id] });
       toast.success('Ustawienia zaawansowane zostały zapisane');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać zmian');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -226,7 +281,7 @@ export const AdminEventManage = () => {
                     Dodatkowe ustawienia dostępne tylko dla administratora
                   </p>
                 </div>
-                <Button onClick={handleSaveAdvanced}>
+                <Button onClick={handleSaveAdvanced} disabled={isSaving}>
                   <Save className="mr-2 h-4 w-4" />
                   Zapisz zmiany
                 </Button>
@@ -243,7 +298,10 @@ export const AdminEventManage = () => {
                   <CardContent>
                     <div className="space-y-2">
                       <Label htmlFor="organizer">Organizator</Label>
-                      <Select value={selectedOrganizer} onValueChange={setSelectedOrganizer}>
+                      <Select
+                        value={selectedOrganizer}
+                        onValueChange={edited(setSelectedOrganizer)}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Wybierz organizatora" />
                         </SelectTrigger>
@@ -272,7 +330,7 @@ export const AdminEventManage = () => {
                       <Input
                         id="liveResultsUrl"
                         value={liveResultsUrl}
-                        onChange={(e) => setLiveResultsUrl(e.target.value)}
+                        onChange={(e) => edited(setLiveResultsUrl)(e.target.value)}
                         placeholder="https://example.com/live-results/..."
                       />
                       <p className="text-xs text-muted-foreground">
@@ -283,12 +341,12 @@ export const AdminEventManage = () => {
                 </Card>
               </div>
 
-              <PriceTiersEditor distances={distances} onChange={setDistances} />
+              <PriceTiersEditor distances={distances} onChange={edited(setDistances)} />
 
               <DiscountCodesEditor
                 discountCodes={discountCodes}
                 distances={distances}
-                onChange={setDiscountCodes}
+                onChange={edited(setDiscountCodes)}
               />
 
               <Card>
@@ -306,14 +364,20 @@ export const AdminEventManage = () => {
                         Uczestnicy będą mogli zamówić gadżety razem z pakietem startowym
                       </p>
                     </div>
-                    <Switch checked={enableMerchandise} onCheckedChange={setEnableMerchandise} />
+                    <Switch
+                      checked={enableMerchandise}
+                      onCheckedChange={edited(setEnableMerchandise)}
+                    />
                   </div>
                 </CardContent>
               </Card>
 
-              <PaymentMethodsEditor paymentMethods={paymentMethods} onChange={setPaymentMethods} />
+              <PaymentMethodsEditor
+                paymentMethods={paymentMethods}
+                onChange={edited(setPaymentMethods)}
+              />
 
-              <MerchandiseEditor merchandise={merchandise} onChange={setMerchandise} />
+              <MerchandiseEditor merchandise={merchandise} onChange={edited(setMerchandise)} />
             </div>
           </TabsContent>
         </Tabs>
