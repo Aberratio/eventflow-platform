@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Event } from '@/types';
-import { buildChildIdMap, remapChildIds, toEventWritePayload } from '../eventChildren';
+import type { DiscountCode, Event } from '@/types';
+import {
+  adoptSavedDiscountCodes,
+  buildChildIdMap,
+  remapChildIds,
+  toEventWritePayload,
+} from '../eventChildren';
 
 describe('toEventWritePayload', () => {
   it('drops server-owned counters and does not mutate its input', () => {
@@ -74,5 +79,24 @@ describe('remapChildIds', () => {
     ]);
     expect(rows[0].id).toBe('dc-1');
     expect(remapChildIds(rows, new Map())).toBe(rows);
+  });
+});
+
+describe('adoptSavedDiscountCodes', () => {
+  it('replaces temporary ids and takes counters from the response, keeping newer local edits', () => {
+    const local = [
+      { id: 'dc-seed', code: 'SEED', active: true, usedCount: 3 },
+      { id: 'dc-tmp', code: 'NEW', active: false, usedCount: 0 },
+    ] as unknown as DiscountCode[];
+    const saved = [
+      { id: 'dc-seed', code: 'SEED', active: true, usedCount: 4, usedBy: [] },
+      { id: 'srv-1', code: 'NEW', active: true, usedCount: 0 },
+    ] as unknown as DiscountCode[];
+
+    const result = adoptSavedDiscountCodes(local, saved, new Map([['dc-tmp', 'srv-1']]));
+
+    expect(result.map((c) => c.id)).toEqual(['dc-seed', 'srv-1']);
+    expect(result[0].usedCount).toBe(4);
+    expect(result[1].active).toBe(false);
   });
 });

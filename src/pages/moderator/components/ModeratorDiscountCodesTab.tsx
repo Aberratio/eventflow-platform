@@ -1,7 +1,10 @@
-import { getEvents, updateEvent } from '@/api';
+import { getEvents } from '@/api';
+import { adoptSavedDiscountCodes } from '@/api/eventChildren';
+import type { PaginatedResponse } from '@/api/types';
+import { useEventChildSaver } from '@/hooks/useEventChildSaver';
 import { QUERY_KEYS } from '@/constants';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -11,13 +14,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
-import { DiscountCode } from '@/types';
+import type { DiscountCode, Event } from '@/types';
 import { Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
+const LIST_QUERY_KEY = [...QUERY_KEYS.events, 'moderator-discount-codes'] as const;
+
 export const ModeratorDiscountCodesTab = () => {
+  const queryClient = useQueryClient();
   const { data: eventsResponse } = useQuery({
-    queryKey: [...QUERY_KEYS.events, 'moderator-discount-codes'],
+    queryKey: LIST_QUERY_KEY,
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 100 }),
   });
   const publishedEvents = (eventsResponse?.data ?? []).filter(
@@ -33,14 +39,33 @@ export const ModeratorDiscountCodesTab = () => {
     setDiscountCodes(event?.discountCodes || []);
   };
 
+  const selectedEventIdRef = useRef('');
+  selectedEventIdRef.current = selectedEventId;
+
+  const saver = useEventChildSaver<DiscountCode>(selectedEventId || undefined, 'discountCodes', {
+    onSaved: (saved: Event, idMap) => {
+      // Adopt the server ids and counters, unless the moderator already switched events.
+      if (selectedEventIdRef.current === saved.id) {
+        setDiscountCodes((local) => adoptSavedDiscountCodes(local, saved.discountCodes, idMap));
+      }
+      // Seed the list cache so switching events and back does not restore stale temporary ids.
+      queryClient.setQueryData<PaginatedResponse<Event>>(LIST_QUERY_KEY, (cached) =>
+        cached
+          ? { ...cached, data: cached.data.map((e) => (e.id === saved.id ? saved : e)) }
+          : cached,
+      );
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
+      void queryClient.invalidateQueries({ queryKey: ['event', saved.id] });
+      toast.success('Kody rabatowe zapisane');
+    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów'),
+  });
+
   const handleDiscountCodesChange = (codes: DiscountCode[]) => {
     if (!selectedEvent) return;
     setDiscountCodes(codes);
-    updateEvent(selectedEvent.id, { discountCodes: codes })
-      .then(() => toast.success('Kody rabatowe zapisane'))
-      .catch((error) =>
-        toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów'),
-      );
+    void saver.save(codes);
   };
 
   return (

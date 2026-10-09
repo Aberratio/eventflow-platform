@@ -1,4 +1,4 @@
-import type { Event } from '@/types';
+import type { DiscountCode, Event } from '@/types';
 import type { UpdateEventPayload } from './payloads';
 
 /**
@@ -98,5 +98,22 @@ export function remapChildIds<T extends IdRow>(items: T[], map: Map<string, stri
       }));
     }
     return next;
+  });
+}
+
+/**
+ * Brings a local discount code list in line with a save response without losing
+ * edits made in flight: temporary ids are replaced by server ids and the
+ * server-owned counters (`usedCount`, `usedBy`) are taken from the response.
+ */
+export function adoptSavedDiscountCodes(
+  local: DiscountCode[],
+  saved: DiscountCode[] | undefined,
+  map: Map<string, string>,
+): DiscountCode[] {
+  const byId = new Map((saved ?? []).map((code) => [code.id, code]));
+  return remapChildIds(local, map).map((code) => {
+    const stored = byId.get(code.id);
+    return stored ? { ...code, usedCount: stored.usedCount, usedBy: stored.usedBy } : code;
   });
 }

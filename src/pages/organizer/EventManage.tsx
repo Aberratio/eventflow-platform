@@ -1,4 +1,6 @@
-import { getEventById, getRegistrationsByEvent, updateEvent } from '@/api';
+import { getEventById, getRegistrationsByEvent } from '@/api';
+import { adoptSavedDiscountCodes } from '@/api/eventChildren';
+import { useEventChildSaver } from '@/hooks/useEventChildSaver';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -22,7 +24,8 @@ import {
   Tag,
   Mail,
 } from 'lucide-react';
-import { DiscountCode } from '@/types';
+import type { ApiResponse } from '@/api/types';
+import type { DiscountCode, Event } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -92,12 +95,31 @@ const EventManage = () => {
 
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>(event?.discountCodes || []);
 
+  const saver = useEventChildSaver<DiscountCode>(id, 'discountCodes', {
+    onSaved: (saved: Event, idMap) => {
+      // Adopt the server ids and counters without dropping edits made while the save was in flight.
+      setDiscountCodes((local) => adoptSavedDiscountCodes(local, saved.discountCodes, idMap));
+      queryClient.setQueryData<ApiResponse<Event>>(['event', saved.id], {
+        success: true,
+        data: saved,
+      });
+      void queryClient.invalidateQueries({ queryKey: ['event', saved.id] });
+      toast.success('Kody rabatowe zapisane');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów');
+    },
+  });
+
+  const isSavingCodes = saver.isBusy;
+
   useEffect(() => {
     if (event) {
-      setDiscountCodes(event.discountCodes || []);
+      // A refetch must not overwrite codes that are still being saved.
+      if (!isSavingCodes()) setDiscountCodes(event.discountCodes || []);
       setLocalStatus(event.publicationStatus);
     }
-  }, [event]);
+  }, [event, isSavingCodes]);
 
   useEffect(() => {
     if (!hasVisibleEvent || !id) return;
@@ -116,14 +138,7 @@ const EventManage = () => {
   const handleDiscountCodesChange = (codes: DiscountCode[]) => {
     if (!visibleEvent) return;
     setDiscountCodes(codes);
-    updateEvent(visibleEvent.id, { discountCodes: codes })
-      .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['event', visibleEvent.id] });
-        toast.success('Kody rabatowe zapisane');
-      })
-      .catch((error) => {
-        toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać kodów');
-      });
+    void saver.save(codes);
   };
 
   // Moderator access starts at `submitted` — a Szkic (draft) is visible only to its
