@@ -573,9 +573,7 @@ describe('httpAdapter getEventBySlug access code', () => {
   it('forwards the private-event access code as a query parameter', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
     await httpAdapter.getEventBySlug('bieg', 'KOD 1');
-    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(
-      /\/events\/slug\/bieg\?accessCode=KOD\+1$/,
-    );
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/events\/slug\/bieg\?accessCode=KOD\+1$/);
   });
 
   it('sends no query string without an access code', async () => {

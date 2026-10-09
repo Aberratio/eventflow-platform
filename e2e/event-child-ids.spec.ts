@@ -37,13 +37,19 @@ const isEventPatch = (eventId: string) => (response: Response) =>
 const uniqueCode = (prefix: string) => `${prefix}${Date.now().toString(36).toUpperCase()}`;
 
 test.describe('event child ids stay stable across saves (PP.96)', () => {
+  // Both tests save the same event, so run them one after another (last write wins otherwise).
+  test.describe.configure({ mode: 'serial' });
+
   test('moderator discount codes tab: second save keeps the server id', async ({ page }) => {
     const eventId = 'e-bank-transfer';
     const code = uniqueCode('PP96A');
     await loginAs(page, 'moderator');
     await page.goto('/moderator');
     await dismissCookies(page);
-    await page.getByRole('navigation').getByRole('button', { name: /Kody rabatowe/ }).click();
+    await page
+      .getByRole('navigation')
+      .getByRole('button', { name: /Kody rabatowe/ })
+      .click();
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: /Bieg Lokalny z Przelewem 2027/ }).click();
 
