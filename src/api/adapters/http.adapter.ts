@@ -4,6 +4,7 @@ import type { ResultImportBatch, ShopOrder, User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { resolveApiAssetUrl } from '@/lib/utils';
 import { ApiRequestError } from '../errors';
+import { toEventWritePayload } from '../eventChildren';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/v1';
 const TOKEN_STORAGE_KEY = STORAGE_KEYS.API_TOKEN;
@@ -249,8 +250,9 @@ export const httpAdapter: ApiAdapter = {
   getEventBySlug: (slug, accessCode) =>
     request(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`),
   getEventById: (id) => request(`/events/${encodeURIComponent(id)}`),
-  createEvent: (data) => request('/events', json('POST', data)),
-  updateEvent: (id, data) => request(`/events/${encodeURIComponent(id)}`, json('PATCH', data)),
+  createEvent: (data) => request('/events', json('POST', toEventWritePayload(data))),
+  updateEvent: (id, data) =>
+    request(`/events/${encodeURIComponent(id)}`, json('PATCH', toEventWritePayload(data))),
   deleteEvent: (id) => request(`/events/${encodeURIComponent(id)}`, json('DELETE')),
   submitEvent: (id) => request(`/events/${encodeURIComponent(id)}/submit`, json('POST')),
   approveEvent: (id) => request(`/events/${encodeURIComponent(id)}/approve`, json('POST')),

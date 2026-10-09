@@ -573,12 +573,64 @@ describe('httpAdapter getEventBySlug access code', () => {
   it('forwards the private-event access code as a query parameter', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
     await httpAdapter.getEventBySlug('bieg', 'KOD 1');
-    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/events\/slug\/bieg\?accessCode=KOD\+1$/);
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(
+      /\/events\/slug\/bieg\?accessCode=KOD\+1$/,
+    );
   });
 
   it('sends no query string without an access code', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
     await httpAdapter.getEventBySlug('bieg');
     expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/events\/slug\/bieg$/);
+  });
+});
+
+describe('httpAdapter event write payloads (PP.96)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const withCounters = {
+    discountCodes: [
+      {
+        id: 'srv-1',
+        code: 'A',
+        discountType: 'percent',
+        discountValue: 10,
+        active: true,
+        usedCount: 5,
+        usedBy: [{ registrationId: 'r1' }],
+      },
+    ],
+    distances: [{ id: 'd1', name: '5 km', price: 50, registeredCount: 7 }],
+  } as unknown as Parameters<typeof httpAdapter.updateEvent>[1];
+
+  const sentBody = () => {
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    return JSON.parse(String(init.body)) as Record<string, unknown>;
+  };
+
+  it('does not send usedCount, usedBy or registeredCount on PATCH /events/{id}', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.updateEvent('e1', withCounters);
+
+    const body = sentBody();
+    expect(JSON.stringify(body)).not.toMatch(/usedCount|usedBy|registeredCount/);
+    expect(body.discountCodes).toEqual([
+      { id: 'srv-1', code: 'A', discountType: 'percent', discountValue: 10, active: true },
+    ]);
+  });
+
+  it('does not send usedCount, usedBy or registeredCount on POST /events', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.createEvent(
+      withCounters as unknown as Parameters<typeof httpAdapter.createEvent>[0],
+    );
+
+    expect(JSON.stringify(sentBody())).not.toMatch(/usedCount|usedBy|registeredCount/);
   });
 });
