@@ -573,7 +573,9 @@ describe('httpAdapter getEventBySlug access code', () => {
   it('forwards the private-event access code as a query parameter', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
     await httpAdapter.getEventBySlug('bieg', 'KOD 1');
-    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(/\/events\/slug\/bieg\?accessCode=KOD\+1$/);
+    expect(String(vi.mocked(fetch).mock.calls[0][0])).toMatch(
+      /\/events\/slug\/bieg\?accessCode=KOD\+1$/,
+    );
   });
 
   it('sends no query string without an access code', async () => {
@@ -630,5 +632,139 @@ describe('httpAdapter event write payloads (PP.96)', () => {
     );
 
     expect(JSON.stringify(sentBody())).not.toMatch(/usedCount|usedBy|registeredCount/);
+  });
+});
+
+describe('event money normalisation (PP.103)', () => {
+  // PHP/PDO returns DECIMAL columns as numeric strings.
+  const rawEvent = () => ({
+    id: 'e1',
+    name: 'Bieg',
+    distances: [
+      {
+        id: 'd1',
+        price: '55.00',
+        length: '10.000',
+        pricingVariants: [{ id: 'v1', price: '40.50' }],
+      },
+      { id: 'd2', price: '0.00', length: null },
+    ],
+    merchandise: [
+      { id: 'm1', price: '79.99', originalPrice: null },
+      { id: 'm2', price: '10.00', originalPrice: '12.50' },
+    ],
+    discountCodes: [{ id: 'c1', discountValue: '10.00' }],
+  });
+
+  type Normalised = ReturnType<typeof rawEvent>;
+  const asEvent = (data: unknown) =>
+    data as unknown as {
+      distances: { price: number; length: number | null; pricingVariants?: { price: number }[] }[];
+      merchandise: { price: number; originalPrice?: number | null }[];
+      discountCodes: { discountValue: number }[];
+    };
+
+  const expectNumbers = (data: unknown) => {
+    const e = asEvent(data);
+    expect(e.distances[0].price).toBe(55);
+    expect(e.distances[0].length).toBe(10);
+    expect(e.distances[0].pricingVariants?.[0].price).toBe(40.5);
+    expect(e.distances[1].price).toBe(0);
+    expect(e.distances[1].length).toBeNull();
+    expect(e.merchandise[0].price).toBe(79.99);
+    expect(e.merchandise[0].originalPrice ?? null).toBeNull();
+    expect(e.merchandise[1].originalPrice).toBe(12.5);
+    expect(e.discountCodes[0].discountValue).toBe(10);
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const ok = (data: unknown) =>
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data }));
+
+  it('getEventById returns numbers', async () => {
+    ok(rawEvent());
+    expectNumbers((await httpAdapter.getEventById('e1')).data);
+  });
+
+  it('getEventById keeps null data', async () => {
+    ok(null);
+    expect((await httpAdapter.getEventById('e1')).data).toBeNull();
+  });
+
+  it('getEventBySlug returns numbers and keeps null data', async () => {
+    ok(rawEvent());
+    expectNumbers((await httpAdapter.getEventBySlug('bieg')).data);
+    ok(null);
+    expect((await httpAdapter.getEventBySlug('bieg')).data).toBeNull();
+  });
+
+  it('getEvents (paginated) normalises each row and keeps paging fields', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: true, data: [rawEvent()], total: 1, page: 1, pageSize: 20 }),
+    );
+    const res = await httpAdapter.getEvents();
+    expectNumbers(res.data[0]);
+    expect(res.total).toBe(1);
+  });
+
+  it('updateEvent returns numbers', async () => {
+    ok(rawEvent());
+    expectNumbers((await httpAdapter.updateEvent('e1', {})).data);
+  });
+
+  it.each([
+    [
+      'createEvent',
+      () => httpAdapter.createEvent({} as Parameters<typeof httpAdapter.createEvent>[0]),
+    ],
+    ['submitEvent', () => httpAdapter.submitEvent('e1')],
+    ['approveEvent', () => httpAdapter.approveEvent('e1')],
+    ['rejectEvent', () => httpAdapter.rejectEvent('e1', 'x')],
+    ['cancelEvent', () => httpAdapter.cancelEvent('e1')],
+    ['setEventVisibility', () => httpAdapter.setEventVisibility('e1', 'public')],
+    ['setEventIsTest', () => httpAdapter.setEventIsTest('e1', true)],
+    [
+      'createExternalEvent',
+      () =>
+        httpAdapter.createExternalEvent({
+          name: 'n',
+          date: '2027-01-01',
+          location: 'l',
+          city: 'c',
+        }),
+    ],
+  ])('%s returns numbers', async (_name, call) => {
+    ok(rawEvent());
+    expectNumbers((await call()).data);
+  });
+
+  it.each([
+    ['getFeaturedEvents', () => httpAdapter.getFeaturedEvents()],
+    ['getLiveEvents', () => httpAdapter.getLiveEvents()],
+    ['getEventsByOrganizer', () => httpAdapter.getEventsByOrganizer('o1')],
+  ])('%s normalises each row', async (_name, call) => {
+    ok([rawEvent()]);
+    expectNumbers((await call()).data[0]);
+  });
+
+  it('does not add collections that were absent', async () => {
+    ok({ id: 'e1', name: 'Bieg' });
+    const data = (await httpAdapter.getEventById('e1')).data as unknown as Record<string, unknown>;
+    expect(Object.keys(data).sort()).toEqual(['id', 'name']);
+  });
+
+  it('does not mutate-away unrelated fields', async () => {
+    const raw: Normalised = rawEvent();
+    ok(raw);
+    const data = (await httpAdapter.getEventById('e1')).data as unknown as { name: string };
+    expect(data.name).toBe('Bieg');
   });
 });
