@@ -343,17 +343,15 @@ const CartPage = () => {
         estimatedDelivery: format(estimatedDeliveryDate, 'd MMMM yyyy', { locale: pl }),
         createdAt: order.createdAt,
         shippingAddress: order.shippingAddress,
+        includesOrganizerPackage: items.some((item) => item.serviceKind === 'organizer_package'),
       };
 
       setLastOrder(orderDetails);
       clearCart();
-      // E5.7: an organizer-package purchase grants the Organizer role
-      // server-side in the same transaction as the order (see
-      // OrderRepository::grantOrganizerRoleIfNeeded()); AuthContext otherwise
-      // only re-fetches /users/me on mount/login, so without this the
-      // Organizer-only nav item (Header.tsx) would stay hidden until the
-      // next reload even though the purchase already succeeded. Cheap and
-      // safe to do unconditionally for every order, not just service ones.
+      // PP.105: an organizer-package order is created `pending` and grants nothing; the
+      // Organizer role, credits and event slot arrive only when staff mark the order paid
+      // (the server then ends the buyer's session, so they log in again). The refresh stays:
+      // it is cheap, harmless for every order, and picks up any change already made server-side.
       void refreshUser();
       navigate('/order-success');
     } catch (error) {

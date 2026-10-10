@@ -74,6 +74,9 @@ export interface CartItem {
   // in a returning visitor's localStorage) is treated as "not a service" —
   // see CartPage's hasOnlyServices.
   isService?: boolean;
+  // PP.105: carried over from ShopProduct.serviceKind so the order success page can say that an
+  // organizer package activates only after payment confirmation.
+  serviceKind?: 'organizer_package';
 }
 
 export interface OrderDetails {
@@ -96,6 +99,8 @@ export interface OrderDetails {
   estimatedDelivery: string;
   createdAt: string;
   shippingAddress?: ShopOrderAddress;
+  // PP.105: the order contains an organizer package (granted only once the order is paid).
+  includesOrganizerPackage?: boolean;
 }
 
 export interface ShopOrderAddress {

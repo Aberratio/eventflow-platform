@@ -94,6 +94,7 @@ const ShopProductPage = () => {
       size: selectedSize,
       color: selectedColor,
       isService: product.isService,
+      serviceKind: product.serviceKind,
     });
   };
 

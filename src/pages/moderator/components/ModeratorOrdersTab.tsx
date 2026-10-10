@@ -131,6 +131,14 @@ export const ModeratorOrdersTab = () => {
           toast.success('Status zamówienia został zaktualizowany');
           setIsOrderDialogOpen(false);
         },
+        // PP.105: the server validates the move (404 / 409 / 422 with a Polish message): show it as is.
+        onError: (error) => {
+          toast.error(
+            error instanceof Error && error.message
+              ? error.message
+              : 'Nie udało się zmienić statusu zamówienia',
+          );
+        },
       },
     );
   };
