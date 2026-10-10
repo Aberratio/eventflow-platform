@@ -164,6 +164,63 @@ function normalizeShopOrder(order: ShopOrder): ShopOrder {
   };
 }
 
+// PP.103: same root cause as TD.18, for the Event payload. `event_distances`
+// (price, length), `event_distance_pricing_variants.price`,
+// `event_merchandise` (price, originalPrice) and `event_discount_codes.
+// discountValue` are DECIMAL columns, so PHP/PDO serialises them as numeric
+// strings ("55.00"). The TypeScript types say `number`, and consumers such as
+// PriceTierPreview call `.toFixed()` on them (admin /events/:id crashed with
+// "price.toFixed is not a function"). Normalised once here, for every
+// Event-returning method. Collections that are absent stay absent (list
+// endpoints may omit children); nullable columns keep their null.
+const num = (value: unknown): number => Number(value ?? 0);
+const numOrNull = (value: unknown): number | null =>
+  value == null || value === '' ? null : Number(value);
+
+function normalizeEvent(event: Event): Event {
+  const normalized: Event = { ...event };
+  if (event.distances) {
+    normalized.distances = event.distances.map((distance) => ({
+      ...distance,
+      price: num(distance.price),
+      length: numOrNull(distance.length),
+      ...(distance.pricingVariants && {
+        pricingVariants: distance.pricingVariants.map((variant) => ({
+          ...variant,
+          price: num(variant.price),
+        })),
+      }),
+    }));
+  }
+  if (event.merchandise) {
+    normalized.merchandise = event.merchandise.map((item) => ({
+      ...item,
+      price: num(item.price),
+      ...(item.originalPrice != null && { originalPrice: num(item.originalPrice) }),
+    }));
+  }
+  if (event.discountCodes) {
+    normalized.discountCodes = event.discountCodes.map((code) => ({
+      ...code,
+      discountValue: num(code.discountValue),
+    }));
+  }
+  return normalized;
+}
+
+const eventOne = (r: ApiResponse<Event>): ApiResponse<Event> => ({
+  ...r,
+  data: normalizeEvent(r.data),
+});
+const eventOrNull = (r: ApiResponse<Event | null>): ApiResponse<Event | null> => ({
+  ...r,
+  data: r.data ? normalizeEvent(r.data) : r.data,
+});
+const eventList = (r: ApiResponse<Event[]>): ApiResponse<Event[]> => ({
+  ...r,
+  data: r.data.map(normalizeEvent),
+});
+
 async function requestForm<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -246,31 +303,50 @@ function json(method: string, data?: unknown): RequestInit {
 }
 
 export const httpAdapter: ApiAdapter = {
-  getEvents: (filters) => paginated('/events', filters as Record<string, QueryValue>),
+  getEvents: (filters) =>
+    paginated<Event>('/events', filters as Record<string, QueryValue>).then((r) => ({
+      ...r,
+      data: r.data.map(normalizeEvent),
+    })),
   getEventBySlug: (slug, accessCode) =>
-    request(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`),
-  getEventById: (id) => request(`/events/${encodeURIComponent(id)}`),
-  createEvent: (data) => request('/events', json('POST', toEventWritePayload(data))),
+    request<Event | null>(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`).then(
+      eventOrNull,
+    ),
+  getEventById: (id) =>
+    request<Event | null>(`/events/${encodeURIComponent(id)}`).then(eventOrNull),
+  createEvent: (data) =>
+    request<Event>('/events', json('POST', toEventWritePayload(data))).then(eventOne),
   updateEvent: (id, data) =>
-    request(`/events/${encodeURIComponent(id)}`, json('PATCH', toEventWritePayload(data))),
+    request<Event>(
+      `/events/${encodeURIComponent(id)}`,
+      json('PATCH', toEventWritePayload(data)),
+    ).then(eventOne),
   deleteEvent: (id) => request(`/events/${encodeURIComponent(id)}`, json('DELETE')),
-  submitEvent: (id) => request(`/events/${encodeURIComponent(id)}/submit`, json('POST')),
-  approveEvent: (id) => request(`/events/${encodeURIComponent(id)}/approve`, json('POST')),
+  submitEvent: (id) =>
+    request<Event>(`/events/${encodeURIComponent(id)}/submit`, json('POST')).then(eventOne),
+  approveEvent: (id) =>
+    request<Event>(`/events/${encodeURIComponent(id)}/approve`, json('POST')).then(eventOne),
   rejectEvent: (id, reason) =>
-    request(`/events/${encodeURIComponent(id)}/reject`, json('POST', { reason })),
-  cancelEvent: (id) => request(`/events/${encodeURIComponent(id)}/cancel`, json('POST')),
+    request<Event>(`/events/${encodeURIComponent(id)}/reject`, json('POST', { reason })).then(
+      eventOne,
+    ),
+  cancelEvent: (id) =>
+    request<Event>(`/events/${encodeURIComponent(id)}/cancel`, json('POST')).then(eventOne),
   setEventVisibility: (id, visibility, accessCode) =>
-    request(
+    request<Event>(
       `/events/${encodeURIComponent(id)}/visibility`,
       json('PATCH', { visibility, accessCode }),
-    ),
+    ).then(eventOne),
   setEventIsTest: (id, isTest) =>
-    request(`/events/${encodeURIComponent(id)}/is-test`, json('PATCH', { isTest })),
-  createExternalEvent: (data) => request('/events/external', json('POST', data)),
-  getFeaturedEvents: () => request('/events/featured'),
-  getLiveEvents: () => request('/events/live'),
+    request<Event>(`/events/${encodeURIComponent(id)}/is-test`, json('PATCH', { isTest })).then(
+      eventOne,
+    ),
+  createExternalEvent: (data) =>
+    request<Event>('/events/external', json('POST', data)).then(eventOne),
+  getFeaturedEvents: () => request<Event[]>('/events/featured').then(eventList),
+  getLiveEvents: () => request<Event[]>('/events/live').then(eventList),
   getEventsByOrganizer: (organizerId) =>
-    request(`/organizers/${encodeURIComponent(organizerId)}/events`),
+    request<Event[]>(`/organizers/${encodeURIComponent(organizerId)}/events`).then(eventList),
   getOrganizerEventLimit: (organizerId) =>
     request(`/organizers/${encodeURIComponent(organizerId)}/event-limit`),
   updateOrganizerEventLimit: (organizerId, limit) =>
