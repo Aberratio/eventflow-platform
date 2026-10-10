@@ -194,6 +194,21 @@ const OrderSuccessPage = () => {
             </div>
           )}
 
+          {/* PP.105: an organizer package is granted only after the payment is confirmed */}
+          {lastOrder.includesOrganizerPackage && (
+            <InfoBanner
+              icon={
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warning/10">
+                  <CreditCard className="h-5 w-5 text-warning" />
+                </div>
+              }
+            >
+              Pakiet organizatora aktywuje się po potwierdzeniu płatności. Do tego czasu nie
+              otrzymasz roli Organizatora ani możliwości tworzenia wydarzeń. Po aktywacji zostaniesz
+              wylogowany/a i wystarczy zalogować się ponownie.
+            </InfoBanner>
+          )}
+
           {/* Email Confirmation Notice */}
           <InfoBanner
             icon={
