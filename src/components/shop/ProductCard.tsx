@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Zap } from 'lucide-react';
 import { ShopProduct } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface ProductCardProps {
   product: ShopProduct;
@@ -64,10 +65,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {product.name}
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-foreground">{product.price} zł</span>
+            <span className="text-lg font-bold text-foreground">{formatMoney(product.price)}</span>
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through">
-                {product.originalPrice} zł
+                {formatMoney(product.originalPrice)}
               </span>
             )}
           </div>

@@ -31,6 +31,7 @@ import { PageBg, PageContent } from '@/components/ui/page-bg';
 import { QUERY_KEYS } from '@/constants';
 import type { Event, Partner, SportDiscipline } from '@/types';
 import { cn } from '@/lib/utils';
+import { formatMoney } from '@/lib/format';
 
 const disciplineLabels: Record<SportDiscipline, string> = {
   running: 'Bieganie',
@@ -180,7 +181,7 @@ const HeroEventCard = ({ event }: { event: Event }) => (
             </span>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-white/55">Od {minPrice(event)} zł</span>
+            <span className="text-white/55">Od {formatMoney(minPrice(event))}</span>
             <span className="text-white/25">•</span>
             <span className="font-medium text-emerald-400">
               Pozostało {spotsLeft(event)} miejsc
@@ -300,7 +301,7 @@ const HomeEventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | '
     footer={
       mode === 'closing' ? (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-white/55">Od {minPrice(event)} zł</span>
+          <span className="text-white/55">Od {formatMoney(minPrice(event))}</span>
           <span className="text-white/24">•</span>
           <span className="font-medium text-emerald-400">Pozostało {spotsLeft(event)} miejsc</span>
         </div>
@@ -336,7 +337,7 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
           href={`/events/${event.slug}`}
           dateTile={tile}
           title={event.name}
-          mobileMeta={`${event.city} • ${disciplineLabels[event.discipline]} • od ${minPrice(event)} zł`}
+          mobileMeta={`${event.city} • ${disciplineLabels[event.discipline]} • od ${formatMoney(minPrice(event))}`}
         >
           <div className="hidden md:block">
             <Badge
@@ -356,7 +357,9 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
             {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
             {registrationLabel(event)}
           </div>
-          <div className="hidden text-sm font-bold text-white md:block">{minPrice(event)} zł</div>
+          <div className="hidden text-sm font-bold text-white md:block">
+            {formatMoney(minPrice(event))}
+          </div>
         </EventTableRow>
       );
     })}

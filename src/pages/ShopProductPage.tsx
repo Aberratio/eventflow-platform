@@ -24,6 +24,7 @@ import {
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { QUERY_KEYS } from '@/constants';
+import { formatMoney } from '@/lib/format';
 
 const ShopProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -177,14 +178,16 @@ const ShopProductPage = () => {
             {/* Price Card */}
             <div className="mb-6 rounded-xl border border-primary/10 bg-gradient-to-r from-primary/5 to-warning/5 p-5">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-foreground">{product.price} zł</span>
+                <span className="text-3xl font-bold text-foreground">
+                  {formatMoney(product.price)}
+                </span>
                 {hasDiscount && (
                   <>
                     <span className="text-xl text-muted-foreground line-through">
-                      {product.originalPrice} zł
+                      {formatMoney(product.originalPrice)}
                     </span>
                     <Badge className="border border-destructive/20 bg-destructive/10 text-destructive">
-                      Oszczędzasz {product.originalPrice! - product.price} zł
+                      Oszczędzasz {formatMoney(product.originalPrice! - product.price)}
                     </Badge>
                   </>
                 )}

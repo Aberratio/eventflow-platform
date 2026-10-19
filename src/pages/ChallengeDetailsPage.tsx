@@ -48,6 +48,7 @@ import {
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { ChallengeRankingCard } from '@/pages/challenges/ChallengeRankingCard';
+import { formatMoney } from '@/lib/format';
 
 // E5.3's client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
 // (same duplication CartPage.tsx already carries — the server stays
@@ -327,7 +328,7 @@ const ChallengeDetailsPage = () => {
               <div key={reward.id} className="rounded border p-3">
                 <p className="font-medium">{reward.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {reward.price ? `${reward.price} zł` : 'Darmowe'}
+                  {reward.price ? formatMoney(reward.price) : 'Darmowe'}
                 </p>
               </div>
             ))}
@@ -372,7 +373,8 @@ const ChallengeDetailsPage = () => {
                           <SelectContent>
                             {challenge.rewards.map((reward) => (
                               <SelectItem key={reward.id} value={reward.productId ?? reward.id}>
-                                {reward.name} {reward.price ? `(${reward.price} zł)` : '(Darmowe)'}
+                                {reward.name}{' '}
+                                {reward.price ? `(${formatMoney(reward.price)})` : '(Darmowe)'}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -407,7 +409,7 @@ const ChallengeDetailsPage = () => {
                             {deliveryMethods.map((method) => (
                               <SelectItem key={method.id} value={method.id}>
                                 {method.name}{' '}
-                                {method.price ? `(${method.price} zł)` : '(bezpłatnie)'}
+                                {method.price ? `(${formatMoney(method.price)})` : '(bezpłatnie)'}
                               </SelectItem>
                             ))}
                           </SelectContent>

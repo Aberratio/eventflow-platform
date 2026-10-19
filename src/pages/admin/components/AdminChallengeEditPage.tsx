@@ -40,6 +40,7 @@ import { ArrowLeft, Plus, Save, Trophy } from 'lucide-react';
 import { Challenge, ChallengeConditionNode } from '@/types';
 import { toast } from 'sonner';
 import { ChallengeConditionTreeSection, defaultNodeForType } from './ChallengeConditionTreeEditor';
+import { formatMoney } from '@/lib/format';
 
 const slugify = (value: string) =>
   value
@@ -490,7 +491,7 @@ export const AdminChallengeEditPage = () => {
                     onCheckedChange={() => toggleProduct(product.id)}
                   />
                   <span>
-                    {product.name} · {product.price} zł
+                    {product.name} · {formatMoney(product.price)}
                   </span>
                 </label>
               ))}

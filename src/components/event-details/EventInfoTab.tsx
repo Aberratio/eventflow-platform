@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { formatMoney } from '@/lib/format';
 
 type LogisticsKey = keyof EventLogisticsInfo;
 
@@ -718,7 +719,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                     )}
                     <span className="truncate text-sm">{item.name}</span>
                   </div>
-                  <Badge variant="secondary">{item.price} zł</Badge>
+                  <Badge variant="secondary">{formatMoney(item.price)}</Badge>
                 </div>
               ))}
             </div>
