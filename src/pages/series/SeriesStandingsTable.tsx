@@ -122,7 +122,7 @@ export const SeriesStandingsTable: React.FC<SeriesStandingsTableProps> = ({
                   {completedEvents.map((event) => (
                     <TableHead key={event.id} className="min-w-24 text-center">
                       <Link
-                        to={`/events/${event.id}`}
+                        to={`/events/${event.slug}`}
                         className="transition-colors hover:text-primary"
                       >
                         {event.name.length > 15 ? `${event.name.substring(0, 15)}...` : event.name}

@@ -185,7 +185,7 @@ const ParticipantOverviewTab = ({
           asChild
           className="h-auto flex-col gap-2 py-4 sm:flex-row sm:gap-2 sm:py-3"
         >
-          <Link to="/results">
+          <Link to="/events?status=past">
             <Trophy className="h-5 w-5 text-primary sm:h-4 sm:w-4" />
             <span className="text-xs sm:text-sm">Przeglądaj wyniki</span>
           </Link>

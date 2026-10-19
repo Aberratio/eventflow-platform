@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
-import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -22,11 +21,7 @@ const statusLabels: Record<string, string> = {
 
 const ChallengesListPage = () => {
   const { user } = useAuth();
-  const {
-    data: challengesData,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data: challengesData } = useQuery({
     queryKey: QUERY_KEYS.challenges,
     queryFn: () => getChallenges(),
   });
@@ -62,24 +57,18 @@ const ChallengesListPage = () => {
       </PageHero>
 
       <div className="container py-8">
-        {isError ? (
-          <QueryErrorState onRetry={() => void refetch()} />
-        ) : (
-          <>
-            <ChallengeGroup
-              title="Aktywne wyzwania"
-              challenges={activeChallenges}
-              userId={user?.id}
-              participations={participations}
-            />
-            <ChallengeGroup
-              title="Pozostałe"
-              challenges={otherChallenges}
-              userId={user?.id}
-              participations={participations}
-            />
-          </>
-        )}
+        <ChallengeGroup
+          title="Aktywne wyzwania"
+          challenges={activeChallenges}
+          userId={user?.id}
+          participations={participations}
+        />
+        <ChallengeGroup
+          title="Pozostałe"
+          challenges={otherChallenges}
+          userId={user?.id}
+          participations={participations}
+        />
       </div>
     </Layout>
   );

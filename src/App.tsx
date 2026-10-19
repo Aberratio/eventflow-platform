@@ -182,6 +182,9 @@ const AppShell = () => {
               </Lazy>
             }
           />
+          {/* Legacy / external links to the results archive: the archive is the finished-events list. */}
+          <Route path="/wyniki" element={<Navigate to="/events?status=past" replace />} />
+          <Route path="/results" element={<Navigate to="/events?status=past" replace />} />
           <Route
             path="/wyniki/live"
             element={

@@ -2,7 +2,6 @@ import { getProducts, getShopCategories } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
-import { QueryErrorState } from '@/components/ui/query-error-state';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,12 +46,7 @@ const ShopPage = () => {
   const [sort, setSort] = useState<SortOption>('popular');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const {
-    data: productsData,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data: productsData, isLoading } = useQuery({
     queryKey: QUERY_KEYS.products,
     queryFn: () => getProducts(),
   });
@@ -345,8 +339,6 @@ const ShopPage = () => {
               <Skeleton key={i} className="h-64 w-full rounded-lg" />
             ))}
           </div>
-        ) : isError ? (
-          <QueryErrorState onRetry={() => void refetch()} />
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             {filteredProducts.map((product) => (
