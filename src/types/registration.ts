@@ -75,6 +75,18 @@ export interface TeamInvite {
   inviteToken: string;
 }
 
+/**
+ * G-04: one active Zapis on a Drużyna's roster, as the captain / the event's manager sees it when
+ * choosing whom to swap out (`GET /teams/{teamId}/members`).
+ */
+export interface TeamMember {
+  registrationId: string;
+  name: string;
+  status: string;
+  bibNumber: string | null;
+  competitorId: string | null;
+}
+
 /** PP.52: returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
 export interface PaymentSession {
   transactionId: string;

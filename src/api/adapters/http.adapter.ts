@@ -543,6 +543,12 @@ export const httpAdapter: ApiAdapter = {
     ),
   getTeamById: (teamId) => request(`/teams/${encodeURIComponent(teamId)}`),
   getTeamInvite: (teamId) => request(`/teams/${encodeURIComponent(teamId)}/invite`),
+  getTeamMembers: (teamId) => request(`/teams/${encodeURIComponent(teamId)}/members`),
+  swapTeamMember: (teamId, registrationId, data) =>
+    request(
+      `/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(registrationId)}/swap`,
+      json('POST', data),
+    ),
   getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getEventEmbedPublicConfig: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/embed/public`),

@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 import { getTeamById, getTeamInvite } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import TeamRosterDialog from '@/components/team/TeamRosterDialog';
 import { toast } from '@/hooks/use-toast';
 import { buildTeamInviteLink } from '@/lib/teamInvite';
 import type { Event, Registration } from '@/types';
@@ -23,6 +25,7 @@ interface CaptainTeamInvitesProps {
  */
 const CaptainTeamInvites = ({ items }: CaptainTeamInvitesProps) => {
   const { user } = useAuth();
+  const [rosterTeam, setRosterTeam] = useState<{ id: string; name: string } | null>(null);
 
   const teamEvents = new Map<string, Event>();
   for (const { registration, event } of items) {
@@ -83,12 +86,35 @@ const CaptainTeamInvites = ({ items }: CaptainTeamInvitesProps) => {
               <p className="truncate font-medium">{team.name}</p>
               <p className="truncate text-sm text-muted-foreground">{event.name}</p>
             </div>
-            <Button type="button" variant="outline" onClick={() => copyInviteLink(team.id, event)}>
-              Kopiuj link zaproszenia
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRosterTeam({ id: team.id, name: team.name })}
+              >
+                Skład i wymiana zawodnika
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => copyInviteLink(team.id, event)}
+              >
+                Kopiuj link zaproszenia
+              </Button>
+            </div>
           </div>
         ))}
       </CardContent>
+      {rosterTeam && (
+        <TeamRosterDialog
+          open
+          onOpenChange={(next) => {
+            if (!next) setRosterTeam(null);
+          }}
+          teamId={rosterTeam.id}
+          teamName={rosterTeam.name}
+        />
+      )}
     </Card>
   );
 };

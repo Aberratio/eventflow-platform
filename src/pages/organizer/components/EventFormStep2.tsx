@@ -921,6 +921,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           form.updateDistance(index, 'relayMinTeamSize', '');
                           form.updateDistance(index, 'relayMaxTeamSize', '');
                           form.updateDistance(index, 'relayTeamCompletionDeadline', '');
+                          form.updateDistance(index, 'relaySwapDeadline', '');
                           form.updateDistance(index, 'teamAggregationRule', '');
                           form.updateDistance(index, 'teamPricingMode', 'per_person');
                         }
@@ -988,6 +989,20 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           )}
                         />
                         <FieldError message={fe[`distance_${index}_relayTeamCompletionDeadline`]} />
+                      </div>
+                      <div className="space-y-2">
+                        <HelpLabel description="Do tej daty (włącznie) kapitan może sam wymienić zawodnika w składzie drużyny; później tylko organizator. Puste = do dnia poprzedzającego start.">
+                          Termin wymiany zawodnika
+                        </HelpLabel>
+                        <Input
+                          type="date"
+                          value={dist.relaySwapDeadline}
+                          onChange={(e) =>
+                            form.updateDistance(index, 'relaySwapDeadline', e.target.value)
+                          }
+                          className={inputError(!!fe[`distance_${index}_relaySwapDeadline`])}
+                        />
+                        <FieldError message={fe[`distance_${index}_relaySwapDeadline`]} />
                       </div>
                       <div className="space-y-2">
                         <HelpLabel description="Sposob wyliczenia wyniku druzyny z wynikow indywidualnych jej czlonkow: suma czasow, czas najlepszego czlonka, albo srednia. Wynik druzynowy to osobna, zawsze liczona na zywo klasyfikacja obok indywidualnej.">

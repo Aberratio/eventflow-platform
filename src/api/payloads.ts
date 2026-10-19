@@ -388,3 +388,22 @@ export type UpdatePartnerPayload = Partial<CreatePartnerPayload>;
 // ──────────────── Re-exports for convenience ────────────────
 
 export type { SaveMailTemplatePayload, MailTemplatePreviewRequest, MailLogFilters };
+
+/**
+ * G-04 (spec 23 §2): who takes over a relay member's Zapis — an existing Zawodnik the caller may
+ * register (own profile or under their Opieka; the event's manager may name any), or the data of a
+ * brand-new person. Exactly one of the two.
+ */
+export type SwapTeamMemberPayload =
+  | { competitorId: string; newPerson?: undefined }
+  | { competitorId?: undefined; newPerson: SwapTeamMemberNewPerson };
+
+export interface SwapTeamMemberNewPerson {
+  firstName: string;
+  lastName: string;
+  birthDate?: string;
+  gender?: 'M' | 'K';
+  email?: string;
+  phone?: string;
+  club?: string;
+}

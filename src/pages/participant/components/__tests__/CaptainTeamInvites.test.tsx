@@ -11,6 +11,7 @@ import CaptainTeamInvites from '../CaptainTeamInvites';
 
 const mockGetTeamById = vi.fn();
 const mockGetTeamInvite = vi.fn();
+const mockGetTeamMembers = vi.fn();
 const mockToast = vi.fn();
 
 vi.mock('@/api', async () => {
@@ -19,6 +20,7 @@ vi.mock('@/api', async () => {
     ...actual,
     getTeamById: (...args: unknown[]) => mockGetTeamById(...args),
     getTeamInvite: (...args: unknown[]) => mockGetTeamInvite(...args),
+    getTeamMembers: (...args: unknown[]) => mockGetTeamMembers(...args),
   };
 });
 
@@ -70,6 +72,7 @@ describe('CaptainTeamInvites', () => {
     resetQueryClient();
     mockGetTeamById.mockReset();
     mockGetTeamInvite.mockReset();
+    mockGetTeamMembers.mockReset();
     mockToast.mockReset();
   });
 
@@ -167,5 +170,33 @@ describe('CaptainTeamInvites', () => {
         variant: 'destructive',
       }),
     );
+  });
+
+  it('opens the roster with the swap action for the captain (G-04)', async () => {
+    mockGetTeamById.mockResolvedValue(team('team-own', 'Moja drużyna', 'u1'));
+    mockGetTeamMembers.mockResolvedValue({
+      success: true,
+      data: [
+        {
+          registrationId: 'r1',
+          name: 'Jan Kowalski',
+          status: 'confirmed',
+          bibNumber: null,
+          competitorId: 'c1',
+        },
+      ],
+    });
+
+    render(
+      <CaptainTeamInvites
+        items={[{ registration: registration({ teamId: 'team-own' }), event }]}
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Skład i wymiana zawodnika' }));
+
+    expect(await screen.findByText('Skład drużyny Moja drużyna')).toBeInTheDocument();
+    expect(mockGetTeamMembers).toHaveBeenCalledWith('team-own');
+    expect(await screen.findByRole('button', { name: 'Wymień zawodnika' })).toBeInTheDocument();
   });
 });
