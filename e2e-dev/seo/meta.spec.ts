@@ -77,7 +77,6 @@ test.describe('SEO and meta @seo', () => {
   });
 
   test('robots.txt is served as text and dev blocks indexing', async ({ request }) => {
-    test.fail(true, 'QA-SEO-02: dev robots.txt allows indexing and there is no noindex');
     const res = await request.get('/robots.txt');
     expect(res.status(), 'robots.txt status').toBe(200);
     expect(res.headers()['content-type'], 'robots.txt content-type').toMatch(/text\/plain/);
