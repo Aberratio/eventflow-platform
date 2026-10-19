@@ -1,6 +1,6 @@
 # Fix backlog – zgodność ze specyfikacją, mailer, BZ, linki
 
-Stan na 2026-10-19 (faza 1: inwentarz, bez zmian w kodzie). Źródła: specyfikacja `zmierzymy-czas-notes/specyfikacje/zmierzymy-czas` (rozdziały 06–23, umowa), `docs/qa-plan.md` §1.4, `docs/qa-manual-findings.md`, `test.fail('QA-…')` w `e2e-dev/`.
+Stan na 2026-10-19: inwentarz z fazy 1, decyzje i – w sekcji „Faza 3” – stan po naprawach i lista wdrożeniowa. Źródła: specyfikacja `zmierzymy-czas-notes/specyfikacje/zmierzymy-czas` (rozdziały 06–23, umowa), `docs/qa-plan.md` §1.4, `docs/qa-manual-findings.md`, `test.fail('QA-…')` w `e2e-dev/`.
 
 Skróty repo: **S** = eventflow-server, **F** = eventflow-platform, **CM** = central-mailer, **BZ** = biuro_zawodow-api.
 Priorytety: **P0** blokuje funkcję ze specyfikacji (w umowie), **P1** błąd lub luka funkcji, **P2** reszta (w tym pozycje „poza umową”). Rozmiar: S/M/L.
@@ -9,6 +9,87 @@ Kolumna „Status” w fazie 3 dostanie: zrobione / PR / zostaje (dlaczego).
 ## Obraz ogólny
 
 Kod jest znacznie dalej, niż zakłada `plan-prac.md`: migracje 001–067, model Zawodnik/Opieka, trzy osie wydarzenia, model cenowy z zamrożonym Rozliczeniem, Tpay/PayNow (kod), zwroty, wyniki z importem, rekordy, wyzwania z drzewem warunków, sklep z pakietami, scalanie profili, drużyny, 15 typów maili przez outbox, pełny kontrakt BZ po obu stronach. Główne luki to front w trzech miejscach umowy (konfiguracja formularza §5.17, edytor szablonów maili §5.19, bilet QR/PDF), egzekwowanie reguł zapisu na serwerze i pakiet defektów z QA.
+
+## Faza 3 – stan po naprawach (2026-10-19)
+
+Wszystkie PR-y są draftami; nic nie jest zmergowane ani wdrożone. Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
+
+### Zrobione (PR)
+
+Repo: **F** = eventflow-platform, **S** = eventflow-server, **CM** = central-mailer.
+
+| ID | Co | PR |
+|---|---|---|
+| B-01, G-08 | Serwer egzekwuje „zapisy otwarte” (409 `registration_closed`); tryb testowy = dry-run bez zapisu w bazie; UI obu stanów | S #28, F #18 |
+| B-02, B-07, R-12 (część) | Konfigurator formularza zapisów; formularz z konfiguracji; odpowiedzi i pola tożsamości w `POST /registrations`; ceny wariantów (także ujemne) w Rozliczeniu | S #35 (mig. 085), F #8, #9 |
+| B-03 | Edytor szablonów maili na prawdziwych trasach + podgląd + dziennik wysyłek | S #36, F #16 |
+| B-04, G-01, G-12 | QR = token `pqr_`, strona biletu do druku („Zapisz jako PDF”), bilet tylko dla opłaconego zapisu, pełny payload biletów, link `/my-starts` z maila #5 | S #38, F #14, #21 |
+| B-05 | Baner „dokończ płatność” + „Zapłać teraz” także w trakcie okna płatności; `paymentExpiresAt` w DTO | S #43, F #17 |
+| B-06, B-08 | Strony prawne (polityka prywatności i RODO z obecnej zmierzymyczas.pl, regulamin = placeholder); edytor CMS z formatowaniem (tiptap) + sanitizacja HTML na serwerze | S #32 (mig. 080), #40, F #19 |
+| D-01, D-04, Z-01 | 404 dla nieistniejących szczegółów (10 tras), PUT w CORS, poprawione komentarze o webhooku BZ | S #29, F #10 |
+| D-02 | Timeout zapytań (15 s / 120 s upload), stany błędu z „Spróbuj ponownie” na 9 stronach | F #10 |
+| D-03, D-06, D-08 | Ceny przez `formatMoney`, klasyfikacja serii z `GET /series/{id}/ranking`, CTA logowania przy wyzwaniu | F #11 |
+| D-05 | Pobieranie wszystkich stron zamiast `pageSize: 1000` (12 miejsc) | F #13 |
+| D-07, L-01–L-04 | Martwe linki (`/wyniki`, `/results`, `/organizer/settings`, linki po id) + test strażnik tras | F #7 |
+| D-09 | `noindex` + `robots.txt Disallow` poza produkcją (`VITE_ALLOW_INDEXING`) | F #12 |
+| D-10 | Embed bez nawigacji aplikacji, z danymi wydarzenia | F #15 |
+| G-02 | Postęp wyzwań przeliczany przy publikacji/korekcie wyników | S #31 |
+| G-03 | Trwała historia korekt wyników + powód + UI | S #37 (mig. 075), F #22 |
+| G-04 | Wymiana zawodnika w sztafecie (kapitan do terminu, organizator zawsze), rotacja `pqr_` | S #39 (mig. 090), F #23 |
+| G-05, G-06, G-06b, G-07, G-10 | `/admin/sales-stats`, realne metody płatności sklepu, ostatnie logowanie adminów i moderatorów, przekazanie własności przez właściciela | S #33 (mig. 068), #42, F #21 |
+| G-09 | Przełącznik anonimizacji (własny profil i podopieczni) | S #43, F #21 |
+| G-11 | Eksport listy startowej XML | S #34, F #21 |
+| M-01 | Reply-To = organizator dla maili wydarzenia | CM #4 (mig. 013), S #30 (mig. 069) |
+| M-02, M-03 | Transport `log` w CM (tylko local/testing); lokalny e2e ZC → outbox → CM → `.eml` przeszedł (mail #1 i #4 z Reply-To) | CM #3 |
+| R-17 | Kalendarz Google: ustawienia w panelu admina, wpis przy zatwierdzeniu przez outbox | S #41 (mig. 095), F #20 |
+| Z-02 | e2e ZC↔BZ (PP.43) lokalnie zielony (67 asercji); testy BZ 170/170 | – (bez zmian w kodzie) |
+| QA | Pakiet e2e-dev, plan i wyniki QA, ten backlog | F #6 |
+
+Gałęzie integracyjne `integration/fix-all` (S i F) łączą wszystkie PR-y z rozwiązanymi konfliktami (8 konfliktów, w tym 2 merytoryczne: B-01×B-07 w `create()`, G-02×G-03 w `PATCH /results/{id}`). Wynik bramek na integracji: F – typecheck, eslint 0 błędów, vitest 989/989 (start: 795); S – lint, stan, Unit 635/635, Integration – patrz opis PR integracyjnego.
+
+### Zostaje (i dlaczego)
+
+| ID | Co | Dlaczego |
+|---|---|---|
+| G-10 (część) | Admin nie może wymusić przekazania własności opublikowanego wydarzenia (PP.4 → 409 `published_organizer_locked`), choć macierz na to pozwala | Decyzja: czy łagodzić regułę PP.4 dla admina |
+| G-06b (część) | Zamówienie nagrody z Wyzwania nadal przyjmuje kartę/BLIK bez bramki (`ChallengeRepository` tworzy własny `OrderRepository`) | Mała poprawka, P2 |
+| R-17 (część) | Wpis w kalendarzu nie aktualizuje się sam po zmianie daty ani nie znika po odwołaniu; ręczne „wyślij” aktualizuje | Rozszerzenie, P2; brak dostępów klienta do testu |
+| B-02 (część) | Zmiana typu/wariantów istniejącego pola = usuń i dodaj; brak endpointu wyceny przed zapisem (front pokazuje ceny wariantów przy opcjach) | API serwera tego nie przewiduje; P2 |
+| G-03 (część) | Dialog korekty edytuje czas brutto i status (bez czasu netto i miejsc) | P2 |
+| R-01–R-11, R-13–R-16, R-18, Z-03, Z-04, M-04, M-05 | Pozycje P2 / „poza umową” / warunkowe od klienta | Zgodnie z decyzją 6 – poza zakresem tej sesji |
+| QA-SEO-01/03/04 | Meta per trasa, sitemap, soft 404 | Decyzja: SEO później |
+| Płatności | Tpay/PayNow sprawdzone tylko na fake gateway | Brak kont sandbox (O-02) |
+
+### Wdrożenie na dev (dla Lesława)
+
+Push na `master` serwera wdraża na staging – merge dopiero po zgodzie Joanny.
+
+**Kolejność merge**
+1. **central-mailer:** #3 → #4 (stacked). Migracja: `php scripts/run-migrations.php` (013 `reply_to`). Restart workerów (`bin/worker.php`, `bin/technical-worker.php`).
+2. **eventflow-server:** PR integracyjny `integration/fix-all` (zawiera #28–#43 z rozwiązanymi konfliktami; po jego merge pojedyncze PR-y zamkną się jako zmergowane). Alternatywa: pojedynczo w kolejności #29, #33, #42, #30, #28, #35, #31, #37, #32, #40, #34, #36, #38, #41, #39, #43 – wtedy konflikty w `routes.php` trzeba rozwiązać jak w gałęzi integracyjnej.
+   Migracje (`composer migrate`, drugi przebieg ma nic nie robić): 068 `users.last_login_at`, 069 `outbox reply_to`, 075 `result_corrections`, 080 strony prawne, 085 pola adresowe `competitors`, 090 `relay_swap_deadline`, 095 Kalendarz Google.
+3. **eventflow-platform:** #6 (pakiet QA) → PR integracyjny `integration/fix-all` (zawiera #7–#23). Front zakłada serwer z kroku 2 (nowe pola i trasy); działa też ze starym serwerem dla 404 szczegółów.
+
+**Zmienne środowiskowe (tylko nazwy)**
+- eventflow-server – nowe: `GOOGLE_CALENDAR_SERVICE_ACCOUNT_FILE` (opcjonalna; ścieżka do JSON klucza konta usługi poza katalogiem publicznym; instrukcja dla klienta: `docs/google-calendar.md`). Do sprawdzenia, że są ustawione: `APP_URL`, `CENTRAL_MAILER_BASE_URL`, `CENTRAL_MAILER_API_KEY`, `INCOMING_API_KEYS`, `BZ_WEBHOOK_BASE_URL`; bramki (gdy będą konta): `TPAY_CLIENT_ID`, `TPAY_CLIENT_SECRET`, `TPAY_MERCHANT_ID`, `TPAY_SANDBOX`, `TPAY_NOTIFICATION_URL`, `TPAY_SUCCESS_URL`, `TPAY_ERROR_URL`, `PAYNOW_API_KEY`, `PAYNOW_SIGNATURE_KEY`, `PAYNOW_SANDBOX`, `PAYNOW_CONTINUE_URL`.
+- central-mailer – nowe: `MAIL_TRANSPORT`, `MAIL_LOG_DIR` – **na dev/staging/prod NIE ustawiać** (`log` jest odrzucany poza local/testing; domyślnie SMTP).
+- Front (build): `VITE_ALLOW_INDEXING=true` **wyłącznie** w buildzie produkcyjnym (dodane w `.github/workflows/deploy.yml`, job „Build production”). Dev i staging bez tej zmiennej = `noindex`. Jeśli dev budowany jest innym mechanizmem niż `deploy.yml` – nic nie ustawiać.
+
+**Infrastruktura**
+- Cron na serwerze ZC: `php bin/scheduler.php` co 5 min (od niego zależą: wygasanie nieopłaconych zapisów, przypomnienia, maile wyników, ponowienia outboxu mail/BZ/kalendarz `calendar.outbox_retry`, auto-zakończenie wydarzeń). Sprawdzić `php bin/scheduler.php --status`.
+- GitHub `Aberratio/eventflow-server`: sekret `BZ_API_REPO_SSH_KEY` (read-only deploy key repo BZ API) – bez niego CI `e2e-bz` pomija test i świeci na zielono.
+- seohost: whitelist IP 83.168.79.141 (429 przy testach e2e-dev).
+- PHP: rozszerzenie `zip` (eksport XLSX).
+
+**Weryfikacja po wdrożeniu**
+1. `GET /api/v1/health` = 200; `composer migrate` drugi raz = nic do zrobienia.
+2. Stopka: `/info/regulamin`, `/info/polityka-prywatnosci`, `/info/rodo` otwierają się z formatowaniem; admin edytuje je w CMS (nagłówki, listy, linki) i zmiany widać publicznie.
+3. `/wyniki`, `/results` → lista zakończonych wydarzeń; `/robots.txt` na dev = `Disallow: /`.
+4. Zapis na wydarzenie z zamkniętymi zapisami → komunikat „Zapisy są zamknięte”; zapis na otwarte z polem własnym z ceną wariantu → pozycja w podsumowaniu; mail #4 przychodzi z `Reply-To` organizatora.
+5. Panel uczestnika: nieopłacony zapis → baner „dokończ płatność”; bilet opłaconego zapisu ma QR `pqr_…` i stronę do druku.
+6. Admin: Szablony maili (podgląd, dziennik), Ustawienia → Kalendarz Google (status „brak klucza” do czasu dostępów), lista adminów/moderatorów z „Ostatnie logowanie”.
+7. Organizator: zakładka „Formularz zapisów”, eksport listy startowej CSV/XLSX/XML, edycja wyniku z powodem i historią korekt, wymiana zawodnika w sztafecie.
+8. `npm run test:e2e:dev` (po whitelist): QA-API-01, CORS PUT, QA-SEO-02 mają być zielone (ich `test.fail` usunięte).
 
 ## P0 – blokuje funkcję z umowy
 
@@ -19,6 +100,8 @@ Kod jest znacznie dalej, niż zakłada `plan-prac.md`: migracje 001–067, model
 | B-03 | Edytor szablonów maili nie działa: front woła `/email-templates*`, `/email-send-logs`, a serwer ma `/admin/mail-templates` i `/events/{id}/mail-templates`. Brak podglądu (preview) po stronie S. | 17, umowa §4.4.12 / §5.19 | `http.adapter.ts:678-694`, `EmailTemplatesManager.tsx`; S `routes.php:4290-4342` | F (+S preview) | M | |
 | B-04 | Bilet: QR koduje JSON `{ticketId,…}` zamiast tokenu `pqr_`; „Pobierz bilet” to atrapa (toast). Brak PDF karty startowej. | 11, umowa §4.1.3 | `EventTicket.tsx:19-33`; poprawny wzorzec `RegistrationListRow.tsx:209`; S bez endpointu PDF | F + S | M | |
 | B-05 | Baner „dokończ płatność” dla nieopłaconych zapisów uczestnika i przycisk ponowienia płatności (endpoint jest, UI nie). | 13, umowa §5.16 | S `routes.php:2314` retry-payment; `retryPayment` w adapterze nieużywane; brak banera w panelu uczestnika | F | M | |
+| B-07 | (wykryte przy B-02) Serwer nie przyjmuje odpowiedzi formularza ani pól tożsamości (telefon, klub, adres…) przy tworzeniu Zapisu, a ceny wariantów pól nie wchodzą do Rozliczenia (`modifierSettlementItems` zwraca `[]`). | 07 krok 2, 10 | `RegistrationRepository.php:4039`, `RegistrationCreatePolicy.php:20` | S (+F: przełączenie na payload create w PR #8) | M | |
+| B-08 | (wykryte przy B-06, decyzja 1) Edytor stron CMS to zwykły `Textarea`, a `TextSection` renderuje czysty tekst, więc admin nie sformatuje regulaminu. Serwer nie sanitizuje treści `info_pages` przy POST/PATCH; renderowanie HTML bez tego = stored XSS. | decyzja 1 | `PageEditorPage`/`SectionEditor`, `DynamicInfoPage`/`TextSection`; S `routes.php` info-pages | S + F | M | |
 | B-06 | Strony prawne w stopce `/info/regulamin`, `/info/polityka-prywatnosci`, `/info/rodo` → 404. Trasa działa, brak rekordów `info_pages`. | linki, RODO | `Footer.tsx:79-95`, `CookieConsent.tsx:105`; seed `001_demo.sql:227` ma tylko o-nas/oferta/kontakt. Uwaga: przy `show_in_footer=1` zdublują się linki (Footer.tsx:14-16). Treść prawna – patrz pytania. | S (migracja) | S | |
 
 ## P1 – błędy i luki funkcji
@@ -60,6 +143,8 @@ Nie sprawdzone statycznie (cele liczone dynamicznie): `getEditUrl`, `getDashboar
 | G-04 | Wymiana zawodnika w sztafecie i osobny termin graniczny wymiany – brak (sztafety §3.4 w umowie; mechanizm transferu z 20 też nie istnieje). | 23 §2, 20 | `TeamRepository.php:147` („E7.3 member-swap”), `RegistrationRepository.php:1876` | S + F | M | |
 | G-05 | `GET /admin/sales-stats` nie istnieje, a używa go przegląd admina. | 03 / dryf kontraktu | `http.adapter.ts:657`, `AdminOverviewTab.tsx:32` | S | S | |
 | G-06 | `/shop/payment-methods` zwraca na sztywno „Karta płatnicza” zamiast metod z konfiguracji bramek. | 16, umowa §3.10 | `routes.php:3056-3057` | S | S | |
+| G-06b | `POST /shop/orders` przyjmuje `card`/`blik`, nawet gdy żadna bramka nie jest skonfigurowana (lista z G-06 już je ukrywa). | 16 | `OrderRepository::PAYMENT_METHODS` | S | S | |
+| G-12 | (wykryte przy B-04) `GET /users/{id}/tickets` (`asTicket`) nie zwraca `eventDate`, `location`, `participantName`, kodu startowego ani statusu, które zakłada typ `Ticket`; zakładka biletów źle dzieli nadchodzące / archiwalne. | 11 | `RegistrationRepository::asTicket` ~:1663 | S | S | |
 | G-07 | Ostatnie logowanie adminów i moderatorów (§5.8): jest tylko lista sesji online, brak trwałego `last_login_at`. | 09, umowa §5.8 | mig. 001, `OnlineStaffCard.tsx` | S + F | S | |
 | G-08 | Tryb testowy (`is_test`) nie wpływa na zapisy: zapis na Szkicu w trybie testowym tworzy prawdziwy Zapis i płatność. | 08 | `is_test` nieobecne w `Domain/Registrations` | S | M | |
 | G-09 | Anonimizacja: API jest, brak przełącznika w profilu na froncie. | 10 | `routes.php:4189`; F brak UI | F | S | |
