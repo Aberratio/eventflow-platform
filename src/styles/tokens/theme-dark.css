@@ -25,7 +25,7 @@
   /* WCAG AA fix: raised from 43% lightness (~3.5:1, failed AA for normal text)
      to 51% (~4.5-4.9:1 against page/card backgrounds) — muted-foreground is
      used site-wide for body copy, not just large/decorative text. */
-  --text-muted: 214 8% 56%;
+  --text-muted: 214 8% 60%;
 
   /* Page background */
   --page-bg: #06101d;
