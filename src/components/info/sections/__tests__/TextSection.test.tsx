@@ -51,3 +51,34 @@ describe('TextSection', () => {
     expect(strong?.textContent).toBe('<img src=x onerror=alert(1)>');
   });
 });
+
+describe('TextSection html format (B-08)', () => {
+  const htmlSection = (content: string) =>
+    ({ id: 's1', type: 'text', format: 'html', title: '', content }) as unknown as InfoPageSection;
+
+  it('renders sanitized HTML: keeps formatting, strips script, handlers and javascript: links', () => {
+    const { container } = render(
+      <TextSection
+        section={htmlSection(
+          '<h2 onclick="x()">Tytuł</h2><p>A <strong>b</strong><script>alert(1)</script><a href="javascript:alert(2)">zły</a></p><ul><li>x</li></ul>',
+        )}
+      />,
+    );
+    expect(container.querySelector('h2')?.textContent).toBe('Tytuł');
+    expect(container.querySelector('strong')?.textContent).toBe('b');
+    expect(container.querySelectorAll('li').length).toBe(1);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('[onclick]')).toBeNull();
+    expect(container.querySelector('a')?.getAttribute('href') ?? null).toBeNull();
+  });
+
+  it('keeps rendering format "text" and missing format as before', () => {
+    const { container } = render(
+      <TextSection
+        section={{ ...htmlSection('**x**'), format: 'text' } as unknown as InfoPageSection}
+      />,
+    );
+    expect(container.querySelector('strong')?.textContent).toBe('x');
+    expect(container.querySelector('p')?.textContent).toBe('x');
+  });
+});

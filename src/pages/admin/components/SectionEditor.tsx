@@ -9,6 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { legacyTextToHtml } from '@/lib/legacyTextToHtml';
+import { useMemo } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { InfoPageSection, InfoPageSectionItem } from '@/types';
 
@@ -45,6 +48,15 @@ const iconOptions = [
 ];
 
 export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
+  // Legacy plain-text blocks open converted to HTML; the first edit saves them as format "html".
+  const textHtml = useMemo(
+    () =>
+      section.type === 'text' && section.format !== 'html'
+        ? legacyTextToHtml(section.content || '')
+        : section.content || '',
+    [section.type, section.format, section.content],
+  );
+
   const addItem = () => {
     const newItem: InfoPageSectionItem = {
       id: `item-${Date.now()}`,
@@ -107,15 +119,13 @@ export const SectionEditor = ({ section, onUpdate }: SectionEditorProps) => {
         </div>
         <div className="space-y-2">
           <Label>Treść</Label>
-          <Textarea
-            value={section.content || ''}
-            onChange={(e) => onUpdate({ content: e.target.value })}
-            placeholder="Treść tekstowa. Użyj nowych linii do tworzenia akapitów."
-            rows={8}
+          <RichTextEditor
+            value={textHtml}
+            onChange={(html) => onUpdate({ content: html, format: 'html' })}
+            placeholder="Treść sekcji"
+            ariaLabel="Treść sekcji"
+            minHeight="200px"
           />
-          <p className="text-xs text-muted-foreground">
-            Użyj nowych linii (Enter), aby rozdzielić akapity.
-          </p>
         </div>
       </div>
     );
