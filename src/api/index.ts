@@ -413,24 +413,16 @@ export const mergeCompetitors: ApiAdapter['mergeCompetitors'] = (...args) =>
   ensureAdapter().then((a) => a.mergeCompetitors(...args));
 
 // Email Templates
-export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailTemplates(...args));
-export const getEmailTemplateById: ApiAdapter['getEmailTemplateById'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailTemplateById(...args));
-export const getEmailSendLogs: ApiAdapter['getEmailSendLogs'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailSendLogs(...args));
-export const createEmailTemplate: ApiAdapter['createEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.createEmailTemplate(...args));
-export const updateEmailTemplate: ApiAdapter['updateEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.updateEmailTemplate(...args));
-export const deleteEmailTemplate: ApiAdapter['deleteEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.deleteEmailTemplate(...args));
-export const toggleEmailTemplate: ApiAdapter['toggleEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.toggleEmailTemplate(...args));
-export const sendEmailNow: ApiAdapter['sendEmailNow'] = (...args) =>
-  ensureAdapter().then((a) => a.sendEmailNow(...args));
-export const previewEmailTemplate: ApiAdapter['previewEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.previewEmailTemplate(...args));
+export const getMailTemplates: ApiAdapter['getMailTemplates'] = (...args) =>
+  ensureAdapter().then((a) => a.getMailTemplates(...args));
+export const saveMailTemplate: ApiAdapter['saveMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.saveMailTemplate(...args));
+export const resetMailTemplate: ApiAdapter['resetMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.resetMailTemplate(...args));
+export const previewMailTemplate: ApiAdapter['previewMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.previewMailTemplate(...args));
+export const getMailLog: ApiAdapter['getMailLog'] = (...args) =>
+  ensureAdapter().then((a) => a.getMailLog(...args));
 
 // ─── Re-exports for convenience ─────────────────────────
 

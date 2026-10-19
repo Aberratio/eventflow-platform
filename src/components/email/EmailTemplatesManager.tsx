@@ -1,172 +1,85 @@
-import {
-  getEmailTemplates,
-  getEmailSendLogs,
-  createEmailTemplate,
-  updateEmailTemplate,
-  deleteEmailTemplate,
-  toggleEmailTemplate,
-  sendEmailNow,
-} from '@/api';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AlertCircle, Loader2, Lock, Mail, Pencil, RotateCcw, Send } from 'lucide-react';
+import { toast } from 'sonner';
+import { getMailTemplates, resetMailTemplate } from '@/api';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Plus, Mail, Loader2, AlertCircle, Send } from 'lucide-react';
-import { toast } from 'sonner';
-import type {
-  EmailTemplate,
-  EmailSendLog,
-  CreateEmailTemplatePayload,
-  EmailTemplateScope,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  MAIL_SOURCE_LABELS,
+  mailTypeLabel,
+  type EmailTemplateScope,
+  type MailTemplate,
 } from '@/types/email';
-import { EmailTemplateCard } from './EmailTemplateCard';
-import { EmailTemplateEditor } from './EmailTemplateEditor';
-import { EmailSendLogsTable } from './EmailSendLogsTable';
+import { MailTemplateEditor } from './MailTemplateEditor';
+import { MailLogTable } from './MailLogTable';
 
 interface EmailTemplatesManagerProps {
-  /** If provided, shows templates for this specific event. Omit for global (admin) view. */
+  /** Required for scope 'event'. */
   eventId?: string;
-  /** When true, only shows read-only view (no create/edit/delete/send). For moderators. */
+  /** Read-only view (no edit/revert). */
   readonly?: boolean;
-  /** Scope: 'event' for per-event templates, 'system' for global/admin templates */
+  /** 'event' = per-event overrides; 'system' = global templates (admin). */
   scope?: EmailTemplateScope;
 }
 
-interface SendConfirmDialogState {
-  open: boolean;
-  template: EmailTemplate | null;
-}
-
+/**
+ * Mail templates of the server catalogue (spec 17): authentication mails are editable only globally,
+ * the rest can be overridden per event and reverted to the default.
+ */
 export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
   eventId,
   readonly = false,
   scope = 'event',
 }) => {
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [logs, setLogs] = useState<EmailSendLog[]>([]);
+  const templatesEventId = scope === 'event' ? eventId : undefined;
+  const [templates, setTemplates] = useState<MailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [logsLoading, setLogsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<MailTemplate | null>(null);
+  const [reverting, setReverting] = useState<MailTemplate | null>(null);
 
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | undefined>(undefined);
-  const [sendDialog, setSendDialog] = useState<SendConfirmDialogState>({
-    open: false,
-    template: null,
-  });
-  const [sending, setSending] = useState(false);
-
-  // ── Load data ──
-  const loadTemplates = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const queryId = scope === 'system' ? null : (eventId ?? undefined);
-      const res = await getEmailTemplates(queryId);
+      const res = await getMailTemplates(templatesEventId);
       setTemplates(res.data);
     } catch {
       setError('Nie udało się załadować szablonów');
     } finally {
       setLoading(false);
     }
-  }, [eventId, scope]);
-
-  const loadLogs = useCallback(async () => {
-    setLogsLoading(true);
-    try {
-      const res = await getEmailSendLogs(eventId);
-      setLogs(res.data);
-    } finally {
-      setLogsLoading(false);
-    }
-  }, [eventId]);
+  }, [templatesEventId]);
 
   useEffect(() => {
-    loadTemplates();
-  }, [loadTemplates]);
+    void load();
+  }, [load]);
 
-  // ── Handlers ──
-  const handleOpenCreate = () => {
-    setEditingTemplate(undefined);
-    setEditorOpen(true);
-  };
-
-  const handleOpenEdit = (template: EmailTemplate) => {
-    setEditingTemplate(template);
-    setEditorOpen(true);
-  };
-
-  const handleSave = async (payload: CreateEmailTemplatePayload) => {
-    if (editingTemplate) {
-      const res = await updateEmailTemplate(editingTemplate.id, payload);
-      if (res.success) {
-        toast.success('Szablon zaktualizowany');
-        loadTemplates();
-      } else {
-        toast.error(res.message ?? 'Błąd podczas zapisywania');
-      }
-    } else {
-      const res = await createEmailTemplate(payload);
-      if (res.success) {
-        toast.success('Szablon utworzony');
-        loadTemplates();
-      } else {
-        toast.error(res.message ?? 'Błąd podczas tworzenia szablonu');
-      }
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    const res = await deleteEmailTemplate(id);
-    if (res.success) {
-      toast.success('Szablon usunięty');
-      loadTemplates();
-    } else {
-      toast.error(res.message ?? 'Błąd podczas usuwania');
-    }
-  };
-
-  const handleToggle = async (id: string, active: boolean) => {
-    const res = await toggleEmailTemplate(id, active);
-    if (res.success) {
-      toast.success(active ? 'Szablon aktywowany' : 'Szablon dezaktywowany');
-      setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, active } : t)));
-    } else {
-      toast.error('Błąd podczas zmiany statusu');
-    }
-  };
-
-  const handleSendNow = (template: EmailTemplate) => {
-    setSendDialog({ open: true, template });
-  };
-
-  const confirmSend = async () => {
-    if (!sendDialog.template) return;
-    setSending(true);
+  const confirmRevert = async () => {
+    if (!reverting || !templatesEventId) return;
     try {
-      const res = await sendEmailNow(sendDialog.template.id);
-      if (res.success) {
-        toast.success(res.message ?? `Wysłano do ${res.data.sent} odbiorców`);
-        loadTemplates();
-        loadLogs();
-      } else {
-        toast.error(res.message ?? 'Błąd podczas wysyłki');
-      }
+      await resetMailTemplate(reverting.mailType, templatesEventId);
+      toast.success('Przywrócono domyślny szablon');
+      void load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Nie udało się przywrócić szablonu');
     } finally {
-      setSending(false);
-      setSendDialog({ open: false, template: null });
+      setReverting(null);
     }
   };
 
-  // ── Render ──
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -185,133 +98,98 @@ export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">Szablony emaili</h2>
-            <p className="text-sm text-muted-foreground">
-              {scope === 'system'
-                ? 'Szablony emaili systemowych (rejestracja konta, reset hasła itp.)'
-                : eventId
-                  ? 'Automatyczne i ręczne emaile dla tego wydarzenia'
-                  : 'Globalne szablony emaili platformy'}
-            </p>
-          </div>
-          {!readonly && (
-            <Button onClick={handleOpenCreate} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nowy szablon
-            </Button>
-          )}
-        </div>
-
-        {/* Tabs: Templates list / Send logs */}
-        <Tabs defaultValue="templates" onValueChange={(v) => v === 'logs' && loadLogs()}>
-          <TabsList>
-            <TabsTrigger value="templates" className="gap-2">
-              <Mail className="h-4 w-4" />
-              Szablony ({templates.length})
-            </TabsTrigger>
-            <TabsTrigger value="logs" className="gap-2">
-              <Send className="h-4 w-4" />
-              Historia wysyłek
-            </TabsTrigger>
-          </TabsList>
-
-          {/* ── Templates list ── */}
-          <TabsContent value="templates" className="mt-4">
-            {templates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-16 text-muted-foreground">
-                <Mail className="mb-3 h-12 w-12 opacity-30" />
-                <p className="text-sm font-medium">Brak szablonów emaili</p>
-                {!readonly && (
-                  <Button variant="link" className="mt-2 text-primary" onClick={handleOpenCreate}>
-                    Utwórz pierwszy szablon
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {templates.map((template) => (
-                  <EmailTemplateCard
-                    key={template.id}
-                    template={template}
-                    readonly={readonly}
-                    onEdit={handleOpenEdit}
-                    onDelete={handleDelete}
-                    onToggle={handleToggle}
-                    onSendNow={handleSendNow}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── Send logs ── */}
-          <TabsContent value="logs" className="mt-4">
-            {logsLoading ? (
-              <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <EmailSendLogsTable logs={logs} />
-            )}
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold">Szablony e-maili</h2>
+        <p className="text-sm text-muted-foreground">
+          {scope === 'system'
+            ? 'Globalne szablony wszystkich maili platformy. Organizatorzy mogą nadpisać część z nich dla swojego wydarzenia.'
+            : 'Maile wysyłane dla tego wydarzenia. Możesz nadpisać treść i wrócić do domyślnej.'}
+        </p>
       </div>
 
-      {/* Editor dialog */}
-      <EmailTemplateEditor
-        open={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        template={editingTemplate}
-        eventId={eventId}
-        scope={scope}
-        onSave={handleSave}
+      <Tabs defaultValue="templates">
+        <TabsList>
+          <TabsTrigger value="templates" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Szablony ({templates.length})
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="gap-2">
+            <Send className="h-4 w-4" />
+            Dziennik wysyłek
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="templates" className="mt-4">
+          <ul className="divide-y rounded-md border">
+            {templates.map((template) => {
+              const locked = scope === 'event' && !template.overridable;
+              return (
+                <li
+                  key={template.mailType}
+                  className="flex flex-wrap items-center justify-between gap-3 p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium">{mailTypeLabel(template.mailType)}</p>
+                    <p className="truncate text-sm text-muted-foreground">{template.subject}</p>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <Badge variant="outline">{MAIL_SOURCE_LABELS[template.source]}</Badge>
+                      {locked && (
+                        <Badge variant="secondary" className="gap-1">
+                          <Lock className="h-3 w-3" />
+                          Tylko globalnie
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  {!readonly && !locked && (
+                    <div className="flex gap-2">
+                      {scope === 'event' && template.source === 'event_override' && (
+                        <Button variant="outline" size="sm" onClick={() => setReverting(template)}>
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Przywróć domyślny
+                        </Button>
+                      )}
+                      <Button size="sm" onClick={() => setEditing(template)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edytuj
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </TabsContent>
+
+        <TabsContent value="logs" className="mt-4">
+          <MailLogTable eventId={templatesEventId} />
+        </TabsContent>
+      </Tabs>
+
+      <MailTemplateEditor
+        open={editing !== null}
+        template={editing}
+        eventId={templatesEventId}
+        onClose={() => setEditing(null)}
+        onSaved={() => void load()}
       />
 
-      {/* Send confirmation dialog */}
-      <Dialog
-        open={sendDialog.open}
-        onOpenChange={(o) => !o && setSendDialog({ open: false, template: null })}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Wyślij email do uczestników</DialogTitle>
-            <DialogDescription>
-              Szablon <strong>„{sendDialog.template?.name}"</strong> zostanie wysłany teraz do
-              wszystkich uczestników spełniających kryteria filtrów.
-              {sendDialog.template?.recipientFilter?.paymentStatus === 'unpaid' && (
-                <span className="mt-1 block text-muted-foreground">
-                  Dotyczy: tylko nieopłaceni uczestnicy.
-                </span>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSendDialog({ open: false, template: null })}
-              disabled={sending}
-            >
-              Anuluj
-            </Button>
-            <Button onClick={confirmSend} disabled={sending} className="gap-2">
-              {sending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Wysyłanie...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" /> Wyślij teraz
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      <AlertDialog open={reverting !== null} onOpenChange={(o) => !o && setReverting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Przywrócić domyślny szablon?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Nadpisanie „{reverting ? mailTypeLabel(reverting.mailType) : ''}" zostanie usunięte —
+              to wydarzenie będzie używać szablonu globalnego.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void confirmRevert()}>Przywróć</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };

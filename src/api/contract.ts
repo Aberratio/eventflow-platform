@@ -516,17 +516,22 @@ export interface ApiAdapter {
     reason?: string,
   ): Promise<ApiResponse<VirtualResultSubmission>>;
 
-  // ── Email Templates ──
-  getEmailTemplates(eventId?: string | null): Promise<PaginatedResponse<EmailTemplate>>;
-  getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>>;
-  getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>>;
-  createEmailTemplate(payload: CreateEmailTemplatePayload): Promise<ApiResponse<EmailTemplate>>;
-  updateEmailTemplate(
-    id: string,
-    data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>,
-  ): Promise<ApiResponse<EmailTemplate>>;
-  deleteEmailTemplate(id: string): Promise<ApiResponse<void>>;
-  toggleEmailTemplate(id: string, active: boolean): Promise<ApiResponse<EmailTemplate>>;
-  sendEmailNow(templateId: string, recipientIds?: string[]): Promise<ApiResponse<SendEmailResult>>;
-  previewEmailTemplate(request: EmailPreviewRequest): Promise<ApiResponse<EmailPreviewResult>>;
+  // ── Mail templates & log (B-03) — eventId omitted/null = global (admin) scope ──
+  getMailTemplates(eventId?: string | null): Promise<ApiResponse<MailTemplate[]>>;
+  saveMailTemplate(
+    mailType: string,
+    payload: SaveMailTemplatePayload,
+    eventId?: string | null,
+  ): Promise<ApiResponse<MailTemplate>>;
+  /** Removes the event override; the server answers with the now-effective template. */
+  resetMailTemplate(mailType: string, eventId: string): Promise<ApiResponse<MailTemplate>>;
+  previewMailTemplate(
+    mailType: string,
+    payload: MailTemplatePreviewRequest,
+    eventId?: string | null,
+  ): Promise<ApiResponse<MailTemplatePreview>>;
+  getMailLog(
+    filters?: MailLogFilters,
+    eventId?: string | null,
+  ): Promise<PaginatedResponse<MailLogEntry>>;
 }
