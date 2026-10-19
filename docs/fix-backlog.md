@@ -16,6 +16,8 @@ Stan wdrożenia (2026-10-19, wieczór): CM #3/#4 zmergowane i wdrożone na stagi
 
 Aktualizacja 2026-10-19 (późny wieczór): bez zmian – nic nowego nie zmergowano, oba repo prywatne, Actions nie startują. Decyzja: nie płacimy za GitHuba, deploye ręcznie robi Lesław (lista „Tryb ręczny” w sekcji „Wdrożenie na dev”). Staging ma stary serwer: `GET /api/v1/health` = 200 z `version` „20260916-1”, a trasa z S #44 `GET /api/v1/results/{id}/corrections` = 404 (route not found). Uwaga: odpowiedź 404 zawiera pełny stack trace ze ścieżkami serwera – na dev prawdopodobnie włączony tryb debug; do sprawdzenia przy deployu (na prod nie może tak być).
 
+**Merge 2026-10-19 (noc, zgoda Joanny):** S #51 → `master` (zawiera #45–#50); F #6 → `main`, #24 i #28 przepięte na `main` i zmergowane, potem stare F #5 (PP.105) i #1 (PP.15) – sprawdzone lokalnie na wyniku rundy 4: bez konfliktów, typecheck, eslint, vitest 1011/1011. Pojedyncze PR-y zawarte w integracjach zamknięte z komentarzem. Niezmergowane: PR-y Lesława (S #52, F #29) i dependabota. **Nic nie jest wdrożone** – Lesław wdraża `master` serwera (migracje 068–101) i `main` frontu według listy „Tryb ręczny”; kroki 1 i 3 z tej listy łączą się w jeden deploy.
+
 Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
 
 ### Runda 4 (2026-10-19) – domknięcie „Zostaje”
