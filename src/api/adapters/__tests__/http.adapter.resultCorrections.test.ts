@@ -38,6 +38,26 @@ describe('httpAdapter result corrections (G-03)', () => {
     expect(body.reason).toBe('Błąd maty');
   });
 
+  it('sends corrected net time and places (incl. null) in the PATCH body', async () => {
+    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: { id: 'r1' } }));
+
+    await httpAdapter.updateResult('r1', {
+      netTime: '00:44:00',
+      netTimeInSeconds: 2640,
+      position: 3,
+      categoryPosition: null,
+    });
+
+    const { init, body } = lastCall();
+    expect(init.method).toBe('PATCH');
+    expect(body).toEqual({
+      netTime: '00:44:00',
+      netTimeInSeconds: 2640,
+      position: 3,
+      categoryPosition: null,
+    });
+  });
+
   it('reads the correction history from GET /results/{id}/corrections', async () => {
     const row = {
       id: 'c1',

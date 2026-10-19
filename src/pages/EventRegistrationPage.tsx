@@ -1,6 +1,14 @@
 import { registrationFormFieldErrors } from '@/api/errors';
 import { answersToPayload } from '@/lib/formFields';
-import { createRegistration, disciplineLabels, getEventBySlug, getCare, getTeamById } from '@/api';
+import {
+  createRegistration,
+  disciplineLabels,
+  getEventBySlug,
+  getCare,
+  getTeamById,
+  quoteRegistration,
+} from '@/api';
+import type { CreateRegistrationPayload } from '@/api/payloads';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -356,15 +364,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     );
   }
 
-  const handleComplete = async (data: RegistrationData) => {
-    // G-08: a Draft in test mode takes the real request (the server answers with a dry run);
-    // without test mode the preview stays local and sends nothing.
-    if (isPreviewAvailable && !event.isTest) {
-      setPreviewRegistrationData(data);
-      return;
-    }
-    if (!user || isSubmitting) return;
-
+  // Payload of `createRegistration` AND of `quoteRegistration` (B-02): the quote asks the server to price
+  // exactly what the create call would send, so both are built here, once.
+  const buildCreatePayload = (data: RegistrationData): CreateRegistrationPayload | null => {
+    if (!user) return null;
     const registeredFor =
       registeringForOther && selectedGrantor
         ? {
@@ -374,6 +377,41 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
             userEmail: selectedGrantor.email ?? '',
           }
         : { userId: user.id, competitorId: undefined, userName: user.name, userEmail: user.email };
+    return {
+      eventId: event.id,
+      eventName: event.name,
+      userId: registeredFor.userId,
+      competitorId: registeredFor.competitorId,
+      userName: registeredFor.userName,
+      userEmail: registeredFor.userEmail,
+      registeredById: registeringForOther && selectedGrantor ? user.id : undefined,
+      distanceId: data.distanceId,
+      distanceName: data.distanceName,
+      category: data.category,
+      teamName: data.teamName,
+      teamId: data.teamId,
+      teamInviteToken: data.teamInviteToken,
+      createTeam: data.createTeam,
+      specialCategory: data.teamSpecialCategory,
+      pricingVariantId: data.pricingVariantId,
+      discountCode: data.discountCode,
+      merchandise: data.merchandise,
+      insuranceVariantId: data.insuranceVariantId,
+      // B-07: answers and identity travel in the create call itself; the server validates them
+      // in the same transaction and creates nothing on a 422.
+      formFieldAnswers: answersToPayload(data.formFieldAnswers),
+      identity: data.identity,
+    };
+  };
+
+  const handleComplete = async (data: RegistrationData) => {
+    // G-08: a Draft in test mode takes the real request (the server answers with a dry run);
+    // without test mode the preview stays local and sends nothing.
+    if (isPreviewAvailable && !event.isTest) {
+      setPreviewRegistrationData(data);
+      return;
+    }
+    if (!user || isSubmitting) return;
 
     setIsSubmitting(true);
     let registration: Registration;
@@ -384,31 +422,9 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       // server recomputes and freezes the authoritative Rozliczenie and
       // returns it on the response — that response (not this preview `data`)
       // is what the success page must render.
-      const response = await createRegistration({
-        eventId: event.id,
-        eventName: event.name,
-        userId: registeredFor.userId,
-        competitorId: registeredFor.competitorId,
-        userName: registeredFor.userName,
-        userEmail: registeredFor.userEmail,
-        registeredById: registeringForOther && selectedGrantor ? user.id : undefined,
-        distanceId: data.distanceId,
-        distanceName: data.distanceName,
-        category: data.category,
-        teamName: data.teamName,
-        teamId: data.teamId,
-        teamInviteToken: data.teamInviteToken,
-        createTeam: data.createTeam,
-        specialCategory: data.teamSpecialCategory,
-        pricingVariantId: data.pricingVariantId,
-        discountCode: data.discountCode,
-        merchandise: data.merchandise,
-        insuranceVariantId: data.insuranceVariantId,
-        // B-07: answers and identity travel in the create call itself; the server validates them
-        // in the same transaction and creates nothing on a 422.
-        formFieldAnswers: answersToPayload(data.formFieldAnswers),
-        identity: data.identity,
-      });
+      const payload = buildCreatePayload(data);
+      if (!payload) return;
+      const response = await createRegistration(payload);
       registration = response.data;
     } catch (error) {
       const closed = registrationClosedMessage(error);
@@ -628,6 +644,11 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           disabled={registeringForOther && !selectedGrantor}
           initialTeamJoin={initialTeamJoin}
           serverFieldErrors={serverFieldErrors}
+          quote={async (data) => {
+            const payload = buildCreatePayload(data);
+            if (!payload) throw new Error('Brak zalogowanego użytkownika.');
+            return quoteRegistration(payload);
+          }}
         />
       </div>
     </Layout>

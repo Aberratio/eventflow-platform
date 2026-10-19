@@ -88,6 +88,83 @@ describe('EditResultDialog (G-03)', () => {
   });
 });
 
+describe('EditResultDialog net time and places (G-03)', () => {
+  const withNumbers = { ...result, netTime: '00:44:30', position: 1, categoryPosition: 1 };
+
+  const renderDialog = (value = withNumbers) =>
+    render(
+      <EditResultDialog
+        open
+        onOpenChange={vi.fn()}
+        result={value}
+        isOfficial={false}
+        onSaved={vi.fn()}
+      />,
+    );
+
+  it('prefills net time and places and sends only the changed ones', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    expect(screen.getByLabelText('Czas netto')).toHaveValue('00:44:30');
+    expect(screen.getByLabelText('Miejsce (open)')).toHaveValue('1');
+    const net = screen.getByLabelText('Czas netto');
+    await user.clear(net);
+    await user.type(net, '00:44:00');
+    const place = screen.getByLabelText('Miejsce (open)');
+    await user.clear(place);
+    await user.type(place, '3');
+    await user.click(screen.getByRole('button', { name: 'Zapisz korektę' }));
+
+    await waitFor(() => expect(updateResult).toHaveBeenCalledTimes(1));
+    expect(updateResult).toHaveBeenCalledWith('r1', {
+      time: '00:45:00',
+      timeInSeconds: 2700,
+      status: 'finished',
+      netTime: '00:44:00',
+      netTimeInSeconds: 2640,
+      position: 3,
+    });
+  });
+
+  it('sends null for an emptied net time and place', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.clear(screen.getByLabelText('Czas netto'));
+    await user.clear(screen.getByLabelText('Miejsce w kategorii'));
+    await user.click(screen.getByRole('button', { name: 'Zapisz korektę' }));
+
+    await waitFor(() => expect(updateResult).toHaveBeenCalledTimes(1));
+    expect(updateResult.mock.calls[0][1]).toMatchObject({
+      netTime: null,
+      netTimeInSeconds: null,
+      categoryPosition: null,
+    });
+    expect(updateResult.mock.calls[0][1]).not.toHaveProperty('position');
+  });
+
+  it('rejects a malformed net time and a non-positive place', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    const net = screen.getByLabelText('Czas netto');
+    await user.clear(net);
+    await user.type(net, '44:30');
+    await user.click(screen.getByRole('button', { name: 'Zapisz korektę' }));
+    expect(await screen.findByText(/format czasu netto/)).toBeInTheDocument();
+
+    await user.clear(net);
+    await user.type(net, '00:44:30');
+    const place = screen.getByLabelText('Miejsce (open)');
+    await user.clear(place);
+    await user.type(place, '0');
+    await user.click(screen.getByRole('button', { name: 'Zapisz korektę' }));
+    expect(await screen.findByText(/Miejsce musi być dodatnią/)).toBeInTheDocument();
+    expect(updateResult).not.toHaveBeenCalled();
+  });
+});
+
 describe('ResultCorrectionsDialog (G-03)', () => {
   it('lists who, when, what changed (from -> to) and why', async () => {
     getResultCorrections.mockResolvedValue({

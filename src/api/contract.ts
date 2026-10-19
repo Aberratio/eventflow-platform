@@ -63,6 +63,7 @@ import type {
   User,
   UserRole,
   Registration,
+  RegistrationQuote,
   PublicStartListEntry,
   RelayTeam,
   TeamInvite,
@@ -286,6 +287,8 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<{ enabled: boolean; allowedOrigins: string[] }>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;
+  /** B-02: prices the payload (same as `createRegistration`) without creating a Zapis. */
+  quoteRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<RegistrationQuote>>;
   updateRegistration(
     id: string,
     data: UpdateRegistrationPayload,

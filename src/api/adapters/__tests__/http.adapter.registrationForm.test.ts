@@ -168,3 +168,63 @@ describe('httpAdapter createRegistration closed and test-mode outcomes (B-01, G-
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('httpAdapter quoteRegistration (B-02)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('POSTs the create payload to /registrations/quote and returns the priced lines', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse({
+        success: true,
+        data: {
+          eventName: 'Bieg',
+          distanceName: '10 km',
+          totalAmount: 75,
+          discountCode: null,
+          settlementItems: [
+            { name: 'Opłata', basis: 'distance_price', amount: 80 },
+            { name: 'Losowanie: Biorę udział', basis: 'modifier', amount: -5 },
+          ],
+        },
+      }),
+    );
+
+    const response = await httpAdapter.quoteRegistration({
+      ...base,
+      formFieldAnswers: [{ fieldId: 'f-draw', value: 'yes' }],
+    });
+
+    const call = lastCall();
+    expect(call.url).toBe(`${BASE}/registrations/quote`);
+    expect(call.init.method).toBe('POST');
+    expect(call.body.formFieldAnswers).toEqual([{ fieldId: 'f-draw', value: 'yes' }]);
+    expect(response.data.totalAmount).toBe(75);
+    expect(response.data.settlementItems[1].amount).toBe(-5);
+  });
+
+  it('keeps the per-field errors of a 422 so the form can be shown as invalid', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse(
+        {
+          success: false,
+          error: {
+            code: 'registration_form_invalid',
+            message: 'Formularz zapisu zawiera błędy.',
+            details: { fields: [{ fieldId: 'f1', fieldKey: 'k', code: 'required', message: 'x' }] },
+          },
+        },
+        422,
+      ),
+    );
+
+    const error = await httpAdapter.quoteRegistration(base).catch((e: unknown) => e);
+
+    expect(registrationFormFieldErrors(error)).toHaveLength(1);
+  });
+});

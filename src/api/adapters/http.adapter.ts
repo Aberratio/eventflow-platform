@@ -554,6 +554,7 @@ export const httpAdapter: ApiAdapter = {
     request(`/events/${encodeURIComponent(eventId)}/embed/public`),
   getRegistrationsByUser: (userId) => request(`/users/${encodeURIComponent(userId)}/registrations`),
   createRegistration: (data) => request('/registrations', json('POST', data)),
+  quoteRegistration: (data) => request('/registrations/quote', json('POST', data)),
   updateRegistration: (id, data) =>
     request(`/registrations/${encodeURIComponent(id)}`, json('PATCH', data)),
   cancelRegistration: (id) =>

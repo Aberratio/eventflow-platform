@@ -802,8 +802,15 @@ export interface CreateFormFieldPayload {
   sortOrder?: number;
 }
 
-/** PATCH accepts only these (type, options and confidentiality are fixed at creation). */
+/**
+ * PATCH accepts only these (confidentiality is fixed at creation). B-02: a custom field's type
+ * and variants are editable in place; the server answers 409 `form_field_has_answers` for a type
+ * change once the field has answers, and 409 `form_field_option_in_use` for dropping a variant
+ * an answer still points at. Send the existing `key` to keep a variant's identity.
+ */
 export interface UpdateFormFieldPayload {
+  fieldType?: FormFieldType;
+  options?: Array<{ key?: string; label: string; price?: number }>;
   state?: FormFieldState;
   label?: string | null;
   tooltip?: string | null;
