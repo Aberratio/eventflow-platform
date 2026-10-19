@@ -289,7 +289,10 @@ export interface CreateResultPayload {
   birthYear?: number;
 }
 
-export type UpdateResultPayload = Partial<CreateResultPayload>;
+export type UpdateResultPayload = Partial<CreateResultPayload> & {
+  /** G-03: why the result is corrected - stored in the correction trail, not on the result. */
+  reason?: string;
+};
 
 // ──────────────── Shop ────────────────
 

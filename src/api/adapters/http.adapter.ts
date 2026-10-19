@@ -497,6 +497,7 @@ export const httpAdapter: ApiAdapter = {
   createResult: (data) => request('/results', json('POST', data)),
   updateResult: (id, data) => request(`/results/${encodeURIComponent(id)}`, json('PATCH', data)),
   deleteResult: (id) => request(`/results/${encodeURIComponent(id)}`, json('DELETE')),
+  getResultCorrections: (id) => request(`/results/${encodeURIComponent(id)}/corrections`),
   getPersonalRecords: (userId) => request(`/users/${encodeURIComponent(userId)}/personal-records`),
   getTeamResults: (eventId) => request(`/events/${encodeURIComponent(eventId)}/team-results`),
   getTeamClassification: (eventId, distanceId) =>

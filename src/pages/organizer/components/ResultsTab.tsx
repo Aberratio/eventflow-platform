@@ -17,6 +17,8 @@ import { Event, Registration, EventResultDocument } from '@/types';
 import { Plus, FileText, CheckCircle2, Trophy, Users, AlertCircle } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { AddResultDialog } from '@/components/organizer/AddResultDialog';
+import { EditResultDialog } from '@/components/organizer/EditResultDialog';
+import { ResultCorrectionsDialog } from '@/components/organizer/ResultCorrectionsDialog';
 import { UploadResultDocumentDialog } from '@/components/organizer/UploadResultDocumentDialog';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { PublicationStatusBadge } from '@/components/results/PublicationStatusBadge';
@@ -30,6 +32,7 @@ interface ResultsTabProps {
 }
 
 interface LocalResult {
+  id?: string;
   bibNumber: string;
   time: string;
   status: 'finished' | 'dnf' | 'dns' | 'dsq';
@@ -45,6 +48,9 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  // G-03: id of the server result being corrected / whose correction history is open.
+  const [editResultId, setEditResultId] = useState<string | null>(null);
+  const [correctionsResultId, setCorrectionsResultId] = useState<string | null>(null);
   const canUploadResults =
     event.publicationStatus === 'published' || event.publicationStatus === 'finished';
 
@@ -70,6 +76,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
 
   const allResults: LocalResult[] = [
     ...eventResults.map((r) => ({
+      id: r.id,
       bibNumber: r.bibNumber,
       time: r.time,
       status: r.status,
@@ -78,6 +85,8 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     })),
     ...localResults,
   ];
+
+  const editResult = eventResults.find((r) => r.id === editResultId);
 
   const selectedDistanceData = event.distances.find((d) => d.id === selectedDistance);
 
@@ -247,6 +256,8 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
             onExportCSV={handleExportCSV}
             onExportPDF={handleExportPDF}
             canEdit={canUploadResults}
+            onEditResult={setEditResultId}
+            onShowCorrections={setCorrectionsResultId}
           />
         </TabsContent>
 
@@ -307,6 +318,23 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
         registrations={registrations.filter((r) => r.distanceId === selectedDistance)}
         onAddResult={handleAddResult}
       />
+      {editResult && (
+        <EditResultDialog
+          open
+          onOpenChange={(open) => !open && setEditResultId(null)}
+          result={{ ...editResult, id: editResult.id }}
+          isOfficial={distancePublicationStatus === 'official'}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ['event-results', event.id] })}
+        />
+      )}
+      {correctionsResultId && (
+        <ResultCorrectionsDialog
+          open
+          onOpenChange={(open) => !open && setCorrectionsResultId(null)}
+          resultId={correctionsResultId}
+          title={allResults.find((r) => r.id === correctionsResultId)?.userName}
+        />
+      )}
       <UploadResultDocumentDialog
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}

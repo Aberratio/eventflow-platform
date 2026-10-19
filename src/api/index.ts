@@ -177,6 +177,8 @@ export const updateResult: ApiAdapter['updateResult'] = (...args) =>
   ensureAdapter().then((a) => a.updateResult(...args));
 export const deleteResult: ApiAdapter['deleteResult'] = (...args) =>
   ensureAdapter().then((a) => a.deleteResult(...args));
+export const getResultCorrections: ApiAdapter['getResultCorrections'] = (...args) =>
+  ensureAdapter().then((a) => a.getResultCorrections(...args));
 export const getPersonalRecords: ApiAdapter['getPersonalRecords'] = (...args) =>
   ensureAdapter().then((a) => a.getPersonalRecords(...args));
 export const getTeamResults: ApiAdapter['getTeamResults'] = (...args) =>

@@ -26,9 +26,13 @@ import {
   Upload,
   AlertCircle,
   Trash2,
+  Pencil,
+  History,
 } from 'lucide-react';
 
 interface LocalResult {
+  /** Present only for results stored on the server (G-03: only those can be corrected). */
+  id?: string;
   bibNumber: string;
   time: string;
   status: 'finished' | 'dnf' | 'dns' | 'dsq';
@@ -64,6 +68,8 @@ interface IndividualResultsCardProps {
   onExportCSV: () => void;
   onExportPDF: () => void;
   canEdit?: boolean;
+  onEditResult?: (id: string) => void;
+  onShowCorrections?: (id: string) => void;
 }
 
 export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
@@ -78,6 +84,8 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
   onExportCSV,
   onExportPDF,
   canEdit = true,
+  onEditResult,
+  onShowCorrections,
 }) => (
   <Card>
     <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
@@ -166,7 +174,7 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
                 <TableHead>Czas</TableHead>
                 <TableHead>Kategoria</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-16"></TableHead>
+                <TableHead className="w-32"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,7 +205,30 @@ export const IndividualResultsCard: React.FC<IndividualResultsCardProps> = ({
                     <TableCell className="font-mono">{result.time}</TableCell>
                     <TableCell>{result.category || '-'}</TableCell>
                     <TableCell>{getStatusBadge(result.status)}</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {result.id && onShowCorrections && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Historia korekt"
+                          title="Historia korekt"
+                          onClick={() => onShowCorrections(result.id as string)}
+                        >
+                          <History className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {result.id && onEditResult && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Koryguj wynik"
+                          title="Koryguj wynik"
+                          onClick={() => onEditResult(result.id as string)}
+                          disabled={!canEdit}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
