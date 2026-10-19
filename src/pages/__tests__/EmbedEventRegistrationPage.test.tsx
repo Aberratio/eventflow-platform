@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
 import EmbedEventRegistrationPage from '../EmbedEventRegistrationPage';
+import { ApiRequestError } from '@/api/errors';
 
 const { testEvent } = vi.hoisted(() => {
   const future = (daysFromNow: number) =>
@@ -247,5 +248,48 @@ describe('EmbedEventRegistrationPage', () => {
       screen.getByText(/Szczegóły zapisu znajdziesz po zalogowaniu w panelu uczestnika\./),
     ).toBeInTheDocument();
     expect(screen.queryByText(/wysłaliśmy/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the server message in a closed state on 409 registration_closed', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockCreateRegistration.mockRejectedValue(
+      new ApiRequestError('Termin zapisów minął.', 'registration_closed', 409),
+    );
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('submit-fixture'));
+
+    expect(await screen.findByText('Zapisy są zamknięte')).toBeInTheDocument();
+    expect(screen.getByText('Termin zapisów minął.')).toBeInTheDocument();
+    expect(screen.queryByText('registration-form-fixture')).not.toBeInTheDocument();
+  });
+
+  it('shows the test-mode message with the Rozliczenie and no gateway on a dry run', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockCreateRegistration.mockResolvedValue({
+      data: {
+        id: 'ghost',
+        isTest: true,
+        status: 'pending',
+        totalAmount: 80,
+        settlementItems: [{ id: 's1', name: 'Opłata startowa', amount: 80, sortOrder: 1 }],
+        paymentSession: { transactionId: 't', redirectUrl: 'https://gw.example/pay' },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('submit-fixture'));
+
+    expect(await screen.findByText('Zapis testowy')).toBeInTheDocument();
+    expect(screen.getByText(/nic nie zostało zapisane ani opłacone/)).toBeInTheDocument();
+    expect(screen.getByText('Opłata startowa')).toBeInTheDocument();
+    expect(mockNavigateToPaymentGateway).not.toHaveBeenCalled();
+    expect(screen.queryByText('Zapisano się!')).not.toBeInTheDocument();
   });
 });
