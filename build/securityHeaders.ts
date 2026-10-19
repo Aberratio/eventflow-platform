@@ -8,7 +8,7 @@
  */
 
 export interface HtaccessOptions {
-  /** Vite mode: 'development' | 'staging' | 'production' | other. */
+  /** Vite mode: 'development' (local) | 'dev' | 'staging' | 'production' | other. */
   mode: string;
   /** Absolute URL of the API, e.g. 'https://api.example.test/api/v1'. */
   apiUrl: string;
@@ -20,8 +20,9 @@ export interface HtaccessOptions {
 
 const ORIGIN_PATTERN = /^https?:\/\/[^/\s?#*]+$/;
 
+/** Hosted modes (dev, staging, production): https only, HSTS on. */
 function isStagingOrProduction(mode: string): boolean {
-  return mode === 'staging' || mode === 'production';
+  return mode === 'dev' || mode === 'staging' || mode === 'production';
 }
 
 /** `new URL(url).origin`; throws an Error on a relative or invalid URL. */
@@ -56,7 +57,7 @@ function validateExtraConnectSrc(entries: string[], mode: string): void {
     }
     if (isStagingOrProduction(mode) && !entry.startsWith('https://')) {
       throw new Error(
-        `CSP_CONNECT_SRC_EXTRA entry '${entry}' must use https when mode is staging or production.`,
+        `CSP_CONNECT_SRC_EXTRA entry '${entry}' must use https when mode is dev, staging or production.`,
       );
     }
   }
@@ -71,7 +72,7 @@ function validateApiUrl(apiUrl: string, mode: string): string {
   }
   if (isStagingOrProduction(mode) && !apiUrl.startsWith('https://')) {
     throw new Error(
-      `VITE_API_URL must use https when mode is staging or production (got '${apiUrl}').`,
+      `VITE_API_URL must use https when mode is dev, staging or production (got '${apiUrl}').`,
     );
   }
   return origin;

@@ -19,6 +19,23 @@ w `.env.local`:
 VITE_API_URL=http://localhost:8081/api/v1
 ```
 
+## Srodowiska
+
+Kazde srodowisko ma wlasny plik `.env.<mode>` z adresem API, wiec nie trzeba
+nadpisywac `VITE_API_URL` zmiennymi srodowiskowymi:
+
+| Srodowisko | Plik | Serwer developerski | Build |
+| --- | --- | --- | --- |
+| local (backend na tym komputerze) | `.env.development` | `npm run dev` | `npm run build:local` |
+| dev (`portal-dev.zmierzymyczas.kokot.it`) | `.env.dev` | `npm run dev:dev` | `npm run build:dev` |
+| staging | `.env.staging` | `npm run dev:staging` | `npm run build:staging` |
+| production | `.env.production` | `npm run dev:prod` | `npm run build` |
+
+`npm run dev:dev` uruchamia front lokalnie na porcie `8080` z API instancji dev
+(`localhost:8080` jest na liscie CORS tego API). Deploy na dev: workflow
+"Deploy frontend", `deploy_target=dev`; sekret `API_URL` jest tam opcjonalny
+(gdy jest ustawiony, wygrywa z `.env.dev`).
+
 Jesli backend zwraca 500 albo przegladarka pokazuje `connection refused`,
 najpierw sprawdz:
 
@@ -51,7 +68,7 @@ npm run build
 
 ## Security headers / .htaccess
 
-`npm run build` / `npm run build:staging` / `npm run build:dev` generate
+`npm run build` / `npm run build:staging` / `npm run build:dev` / `npm run build:local` generate
 `dist/.htaccess` at build time, via `build/securityHeaders.ts` (the pure CSP
 generator, unit-tested in `build/securityHeaders.test.ts`) and
 `build/securityHeadersPlugin.ts` (the Vite `writeBundle` plugin that writes
@@ -61,7 +78,7 @@ only known at build time, from `VITE_API_URL`.
 
 The generated file sets a full Content-Security-Policy, `X-Content-Type-Options`,
 `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` (unset for the
-embed routes), `Strict-Transport-Security` (staging/production only), the
+embed routes), `Strict-Transport-Security` (dev/staging/production only), the
 SPA fallback rewrite (excluding `/api`, `/uploads` and `/assets`), and a
 cache policy for immutable hashed assets. Embed routes (`/embed/*`,
 `/events/:slug/embed`) are served `embed.html` instead of `index.html`
