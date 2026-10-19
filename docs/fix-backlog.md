@@ -16,7 +16,33 @@ Stan wdrożenia (2026-10-19, wieczór): CM #3/#4 zmergowane i wdrożone na stagi
 
 Aktualizacja 2026-10-19 (późny wieczór): bez zmian – nic nowego nie zmergowano, oba repo prywatne, Actions nie startują. Decyzja: nie płacimy za GitHuba, deploye ręcznie robi Lesław (lista „Tryb ręczny” w sekcji „Wdrożenie na dev”). Staging ma stary serwer: `GET /api/v1/health` = 200 z `version` „20260916-1”, a trasa z S #44 `GET /api/v1/results/{id}/corrections` = 404 (route not found). Uwaga: odpowiedź 404 zawiera pełny stack trace ze ścieżkami serwera – na dev prawdopodobnie włączony tryb debug; do sprawdzenia przy deployu (na prod nie może tak być).
 
-**Merge 2026-10-19 (noc, zgoda Joanny):** S #51 → `master` (zawiera #45–#50); F #6 → `main`, #24 i #28 przepięte na `main` i zmergowane, potem stare F #5 (PP.105) i #1 (PP.15) – sprawdzone lokalnie na wyniku rundy 4: bez konfliktów, typecheck, eslint, vitest 1011/1011. Pojedyncze PR-y zawarte w integracjach zamknięte z komentarzem. Niezmergowane: PR-y Lesława (S #52, F #29) i dependabota. **Nic nie jest wdrożone** – Lesław wdraża `master` serwera (migracje 068–101) i `main` frontu według listy „Tryb ręczny”; kroki 1 i 3 z tej listy łączą się w jeden deploy.
+**Merge 2026-10-19 (noc, zgoda Joanny):** S #51 → `master` (zawiera #45–#50); F #6 → `main`, #24 i #28 przepięte na `main` i zmergowane, potem stare F #5 (PP.105) i #1 (PP.15) – sprawdzone lokalnie na wyniku rundy 4: bez konfliktów, typecheck, eslint, vitest 1011/1011. Pojedyncze PR-y serwera (#45–#50) GitHub oznaczył jako zmergowane; frontowe F #7–#23 i #25–#27 są w `main`, ale **nadal otwarte** (zamknięcie zablokowane w sesji – do zamknięcia ręcznie). Niezmergowane: PR-y Lesława (S #52, F #29) i dependabota. **Nic nie jest wdrożone** – Lesław wdraża `master` serwera (migracje 068–101) i `main` frontu według listy „Tryb ręczny”; kroki 1 i 3 z tej listy łączą się w jeden deploy.
+
+### Noc 2026-10-19/20 – P2, CI, WCAG, UX (wszystko draft / lokalnie, nic niezmergowane)
+
+Push i `gh pr create` agentów były częściowo blokowane przez klasyfikator uprawnień – część gałęzi jest tylko wypchnięta albo tylko lokalna.
+
+| ID | Co | Gdzie |
+|---|---|---|
+| CI | `test.yml` tylko gotowe PR-y + concurrency + paths-ignore, bez push master; `e2e-bz` po merge, ręcznie i co tydzień | S #54 |
+| R-08 | Zgłoszenie duplikatu (opiekun/organizator), kolejka dla moderatora/admina; mig. 103. Spec 22 niedostępna (hook) – założenia: organizator może zgłosić dowolny profil, brak akcji „odrzuć/scalone” | S #55, F #30 |
+| M-04 | Klient `zmierzymy-czas` w `email_clients`; mig. CM 014; nowa zmienna `ZMIERZYMY_CZAS_API_KEY` (CM), potem przestawić klucz w serwerze | CM #5 |
+| R-05 | Zadanie `retention.purge`: odpowiedzi poufne 12 mies. po końcu wydarzenia, rejestr aktywności 12 mies. (okres do potwierdzenia RODO) | S gałąź `fix/r05-retention-jobs` (bez PR) |
+| R-09 | `Anonim #<8 hex>` (skrót z id zawodnika) – **zmiana kontraktu** `userName` | S gałąź `fix/r09-anonymous-label` (bez PR) |
+| R-12 | Testy: podłoga ceny i współbieżność licznika miejsc (6 procesów) – błędu nie ma | S `test/r12-price-and-capacity` (tylko lokalnie, `.wt/p2-server`) |
+| QA-LOCAL-01 | Błędny fixture (brak K40 na dystansie), nie kod | S gałąź `fix/qa-local-01-dnf-sample` (bez PR) |
+| R-15 | Inter self-hostowany, hosty Google usunięte z CSP | F `fix/r15-fonts-consent` (lokalnie, `.wt/p2-front`) |
+| R-16 | Escape zamyka menu mobilne, fokus wraca na przycisk | F `fix/r16-mobile-menu-escape` (lokalnie) |
+| R-11 | Usunięte tylko nieużywane `getMessage/sendMessage/markAsRead`. **Decyzja:** zakładka „Wiadomości” uczestnika woła `/users/{id}/messages` (poza umową) – usunąć? | F `chore/r11-remove-messages` (lokalnie) |
+| WCAG | Audyt 2.2 AA (68 ekranów × 2 viewporty), 25 pozycji (14 P1); raport `docs/a11y-audit.md` | F #31–#34 (mechaniczne konflikty w `Footer.tsx`/`Index.tsx` między #32–#34) |
+| UX | Audyt użyteczności mobile, raport `docs/ux-audit.md`; poprawki blokujące: bilet bez daty (500), overflow paneli na 360 px | F #35 |
+| Redesign | Plan: `docs/redesign-plan.md` | ten PR |
+
+Nowe defekty:
+- **QA-TEST-01:** `ParticipantTicketsTab (G-12)` w vitest pada po północy czasu lokalnego (fixture z datami względnymi vs UTC).
+- **QA-DEV-01:** odpowiedź 404 API na dev zawiera stack trace (tryb debug).
+- **A11Y-22:** około 100 kontrolek w panelach bez nazwy (lista i metoda w `docs/a11y-audit.md`).
+- **A11Y-25:** fokus nie wchodzi do menu mobilnego – do zrobienia razem z R-16.
 
 Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
 
