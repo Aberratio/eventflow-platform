@@ -13,6 +13,7 @@ import { ParticipantsTab } from './components/ParticipantsTab';
 import { ResultsTab } from './components/ResultsTab';
 import { VirtualResultsVerificationTab } from './components/VirtualResultsVerificationTab';
 import { EventSettingsTab } from './components/EventSettingsTab';
+import { FormFieldsTab } from './components/FormFieldsTab';
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
 import {
   ArrowLeft,
@@ -23,6 +24,7 @@ import {
   Globe,
   Tag,
   Mail,
+  ClipboardList,
 } from 'lucide-react';
 import type { ApiResponse } from '@/api/types';
 import type { DiscountCode, Event } from '@/types';
@@ -35,6 +37,7 @@ const eventManageTabs = [
   'participants',
   'results',
   'discounts',
+  'form',
   'emails',
   'settings',
 ] as const;
@@ -245,6 +248,10 @@ const EventManage = () => {
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Kody rabatowe</span>
             </TabsTrigger>
+            <TabsTrigger value="form" className="flex h-[52px] items-center gap-2 px-7 py-4">
+              <ClipboardList className="h-4 w-4" />
+              <span className="hidden sm:inline">Formularz zapisów</span>
+            </TabsTrigger>
             <TabsTrigger value="emails" className="flex h-[52px] items-center gap-2 px-7 py-4">
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emaile</span>
@@ -287,6 +294,10 @@ const EventManage = () => {
               distances={visibleEvent.distances}
               onChange={handleDiscountCodesChange}
             />
+          </TabsContent>
+
+          <TabsContent value="form">
+            <FormFieldsTab eventId={visibleEvent.id} />
           </TabsContent>
 
           <TabsContent value="emails">
