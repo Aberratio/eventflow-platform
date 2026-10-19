@@ -14,6 +14,8 @@ Kod jest znacznie dalej, niż zakłada `plan-prac.md`: migracje 001–067, model
 
 Stan wdrożenia (2026-10-19, wieczór): CM #3/#4 zmergowane i wdrożone na staging. S #44 (`integration/fix-all`) zmergowany do master (7199124), ale **niewdrożony**: GitHub Actions w eventflow-server nie startują (billing konta – „recent account payments have failed or your spending limit needs to be increased”), a środowisko `staging` w GitHubie (i repo) ma **0 sekretów**, więc deploy pada na „Check deploy configuration”. Do uzupełnienia w environment `staging`: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `BACKEND_REMOTE_DIR`, `BACKEND_ALLOWED_ROOT`, `BACKEND_BACKUP_DIR`, `API_URL`. F #6 i #24 celowo niezmergowane do czasu wdrożenia S. Weryfikacja po wdrożeniu (8 kroków niżej, `npm run test:e2e:dev`, ręczne QA zalogowanych) – czeka.
 
+Aktualizacja 2026-10-19 (późny wieczór): bez zmian – nic nowego nie zmergowano, oba repo prywatne, Actions nie startują. Decyzja: nie płacimy za GitHuba, deploye ręcznie robi Lesław (lista „Tryb ręczny” w sekcji „Wdrożenie na dev”). Wersji API na stagingu nie da się sprawdzić z zewnątrz – host odpowiada 429 (brak whitelisty), a `/health` zwraca `version` tylko przy ustawionym `APP_VERSION`.
+
 Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
 
 ### Runda 4 (2026-10-19) – domknięcie „Zostaje”
@@ -79,6 +81,18 @@ Gałęzie integracyjne `integration/fix-all` (S i F) łączą wszystkie PR-y z r
 ### Wdrożenie na dev (dla Lesława)
 
 Push na `master` serwera wdraża na staging – merge dopiero po zgodzie Joanny.
+
+**Tryb ręczny (stan 2026-10-19, Actions nie działają – brak minut i 0 sekretów w environment `staging`)**
+
+Skrócona lista – szczegóły (migracje, zmienne, weryfikacja) niżej.
+
+1. **Serwer, teraz:** wdrożyć `master` @ `7199124` (zawiera S #44; CM #3/#4 już są na stagingu). Tak jak robi to `deploy.yml`: `composer install --no-dev --optimize-autoloader`, paczka bez `.git`, `.github`, `.env*`, `tests`, `vendor/phpunit`; na serwerze `scripts/deploy/api-remote.sh preflight`, potem `install` (robi kopię bazy i odpala `bin/migrate.php`; zmienne `BACKEND_REMOTE_DIR`, `BACKEND_ALLOWED_ROOT`, `BACKEND_BACKUP_DIR`, `REMOTE_ZIP`, `TARGET_ENV=staging`, `MIGRATION_MODE=run`, `DEPLOY_ID`). Migracje: 068, 069, 075, 080, 085, 090, 095. Opcjonalnie ustawić `APP_VERSION` (np. `7199124`) – `GET /api/v1/health` zwraca ją w polu `version`, co pozwala z zewnątrz sprawdzić, która wersja stoi.
+2. **Sprawdzić:** `GET /api/v1/health` = 200, drugi `composer migrate` = nic do zrobienia, cron `php bin/scheduler.php --status`. Dać znać Joannie.
+3. **Joanna merguje S #51** (`integration/round4`, zawiera #45–#50) → **drugi deploy serwera** tak samo jak w kroku 1. Migracje: 100 (`r17_calendar_outbox_action`), 101 (`g03_manual_result_places`). Runda 4 nie dodaje nowych zmiennych env.
+4. **Joanna merguje front** F #6 → #24 (przepięty na `main`) → #28 (przepięty na `main`) → **deploy frontu**: `npm ci`, `VITE_API_URL=<URL API dev> VITE_APP_ENV=staging VITE_APP_RELEASE=<sha> npm run build:staging` (+ `VITE_STAGING_GATE_PASSWORD`, jeśli bramka jest używana), wgrać `dist/`. **Nie** ustawiać `VITE_ALLOW_INDEXING` na dev.
+5. Po wdrożeniu: 8 kroków „Weryfikacja po wdrożeniu” niżej + whitelist IP w seohost (bez niego `npm run test:e2e:dev` dostaje 429).
+
+Gdy repo stanie się publiczne i Actions ruszą: do environment `staging` serwera dodać `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `BACKEND_REMOTE_DIR`, `BACKEND_ALLOWED_ROOT`, `BACKEND_BACKUP_DIR`, `API_URL`; frontu: `API_URL`, `VITE_STAGING_GATE_PASSWORD` oraz zestaw FTP (`FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_SERVER_DIR`) albo SSH (`SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `FRONTEND_REMOTE_DIR`, `FRONTEND_ALLOWED_ROOT`, `FRONTEND_URL`) – zależnie od wybranej metody w `deploy.yml`.
 
 **Kolejność merge**
 1. **central-mailer:** #3 → #4 (stacked). Migracja: `php scripts/run-migrations.php` (013 `reply_to`). Restart workerów (`bin/worker.php`, `bin/technical-worker.php`).
@@ -230,6 +244,20 @@ Kontrakt jest zbudowany po obu stronach. Komentarz w `eventflow-server/.env.exam
 | O-02 | Bramki Tpay / PayNow: kod jest, nigdy nie był sprawdzony na sandboksie. Zmienne: `TPAY_CLIENT_ID`, `TPAY_CLIENT_SECRET`, `TPAY_MERCHANT_ID`, `TPAY_SANDBOX`, `TPAY_NOTIFICATION_URL`, `TPAY_SUCCESS_URL`, `TPAY_ERROR_URL`, `PAYNOW_API_KEY`, `PAYNOW_SIGNATURE_KEY`, `PAYNOW_SANDBOX`, `PAYNOW_CONTINUE_URL`. | P0 (warunkowe: konta) |
 | O-03 | Whitelist IP w seohost (429) – bez tego testy e2e-dev są niewiarygodne. | P1 |
 | O-04 | Rozszerzenie PHP `zip` na hostingu (eksport XLSX zwraca `xlsx_not_supported` bez niego). | P1 |
+
+## CI eventflow-server – propozycja (czeka na zgodę Joanny)
+
+Dziś `test.yml` i `e2e-bz.yml` startują na każdy push do każdego PR (także draftu) i na push do `master`; `e2e-bz` dodatkowo co noc. `deploy.yml` przy pushu na `master` sam odpala lint, migracje, seed, Unit i Integration – więc `test.yml` na `master` dubluje te same testy.
+
+| Zmiana | Plik | Efekt |
+|---|---|---|
+| `pull_request` z `types: [opened, synchronize, reopened, ready_for_review]` + `if: github.event.pull_request.draft == false` | `test.yml`, `e2e-bz.yml` | drafty nie zużywają minut; testy ruszają po „Ready for review” |
+| `concurrency: { group: "${{ github.workflow }}-${{ github.ref }}", cancel-in-progress: true }` | `test.yml`, `e2e-bz.yml` (nie `deploy.yml`) | nowy push anuluje stary przebieg tego samego PR |
+| `paths-ignore: ['docs/**', '**/*.md']` | `test.yml`, `e2e-bz.yml` | zmiany samej dokumentacji nie odpalają testów |
+| Usunąć `push: master` z `test.yml` | `test.yml` | testy na `master` i tak robi `deploy.yml` przed wdrożeniem |
+| `e2e-bz`: tylko `push: master` + `workflow_dispatch` (bez PR i bez crona); ewentualnie PR z `paths: ['src/**/Bz*', 'src/Http/routes.php', 'database/migrations/**']` | `e2e-bz.yml` | kontrakt z BZ sprawdzany po merge i na żądanie |
+
+Ryzyko: jeśli kiedyś włączymy wymagane status checks na `master`, `paths-ignore`/pominięty draft zostawi check „pending” – wtedy zamiast `paths-ignore` trzeba warunku w jobie. Po upublicznieniu repo minuty są darmowe, więc zysk to głównie szybkość i mniej szumu.
 
 ## P2 – reszta (głównie „poza umową” lub do potwierdzenia przez Zamawiającego)
 
