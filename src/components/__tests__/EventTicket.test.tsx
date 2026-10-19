@@ -57,3 +57,57 @@ describe('EventTicket check-in display (E3.6)', () => {
     expect(screen.getByText(/Jan Kowalski \(BZ\)/)).toBeInTheDocument();
   });
 });
+
+const START_CODE = `pqr_${'a1'.repeat(24)}`;
+
+describe('EventTicket start code QR (B-04, G-01)', () => {
+  it('encodes the bare pqr_ start code (not JSON) for a confirmed Zapis', () => {
+    const { container } = render(
+      
+        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }} />
+      ,
+    );
+
+    const qr = container.querySelector('svg[data-qr-value]');
+    expect(qr).not.toBeNull();
+    expect(qr?.getAttribute('data-qr-value')).toBe(START_CODE);
+    expect(qr?.getAttribute('data-qr-value')).not.toContain('{');
+  });
+
+  it.each(['pending', 'expired', 'cancelled', 'removed'] as const)(
+    'shows no QR and a status message for a %s Zapis',
+    (registrationStatus) => {
+      const { container } = render(
+        
+          <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus }} />
+        ,
+      );
+
+      expect(container.querySelector('svg')?.getAttribute('data-qr-value')).toBeFalsy();
+      expect(container.querySelector('[data-qr-value]')).toBeNull();
+      expect(screen.getByTestId('ticket-inactive')).toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /Pobierz bilet/ })).not.toBeInTheDocument();
+    },
+  );
+
+  it('says the ticket appears after payment for an unpaid Zapis', () => {
+    render(
+      
+        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'pending' }} />
+      ,
+    );
+    expect(screen.getByText(/Bilet pojawi się po opłaceniu zapisu/)).toBeInTheDocument();
+  });
+
+  it('links "Pobierz bilet" to the print page of the Zapis', () => {
+    render(
+      
+        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }} />
+      ,
+    );
+    expect(screen.getByRole('link', { name: /Pobierz bilet/ })).toHaveAttribute(
+      'href',
+      '/participant/tickets/registration-1/print',
+    );
+  });
+});

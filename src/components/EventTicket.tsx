@@ -1,10 +1,10 @@
-import { QRCodeSVG } from 'qrcode.react';
+import { Link } from 'react-router-dom';
+import { TicketQr } from '@/components/TicketQr';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Download, Calendar, MapPin, User, Hash, CheckCircle2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Ticket } from '@/types';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -14,23 +14,13 @@ interface EventTicketProps {
 }
 
 export const EventTicket = ({ ticket }: EventTicketProps) => {
-  const { toast } = useToast();
-
-  const handleDownload = () => {
-    toast({
-      title: 'Pobieranie biletu',
-      description: 'Bilet PDF zostanie pobrany za chwilę...',
-    });
-    // Mock - in real app, would generate and download PDF
-  };
-
-  // QR code data - contains ticket verification info
-  const qrData = JSON.stringify({
-    ticketId: ticket.id,
-    eventId: ticket.eventId,
-    bibNumber: ticket.bibNumber,
-    distanceId: ticket.distanceId,
-  });
+  // G-01 (spec 11 pkt 4): kod startowy ważny tylko dla Zapisu opłaconego/potwierdzonego.
+  const qrValue =
+    ticket.registrationStatus === 'confirmed' && ticket.qrCode ? ticket.qrCode : null;
+  const inactiveMessage =
+    ticket.registrationStatus === 'pending'
+      ? 'Bilet pojawi się po opłaceniu zapisu.'
+      : 'Bilet nieaktywny — zapis został anulowany, usunięty lub wygasł.';
 
   return (
     <Card className="overflow-hidden">
@@ -38,9 +28,18 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
         <div className="flex flex-col sm:flex-row">
           {/* QR Code Section */}
           <div className="flex items-center justify-center bg-muted p-6 sm:w-48 sm:flex-shrink-0">
-            <div className="rounded-lg bg-background p-3">
-              <QRCodeSVG value={qrData} size={120} level="H" includeMargin={false} />
-            </div>
+            {qrValue ? (
+              <div className="rounded-lg bg-background p-3">
+                <TicketQr value={qrValue} />
+              </div>
+            ) : (
+              <p
+                data-testid="ticket-inactive"
+                className="text-center text-sm text-muted-foreground"
+              >
+                {inactiveMessage}
+              </p>
+            )}
           </div>
 
           {/* Ticket Details */}
@@ -93,12 +92,16 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
               </Badge>
             )}
 
-            <div className="pt-2">
-              <Button variant="outline" onClick={handleDownload} className="w-full sm:w-auto">
-                <Download className="mr-2 h-4 w-4" />
-                Pobierz PDF
-              </Button>
-            </div>
+            {qrValue && (
+              <div className="pt-2">
+                <Button variant="outline" asChild className="w-full sm:w-auto">
+                  <Link to={`/participant/tickets/${ticket.registrationId}/print`}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Pobierz bilet
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
