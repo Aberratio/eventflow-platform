@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { securityHeadersPlugin } from './build/securityHeadersPlugin';
 import { splitList } from './build/securityHeaders';
+import { indexingPlugin } from './build/indexingPlugin';
+import { isIndexingAllowed } from './build/indexing';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), ''); // process env (CI) wins over .env.<mode>
@@ -13,6 +15,8 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      // D-09: indexing only when VITE_ALLOW_INDEXING=true (production build); noindex + Disallow otherwise
+      indexingPlugin({ allowIndexing: isIndexingAllowed(env.VITE_ALLOW_INDEXING) }),
       securityHeadersPlugin({
         mode,
         apiUrl: env.VITE_API_URL || 'http://localhost:8081/api/v1', // same fallback as src/api/client.ts:3

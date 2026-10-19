@@ -322,6 +322,7 @@ jobs:
         env:
           API_URL: ${{ secrets.API_URL }}
           VITE_APP_ENV: production
+          VITE_ALLOW_INDEXING: "true"
           CSP_REPORT_ONLY: ${{ vars.CSP_REPORT_ONLY }}
           CSP_CONNECT_SRC_EXTRA: ${{ vars.CSP_CONNECT_SRC_EXTRA }}
         run: |
