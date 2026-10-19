@@ -401,6 +401,8 @@ export const revokeCare: ApiAdapter['revokeCare'] = (...args) =>
   ensureAdapter().then((a) => a.revokeCare(...args));
 export const checkCompetitorDuplicates: ApiAdapter['checkCompetitorDuplicates'] = (...args) =>
   ensureAdapter().then((a) => a.checkCompetitorDuplicates(...args));
+export const setCompetitorAnonymization: ApiAdapter['setCompetitorAnonymization'] = (...args) =>
+  ensureAdapter().then((a) => a.setCompetitorAnonymization(...args));
 export const rotateIdentityCode: ApiAdapter['rotateIdentityCode'] = (...args) =>
   ensureAdapter().then((a) => a.rotateIdentityCode(...args));
 

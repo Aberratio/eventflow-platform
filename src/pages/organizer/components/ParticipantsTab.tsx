@@ -572,6 +572,18 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                         <FileText className="mr-2 h-4 w-4" />
                         Lista startowa (XLSX)
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={distanceFilter === 'all'}
+                        title={
+                          distanceFilter === 'all'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            : undefined
+                        }
+                        onClick={() => handleExportStartList(distanceFilter, 'xml')}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Lista startowa (XML)
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>

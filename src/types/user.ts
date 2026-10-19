@@ -35,6 +35,8 @@ export interface User {
   eventLimit?: number;
   /** PP.7: informational only; absent on older API responses. */
   emailVerified?: boolean;
+  /** G-07 (umowa §5.8): last successful login, ISO 8601; null before the first login. */
+  lastLoginAt?: string | null;
 }
 
 /**
@@ -67,6 +69,8 @@ export interface Competitor {
   status?: 'active' | 'scalony';
   /** E8.1: set only when status === 'scalony' — the profile that survived. */
   mergedIntoCompetitorId?: string | null;
+  /** G-09: public name masking in rankings (POST /competitors/{id}/anonymization). */
+  isAnonymized?: boolean;
 }
 
 /** Zawodnik pod moją opieką — mogę go zapisywać na zawody. */
@@ -84,6 +88,8 @@ export interface MyCompetitor {
   /** E1.12: kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
   identityCode: string;
   competitorUserId?: string | null;
+  /** G-09: absent in GET /care today (server gap) — treated as false until toggled in this session. */
+  isAnonymized?: boolean;
 }
 
 /** Konto, które sprawuje opiekę nade mną (może mnie zapisywać). */

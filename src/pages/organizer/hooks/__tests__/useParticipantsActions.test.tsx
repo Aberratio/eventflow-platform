@@ -314,6 +314,19 @@ describe('useParticipantsActions', () => {
     expect(exportStartList).toHaveBeenCalledWith('evt-1', 'd1', 'xlsx');
   });
 
+  it('handleExportStartList also supports the xml format (G-11)', async () => {
+    exportStartList.mockResolvedValueOnce(undefined);
+    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.handleExportStartList('d1', 'xml');
+    });
+
+    expect(exportStartList).toHaveBeenCalledWith('evt-1', 'd1', 'xml');
+  });
+
   it('handleExportStartList does not throw when the download fails', async () => {
     exportStartList.mockRejectedValueOnce(new Error('forbidden'));
     const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {

@@ -44,6 +44,9 @@ const roleLabels: Record<Extract<UserRole, 'admin' | 'superadmin'>, string> = {
   superadmin: 'Superadmin',
 };
 
+const formatLastLogin = (iso?: string | null): string =>
+  iso ? new Date(iso).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' }) : 'Nigdy';
+
 export const UsersAdminsTab = () => {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -157,6 +160,7 @@ export const UsersAdminsTab = () => {
               <TableHead>Email</TableHead>
               <TableHead>Rola</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Ostatnie logowanie</TableHead>
               <TableHead className="text-right">Akcje</TableHead>
             </TableRow>
           </TableHeader>
@@ -174,6 +178,9 @@ export const UsersAdminsTab = () => {
                   <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
                     {user.status === 'blocked' ? 'Zablokowany' : 'Aktywny'}
                   </Badge>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {formatLastLogin(user.lastLoginAt)}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
