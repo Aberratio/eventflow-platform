@@ -119,3 +119,52 @@ describe('httpAdapter createRegistration with the registration form (B-07)', () 
     expect(registrationFormFieldErrors(new Error('x'))).toEqual([]);
   });
 });
+
+describe('httpAdapter createRegistration closed and test-mode outcomes (B-01, G-08)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('throws an ApiRequestError with code registration_closed, status 409 and the server message', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'registration_closed', message: 'Zapisy na to wydarzenie są zamknięte.' },
+        },
+        409,
+      ),
+    );
+
+    const error = await httpAdapter.createRegistration(base).catch((e: unknown) => e);
+
+    expect(error).toMatchObject({
+      name: 'ApiRequestError',
+      code: 'registration_closed',
+      status: 409,
+      message: 'Zapisy na to wydarzenie są zamknięte.',
+    });
+  });
+
+  it('returns the dry-run response with isTest and its Rozliczenie, in a single request', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse(
+        {
+          success: true,
+          data: { id: 'r-dry', isTest: true, totalAmount: 80, settlementItems: [] },
+        },
+        201,
+      ),
+    );
+
+    const response = await httpAdapter.createRegistration(base);
+
+    expect(response.data.isTest).toBe(true);
+    expect(response.data.totalAmount).toBe(80);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});

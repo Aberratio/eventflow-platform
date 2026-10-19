@@ -115,6 +115,11 @@ export interface Registration {
    * yet (column registrations.payment_expires_at) — the banner degrades to "dokończ płatność" without a date.
    */
   paymentExpiresAt?: string | null;
+  /**
+   * G-08: true on the POST /registrations response of a dry run (a Draft in test mode). The
+   * Zapis does not exist (the `id` is a ghost), nothing was paid; only the Rozliczenie is real.
+   */
+  isTest?: boolean;
   registeredById?: string;
   /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import EventRegistrationPage from '../EventRegistrationPage';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 import { getCare } from '@/api';
+import { ApiRequestError } from '@/api/errors';
 
 // E1.2: the client must never send computed money amounts to the server as
 // authoritative — this test exercises the real `handleComplete` in
@@ -226,5 +227,51 @@ describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () 
     await user.click(await screen.findByText('submit-fixture'));
     expect(mockCreateRegistration).toHaveBeenCalledTimes(1);
     expect(mockCreateRegistration.mock.calls[0][0].competitorId).toBe('c-zosia');
+  });
+
+  it('shows the server message in a closed state on 409 registration_closed, not a generic error', async () => {
+    mockCreateRegistration.mockRejectedValueOnce(
+      new ApiRequestError(
+        'Zapisy zostały zamknięte przez organizatora.',
+        'registration_closed',
+        409,
+      ),
+    );
+    const user = userEvent.setup();
+    render(<EventRegistrationPage />);
+
+    await user.click(await screen.findByText('submit-fixture'));
+
+    expect(await screen.findByText('Zapisy są zamknięte')).toBeInTheDocument();
+    expect(screen.getByText('Zapisy zostały zamknięte przez organizatora.')).toBeInTheDocument();
+    expect(screen.queryByText('submit-fixture')).not.toBeInTheDocument();
+  });
+
+  it('sends a test-mode dry run to the success page without the gateway', async () => {
+    mockCreateRegistration.mockResolvedValueOnce({
+      data: {
+        id: 'ghost',
+        isTest: true,
+        status: 'pending',
+        totalAmount: 80,
+        paymentSession: { transactionId: 't', redirectUrl: 'https://gw.example/pay' },
+      },
+    });
+    const user = userEvent.setup();
+    render(<EventRegistrationPage />);
+
+    await user.click(await screen.findByText('submit-fixture'));
+
+    await vi.waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/events/test-event/register/success',
+        expect.objectContaining({
+          state: expect.objectContaining({
+            registration: expect.objectContaining({ isTest: true }),
+          }),
+        }),
+      ),
+    );
+    expect(mockNavigateToPaymentGateway).not.toHaveBeenCalled();
   });
 });
