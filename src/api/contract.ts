@@ -66,6 +66,7 @@ import type {
   RelayTeam,
   TeamInvite,
   Result,
+  ResultCorrection,
   ResultImportBatch,
   ResultImportMode,
   PersonalRecord,
@@ -292,6 +293,8 @@ export interface ApiAdapter {
   createResult(data: CreateResultPayload): Promise<ApiResponse<Result>>;
   updateResult(id: string, data: UpdateResultPayload): Promise<ApiResponse<Result>>;
   deleteResult(id: string): Promise<ApiResponse<void>>;
+  /** G-03: correction trail of one result, newest first. */
+  getResultCorrections(id: string): Promise<ApiResponse<ResultCorrection[]>>;
   getPersonalRecords(userId: string): Promise<ApiResponse<PersonalRecord[]>>;
   getTeamResults(eventId: string): Promise<ApiResponse<TeamResult[]>>;
   /** E2.7: live-computed team/relay classification for one event+distance. */
