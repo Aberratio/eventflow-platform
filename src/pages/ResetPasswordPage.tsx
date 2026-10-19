@@ -146,7 +146,7 @@ const ResetPasswordPage = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
                             aria-pressed={showPassword}
                           >
