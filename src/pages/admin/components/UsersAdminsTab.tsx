@@ -1,4 +1,4 @@
-import { getUsers } from '@/api';
+import { getAllUsers } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -57,7 +57,7 @@ export const UsersAdminsTab = () => {
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', phone: '' });
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'admins'],
-    queryFn: () => getUsers({ pageSize: 1000 }),
+    queryFn: () => getAllUsers(),
   });
 
   const admins = [

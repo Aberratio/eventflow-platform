@@ -1,4 +1,5 @@
-import { getEvents, getVirtualResultSubmissions, requestRefund } from '@/api';
+import { getVirtualResultSubmissions, requestRefund } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -40,7 +41,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   };
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-registrations'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
   const { data: virtualSubmissionsResponse } = useQuery({

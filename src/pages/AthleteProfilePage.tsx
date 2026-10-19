@@ -1,4 +1,5 @@
-import { getEvents, getResultsByUser, disciplineLabels } from '@/api';
+import { getResultsByUser, disciplineLabels } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useParams, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +24,7 @@ const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'athlete-profile'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
 

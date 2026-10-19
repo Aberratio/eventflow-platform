@@ -1,4 +1,4 @@
-import { getEvents } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,7 +25,7 @@ const ParticipantOverviewTab = ({
 }: ParticipantOverviewTabProps) => {
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-overview'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
 

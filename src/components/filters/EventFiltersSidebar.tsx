@@ -1,4 +1,4 @@
-import { getEvents } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,7 @@ interface EventFiltersSidebarProps {
 function useFilterOptions() {
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'filter-options'],
-    queryFn: () => getEvents({ pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged(),
   });
   const events = useMemo(() => eventsResponse?.data ?? [], [eventsResponse?.data]);
   const cities = useMemo(() => [...new Set(events.map((e) => e.city))].sort(), [events]);
