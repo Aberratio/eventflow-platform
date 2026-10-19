@@ -2,6 +2,7 @@ import { getEvents, getResults, getSeriesBySlug } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, ArrowLeft } from 'lucide-react';
@@ -57,7 +58,12 @@ const isInAgeCategory = (age: number | null, category: string): boolean => {
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
-  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+  const {
+    data: seriesData,
+    isLoading: seriesLoading,
+    isError: seriesError,
+    refetch: refetchSeries,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.seriesBySlug(slug) : ['series'],
     queryFn: () => getSeriesBySlug(slug!),
     enabled: !!slug,
@@ -136,6 +142,16 @@ const SeriesDetailsPage = () => {
     return (
       <Layout>
         <div className="container py-16 text-center text-muted-foreground">Ładowanie serii...</div>
+      </Layout>
+    );
+  }
+
+  if (seriesError && !series) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <QueryErrorState onRetry={() => void refetchSeries()} />
+        </div>
       </Layout>
     );
   }

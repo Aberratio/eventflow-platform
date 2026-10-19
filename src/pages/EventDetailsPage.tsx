@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -87,7 +88,12 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const accessCodeFromUrl = searchParams.get('access') || undefined;
   const accessStorageKey = `private-event-code:${slug ?? ''}`;
   const accessCode = accessCodeFromUrl ?? readStoredAccessCode(accessStorageKey);
-  const { data: eventResponse, isLoading } = useQuery({
+  const {
+    data: eventResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['event-by-slug', slug, accessCode ?? null],
     queryFn: () => getEventBySlug(slug || '', accessCode),
     enabled: Boolean(slug),
@@ -149,11 +155,17 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     );
   }
 
-  if (
-    !event ||
-    (previewMode && !canViewDraft) ||
-    (isUnpublished && !canViewDraft)
-  ) {
+  if (isError && !event) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <QueryErrorState onRetry={() => void refetch()} />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!event || (previewMode && !canViewDraft) || (isUnpublished && !canViewDraft)) {
     return (
       <Layout>
         <div className="container py-12 text-center">

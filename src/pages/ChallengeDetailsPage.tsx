@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,7 +71,12 @@ const ChallengeDetailsPage = () => {
   const [position, setPosition] = useState('');
   const [proofUrl, setProofUrl] = useState('');
 
-  const { data: challengeData, isLoading: challengeLoading } = useQuery({
+  const {
+    data: challengeData,
+    isLoading: challengeLoading,
+    isError: challengeError,
+    refetch: refetchChallenge,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.challengeBySlug(slug) : ['challenge'],
     queryFn: () => getChallengeBySlug(slug!),
     enabled: !!slug,
@@ -224,6 +230,16 @@ const ChallengeDetailsPage = () => {
       <Layout>
         <div className="container py-16 text-center text-muted-foreground">
           Ładowanie wyzwania...
+        </div>
+      </Layout>
+    );
+  }
+
+  if (challengeError && !challenge) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <QueryErrorState onRetry={() => void refetchChallenge()} />
         </div>
       </Layout>
     );
