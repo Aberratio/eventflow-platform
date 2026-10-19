@@ -32,6 +32,10 @@ export interface Ticket {
   bibNumber: string;
   category: string;
   registrationId: string;
+  /** G-12 (server PR #38): status of the Zapis this ticket belongs to. */
+  registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
+  /** G-12: start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
+  qrCode?: string | null;
   /**
    * G-01 (spec 11 pkt 4): status Zapisu stojącego za biletem — QR kodu startowego
    * jest pokazywany tylko dla `confirmed` (opłacony/potwierdzony).

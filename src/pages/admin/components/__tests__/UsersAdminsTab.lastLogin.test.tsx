@@ -34,4 +34,36 @@ describe('UsersAdminsTab last login (G-07)', () => {
     expect(screen.getByText(/15\.09\.2026/)).toBeInTheDocument();
     expect(screen.getByText('Nigdy')).toBeInTheDocument();
   });
+
+  // Umowa §5.8: "ostatnie logowanie" dotyczy administratorów i moderatorów.
+  it('lists moderators too, with their last login date', async () => {
+    vi.mocked(getUsers).mockResolvedValue({
+      data: [
+        user({
+          id: 'm1',
+          name: 'Mira Moderator',
+          email: 'mira@example.com',
+          role: 'moderator',
+          lastLoginAt: '2026-09-20T10:00:00+02:00',
+        }),
+        user({
+          id: 'p1',
+          name: 'Pawel Uczestnik',
+          email: 'pawel@example.com',
+          role: 'participant',
+        }),
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 1000,
+      totalPages: 1,
+    });
+
+    render(<UsersAdminsTab />);
+
+    expect(await screen.findByText('Mira Moderator')).toBeInTheDocument();
+    expect(screen.getByText('Moderator')).toBeInTheDocument();
+    expect(screen.getByText(/20.09.2026/)).toBeInTheDocument();
+    expect(screen.queryByText('Pawel Uczestnik')).not.toBeInTheDocument();
+  });
 });

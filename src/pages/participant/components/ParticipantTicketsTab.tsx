@@ -10,13 +10,23 @@ interface ParticipantTicketsTabProps {
   registrations?: Registration[];
 }
 
+/**
+ * G-12: archived = the event day is before today (the event day itself is still upcoming). A ticket
+ * without a usable `eventDate` is never dropped from the list, so it counts as upcoming.
+ */
+const isArchived = (ticket: Ticket, startOfToday: number): boolean => {
+  const eventTime = new Date(ticket.eventDate).getTime();
+  return !Number.isNaN(eventTime) && eventTime < startOfToday;
+};
+
 const ParticipantTicketsTab = ({ tickets: rawTickets, registrations = [] }: ParticipantTicketsTabProps) => {
   const tickets: Ticket[] = rawTickets.map((t) => {
     const reg = registrations.find((r) => r.id === t.registrationId);
     return reg ? { ...t, registrationStatus: reg.status, qrCode: reg.qrCode ?? t.qrCode } : t;
   });
-  const activeTickets = tickets.filter((t) => new Date(t.eventDate) >= new Date());
-  const pastTickets = tickets.filter((t) => new Date(t.eventDate) < new Date());
+  const startOfToday = new Date().setHours(0, 0, 0, 0);
+  const activeTickets = tickets.filter((t) => !isArchived(t, startOfToday));
+  const pastTickets = tickets.filter((t) => isArchived(t, startOfToday));
 
   return (
     <div className="space-y-6">
