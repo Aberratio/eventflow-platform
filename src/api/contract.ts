@@ -98,6 +98,8 @@ import type {
   CompetitorMergeComparison,
   CompetitorMergePayload,
   CompetitorMergeResult,
+  CompetitorDuplicateReport,
+  ReportCompetitorDuplicatePayload,
   GlobalInsuranceSettings,
   ChallengePointsSettings,
   AdminActivityLog,
@@ -480,6 +482,15 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<CompetitorMergeComparison>>;
   /** Wykonuje (albo wstrzymuje) scalenie — patrz CompetitorMergeResult.status. */
   mergeCompetitors(payload: CompetitorMergePayload): Promise<ApiResponse<CompetitorMergeResult>>;
+
+  // ── R-08: zgłoszenia duplikatów Zawodnika ──
+  /** Opiekun / organizator zgłasza, że profil jest duplikatem innego (nic nie scala). */
+  reportCompetitorDuplicate(
+    competitorId: string,
+    payload: ReportCompetitorDuplicatePayload,
+  ): Promise<ApiResponse<CompetitorDuplicateReport>>;
+  /** Kolejka otwartych zgłoszeń dla Moderatora/Admina. */
+  listCompetitorDuplicateReports(): Promise<ApiResponse<CompetitorDuplicateReport[]>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
