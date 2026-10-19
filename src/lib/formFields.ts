@@ -1,4 +1,12 @@
-import type { FormField, FormFieldAnswerValue, FormFieldState, FormFieldType } from '@/types';
+import type {
+  FormField,
+  FormFieldAnswerValue,
+  FormFieldState,
+  FormFieldType,
+  RegistrationFormFieldAnswer,
+  RegistrationFormFieldError,
+  RegistrationIdentityPayload,
+} from '@/types';
 
 /** Label shown to the Zawodnik: the organizer's override, else the catalogue label. */
 export const SYSTEM_FIELD_LABELS: Record<string, string> = {
@@ -140,4 +148,122 @@ export const moveFieldId = (
   if (index < 0 || target < 0 || target >= ids.length) return null;
   [ids[index], ids[target]] = [ids[target], ids[index]];
   return ids;
+};
+
+/** Closed list of 16 voivodeships — identical to FormFieldCatalog::voivodeships() on the server. */
+export const VOIVODESHIPS = [
+  'dolnośląskie',
+  'kujawsko-pomorskie',
+  'lubelskie',
+  'lubuskie',
+  'łódzkie',
+  'małopolskie',
+  'mazowieckie',
+  'opolskie',
+  'podkarpackie',
+  'podlaskie',
+  'pomorskie',
+  'śląskie',
+  'świętokrzyskie',
+  'warmińsko-mazurskie',
+  'wielkopolskie',
+  'zachodniopomorskie',
+] as const;
+
+/** Identity-section system positions the registration form renders, keyed to the `identity` payload key. */
+export const IDENTITY_PAYLOAD_KEYS = {
+  phone: 'phone',
+  club: 'club',
+  country: 'country',
+  city: 'city',
+  postal_code: 'postalCode',
+  voivodeship: 'voivodeship',
+  address: 'address',
+  anonymization: 'isAnonymized',
+} as const satisfies Record<string, keyof RegistrationIdentityPayload>;
+
+type IdentityFieldKey = keyof typeof IDENTITY_PAYLOAD_KEYS;
+
+export const isIdentityFieldKey = (fieldKey: string): fieldKey is IdentityFieldKey =>
+  Object.prototype.hasOwnProperty.call(IDENTITY_PAYLOAD_KEYS, fieldKey);
+
+/** Identity system positions that are not hidden (tri-state: hidden => absent, shown, required). */
+export const visibleIdentityFields = (fields: FormField[] | undefined): FormField[] =>
+  (fields ?? []).filter(
+    (f) => f.kind === 'system' && isIdentityFieldKey(f.fieldKey) && f.state !== 'hidden',
+  );
+
+/** Everything the "Formularz" step renders: identity positions plus custom fields. */
+export const formStepFields = (fields: FormField[] | undefined): FormField[] => [
+  ...visibleIdentityFields(fields),
+  ...visibleCustomFields(fields),
+];
+
+/**
+ * The `identity` object for POST /registrations: only visible positions the Zawodnik filled in
+ * (values are read from the answers map by form-field id). Hidden positions are never sent.
+ */
+export const identityToSubmit = (
+  fields: FormField[],
+  answers: Record<string, FormFieldAnswerValue>,
+): RegistrationIdentityPayload | undefined => {
+  const identity: Record<string, string | boolean> = {};
+  for (const field of visibleIdentityFields(fields)) {
+    const key = IDENTITY_PAYLOAD_KEYS[field.fieldKey as IdentityFieldKey];
+    const value = answers[field.id];
+    if (key === 'isAnonymized') {
+      if (typeof value === 'boolean') identity[key] = value;
+      continue;
+    }
+    if (typeof value === 'string' && value.trim() !== '') identity[key] = value.trim();
+  }
+  return Object.keys(identity).length > 0 ? (identity as RegistrationIdentityPayload) : undefined;
+};
+
+/** The `formFieldAnswers` array for POST /registrations from the id => value map. */
+export const answersToPayload = (
+  answers: Record<string, FormFieldAnswerValue> | undefined,
+): RegistrationFormFieldAnswer[] | undefined => {
+  const entries = Object.entries(answers ?? {});
+  return entries.length > 0 ? entries.map(([fieldId, value]) => ({ fieldId, value })) : undefined;
+};
+
+/**
+ * Maps the server's per-field 422 entries onto the rendered fields (by `fieldId`, falling back
+ * to `fieldKey`): messages keyed by form-field id, plus the entries that match no field.
+ */
+export const mapServerFieldErrors = (
+  fields: FormField[],
+  errors: RegistrationFormFieldError[],
+): { byFieldId: Record<string, string>; unmatched: RegistrationFormFieldError[] } => {
+  const byFieldId: Record<string, string> = {};
+  const unmatched: RegistrationFormFieldError[] = [];
+  for (const error of errors) {
+    const field =
+      fields.find((f) => f.id === error.fieldId) ??
+      fields.find((f) => error.fieldKey !== '' && f.fieldKey === error.fieldKey);
+    if (field) byFieldId[field.id] ??= error.message;
+    else unmatched.push(error);
+  }
+  return { byFieldId, unmatched };
+};
+
+/**
+ * Preview-only sum of the variant prices picked in single/multi choice fields. Never sent and
+ * never trusted: the server's `settlementItems` (basis `modifier`) are the truth.
+ */
+export const modifierPreviewTotal = (
+  fields: FormField[],
+  answers: Record<string, FormFieldAnswerValue>,
+): number => {
+  let total = 0;
+  for (const field of fields) {
+    if (field.fieldType !== 'single_choice' && field.fieldType !== 'multi_choice') continue;
+    const value = answers[field.id];
+    const picked = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+    for (const option of field.options ?? []) {
+      if (picked.includes(option.key)) total += Number(option.price) || 0;
+    }
+  }
+  return total;
 };

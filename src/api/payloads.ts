@@ -34,6 +34,8 @@ import type {
   ShopCategoryConfig,
   Challenge,
   Partner,
+  RegistrationFormFieldAnswer,
+  RegistrationIdentityPayload,
 } from '@/types';
 import type { CreateEmailTemplatePayload, EmailPreviewRequest } from '@/types/email';
 
@@ -250,6 +252,13 @@ export interface CreateRegistrationPayload {
   discountCode?: string;
   merchandise?: RegistrationMerchandiseSelection[];
   insuranceVariantId?: string;
+  /**
+   * B-07: answers to the organizer's custom form fields, validated and stored in the same
+   * transaction as the Zapis (a failure answers 422 `registration_form_invalid`, nothing is created).
+   */
+  formFieldAnswers?: RegistrationFormFieldAnswer[];
+  /** B-07: values of the visible identity-section positions (phone, club, address, ...). */
+  identity?: RegistrationIdentityPayload;
   /** Ignored by the server since PP.52 (derived from the caller and `competitorId`). */
   registeredById?: string;
 }

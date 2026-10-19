@@ -818,5 +818,34 @@ export interface FormFieldAnswer {
   valueJson: unknown[] | null;
 }
 
-/** Value sent to `PUT /registrations/{id}/form-field-answers/{fieldId}`. */
+/** Value sent to `PUT /registrations/{id}/form-field-answers/{fieldId}` and in `POST /registrations`. */
 export type FormFieldAnswerValue = string | number | boolean | string[] | null;
+
+/** One answer in `POST /registrations` `formFieldAnswers` (amounts are never sent). */
+export interface RegistrationFormFieldAnswer {
+  fieldId: string;
+  value: FormFieldAnswerValue;
+}
+
+/**
+ * Identity-section values in `POST /registrations` `identity` (B-07). Every key is optional;
+ * the server ignores values for hidden positions and takes `voivodeship` from a closed list.
+ */
+export interface RegistrationIdentityPayload {
+  phone?: string;
+  club?: string;
+  country?: string;
+  city?: string;
+  postalCode?: string;
+  voivodeship?: string;
+  address?: string;
+  isAnonymized?: boolean;
+}
+
+/** One entry of the 422 `registration_form_invalid` `error.details.fields`. */
+export interface RegistrationFormFieldError {
+  fieldId: string;
+  fieldKey: string;
+  code: string;
+  message: string;
+}
