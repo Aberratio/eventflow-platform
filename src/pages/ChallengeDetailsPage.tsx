@@ -279,6 +279,13 @@ const ChallengeDetailsPage = () => {
                   Dołącz
                 </Button>
               )}
+              {!user && (
+                <Button asChild>
+                  <Link to="/logowanie" state={{ returnTo: `/challenges/${challenge.slug}` }}>
+                    Zaloguj się, aby dołączyć
+                  </Link>
+                </Button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1">
