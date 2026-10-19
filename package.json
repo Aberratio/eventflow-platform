@@ -23,6 +23,7 @@
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:e2e:dev": "playwright test -c playwright.dev.config.ts",
     "test:e2e:ui": "playwright test --ui",
     "validate": "npm run typecheck && npm run lint:warn && npm run test",
     "clean": "rm -rf dist node_modules/.vite",
@@ -98,6 +99,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",

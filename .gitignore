@@ -15,6 +15,7 @@ dist-ssr
 # Playwright output
 test-results
 playwright-report
+playwright-report-dev
 blob-report
 
 # Editor directories and files
@@ -27,3 +28,7 @@ blob-report
 *.njsproj
 *.sln
 *.sw?
+
+# Dev E2E suite: local credentials and reports
+.env.e2e-dev
+test-results-dev
