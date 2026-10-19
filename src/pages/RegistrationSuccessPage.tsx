@@ -26,6 +26,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getTeamInvite } from '@/api';
 import { buildTeamInviteLink } from '@/lib/teamInvite';
 import { formatMoney } from '@/lib/format';
+import { TEST_REGISTRATION_MESSAGE } from '@/lib/registrationOutcome';
 import { cn } from '@/lib/utils';
 
 interface RegistrationSuccessState {
@@ -126,7 +127,7 @@ const RegistrationSuccessPage = () => {
   // from the server (captain-only) instead of being derived from the Zapis. Only the Zapis that
   // just created a brand-new relay Drużyna is the captain and gets the link here.
   const inviteTeamId =
-    state?.registrationData.createTeam && state.registration.teamId
+    state?.registrationData.createTeam && state.registration.teamId && !state.registration.isTest
       ? state.registration.teamId
       : null;
   const teamInviteQuery = useQuery({
@@ -197,6 +198,7 @@ const RegistrationSuccessPage = () => {
   const { registration, registrationData, eventName, eventDate, eventCity, paymentConfig } = state;
   const isBankTransfer = paymentConfig?.type === 'organizer_bank';
   // PP.52: paid or not comes from the server's Zapis status, never from the payment route.
+  const isTestRun = registration.isTest === true;
   const isPaid = registration.status === 'confirmed';
   const receiptLines = buildReceiptLines(registration, registrationData);
   const totalAmount = registration.totalAmount ?? registrationData.totalAmount;
@@ -227,10 +229,19 @@ const RegistrationSuccessPage = () => {
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
             <h1 className="mb-2 text-2xl font-bold">
-              {isPaid ? 'Rejestracja zakończona!' : 'Rejestracja wstępna zakończona!'}
+              {isTestRun
+                ? 'Zapis testowy'
+                : isPaid
+                  ? 'Rejestracja zakończona!'
+                  : 'Rejestracja wstępna zakończona!'}
             </h1>
+            {isTestRun && (
+              <p className="mb-2 font-medium text-amber-800 dark:text-amber-200">
+                {TEST_REGISTRATION_MESSAGE}
+              </p>
+            )}
             <p className="text-muted-foreground">
-              Zapisałeś się na wydarzenie{' '}
+              {isTestRun ? 'Sprawdzone wydarzenie' : 'Zapisałeś się na wydarzenie'}{' '}
               <span className="font-semibold text-foreground">{eventName}</span>
             </p>
             <div className="mt-3 flex items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -280,14 +291,14 @@ const RegistrationSuccessPage = () => {
                   <span>{formatMoney(totalAmount)}</span>
                 </div>
 
-                {isPaid && !isBankTransfer && (
+                {!isTestRun && isPaid && !isBankTransfer && (
                   <div className="mt-2 flex items-center gap-2 text-sm text-primary">
                     <CreditCard className="h-4 w-4" />
                     <span>Płatność zrealizowana automatycznie</span>
                   </div>
                 )}
 
-                {!isPaid && !isBankTransfer && (
+                {!isTestRun && !isPaid && !isBankTransfer && (
                   <div className="mt-3 rounded-md border border-amber-200 bg-amber-50/50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/20 dark:text-amber-200">
                     Płatność nie została jeszcze zrealizowana. Zapis zostanie potwierdzony po
                     zaksięgowaniu wpłaty — status sprawdzisz w panelu uczestnika.
@@ -298,7 +309,7 @@ const RegistrationSuccessPage = () => {
           </Card>
 
           {/* Bank Transfer Details (only for bank transfer) */}
-          {isBankTransfer && !isPaid && paymentConfig && (
+          {!isTestRun && isBankTransfer && !isPaid && paymentConfig && (
             <Card className="mb-6 border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
               <CardContent className="space-y-4 pt-6">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">

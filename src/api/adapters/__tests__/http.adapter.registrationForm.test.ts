@@ -153,7 +153,10 @@ describe('httpAdapter createRegistration closed and test-mode outcomes (B-01, G-
   it('returns the dry-run response with isTest and its Rozliczenie, in a single request', async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockJsonResponse(
-        { success: true, data: { id: 'r-dry', isTest: true, totalAmount: 80, settlementItems: [] } },
+        {
+          success: true,
+          data: { id: 'r-dry', isTest: true, totalAmount: 80, settlementItems: [] },
+        },
         201,
       ),
     );

@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import EventRegistrationPage from '../EventRegistrationPage';
 import RegistrationSuccessPage from '../RegistrationSuccessPage';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
@@ -34,7 +33,15 @@ const baseEvent = vi.hoisted(() => {
     registrationDeadline: future(60),
     featured: false,
     distances: [
-      { id: 'd1', name: '10 km', length: 10, unit: 'km', categories: ['Open'], registeredCount: 0, price: 80 },
+      {
+        id: 'd1',
+        name: '10 km',
+        length: 10,
+        unit: 'km',
+        categories: ['Open'],
+        registeredCount: 0,
+        price: 80,
+      },
     ],
   };
 });
@@ -136,7 +143,9 @@ describe('RegistrationSuccessPage for a dry run (G-08)', () => {
         distanceName: '10 km',
         category: 'Open',
         totalAmount: 80,
-        settlementItems: [{ id: 's1', name: 'Opłata startowa', basis: 'distance_price', amount: 80, sortOrder: 1 }],
+        settlementItems: [
+          { id: 's1', name: 'Opłata startowa', basis: 'distance_price', amount: 80, sortOrder: 1 },
+        ],
       },
       registrationData: { distanceName: '10 km', category: 'Open', totalAmount: 80, price: 80 },
       eventId: 'e1',
@@ -146,11 +155,7 @@ describe('RegistrationSuccessPage for a dry run (G-08)', () => {
       eventCity: 'Warszawa',
     };
 
-    render(
-      <MemoryRouter>
-        <RegistrationSuccessPage />
-      </MemoryRouter>,
-    );
+    render(<RegistrationSuccessPage />);
 
     expect(
       await screen.findByText(

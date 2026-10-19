@@ -231,7 +231,11 @@ describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () 
 
   it('shows the server message in a closed state on 409 registration_closed, not a generic error', async () => {
     mockCreateRegistration.mockRejectedValueOnce(
-      new ApiRequestError('Zapisy zostały zamknięte przez organizatora.', 'registration_closed', 409),
+      new ApiRequestError(
+        'Zapisy zostały zamknięte przez organizatora.',
+        'registration_closed',
+        409,
+      ),
     );
     const user = userEvent.setup();
     render(<EventRegistrationPage />);
