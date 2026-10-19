@@ -39,6 +39,7 @@ const ConfirmEmailChangePage = lazy(() => import('./pages/ConfirmEmailChangePage
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const EventDetailsPage = lazy(() => import('./pages/EventDetailsPage'));
 const EventRegistrationPage = lazy(() => import('./pages/EventRegistrationPage'));
+import { isEmbedPathname } from '@/lib/embedRoutes';
 const EventRegistrationEmbed = lazy(() => import('./pages/EventRegistrationEmbed'));
 const EmbedEventRegistrationPage = lazy(() => import('./pages/EmbedEventRegistrationPage'));
 const RegistrationSuccessPage = lazy(() => import('./pages/RegistrationSuccessPage'));
@@ -151,7 +152,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// E8.11: `/embed/*` routes render inside a third-party iframe on an external
+// E8.11/D-10: `/embed/*` and `/events/:slug/embed` routes render inside a third-party iframe on an external
 // site — the normal site chrome (bottom nav, onboarding dialog, cookie
 // banner, dev toolbox) has no business showing up there, so this shell
 // suppresses it for that one path prefix. Split out from `App` because
@@ -159,7 +160,7 @@ const queryClient = new QueryClient({
 // `<BrowserRouter>`.
 const AppShell = () => {
   const location = useLocation();
-  const isEmbedRoute = location.pathname.startsWith('/embed/');
+  const isEmbedRoute = isEmbedPathname(location.pathname);
 
   return (
     <ErrorBoundary>
