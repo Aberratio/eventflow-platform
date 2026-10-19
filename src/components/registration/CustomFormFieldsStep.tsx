@@ -1,11 +1,18 @@
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, UserRound } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { formFieldLabel } from '@/lib/formFields';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { formFieldLabel, VOIVODESHIPS } from '@/lib/formFields';
 import { formatMoney } from '@/lib/format';
 import type { FormField, FormFieldAnswerValue, FormFieldOption } from '@/types';
 
@@ -13,6 +20,8 @@ interface CustomFormFieldsStepProps {
   fields: FormField[];
   answers: Record<string, FormFieldAnswerValue>;
   errors: Record<string, string>;
+  /** B-07: messages from the server's 422 `registration_form_invalid`, by form-field id. */
+  serverErrors?: Record<string, string>;
   onChange: (fieldId: string, value: FormFieldAnswerValue) => void;
 }
 
@@ -31,13 +40,59 @@ export const CustomFormFieldsStep = ({
   fields,
   answers,
   errors,
+  serverErrors = {},
   onChange,
 }: CustomFormFieldsStepProps) => {
   const renderControl = (field: FormField) => {
     const id = `ff-${field.id}`;
     const value = answers[field.id];
     const options = field.options ?? [];
-    const invalid = Boolean(errors[field.id]);
+    const invalid = Boolean(errors[field.id] || serverErrors[field.id]);
+
+    if (field.kind === 'system') {
+      if (field.fieldKey === 'anonymization') {
+        return (
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id={id}
+              checked={value === true}
+              onCheckedChange={(checked) => onChange(field.id, checked === true)}
+            />
+            <Label htmlFor={id} className="font-normal leading-snug">
+              {formFieldLabel(field)}
+            </Label>
+          </div>
+        );
+      }
+      if (field.fieldKey === 'voivodeship') {
+        return (
+          <Select
+            value={typeof value === 'string' ? value : ''}
+            onValueChange={(v) => onChange(field.id, v)}
+          >
+            <SelectTrigger id={id} aria-invalid={invalid}>
+              <SelectValue placeholder="Wybierz województwo" />
+            </SelectTrigger>
+            <SelectContent>
+              {VOIVODESHIPS.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      }
+      return (
+        <Input
+          id={id}
+          type={field.fieldKey === 'phone' ? 'tel' : 'text'}
+          value={typeof value === 'string' ? value : ''}
+          onChange={(e) => onChange(field.id, e.target.value)}
+          aria-invalid={invalid}
+        />
+      );
+    }
 
     switch (field.fieldType) {
       case 'long_text':
@@ -140,37 +195,55 @@ export const CustomFormFieldsStep = ({
     }
   };
 
+  const renderField = (field: FormField) => (
+    <div key={field.id} className="space-y-2" data-testid={`form-field-${field.fieldKey}`}>
+      {field.fieldType !== 'consent' && field.fieldKey !== 'anonymization' && (
+        <Label htmlFor={`ff-${field.id}`} className="text-base font-medium">
+          {formFieldLabel(field)}
+          {field.state === 'required' && <span aria-hidden> *</span>}
+        </Label>
+      )}
+      {field.tooltipOverride && (
+        <p className="text-sm text-muted-foreground">{field.tooltipOverride}</p>
+      )}
+      {renderControl(field)}
+      {(serverErrors[field.id] || (errors[field.id] && answers[field.id] !== undefined)) && (
+        <p role="alert" className="text-sm text-destructive">
+          {serverErrors[field.id] ?? errors[field.id]}
+        </p>
+      )}
+    </div>
+  );
+
+  const identityFields = fields.filter((f) => f.kind === 'system');
+  const customFields = fields.filter((f) => f.kind !== 'system');
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5" /> Dodatkowe informacje
-        </CardTitle>
-        <CardDescription>
-          Organizator prosi o kilka dodatkowych informacji. Pola oznaczone * są wymagane.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {fields.map((field) => (
-          <div key={field.id} className="space-y-2" data-testid={`form-field-${field.fieldKey}`}>
-            {field.fieldType !== 'consent' && (
-              <Label htmlFor={`ff-${field.id}`} className="text-base font-medium">
-                {formFieldLabel(field)}
-                {field.state === 'required' && <span aria-hidden> *</span>}
-              </Label>
-            )}
-            {field.tooltipOverride && (
-              <p className="text-sm text-muted-foreground">{field.tooltipOverride}</p>
-            )}
-            {renderControl(field)}
-            {errors[field.id] && answers[field.id] !== undefined && (
-              <p role="alert" className="text-sm text-destructive">
-                {errors[field.id]}
-              </p>
-            )}
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      {identityFields.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserRound className="h-5 w-5" /> Dane kontaktowe i adresowe
+            </CardTitle>
+            <CardDescription>Pola oznaczone * są wymagane przez organizatora.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">{identityFields.map(renderField)}</CardContent>
+        </Card>
+      )}
+      {customFields.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" /> Dodatkowe informacje
+            </CardTitle>
+            <CardDescription>
+              Organizator prosi o kilka dodatkowych informacji. Pola oznaczone * są wymagane.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">{customFields.map(renderField)}</CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

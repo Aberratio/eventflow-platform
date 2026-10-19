@@ -71,6 +71,10 @@ function apiErrorCode(payload: unknown): string | undefined {
   return (payload as { error?: { code?: string } })?.error?.code;
 }
 
+function apiErrorDetails(payload: unknown): unknown {
+  return (payload as { error?: { details?: unknown } })?.error?.details;
+}
+
 function apiErrorMessage(payload: unknown, fallback: string, preferServerMessage = false): string {
   const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
   const code = errorPayload?.error?.code;
@@ -145,6 +149,7 @@ async function request<T>(
       apiErrorMessage(payload, `Błąd API ${response.status}`, preferServerMessage),
       apiErrorCode(payload),
       response.status,
+      apiErrorDetails(payload),
     );
   }
   return payload as ApiResponse<T>;

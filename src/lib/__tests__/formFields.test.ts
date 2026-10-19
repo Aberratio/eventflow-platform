@@ -1,19 +1,17 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   allowedSystemStates,
+  answersToPayload,
   answersToSubmit,
+  formStepFields,
+  identityToSubmit,
+  mapServerFieldErrors,
+  modifierPreviewTotal,
   moveFieldId,
   validateFormFieldAnswers,
+  VOIVODESHIPS,
 } from '../formFields';
-import { submitFormFieldAnswers } from '../submitFormFieldAnswers';
 import type { FormField } from '@/types';
-
-vi.mock('@/api', () => ({
-  saveFormFieldAnswer: vi.fn(async (_r: string, fieldId: string) => {
-    if (fieldId === 'bad') throw new Error('Wartość musi być liczbą.');
-    return { success: true, data: {} };
-  }),
-}));
 
 const f = (over: Partial<FormField>): FormField =>
   ({
@@ -72,8 +70,104 @@ describe('form field helpers', () => {
     expect(moveFieldId(fields, 'c', 1)).toBeNull();
   });
 
-  it('reports failed answers without throwing', async () => {
-    const failures = await submitFormFieldAnswers('r1', { ok: 'x', bad: '1' });
-    expect(failures).toEqual([{ fieldId: 'bad', message: 'Wartość musi być liczbą.' }]);
+  it('turns the answers map into the create-payload array (nothing when empty)', () => {
+    expect(answersToPayload({ a: 'x', b: ['k1', 'k2'], c: true })).toEqual([
+      { fieldId: 'a', value: 'x' },
+      { fieldId: 'b', value: ['k1', 'k2'] },
+      { fieldId: 'c', value: true },
+    ]);
+    expect(answersToPayload({})).toBeUndefined();
+    expect(answersToPayload(undefined)).toBeUndefined();
+  });
+});
+
+const sys = (key: string, state: FormField['state'], id = `s-${key}`): FormField =>
+  f({ id, kind: 'system', fieldKey: key, state, fieldType: null, labelOverride: null });
+
+describe('identity section by tri-state (B-07)', () => {
+  const fields = [
+    sys('phone', 'required'),
+    sys('club', 'shown'),
+    sys('city', 'hidden'),
+    sys('postal_code', 'shown'),
+    sys('anonymization', 'shown'),
+    sys('first_name', 'required'),
+    f({ id: 'c1' }),
+  ];
+
+  it('renders only visible identity positions plus custom ones, never first_name or hidden', () => {
+    expect(formStepFields(fields).map((x) => x.fieldKey)).toEqual([
+      'phone',
+      'club',
+      'postal_code',
+      'anonymization',
+      'custom_x',
+    ]);
+  });
+
+  it('requires a required identity position and ignores optional ones', () => {
+    const errors = validateFormFieldAnswers(formStepFields(fields), { 's-club': '' });
+    expect(errors).toEqual({ 's-phone': 'To pole jest wymagane.' });
+  });
+
+  it('sends only visible, filled identity values under the server keys', () => {
+    expect(
+      identityToSubmit(fields, {
+        's-phone': ' +48 600 100 200 ',
+        's-club': '',
+        's-city': 'Gdańsk',
+        's-postal_code': '80-001',
+        's-anonymization': false,
+        's-first_name': 'Jan',
+      }),
+    ).toEqual({ phone: '+48 600 100 200', postalCode: '80-001', isAnonymized: false });
+    expect(identityToSubmit(fields, {})).toBeUndefined();
+  });
+
+  it('offers the closed list of 16 voivodeships', () => {
+    expect(VOIVODESHIPS).toHaveLength(16);
+    expect(VOIVODESHIPS).toContain('warmińsko-mazurskie');
+  });
+});
+
+describe('server field errors (B-07)', () => {
+  const fields = [sys('phone', 'required'), f({ id: 'c1', fieldKey: 'custom_size' })];
+
+  it('maps by fieldId, falls back to fieldKey and reports the rest', () => {
+    const { byFieldId, unmatched } = mapServerFieldErrors(fields, [
+      {
+        fieldId: 'c1',
+        fieldKey: 'custom_size',
+        code: 'required',
+        message: 'To pole jest wymagane.',
+      },
+      { fieldId: '', fieldKey: 'phone', code: 'required', message: 'Podaj telefon.' },
+      { fieldId: 'zz', fieldKey: 'birth_date', code: 'invalid_value', message: 'Zła data.' },
+    ]);
+    expect(byFieldId).toEqual({ c1: 'To pole jest wymagane.', 's-phone': 'Podaj telefon.' });
+    expect(unmatched.map((e) => e.fieldKey)).toEqual(['birth_date']);
+  });
+});
+
+describe('modifier preview (display only)', () => {
+  it('sums signed variant prices of the picked options', () => {
+    const meal = f({
+      id: 'm',
+      fieldType: 'single_choice',
+      options: [
+        { key: 'veg', label: 'Veg', price: 5 },
+        { key: 'draw', label: 'Losowanie', price: -2 },
+      ],
+    });
+    const extras = f({
+      id: 'x',
+      fieldType: 'multi_choice',
+      options: [
+        { key: 'a', label: 'A', price: 3 },
+        { key: 'b', label: 'B', price: 4 },
+      ],
+    });
+    expect(modifierPreviewTotal([meal, extras], { m: 'draw', x: ['a', 'b'] })).toBe(5);
+    expect(modifierPreviewTotal([meal, extras], {})).toBe(0);
   });
 });
