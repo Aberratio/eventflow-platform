@@ -42,8 +42,10 @@ import {
   CheckCircle2,
   UserCog,
   Star,
+  ClipboardList,
 } from 'lucide-react';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import { Event, EventMerchandise, FormFieldAnswerValue, MerchandiseOrder } from '@/types';
+import { CustomFormFieldsStep } from './CustomFormFieldsStep';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -107,6 +109,11 @@ export interface RegistrationData {
   teamSpecialCategory?: string;
   pricingVariantId?: string;
   insuranceVariantId?: string;
+  /**
+   * E1.13: answers to the organizer's custom form fields, keyed by form-field id (only the
+   * ones actually filled in). Sent per field to the answers route once the Zapis exists.
+   */
+  formFieldAnswers?: Record<string, FormFieldAnswerValue>;
 }
 
 const currentYear = new Date().getFullYear();
@@ -137,6 +144,7 @@ const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')
 const stepIcons: Record<string, typeof Ticket> = {
   Dystans: Ticket,
   Dane: User,
+  Formularz: ClipboardList,
   Drużyna: Users,
   Ubezpieczenie: Shield,
   Gadżety: ShoppingBag,
@@ -247,6 +255,16 @@ export const RegistrationForm = ({
 
       {/* Step 2: Personal Data */}
       {form.step === 2 && form.selectedDistance && <PersonalDataStep form={form} />}
+
+      {/* Step 26: organizer-configured custom fields (E1.13) */}
+      {form.step === 26 && form.isStepInActiveSteps(26) && (
+        <CustomFormFieldsStep
+          fields={form.customFormFields}
+          answers={form.formFieldAnswers}
+          errors={form.formFieldErrors}
+          onChange={form.setFormFieldAnswer}
+        />
+      )}
 
       {/* Step 25: Team */}
       {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep form={form} />}

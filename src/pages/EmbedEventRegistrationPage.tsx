@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, LogIn } from 'lucide-react';
+import { submitFormFieldAnswers } from '@/lib/submitFormFieldAnswers';
 import { getEventById, getEventEmbedPublicConfig, createRegistration } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -108,6 +109,13 @@ const EmbedEventRegistrationPage = () => {
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
       });
+      // E1.13: custom-field answers live on the Zapis, saved per field right after it exists.
+      const answerFailures = await submitFormFieldAnswers(response.data.id, data.formFieldAnswers);
+      if (answerFailures.length > 0) {
+        setSubmitError(
+          `Zapis utworzony, ale nie wszystkie odpowiedzi zostały zapisane: ${answerFailures[0].message}`,
+        );
+      }
       // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — pay there
       // (the helper breaks out of the iframe, E8.11).
       if (response.data.status === 'pending' && response.data.paymentSession?.redirectUrl) {

@@ -34,7 +34,9 @@ describe('httpAdapter form-field routes (E1.13)', () => {
   });
 
   it('creates a custom field with options and signed prices', async () => {
-    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: { id: 'f1' } }, 201));
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse({ success: true, data: { id: 'f1' } }, 201),
+    );
     await httpAdapter.createFormField('e1', {
       fieldType: 'single_choice',
       label: 'Posiłek',

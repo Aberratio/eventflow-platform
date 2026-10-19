@@ -1,3 +1,4 @@
+import { submitFormFieldAnswers } from '@/lib/submitFormFieldAnswers';
 import { createRegistration, disciplineLabels, getEventBySlug, getCare, getTeamById } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -377,6 +378,15 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         insuranceVariantId: data.insuranceVariantId,
       });
       registration = response.data;
+      // E1.13: custom-field answers live on the Zapis, saved per field right after it exists.
+      const answerFailures = await submitFormFieldAnswers(registration.id, data.formFieldAnswers);
+      if (answerFailures.length > 0) {
+        toast({
+          title: 'Zapis utworzony, ale nie wszystkie odpowiedzi zostały zapisane',
+          description: answerFailures[0].message,
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Nie udało się zapisać rejestracji',

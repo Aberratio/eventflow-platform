@@ -7,13 +7,15 @@ import {
   validateTeamName,
   getRegistrationsByEvent,
   getTeamsForDistance,
+  getPublicFormFields,
 } from '@/api';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import { Event, EventMerchandise, FormFieldAnswerValue, MerchandiseOrder } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 import { roundToCents } from '@/lib/discountValue';
+import { answersToSubmit, validateFormFieldAnswers, visibleCustomFields } from '@/lib/formFields';
 
 const currentYear = new Date().getFullYear();
 
@@ -237,6 +239,26 @@ export const useRegistrationForm = (
           ? `do ${selectedDistance.relayMaxTeamSize} os.`
           : '';
 
+  // E1.13: the organizer-configured form. The public route lists every non-hidden position
+  // in the order the organizer set; this form renders the custom ones. A failed load simply
+  // leaves the fixed fields (the registration must not depend on this optional list).
+  const { data: publicFormFields } = useQuery({
+    queryKey: ['form-fields', 'public', event.id],
+    queryFn: () => getPublicFormFields(event.id),
+    select: (r) => r.data ?? [],
+    retry: false,
+  });
+  const customFormFields = useMemo(() => visibleCustomFields(publicFormFields), [publicFormFields]);
+  const [formFieldAnswers, setFormFieldAnswers] = useState<Record<string, FormFieldAnswerValue>>(
+    {},
+  );
+  const setFormFieldAnswer = (fieldId: string, value: FormFieldAnswerValue) =>
+    setFormFieldAnswers((prev) => ({ ...prev, [fieldId]: value }));
+  const formFieldErrors = useMemo(
+    () => validateFormFieldAnswers(customFormFields, formFieldAnswers),
+    [customFormFields, formFieldAnswers],
+  );
+
   const { data: eventRegsData } = useQuery({
     queryKey: ['registrations', 'event', event.id],
     queryFn: () => getRegistrationsByEvent(event.id),
@@ -298,13 +320,14 @@ export const useRegistrationForm = (
       { id: 1, name: 'Dystans' },
       { id: 2, name: 'Dane' },
     ];
+    if (customFormFields.length > 0) steps.push({ id: 26, name: 'Formularz' });
     if (hasTeamOption) steps.push({ id: 25, name: 'Drużyna' });
     if (hasInsurance) steps.push({ id: 3, name: 'Ubezpieczenie' });
     if (hasMerchandise) steps.push({ id: 4, name: 'Gadżety' });
     steps.push({ id: 5, name: 'Rabat' });
     steps.push({ id: 6, name: 'Podsumowanie' });
     return steps;
-  }, [hasTeamOption, hasInsurance, hasMerchandise]);
+  }, [hasTeamOption, hasInsurance, hasMerchandise, customFormFields.length]);
 
   useEffect(() => {
     if (isRelayDistance) {
@@ -550,6 +573,8 @@ export const useRegistrationForm = (
         if (!hasAgeCats && !hasRegularCats) return true;
         return !!selectedCategory;
       }
+      case 26:
+        return Object.keys(formFieldErrors).length === 0;
       case 25:
         if (isRelayDistance && !wantsTeam) return false;
         if (!wantsTeam) return true;
@@ -597,6 +622,7 @@ export const useRegistrationForm = (
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       modifiersTotal,
       totalAmount,
+      formFieldAnswers: answersToSubmit(customFormFields, formFieldAnswers),
       teamName: getFinalTeamName(),
       teamId: getFinalTeamId(),
       teamInviteToken:
@@ -690,6 +716,10 @@ export const useRegistrationForm = (
     modifiersTotal,
     discountAmount,
     totalAmount,
+    customFormFields,
+    formFieldAnswers,
+    setFormFieldAnswer,
+    formFieldErrors,
     isStepInActiveSteps,
     canProceed,
     handleNext,

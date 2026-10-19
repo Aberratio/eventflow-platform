@@ -71,11 +71,7 @@ function apiErrorCode(payload: unknown): string | undefined {
   return (payload as { error?: { code?: string } })?.error?.code;
 }
 
-function apiErrorMessage(
-  payload: unknown,
-  fallback: string,
-  preferServerMessage = false,
-): string {
+function apiErrorMessage(payload: unknown, fallback: string, preferServerMessage = false): string {
   const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
   const code = errorPayload?.error?.code;
   if (preferServerMessage && code === 'validation_error' && errorPayload?.error?.message) {
