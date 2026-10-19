@@ -15,6 +15,8 @@ const notFound = () =>
 
 /** Contract Rule (D-01): detail routes answer 404 now, 200 + data:null before. Both = "not found". */
 const detailCalls: Array<[string, () => Promise<{ data: unknown }>]> = [
+  ['getEventBySlug', () => httpAdapter.getEventBySlug('x')],
+  ['getEventById', () => httpAdapter.getEventById('x')],
   ['getSeriesBySlug', () => httpAdapter.getSeriesBySlug('x')],
   ['getSeriesById', () => httpAdapter.getSeriesById('x')],
   ['getProductBySlug', () => httpAdapter.getProductBySlug('x')],
@@ -75,7 +77,9 @@ describe('httpAdapter resilience', () => {
     let signal: AbortSignal | undefined;
     vi.mocked(fetch).mockImplementation((_url, init) => {
       signal = init?.signal ?? undefined;
-      return new Promise((resolve) => setTimeout(() => resolve(res({ success: true, data: {} })), 30_000));
+      return new Promise((resolve) =>
+        setTimeout(() => resolve(res({ success: true, data: {} })), 30_000),
+      );
     });
     const file = new File(['x'], 'a.png', { type: 'image/png' });
     const pending = httpAdapter.uploadEventImage(file);

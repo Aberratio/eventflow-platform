@@ -109,7 +109,8 @@ describe('EventDetailsPage private link', () => {
   });
 
   it('shows not found when the server rejects the code', async () => {
-    mockGetEventBySlug.mockRejectedValue(new Error('Event not found'));
+    // The adapter folds the server's 404 into data:null (D-01); a rejection now means a real failure.
+    mockGetEventBySlug.mockResolvedValue({ success: true, data: null });
     renderAt('/events/bieg?access=ZLY');
 
     expect(await screen.findByText('Wydarzenie nie zostało znalezione')).toBeInTheDocument();

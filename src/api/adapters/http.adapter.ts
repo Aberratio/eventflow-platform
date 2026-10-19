@@ -370,11 +370,11 @@ export const httpAdapter: ApiAdapter = {
       data: r.data.map(normalizeEvent),
     })),
   getEventBySlug: (slug, accessCode) =>
-    request<Event | null>(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`).then(
-      eventOrNull,
-    ),
+    nullOn404(
+      request<Event | null>(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`),
+    ).then(eventOrNull),
   getEventById: (id) =>
-    request<Event | null>(`/events/${encodeURIComponent(id)}`).then(eventOrNull),
+    nullOn404(request<Event | null>(`/events/${encodeURIComponent(id)}`)).then(eventOrNull),
   createEvent: (data) =>
     request<Event>('/events', json('POST', toEventWritePayload(data))).then(eventOne),
   updateEvent: (id, data) =>
@@ -435,7 +435,8 @@ export const httpAdapter: ApiAdapter = {
   },
 
   getEventBackgrounds: () => request('/event-backgrounds'),
-  getEventBackgroundById: (id) => nullOn404(request(`/event-backgrounds/${encodeURIComponent(id)}`)),
+  getEventBackgroundById: (id) =>
+    nullOn404(request(`/event-backgrounds/${encodeURIComponent(id)}`)),
   getEventBackgroundUsages: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
   createEventBackground: (data) => request('/event-backgrounds', json('POST', data)),
   updateEventBackground: (id, data) =>
