@@ -1,5 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { useInfoPage } from '@/hooks/useInfoPage';
 import { PageHero } from '@/components/ui/page-hero';
 import { PageSection } from '@/components/ui/page-section';
@@ -52,7 +53,7 @@ const SectionRenderer = ({ section, index }: { section: InfoPageSection; index: 
 
 export const DynamicInfoPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { page, isLoading, error } = useInfoPage(slug);
+  const { page, isLoading, error, isError, refetch } = useInfoPage(slug);
 
   if (isLoading) {
     return (
@@ -79,6 +80,16 @@ export const DynamicInfoPage = () => {
               <Skeleton className="h-4 w-5/6" />
             </div>
           </PageSection>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isError && !page) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <QueryErrorState onRetry={refetch} />
         </div>
       </Layout>
     );

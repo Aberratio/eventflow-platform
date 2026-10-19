@@ -233,9 +233,7 @@ test.describe('API contract: errors @api', () => {
   });
 
   test('unknown catalogue slug/id -> 404 with error envelope', async ({ request }) => {
-    // QA-API-01 (docs/qa-report.md): these routes pass a null lookup straight to JsonResponder::ok,
-    // so they answer 200 {success:true,data:null}. Remove test.fail once fixed.
-    test.fail(true, 'QA-API-01: catalogue detail routes answer 200 with data:null for unknown slug/id');
+    // QA-API-01 (D-01): needs the server change that answers 404 for unknown catalogue slugs (eventflow-server PR).
     const ts = Date.now().toString(36);
     for (const path of [
       `/series/slug/qa-nope-${ts}`,

@@ -6,10 +6,13 @@ export interface InfoPageResponse {
   page: InfoPage | null | undefined;
   isLoading: boolean;
   error: string | null;
+  /** The request itself failed (5xx, network, timeout) - not the same as "no such page". */
+  isError: boolean;
+  refetch: () => void;
 }
 
 export const useInfoPage = (slug: string | undefined): InfoPageResponse => {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['info-page', slug],
     queryFn: () => getInfoPageBySlug(slug!),
     enabled: !!slug,
@@ -25,5 +28,5 @@ export const useInfoPage = (slug: string | undefined): InfoPageResponse => {
         ? 'Strona nie istnieje'
         : null;
 
-  return { page, isLoading, error };
+  return { page, isLoading, error, isError, refetch: () => void refetch() };
 };

@@ -23,6 +23,7 @@ import {
 import { differenceInCalendarDays, format, getYear, isToday, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -568,7 +569,7 @@ const EventsPage = () => {
     }
   }, [statusParam, updateFilter]);
 
-  const { data: allEvents, isLoading } = useQuery({
+  const { data: allEvents, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.events,
     queryFn: () => getAllEvents(),
   });
@@ -792,6 +793,8 @@ const EventsPage = () => {
                       <Skeleton key={index} className="h-20 w-full rounded-xl bg-white/[0.05]" />
                     ))}
                   </div>
+                ) : isError ? (
+                  <QueryErrorState onRetry={() => void refetch()} />
                 ) : filteredEvents.length === 0 ? (
                   <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] py-16 text-center">
                     <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -915,6 +918,8 @@ const EventsPage = () => {
                       <Skeleton key={index} className="h-20 w-full rounded-lg bg-white/[0.05]" />
                     ))}
                   </div>
+                ) : isError ? (
+                  <QueryErrorState onRetry={() => void refetch()} />
                 ) : filteredEvents.length === 0 ? (
                   <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] py-16 text-center">
                     <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />

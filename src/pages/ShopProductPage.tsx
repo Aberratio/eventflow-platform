@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -29,7 +30,12 @@ const ShopProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addItem } = useCart();
 
-  const { data: productData, isLoading: productLoading } = useQuery({
+  const {
+    data: productData,
+    isLoading: productLoading,
+    isError: productError,
+    refetch: refetchProduct,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.productBySlug(slug) : ['product'],
     queryFn: () => getProductBySlug(slug!),
     enabled: !!slug,
@@ -60,6 +66,16 @@ const ShopProductPage = () => {
       <Layout>
         <div className="container py-16 text-center text-muted-foreground">
           Ładowanie produktu...
+        </div>
+      </Layout>
+    );
+  }
+
+  if (productError && !product) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <QueryErrorState onRetry={() => void refetchProduct()} />
         </div>
       </Layout>
     );
