@@ -693,9 +693,6 @@ export const httpAdapter: ApiAdapter = {
   getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
   getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
-  getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),
-  sendMessage: (data) => request('/messages', json('POST', data)),
-  markAsRead: (id) => request(`/messages/${encodeURIComponent(id)}/read`, json('POST')),
 
   getTickets: (userId) => request(`/users/${encodeURIComponent(userId)}/tickets`),
   getCertificates: (userId) => request(`/users/${encodeURIComponent(userId)}/certificates`),
