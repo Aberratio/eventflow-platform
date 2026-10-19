@@ -8,6 +8,7 @@ import {
   updateChallengePointsSettings,
   getGlobalInsuranceSettings,
   getCalendarSettings,
+  updateCalendarSettings,
 } from '@/api';
 import type {
   ChallengePointsSettings,
@@ -35,6 +36,7 @@ const mockedGetChallengePointsSettings = vi.mocked(getChallengePointsSettings);
 const mockedUpdateChallengePointsSettings = vi.mocked(updateChallengePointsSettings);
 const mockedGetGlobalInsuranceSettings = vi.mocked(getGlobalInsuranceSettings);
 const mockedGetCalendarSettings = vi.mocked(getCalendarSettings);
+const mockedUpdateCalendarSettings = vi.mocked(updateCalendarSettings);
 
 const pointsSettings: ChallengePointsSettings = {
   pointsTable: [100, 95, 90],
@@ -49,6 +51,7 @@ const insuranceSettings: GlobalInsuranceSettings = {
 };
 
 const calendarSettings: GoogleCalendarSettings = {
+  credentialsConfigured: false,
   connected: false,
   enabled: false,
 };
@@ -146,5 +149,78 @@ describe('AdminSettingsTab — Challenge points settings (E6.2)', () => {
     fireEvent.change(floor, { target: { value: '-5' } });
 
     expect(floor).toHaveValue(0);
+  });
+});
+
+// R-17 (umowa §5.9): the admin can configure the Google Calendar integration; the service-account
+// key itself lives only on the server, the panel only shows whether it is there.
+describe('AdminSettingsTab — Google Calendar (R-17)', () => {
+  beforeEach(() => {
+    mockedGetChallengePointsSettings.mockResolvedValue({ data: pointsSettings } as never);
+    mockedGetGlobalInsuranceSettings.mockResolvedValue({ data: insuranceSettings } as never);
+    mockedUpdateCalendarSettings.mockReset();
+    mockedUpdateCalendarSettings.mockResolvedValue({ data: calendarSettings } as never);
+  });
+
+  it('without a server key shows the "contact the server administrator" status', async () => {
+    mockedGetCalendarSettings.mockResolvedValue({ data: calendarSettings } as never);
+    render(<AdminSettingsTab />);
+
+    expect(await screen.findByText('Brak klucza konta usługi Google')).toBeInTheDocument();
+    expect(screen.getByText(/Skontaktuj się z administratorem serwera/)).toBeInTheDocument();
+  });
+
+  it('with a key shows it as configured', async () => {
+    mockedGetCalendarSettings.mockResolvedValue({
+      data: {
+        ...calendarSettings,
+        credentialsConfigured: true,
+        connected: true,
+        enabled: true,
+        calendarId: 'a@b',
+      },
+    } as never);
+    render(<AdminSettingsTab />);
+
+    expect(await screen.findByText('Klucz konta usługi Google skonfigurowany')).toBeInTheDocument();
+    expect(screen.getByText('Integracja aktywna')).toBeInTheDocument();
+  });
+
+  it('saves the calendar id and sends only that field', async () => {
+    const user = userEvent.setup();
+    mockedGetCalendarSettings.mockResolvedValue({ data: calendarSettings } as never);
+    render(<AdminSettingsTab />);
+
+    const input = await screen.findByLabelText('ID kalendarza Google');
+    await user.type(input, 'zawody@group.calendar.google.com');
+    await user.click(screen.getByRole('button', { name: /^Zapisz$/ }));
+
+    await waitFor(() => {
+      expect(mockedUpdateCalendarSettings).toHaveBeenCalledWith({
+        calendarId: 'zawody@group.calendar.google.com',
+      });
+    });
+  });
+
+  it('the enable switch is locked until a calendar id exists, then sends only enabled', async () => {
+    const user = userEvent.setup();
+    mockedGetCalendarSettings.mockResolvedValue({ data: calendarSettings } as never);
+    const { unmount } = render(<AdminSettingsTab />);
+    expect(
+      await screen.findByRole('switch', { name: 'Automatyczne dodawanie wydarzeń' }),
+    ).toBeDisabled();
+    unmount();
+
+    mockedGetCalendarSettings.mockResolvedValue({
+      data: { ...calendarSettings, calendarId: 'a@b' },
+    } as never);
+    render(<AdminSettingsTab />);
+    await user.click(
+      await screen.findByRole('switch', { name: 'Automatyczne dodawanie wydarzeń' }),
+    );
+
+    await waitFor(() => {
+      expect(mockedUpdateCalendarSettings).toHaveBeenCalledWith({ enabled: true });
+    });
   });
 });
