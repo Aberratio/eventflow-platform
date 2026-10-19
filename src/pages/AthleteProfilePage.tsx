@@ -1,4 +1,5 @@
-import { getEvents, getResultsByUser, disciplineLabels } from '@/api';
+import { getResultsByUser, disciplineLabels } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useParams, Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +24,7 @@ const AthleteProfilePage = () => {
   const { userId } = useParams<{ userId: string }>();
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'athlete-profile'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
 
@@ -111,7 +112,7 @@ const AthleteProfilePage = () => {
                 Brak dostępnych wyników dla tego zawodnika.
               </p>
               <Button asChild>
-                <Link to="/results">
+                <Link to="/events?status=past">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Wróć do wyników
                 </Link>
@@ -129,7 +130,7 @@ const AthleteProfilePage = () => {
         {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link to="/results">
+            <Link to="/events?status=past">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Wróć do wyników
             </Link>

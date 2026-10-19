@@ -1,4 +1,4 @@
-import { getEvents } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,7 +18,7 @@ const ParticipantMessagesTab = ({ messages, onMarkAsRead }: ParticipantMessagesT
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-messages'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
 

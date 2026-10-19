@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +49,7 @@ import {
 import { ChallengeEntryStatus } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { ChallengeRankingCard } from '@/pages/challenges/ChallengeRankingCard';
+import { formatMoney } from '@/lib/format';
 
 // E5.3's client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
 // (same duplication CartPage.tsx already carries — the server stays
@@ -70,7 +72,12 @@ const ChallengeDetailsPage = () => {
   const [position, setPosition] = useState('');
   const [proofUrl, setProofUrl] = useState('');
 
-  const { data: challengeData, isLoading: challengeLoading } = useQuery({
+  const {
+    data: challengeData,
+    isLoading: challengeLoading,
+    isError: challengeError,
+    refetch: refetchChallenge,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.challengeBySlug(slug) : ['challenge'],
     queryFn: () => getChallengeBySlug(slug!),
     enabled: !!slug,
@@ -229,6 +236,16 @@ const ChallengeDetailsPage = () => {
     );
   }
 
+  if (challengeError && !challenge) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <QueryErrorState onRetry={() => void refetchChallenge()} />
+        </div>
+      </Layout>
+    );
+  }
+
   if (!challenge) {
     return (
       <Layout>
@@ -279,6 +296,13 @@ const ChallengeDetailsPage = () => {
                   Dołącz
                 </Button>
               )}
+              {!user && (
+                <Button asChild>
+                  <Link to="/logowanie" state={{ returnTo: `/challenges/${challenge.slug}` }}>
+                    Zaloguj się, aby dołączyć
+                  </Link>
+                </Button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1">
@@ -320,7 +344,7 @@ const ChallengeDetailsPage = () => {
               <div key={reward.id} className="rounded border p-3">
                 <p className="font-medium">{reward.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {reward.price ? `${reward.price} zł` : 'Darmowe'}
+                  {reward.price ? formatMoney(reward.price) : 'Darmowe'}
                 </p>
               </div>
             ))}
@@ -365,7 +389,8 @@ const ChallengeDetailsPage = () => {
                           <SelectContent>
                             {challenge.rewards.map((reward) => (
                               <SelectItem key={reward.id} value={reward.productId ?? reward.id}>
-                                {reward.name} {reward.price ? `(${reward.price} zł)` : '(Darmowe)'}
+                                {reward.name}{' '}
+                                {reward.price ? `(${formatMoney(reward.price)})` : '(Darmowe)'}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -400,7 +425,7 @@ const ChallengeDetailsPage = () => {
                             {deliveryMethods.map((method) => (
                               <SelectItem key={method.id} value={method.id}>
                                 {method.name}{' '}
-                                {method.price ? `(${method.price} zł)` : '(bezpłatnie)'}
+                                {method.price ? `(${formatMoney(method.price)})` : '(bezpłatnie)'}
                               </SelectItem>
                             ))}
                           </SelectContent>

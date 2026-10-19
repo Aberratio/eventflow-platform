@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { ShopCategory } from '@/types';
 import { toast } from 'sonner';
+import { formatMoney } from '@/lib/format';
 
 export const AdminShopTab = () => {
   const navigate = useNavigate();
@@ -228,7 +229,7 @@ export const AdminShopTab = () => {
                         {categoryLabels[product.category] ?? product.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{product.price} zł</TableCell>
+                    <TableCell className="text-right">{formatMoney(product.price)}</TableCell>
                     <TableCell className="text-center">
                       {product.isService ? (
                         <InfinityIcon className="mx-auto h-4 w-4" />

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Trash2, ArrowRight, AlertTriangle } from 'lucide-react';
 import { PriceTier, PriceTierDiscountType } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface TierEditorProps {
   tier: PriceTier;
@@ -47,7 +48,7 @@ export const TierEditor = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5">
             <ArrowRight className="h-3.5 w-3.5 text-primary" />
-            <span className="text-sm font-bold text-primary">{calculatedPrice} zł</span>
+            <span className="text-sm font-bold text-primary">{formatMoney(calculatedPrice)}</span>
           </div>
           <Button
             variant="ghost"
@@ -93,9 +94,9 @@ export const TierEditor = ({
           />
           <p className="text-xs text-muted-foreground">
             {tier.discountValue > 0
-              ? `Zniżka ${tier.discountType === 'percent' ? `${tier.discountValue}%` : `${tier.discountValue} zł`}`
+              ? `Zniżka ${tier.discountType === 'percent' ? `${tier.discountValue}%` : formatMoney(tier.discountValue)}`
               : tier.discountValue < 0
-                ? `Dopłata ${tier.discountType === 'percent' ? `${Math.abs(tier.discountValue)}%` : `${Math.abs(tier.discountValue)} zł`}`
+                ? `Dopłata ${tier.discountType === 'percent' ? `${Math.abs(tier.discountValue)}%` : formatMoney(Math.abs(tier.discountValue))}`
                 : 'Cena bazowa bez zmian'}
           </p>
           {priceWarning && (

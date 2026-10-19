@@ -1,4 +1,5 @@
-import { getEvents, getVirtualResultSubmissions, requestRefund } from '@/api';
+import { getVirtualResultSubmissions, requestRefund } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,7 @@ import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog
 import CaptainTeamInvites from './CaptainTeamInvites';
 import { QUERY_KEYS } from '@/constants';
 import { useToast } from '@/hooks/use-toast';
+import { retryErrorMessage, retryRegistrationPayment } from '@/lib/unpaidRegistration';
 
 interface ParticipantRegistrationsTabProps {
   registrations: Registration[];
@@ -38,9 +40,25 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
       });
     }
   };
+  // B-05: same button as in the unpaid banner — reopens the payment window / sends to the gateway.
+  const handleRetryPayment = async (registration: Registration) => {
+    try {
+      const { redirected } = await retryRegistrationPayment(registration.id);
+      if (!redirected) {
+        toast({ title: 'Okno płatności zostało ponownie otwarte' });
+      }
+    } catch (error) {
+      toast({
+        title: 'Nie udało się ponowić płatności',
+        description: retryErrorMessage(error),
+        variant: 'destructive',
+      });
+    }
+    queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+  };
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-registrations'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
   const { data: virtualSubmissionsResponse } = useQuery({
@@ -113,6 +131,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
             virtualSubmission={virtualSubmission}
             onSubmitResult={() => handleOpenSubmissionDialog(event, registration.distanceId)}
             onRequestRefund={() => handleRequestRefund(registration)}
+            onRetryPayment={() => handleRetryPayment(registration)}
           />
         ))}
       </ListContainer>

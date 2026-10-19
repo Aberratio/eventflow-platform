@@ -71,9 +71,16 @@ function apiErrorCode(payload: unknown): string | undefined {
   return (payload as { error?: { code?: string } })?.error?.code;
 }
 
-function apiErrorMessage(payload: unknown, fallback: string): string {
+function apiErrorDetails(payload: unknown): unknown {
+  return (payload as { error?: { details?: unknown } })?.error?.details;
+}
+
+function apiErrorMessage(payload: unknown, fallback: string, preferServerMessage = false): string {
   const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
   const code = errorPayload?.error?.code;
+  if (preferServerMessage && code === 'validation_error' && errorPayload?.error?.message) {
+    return errorPayload.error.message;
+  }
   return (
     (code ? API_ERROR_MESSAGES[code] : undefined) ??
     errorPayload?.error?.message ??
@@ -110,18 +117,56 @@ function query(params?: Record<string, QueryValue>): string {
   return value ? `?${value}` : '';
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+/** No answer within this long = the request failed (otherwise the UI would load forever). */
+export const REQUEST_TIMEOUT_MS = 15_000;
+/** Multipart uploads and file exports move far more bytes, so they get a much longer budget. */
+export const UPLOAD_TIMEOUT_MS = 120_000;
 
-  const payload = await response.json().catch(() => ({}));
+const TIMEOUT_MESSAGE = 'Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.';
+
+/**
+ * fetch() + body parsing under one deadline. An expired deadline surfaces as an
+ * ApiRequestError (code `timeout`) so pages show the same error state as for a 5xx.
+ */
+async function fetchJsonWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<{ response: Response; payload: unknown }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...init, signal: init.signal ?? controller.signal });
+    const payload = await response.json().catch(() => ({}));
+    return { response, payload };
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new ApiRequestError(TIMEOUT_MESSAGE, 'timeout');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  preferServerMessage = false,
+): Promise<ApiResponse<T>> {
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+  const { response, payload } = await fetchJsonWithTimeout(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    },
+    REQUEST_TIMEOUT_MS,
+  );
   if (!response.ok) {
     if (
       response.status === 401 &&
@@ -135,12 +180,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
 
     throw new ApiRequestError(
-      apiErrorMessage(payload, `Błąd API ${response.status}`),
+      apiErrorMessage(payload, `Błąd API ${response.status}`, preferServerMessage),
       apiErrorCode(payload),
       response.status,
+      apiErrorDetails(payload),
     );
   }
   return payload as ApiResponse<T>;
+}
+
+/**
+ * Detail routes answer 404 `not_found` for an unknown record (D-01; they used to answer
+ * 200 with `data: null`). Pages treat both the same way ("not found"), so a 404 is folded
+ * back into `data: null`; every other failure (5xx, network, timeout) still throws.
+ */
+function nullOn404<T>(promise: Promise<ApiResponse<T | null>>): Promise<ApiResponse<T | null>> {
+  return promise.catch((error: unknown) => {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      return { success: true, data: null } as ApiResponse<T | null>;
+    }
+    throw error;
+  });
 }
 
 // TD.18: PHP/PDO returns DECIMAL columns as numeric strings ("45.00"), not
@@ -223,15 +283,17 @@ const eventList = (r: ApiResponse<Event[]>): ApiResponse<Event[]> => ({
 
 async function requestForm<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const { response, payload } = await fetchJsonWithTimeout(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
     },
-    body: formData,
-  });
-
-  const payload = await response.json().catch(() => ({}));
+    UPLOAD_TIMEOUT_MS,
+  );
   if (!response.ok) {
     if (response.status === 401 && !token?.startsWith(MOCK_TOKEN_PREFIX)) {
       if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
@@ -264,11 +326,22 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
  */
 async function downloadFile(endpoint: string, fallbackFilename: string): Promise<void> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) throw new ApiRequestError(TIMEOUT_MESSAGE, 'timeout');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
@@ -302,6 +375,10 @@ function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
 }
 
+/** B-03: global templates live under /admin, per-event ones under /events/{id}. */
+const mailTemplatesBase = (eventId?: string | null): string =>
+  eventId ? `/events/${encodeURIComponent(eventId)}/mail-templates` : '/admin/mail-templates';
+
 export const httpAdapter: ApiAdapter = {
   getEvents: (filters) =>
     paginated<Event>('/events', filters as Record<string, QueryValue>).then((r) => ({
@@ -309,11 +386,11 @@ export const httpAdapter: ApiAdapter = {
       data: r.data.map(normalizeEvent),
     })),
   getEventBySlug: (slug, accessCode) =>
-    request<Event | null>(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`).then(
-      eventOrNull,
-    ),
+    nullOn404(
+      request<Event | null>(`/events/slug/${encodeURIComponent(slug)}${query({ accessCode })}`),
+    ).then(eventOrNull),
   getEventById: (id) =>
-    request<Event | null>(`/events/${encodeURIComponent(id)}`).then(eventOrNull),
+    nullOn404(request<Event | null>(`/events/${encodeURIComponent(id)}`)).then(eventOrNull),
   createEvent: (data) =>
     request<Event>('/events', json('POST', toEventWritePayload(data))).then(eventOne),
   updateEvent: (id, data) =>
@@ -374,7 +451,8 @@ export const httpAdapter: ApiAdapter = {
   },
 
   getEventBackgrounds: () => request('/event-backgrounds'),
-  getEventBackgroundById: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}`),
+  getEventBackgroundById: (id) =>
+    nullOn404(request(`/event-backgrounds/${encodeURIComponent(id)}`)),
   getEventBackgroundUsages: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
   createEventBackground: (data) => request('/event-backgrounds', json('POST', data)),
   updateEventBackground: (id, data) =>
@@ -465,6 +543,12 @@ export const httpAdapter: ApiAdapter = {
     ),
   getTeamById: (teamId) => request(`/teams/${encodeURIComponent(teamId)}`),
   getTeamInvite: (teamId) => request(`/teams/${encodeURIComponent(teamId)}/invite`),
+  getTeamMembers: (teamId) => request(`/teams/${encodeURIComponent(teamId)}/members`),
+  swapTeamMember: (teamId, registrationId, data) =>
+    request(
+      `/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(registrationId)}/swap`,
+      json('POST', data),
+    ),
   getPublicStartList: (eventId) => request(`/events/${encodeURIComponent(eventId)}/start-list`),
   getEventEmbedPublicConfig: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/embed/public`),
@@ -497,6 +581,7 @@ export const httpAdapter: ApiAdapter = {
   createResult: (data) => request('/results', json('POST', data)),
   updateResult: (id, data) => request(`/results/${encodeURIComponent(id)}`, json('PATCH', data)),
   deleteResult: (id) => request(`/results/${encodeURIComponent(id)}`, json('DELETE')),
+  getResultCorrections: (id) => request(`/results/${encodeURIComponent(id)}/corrections`),
   getPersonalRecords: (userId) => request(`/users/${encodeURIComponent(userId)}/personal-records`),
   getTeamResults: (eventId) => request(`/events/${encodeURIComponent(eventId)}/team-results`),
   getTeamClassification: (eventId, distanceId) =>
@@ -535,14 +620,14 @@ export const httpAdapter: ApiAdapter = {
     ),
 
   getSeries: (filters) => paginated('/series', filters as Record<string, QueryValue>),
-  getSeriesById: (id) => request(`/series/${encodeURIComponent(id)}`),
-  getSeriesBySlug: (slug) => request(`/series/slug/${encodeURIComponent(slug)}`),
+  getSeriesById: (id) => nullOn404(request(`/series/${encodeURIComponent(id)}`)),
+  getSeriesBySlug: (slug) => nullOn404(request(`/series/slug/${encodeURIComponent(slug)}`)),
   createSeries: (data) => request('/series', json('POST', data)),
   updateSeries: (id, data) => request(`/series/${encodeURIComponent(id)}`, json('PATCH', data)),
   archiveSeries: (id) => request(`/series/${encodeURIComponent(id)}/archive`, json('POST')),
 
   getProducts: (filters) => paginated('/shop/products', filters as Record<string, QueryValue>),
-  getProductBySlug: (slug) => request(`/shop/products/slug/${encodeURIComponent(slug)}`),
+  getProductBySlug: (slug) => nullOn404(request(`/shop/products/slug/${encodeURIComponent(slug)}`)),
   getProductById: (id) => request(`/shop/products/${encodeURIComponent(id)}`),
   createProduct: (data) => request('/shop/products', json('POST', data)),
   updateProduct: (id, data) =>
@@ -582,8 +667,8 @@ export const httpAdapter: ApiAdapter = {
     ).then((r) => ({ ...r, data: normalizeShopOrder(r.data) })),
 
   getChallenges: (filters) => request(`/challenges${query(filters as Record<string, QueryValue>)}`),
-  getChallengeBySlug: (slug) => request(`/challenges/slug/${encodeURIComponent(slug)}`),
-  getChallengeById: (id) => request(`/challenges/${encodeURIComponent(id)}`),
+  getChallengeBySlug: (slug) => nullOn404(request(`/challenges/slug/${encodeURIComponent(slug)}`)),
+  getChallengeById: (id) => nullOn404(request(`/challenges/${encodeURIComponent(id)}`)),
   createChallenge: (data) => request('/challenges', json('POST', data)),
   updateChallenge: (id, data) =>
     request(`/challenges/${encodeURIComponent(id)}`, json('PATCH', data)),
@@ -614,7 +699,7 @@ export const httpAdapter: ApiAdapter = {
 
   getPartners: () => request('/partners'),
   getFeaturedPartners: () => request('/partners/featured'),
-  getPartnerById: (id) => request(`/partners/${encodeURIComponent(id)}`),
+  getPartnerById: (id) => nullOn404(request(`/partners/${encodeURIComponent(id)}`)),
   createPartner: (data) => request('/partners', json('POST', data)),
   updatePartner: (id, data) => request(`/partners/${encodeURIComponent(id)}`, json('PATCH', data)),
   deletePartner: (id) => request(`/partners/${encodeURIComponent(id)}`, json('DELETE')),
@@ -644,6 +729,39 @@ export const httpAdapter: ApiAdapter = {
     ),
   getFormFieldAggregates: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
+  // E1.13: the server's 422 text is field-specific ("To pole jest wymagane."), so keep it
+  // instead of the generic validation_error copy.
+  getPublicFormFields: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/form-fields/public`),
+  getFormFields: (eventId) => request(`/events/${encodeURIComponent(eventId)}/form-fields`),
+  createFormField: (eventId, data) =>
+    request(`/events/${encodeURIComponent(eventId)}/form-fields`, json('POST', data), true),
+  updateFormField: (eventId, fieldId, data) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/${encodeURIComponent(fieldId)}`,
+      json('PATCH', data),
+      true,
+    ),
+  deleteFormField: (eventId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/${encodeURIComponent(fieldId)}`,
+      json('DELETE'),
+      true,
+    ),
+  reorderFormFields: (eventId, orderedIds) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/reorder`,
+      json('PUT', { orderedIds }),
+      true,
+    ),
+  saveFormFieldAnswer: (registrationId, fieldId, value) =>
+    request(
+      `/registrations/${encodeURIComponent(registrationId)}/form-field-answers/${encodeURIComponent(fieldId)}`,
+      json('PUT', { value }),
+      true,
+    ),
+  getFormFieldAnswers: (registrationId) =>
+    request(`/registrations/${encodeURIComponent(registrationId)}/form-field-answers`),
   getRegistrationStats: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/registration-stats`),
   exportStartList: (eventId, distanceId, format) =>
@@ -658,7 +776,7 @@ export const httpAdapter: ApiAdapter = {
   getPlatformStats: () => request('/admin/platform-stats'),
 
   getInfoPages: () => request('/info-pages'),
-  getInfoPageBySlug: (slug) => request(`/info-pages/slug/${encodeURIComponent(slug)}`),
+  getInfoPageBySlug: (slug) => nullOn404(request(`/info-pages/slug/${encodeURIComponent(slug)}`)),
   createInfoPage: (data) => request('/info-pages', json('POST', data)),
   updateInfoPage: (id, data) =>
     request(`/info-pages/${encodeURIComponent(id)}`, json('PATCH', data)),
@@ -666,8 +784,18 @@ export const httpAdapter: ApiAdapter = {
   reorderInfoPages: (ids) => request('/info-pages/reorder', json('POST', { ids })),
 
   getCalendarSettings: () => request('/calendar/settings'),
-  updateCalendarSettings: (data) => request('/calendar/settings', json('PATCH', data)),
-  addEventToCalendar: (event) => request('/calendar/events', json('POST', event)),
+  // Only enabled / calendarId / timeZone are writable; the derived flags stay on the server.
+  updateCalendarSettings: (data) =>
+    request(
+      '/calendar/settings',
+      json('PATCH', {
+        ...(data.enabled !== undefined && { enabled: data.enabled }),
+        ...(data.calendarId !== undefined && { calendarId: data.calendarId }),
+        ...(data.timeZone !== undefined && { timeZone: data.timeZone }),
+      }),
+    ),
+  // The server reads the Event from its own database; only the id selects it.
+  addEventToCalendar: (event) => request('/calendar/events', json('POST', { id: event.id })),
 
   getVirtualResultSubmissions: (filters) =>
     request(`/virtual-results${query(filters as Record<string, QueryValue>)}`),
@@ -675,23 +803,21 @@ export const httpAdapter: ApiAdapter = {
   reviewVirtualResult: (id, status, reason) =>
     request(`/virtual-results/${encodeURIComponent(id)}/review`, json('PATCH', { status, reason })),
 
-  getEmailTemplates: (eventId) => paginated('/email-templates', { eventId: eventId ?? undefined }),
-  getEmailTemplateById: (id) => request(`/email-templates/${encodeURIComponent(id)}`),
-  getEmailSendLogs: (eventId) => request(`/email-send-logs${query({ eventId })}`),
-  createEmailTemplate: (payload) => request('/email-templates', json('POST', payload)),
-  updateEmailTemplate: (id, data) =>
-    request(`/email-templates/${encodeURIComponent(id)}`, json('PATCH', data)),
-  deleteEmailTemplate: (id) =>
-    request(`/email-templates/${encodeURIComponent(id)}`, json('DELETE')),
-  toggleEmailTemplate: (id, active) =>
-    request(`/email-templates/${encodeURIComponent(id)}/active`, json('PATCH', { active })),
-  sendEmailNow: (templateId, recipientIds) =>
+  getMailTemplates: (eventId) => request(mailTemplatesBase(eventId)),
+  saveMailTemplate: (mailType, payload, eventId) =>
+    request(`${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}`, json('PUT', payload)),
+  resetMailTemplate: (mailType, eventId) =>
+    request(`${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}`, json('DELETE')),
+  previewMailTemplate: (mailType, payload, eventId) =>
     request(
-      `/email-templates/${encodeURIComponent(templateId)}/send`,
-      json('POST', { recipientIds }),
+      `${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}/preview`,
+      json('POST', payload),
     ),
-  previewEmailTemplate: (requestPayload) =>
-    request('/email-templates/preview', json('POST', requestPayload)),
+  getMailLog: (filters, eventId) =>
+    paginated(
+      `${eventId ? `/events/${encodeURIComponent(eventId)}` : '/admin'}/mail-log`,
+      filters as Record<string, QueryValue>,
+    ),
 
   getCare: () => request('/care'),
   grantCareByEmail: (email) => request('/care', json('POST', { email })),
@@ -704,6 +830,11 @@ export const httpAdapter: ApiAdapter = {
         lastName,
         ...(birthDate ? { birthDate } : {}),
       }).toString()}`,
+    ),
+  setCompetitorAnonymization: (competitorId, isAnonymized) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/anonymization`,
+      json('POST', { isAnonymized }),
     ),
   rotateIdentityCode: (competitorId) =>
     request(`/competitors/${encodeURIComponent(competitorId)}/rotate-identity-code`, json('POST')),

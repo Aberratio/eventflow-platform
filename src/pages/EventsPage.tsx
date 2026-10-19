@@ -1,5 +1,5 @@
-import { useMemo, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -23,6 +23,7 @@ import {
 import { differenceInCalendarDays, format, getYear, isToday, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -547,6 +548,8 @@ const MobileStatCard = ({
   );
 };
 
+const validStatusParams: EventStatusKey[] = ['live', 'open', 'ending', 'closed', 'past', 'cancelled'];
+
 const EventsPage = () => {
   const {
     filters,
@@ -557,7 +560,16 @@ const EventsPage = () => {
     hasActiveFilters,
   } = useEventFilters();
 
-  const { data: allEvents, isLoading } = useQuery({
+  // ?status=past (the "results archive" entry point) preselects that status filter.
+  const [searchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
+  useEffect(() => {
+    if (statusParam && validStatusParams.includes(statusParam as EventStatusKey)) {
+      updateFilter('statuses', [statusParam]);
+    }
+  }, [statusParam, updateFilter]);
+
+  const { data: allEvents, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.events,
     queryFn: () => getAllEvents(),
   });
@@ -781,6 +793,8 @@ const EventsPage = () => {
                       <Skeleton key={index} className="h-20 w-full rounded-xl bg-white/[0.05]" />
                     ))}
                   </div>
+                ) : isError ? (
+                  <QueryErrorState onRetry={() => void refetch()} />
                 ) : filteredEvents.length === 0 ? (
                   <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] py-16 text-center">
                     <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -904,6 +918,8 @@ const EventsPage = () => {
                       <Skeleton key={index} className="h-20 w-full rounded-lg bg-white/[0.05]" />
                     ))}
                   </div>
+                ) : isError ? (
+                  <QueryErrorState onRetry={() => void refetch()} />
                 ) : filteredEvents.length === 0 ? (
                   <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] py-16 text-center">
                     <CalendarDays className="mx-auto h-12 w-12 text-muted-foreground" />

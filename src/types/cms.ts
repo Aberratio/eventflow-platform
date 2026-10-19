@@ -24,6 +24,8 @@ export interface InfoPageSection {
   type: InfoPageSectionType;
   title?: string;
   content?: string;
+  /** Text blocks: 'html' = rich text sanitized by the server; 'text' (default) = legacy plain text. */
+  format?: 'html' | 'text';
   items?: InfoPageSectionItem[];
 }
 

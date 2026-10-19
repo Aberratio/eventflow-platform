@@ -75,6 +75,18 @@ export interface TeamInvite {
   inviteToken: string;
 }
 
+/**
+ * G-04: one active Zapis on a Drużyna's roster, as the captain / the event's manager sees it when
+ * choosing whom to swap out (`GET /teams/{teamId}/members`).
+ */
+export interface TeamMember {
+  registrationId: string;
+  name: string;
+  status: string;
+  bibNumber: string | null;
+  competitorId: string | null;
+}
+
 /** PP.52: returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
 export interface PaymentSession {
   transactionId: string;
@@ -110,6 +122,16 @@ export interface Registration {
   paymentDetails?: PaymentDetails;
   /** PP.52: present only on the POST /registrations response, when a gateway session was opened. */
   paymentSession?: PaymentSession | null;
+  /**
+   * B-05: end of the payment window of a `pending` Zapis (ISO). NOTE: the server does not serialise it
+   * yet (column registrations.payment_expires_at) — the banner degrades to "dokończ płatność" without a date.
+   */
+  paymentExpiresAt?: string | null;
+  /**
+   * G-08: true on the POST /registrations response of a dry run (a Draft in test mode). The
+   * Zapis does not exist (the `id` is a ghost), nothing was paid; only the Rozliczenie is real.
+   */
+  isTest?: boolean;
   registeredById?: string;
   /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;

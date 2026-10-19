@@ -43,7 +43,7 @@ export const HomeHero = () => {
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg" className="gap-2">
-              <Link to="/results">
+              <Link to="/events?status=past">
                 <Trophy className="h-4 w-4" />
                 Sprawdź wyniki
               </Link>

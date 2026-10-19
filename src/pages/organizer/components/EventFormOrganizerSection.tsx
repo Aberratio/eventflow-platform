@@ -233,7 +233,7 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
             Nazwa i strona organizatora pobierana jest automatycznie z profilu. Aby je zmienić,
             zaktualizuj{' '}
             <a
-              href="/organizer/settings"
+              href="/profile"
               className="text-primary underline-offset-4 hover:underline"
               target="_blank"
             >
@@ -345,7 +345,7 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
               Dane kontaktowe wpisane tutaj dotyczą tylko tego wydarzenia. Jeśli chcesz, aby były
               dostępne przy każdym nowym wydarzeniu, warto je uzupełnić w{' '}
               <a
-                href="/organizer/settings"
+                href="/profile"
                 className="text-primary underline-offset-4 hover:underline"
                 target="_blank"
               >

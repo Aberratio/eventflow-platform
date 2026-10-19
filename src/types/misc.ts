@@ -32,6 +32,17 @@ export interface Ticket {
   bibNumber: string;
   category: string;
   registrationId: string;
+  /** G-12 (server PR #38): status of the Zapis this ticket belongs to. */
+  registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
+  /** G-12: start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
+  qrCode?: string | null;
+  /**
+   * G-01 (spec 11 pkt 4): status Zapisu stojącego za biletem — QR kodu startowego
+   * jest pokazywany tylko dla `confirmed` (opłacony/potwierdzony).
+   */
+  registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
+  /** B-04: kod startowy `pqr_…` Zapisu (z Registration.qrCode); QR = sam ten token. */
+  qrCode?: string | null;
   /**
    * E3.6 (issue 12 §4): the Odprawa fact reported back by Biuro Zawodów —
    * set once BZ confirms check-in, undefined/null beforehand. `checkedInBy`
@@ -56,7 +67,12 @@ export interface Notification {
 
 export interface GoogleCalendarSettings {
   enabled: boolean;
+  /** Server-derived: key configured on the server AND a calendar id is set. Not writable. */
   connected: boolean;
+  /** Server-derived: the service-account key file exists on the server. Never carries the key. Not writable. */
+  credentialsConfigured: boolean;
   calendarId?: string;
-  lastSyncAt?: string;
+  /** IANA time zone used for timed events (server default Europe/Warsaw). */
+  timeZone?: string;
+  lastSyncAt?: string | null;
 }

@@ -1,4 +1,5 @@
-import { getUsers, getOrders } from '@/api';
+import { getOrders } from '@/api';
+import { getAllUsers } from '@/api/fetchAllPages';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -82,7 +83,7 @@ export const AdminOrdersTab = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'order-customers'],
-    queryFn: () => getUsers({ pageSize: 1000 }),
+    queryFn: () => getAllUsers(),
   });
   const users = usersResponse?.data ?? [];
 

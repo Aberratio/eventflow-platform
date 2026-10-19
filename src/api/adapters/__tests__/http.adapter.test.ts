@@ -527,6 +527,18 @@ describe('httpAdapter.exportStartList (E2.6)', () => {
     );
   });
 
+  it('requests format=xml and downloads the file (G-11)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockFileResponse('<startList/>'));
+
+    await httpAdapter.exportStartList('event-1', 'distance-1', 'xml');
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/events/event-1/distances/distance-1/start-list-export?format=xml',
+      expect.anything(),
+    );
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('triggers a browser download named from the server Content-Disposition header', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFileResponse('binary-xlsx-bytes', {
@@ -766,5 +778,79 @@ describe('event money normalisation (PP.103)', () => {
     ok(raw);
     const data = (await httpAdapter.getEventById('e1')).data as unknown as { name: string };
     expect(data.name).toBe('Bieg');
+  });
+});
+
+describe('httpAdapter info page block format (B-08)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const block = { id: 'b', type: 'text', format: 'html', title: '', content: '<p>x</p>' } as const;
+
+  it('sends the text block format on PATCH /info-pages/{id}', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.updateInfoPage('p1', { content: [block] });
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({ content: [block] });
+  });
+
+  it('returns the block format from GET /info-pages/slug/{slug}', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: true, data: { id: 'p1', slug: 's', content: [block] } }),
+    );
+    const res = await httpAdapter.getInfoPageBySlug('s');
+    expect(res.data?.content[0].format).toBe('html');
+  });
+});
+
+describe('httpAdapter calendar (R-17)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const lastCall = () => {
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    return {
+      url,
+      method: init.method,
+      body: JSON.parse(String(init.body)) as Record<string, unknown>,
+    };
+  };
+
+  it('PATCH /calendar/settings sends only the writable fields', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.updateCalendarSettings({
+      enabled: true,
+      calendarId: 'a@b',
+      connected: true,
+      credentialsConfigured: true,
+      lastSyncAt: '2026-01-01T00:00:00Z',
+    });
+
+    const call = lastCall();
+    expect(call.url).toContain('/calendar/settings');
+    expect(call.method).toBe('PATCH');
+    expect(call.body).toEqual({ enabled: true, calendarId: 'a@b' });
+  });
+
+  it('POST /calendar/events sends just the event id', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
+    await httpAdapter.addEventToCalendar({ id: 'e1', name: 'Bieg' } as never);
+
+    const call = lastCall();
+    expect(call.url).toContain('/calendar/events');
+    expect(call.method).toBe('POST');
+    expect(call.body).toEqual({ id: 'e1' });
   });
 });

@@ -39,6 +39,7 @@ const ConfirmEmailChangePage = lazy(() => import('./pages/ConfirmEmailChangePage
 const EventsPage = lazy(() => import('./pages/EventsPage'));
 const EventDetailsPage = lazy(() => import('./pages/EventDetailsPage'));
 const EventRegistrationPage = lazy(() => import('./pages/EventRegistrationPage'));
+import { isEmbedPathname } from '@/lib/embedRoutes';
 const EventRegistrationEmbed = lazy(() => import('./pages/EventRegistrationEmbed'));
 const EmbedEventRegistrationPage = lazy(() => import('./pages/EmbedEventRegistrationPage'));
 const RegistrationSuccessPage = lazy(() => import('./pages/RegistrationSuccessPage'));
@@ -60,6 +61,7 @@ const Forbidden = lazy(() => import('./pages/Forbidden'));
 
 // Dashboard pages (heaviest — always lazy)
 const ParticipantDashboard = lazy(() => import('./pages/participant/ParticipantDashboard'));
+const TicketPrintPage = lazy(() => import('./pages/participant/TicketPrintPage'));
 const OrganizerDashboard = lazy(() => import('./pages/organizer/OrganizerDashboard'));
 const OrganizerEventsPage = lazy(() => import('./pages/organizer/OrganizerEventsPage'));
 const EventForm = lazy(() => import('./pages/organizer/EventForm'));
@@ -151,7 +153,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// E8.11: `/embed/*` routes render inside a third-party iframe on an external
+// E8.11/D-10: `/embed/*` and `/events/:slug/embed` routes render inside a third-party iframe on an external
 // site — the normal site chrome (bottom nav, onboarding dialog, cookie
 // banner, dev toolbox) has no business showing up there, so this shell
 // suppresses it for that one path prefix. Split out from `App` because
@@ -159,7 +161,7 @@ const queryClient = new QueryClient({
 // `<BrowserRouter>`.
 const AppShell = () => {
   const location = useLocation();
-  const isEmbedRoute = location.pathname.startsWith('/embed/');
+  const isEmbedRoute = isEmbedPathname(location.pathname);
 
   return (
     <ErrorBoundary>
@@ -182,6 +184,9 @@ const AppShell = () => {
               </Lazy>
             }
           />
+          {/* Legacy / external links to the results archive: the archive is the finished-events list. */}
+          <Route path="/wyniki" element={<Navigate to="/events?status=past" replace />} />
+          <Route path="/results" element={<Navigate to="/events?status=past" replace />} />
           <Route
             path="/wyniki/live"
             element={
@@ -448,6 +453,18 @@ const AppShell = () => {
               <Lazy fallback={<DashboardSkeleton />}>
                 <ProtectedRoute roles={participantRoles}>
                   <ParticipantDashboard />
+                </ProtectedRoute>
+              </Lazy>
+            }
+          />
+          {/* Link „Moich startach” z maila #5 (APP_URL + /my-starts) */}
+          <Route path="/my-starts" element={<Navigate to="/participant?tab=tickets" replace />} />
+          <Route
+            path="/participant/tickets/:registrationId/print"
+            element={
+              <Lazy fallback={<DashboardSkeleton />}>
+                <ProtectedRoute roles={participantRoles}>
+                  <TicketPrintPage />
                 </ProtectedRoute>
               </Lazy>
             }

@@ -14,10 +14,12 @@ import {
   RotateCcw,
   QrCode,
   CheckCircle2,
+  CreditCard,
 } from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
+import { canRetryPayment } from '@/lib/unpaidRegistration';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface RegistrationListRowProps {
@@ -27,6 +29,8 @@ interface RegistrationListRowProps {
   onSubmitResult?: () => void;
   /** E1.5: „poproś o zwrot" — omitted when the caller doesn't want the action offered here. */
   onRequestRefund?: () => void;
+  /** B-05: „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. */
+  onRetryPayment?: () => void;
 }
 
 export const RegistrationListRow = ({
@@ -35,6 +39,7 @@ export const RegistrationListRow = ({
   virtualSubmission,
   onSubmitResult,
   onRequestRefund,
+  onRetryPayment,
 }: RegistrationListRowProps) => {
   const [showStartCode, setShowStartCode] = useState(false);
   const now = new Date();
@@ -65,7 +70,11 @@ export const RegistrationListRow = ({
         variant={registration.status === 'confirmed' ? 'default' : 'secondary'}
         className="text-xs"
       >
-        {registration.status === 'confirmed' ? 'Potwierdzony' : 'Oczekuje'}
+        {registration.status === 'confirmed'
+          ? 'Potwierdzony'
+          : registration.status === 'expired'
+            ? 'Wygasł'
+            : 'Oczekuje'}
       </Badge>
       {registration.refund && (
         <Badge variant="outline" className="text-xs">
@@ -108,6 +117,24 @@ export const RegistrationListRow = ({
       Poproś o zwrot
     </Button>
   );
+
+  const retryButton = onRetryPayment &&
+    canRetryPayment(registration, new Date(), {
+      isBankTransfer: event.paymentConfig?.type === 'organizer_bank',
+    }) && (
+      <Button
+        size="sm"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onRetryPayment();
+        }}
+        className="h-7 text-xs"
+      >
+        <CreditCard className="mr-1 h-3 w-3" />
+        Ponów płatność
+      </Button>
+    );
 
   const submitButton = (label: string, variant: 'default' | 'outline' = 'default') => (
     <Button
@@ -253,6 +280,7 @@ export const RegistrationListRow = ({
       {renderVirtualStatus()}
       {startCodeTrigger}
       {refundButton}
+      {retryButton}
       {startCodeReveal}
     </div>
   );

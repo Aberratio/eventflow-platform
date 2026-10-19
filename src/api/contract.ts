@@ -38,6 +38,7 @@ import type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  SwapTeamMemberPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
   UpdateResultPayload,
@@ -65,7 +66,9 @@ import type {
   PublicStartListEntry,
   RelayTeam,
   TeamInvite,
+  TeamMember,
   Result,
+  ResultCorrection,
   ResultImportBatch,
   ResultImportMode,
   PersonalRecord,
@@ -108,6 +111,11 @@ import type {
   EventBackground,
   EventBackgroundUsage,
   FormFieldAggregate,
+  FormField,
+  CreateFormFieldPayload,
+  UpdateFormFieldPayload,
+  FormFieldAnswer,
+  FormFieldAnswerValue,
   RegistrationStats,
 } from '@/types';
 import type {
@@ -247,6 +255,23 @@ export interface ApiAdapter {
    * caller is the team's captain or manages the event, 404 for an unknown id.
    */
   getTeamInvite(teamId: string): Promise<ApiResponse<TeamInvite>>;
+  /**
+   * G-04: the active roster of a Drużyna (the list to pick the member to swap out of). Authenticated;
+   * 403 unless the caller is the team's captain or manages the event, 404 for an unknown id.
+   */
+  getTeamMembers(teamId: string): Promise<ApiResponse<TeamMember[]>>;
+  /**
+   * G-04 (spec 23 §2 / spec 20 transfer): swaps the person on a relay member's Zapis. Price, bib
+   * number and status stay, the start code rotates. Captain until the Dystans's swap deadline
+   * (409 `team_swap_deadline_passed` afterwards), the event's manager always. Rejects with
+   * `ApiRequestError` (codes: `team_not_captain`, `not_authorized_to_register`,
+   * `team_swap_deadline_passed`, `team_swap_competitor_already_registered`, `team_swap_same_person`).
+   */
+  swapTeamMember(
+    teamId: string,
+    registrationId: string,
+    data: SwapTeamMemberPayload,
+  ): Promise<ApiResponse<Registration>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<PublicStartListEntry[]>>;
   /**
    * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)
@@ -292,6 +317,8 @@ export interface ApiAdapter {
   createResult(data: CreateResultPayload): Promise<ApiResponse<Result>>;
   updateResult(id: string, data: UpdateResultPayload): Promise<ApiResponse<Result>>;
   deleteResult(id: string): Promise<ApiResponse<void>>;
+  /** G-03: correction trail of one result, newest first. */
+  getResultCorrections(id: string): Promise<ApiResponse<ResultCorrection[]>>;
   getPersonalRecords(userId: string): Promise<ApiResponse<PersonalRecord[]>>;
   getTeamResults(eventId: string): Promise<ApiResponse<TeamResult[]>>;
   /** E2.7: live-computed team/relay classification for one event+distance. */
@@ -434,6 +461,11 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<Competitor[]>>;
   /** E1.12: rotacja kodu tożsamości — wywołujący musi być Zawodnikiem albo mieć nad nim Opiekę. */
   rotateIdentityCode(competitorId: string): Promise<ApiResponse<Competitor>>;
+  /** G-09 (spec 10): own profile or a Zawodnik under my Opieka; drives name masking in public rankings. */
+  setCompetitorAnonymization(
+    competitorId: string,
+    isAnonymized: boolean,
+  ): Promise<ApiResponse<Competitor>>;
 
   // ── E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin) ──
   /** Wyszukiwanie kandydatów do scalenia po imieniu/nazwisku/kodzie tożsamości. */
@@ -470,6 +502,24 @@ export interface ApiAdapter {
   // E2.5: automatic, no-opt-in answer-count aggregation for choice-type form fields
   // (single_choice/multi_choice/consent) — organizer-scoped, same $canManageEvent gate.
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
+  // E1.13: configurable registration form ("Pozycje formularza"). The public list is
+  // unauthenticated (non-hidden positions only); the rest is organizer/staff-scoped.
+  getPublicFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  getFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  createFormField(eventId: string, data: CreateFormFieldPayload): Promise<ApiResponse<FormField>>;
+  updateFormField(
+    eventId: string,
+    fieldId: string,
+    data: UpdateFormFieldPayload,
+  ): Promise<ApiResponse<FormField>>;
+  deleteFormField(eventId: string, fieldId: string): Promise<ApiResponse<{ deleted: boolean }>>;
+  reorderFormFields(eventId: string, orderedIds: string[]): Promise<ApiResponse<FormField[]>>;
+  saveFormFieldAnswer(
+    registrationId: string,
+    fieldId: string,
+    value: FormFieldAnswerValue,
+  ): Promise<ApiResponse<FormFieldAnswer>>;
+  getFormFieldAnswers(registrationId: string): Promise<ApiResponse<FormFieldAnswer[]>>;
   // E8.2: built-in cross-sections from the Zapis record itself (distance,
   // payment status, signup curve, plus gender/club/age-category when
   // configured) — complements getFormFieldAggregates above. Same
@@ -479,7 +529,7 @@ export interface ApiAdapter {
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.
   // Same $canManageEvent gate as the rest of this group, server-side.
-  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx'): Promise<void>;
+  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx' | 'xml'): Promise<void>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;
@@ -516,17 +566,22 @@ export interface ApiAdapter {
     reason?: string,
   ): Promise<ApiResponse<VirtualResultSubmission>>;
 
-  // ── Email Templates ──
-  getEmailTemplates(eventId?: string | null): Promise<PaginatedResponse<EmailTemplate>>;
-  getEmailTemplateById(id: string): Promise<ApiResponse<EmailTemplate | null>>;
-  getEmailSendLogs(eventId?: string): Promise<ApiResponse<EmailSendLog[]>>;
-  createEmailTemplate(payload: CreateEmailTemplatePayload): Promise<ApiResponse<EmailTemplate>>;
-  updateEmailTemplate(
-    id: string,
-    data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'sentCount'>>,
-  ): Promise<ApiResponse<EmailTemplate>>;
-  deleteEmailTemplate(id: string): Promise<ApiResponse<void>>;
-  toggleEmailTemplate(id: string, active: boolean): Promise<ApiResponse<EmailTemplate>>;
-  sendEmailNow(templateId: string, recipientIds?: string[]): Promise<ApiResponse<SendEmailResult>>;
-  previewEmailTemplate(request: EmailPreviewRequest): Promise<ApiResponse<EmailPreviewResult>>;
+  // ── Mail templates & log (B-03) — eventId omitted/null = global (admin) scope ──
+  getMailTemplates(eventId?: string | null): Promise<ApiResponse<MailTemplate[]>>;
+  saveMailTemplate(
+    mailType: string,
+    payload: SaveMailTemplatePayload,
+    eventId?: string | null,
+  ): Promise<ApiResponse<MailTemplate>>;
+  /** Removes the event override; the server answers with the now-effective template. */
+  resetMailTemplate(mailType: string, eventId: string): Promise<ApiResponse<MailTemplate>>;
+  previewMailTemplate(
+    mailType: string,
+    payload: MailTemplatePreviewRequest,
+    eventId?: string | null,
+  ): Promise<ApiResponse<MailTemplatePreview>>;
+  getMailLog(
+    filters?: MailLogFilters,
+    eventId?: string | null,
+  ): Promise<PaginatedResponse<MailLogEntry>>;
 }

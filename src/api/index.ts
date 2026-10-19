@@ -141,6 +141,10 @@ export const getTeamById: ApiAdapter['getTeamById'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamById(...args));
 export const getTeamInvite: ApiAdapter['getTeamInvite'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamInvite(...args));
+export const getTeamMembers: ApiAdapter['getTeamMembers'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamMembers(...args));
+export const swapTeamMember: ApiAdapter['swapTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.swapTeamMember(...args));
 export const getPublicStartList: ApiAdapter['getPublicStartList'] = (...args) =>
   ensureAdapter().then((a) => a.getPublicStartList(...args));
 export const getRegistrationsByUser: ApiAdapter['getRegistrationsByUser'] = (...args) =>
@@ -177,6 +181,8 @@ export const updateResult: ApiAdapter['updateResult'] = (...args) =>
   ensureAdapter().then((a) => a.updateResult(...args));
 export const deleteResult: ApiAdapter['deleteResult'] = (...args) =>
   ensureAdapter().then((a) => a.deleteResult(...args));
+export const getResultCorrections: ApiAdapter['getResultCorrections'] = (...args) =>
+  ensureAdapter().then((a) => a.getResultCorrections(...args));
 export const getPersonalRecords: ApiAdapter['getPersonalRecords'] = (...args) =>
   ensureAdapter().then((a) => a.getPersonalRecords(...args));
 export const getTeamResults: ApiAdapter['getTeamResults'] = (...args) =>
@@ -329,6 +335,22 @@ export const getEventActivityLogs: ApiAdapter['getEventActivityLogs'] = (...args
   ensureAdapter().then((a) => a.getEventActivityLogs(...args));
 export const getFormFieldAggregates: ApiAdapter['getFormFieldAggregates'] = (...args) =>
   ensureAdapter().then((a) => a.getFormFieldAggregates(...args));
+export const getPublicFormFields: ApiAdapter['getPublicFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.getPublicFormFields(...args));
+export const getFormFields: ApiAdapter['getFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.getFormFields(...args));
+export const createFormField: ApiAdapter['createFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.createFormField(...args));
+export const updateFormField: ApiAdapter['updateFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.updateFormField(...args));
+export const deleteFormField: ApiAdapter['deleteFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.deleteFormField(...args));
+export const reorderFormFields: ApiAdapter['reorderFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.reorderFormFields(...args));
+export const saveFormFieldAnswer: ApiAdapter['saveFormFieldAnswer'] = (...args) =>
+  ensureAdapter().then((a) => a.saveFormFieldAnswer(...args));
+export const getFormFieldAnswers: ApiAdapter['getFormFieldAnswers'] = (...args) =>
+  ensureAdapter().then((a) => a.getFormFieldAnswers(...args));
 export const getRegistrationStats: ApiAdapter['getRegistrationStats'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrationStats(...args));
 export const exportStartList: ApiAdapter['exportStartList'] = (...args) =>
@@ -401,6 +423,8 @@ export const revokeCare: ApiAdapter['revokeCare'] = (...args) =>
   ensureAdapter().then((a) => a.revokeCare(...args));
 export const checkCompetitorDuplicates: ApiAdapter['checkCompetitorDuplicates'] = (...args) =>
   ensureAdapter().then((a) => a.checkCompetitorDuplicates(...args));
+export const setCompetitorAnonymization: ApiAdapter['setCompetitorAnonymization'] = (...args) =>
+  ensureAdapter().then((a) => a.setCompetitorAnonymization(...args));
 export const rotateIdentityCode: ApiAdapter['rotateIdentityCode'] = (...args) =>
   ensureAdapter().then((a) => a.rotateIdentityCode(...args));
 
@@ -413,24 +437,16 @@ export const mergeCompetitors: ApiAdapter['mergeCompetitors'] = (...args) =>
   ensureAdapter().then((a) => a.mergeCompetitors(...args));
 
 // Email Templates
-export const getEmailTemplates: ApiAdapter['getEmailTemplates'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailTemplates(...args));
-export const getEmailTemplateById: ApiAdapter['getEmailTemplateById'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailTemplateById(...args));
-export const getEmailSendLogs: ApiAdapter['getEmailSendLogs'] = (...args) =>
-  ensureAdapter().then((a) => a.getEmailSendLogs(...args));
-export const createEmailTemplate: ApiAdapter['createEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.createEmailTemplate(...args));
-export const updateEmailTemplate: ApiAdapter['updateEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.updateEmailTemplate(...args));
-export const deleteEmailTemplate: ApiAdapter['deleteEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.deleteEmailTemplate(...args));
-export const toggleEmailTemplate: ApiAdapter['toggleEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.toggleEmailTemplate(...args));
-export const sendEmailNow: ApiAdapter['sendEmailNow'] = (...args) =>
-  ensureAdapter().then((a) => a.sendEmailNow(...args));
-export const previewEmailTemplate: ApiAdapter['previewEmailTemplate'] = (...args) =>
-  ensureAdapter().then((a) => a.previewEmailTemplate(...args));
+export const getMailTemplates: ApiAdapter['getMailTemplates'] = (...args) =>
+  ensureAdapter().then((a) => a.getMailTemplates(...args));
+export const saveMailTemplate: ApiAdapter['saveMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.saveMailTemplate(...args));
+export const resetMailTemplate: ApiAdapter['resetMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.resetMailTemplate(...args));
+export const previewMailTemplate: ApiAdapter['previewMailTemplate'] = (...args) =>
+  ensureAdapter().then((a) => a.previewMailTemplate(...args));
+export const getMailLog: ApiAdapter['getMailLog'] = (...args) =>
+  ensureAdapter().then((a) => a.getMailLog(...args));
 
 // ─── Re-exports for convenience ─────────────────────────
 
@@ -465,6 +481,8 @@ export type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  SwapTeamMemberPayload,
+  SwapTeamMemberNewPerson,
   RegistrationMerchandiseSelection,
   UpdateRegistrationPayload,
   CreateResultPayload,

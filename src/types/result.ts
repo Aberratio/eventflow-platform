@@ -33,6 +33,23 @@ export interface Result {
   publicationStatus: 'preliminary' | 'official';
 }
 
+/** G-03: one row of GET /results/{id}/corrections - who, when, what changed (from -> to) and why. */
+export type ResultCorrectionField = 'time' | 'netTime' | 'status' | 'position' | 'categoryPosition';
+
+export interface ResultCorrection {
+  id: string;
+  resultId: string;
+  correctedBy: string;
+  correctedByName?: string | null;
+  correctedAt: string;
+  reason: string | null;
+  /** The classification was already official when this correction was made. */
+  wasOfficial: boolean;
+  changes: Partial<
+    Record<ResultCorrectionField, { from: string | number | null; to: string | number | null }>
+  >;
+}
+
 export type ResultImportMode = 'replace' | 'upsert';
 export type ResultImportRowStatus =
   | 'ready'

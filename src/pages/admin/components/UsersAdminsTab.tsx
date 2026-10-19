@@ -1,4 +1,4 @@
-import { getUsers } from '@/api';
+import { getAllUsers } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -44,6 +44,12 @@ const roleLabels: Record<Extract<UserRole, 'admin' | 'superadmin'>, string> = {
   superadmin: 'Superadmin',
 };
 
+/** Staff accounts listed here: admins and (umowa §5.8) moderators. */
+const staffRoleLabel = (role: UserRole): string =>
+  role === 'superadmin' ? 'Superadmin' : role === 'moderator' ? 'Moderator' : 'Administrator';
+const formatLastLogin = (iso?: string | null): string =>
+  iso ? new Date(iso).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' }) : 'Nigdy';
+
 export const UsersAdminsTab = () => {
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -57,12 +63,14 @@ export const UsersAdminsTab = () => {
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', phone: '' });
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'admins'],
-    queryFn: () => getUsers({ pageSize: 1000 }),
+    queryFn: () => getAllUsers(),
   });
 
   const admins = [
     ...(usersResponse?.data ?? [])
-      .filter((user) => user.role === 'admin' || user.role === 'superadmin')
+      .filter(
+        (user) => user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator',
+      )
       .map((user) => ({ ...user, role: roleOverrides[user.id] ?? user.role })),
     ...createdAdmins,
   ];
@@ -157,6 +165,7 @@ export const UsersAdminsTab = () => {
               <TableHead>Email</TableHead>
               <TableHead>Rola</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Ostatnie logowanie</TableHead>
               <TableHead className="text-right">Akcje</TableHead>
             </TableRow>
           </TableHeader>
@@ -167,13 +176,16 @@ export const UsersAdminsTab = () => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === 'superadmin' ? 'destructive' : 'default'}>
-                    {user.role === 'superadmin' ? 'Superadmin' : 'Administrator'}
+                    {staffRoleLabel(user.role)}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
                     {user.status === 'blocked' ? 'Zablokowany' : 'Aktywny'}
                   </Badge>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {formatLastLogin(user.lastLoginAt)}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -219,9 +231,7 @@ export const UsersAdminsTab = () => {
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span className="text-sm">
                 Konto z uprawnieniami:{' '}
-                <span className="font-medium">
-                  {selectedUser.role === 'superadmin' ? 'Superadmin' : 'Administrator'}
-                </span>
+                <span className="font-medium">{staffRoleLabel(selectedUser.role)}</span>
               </span>
             </div>
           )

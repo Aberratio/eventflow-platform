@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 import { InfoPageSection } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface PricingSectionProps {
   section: InfoPageSection;
@@ -21,7 +22,7 @@ export const PricingSection = ({ section }: PricingSectionProps) => {
                 <CardTitle className="text-center">{item.title}</CardTitle>
                 {item.price !== undefined && (
                   <div className="text-center">
-                    <span className="text-4xl font-bold">{item.price} zł</span>
+                    <span className="text-4xl font-bold">{formatMoney(item.price)}</span>
                     <span className="text-muted-foreground">/mies.</span>
                   </div>
                 )}

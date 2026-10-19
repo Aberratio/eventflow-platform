@@ -14,6 +14,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Plus, Trash2, ChevronDown, Star } from 'lucide-react';
 import { VipPrice, PriceTierDiscountType } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 interface VipPricesSectionProps {
   distanceVipPrices: VipPrice[];
@@ -53,7 +54,7 @@ export const VipPricesSection = ({
       <CollapsibleContent className="space-y-3 pt-2">
         <p className="text-xs text-muted-foreground">
           Ceny VIP obowiązują niezależnie od aktywnego progu cenowego. Rabat VIP jest naliczany od
-          ceny bazowej dystansu ({basePrice} zł).
+          ceny bazowej dystansu ({formatMoney(basePrice)}).
         </p>
         {distanceVipPrices.map((vip) => {
           const vipFinalPrice = applyDiscount(basePrice, vip.discountType, vip.discountValue);
@@ -67,7 +68,7 @@ export const VipPricesSection = ({
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 rounded bg-yellow-100 px-2 py-1 text-xs font-semibold dark:bg-yellow-900/30">
-                    {vipFinalPrice} zł
+                    {formatMoney(vipFinalPrice)}
                   </div>
                   <Button
                     variant="ghost"

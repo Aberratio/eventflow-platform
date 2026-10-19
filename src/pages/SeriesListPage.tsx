@@ -2,6 +2,7 @@ import { getSeries, getEvents, seriesTypeLabels } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -28,7 +29,12 @@ const SeriesListPage = () => {
   const [selectedType, setSelectedType] = useState<SeriesType | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+  const {
+    data: seriesData,
+    isLoading: seriesLoading,
+    isError: seriesError,
+    refetch: refetchSeries,
+  } = useQuery({
     queryKey: QUERY_KEYS.series,
     queryFn: () => getSeries(),
   });
@@ -157,6 +163,8 @@ const SeriesListPage = () => {
               <Skeleton key={i} className="h-24 w-full rounded-lg" />
             ))}
           </div>
+        ) : seriesError ? (
+          <QueryErrorState onRetry={() => void refetchSeries()} />
         ) : (
           <ListContainer
             isEmpty={filteredSeries.length === 0}

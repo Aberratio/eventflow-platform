@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -24,12 +25,18 @@ import {
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { QUERY_KEYS } from '@/constants';
+import { formatMoney } from '@/lib/format';
 
 const ShopProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { addItem } = useCart();
 
-  const { data: productData, isLoading: productLoading } = useQuery({
+  const {
+    data: productData,
+    isLoading: productLoading,
+    isError: productError,
+    refetch: refetchProduct,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.productBySlug(slug) : ['product'],
     queryFn: () => getProductBySlug(slug!),
     enabled: !!slug,
@@ -60,6 +67,16 @@ const ShopProductPage = () => {
       <Layout>
         <div className="container py-16 text-center text-muted-foreground">
           Ładowanie produktu...
+        </div>
+      </Layout>
+    );
+  }
+
+  if (productError && !product) {
+    return (
+      <Layout>
+        <div className="container py-16">
+          <QueryErrorState onRetry={() => void refetchProduct()} />
         </div>
       </Layout>
     );
@@ -177,14 +194,16 @@ const ShopProductPage = () => {
             {/* Price Card */}
             <div className="mb-6 rounded-xl border border-primary/10 bg-gradient-to-r from-primary/5 to-warning/5 p-5">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-foreground">{product.price} zł</span>
+                <span className="text-3xl font-bold text-foreground">
+                  {formatMoney(product.price)}
+                </span>
                 {hasDiscount && (
                   <>
                     <span className="text-xl text-muted-foreground line-through">
-                      {product.originalPrice} zł
+                      {formatMoney(product.originalPrice)}
                     </span>
                     <Badge className="border border-destructive/20 bg-destructive/10 text-destructive">
-                      Oszczędzasz {product.originalPrice! - product.price} zł
+                      Oszczędzasz {formatMoney(product.originalPrice! - product.price)}
                     </Badge>
                   </>
                 )}

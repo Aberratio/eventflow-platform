@@ -21,6 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save } from 'lucide-react';
 import { EventSeries } from '@/types';
 import { toast } from 'sonner';
+import { formatMoney } from '@/lib/format';
 
 const slugify = (value: string) =>
   value
@@ -237,7 +238,7 @@ export const AdminSeriesEditPage = () => {
                     onCheckedChange={() => toggleProduct(product.id)}
                   />
                   <span>
-                    {product.name} · {product.price} zł
+                    {product.name} · {formatMoney(product.price)}
                   </span>
                 </label>
               ))}

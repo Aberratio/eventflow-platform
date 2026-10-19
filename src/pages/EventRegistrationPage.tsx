@@ -1,3 +1,5 @@
+import { registrationFormFieldErrors } from '@/api/errors';
+import { answersToPayload } from '@/lib/formFields';
 import { createRegistration, disciplineLabels, getEventBySlug, getCare, getTeamById } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -26,12 +28,13 @@ import { RegistrationForm, RegistrationData } from '@/components/registration/Re
 import type { RegistrationParticipant } from '@/hooks/useRegistrationForm';
 import { formatMoney } from '@/lib/format';
 import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
+import { registrationClosedMessage } from '@/lib/registrationOutcome';
 import {
   ExternalRegistrationFrame,
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
-import type { MyCompetitor, Registration } from '@/types';
+import type { MyCompetitor, Registration, RegistrationFormFieldError } from '@/types';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -45,6 +48,12 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // B-01: the server refused with 409 `registration_closed` — shown instead of the form.
+  const [closedMessage, setClosedMessage] = useState<string | null>(null);
+  // B-07: per-field messages of a 422 `registration_form_invalid`, handed to the form.
+  const [serverFieldErrors, setServerFieldErrors] = useState<RegistrationFormFieldError[] | null>(
+    null,
+  );
 
   // Zapis Zawodnika pod moją opieką (kogoś innego niż ja)
   const [registeringForOther, setRegisteringForOther] = useState(false);
@@ -329,8 +338,28 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     return null;
   }
 
+  if (closedMessage !== null) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <div className="mx-auto max-w-xl text-center">
+            <Card>
+              <CardContent className="space-y-5 pt-8">
+                <h1 className="text-2xl font-bold">Zapisy są zamknięte</h1>
+                <p className="text-muted-foreground">{closedMessage}</p>
+                <Button onClick={() => navigate(`/events/${slug}`)}>Wróć do wydarzenia</Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const handleComplete = async (data: RegistrationData) => {
-    if (isPreviewAvailable) {
+    // G-08: a Draft in test mode takes the real request (the server answers with a dry run);
+    // without test mode the preview stays local and sends nothing.
+    if (isPreviewAvailable && !event.isTest) {
       setPreviewRegistrationData(data);
       return;
     }
@@ -375,9 +404,21 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         discountCode: data.discountCode,
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
+        // B-07: answers and identity travel in the create call itself; the server validates them
+        // in the same transaction and creates nothing on a 422.
+        formFieldAnswers: answersToPayload(data.formFieldAnswers),
+        identity: data.identity,
       });
       registration = response.data;
     } catch (error) {
+      const closed = registrationClosedMessage(error);
+      if (closed !== null) {
+        setClosedMessage(closed);
+        setIsSubmitting(false);
+        return;
+      }
+      const fieldErrors = registrationFormFieldErrors(error);
+      if (fieldErrors.length > 0) setServerFieldErrors(fieldErrors);
       toast({
         title: 'Nie udało się zapisać rejestracji',
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
@@ -389,7 +430,11 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
     // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — the
     // payment happens there. The page is leaving, so `isSubmitting` stays true.
-    if (registration.status === 'pending' && registration.paymentSession?.redirectUrl) {
+    if (
+      !registration.isTest &&
+      registration.status === 'pending' &&
+      registration.paymentSession?.redirectUrl
+    ) {
       navigateToPaymentGateway(registration.paymentSession.redirectUrl);
       return;
     }
@@ -456,6 +501,13 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
       {/* Registration Form */}
       <div className="container py-8">
+        {isPreviewAvailable && (
+          <p className="mb-4 rounded-md border bg-muted/50 p-3 text-sm text-muted-foreground">
+            {event.isTest
+              ? 'Tryb testowy jest włączony – wysłanie formularza sprawdzi konfigurację na serwerze, ale nie zapisze ani nie opłaci niczego.'
+              : 'Podgląd formularza – nic nie jest wysyłane. Włącz tryb testowy w ustawieniach wydarzenia, aby sprawdzić Rozliczenie na serwerze.'}
+          </p>
+        )}
         {/* Zapis w imieniu kogoś innego */}
         {isParticipant && hasGrantors && !previewMode && (
           <div className="mx-auto mb-6 max-w-2xl">
@@ -575,6 +627,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           previewMode={isPreviewAvailable}
           disabled={registeringForOther && !selectedGrantor}
           initialTeamJoin={initialTeamJoin}
+          serverFieldErrors={serverFieldErrors}
         />
       </div>
     </Layout>

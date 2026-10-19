@@ -42,8 +42,17 @@ import {
   CheckCircle2,
   UserCog,
   Star,
+  ClipboardList,
 } from 'lucide-react';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import {
+  Event,
+  EventMerchandise,
+  FormFieldAnswerValue,
+  MerchandiseOrder,
+  RegistrationFormFieldError,
+  RegistrationIdentityPayload,
+} from '@/types';
+import { CustomFormFieldsStep } from './CustomFormFieldsStep';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -67,6 +76,11 @@ interface RegistrationFormProps {
   initialTeamJoin?: InitialTeamJoin | null;
   /** PP.44: the ward being registered; null/undefined = the logged-in user themself. */
   participant?: RegistrationParticipant | null;
+  /**
+   * B-07: per-field errors from a 422 `registration_form_invalid` after a submit attempt; the
+   * form shows each next to its field and moves back to the step that holds it.
+   */
+  serverFieldErrors?: RegistrationFormFieldError[] | null;
 }
 
 /**
@@ -107,6 +121,13 @@ export interface RegistrationData {
   teamSpecialCategory?: string;
   pricingVariantId?: string;
   insuranceVariantId?: string;
+  /**
+   * E1.13: answers to the organizer's custom form fields, keyed by form-field id (only the
+   * ones actually filled in). Sent as `formFieldAnswers` in the same POST that creates the Zapis.
+   */
+  formFieldAnswers?: Record<string, FormFieldAnswerValue>;
+  /** B-07: values of the visible identity positions (phone, club, ...), sent in `identity`. */
+  identity?: RegistrationIdentityPayload;
 }
 
 const currentYear = new Date().getFullYear();
@@ -137,6 +158,7 @@ const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')
 const stepIcons: Record<string, typeof Ticket> = {
   Dystans: Ticket,
   Dane: User,
+  Formularz: ClipboardList,
   Drużyna: Users,
   Ubezpieczenie: Shield,
   Gadżety: ShoppingBag,
@@ -152,8 +174,15 @@ export const RegistrationForm = ({
   disabled = false,
   initialTeamJoin = null,
   participant = null,
+  serverFieldErrors = null,
 }: RegistrationFormProps) => {
   const form = useRegistrationForm(event, initialTeamJoin, participant);
+  const { applyServerFieldErrors } = form;
+  useEffect(() => {
+    if (serverFieldErrors && serverFieldErrors.length > 0)
+      applyServerFieldErrors(serverFieldErrors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- apply once per new error list
+  }, [serverFieldErrors]);
 
   const handleSubmit = () => {
     const data = form.buildSubmitData();
@@ -247,6 +276,17 @@ export const RegistrationForm = ({
 
       {/* Step 2: Personal Data */}
       {form.step === 2 && form.selectedDistance && <PersonalDataStep form={form} />}
+
+      {/* Step 26: organizer-configured custom fields (E1.13) */}
+      {form.step === 26 && form.isStepInActiveSteps(26) && (
+        <CustomFormFieldsStep
+          fields={form.stepFormFields}
+          answers={form.formFieldAnswers}
+          errors={form.formFieldErrors}
+          serverErrors={form.serverFieldErrors}
+          onChange={form.setFormFieldAnswer}
+        />
+      )}
 
       {/* Step 25: Team */}
       {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep form={form} />}
@@ -348,7 +388,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-bold text-primary">{price} zł</div>
+                      <div className="text-xl font-bold text-primary">{formatMoney(price)}</div>
                       <Badge variant="secondary" className="text-xs">
                         {tierName}
                       </Badge>
@@ -371,7 +411,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                             >
                               <span>{tier.name}</span>
                               <span>
-                                {tierPrice} zł
+                                {formatMoney(tierPrice)}
                                 {tier.endDate &&
                                   ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
                                 {tier.participantLimit != null &&
@@ -444,7 +484,9 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                   >
                     <RadioGroupItem value={variant.id} />
                     <span className="flex-1 text-sm">{variant.name}</span>
-                    <span className="text-sm font-semibold text-primary">{variantPrice} zł</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {formatMoney(variantPrice)}
+                    </span>
                   </label>
                 );
               })}
@@ -1047,7 +1089,7 @@ const InsuranceStep = ({ event, form }: { event: Event; form: FormHook }) => {
                       </span>
                     ) : (
                       <span className="font-bold text-primary">
-                        Składka: {premium.amount} zł (wiek na dzień zawodów)
+                        Składka: {formatMoney(premium.amount)} (wiek na dzień zawodów)
                       </span>
                     )}
                   </div>
@@ -1091,7 +1133,7 @@ const InsuranceStep = ({ event, form }: { event: Event; form: FormHook }) => {
                       {premium?.available === false
                         ? `niedostępne pow. ${variant.maxAge} lat`
                         : premium
-                          ? `${premium.amount} zł`
+                          ? formatMoney(premium.amount)
                           : '—'}
                     </span>
                   </label>
@@ -1139,7 +1181,7 @@ const MerchandiseStep = ({ event, form }: { event: Event; form: FormHook }) => (
         <div className="mt-4 rounded-lg bg-muted/50 p-4">
           <div className="flex items-center justify-between font-semibold">
             <span>Suma produktów:</span>
-            <span className="text-primary">{form.merchandiseTotal} zł</span>
+            <span className="text-primary">{formatMoney(form.merchandiseTotal)}</span>
           </div>
         </div>
       )}
@@ -1506,7 +1548,7 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               )}
             </div>
-            <span className="font-bold text-primary">{item.price} zł</span>
+            <span className="font-bold text-primary">{formatMoney(item.price)}</span>
           </div>
           <div className="flex flex-wrap items-end gap-4">
             {item.sizes.length > 0 && (

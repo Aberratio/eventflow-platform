@@ -1,7 +1,8 @@
-import { getEvents, getResults, getSeriesBySlug } from '@/api';
+import { getEvents, getSeriesBySlug, getSeriesRanking } from '@/api';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
+import { QueryErrorState } from '@/components/ui/query-error-state';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, ArrowLeft } from 'lucide-react';
@@ -13,51 +14,15 @@ import { SeriesStandingsTable, type SeriesStanding } from './series/SeriesStandi
 import { SeriesEventsList } from './series/SeriesEventsList';
 import { QUERY_KEYS } from '@/constants';
 
-const getPointsForPosition = (position: number): number => {
-  const pointsTable: Record<number, number> = {
-    1: 100,
-    2: 80,
-    3: 60,
-    4: 50,
-    5: 45,
-    6: 40,
-    7: 36,
-    8: 32,
-    9: 29,
-    10: 26,
-  };
-  if (position <= 10) return pointsTable[position];
-  if (position <= 20) return Math.max(25 - (position - 10), 1);
-  return 1;
-};
-
-const calculateAge = (birthYear?: number): number | null => {
-  if (!birthYear) return null;
-  return new Date().getFullYear() - birthYear;
-};
-
-const isInAgeCategory = (age: number | null, category: string): boolean => {
-  if (age === null) return false;
-  switch (category) {
-    case '18-29':
-      return age >= 18 && age <= 29;
-    case '30-39':
-      return age >= 30 && age <= 39;
-    case '40-49':
-      return age >= 40 && age <= 49;
-    case '50-59':
-      return age >= 50 && age <= 59;
-    case '60+':
-      return age >= 60;
-    default:
-      return true;
-  }
-};
-
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
-  const { data: seriesData, isLoading: seriesLoading } = useQuery({
+  const {
+    data: seriesData,
+    isLoading: seriesLoading,
+    isError: seriesError,
+    refetch: refetchSeries,
+  } = useQuery({
     queryKey: slug ? QUERY_KEYS.seriesBySlug(slug) : ['series'],
     queryFn: () => getSeriesBySlug(slug!),
     enabled: !!slug,
@@ -66,16 +31,16 @@ const SeriesDetailsPage = () => {
     queryKey: QUERY_KEYS.events,
     queryFn: () => getEvents(),
   });
-  const { data: resultsData } = useQuery({
-    queryKey: QUERY_KEYS.results,
-    queryFn: () => getResults(),
+  const seriesId = seriesData?.data?.id;
+  const { data: rankingData } = useQuery({
+    queryKey: ['series-ranking', seriesId],
+    queryFn: () => getSeriesRanking(seriesId!),
+    enabled: !!seriesId,
   });
   const series = seriesData?.data;
   const allEvents = eventsData?.data ?? [];
-  const allResults = resultsData?.data ?? [];
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'M' | 'K'>('all');
-  const [ageFilter, setAgeFilter] = useState<string>('all');
 
   const seriesEvents = useMemo(() => {
     if (!series) return [];
@@ -86,56 +51,36 @@ const SeriesDetailsPage = () => {
     return seriesEvents.filter((e) => e.publicationStatus === 'finished');
   }, [seriesEvents]);
 
-  const standings = useMemo((): SeriesStanding[] => {
-    if (!series || completedEvents.length === 0) return [];
-    const standingsMap = new Map<string, SeriesStanding>();
-
-    completedEvents.forEach((event) => {
-      const eventResults = allResults.filter((r) => r.eventId === event.id);
-      eventResults.forEach((result) => {
-        const points = getPointsForPosition(result.position);
-        if (!standingsMap.has(result.userId)) {
-          standingsMap.set(result.userId, {
-            userId: result.userId,
-            userName: result.userName,
-            totalPoints: 0,
-            eventsCount: 0,
-            eventPoints: {},
-            gender: result.gender,
-            birthYear: result.birthYear,
-          });
-        }
-        const standing = standingsMap.get(result.userId)!;
-        standing.totalPoints += points;
-        standing.eventsCount += 1;
-        standing.eventPoints[event.id] = points;
-        if (!standing.gender && result.gender) standing.gender = result.gender;
-        if (!standing.birthYear && result.birthYear) standing.birthYear = result.birthYear;
-      });
-    });
-
-    return Array.from(standingsMap.values()).sort((a, b) =>
-      b.totalPoints !== a.totalPoints
-        ? b.totalPoints - a.totalPoints
-        : b.eventsCount - a.eventsCount,
-    );
-  }, [allResults, series, completedEvents]);
-
-  const filteredStandings = useMemo(() => {
-    return standings.filter((s) => {
-      if (genderFilter !== 'all' && s.gender !== genderFilter) return false;
-      if (ageFilter !== 'all') {
-        const age = calculateAge(s.birthYear);
-        if (!isInAgeCategory(age, ageFilter)) return false;
-      }
-      return true;
-    });
-  }, [standings, genderFilter, ageFilter]);
+  // The server sums the series' challenge rankings (E6.6); it owns ordering and ties.
+  const ranking = rankingData?.data;
+  const standings = useMemo(
+    (): SeriesStanding[] =>
+      (ranking?.entries ?? []).map((entry) => ({
+        userId: entry.userId,
+        userName: entry.name,
+        totalPoints: entry.points,
+        eventsCount: 0,
+        eventPoints: {},
+        rank: entry.rank,
+        isAnonymized: entry.isAnonymized,
+      })),
+    [ranking],
+  );
 
   if (seriesLoading) {
     return (
       <Layout>
         <div className="container py-16 text-center text-muted-foreground">Ładowanie serii...</div>
+      </Layout>
+    );
+  }
+
+  if (seriesError && !series) {
+    return (
+      <Layout>
+        <div className="container py-12">
+          <QueryErrorState onRetry={() => void refetchSeries()} />
+        </div>
       </Layout>
     );
   }
@@ -154,7 +99,7 @@ const SeriesDetailsPage = () => {
   }
 
   const handleExportCSV = () => {
-    const data = filteredStandings.map((s, i) => ({
+    const data = standings.map((s, i) => ({
       Pozycja: i + 1,
       Zawodnik: s.userName,
       Punkty: s.totalPoints,
@@ -166,7 +111,7 @@ const SeriesDetailsPage = () => {
 
   const handleExportPDF = () => {
     const columns = ['Poz.', 'Zawodnik', 'Punkty', 'Starty'];
-    const rows = filteredStandings.map((s, i) => [
+    const rows = standings.map((s, i) => [
       String(i + 1),
       s.userName,
       String(s.totalPoints),
@@ -178,10 +123,7 @@ const SeriesDetailsPage = () => {
   const showStandings =
     (series.type === 'cup' || series.type === 'championship') && standings.length > 0;
 
-  const clearFilters = () => {
-    setGenderFilter('all');
-    setAgeFilter('all');
-  };
+  const clearFilters = () => setGenderFilter('all');
 
   return (
     <Layout>
@@ -211,7 +153,8 @@ const SeriesDetailsPage = () => {
 
         {showStandings && (
           <SeriesStandingsTable
-            standings={filteredStandings}
+            standings={standings}
+            serverRanking={{ hasPoints: ranking?.hasPoints ?? true }}
             completedEvents={completedEvents}
             genderFilter={genderFilter}
             onGenderFilterChange={setGenderFilter}

@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
-import { getCare, grantCareByEmail, addCompetitor, revokeCare, rotateIdentityCode } from '@/api';
+import {
+  getCare,
+  grantCareByEmail,
+  addCompetitor,
+  revokeCare,
+  rotateIdentityCode,
+  setCompetitorAnonymization,
+} from '@/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Loader2,
   Trash2,
@@ -18,6 +26,7 @@ import {
   AlertTriangle,
   QrCode,
   RotateCw,
+  EyeOff,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import type { MyCompetitor, Caregiver } from '@/types';
@@ -118,6 +127,69 @@ function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
   );
 }
 
+/** G-09 (spec 10): jedna osoba w przełączniku anonimizacji. */
+interface AnonymizationOption {
+  competitorId: string;
+  label: string;
+  isAnonymized: boolean;
+}
+
+/**
+ * G-09: „Anonimizuj moje dane w rankingach" — POST /competitors/{id}/anonymization dla własnego
+ * profilu i każdego Zawodnika pod Opieką. Serwer maskuje imię i nazwisko w publicznych rankingach.
+ */
+function AnonymizationCard({ options }: { options: AnonymizationOption[] }) {
+  const queryClient = useQueryClient();
+  // GET /care does not return the flag for wards yet, so the answer of the toggle is kept locally.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+
+  const mutation = useMutation({
+    mutationFn: (v: { competitorId: string; isAnonymized: boolean }) =>
+      setCompetitorAnonymization(v.competitorId, v.isAnonymized),
+    onSuccess: (_res, v) => {
+      setOverrides((prev) => ({ ...prev, [v.competitorId]: v.isAnonymized }));
+      toast({ title: v.isAnonymized ? 'Anonimizacja włączona' : 'Anonimizacja wyłączona' });
+      queryClient.invalidateQueries({ queryKey: ['care'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+    },
+  });
+
+  if (options.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <EyeOff className="h-4 w-4" />
+          Anonimizacja w rankingach
+        </CardTitle>
+        <CardDescription>
+          Po włączeniu imię i nazwisko danej osoby są ukrywane w publicznych rankingach.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="divide-y">
+          {options.map((o) => (
+            <li key={o.competitorId} className="flex items-center justify-between py-3">
+              <span className="text-sm font-medium">{o.label}</span>
+              <Switch
+                aria-label={`Anonimizuj: ${o.label}`}
+                checked={overrides[o.competitorId] ?? o.isAnonymized}
+                disabled={mutation.isPending}
+                onCheckedChange={(checked) =>
+                  mutation.mutate({ competitorId: o.competitorId, isAnonymized: checked })
+                }
+              />
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 const ParticipantAuthorizationsTab = () => {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
@@ -213,6 +285,23 @@ const ParticipantAuthorizationsTab = () => {
       competitorId: c.competitorId,
       label: `${c.firstName} ${c.lastName}`,
       identityCode: c.identityCode,
+    })),
+  ];
+
+  const anonymizationOptions: AnonymizationOption[] = [
+    ...(data?.myProfile
+      ? [
+          {
+            competitorId: data.myProfile.id,
+            label: 'Ja',
+            isAnonymized: Boolean(data.myProfile.isAnonymized),
+          },
+        ]
+      : []),
+    ...myCompetitors.map((c) => ({
+      competitorId: c.competitorId,
+      label: `${c.firstName} ${c.lastName}`,
+      isAnonymized: Boolean(c.isAnonymized),
     })),
   ];
 
@@ -334,6 +423,9 @@ const ParticipantAuthorizationsTab = () => {
         <>
           {/* E1.12: kod tożsamości QR — mój i każdego Zawodnika pod opieką, z przełącznikiem */}
           <IdentityCodeCard options={identityOptions} />
+
+          {/* G-09: przełącznik anonimizacji */}
+          <AnonymizationCard options={anonymizationOptions} />
 
           {/* Zawodnicy pod moją opieką */}
           <Card>

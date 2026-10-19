@@ -34,8 +34,14 @@ import type {
   ShopCategoryConfig,
   Challenge,
   Partner,
+  RegistrationFormFieldAnswer,
+  RegistrationIdentityPayload,
 } from '@/types';
-import type { CreateEmailTemplatePayload, EmailPreviewRequest } from '@/types/email';
+import type {
+  SaveMailTemplatePayload,
+  MailTemplatePreviewRequest,
+  MailLogFilters,
+} from '@/types/email';
 
 // ──────────────── Events ────────────────
 
@@ -250,6 +256,13 @@ export interface CreateRegistrationPayload {
   discountCode?: string;
   merchandise?: RegistrationMerchandiseSelection[];
   insuranceVariantId?: string;
+  /**
+   * B-07: answers to the organizer's custom form fields, validated and stored in the same
+   * transaction as the Zapis (a failure answers 422 `registration_form_invalid`, nothing is created).
+   */
+  formFieldAnswers?: RegistrationFormFieldAnswer[];
+  /** B-07: values of the visible identity-section positions (phone, club, address, ...). */
+  identity?: RegistrationIdentityPayload;
   /** Ignored by the server since PP.52 (derived from the caller and `competitorId`). */
   registeredById?: string;
 }
@@ -289,7 +302,10 @@ export interface CreateResultPayload {
   birthYear?: number;
 }
 
-export type UpdateResultPayload = Partial<CreateResultPayload>;
+export type UpdateResultPayload = Partial<CreateResultPayload> & {
+  /** G-03: why the result is corrected - stored in the correction trail, not on the result. */
+  reason?: string;
+};
 
 // ──────────────── Shop ────────────────
 
@@ -371,4 +387,23 @@ export type UpdatePartnerPayload = Partial<CreatePartnerPayload>;
 
 // ──────────────── Re-exports for convenience ────────────────
 
-export type { CreateEmailTemplatePayload, EmailPreviewRequest };
+export type { SaveMailTemplatePayload, MailTemplatePreviewRequest, MailLogFilters };
+
+/**
+ * G-04 (spec 23 §2): who takes over a relay member's Zapis — an existing Zawodnik the caller may
+ * register (own profile or under their Opieka; the event's manager may name any), or the data of a
+ * brand-new person. Exactly one of the two.
+ */
+export type SwapTeamMemberPayload =
+  | { competitorId: string; newPerson?: undefined }
+  | { competitorId?: undefined; newPerson: SwapTeamMemberNewPerson };
+
+export interface SwapTeamMemberNewPerson {
+  firstName: string;
+  lastName: string;
+  birthDate?: string;
+  gender?: 'M' | 'K';
+  email?: string;
+  phone?: string;
+  club?: string;
+}

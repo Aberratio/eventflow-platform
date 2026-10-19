@@ -54,6 +54,7 @@ export interface DistanceFormData {
   relayMinTeamSize: string;
   relayMaxTeamSize: string;
   relayTeamCompletionDeadline: string;
+  relaySwapDeadline: string;
   /** E2.7: regula agregacji wyniku druzynowego - puste = brak wyboru (nie wysylane). */
   teamAggregationRule: TeamAggregationRule | '';
   /** TD.8 (spec 07 rozstrzygniecie 10): sposob naliczania oplaty startowej dla Dystansu sztafetowego. */
@@ -586,6 +587,7 @@ export const useEventFormState = () => {
       relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
       relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
       relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
+      relaySwapDeadline: d.relaySwapDeadline || '',
       teamAggregationRule: d.teamAggregationRule || '',
       teamPricingMode: d.teamPricingMode || 'per_person',
       price: d.price.toString(),
@@ -718,6 +720,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: d.relayMinTeamSize?.toString() || '',
         relayMaxTeamSize: d.relayMaxTeamSize?.toString() || '',
         relayTeamCompletionDeadline: d.relayTeamCompletionDeadline || '',
+        relaySwapDeadline: d.relaySwapDeadline || '',
         teamAggregationRule: d.teamAggregationRule || '',
         teamPricingMode: d.teamPricingMode || 'per_person',
         price: d.price.toString(),
@@ -807,6 +810,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: '',
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
+        relaySwapDeadline: '',
         teamAggregationRule: '',
         teamPricingMode: 'per_person',
         price: '',
@@ -841,6 +845,7 @@ export const useEventFormState = () => {
         relayMinTeamSize: '',
         relayMaxTeamSize: '',
         relayTeamCompletionDeadline: '',
+        relaySwapDeadline: '',
         teamAggregationRule: '',
         teamPricingMode: 'per_person',
         price: '',
@@ -1420,6 +1425,10 @@ export const useEventFormState = () => {
           errors[`distance_${i}_relayTeamCompletionDeadline`] =
             'Deadline nie może być późniejszy niż data wydarzenia';
         }
+        if (dist.relaySwapDeadline && date && dist.relaySwapDeadline > date) {
+          errors[`distance_${i}_relaySwapDeadline`] =
+            'Termin wymiany nie może być późniejszy niż data wydarzenia';
+        }
         if (isBlank(dist.teamAggregationRule)) {
           errors[`distance_${i}_teamAggregationRule`] =
             'Wybierz regułę agregacji wyniku drużynowego';
@@ -1636,6 +1645,8 @@ export const useEventFormState = () => {
             : undefined,
         relayTeamCompletionDeadline:
           dist.startType === 'relay' ? dist.relayTeamCompletionDeadline || undefined : undefined,
+        relaySwapDeadline:
+          dist.startType === 'relay' ? dist.relaySwapDeadline || undefined : undefined,
         teamAggregationRule:
           dist.startType === 'relay' ? dist.teamAggregationRule || undefined : undefined,
         teamPricingMode: dist.teamPricingMode,

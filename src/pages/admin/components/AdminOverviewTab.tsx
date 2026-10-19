@@ -1,4 +1,5 @@
-import { getSalesStats, getOnlineSessions, getEvents, getUsers, getRegistrations } from '@/api';
+import { getSalesStats, getOnlineSessions, getEvents, getUsers } from '@/api';
+import { getAllRegistrations } from '@/api/fetchAllPages';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +39,7 @@ export const AdminOverviewTab = () => {
   });
   const { data: registrationsResponse } = useQuery({
     queryKey: ['registrations', 'admin-overview'],
-    queryFn: () => getRegistrations({ pageSize: 1000 }),
+    queryFn: () => getAllRegistrations(),
   });
 
   const events = eventsResponse?.data ?? [];
