@@ -18,7 +18,7 @@ const ISO_DATE = /\b\d{4}-\d{2}-\d{2}\b/;
 const EN_MONTH = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 const PL_DOTTED = /\b\d{2}\.\d{2}\.\d{4}\b/;
 const PL_MONTH = /\b\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\b/i;
-const PRICE_PL = /\d[\d\s ]*,\d{2}\s?zł/;
+const PRICE_PL = /\d[\d\s\u00a0]*,\d{2}\s?zł/;
 const PRICE_BAD = /\d\.\d{2}\s?zł|\bPLN\b/;
 
 test.describe('@usability links and i18n', () => {
