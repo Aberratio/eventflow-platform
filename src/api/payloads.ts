@@ -302,7 +302,10 @@ export interface CreateResultPayload {
   birthYear?: number;
 }
 
-export type UpdateResultPayload = Partial<CreateResultPayload> & {
+export type UpdateResultPayload = Partial<Omit<CreateResultPayload, 'position' | 'categoryPosition'>> & {
+  /** G-03: corrected place (open / in category): a positive integer, or null to keep the computed ranking. */
+  position?: number | null;
+  categoryPosition?: number | null;
   /** G-03: why the result is corrected - stored in the correction trail, not on the result. */
   reason?: string;
 };
