@@ -89,11 +89,13 @@ export const ResultListRow = ({
           <Download className="h-4 w-4" />
         </Button>
       )}
-      <Button variant="ghost" size="icon" asChild>
-        <Link to={`/results?event=${result.eventId}`}>
-          <ExternalLink className="h-4 w-4" />
-        </Link>
-      </Button>
+      {event?.slug && (
+        <Button variant="ghost" size="icon" asChild>
+          <Link to={`/events/${event.slug}/results`} aria-label="Wyniki wydarzenia">
+            <ExternalLink className="h-4 w-4" />
+          </Link>
+        </Button>
+      )}
     </div>
   ) : undefined;
 

@@ -579,7 +579,7 @@ const Index = () => {
               accent="success"
               action={
                 <Link
-                  to="/wyniki"
+                  to="/events?status=past"
                   className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
                 >
                   Zobacz wszystkie wyniki

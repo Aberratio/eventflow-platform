@@ -111,7 +111,7 @@ const AthleteProfilePage = () => {
                 Brak dostępnych wyników dla tego zawodnika.
               </p>
               <Button asChild>
-                <Link to="/results">
+                <Link to="/events?status=past">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Wróć do wyników
                 </Link>
@@ -129,7 +129,7 @@ const AthleteProfilePage = () => {
         {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link to="/results">
+            <Link to="/events?status=past">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Wróć do wyników
             </Link>

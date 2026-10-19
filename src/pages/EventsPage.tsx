@@ -1,5 +1,5 @@
-import { useMemo, useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -547,6 +547,8 @@ const MobileStatCard = ({
   );
 };
 
+const validStatusParams: EventStatusKey[] = ['live', 'open', 'ending', 'closed', 'past', 'cancelled'];
+
 const EventsPage = () => {
   const {
     filters,
@@ -556,6 +558,15 @@ const EventsPage = () => {
     activeFiltersCount,
     hasActiveFilters,
   } = useEventFilters();
+
+  // ?status=past (the "results archive" entry point) preselects that status filter.
+  const [searchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
+  useEffect(() => {
+    if (statusParam && validStatusParams.includes(statusParam as EventStatusKey)) {
+      updateFilter('statuses', [statusParam]);
+    }
+  }, [statusParam, updateFilter]);
 
   const { data: allEvents, isLoading } = useQuery({
     queryKey: QUERY_KEYS.events,
