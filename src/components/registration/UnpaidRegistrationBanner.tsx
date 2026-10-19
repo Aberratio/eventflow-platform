@@ -34,12 +34,19 @@ export const UnpaidRegistrationBanner = ({
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const now = new Date();
 
+  const isBankTransfer = (event?: Event): boolean =>
+    event?.paymentConfig?.type === 'organizer_bank';
+
   const items = registrations
-    .filter((r) => isAwaitingPayment(r, now) || canRetryPayment(r, now))
     .map((registration) => ({
       registration,
       event: events.find((e) => e.id === registration.eventId),
-    }));
+    }))
+    .filter(
+      ({ registration, event }) =>
+        isAwaitingPayment(registration, now) ||
+        canRetryPayment(registration, now, { isBankTransfer: isBankTransfer(event) }),
+    );
 
   if (items.length === 0) return null;
 
@@ -70,8 +77,10 @@ export const UnpaidRegistrationBanner = ({
     <div className="mb-5 space-y-3 sm:mb-6" data-testid="unpaid-registration-banner">
       {items.map(({ registration, event }) => {
         const eventName = event?.name ?? registration.eventName;
-        const retryable = canRetryPayment(registration, now);
-        const isBank = event?.paymentConfig?.type === 'organizer_bank';
+        const isBank = isBankTransfer(event);
+        const retryable = canRetryPayment(registration, now, { isBankTransfer: isBank });
+        // Window lapsed (expired): the explanation changes; an open window keeps the deadline text.
+        const lapsed = retryable && !isAwaitingPayment(registration, now);
         const transferTitle = registration.transferTitle ?? `ZC-${registration.id}`;
         const busy = retryingId === registration.id;
 
@@ -79,12 +88,12 @@ export const UnpaidRegistrationBanner = ({
           <Alert key={registration.id} role="status" className="border-warning/40 bg-warning/5">
             <AlertTriangle className="h-4 w-4 text-warning" />
             <AlertTitle>
-              {retryable
+              {lapsed
                 ? `Zapis na ${eventName} wygasł z powodu braku płatności`
                 : `Masz nieopłacony zapis na ${eventName}`}
             </AlertTitle>
             <AlertDescription className="space-y-2">
-              {retryable ? (
+              {lapsed ? (
                 <p>Ponów płatność, aby odzyskać miejsce (o ile dystans nie jest już zapełniony).</p>
               ) : (
                 <p>
@@ -96,7 +105,7 @@ export const UnpaidRegistrationBanner = ({
                 </p>
               )}
 
-              {!retryable && isBank && event?.paymentConfig && (
+              {!lapsed && isBank && event?.paymentConfig && (
                 <dl className="grid gap-x-3 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">
                   <dt className="text-muted-foreground">Numer konta</dt>
                   <dd className="font-medium">
@@ -119,10 +128,9 @@ export const UnpaidRegistrationBanner = ({
                 </dl>
               )}
 
-              {!retryable && !isBank && (
+              {!lapsed && !isBank && (
                 <p className="text-sm text-muted-foreground">
-                  Płatność online — dokończ ją w bramce, do której przekierowaliśmy Cię po zapisie.
-                  Jeśli okno płatności wygaśnie, ponowisz ją tutaj.
+                  Płatność online — kliknij „Zapłać teraz”, aby przejść do bramki płatności.
                 </p>
               )}
 

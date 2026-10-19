@@ -118,20 +118,23 @@ export const RegistrationListRow = ({
     </Button>
   );
 
-  const retryButton = onRetryPayment && canRetryPayment(registration) && (
-    <Button
-      size="sm"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onRetryPayment();
-      }}
-      className="h-7 text-xs"
-    >
-      <CreditCard className="mr-1 h-3 w-3" />
-      Ponów płatność
-    </Button>
-  );
+  const retryButton = onRetryPayment &&
+    canRetryPayment(registration, new Date(), {
+      isBankTransfer: event.paymentConfig?.type === 'organizer_bank',
+    }) && (
+      <Button
+        size="sm"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onRetryPayment();
+        }}
+        className="h-7 text-xs"
+      >
+        <CreditCard className="mr-1 h-3 w-3" />
+        Ponów płatność
+      </Button>
+    );
 
   const submitButton = (label: string, variant: 'default' | 'outline' = 'default') => (
     <Button
