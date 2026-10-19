@@ -707,6 +707,11 @@ export const httpAdapter: ApiAdapter = {
         ...(birthDate ? { birthDate } : {}),
       }).toString()}`,
     ),
+  setCompetitorAnonymization: (competitorId, isAnonymized) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/anonymization`,
+      json('POST', { isAnonymized }),
+    ),
   rotateIdentityCode: (competitorId) =>
     request(`/competitors/${encodeURIComponent(competitorId)}/rotate-identity-code`, json('POST')),
 

@@ -221,13 +221,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   // E2.6: server-driven start-list export (all form fields + numer startowy +
-  // status płatności, Windows-1250 CSV or XLSX) for one Distance — distinct
+  // status płatności, Windows-1250 CSV, XLSX or XML) for one Distance — distinct
   // from handleExportCSV above, which is a client-side-only, fixed-column
   // export of whatever rows are already loaded in the browser. This one
   // hits GET /events/{id}/distances/{id}/start-list-export and leaves an
   // activity-log entry server-side, per spec ("każdy eksport zostawia wpis
   // w rejestrze aktywności").
-  const handleExportStartList = async (distanceId: string, format: 'csv' | 'xlsx') => {
+  const handleExportStartList = async (distanceId: string, format: 'csv' | 'xlsx' | 'xml') => {
     try {
       await exportStartList(event.id, distanceId, format);
       toast({

@@ -434,6 +434,11 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<Competitor[]>>;
   /** E1.12: rotacja kodu tożsamości — wywołujący musi być Zawodnikiem albo mieć nad nim Opiekę. */
   rotateIdentityCode(competitorId: string): Promise<ApiResponse<Competitor>>;
+  /** G-09 (spec 10): own profile or a Zawodnik under my Opieka; drives name masking in public rankings. */
+  setCompetitorAnonymization(
+    competitorId: string,
+    isAnonymized: boolean,
+  ): Promise<ApiResponse<Competitor>>;
 
   // ── E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin) ──
   /** Wyszukiwanie kandydatów do scalenia po imieniu/nazwisku/kodzie tożsamości. */
@@ -479,7 +484,7 @@ export interface ApiAdapter {
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.
   // Same $canManageEvent gate as the rest of this group, server-side.
-  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx'): Promise<void>;
+  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx' | 'xml'): Promise<void>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;

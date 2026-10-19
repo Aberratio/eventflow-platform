@@ -527,6 +527,18 @@ describe('httpAdapter.exportStartList (E2.6)', () => {
     );
   });
 
+  it('requests format=xml and downloads the file (G-11)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockFileResponse('<startList/>'));
+
+    await httpAdapter.exportStartList('event-1', 'distance-1', 'xml');
+
+    expect(fetch).toHaveBeenCalledWith(
+      'http://localhost:8081/api/v1/events/event-1/distances/distance-1/start-list-export?format=xml',
+      expect.anything(),
+    );
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('triggers a browser download named from the server Content-Disposition header', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFileResponse('binary-xlsx-bytes', {
