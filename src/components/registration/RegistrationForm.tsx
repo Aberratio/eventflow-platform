@@ -50,6 +50,7 @@ import {
   FormFieldAnswerValue,
   MerchandiseOrder,
   RegistrationFormFieldError,
+  RegistrationQuote,
   RegistrationIdentityPayload,
 } from '@/types';
 import { CustomFormFieldsStep } from './CustomFormFieldsStep';
@@ -65,6 +66,7 @@ import {
 } from '@/hooks/useRegistrationForm';
 import { appLogger } from '@/lib/logger';
 import { formatMoney } from '@/lib/format';
+import { useRegistrationQuote } from '@/hooks/useRegistrationQuote';
 
 interface RegistrationFormProps {
   event: Event;
@@ -81,6 +83,9 @@ interface RegistrationFormProps {
    * form shows each next to its field and moves back to the step that holds it.
    */
   serverFieldErrors?: RegistrationFormFieldError[] | null;
+  /**   * B-02: asks the server what this form would cost (`POST /registrations/quote`), given the form as   * filled in so far. The summary shows the server's Rozliczenie lines and total (debounced) instead of   * the local preview; without it, or when the server refuses, the local preview stays.   */ quote?: (
+    data: RegistrationData,
+  ) => Promise<{ data: RegistrationQuote }>;
 }
 
 /**
@@ -175,6 +180,7 @@ export const RegistrationForm = ({
   initialTeamJoin = null,
   participant = null,
   serverFieldErrors = null,
+  quote,
 }: RegistrationFormProps) => {
   const form = useRegistrationForm(event, initialTeamJoin, participant);
   const { applyServerFieldErrors } = form;
@@ -306,7 +312,7 @@ export const RegistrationForm = ({
 
       {/* Step 6: Summary */}
       {form.step === 6 && form.isStepInActiveSteps(6) && form.selectedDistance && (
-        <SummaryStep event={event} form={form} previewMode={previewMode} />
+        <SummaryStep event={event} form={form} previewMode={previewMode} quote={quote} />
       )}
 
       {/* Navigation */}
@@ -1253,12 +1259,21 @@ const SummaryStep = ({
   event,
   form,
   previewMode,
+  quote: requestQuote,
 }: {
   event: Event;
   form: FormHook;
   previewMode: boolean;
+  quote?: RegistrationFormProps['quote'];
 }) => {
   const selectedDistance = form.selectedDistance!;
+  // B-02: the server's price for the form as it stands; the local preview is the fallback.
+  const { quote, isPending: quotePending } = useRegistrationQuote({
+    enabled: Boolean(requestQuote) && !previewMode,
+    payload: form.buildRegistrationData(),
+    quote: (payload: RegistrationData) => requestQuote!(payload),
+  });
+  const displayTotal = quote?.totalAmount ?? form.totalAmount;
   return (
     <Card>
       <CardHeader>
@@ -1283,7 +1298,7 @@ const SummaryStep = ({
                 </span>
               )}
             </div>
-            <span>{formatMoney(form.distancePrice)}</span>
+            {!quote && <span>{formatMoney(form.distancePrice)}</span>}
           </div>
           <div className="flex justify-between text-muted-foreground">
             <span>Kategoria: {form.selectedCategory}</span>
@@ -1295,55 +1310,81 @@ const SummaryStep = ({
               </span>
             </div>
           )}
-          <Separator />
-          <div className="flex justify-between text-muted-foreground">
-            <span>Modyfikatory</span>
-            <span>{formatMoney(form.modifiersTotal)}</span>
-          </div>
-          {form.insurancePrice > 0 && (
+          {quote ? (
             <>
               <Separator />
-              <div className="flex justify-between">
-                <span className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" /> Ubezpieczenie NNW
-                </span>
-                <span>{formatMoney(form.insurancePrice)}</span>
-              </div>
-            </>
-          )}
-          {form.merchandiseOrders.size > 0 && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <span className="text-sm font-medium">Produkty dodatkowe:</span>
-                {Array.from(form.merchandiseOrders.values()).map((order, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span>
-                      {order.merchandiseName}
-                      {order.size && ` (${order.size})`}
-                      {order.color && `, ${order.color}`}
-                      {order.quantity > 1 && ` x${order.quantity}`}
+              <ul aria-label="Rozliczenie" className="space-y-2">
+                {quote.settlementItems.map((item, i) => (
+                  <li key={`${item.basis}-${i}`} className="flex justify-between">
+                    <span>{item.name}</span>
+                    <span className={item.amount < 0 ? 'text-success' : undefined}>
+                      {formatMoney(item.amount)}
                     </span>
-                    <span>{formatMoney(order.price)}</span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </>
-          )}
-          {form.discountAmount > 0 && (
+          ) : (
             <>
               <Separator />
-              <div className="flex justify-between text-success">
-                <span>Rabat ({form.discountCode})</span>
-                <span>-{formatMoney(form.discountAmount)}</span>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Modyfikatory</span>
+                <span>{formatMoney(form.modifiersTotal)}</span>
               </div>
+              {form.insurancePrice > 0 && (
+                <>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" /> Ubezpieczenie NNW
+                    </span>
+                    <span>{formatMoney(form.insurancePrice)}</span>
+                  </div>
+                </>
+              )}
+              {form.merchandiseOrders.size > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium">Produkty dodatkowe:</span>
+                    {Array.from(form.merchandiseOrders.values()).map((order, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span>
+                          {order.merchandiseName}
+                          {order.size && ` (${order.size})`}
+                          {order.color && `, ${order.color}`}
+                          {order.quantity > 1 && ` x${order.quantity}`}
+                        </span>
+                        <span>{formatMoney(order.price)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {form.discountAmount > 0 && (
+                <>
+                  <Separator />
+                  <div className="flex justify-between text-success">
+                    <span>Rabat ({form.discountCode})</span>
+                    <span>-{formatMoney(form.discountAmount)}</span>
+                  </div>
+                </>
+              )}
             </>
           )}
           <Separator />
           <div className="flex justify-between text-xl font-bold">
             <span>Do zapłaty</span>
-            <span className="text-primary">{formatMoney(form.totalAmount)}</span>
+            <span className="text-primary" data-testid="summary-total">
+              {formatMoney(displayTotal)}
+            </span>
           </div>
+          {requestQuote && !previewMode && quotePending && (
+            <p role="status" className="text-right text-xs text-muted-foreground">
+              {' '}
+              Przeliczanie ceny…{' '}
+            </p>
+          )}
         </div>
         {!previewMode && event.paymentConfig?.type === 'organizer_bank' && (
           <BankTransferDetails
@@ -1355,7 +1396,7 @@ const SummaryStep = ({
                 ? `${form.birthYear}-${form.birthMonth}-${form.birthDay}`
                 : undefined
             }
-            totalAmount={form.totalAmount}
+            totalAmount={displayTotal}
           />
         )}
         <div className="flex items-start gap-3 pt-4">

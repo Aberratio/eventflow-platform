@@ -151,6 +151,8 @@ export const getRegistrationsByUser: ApiAdapter['getRegistrationsByUser'] = (...
   ensureAdapter().then((a) => a.getRegistrationsByUser(...args));
 export const createRegistration: ApiAdapter['createRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.createRegistration(...args));
+export const quoteRegistration: ApiAdapter['quoteRegistration'] = (...args) =>
+  ensureAdapter().then((a) => a.quoteRegistration(...args));
 export const updateRegistration: ApiAdapter['updateRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.updateRegistration(...args));
 export const cancelRegistration: ApiAdapter['cancelRegistration'] = (...args) =>

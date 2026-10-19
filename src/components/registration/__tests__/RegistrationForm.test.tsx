@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, waitFor } from '@/test/test-utils';
 import { RegistrationForm } from '../RegistrationForm';
 import type { Event, MerchandiseOrder } from '@/types';
 
@@ -101,6 +101,7 @@ const formState = {
   handleNext: vi.fn(),
   handleBack: vi.fn(),
   getFinalTeamName: () => undefined,
+  buildRegistrationData: () => submitData,
   buildSubmitData: () => submitData,
   isLastStep: true,
   isFirstStep: false,
@@ -147,6 +148,73 @@ describe('RegistrationForm preview mode', () => {
 
     await user.click(screen.getByRole('button', { name: /Zakończ testowo, bez płatności/i }));
     expect(onComplete).toHaveBeenCalledWith(submitData);
+  });
+});
+
+describe('RegistrationForm summary with the server quote (B-02)', () => {
+  afterEach(() => {
+    currentFormState = formState;
+  });
+
+  const quoteResponse = {
+    data: {
+      eventName: 'Test Event',
+      distanceName: '5K',
+      totalAmount: 75,
+      discountCode: null,
+      settlementItems: [
+        { name: 'Opłata startowa', basis: 'distance_price', amount: 80 },
+        { name: 'Losowanie: Biorę udział', basis: 'modifier', amount: -5 },
+      ],
+    },
+  };
+
+  it('replaces the local preview with the server lines and total, asking once with the form data', async () => {
+    const quote = vi.fn().mockResolvedValue(quoteResponse);
+    render(
+      <RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} quote={quote} />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('Przeliczanie ceny');
+    expect(await screen.findByRole('list', { name: 'Rozliczenie' })).toBeInTheDocument();
+    expect(screen.getByText('Losowanie: Biorę udział')).toBeInTheDocument();
+    expect(screen.getByText('-5,00 zł')).toBeInTheDocument();
+    expect(screen.getByTestId('summary-total')).toHaveTextContent('75,00 zł');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(quote).toHaveBeenCalledTimes(1);
+    expect(quote).toHaveBeenCalledWith(submitData);
+  });
+
+  it('keeps the local preview when the server refuses the quote', async () => {
+    const quote = vi.fn().mockRejectedValue(new Error('422'));
+    render(
+      <RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} quote={quote} />,
+    );
+
+    await waitFor(() => expect(quote).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+    expect(screen.queryByRole('list', { name: 'Rozliczenie' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('summary-total')).toHaveTextContent('80,00 zł');
+  });
+
+  it('asks nothing in preview mode or when no quote function is given', async () => {
+    const quote = vi.fn().mockResolvedValue(quoteResponse);
+    const { unmount } = render(
+      <RegistrationForm
+        event={event}
+        onCancel={vi.fn()}
+        onComplete={vi.fn()}
+        quote={quote}
+        previewMode
+      />,
+    );
+    await new Promise((r) => setTimeout(r, 600));
+    expect(quote).not.toHaveBeenCalled();
+    unmount();
+
+    render(<RegistrationForm event={event} onCancel={vi.fn()} onComplete={vi.fn()} />);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByTestId('summary-total')).toHaveTextContent('80,00 zł');
   });
 });
 

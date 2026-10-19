@@ -192,3 +192,22 @@ export interface PublicStartListEntry {
   hasMerchandise: boolean;
   formFields: PublicStartListField[];
 }
+
+/** B-02: one line of the Rozliczenie a Zapis would get — the response of `POST /registrations/quote`. */
+export interface RegistrationQuoteItem {
+  name: string;
+  basis: string;
+  amount: number;
+}
+
+/**
+ * B-02: the price the server would freeze for this payload right now, without creating the Zapis.
+ * Binding only as a preview — the Zapis created afterwards recomputes the same way.
+ */
+export interface RegistrationQuote {
+  eventName: string;
+  distanceName: string;
+  settlementItems: RegistrationQuoteItem[];
+  totalAmount: number;
+  discountCode: string | null;
+}
