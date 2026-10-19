@@ -12,7 +12,24 @@ Kod jest znacznie dalej, niż zakłada `plan-prac.md`: migracje 001–067, model
 
 ## Faza 3 – stan po naprawach (2026-10-19)
 
-Wszystkie PR-y są draftami; nic nie jest zmergowane ani wdrożone. Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
+Stan wdrożenia (2026-10-19, wieczór): CM #3/#4 zmergowane i wdrożone na staging. S #44 (`integration/fix-all`) zmergowany do master (7199124), ale **niewdrożony**: GitHub Actions w eventflow-server nie startują (billing konta – „recent account payments have failed or your spending limit needs to be increased”), a środowisko `staging` w GitHubie (i repo) ma **0 sekretów**, więc deploy pada na „Check deploy configuration”. Do uzupełnienia w environment `staging`: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `BACKEND_REMOTE_DIR`, `BACKEND_ALLOWED_ROOT`, `BACKEND_BACKUP_DIR`, `API_URL`. F #6 i #24 celowo niezmergowane do czasu wdrożenia S. Weryfikacja po wdrożeniu (8 kroków niżej, `npm run test:e2e:dev`, ręczne QA zalogowanych) – czeka.
+
+Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
+
+### Runda 4 (2026-10-19) – domknięcie „Zostaje”
+
+Decyzje właścicielki: robimy G-03 i B-02 w całości; **admin może przekazać własność opublikowanego wydarzenia** (PP.4 łagodzone tylko dla admin/superadmin, organizator nadal 409). Wszystkie PR-y draft; S na master, F na `integration/fix-all`.
+
+| ID | Co | PR |
+|---|---|---|
+| G-06b | Zamówienie nagrody z Wyzwania stosuje regułę bramek sklepu (`card`/`blik` bez bramki → 422 `order_invalid_payment_method`, `bank` OK) | S #48 |
+| G-10 / PP.4 | Admin i superadmin przekazują własność opublikowanego wydarzenia; wpis `event_ownership_transferred` w rejestrze aktywności; organizator 409, moderator 403. F bez zmian (formularz nie blokował) | S #50 |
+| R-17 | Zmiana tytułu/daty/miejsca/miasta/sluga → zadanie `upsert` w outboxie; odwołanie/usunięcie → `delete` (404/410 = sukces, czyści ID wpisu); idempotentnie, tylko przy aktywnej integracji | S #46 (mig. 100) |
+| G-03 | Korekta wyniku: czas netto, miejsce open i w kategorii (z historią z/do); ręczne miejsce trwałe (flagi `position_manual`, `category_position_manual`), `null` wraca do rankingu automatycznego | S #47 (mig. 101), F #26 |
+| B-02 | `PATCH` pola formularza zmienia typ i warianty (409 `form_field_has_answers` / `form_field_option_in_use`) | S #45, F #25 |
+| B-02 | `POST /registrations/quote` – wycena bez zapisu, wspólny `priceRegistration()` z create; podsumowanie w formularzu zapisu | S #49, F #27 |
+
+Gałęzie integracyjne `integration/round4`: S = master + 6 PR (1 konflikt: lista `use (...)` w `PATCH /events/{id}`, #46×#50) – lint, stan, Unit 637/637, Integration 1449 (1 błąd lokalny, patrz QA-LOCAL-01); F = `integration/fix-all` + 3 PR, bez konfliktów – typecheck, eslint, vitest 1008/1008.
 
 ### Zrobione (PR)
 
@@ -51,11 +68,10 @@ Gałęzie integracyjne `integration/fix-all` (S i F) łączą wszystkie PR-y z r
 
 | ID | Co | Dlaczego |
 |---|---|---|
-| G-10 (część) | Admin nie może wymusić przekazania własności opublikowanego wydarzenia (PP.4 → 409 `published_organizer_locked`), choć macierz na to pozwala | Decyzja: czy łagodzić regułę PP.4 dla admina |
-| G-06b (część) | Zamówienie nagrody z Wyzwania nadal przyjmuje kartę/BLIK bez bramki (`ChallengeRepository` tworzy własny `OrderRepository`) | Mała poprawka, P2 |
-| R-17 (część) | Wpis w kalendarzu nie aktualizuje się sam po zmianie daty ani nie znika po odwołaniu; ręczne „wyślij” aktualizuje | Rozszerzenie, P2; brak dostępów klienta do testu |
-| B-02 (część) | Zmiana typu/wariantów istniejącego pola = usuń i dodaj; brak endpointu wyceny przed zapisem (front pokazuje ceny wariantów przy opcjach) | API serwera tego nie przewiduje; P2 |
-| G-03 (część) | Dialog korekty edytuje czas brutto i status (bez czasu netto i miejsc) | P2 |
+| R-17 (reszta) | Zmiana widoczności na prywatną nie usuwa wpisu z kalendarza; brak testu na prawdziwym Google | P2; brak dostępów klienta |
+| G-03 (reszta) | Ręczne miejsce może się pokrywać z automatycznym (pozostali liczeni po czasie); brak miejsca wg płci (brak kolumny) | P2 |
+| B-02 (reszta) | Embed (`EmbedEventRegistrationPage`) pokazuje lokalny podgląd ceny zamiast quote; quote nie sprawdza limitu miejsc ani zaproszenia do drużyny | P2 |
+| QA-LOCAL-01 | `ResultImportRepositoryTest::testRealSampleCsvImportsDnfRowWithStatusAndNoRankingPosition` pada na master (`AgeCategoryResolver`: „kategoria nie jest dostępna na tym dystansie”) – test z grupy `requires-local-samples`, CI go pomija | Defekt P2: test lub dane próbki niezgodne z kategoriami liczonymi na serwerze (PP.79) |
 | R-01–R-11, R-13–R-16, R-18, Z-03, Z-04, M-04, M-05 | Pozycje P2 / „poza umową” / warunkowe od klienta | Zgodnie z decyzją 6 – poza zakresem tej sesji |
 | QA-SEO-01/03/04 | Meta per trasa, sitemap, soft 404 | Decyzja: SEO później |
 | Płatności | Tpay/PayNow sprawdzone tylko na fake gateway | Brak kont sandbox (O-02) |
