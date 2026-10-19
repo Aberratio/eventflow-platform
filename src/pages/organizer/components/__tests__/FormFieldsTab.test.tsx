@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
 import { render, resetQueryClient } from '@/test/test-utils';
 import { FormFieldsTab } from '../FormFieldsTab';
+import { ApiRequestError } from '@/api/errors';
 import type { FormField } from '@/types';
 
 const api = vi.hoisted(() => ({
@@ -147,6 +148,64 @@ describe('FormFieldsTab (E1.13)', () => {
         options: [{ label: 'Bez losowania', price: -5 }],
       }),
     );
+  });
+
+  it('edits the variants of a custom field in place, keeping the keys of existing ones (B-02)', async () => {
+    api.updateFormField.mockResolvedValue({ success: true, data: list[3] });
+    render(<FormFieldsTab eventId="e1" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
+    const price = screen.getByLabelText('Cena wariantu 1');
+    await userEvent.clear(price);
+    await userEvent.type(price, '-7');
+    await userEvent.click(screen.getByRole('button', { name: /Dodaj wariant/ }));
+    await userEvent.type(screen.getByLabelText('Wariant 2'), 'XL');
+    await userEvent.type(screen.getByLabelText('Cena wariantu 2'), '3');
+    await userEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+    await waitFor(() => expect(api.updateFormField).toHaveBeenCalledTimes(1));
+    const [, id, patch] = api.updateFormField.mock.calls[0];
+    expect(id).toBe('c1');
+    expect(patch.options).toEqual([
+      { key: 'm', label: 'M', price: -7 },
+      { label: 'XL', price: 3 },
+    ]);
+    expect(patch).not.toHaveProperty('fieldType');
+  });
+
+  it('changes the type of a custom field in place (B-02)', async () => {
+    api.updateFormField.mockResolvedValue({ success: true, data: list[3] });
+    render(<FormFieldsTab eventId="e1" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
+    await userEvent.click(screen.getByLabelText('Typ pola'));
+    await userEvent.click(await screen.findByRole('option', { name: 'Wybór wielokrotny' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+    await waitFor(() => expect(api.updateFormField).toHaveBeenCalledTimes(1));
+    expect(api.updateFormField.mock.calls[0][2]).toMatchObject({
+      fieldType: 'multi_choice',
+      options: [{ key: 'm', label: 'M', price: -5 }],
+    });
+  });
+
+  it('explains a 409 when the type of a field with answers is changed (B-02)', async () => {
+    api.updateFormField.mockRejectedValue(
+      new ApiRequestError('Nie można zmienić typu.', 'form_field_has_answers', 409),
+    );
+    render(<FormFieldsTab eventId="e1" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
+    await userEvent.click(screen.getByLabelText('Typ pola'));
+    await userEvent.click(await screen.findByRole('option', { name: 'Tekst krótki' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('ma już odpowiedzi');
+    expect(screen.getByRole('button', { name: 'Zapisz' })).toBeInTheDocument();
+  });
+
+  it('explains a 409 when a used variant is removed (B-02)', async () => {
+    api.updateFormField.mockRejectedValue(
+      new ApiRequestError('Nie można usunąć wariantu: m.', 'form_field_option_in_use', 409),
+    );
+    render(<FormFieldsTab eventId="e1" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Zapisz' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('wybrali już zawodnicy');
   });
 
   it('shows a 422 from the server inside the create dialog', async () => {
