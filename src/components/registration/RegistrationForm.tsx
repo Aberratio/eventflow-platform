@@ -388,7 +388,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-bold text-primary">{price} zł</div>
+                      <div className="text-xl font-bold text-primary">{formatMoney(price)}</div>
                       <Badge variant="secondary" className="text-xs">
                         {tierName}
                       </Badge>
@@ -411,7 +411,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                             >
                               <span>{tier.name}</span>
                               <span>
-                                {tierPrice} zł
+                                {formatMoney(tierPrice)}
                                 {tier.endDate &&
                                   ` do ${format(new Date(tier.endDate), 'd MMM', { locale: pl })}`}
                                 {tier.participantLimit != null &&
@@ -484,7 +484,9 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
                   >
                     <RadioGroupItem value={variant.id} />
                     <span className="flex-1 text-sm">{variant.name}</span>
-                    <span className="text-sm font-semibold text-primary">{variantPrice} zł</span>
+                    <span className="text-sm font-semibold text-primary">
+                      {formatMoney(variantPrice)}
+                    </span>
                   </label>
                 );
               })}
@@ -1087,7 +1089,7 @@ const InsuranceStep = ({ event, form }: { event: Event; form: FormHook }) => {
                       </span>
                     ) : (
                       <span className="font-bold text-primary">
-                        Składka: {premium.amount} zł (wiek na dzień zawodów)
+                        Składka: {formatMoney(premium.amount)} (wiek na dzień zawodów)
                       </span>
                     )}
                   </div>
@@ -1131,7 +1133,7 @@ const InsuranceStep = ({ event, form }: { event: Event; form: FormHook }) => {
                       {premium?.available === false
                         ? `niedostępne pow. ${variant.maxAge} lat`
                         : premium
-                          ? `${premium.amount} zł`
+                          ? formatMoney(premium.amount)
                           : '—'}
                     </span>
                   </label>
@@ -1179,7 +1181,7 @@ const MerchandiseStep = ({ event, form }: { event: Event; form: FormHook }) => (
         <div className="mt-4 rounded-lg bg-muted/50 p-4">
           <div className="flex items-center justify-between font-semibold">
             <span>Suma produktów:</span>
-            <span className="text-primary">{form.merchandiseTotal} zł</span>
+            <span className="text-primary">{formatMoney(form.merchandiseTotal)}</span>
           </div>
         </div>
       )}
@@ -1546,7 +1548,7 @@ const MerchandiseItem = ({ item, order, onUpdate }: MerchandiseItemProps) => {
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               )}
             </div>
-            <span className="font-bold text-primary">{item.price} zł</span>
+            <span className="font-bold text-primary">{formatMoney(item.price)}</span>
           </div>
           <div className="flex flex-wrap items-end gap-4">
             {item.sizes.length > 0 && (

@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
+import { formatMoney } from '@/lib/format';
 
 interface EventDistancesTabProps {
   event: Event;
@@ -213,7 +214,7 @@ const DistanceCard = ({
                       >
                         <span>{tier.name}</span>
                         <span>
-                          {tierPrice} zł
+                          {formatMoney(tierPrice)}
                           {tier.endDate &&
                             ` do ${format(new Date(tier.endDate), 'd MMM yyyy', { locale: pl })}`}
                           {tier.participantLimit != null && ` (do ${tier.participantLimit} os.)`}
@@ -238,7 +239,7 @@ const DistanceCard = ({
                     return (
                       <div key={vip.id} className="flex justify-between text-xs text-foreground/65">
                         <span>{vip.name}</span>
-                        <span className="font-medium text-primary">{vipPrice} zł</span>
+                        <span className="font-medium text-primary">{formatMoney(vipPrice)}</span>
                       </div>
                     );
                   })}
@@ -248,7 +249,7 @@ const DistanceCard = ({
           </div>
 
           <div className="min-w-[120px] text-right">
-            <div className="text-2xl font-bold">{currentPrice} zł</div>
+            <div className="text-2xl font-bold">{formatMoney(currentPrice)}</div>
             {!singleDistance && (
               <p className="mt-0.5 text-xs text-foreground/55">cena za ten dystans</p>
             )}

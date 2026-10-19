@@ -9,6 +9,7 @@ import { Registration, Event, PaymentDetails, MerchandisePaymentStatus } from '@
 import { Check, X, Mail, CreditCard, Calendar, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
+import { formatMoney } from '@/lib/format';
 
 interface PaymentDetailsPanelProps {
   registration: Registration;
@@ -186,7 +187,7 @@ export const PaymentDetailsPanel = ({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-medium">{details.startFeeAmount} zł</span>
+              <span className="font-medium">{formatMoney(details.startFeeAmount)}</span>
               {details.startFeePaid ? (
                 <Badge className="bg-primary/10 text-primary">
                   <Check className="mr-1 h-3 w-3" />
@@ -218,7 +219,7 @@ export const PaymentDetailsPanel = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">{details.insuranceAmount} zł</span>
+                <span className="font-medium">{formatMoney(details.insuranceAmount)}</span>
                 {details.insurancePaid ? (
                   <Badge className="bg-primary/10 text-primary">
                     <Check className="mr-1 h-3 w-3" />
@@ -252,7 +253,7 @@ export const PaymentDetailsPanel = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">{mp.amount} zł</span>
+                <span className="font-medium">{formatMoney(mp.amount)}</span>
                 {mp.paid ? (
                   <Badge className="bg-primary/10 text-primary">
                     <Check className="mr-1 h-3 w-3" />
@@ -283,7 +284,7 @@ export const PaymentDetailsPanel = ({
                       : 'zrealizowany'}
                 </span>
                 {typeof registration.refund.amount === 'number' && (
-                  <span className="font-medium">{registration.refund.amount} zł</span>
+                  <span className="font-medium">{formatMoney(registration.refund.amount)}</span>
                 )}
               </div>
               {registration.refund.reason && (
@@ -313,16 +314,16 @@ export const PaymentDetailsPanel = ({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Razem do zapłaty:</span>
-            <span className="font-medium">{totalAmount} zł</span>
+            <span className="font-medium">{formatMoney(totalAmount)}</span>
           </div>
           <div className="flex justify-between text-primary">
             <span>Opłacono:</span>
-            <span className="font-medium">{paidAmount} zł</span>
+            <span className="font-medium">{formatMoney(paidAmount)}</span>
           </div>
           {unpaidAmount > 0 && (
             <div className="flex justify-between text-warning">
               <span>Pozostało:</span>
-              <span className="font-medium">{unpaidAmount} zł</span>
+              <span className="font-medium">{formatMoney(unpaidAmount)}</span>
             </div>
           )}
         </div>

@@ -72,8 +72,8 @@ describe('participant event display', () => {
     expect(screen.getAllByText('5 km').length).toBeGreaterThan(0);
     expect(screen.getByText('42 / 100 zapisanych')).toBeInTheDocument();
     expect(screen.getByText('10 zapisanych')).toBeInTheDocument();
-    expect(screen.getByText('80 zł')).toBeInTheDocument();
-    expect(screen.getByText('50 zł')).toBeInTheDocument();
+    expect(screen.getByText('80,00 zł')).toBeInTheDocument();
+    expect(screen.getByText('50,00 zł')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /GPX/i })).toHaveAttribute(
       'href',
       'https://example.test/10k.gpx',

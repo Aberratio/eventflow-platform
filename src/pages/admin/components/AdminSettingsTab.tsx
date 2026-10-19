@@ -33,6 +33,7 @@ import type {
   GlobalInsuranceSettings,
   GoogleCalendarSettings,
 } from '@/types';
+import { formatMoney } from '@/lib/format';
 
 export const AdminSettingsTab = () => {
   const queryClient = useQueryClient();
@@ -297,7 +298,7 @@ export const AdminSettingsTab = () => {
                         <div
                           className={`font-bold ${isOver ? 'text-destructive line-through' : 'text-primary'}`}
                         >
-                          {isOver ? 'N/D' : `${price} zł`}
+                          {isOver ? 'N/D' : formatMoney(price)}
                         </div>
                       </div>
                     );

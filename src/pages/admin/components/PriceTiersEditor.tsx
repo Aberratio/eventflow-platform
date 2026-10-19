@@ -9,6 +9,7 @@ import { Distance, PriceTier, VipPrice } from '@/types';
 import { TierEditor } from './TierEditor';
 import { VipPricesSection } from './VipPricesSection';
 import { PriceTierPreview } from '@/components/pricing/PriceTierPreview';
+import { formatMoney } from '@/lib/format';
 
 interface PriceTiersEditorProps {
   distances: Distance[];
@@ -165,7 +166,9 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                   )}
                   <Badge variant="secondary">{tiers.length} progów</Badge>
                 </div>
-                <span className="text-sm font-medium">Cena bazowa: {distance.price} zł</span>
+                <span className="text-sm font-medium">
+                  Cena bazowa: {formatMoney(distance.price)}
+                </span>
               </button>
 
               {isExpanded && (
@@ -191,7 +194,7 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                   <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3">
                     <DollarSign className="h-4 w-4 text-primary" />
                     <span className="text-sm">Cena bazowa:</span>
-                    <span className="font-bold text-primary">{distance.price} zł</span>
+                    <span className="font-bold text-primary">{formatMoney(distance.price)}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
                       (ustawiona w konfiguracji dystansu)
                     </span>
@@ -201,7 +204,7 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                     <div className="py-6 text-center">
                       <p className="mb-4 text-muted-foreground">
                         Brak progów cenowych. Wszystkie zapisy będą mieć cenę bazową{' '}
-                        {distance.price} zł.
+                        {formatMoney(distance.price)}.
                       </p>
                       <div className="flex justify-center gap-2">
                         <Button variant="outline" onClick={() => addTier(distance.id)}>
