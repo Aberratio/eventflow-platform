@@ -7,13 +7,30 @@ import {
   validateTeamName,
   getRegistrationsByEvent,
   getTeamsForDistance,
+  getPublicFormFields,
 } from '@/api';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Event, EventMerchandise, MerchandiseOrder } from '@/types';
+import {
+  Event,
+  EventMerchandise,
+  FormFieldAnswerValue,
+  MerchandiseOrder,
+  RegistrationFormFieldError,
+} from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 import { roundToCents } from '@/lib/discountValue';
+import {
+  answersToSubmit,
+  formStepFields,
+  identityToSubmit,
+  modifierPreviewTotal,
+  mapServerFieldErrors,
+  validateFormFieldAnswers,
+  visibleCustomFields,
+  visibleIdentityFields,
+} from '@/lib/formFields';
 
 const currentYear = new Date().getFullYear();
 
@@ -237,6 +254,40 @@ export const useRegistrationForm = (
           ? `do ${selectedDistance.relayMaxTeamSize} os.`
           : '';
 
+  // E1.13: the organizer-configured form. The public route lists every non-hidden position
+  // in the order the organizer set; this form renders the custom ones. A failed load simply
+  // leaves the fixed fields (the registration must not depend on this optional list).
+  const { data: publicFormFields } = useQuery({
+    queryKey: ['form-fields', 'public', event.id],
+    queryFn: () => getPublicFormFields(event.id),
+    select: (r) => r.data ?? [],
+    retry: false,
+  });
+  const customFormFields = useMemo(() => visibleCustomFields(publicFormFields), [publicFormFields]);
+  // B-07: identity system positions (phone, club, ..., anonymization) by their tri-state.
+  const identityFormFields = useMemo(
+    () => visibleIdentityFields(publicFormFields),
+    [publicFormFields],
+  );
+  const stepFormFields = useMemo(() => formStepFields(publicFormFields), [publicFormFields]);
+  const [formFieldAnswers, setFormFieldAnswers] = useState<Record<string, FormFieldAnswerValue>>(
+    {},
+  );
+  // B-07: messages from a 422 `registration_form_invalid`, by form-field id; cleared per field on edit.
+  const [serverFieldErrors, setServerFieldErrors] = useState<Record<string, string>>({});
+  const setFormFieldAnswer = (fieldId: string, value: FormFieldAnswerValue) => {
+    setFormFieldAnswers((prev) => ({ ...prev, [fieldId]: value }));
+    setServerFieldErrors((prev) => {
+      if (!(fieldId in prev)) return prev;
+      const { [fieldId]: _dropped, ...rest } = prev;
+      return rest;
+    });
+  };
+  const formFieldErrors = useMemo(
+    () => validateFormFieldAnswers(stepFormFields, formFieldAnswers),
+    [stepFormFields, formFieldAnswers],
+  );
+
   const { data: eventRegsData } = useQuery({
     queryKey: ['registrations', 'event', event.id],
     queryFn: () => getRegistrationsByEvent(event.id),
@@ -298,13 +349,14 @@ export const useRegistrationForm = (
       { id: 1, name: 'Dystans' },
       { id: 2, name: 'Dane' },
     ];
+    if (stepFormFields.length > 0) steps.push({ id: 26, name: 'Formularz' });
     if (hasTeamOption) steps.push({ id: 25, name: 'Drużyna' });
     if (hasInsurance) steps.push({ id: 3, name: 'Ubezpieczenie' });
     if (hasMerchandise) steps.push({ id: 4, name: 'Gadżety' });
     steps.push({ id: 5, name: 'Rabat' });
     steps.push({ id: 6, name: 'Podsumowanie' });
     return steps;
-  }, [hasTeamOption, hasInsurance, hasMerchandise]);
+  }, [hasTeamOption, hasInsurance, hasMerchandise, stepFormFields.length]);
 
   useEffect(() => {
     if (isRelayDistance) {
@@ -383,13 +435,11 @@ export const useRegistrationForm = (
   }, [appliedDiscount, distancePrice]);
 
   /**
-   * Step 4 placeholder. Modyfikatory (form-field-variant price modifiers)
-   * are not built yet (ticket E1.13 / "10") — always zero today, but kept as
-   * an explicit line in the breakdown rather than silently absent so the
-   * preview UI already has a real (if empty) "Modyfikatory" row, matching
-   * the server which reserves the same empty stage.
+   * Step 4 preview: the variant prices of the choices made so far (`options[].price` from
+   * the public form fields, may be negative). Display-only — the server computes the binding
+   * Modyfikatory and total; the success page renders its `settlementItems`.
    */
-  const modifiersTotal = 0;
+  const modifiersTotal = roundToCents(modifierPreviewTotal(customFormFields, formFieldAnswers));
 
   const totalAmount = Math.max(
     0,
@@ -550,6 +600,8 @@ export const useRegistrationForm = (
         if (!hasAgeCats && !hasRegularCats) return true;
         return !!selectedCategory;
       }
+      case 26:
+        return Object.keys(formFieldErrors).length === 0;
       case 25:
         if (isRelayDistance && !wantsTeam) return false;
         if (!wantsTeam) return true;
@@ -569,6 +621,21 @@ export const useRegistrationForm = (
       default:
         return false;
     }
+  };
+
+  /**
+   * B-07: puts the server's per-field messages next to their fields and returns the user to the
+   * step that holds the first offending field. Returns the entries that match no field.
+   */
+  const applyServerFieldErrors = (errors: RegistrationFormFieldError[]) => {
+    const { byFieldId, unmatched } = mapServerFieldErrors(publicFormFields ?? [], errors);
+    setServerFieldErrors(byFieldId);
+    const firstId = Object.keys(byFieldId)[0];
+    if (firstId) {
+      const inFormStep = stepFormFields.some((f) => f.id === firstId);
+      setStep(inFormStep ? 26 : 2);
+    }
+    return unmatched;
   };
 
   const handleNext = () => {
@@ -597,6 +664,8 @@ export const useRegistrationForm = (
       insurancePrice: insurancePrice > 0 ? insurancePrice : undefined,
       modifiersTotal,
       totalAmount,
+      formFieldAnswers: answersToSubmit(customFormFields, formFieldAnswers),
+      identity: identityToSubmit(identityFormFields, formFieldAnswers),
       teamName: getFinalTeamName(),
       teamId: getFinalTeamId(),
       teamInviteToken:
@@ -690,6 +759,14 @@ export const useRegistrationForm = (
     modifiersTotal,
     discountAmount,
     totalAmount,
+    customFormFields,
+    identityFormFields,
+    stepFormFields,
+    serverFieldErrors,
+    applyServerFieldErrors,
+    formFieldAnswers,
+    setFormFieldAnswer,
+    formFieldErrors,
     isStepInActiveSteps,
     canProceed,
     handleNext,

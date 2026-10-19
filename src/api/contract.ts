@@ -109,6 +109,11 @@ import type {
   EventBackground,
   EventBackgroundUsage,
   FormFieldAggregate,
+  FormField,
+  CreateFormFieldPayload,
+  UpdateFormFieldPayload,
+  FormFieldAnswer,
+  FormFieldAnswerValue,
   RegistrationStats,
 } from '@/types';
 import type {
@@ -478,6 +483,24 @@ export interface ApiAdapter {
   // E2.5: automatic, no-opt-in answer-count aggregation for choice-type form fields
   // (single_choice/multi_choice/consent) — organizer-scoped, same $canManageEvent gate.
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
+  // E1.13: configurable registration form ("Pozycje formularza"). The public list is
+  // unauthenticated (non-hidden positions only); the rest is organizer/staff-scoped.
+  getPublicFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  getFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  createFormField(eventId: string, data: CreateFormFieldPayload): Promise<ApiResponse<FormField>>;
+  updateFormField(
+    eventId: string,
+    fieldId: string,
+    data: UpdateFormFieldPayload,
+  ): Promise<ApiResponse<FormField>>;
+  deleteFormField(eventId: string, fieldId: string): Promise<ApiResponse<{ deleted: boolean }>>;
+  reorderFormFields(eventId: string, orderedIds: string[]): Promise<ApiResponse<FormField[]>>;
+  saveFormFieldAnswer(
+    registrationId: string,
+    fieldId: string,
+    value: FormFieldAnswerValue,
+  ): Promise<ApiResponse<FormFieldAnswer>>;
+  getFormFieldAnswers(registrationId: string): Promise<ApiResponse<FormFieldAnswer[]>>;
   // E8.2: built-in cross-sections from the Zapis record itself (distance,
   // payment status, signup curve, plus gender/club/age-category when
   // configured) — complements getFormFieldAggregates above. Same

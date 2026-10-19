@@ -1,3 +1,5 @@
+import { registrationFormFieldErrors } from '@/api/errors';
+import { answersToPayload } from '@/lib/formFields';
 import { createRegistration, disciplineLabels, getEventBySlug, getCare, getTeamById } from '@/api';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +33,7 @@ import {
   isExternalRegistrationActive,
   isExternalRegistrationEvent,
 } from '@/components/event-details';
-import type { MyCompetitor, Registration } from '@/types';
+import type { MyCompetitor, Registration, RegistrationFormFieldError } from '@/types';
 
 interface EventRegistrationPageProps {
   previewMode?: boolean;
@@ -45,6 +47,10 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // B-07: per-field messages of a 422 `registration_form_invalid`, handed to the form.
+  const [serverFieldErrors, setServerFieldErrors] = useState<RegistrationFormFieldError[] | null>(
+    null,
+  );
 
   // Zapis Zawodnika pod moją opieką (kogoś innego niż ja)
   const [registeringForOther, setRegisteringForOther] = useState(false);
@@ -375,9 +381,15 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
         discountCode: data.discountCode,
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
+        // B-07: answers and identity travel in the create call itself; the server validates them
+        // in the same transaction and creates nothing on a 422.
+        formFieldAnswers: answersToPayload(data.formFieldAnswers),
+        identity: data.identity,
       });
       registration = response.data;
     } catch (error) {
+      const fieldErrors = registrationFormFieldErrors(error);
+      if (fieldErrors.length > 0) setServerFieldErrors(fieldErrors);
       toast({
         title: 'Nie udało się zapisać rejestracji',
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
@@ -575,6 +587,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
           previewMode={isPreviewAvailable}
           disabled={registeringForOther && !selectedGrantor}
           initialTeamJoin={initialTeamJoin}
+          serverFieldErrors={serverFieldErrors}
         />
       </div>
     </Layout>

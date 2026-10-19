@@ -331,6 +331,22 @@ export const getEventActivityLogs: ApiAdapter['getEventActivityLogs'] = (...args
   ensureAdapter().then((a) => a.getEventActivityLogs(...args));
 export const getFormFieldAggregates: ApiAdapter['getFormFieldAggregates'] = (...args) =>
   ensureAdapter().then((a) => a.getFormFieldAggregates(...args));
+export const getPublicFormFields: ApiAdapter['getPublicFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.getPublicFormFields(...args));
+export const getFormFields: ApiAdapter['getFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.getFormFields(...args));
+export const createFormField: ApiAdapter['createFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.createFormField(...args));
+export const updateFormField: ApiAdapter['updateFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.updateFormField(...args));
+export const deleteFormField: ApiAdapter['deleteFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.deleteFormField(...args));
+export const reorderFormFields: ApiAdapter['reorderFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.reorderFormFields(...args));
+export const saveFormFieldAnswer: ApiAdapter['saveFormFieldAnswer'] = (...args) =>
+  ensureAdapter().then((a) => a.saveFormFieldAnswer(...args));
+export const getFormFieldAnswers: ApiAdapter['getFormFieldAnswers'] = (...args) =>
+  ensureAdapter().then((a) => a.getFormFieldAnswers(...args));
 export const getRegistrationStats: ApiAdapter['getRegistrationStats'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrationStats(...args));
 export const exportStartList: ApiAdapter['exportStartList'] = (...args) =>

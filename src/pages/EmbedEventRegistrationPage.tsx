@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, LogIn } from 'lucide-react';
+import { registrationFormFieldErrors } from '@/api/errors';
+import { answersToPayload } from '@/lib/formFields';
 import { getEventById, getEventEmbedPublicConfig, createRegistration } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
-import type { Registration } from '@/types';
+import type { Registration, RegistrationFormFieldError } from '@/types';
 import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
 
 /**
@@ -26,6 +28,9 @@ const EmbedEventRegistrationPage = () => {
   const [registration, setRegistration] = useState<Registration | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [serverFieldErrors, setServerFieldErrors] = useState<RegistrationFormFieldError[] | null>(
+    null,
+  );
 
   const { data: embedConfigResponse, isLoading: isEmbedConfigLoading } = useQuery({
     queryKey: ['event-embed-public-config', id],
@@ -107,6 +112,9 @@ const EmbedEventRegistrationPage = () => {
         discountCode: data.discountCode,
         merchandise: data.merchandise,
         insuranceVariantId: data.insuranceVariantId,
+        // B-07: answers and identity are validated by the server in the create call itself.
+        formFieldAnswers: answersToPayload(data.formFieldAnswers),
+        identity: data.identity,
       });
       // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — pay there
       // (the helper breaks out of the iframe, E8.11).
@@ -121,6 +129,8 @@ const EmbedEventRegistrationPage = () => {
       // Central Mailer is configured; the UI makes no claim about it.
       setRegistration(response.data);
     } catch (error) {
+      const fieldErrors = registrationFormFieldErrors(error);
+      if (fieldErrors.length > 0) setServerFieldErrors(fieldErrors);
       setSubmitError(error instanceof Error ? error.message : 'Spróbuj ponownie.');
     } finally {
       setIsSubmitting(false);
@@ -253,6 +263,7 @@ const EmbedEventRegistrationPage = () => {
           onComplete={handleComplete}
           onCancel={() => window.history.back()}
           disabled={isSubmitting}
+          serverFieldErrors={serverFieldErrors}
         />
       </div>
     </div>
