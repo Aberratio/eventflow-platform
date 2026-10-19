@@ -110,18 +110,52 @@ function query(params?: Record<string, QueryValue>): string {
   return value ? `?${value}` : '';
 }
 
+/** No answer within this long = the request failed (otherwise the UI would load forever). */
+export const REQUEST_TIMEOUT_MS = 15_000;
+/** Multipart uploads and file exports move far more bytes, so they get a much longer budget. */
+export const UPLOAD_TIMEOUT_MS = 120_000;
+
+const TIMEOUT_MESSAGE = 'Serwer nie odpowiada. Sprawdź połączenie i spróbuj ponownie.';
+
+/**
+ * fetch() + body parsing under one deadline. An expired deadline surfaces as an
+ * ApiRequestError (code `timeout`) so pages show the same error state as for a 5xx.
+ */
+async function fetchJsonWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<{ response: Response; payload: unknown }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...init, signal: init.signal ?? controller.signal });
+    const payload = await response.json().catch(() => ({}));
+    return { response, payload };
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new ApiRequestError(TIMEOUT_MESSAGE, 'timeout');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
+  const { response, payload } = await fetchJsonWithTimeout(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
     },
-  });
-
-  const payload = await response.json().catch(() => ({}));
+    REQUEST_TIMEOUT_MS,
+  );
   if (!response.ok) {
     if (
       response.status === 401 &&
@@ -141,6 +175,20 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     );
   }
   return payload as ApiResponse<T>;
+}
+
+/**
+ * Detail routes answer 404 `not_found` for an unknown record (D-01; they used to answer
+ * 200 with `data: null`). Pages treat both the same way ("not found"), so a 404 is folded
+ * back into `data: null`; every other failure (5xx, network, timeout) still throws.
+ */
+function nullOn404<T>(promise: Promise<ApiResponse<T | null>>): Promise<ApiResponse<T | null>> {
+  return promise.catch((error: unknown) => {
+    if (error instanceof ApiRequestError && error.status === 404) {
+      return { success: true, data: null } as ApiResponse<T | null>;
+    }
+    throw error;
+  });
 }
 
 // TD.18: PHP/PDO returns DECIMAL columns as numeric strings ("45.00"), not
@@ -223,15 +271,17 @@ const eventList = (r: ApiResponse<Event[]>): ApiResponse<Event[]> => ({
 
 async function requestForm<T>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'POST',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const { response, payload } = await fetchJsonWithTimeout(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
     },
-    body: formData,
-  });
-
-  const payload = await response.json().catch(() => ({}));
+    UPLOAD_TIMEOUT_MS,
+  );
   if (!response.ok) {
     if (response.status === 401 && !token?.startsWith(MOCK_TOKEN_PREFIX)) {
       if (!token || localStorage.getItem(TOKEN_STORAGE_KEY) === token) {
@@ -264,11 +314,22 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
  */
 async function downloadFile(endpoint: string, fallbackFilename: string): Promise<void> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) throw new ApiRequestError(TIMEOUT_MESSAGE, 'timeout');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
@@ -374,7 +435,7 @@ export const httpAdapter: ApiAdapter = {
   },
 
   getEventBackgrounds: () => request('/event-backgrounds'),
-  getEventBackgroundById: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}`),
+  getEventBackgroundById: (id) => nullOn404(request(`/event-backgrounds/${encodeURIComponent(id)}`)),
   getEventBackgroundUsages: (id) => request(`/event-backgrounds/${encodeURIComponent(id)}/usages`),
   createEventBackground: (data) => request('/event-backgrounds', json('POST', data)),
   updateEventBackground: (id, data) =>
@@ -535,14 +596,14 @@ export const httpAdapter: ApiAdapter = {
     ),
 
   getSeries: (filters) => paginated('/series', filters as Record<string, QueryValue>),
-  getSeriesById: (id) => request(`/series/${encodeURIComponent(id)}`),
-  getSeriesBySlug: (slug) => request(`/series/slug/${encodeURIComponent(slug)}`),
+  getSeriesById: (id) => nullOn404(request(`/series/${encodeURIComponent(id)}`)),
+  getSeriesBySlug: (slug) => nullOn404(request(`/series/slug/${encodeURIComponent(slug)}`)),
   createSeries: (data) => request('/series', json('POST', data)),
   updateSeries: (id, data) => request(`/series/${encodeURIComponent(id)}`, json('PATCH', data)),
   archiveSeries: (id) => request(`/series/${encodeURIComponent(id)}/archive`, json('POST')),
 
   getProducts: (filters) => paginated('/shop/products', filters as Record<string, QueryValue>),
-  getProductBySlug: (slug) => request(`/shop/products/slug/${encodeURIComponent(slug)}`),
+  getProductBySlug: (slug) => nullOn404(request(`/shop/products/slug/${encodeURIComponent(slug)}`)),
   getProductById: (id) => request(`/shop/products/${encodeURIComponent(id)}`),
   createProduct: (data) => request('/shop/products', json('POST', data)),
   updateProduct: (id, data) =>
@@ -582,8 +643,8 @@ export const httpAdapter: ApiAdapter = {
     ).then((r) => ({ ...r, data: normalizeShopOrder(r.data) })),
 
   getChallenges: (filters) => request(`/challenges${query(filters as Record<string, QueryValue>)}`),
-  getChallengeBySlug: (slug) => request(`/challenges/slug/${encodeURIComponent(slug)}`),
-  getChallengeById: (id) => request(`/challenges/${encodeURIComponent(id)}`),
+  getChallengeBySlug: (slug) => nullOn404(request(`/challenges/slug/${encodeURIComponent(slug)}`)),
+  getChallengeById: (id) => nullOn404(request(`/challenges/${encodeURIComponent(id)}`)),
   createChallenge: (data) => request('/challenges', json('POST', data)),
   updateChallenge: (id, data) =>
     request(`/challenges/${encodeURIComponent(id)}`, json('PATCH', data)),
@@ -614,7 +675,7 @@ export const httpAdapter: ApiAdapter = {
 
   getPartners: () => request('/partners'),
   getFeaturedPartners: () => request('/partners/featured'),
-  getPartnerById: (id) => request(`/partners/${encodeURIComponent(id)}`),
+  getPartnerById: (id) => nullOn404(request(`/partners/${encodeURIComponent(id)}`)),
   createPartner: (data) => request('/partners', json('POST', data)),
   updatePartner: (id, data) => request(`/partners/${encodeURIComponent(id)}`, json('PATCH', data)),
   deletePartner: (id) => request(`/partners/${encodeURIComponent(id)}`, json('DELETE')),
@@ -658,7 +719,7 @@ export const httpAdapter: ApiAdapter = {
   getPlatformStats: () => request('/admin/platform-stats'),
 
   getInfoPages: () => request('/info-pages'),
-  getInfoPageBySlug: (slug) => request(`/info-pages/slug/${encodeURIComponent(slug)}`),
+  getInfoPageBySlug: (slug) => nullOn404(request(`/info-pages/slug/${encodeURIComponent(slug)}`)),
   createInfoPage: (data) => request('/info-pages', json('POST', data)),
   updateInfoPage: (id, data) =>
     request(`/info-pages/${encodeURIComponent(id)}`, json('PATCH', data)),
