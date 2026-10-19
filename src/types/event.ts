@@ -735,3 +735,88 @@ export interface RegistrationStats {
   byClub?: RegistrationStatsFieldCount[];
   ageCategories?: RegistrationStatsAgeCategoryBreakdown[];
 }
+
+/**
+ * E1.13 (ticket 10, model-formularza-zapisow.md): one "Pozycja formularza" as the
+ * server returns it from `/events/{id}/form-fields*` — 13 system positions plus the
+ * organizer's custom fields, one ordered list per Wydarzenie.
+ */
+export type FormFieldState = 'hidden' | 'shown' | 'required';
+export type FormFieldKind = 'system' | 'custom';
+export type FormFieldType =
+  | 'short_text'
+  | 'long_text'
+  | 'number'
+  | 'date'
+  | 'single_choice'
+  | 'multi_choice'
+  | 'consent';
+
+export interface FormFieldOption {
+  key: string;
+  label: string;
+  /** Variant price modifier (may be negative); 0 when the variant is free. */
+  price: number;
+}
+
+export interface FormFieldValidationConfig {
+  maxLength?: number;
+  min?: number | string;
+  max?: number | string;
+}
+
+export interface FormField {
+  id: string;
+  eventId: string;
+  distanceId: string | null;
+  kind: FormFieldKind;
+  /** Stable canonical key (system key or generated `custom_…`), never changed by label edits. */
+  fieldKey: string;
+  storageLocation: 'competitor' | 'registration';
+  state: FormFieldState;
+  sortOrder: number;
+  labelOverride: string | null;
+  tooltipOverride: string | null;
+  publicListVisible: boolean;
+  visibleToBz: boolean;
+  isConfidential: boolean;
+  /** Custom fields only. */
+  fieldType: FormFieldType | null;
+  validationConfig: FormFieldValidationConfig | null;
+  options: FormFieldOption[] | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateFormFieldPayload {
+  fieldType: FormFieldType;
+  label: string;
+  tooltip?: string | null;
+  state?: FormFieldState;
+  options?: Array<{ label: string; price?: number }>;
+  validationConfig?: FormFieldValidationConfig | null;
+  isConfidential?: boolean;
+  publicListVisible?: boolean;
+  visibleToBz?: boolean;
+  sortOrder?: number;
+}
+
+/** PATCH accepts only these (type, options and confidentiality are fixed at creation). */
+export interface UpdateFormFieldPayload {
+  state?: FormFieldState;
+  label?: string | null;
+  tooltip?: string | null;
+  publicListVisible?: boolean;
+  visibleToBz?: boolean;
+}
+
+export interface FormFieldAnswer {
+  id: string;
+  formFieldId: string;
+  registrationId: string;
+  valueText: string | null;
+  valueJson: unknown[] | null;
+}
+
+/** Value sent to `PUT /registrations/{id}/form-field-answers/{fieldId}`. */
+export type FormFieldAnswerValue = string | number | boolean | string[] | null;

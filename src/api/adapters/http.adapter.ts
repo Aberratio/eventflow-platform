@@ -71,9 +71,16 @@ function apiErrorCode(payload: unknown): string | undefined {
   return (payload as { error?: { code?: string } })?.error?.code;
 }
 
-function apiErrorMessage(payload: unknown, fallback: string): string {
+function apiErrorMessage(
+  payload: unknown,
+  fallback: string,
+  preferServerMessage = false,
+): string {
   const errorPayload = payload as { error?: { code?: string; message?: string }; message?: string };
   const code = errorPayload?.error?.code;
+  if (preferServerMessage && code === 'validation_error' && errorPayload?.error?.message) {
+    return errorPayload.error.message;
+  }
   return (
     (code ? API_ERROR_MESSAGES[code] : undefined) ??
     errorPayload?.error?.message ??
@@ -110,7 +117,11 @@ function query(params?: Record<string, QueryValue>): string {
   return value ? `?${value}` : '';
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  preferServerMessage = false,
+): Promise<ApiResponse<T>> {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY);
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
@@ -135,7 +146,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     }
 
     throw new ApiRequestError(
-      apiErrorMessage(payload, `Błąd API ${response.status}`),
+      apiErrorMessage(payload, `Błąd API ${response.status}`, preferServerMessage),
       apiErrorCode(payload),
       response.status,
     );
@@ -644,6 +655,39 @@ export const httpAdapter: ApiAdapter = {
     ),
   getFormFieldAggregates: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
+  // E1.13: the server's 422 text is field-specific ("To pole jest wymagane."), so keep it
+  // instead of the generic validation_error copy.
+  getPublicFormFields: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/form-fields/public`),
+  getFormFields: (eventId) => request(`/events/${encodeURIComponent(eventId)}/form-fields`),
+  createFormField: (eventId, data) =>
+    request(`/events/${encodeURIComponent(eventId)}/form-fields`, json('POST', data), true),
+  updateFormField: (eventId, fieldId, data) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/${encodeURIComponent(fieldId)}`,
+      json('PATCH', data),
+      true,
+    ),
+  deleteFormField: (eventId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/${encodeURIComponent(fieldId)}`,
+      json('DELETE'),
+      true,
+    ),
+  reorderFormFields: (eventId, orderedIds) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/reorder`,
+      json('PUT', { orderedIds }),
+      true,
+    ),
+  saveFormFieldAnswer: (registrationId, fieldId, value) =>
+    request(
+      `/registrations/${encodeURIComponent(registrationId)}/form-field-answers/${encodeURIComponent(fieldId)}`,
+      json('PUT', { value }),
+      true,
+    ),
+  getFormFieldAnswers: (registrationId) =>
+    request(`/registrations/${encodeURIComponent(registrationId)}/form-field-answers`),
   getRegistrationStats: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/registration-stats`),
   exportStartList: (eventId, distanceId, format) =>
