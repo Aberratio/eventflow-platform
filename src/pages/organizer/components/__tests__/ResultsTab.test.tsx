@@ -9,12 +9,15 @@ const getResultsByEvent = vi.fn();
 const getTeamClassification = vi.fn();
 const getResultDocuments = vi.fn();
 const publishOfficialResults = vi.fn();
+const getResultCorrections = vi.fn();
 
 vi.mock('@/api', () => ({
   getResultsByEvent: (...args: unknown[]) => getResultsByEvent(...args),
   getTeamClassification: (...args: unknown[]) => getTeamClassification(...args),
   getResultDocuments: (...args: unknown[]) => getResultDocuments(...args),
   publishOfficialResults: (...args: unknown[]) => publishOfficialResults(...args),
+  getResultCorrections: (...args: unknown[]) => getResultCorrections(...args),
+  updateResult: vi.fn(),
 }));
 
 const event: Event = {
@@ -160,5 +163,29 @@ describe('ResultsTab team classification (E2.7)', () => {
     await waitFor(() =>
       expect(getTeamClassification).toHaveBeenCalledWith('event-1', 'distance-1'),
     );
+  });
+});
+
+describe('ResultsTab result corrections (G-03)', () => {
+  it('opens the correction history of a result from its row', async () => {
+    const user = userEvent.setup();
+    getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
+    getResultCorrections.mockResolvedValue({ success: true, data: [] });
+    render(<ResultsTab event={event} registrations={registrations} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Historia korekt' }));
+
+    expect(await screen.findByText('Ten wynik nie był korygowany.')).toBeInTheDocument();
+    expect(getResultCorrections).toHaveBeenCalledWith('result-1');
+  });
+
+  it('opens the edit dialog with the reason field from the row', async () => {
+    const user = userEvent.setup();
+    getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
+    render(<ResultsTab event={event} registrations={registrations} />);
+
+    await user.click(await screen.findByRole('button', { name: 'Koryguj wynik' }));
+
+    expect(await screen.findByLabelText(/Powód korekty/)).toBeInTheDocument();
   });
 });
