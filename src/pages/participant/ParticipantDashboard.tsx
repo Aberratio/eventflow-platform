@@ -161,7 +161,7 @@ const ParticipantDashboard = () => {
           </TabsContent>
 
           <TabsContent value="tickets" className="mt-0">
-            <ParticipantTicketsTab tickets={userTickets} />
+            <ParticipantTicketsTab tickets={userTickets} registrations={userRegistrations} />
           </TabsContent>
 
           <TabsContent value="history" className="mt-0">

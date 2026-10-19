@@ -60,6 +60,7 @@ const Forbidden = lazy(() => import('./pages/Forbidden'));
 
 // Dashboard pages (heaviest — always lazy)
 const ParticipantDashboard = lazy(() => import('./pages/participant/ParticipantDashboard'));
+const TicketPrintPage = lazy(() => import('./pages/participant/TicketPrintPage'));
 const OrganizerDashboard = lazy(() => import('./pages/organizer/OrganizerDashboard'));
 const OrganizerEventsPage = lazy(() => import('./pages/organizer/OrganizerEventsPage'));
 const EventForm = lazy(() => import('./pages/organizer/EventForm'));
@@ -448,6 +449,18 @@ const AppShell = () => {
               <Lazy fallback={<DashboardSkeleton />}>
                 <ProtectedRoute roles={participantRoles}>
                   <ParticipantDashboard />
+                </ProtectedRoute>
+              </Lazy>
+            }
+          />
+          {/* Link „Moich startach” z maila #5 (APP_URL + /my-starts) */}
+          <Route path="/my-starts" element={<Navigate to="/participant?tab=tickets" replace />} />
+          <Route
+            path="/participant/tickets/:registrationId/print"
+            element={
+              <Lazy fallback={<DashboardSkeleton />}>
+                <ProtectedRoute roles={participantRoles}>
+                  <TicketPrintPage />
                 </ProtectedRoute>
               </Lazy>
             }

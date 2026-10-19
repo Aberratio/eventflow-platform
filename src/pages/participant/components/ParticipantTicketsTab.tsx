@@ -1,14 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EventTicket } from '@/components/EventTicket';
-import { Ticket } from '@/types';
+import { Ticket, Registration } from '@/types';
 import { TicketIcon, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ParticipantTicketsTabProps {
   tickets: Ticket[];
+  /** G-01/B-04: Zapisy użytkownika — źródło statusu i kodu startowego biletu. */
+  registrations?: Registration[];
 }
 
-const ParticipantTicketsTab = ({ tickets }: ParticipantTicketsTabProps) => {
+const ParticipantTicketsTab = ({ tickets: rawTickets, registrations = [] }: ParticipantTicketsTabProps) => {
+  const tickets: Ticket[] = rawTickets.map((t) => {
+    const reg = registrations.find((r) => r.id === t.registrationId);
+    return reg ? { ...t, registrationStatus: reg.status, qrCode: reg.qrCode ?? t.qrCode } : t;
+  });
   const activeTickets = tickets.filter((t) => new Date(t.eventDate) >= new Date());
   const pastTickets = tickets.filter((t) => new Date(t.eventDate) < new Date());
 

@@ -33,6 +33,13 @@ export interface Ticket {
   category: string;
   registrationId: string;
   /**
+   * G-01 (spec 11 pkt 4): status Zapisu stojącego za biletem — QR kodu startowego
+   * jest pokazywany tylko dla `confirmed` (opłacony/potwierdzony).
+   */
+  registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
+  /** B-04: kod startowy `pqr_…` Zapisu (z Registration.qrCode); QR = sam ten token. */
+  qrCode?: string | null;
+  /**
    * E3.6 (issue 12 §4): the Odprawa fact reported back by Biuro Zawodów —
    * set once BZ confirms check-in, undefined/null beforehand. `checkedInBy`
    * is BZ's own opaque identifier/name for whoever confirmed it.
