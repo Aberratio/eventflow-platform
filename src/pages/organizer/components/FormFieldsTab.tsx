@@ -30,6 +30,7 @@ import {
   reorderFormFields,
   updateFormField,
 } from '@/api';
+import { apiErrorCode } from '@/api/errors';
 import {
   FORM_FIELD_STATE_LABELS,
   FORM_FIELD_TYPE_LABELS,
@@ -49,8 +50,17 @@ const STATES: FormFieldState[] = ['hidden', 'shown', 'required'];
 const CHOICE_TYPES: FormFieldType[] = ['single_choice', 'multi_choice'];
 const TEXT_TYPES: FormFieldType[] = ['short_text', 'long_text'];
 
-const errorText = (error: unknown): string =>
-  error instanceof Error ? error.message : 'Nie udało się zapisać zmiany.';
+const errorText = (error: unknown): string => {
+  // B-02: the two 409s of an in-place type / variants edit get an actionable text.
+  const code = apiErrorCode(error);
+  if (code === 'form_field_has_answers') {
+    return 'Nie można zmienić typu pola, które ma już odpowiedzi w zapisach. Dodaj nowe pole zamiast zmieniać typ.';
+  }
+  if (code === 'form_field_option_in_use') {
+    return 'Nie można usunąć wariantu, który wybrali już zawodnicy. Zmień jego nazwę lub cenę albo zostaw go na liście.';
+  }
+  return error instanceof Error ? error.message : 'Nie udało się zapisać zmiany.';
+};
 
 interface FormFieldsTabProps {
   eventId: string;
@@ -318,9 +328,92 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
 // ─── Create ──────────────────────────────────────────────────────────────
 
 interface DraftOption {
+  /** Present for a variant that already exists on the server — keeps its identity on save. */
+  key?: string;
   label: string;
   price: string;
 }
+
+const parsePrice = (raw: string): number => (raw.trim() === '' ? 0 : Number(raw.replace(',', '.')));
+
+const toDraftOptions = (field: FormField): DraftOption[] =>
+  field.options && field.options.length > 0
+    ? field.options.map((o) => ({
+        key: o.key,
+        label: o.label,
+        price: o.price ? String(o.price) : '',
+      }))
+    : [{ label: '', price: '' }];
+
+const toPayloadOptions = (drafts: DraftOption[]) =>
+  drafts
+    .filter((o) => o.label.trim() !== '')
+    .map((o) => ({
+      ...(o.key ? { key: o.key } : {}),
+      label: o.label.trim(),
+      price: parsePrice(o.price),
+    }));
+
+/** Variant rows (name + signed price) shared by the create and the edit dialog. */
+const OptionsEditor = ({
+  options,
+  setOptions,
+}: {
+  options: DraftOption[];
+  setOptions: (updater: (prev: DraftOption[]) => DraftOption[]) => void;
+}) => (
+  <div className="space-y-2">
+    <Label>Warianty</Label>
+    <p className="text-xs text-muted-foreground">
+      Cena wariantu jest opcjonalna i może być ujemna (np. -5 przy rezygnacji z losowania).
+    </p>
+    {options.map((option, index) => (
+      <div key={index} className="flex gap-2">
+        <Input
+          aria-label={`Wariant ${index + 1}`}
+          placeholder="Nazwa wariantu"
+          value={option.label}
+          onChange={(e) =>
+            setOptions((prev) =>
+              prev.map((o, i) => (i === index ? { ...o, label: e.target.value } : o)),
+            )
+          }
+        />
+        <Input
+          aria-label={`Cena wariantu ${index + 1}`}
+          placeholder="Cena, zł"
+          type="number"
+          step="0.01"
+          className="w-32"
+          value={option.price}
+          onChange={(e) =>
+            setOptions((prev) =>
+              prev.map((o, i) => (i === index ? { ...o, price: e.target.value } : o)),
+            )
+          }
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={`Usuń wariant ${index + 1}`}
+          disabled={options.length === 1}
+          onClick={() => setOptions((prev) => prev.filter((_, i) => i !== index))}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    ))}
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => setOptions((prev) => [...prev, { label: '', price: '' }])}
+    >
+      <Plus className="mr-2 h-4 w-4" /> Dodaj wariant
+    </Button>
+  </div>
+);
 
 const CreateFieldDialog = ({
   eventId,
@@ -366,7 +459,7 @@ const CreateFieldDialog = ({
     if (usesOptions) {
       payload.options = filledOptions.map((o) => ({
         label: o.label.trim(),
-        price: o.price.trim() === '' ? 0 : Number(o.price.replace(',', '.')),
+        price: parsePrice(o.price),
       }));
     }
     if (TEXT_TYPES.includes(fieldType) && Number(maxLength) > 0) {
@@ -389,8 +482,8 @@ const CreateFieldDialog = ({
         <DialogHeader>
           <DialogTitle>Nowe pole formularza</DialogTitle>
           <DialogDescription>
-            Typ pola, warianty i poufność ustalasz teraz; później możesz zmienić etykietę,
-            podpowiedź i widoczność.
+            Poufność ustalasz teraz i nie da się jej później zmienić. Typ i warianty możesz poprawić
+            w edycji pola (typ tylko dopóki nie ma odpowiedzi).
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -429,60 +522,7 @@ const CreateFieldDialog = ({
               />
             </div>
           )}
-          {usesOptions && (
-            <div className="space-y-2">
-              <Label>Warianty</Label>
-              <p className="text-xs text-muted-foreground">
-                Cena wariantu jest opcjonalna i może być ujemna (np. -5 przy rezygnacji z
-                losowania).
-              </p>
-              {options.map((option, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    aria-label={`Wariant ${index + 1}`}
-                    placeholder="Nazwa wariantu"
-                    value={option.label}
-                    onChange={(e) =>
-                      setOptions((prev) =>
-                        prev.map((o, i) => (i === index ? { ...o, label: e.target.value } : o)),
-                      )
-                    }
-                  />
-                  <Input
-                    aria-label={`Cena wariantu ${index + 1}`}
-                    placeholder="Cena, zł"
-                    type="number"
-                    step="0.01"
-                    className="w-32"
-                    value={option.price}
-                    onChange={(e) =>
-                      setOptions((prev) =>
-                        prev.map((o, i) => (i === index ? { ...o, price: e.target.value } : o)),
-                      )
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Usuń wariant ${index + 1}`}
-                    disabled={options.length === 1}
-                    onClick={() => setOptions((prev) => prev.filter((_, i) => i !== index))}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setOptions((prev) => [...prev, { label: '', price: '' }])}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Dodaj wariant
-              </Button>
-            </div>
-          )}
+          {usesOptions && <OptionsEditor options={options} setOptions={setOptions} />}
           <div className="flex items-center justify-between">
             <Label htmlFor="ff-required">Pole wymagane</Label>
             <Switch id="ff-required" checked={required} onCheckedChange={setRequired} />
@@ -549,22 +589,34 @@ const EditFieldDialog = ({
   const [tooltip, setTooltip] = useState(field.tooltipOverride ?? '');
   const [publicList, setPublicList] = useState(field.publicListVisible);
   const [bz, setBz] = useState(field.visibleToBz);
+  const [fieldType, setFieldType] = useState<FormFieldType | null>(field.fieldType);
+  const [options, setOptions] = useState<DraftOption[]>(() => toDraftOptions(field));
   const [saving, setSaving] = useState(false);
+
+  const isCustom = field.kind === 'custom' && field.fieldType !== null;
+  const usesOptions = fieldType !== null && CHOICE_TYPES.includes(fieldType);
 
   const save = async () => {
     setSaving(true);
+    const definition: UpdateFormFieldPayload = {};
+    if (isCustom && fieldType !== null) {
+      // B-02: type / variants edited in place — only what changed, variants keep their keys.
+      if (fieldType !== field.fieldType) definition.fieldType = fieldType;
+      if (usesOptions) definition.options = toPayloadOptions(options);
+    }
     await onSave({
       label: label.trim() || null,
       tooltip: tooltip.trim() || null,
       publicListVisible: publicList,
       ...(field.kind === 'custom' ? { visibleToBz: bz } : {}),
+      ...definition,
     });
     setSaving(false);
   };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edytuj: {formFieldLabel(field)}</DialogTitle>
           <DialogDescription>
@@ -580,6 +632,28 @@ const EditFieldDialog = ({
             <Label htmlFor="ef-tooltip">Podpowiedź</Label>
             <Input id="ef-tooltip" value={tooltip} onChange={(e) => setTooltip(e.target.value)} />
           </div>
+          {isCustom && fieldType !== null && (
+            <div className="space-y-2">
+              <Label htmlFor="ef-type">Typ pola</Label>
+              <Select value={fieldType} onValueChange={(v) => setFieldType(v as FormFieldType)}>
+                <SelectTrigger id="ef-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(FORM_FIELD_TYPE_LABELS) as FormFieldType[]).map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {FORM_FIELD_TYPE_LABELS[type]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Typ można zmienić, dopóki nikt nie odpowiedział na to pole. Wariantów użytych w
+                odpowiedziach nie da się usunąć, ale możesz zmienić ich nazwę i cenę.
+              </p>
+            </div>
+          )}
+          {isCustom && usesOptions && <OptionsEditor options={options} setOptions={setOptions} />}
           <div className="flex items-center justify-between">
             <Label htmlFor="ef-public">Widoczne na publicznej liście startowej</Label>
             <Switch

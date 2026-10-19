@@ -61,6 +61,41 @@ describe('httpAdapter form-field routes (E1.13)', () => {
     expect(call.body).toEqual({ state: 'required' });
   });
 
+  it('PATCHes a changed type and variants with their keys and signed prices (B-02)', async () => {
+    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: { id: 'f1' } }));
+    await httpAdapter.updateFormField('e1', 'f1', {
+      fieldType: 'multi_choice',
+      options: [
+        { key: 'm', label: 'M', price: -5 },
+        { label: 'XL', price: 3 },
+      ],
+    });
+    const call = lastCall();
+    expect(call.init.method).toBe('PATCH');
+    expect(call.body).toEqual({
+      fieldType: 'multi_choice',
+      options: [
+        { key: 'm', label: 'M', price: -5 },
+        { label: 'XL', price: 3 },
+      ],
+    });
+  });
+
+  it('surfaces the 409 code of a type / variant edit that would orphan answers (B-02)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      mockJsonResponse(
+        {
+          success: false,
+          error: { code: 'form_field_has_answers', message: 'Pole ma już odpowiedzi.' },
+        },
+        409,
+      ),
+    );
+    await expect(
+      httpAdapter.updateFormField('e1', 'f1', { fieldType: 'short_text' }),
+    ).rejects.toMatchObject({ code: 'form_field_has_answers', status: 409 });
+  });
+
   it('DELETEs a field and PUTs the reorder list as orderedIds', async () => {
     vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: {} }));
     await httpAdapter.deleteFormField('e1', 'f1');
