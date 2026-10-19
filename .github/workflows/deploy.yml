@@ -13,6 +13,7 @@ on:
         default: staging
         type: choice
         options:
+          - dev
           - staging
           - production
       deploy_method:
@@ -42,11 +43,12 @@ env:
   SKIP_TESTS: ${{ github.event_name == 'workflow_dispatch' && inputs.skipTests || false }}
 
 jobs:
+  # dev and staging share this job; production has its own below.
   deploy-staging:
-    name: Deploy frontend staging
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'staging')
+    name: Deploy frontend ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target || 'staging' }}
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (inputs.deploy_target == 'staging' || inputs.deploy_target == 'dev'))
     runs-on: ubuntu-latest
-    environment: staging
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_target || 'staging' }}
 
     steps:
       - name: Checkout
@@ -81,23 +83,34 @@ jobs:
               ;;
           esac
 
-      - name: Build staging
+      # dev: VITE_API_URL comes from .env.dev, so the API_URL secret is optional
+      # there (when set, it still wins). staging still requires it.
+      - name: Build ${{ env.DEPLOY_TARGET }}
         env:
           API_URL: ${{ secrets.API_URL }}
-          VITE_APP_ENV: staging
           VITE_STAGING_GATE_PASSWORD: ${{ secrets.VITE_STAGING_GATE_PASSWORD }}
           CSP_REPORT_ONLY: ${{ vars.CSP_REPORT_ONLY }}
           CSP_CONNECT_SRC_EXTRA: ${{ vars.CSP_CONNECT_SRC_EXTRA }}
         run: |
           set -Eeuo pipefail
-          if [ -z "$API_URL" ]; then
+          case "$DEPLOY_TARGET" in
+            dev | staging) ;;
+            *)
+              echo "This job builds dev or staging only (got '$DEPLOY_TARGET')."
+              exit 22
+              ;;
+          esac
+          if [ -n "$API_URL" ]; then
+            export VITE_API_URL="$API_URL"
+            echo "Building $DEPLOY_TARGET frontend with API_URL from the $DEPLOY_TARGET GitHub Environment."
+          elif [ "$DEPLOY_TARGET" = "dev" ]; then
+            echo "Building dev frontend with VITE_API_URL from .env.dev."
+          else
             echo "API_URL is required in the selected GitHub Environment secrets."
             exit 21
           fi
-          export VITE_API_URL="$API_URL"
           export VITE_APP_RELEASE="${GITHUB_SHA}"
-          echo "Building staging frontend with API_URL from the staging GitHub Environment."
-          npm run build:staging
+          npm run "build:$DEPLOY_TARGET"
 
       - name: Verify generated .htaccess
         run: |
@@ -277,6 +290,9 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: |
           set -Eeuo pipefail
+          if [ -z "$FRONTEND_URL" ] && [ "$DEPLOY_TARGET" = "dev" ]; then
+            FRONTEND_URL="https://portal-dev.zmierzymyczas.kokot.it"
+          fi
           curl --fail --show-error --location "$FRONTEND_URL"
 
   deploy-production:

@@ -110,8 +110,11 @@ describe('buildCsp', () => {
     expect(csp).not.toContain('"');
   });
 
-  it('rejects relative or http apiUrl in staging and production', () => {
+  it('rejects relative or http apiUrl in dev, staging and production', () => {
     expect(() => buildCsp(baseOptions({ apiUrl: '/api/v1' }), "'self'")).toThrow();
+    expect(() =>
+      buildCsp(baseOptions({ mode: 'dev', apiUrl: 'http://api.example.test/api/v1' }), "'self'"),
+    ).toThrow(/https/);
     expect(() =>
       buildCsp(
         baseOptions({ mode: 'staging', apiUrl: 'http://api.example.test/api/v1' }),
@@ -161,11 +164,14 @@ describe('buildHtaccess', () => {
     expect(out).toContain('RewriteRule ^ index.html [L]');
   });
 
-  it('HSTS only for staging and production modes', () => {
+  it('HSTS only for dev, staging and production modes', () => {
     const dev = buildHtaccess(
       baseOptions({ mode: 'development', apiUrl: 'http://localhost:8104/api/v1' }),
     );
     expect(dev).not.toContain('Strict-Transport-Security');
+
+    const hostedDev = buildHtaccess(baseOptions({ mode: 'dev' }));
+    expect(hostedDev).toContain('Strict-Transport-Security "max-age=31536000"');
 
     const staging = buildHtaccess(baseOptions({ mode: 'staging' }));
     expect(staging).toContain('Strict-Transport-Security "max-age=31536000"');
