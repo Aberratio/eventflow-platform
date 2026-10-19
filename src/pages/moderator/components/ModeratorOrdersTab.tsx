@@ -1,4 +1,5 @@
-import { getUsers, getOrders, updateOrderStatus } from '@/api';
+import { getOrders, updateOrderStatus } from '@/api';
+import { getAllUsers } from '@/api/fetchAllPages';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,7 +80,7 @@ export const ModeratorOrdersTab = () => {
   const [orderTrackingNumber, setOrderTrackingNumber] = useState('');
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'moderator-order-customers'],
-    queryFn: () => getUsers({ pageSize: 1000 }),
+    queryFn: () => getAllUsers(),
   });
   const users = usersResponse?.data ?? [];
 

@@ -1,4 +1,5 @@
-import { getEvents, disciplineLabels } from '@/api';
+import { disciplineLabels } from '@/api';
+import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -25,7 +26,7 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
   const [disciplineFilter, setDisciplineFilter] = useState<string>('all');
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-history'],
-    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
+    queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
   const events = eventsResponse?.data ?? [];
 

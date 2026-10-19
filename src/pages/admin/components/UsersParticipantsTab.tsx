@@ -1,4 +1,4 @@
-import { getUsers } from '@/api';
+import { getAllUsers } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
@@ -74,7 +74,7 @@ export const UsersParticipantsTab = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('participant');
   const { data: usersResponse } = useQuery({
     queryKey: ['users', 'participants'],
-    queryFn: () => getUsers({ role: 'participant', pageSize: 1000 }),
+    queryFn: () => getAllUsers({ role: 'participant' }),
   });
 
   const isBlocked = (userId: string) => blockedUsers.has(userId);

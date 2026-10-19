@@ -1,4 +1,5 @@
-import { getEvents, getUsers, getRegistrations } from '@/api';
+import { getEvents, getUsers } from '@/api';
+import { getAllRegistrations } from '@/api/fetchAllPages';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +16,7 @@ export const ModeratorOverviewTab = () => {
   });
   const { data: registrationsResponse } = useQuery({
     queryKey: ['registrations', 'moderator-overview'],
-    queryFn: () => getRegistrations({ pageSize: 1000 }),
+    queryFn: () => getAllRegistrations(),
   });
   const events = eventsResponse?.data ?? [];
   const users = usersResponse?.data ?? [];
