@@ -110,6 +110,11 @@ export interface Registration {
   paymentDetails?: PaymentDetails;
   /** PP.52: present only on the POST /registrations response, when a gateway session was opened. */
   paymentSession?: PaymentSession | null;
+  /**
+   * B-05: end of the payment window of a `pending` Zapis (ISO). NOTE: the server does not serialise it
+   * yet (column registrations.payment_expires_at) — the banner degrades to "dokończ płatność" without a date.
+   */
+  paymentExpiresAt?: string | null;
   registeredById?: string;
   /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;

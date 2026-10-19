@@ -6,9 +6,11 @@ import {
   getTickets,
   getCertificates,
   getMyOrders,
+  getEvents,
 } from '@/api';
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { UnpaidRegistrationBanner } from '@/components/registration/UnpaidRegistrationBanner';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,6 +54,13 @@ const ParticipantDashboard = () => {
   const { data: registrationsResp } = useQuery({
     queryKey: ['registrations-by-user', user?.id],
     queryFn: () => getRegistrationsByUser(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const queryClient = useQueryClient();
+  // B-05: shares the cache entry with the registrations tab (payment config of each event).
+  const { data: eventsResp } = useQuery({
+    queryKey: ['events', 'participant-registrations'],
+    queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),
     enabled: Boolean(user?.id),
   });
   const { data: resultsResp } = useQuery({
@@ -124,6 +133,11 @@ const ParticipantDashboard = () => {
       </PageHero>
 
       <div className="container py-5 sm:py-8">
+        <UnpaidRegistrationBanner
+          registrations={userRegistrations}
+          events={eventsResp?.data ?? []}
+          onRetried={() => queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] })}
+        />
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5 sm:space-y-6">
           {/* Mobile: horizontal scroll tabs */}
