@@ -251,8 +251,18 @@ const ParticipantProfileTab = () => {
               udostępnić innym, aby mogli zobaczyć Twoje wyniki i statystyki.
             </p>
             <div className="flex gap-2">
-              <Input value={publicProfileUrl} readOnly className="text-sm" />
-              <Button type="button" variant="outline" onClick={copyProfileLink}>
+              <Input
+                aria-label="Adres profilu publicznego"
+                value={publicProfileUrl}
+                readOnly
+                className="text-sm"
+              />
+              <Button
+                aria-label="Kopiuj link do profilu"
+                type="button"
+                variant="outline"
+                onClick={copyProfileLink}
+              >
                 <Link className="h-4 w-4" />
               </Button>
             </div>
