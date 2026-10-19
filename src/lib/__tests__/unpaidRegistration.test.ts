@@ -52,6 +52,22 @@ describe('isAwaitingPayment / canRetryPayment', () => {
     expect(isAwaitingPayment(lapsed, NOW)).toBe(false);
     expect(canRetryPayment(lapsed, NOW)).toBe(true);
   });
+
+  it('a pending gateway registration with an open window can be retried (B-05)', () => {
+    expect(canRetryPayment(reg(), NOW, { isBankTransfer: false })).toBe(true);
+    // bank transfer has no gateway link; unknown route is not assumed to be a gateway
+    expect(canRetryPayment(reg(), NOW, { isBankTransfer: true })).toBe(false);
+    expect(canRetryPayment(reg(), NOW)).toBe(false);
+    // paid / confirmed never offer a retry
+    expect(
+      canRetryPayment(reg({ paymentDetails: { startFeePaid: true } as never }), NOW, {
+        isBankTransfer: false,
+      }),
+    ).toBe(false);
+    expect(canRetryPayment(reg({ status: 'confirmed' }), NOW, { isBankTransfer: false })).toBe(
+      false,
+    );
+  });
 });
 
 describe('retryRegistrationPayment', () => {

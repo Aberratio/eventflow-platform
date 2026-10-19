@@ -75,6 +75,15 @@ describe('UnpaidRegistrationBanner (B-05)', () => {
     await waitFor(() => expect(lib.retryRegistrationPayment).toHaveBeenCalledWith('r1'));
   });
 
+  it('offers "Zapłać teraz" for a pending gateway registration with an open window', async () => {
+    lib.retryRegistrationPayment.mockResolvedValue({ registration: reg(), redirected: true });
+    render(<UnpaidRegistrationBanner registrations={[reg()]} events={[event('admin_gateway')]} />);
+    expect(screen.getByText('Masz nieopłacony zapis na Bieg Testowy')).toBeInTheDocument();
+    expect(screen.getByText(/Dokończ płatność do /)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Zapłać teraz/ }));
+    await waitFor(() => expect(lib.retryRegistrationPayment).toHaveBeenCalledWith('r1'));
+  });
+
   it('shows the server error (e.g. capacity) as a destructive toast', async () => {
     lib.retryRegistrationPayment.mockRejectedValue(
       new ApiRequestError('x', 'registration_capacity_exceeded', 409),

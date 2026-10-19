@@ -16,17 +16,21 @@ export function isAwaitingPayment(registration: Registration, now: Date = new Da
 }
 
 /**
- * POST /registrations/{id}/retry-payment only reopens a Zapis that has already expired (the server
- * answers 409 retry_requires_expired_registration otherwise); a lapsed-but-not-yet-swept `pending`
- * Zapis is expired on the spot by the server, so it is retryable too.
+ * POST /registrations/{id}/retry-payment reopens an expired Zapis (a lapsed-but-not-yet-swept
+ * `pending` one is expired on the spot by the server) and, since B-05, also starts a fresh gateway
+ * session for a `pending` Zapis whose window is still open. A bank-transfer Zapis has no gateway
+ * link, so the pending case needs the caller to say it is NOT a transfer (`isBankTransfer: false`);
+ * an unknown route is never assumed to be a gateway.
  */
-export function canRetryPayment(registration: Registration, now: Date = new Date()): boolean {
+export function canRetryPayment(
+  registration: Registration,
+  now: Date = new Date(),
+  options: { isBankTransfer?: boolean } = {},
+): boolean {
   if (registration.status === 'expired') return true;
-  return (
-    registration.status === 'pending' &&
-    !registration.paymentDetails?.startFeePaid &&
-    isPast(registration.paymentExpiresAt, now)
-  );
+  if (registration.status !== 'pending' || registration.paymentDetails?.startFeePaid) return false;
+  if (isPast(registration.paymentExpiresAt, now)) return true;
+  return options.isBankTransfer === false;
 }
 
 /**
@@ -52,6 +56,8 @@ export function retryErrorMessage(error: unknown): string {
       return 'Limit uczestników na tym dystansie został osiągnięty — nie można ponowić płatności.';
     case 'retry_requires_expired_registration':
       return 'Ten zapis jeszcze nie wygasł — dokończ płatność w trwającym oknie.';
+    case 'retry_not_available_for_bank_transfer':
+      return 'Ten zapis opłacasz przelewem — użyj danych do przelewu z komunikatu.';
     case 'registration_distance_invalid':
       return 'Wybrany dystans nie jest już dostępny.';
   }
