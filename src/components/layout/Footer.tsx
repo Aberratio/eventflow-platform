@@ -30,7 +30,7 @@ export const Footer = () => {
                 Zmierzmy<span className="text-primary">Czas</span>
               </span>
             </Link>
-            <p className="max-w-xs text-sm leading-relaxed text-white/40">
+            <p className="max-w-xs text-sm leading-relaxed text-white/55">
               Profesjonalna platforma do organizacji wydarzeń sportowych.
             </p>
             <div className="flex gap-2 pt-0.5 md:hidden">
@@ -38,7 +38,7 @@ export const Footer = () => {
                 <a
                   key={i}
                   href="#"
-                  className="flex h-7 w-7 items-center justify-center rounded text-white/35 transition hover:text-white/65"
+                  className="flex h-7 w-7 items-center justify-center rounded text-white/55 transition hover:text-white/65"
                   aria-label={Icon.displayName}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -51,7 +51,7 @@ export const Footer = () => {
           <div className="grid grid-cols-2 gap-6 md:contents">
             {/* Informacje */}
             <div>
-              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 Informacje
               </h4>
               <ul className="space-y-2.5 text-sm">
@@ -70,7 +70,7 @@ export const Footer = () => {
 
             {/* Prawne */}
             <div>
-              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 Prawne
               </h4>
               <ul className="space-y-2.5 text-sm">
@@ -113,7 +113,7 @@ export const Footer = () => {
 
           {/* Kontakt & Social */}
           <div>
-            <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/30">
+            <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
               Kontakt
             </h4>
             <ul className="mb-5 space-y-2.5 text-sm">
@@ -141,7 +141,7 @@ export const Footer = () => {
                 <a
                   key={i}
                   href="#"
-                  className="flex h-7 w-7 items-center justify-center rounded text-white/30 transition hover:text-white/60"
+                  className="flex h-7 w-7 items-center justify-center rounded text-white/55 transition hover:text-white/60"
                   aria-label={Icon.displayName}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -153,10 +153,10 @@ export const Footer = () => {
 
         {/* Bottom row */}
         <div className="border-white/8 mt-8 flex flex-col items-center justify-between gap-2 border-t pt-5 sm:flex-row">
-          <p className="text-xs text-white/25">
+          <p className="text-xs text-white/55">
             © {new Date().getFullYear()} ZmierzymyCzas. Wszystkie prawa zastrzeżone.
           </p>
-          <p className="text-xs text-white/20">
+          <p className="text-xs text-white/55">
             Made with <span className="text-primary/60">♥</span> for runners
           </p>
         </div>
