@@ -2,6 +2,7 @@ import { InfoPageSection } from '@/types';
 import { CheckCircle } from 'lucide-react';
 import { PageSection } from '@/components/ui/page-section';
 import { SectionHeading } from '@/components/ui/section-heading';
+import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import { renderInlineMarkdown } from '@/lib/inlineMarkdown';
 
 interface TextSectionProps {
@@ -59,7 +60,10 @@ export const TextSection = ({ section }: TextSectionProps) => {
     <PageSection compact>
       <div className="mx-auto max-w-3xl">
         {section.title && <SectionHeading title={section.title} className="mb-5" />}
-        {section.content && (
+        {section.content && section.format === 'html' && (
+          <RichTextDisplay html={section.content} className="pl-0 md:pl-1" />
+        )}
+        {section.content && section.format !== 'html' && (
           <div className="space-y-3 pl-0 md:pl-1">{renderContent(section.content)}</div>
         )}
       </div>

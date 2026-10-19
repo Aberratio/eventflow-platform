@@ -768,3 +768,31 @@ describe('event money normalisation (PP.103)', () => {
     expect(data.name).toBe('Bieg');
   });
 });
+
+describe('httpAdapter info page block format (B-08)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const block = { id: 'b', type: 'text', format: 'html', title: '', content: '<p>x</p>' } as const;
+
+  it('sends the text block format on PATCH /info-pages/{id}', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.updateInfoPage('p1', { content: [block] });
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect(JSON.parse(String(init.body))).toEqual({ content: [block] });
+  });
+
+  it('returns the block format from GET /info-pages/slug/{slug}', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse({ success: true, data: { id: 'p1', slug: 's', content: [block] } }),
+    );
+    const res = await httpAdapter.getInfoPageBySlug('s');
+    expect(res.data?.content[0].format).toBe('html');
+  });
+});
