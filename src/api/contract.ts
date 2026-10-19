@@ -38,6 +38,7 @@ import type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  SwapTeamMemberPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
   UpdateResultPayload,
@@ -65,6 +66,7 @@ import type {
   PublicStartListEntry,
   RelayTeam,
   TeamInvite,
+  TeamMember,
   Result,
   ResultImportBatch,
   ResultImportMode,
@@ -247,6 +249,23 @@ export interface ApiAdapter {
    * caller is the team's captain or manages the event, 404 for an unknown id.
    */
   getTeamInvite(teamId: string): Promise<ApiResponse<TeamInvite>>;
+  /**
+   * G-04: the active roster of a Drużyna (the list to pick the member to swap out of). Authenticated;
+   * 403 unless the caller is the team's captain or manages the event, 404 for an unknown id.
+   */
+  getTeamMembers(teamId: string): Promise<ApiResponse<TeamMember[]>>;
+  /**
+   * G-04 (spec 23 §2 / spec 20 transfer): swaps the person on a relay member's Zapis. Price, bib
+   * number and status stay, the start code rotates. Captain until the Dystans's swap deadline
+   * (409 `team_swap_deadline_passed` afterwards), the event's manager always. Rejects with
+   * `ApiRequestError` (codes: `team_not_captain`, `not_authorized_to_register`,
+   * `team_swap_deadline_passed`, `team_swap_competitor_already_registered`, `team_swap_same_person`).
+   */
+  swapTeamMember(
+    teamId: string,
+    registrationId: string,
+    data: SwapTeamMemberPayload,
+  ): Promise<ApiResponse<Registration>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<PublicStartListEntry[]>>;
   /**
    * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)

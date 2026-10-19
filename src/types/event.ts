@@ -162,6 +162,7 @@ export interface Distance {
   relayMinTeamSize?: number;
   relayMaxTeamSize?: number;
   relayTeamCompletionDeadline?: string;
+  relaySwapDeadline?: string;
   teamPricingMode?: TeamPricingMode;
   /**
    * E2.7 (spec 14 sekcja 4): regula agregacji wyniku druzynowego z wynikow

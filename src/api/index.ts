@@ -141,6 +141,10 @@ export const getTeamById: ApiAdapter['getTeamById'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamById(...args));
 export const getTeamInvite: ApiAdapter['getTeamInvite'] = (...args) =>
   ensureAdapter().then((a) => a.getTeamInvite(...args));
+export const getTeamMembers: ApiAdapter['getTeamMembers'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamMembers(...args));
+export const swapTeamMember: ApiAdapter['swapTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.swapTeamMember(...args));
 export const getPublicStartList: ApiAdapter['getPublicStartList'] = (...args) =>
   ensureAdapter().then((a) => a.getPublicStartList(...args));
 export const getRegistrationsByUser: ApiAdapter['getRegistrationsByUser'] = (...args) =>
@@ -465,6 +469,8 @@ export type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  SwapTeamMemberPayload,
+  SwapTeamMemberNewPerson,
   RegistrationMerchandiseSelection,
   UpdateRegistrationPayload,
   CreateResultPayload,

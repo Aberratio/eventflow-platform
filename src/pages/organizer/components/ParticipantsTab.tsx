@@ -41,6 +41,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { SendMessageDialog } from '@/components/SendMessageDialog';
+import SwapTeamMemberDialog from '@/components/team/SwapTeamMemberDialog';
 import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration } from '@/types';
 import {
@@ -59,6 +60,7 @@ import {
   RotateCcw,
   Users,
   UserMinus,
+  ArrowLeftRight,
   FileText,
   Printer,
   CreditCard,
@@ -168,6 +170,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [viewMode, setViewMode] = useState<ViewMode>('active');
   const [selectedParticipant, setSelectedParticipant] = useState<Registration | null>(null);
   const [bibDialogOpen, setBibDialogOpen] = useState(false);
+  const [swapRegistration, setSwapRegistration] = useState<Registration | null>(null);
   const [bibNumber, setBibNumber] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] = useState(false);
@@ -703,6 +706,17 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                   >
                                     <Hash className="h-4 w-4" />
                                   </Button>
+                                  {reg.teamId && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Wymień zawodnika"
+                                      aria-label={`Wymień zawodnika ${reg.userName}`}
+                                      onClick={() => setSwapRegistration(reg)}
+                                    >
+                                      <ArrowLeftRight className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                   {reg.status !== 'confirmed' && (
                                     <Button
                                       variant="ghost"
@@ -744,6 +758,23 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             </CardContent>
           </Card>
         </TabsContent>
+
+        {swapRegistration?.teamId && (
+          <SwapTeamMemberDialog
+            open
+            onOpenChange={(next) => {
+              if (!next) setSwapRegistration(null);
+            }}
+            teamId={swapRegistration.teamId}
+            registrationId={swapRegistration.id}
+            memberName={swapRegistration.userName}
+            onSwapped={(updated) =>
+              setLocalRegistrations((prev) =>
+                prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+              )
+            }
+          />
+        )}
 
         <TabsContent value="numbers" className="mt-0">
           <BibNumberAssignment
