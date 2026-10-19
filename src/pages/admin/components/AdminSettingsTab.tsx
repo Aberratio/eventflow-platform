@@ -56,13 +56,13 @@ export const AdminSettingsTab = () => {
   });
 
   const [localInsurance, setLocalInsurance] = useState<GlobalInsuranceSettings | null>(null);
-  const [localCalendar, setLocalCalendar] = useState<GoogleCalendarSettings | null>(null);
+  const [localCalendarId, setLocalCalendarId] = useState<string | null>(null);
   const [localChallengePoints, setLocalChallengePoints] = useState<ChallengePointsSettings | null>(
     null,
   );
 
   const ins = localInsurance ?? remoteInsurance;
-  const cal = localCalendar ?? remoteCalendar;
+  const cal = remoteCalendar;
   const pts = localChallengePoints ?? remoteChallengePoints;
 
   const insuranceMutation = useMutation({
@@ -82,7 +82,7 @@ export const AdminSettingsTab = () => {
     mutationFn: updateCalendarSettings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar-settings'] });
-      setLocalCalendar(null);
+      setLocalCalendarId(null);
     },
   });
 
@@ -129,30 +129,18 @@ export const AdminSettingsTab = () => {
     });
   };
 
-  const handleConnectCalendar = () => {
-    const updated: GoogleCalendarSettings = {
-      ...(cal ?? ({} as GoogleCalendarSettings)),
-      connected: true,
-      lastSyncAt: new Date().toISOString(),
-    };
-    calendarMutation.mutate(updated, {
+  const handleSaveCalendar = (patch: Partial<GoogleCalendarSettings>) => {
+    calendarMutation.mutate(patch, {
       onSuccess: () => {
-        appLogger.settings('calendar_connect', 'Połączono z Google Calendar');
-        toast({ title: 'Połączono', description: 'Google Calendar został podłączony' });
+        appLogger.settings('calendar_save', 'Zapisano ustawienia Kalendarza Google');
+        toast({ title: 'Zapisano', description: 'Ustawienia Kalendarza Google zostały zapisane' });
       },
-    });
-  };
-
-  const handleDisconnectCalendar = () => {
-    const updated: GoogleCalendarSettings = {
-      ...(cal ?? ({} as GoogleCalendarSettings)),
-      connected: false,
-      lastSyncAt: undefined,
-    };
-    calendarMutation.mutate(updated, {
-      onSuccess: () => {
-        appLogger.settings('calendar_disconnect', 'Rozłączono z Google Calendar');
-        toast({ title: 'Rozłączono', description: 'Google Calendar został odłączony' });
+      onError: () => {
+        toast({
+          title: 'Nie zapisano',
+          description: 'Sprawdź ID kalendarza i spróbuj ponownie',
+          variant: 'destructive',
+        });
       },
     });
   };
@@ -418,41 +406,60 @@ export const AdminSettingsTab = () => {
         </CardHeader>
         {cal && (
           <CardContent className="space-y-6">
-            {/* Connection Status */}
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="flex items-center gap-3">
-                {cal.connected ? (
-                  <div className="rounded-full bg-primary/10 p-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                  </div>
-                ) : (
-                  <div className="rounded-full bg-muted p-2">
-                    <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                )}
-                <div>
-                  <p className="font-medium">
-                    {cal.connected
-                      ? 'Połączono z Google Calendar'
-                      : 'Nie połączono z Google Calendar'}
-                  </p>
-                  {cal.connected && cal.lastSyncAt && (
-                    <p className="text-sm text-muted-foreground">
-                      Ostatnia synchronizacja: {new Date(cal.lastSyncAt).toLocaleString('pl-PL')}
-                    </p>
-                  )}
+            {/* Key status (the key itself lives only in the server environment) */}
+            <div className="flex items-center gap-3 rounded-lg border p-4">
+              {cal.credentialsConfigured ? (
+                <div className="rounded-full bg-primary/10 p-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
                 </div>
-              </div>
-              {cal.connected ? (
-                <Button variant="outline" onClick={handleDisconnectCalendar}>
-                  Rozłącz
-                </Button>
               ) : (
-                <Button onClick={handleConnectCalendar} disabled={calendarMutation.isPending}>
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {calendarMutation.isPending ? 'Łączenie...' : 'Połącz Google Calendar'}
-                </Button>
+                <div className="rounded-full bg-muted p-2">
+                  <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                </div>
               )}
+              <div>
+                <p className="font-medium">
+                  {cal.credentialsConfigured
+                    ? 'Klucz konta usługi Google skonfigurowany'
+                    : 'Brak klucza konta usługi Google'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {cal.credentialsConfigured
+                    ? cal.connected && cal.enabled
+                      ? 'Integracja aktywna'
+                      : 'Wpisz ID kalendarza i włącz integrację'
+                    : 'Skontaktuj się z administratorem serwera. Do czasu skonfigurowania klucza integracja jest nieaktywna.'}
+                </p>
+                {cal.lastSyncAt && (
+                  <p className="text-sm text-muted-foreground">
+                    Ostatnia synchronizacja: {new Date(cal.lastSyncAt).toLocaleString('pl-PL')}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Calendar id */}
+            <div className="space-y-2">
+              <Label htmlFor="calendar-id">ID kalendarza Google</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="calendar-id"
+                  placeholder="np. zawody@group.calendar.google.com"
+                  value={localCalendarId ?? cal.calendarId ?? ''}
+                  onChange={(e) => setLocalCalendarId(e.target.value)}
+                />
+                <Button
+                  onClick={() => handleSaveCalendar({ calendarId: (localCalendarId ?? '').trim() })}
+                  disabled={
+                    calendarMutation.isPending ||
+                    localCalendarId === null ||
+                    localCalendarId.trim() === (cal.calendarId ?? '')
+                  }
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Zapisz
+                </Button>
+              </div>
             </div>
 
             {/* Auto-add setting */}
@@ -464,13 +471,10 @@ export const AdminSettingsTab = () => {
                 </p>
               </div>
               <Switch
+                aria-label="Automatyczne dodawanie wydarzeń"
                 checked={cal.enabled}
-                onCheckedChange={(checked) => {
-                  const updated = { ...(localCalendar ?? cal), enabled: checked };
-                  setLocalCalendar(updated);
-                  calendarMutation.mutate(updated);
-                }}
-                disabled={!cal.connected}
+                onCheckedChange={(checked) => handleSaveCalendar({ enabled: checked })}
+                disabled={calendarMutation.isPending || (!cal.enabled && !cal.calendarId)}
               />
             </div>
 
@@ -479,7 +483,7 @@ export const AdminSettingsTab = () => {
             {/* Info about what gets synced */}
             <div className="space-y-2 rounded-lg bg-muted/50 p-4">
               <p className="text-sm font-medium">
-                Po połączeniu, każde zatwierdzone wydarzenie zostanie automatycznie dodane do
+                Po włączeniu, każde zatwierdzone wydarzenie zostanie automatycznie dodane do
                 kalendarza z:
               </p>
               <ul className="ml-4 list-disc space-y-1 text-sm text-muted-foreground">

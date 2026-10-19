@@ -768,3 +768,49 @@ describe('event money normalisation (PP.103)', () => {
     expect(data.name).toBe('Bieg');
   });
 });
+
+describe('httpAdapter calendar (R-17)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const lastCall = () => {
+    const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    return {
+      url,
+      method: init.method,
+      body: JSON.parse(String(init.body)) as Record<string, unknown>,
+    };
+  };
+
+  it('PATCH /calendar/settings sends only the writable fields', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: {} }));
+    await httpAdapter.updateCalendarSettings({
+      enabled: true,
+      calendarId: 'a@b',
+      connected: true,
+      credentialsConfigured: true,
+      lastSyncAt: '2026-01-01T00:00:00Z',
+    });
+
+    const call = lastCall();
+    expect(call.url).toContain('/calendar/settings');
+    expect(call.method).toBe('PATCH');
+    expect(call.body).toEqual({ enabled: true, calendarId: 'a@b' });
+  });
+
+  it('POST /calendar/events sends just the event id', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
+    await httpAdapter.addEventToCalendar({ id: 'e1', name: 'Bieg' } as never);
+
+    const call = lastCall();
+    expect(call.url).toContain('/calendar/events');
+    expect(call.method).toBe('POST');
+    expect(call.body).toEqual({ id: 'e1' });
+  });
+});

@@ -56,7 +56,12 @@ export interface Notification {
 
 export interface GoogleCalendarSettings {
   enabled: boolean;
+  /** Server-derived: key configured on the server AND a calendar id is set. Not writable. */
   connected: boolean;
+  /** Server-derived: the service-account key file exists on the server. Never carries the key. Not writable. */
+  credentialsConfigured: boolean;
   calendarId?: string;
-  lastSyncAt?: string;
+  /** IANA time zone used for timed events (server default Europe/Warsaw). */
+  timeZone?: string;
+  lastSyncAt?: string | null;
 }

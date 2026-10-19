@@ -666,8 +666,18 @@ export const httpAdapter: ApiAdapter = {
   reorderInfoPages: (ids) => request('/info-pages/reorder', json('POST', { ids })),
 
   getCalendarSettings: () => request('/calendar/settings'),
-  updateCalendarSettings: (data) => request('/calendar/settings', json('PATCH', data)),
-  addEventToCalendar: (event) => request('/calendar/events', json('POST', event)),
+  // Only enabled / calendarId / timeZone are writable; the derived flags stay on the server.
+  updateCalendarSettings: (data) =>
+    request(
+      '/calendar/settings',
+      json('PATCH', {
+        ...(data.enabled !== undefined && { enabled: data.enabled }),
+        ...(data.calendarId !== undefined && { calendarId: data.calendarId }),
+        ...(data.timeZone !== undefined && { timeZone: data.timeZone }),
+      }),
+    ),
+  // The server reads the Event from its own database; only the id selects it.
+  addEventToCalendar: (event) => request('/calendar/events', json('POST', { id: event.id })),
 
   getVirtualResultSubmissions: (filters) =>
     request(`/virtual-results${query(filters as Record<string, QueryValue>)}`),
