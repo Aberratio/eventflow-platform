@@ -37,7 +37,7 @@ describe('UsersAdminsTab last login (G-07)', () => {
 
   // Umowa §5.8: "ostatnie logowanie" dotyczy administratorów i moderatorów.
   it('lists moderators too, with their last login date', async () => {
-    vi.mocked(getUsers).mockResolvedValue({
+    vi.mocked(getAllUsers).mockResolvedValue({
       data: [
         user({
           id: 'm1',
@@ -55,7 +55,7 @@ describe('UsersAdminsTab last login (G-07)', () => {
       ],
       total: 2,
       page: 1,
-      pageSize: 1000,
+      pageSize: 100,
       totalPages: 1,
     });
 
