@@ -3,7 +3,7 @@ import { test, expect } from '../playwright-fixture';
 test.describe('Polskie aliasy tras', () => {
   test('/wydarzenia ładuje stronę wydarzeń', async ({ page }) => {
     await page.goto('/wydarzenia');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('/logowanie ładuje stronę logowania', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Polskie aliasy tras', () => {
 
   test('/sklep ładuje stronę sklepu', async ({ page }) => {
     await page.goto('/sklep');
-    await expect(page.locator('h1')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 5000 });
   });
 
   test('/wyniki/live ładuje wyniki na żywo', async ({ page }) => {

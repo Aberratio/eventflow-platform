@@ -1,89 +1,80 @@
 import { test, expect } from '../playwright-fixture';
 
-async function loginAsParticipant(page: any) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', 'jan@example.com');
-  await page.fill('input[type="password"]', 'demo1234');
-  await page.click('button[type="submit"]');
-  await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
-}
+import { loginAs } from './helpers';
 
 test.describe('Participant Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsParticipant(page);
+    await loginAs(page, 'participant');
   });
 
   test('overview tab shows stats and upcoming events', async ({ page }) => {
-    await expect(page.locator('text=Jan Kowalski')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/Witaj, Jan/).first()).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Przegląd/ })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
   });
 
   test('registrations tab displays list', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Rejestracje")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Rejestracje/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
-  test('results/records tab displays', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Wyniki")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('history tab displays results', async ({ page }) => {
+    const tab = page.getByRole('tab', { name: /Historia/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
   test('messages tab displays', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Wiadomości")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Wiadomości/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
   test('orders tab displays order history', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Zamówienia")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Zamówienia/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
   test('tickets tab displays', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Bilety")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Bilety/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
   test('challenges tab displays', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Wyzwania")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Wyzwania/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
   test('profile tab shows user data', async ({ page }) => {
-    const tab = page.locator('[role="tab"]:has-text("Profil")');
-    if (await tab.isVisible()) {
-      await tab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+    const tab = page.getByRole('tab', { name: /Profil/ });
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 });
 
 test.describe('Participant Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsParticipant(page);
+    await loginAs(page, 'participant');
   });
 
   test('can navigate to events page', async ({ page }) => {

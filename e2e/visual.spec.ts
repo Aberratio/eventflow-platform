@@ -7,6 +7,9 @@ async function loginAs(page: any, email: string) {
   await page.click('button[type="submit"]');
 }
 
+// The baselines include the cookie banner, so these specs must not pre-accept it (PP.15).
+test.use({ preAcceptCookies: false });
+
 test.describe('Visual Snapshots - Public Pages', () => {
   test('strona główna — desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -79,6 +82,10 @@ test.describe('Visual Snapshots - Public Pages', () => {
   });
 
   test('sklep — desktop', async ({ page }) => {
+    test.fixme(
+      true,
+      'quarantined: PP.58 baseline differs on a fresh seed (external product and challenge images, 22% and 6% of pixels)',
+    );
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/shop');
     await page.waitForTimeout(1500);
@@ -109,6 +116,10 @@ test.describe('Visual Snapshots - Public Pages', () => {
   });
 
   test('wyzwania — desktop', async ({ page }) => {
+    test.fixme(
+      true,
+      'quarantined: PP.58 baseline differs on a fresh seed (external product and challenge images, 22% and 6% of pixels)',
+    );
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/challenges');
     await page.waitForTimeout(1000);

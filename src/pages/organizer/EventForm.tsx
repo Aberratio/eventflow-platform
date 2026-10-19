@@ -78,7 +78,12 @@ const EventForm = () => {
           </div>
 
           {/* Main content */}
-          <div className="min-w-0 flex-1">
+          <div
+            className="min-w-0 flex-1"
+            data-testid="event-form-step"
+            data-step={form.step}
+            data-substep={form.subStep}
+          >
             {form.step === 1 && <EventFormStep1 form={form} activeSubStep={form.subStep} />}
             {form.step === 2 && <EventFormStep2 form={form} activeSubStep={form.subStep} />}
             {form.step === 3 && <EventFormShopStep form={form} />}

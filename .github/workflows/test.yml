@@ -26,13 +26,58 @@ jobs:
   smoke:
     name: Playwright smoke
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: zmierzymy_czas_e2e
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      # Server (read via getenv: the checkout has no .env, which is gitignored)
+      APP_ENV: local # bin/seed.php refuses production, which is the default when unset
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_DATABASE: zmierzymy_czas_e2e
+      DB_USERNAME: root
+      DB_PASSWORD: ''
+      JWT_SECRET: ci-e2e-jwt-secret-not-for-production-0123456789
+      APP_URL: http://127.0.0.1:8081
+      APP_CORS_ORIGIN: http://127.0.0.1:5173,http://localhost:5173
+      # Playwright
+      PLAYWRIGHT_API_URL: http://127.0.0.1:8081/api/v1
+      PLAYWRIGHT_FRONTEND_PORT: '5173'
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: client
+      - uses: actions/checkout@v4
+        with:
+          repository: Aberratio/eventflow-server
+          ref: master
+          path: zmierzymy_czas_server
+          ssh-key: ${{ secrets.SERVER_REPO_SSH_KEY }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          extensions: pdo_mysql
+      - run: composer install --no-interaction --no-progress --prefer-dist
+        working-directory: zmierzymy_czas_server
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: client/package-lock.json
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:smoke
@@ -41,5 +86,5 @@ jobs:
         with:
           name: playwright-smoke-artifacts
           path: |
-            test-results
-            playwright-report
+            client/test-results
+            client/playwright-report

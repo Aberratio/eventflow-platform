@@ -3,23 +3,23 @@ import { test, expect } from '../playwright-fixture';
 test.describe('Navigation', () => {
   test('home page loads and shows hero', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   });
 
   test('navigates to events page', async ({ page }) => {
     await page.goto('/');
-    await page.click('a[href="/events"]');
-    await expect(page).toHaveURL(/\/events/);
+    await page.getByRole('banner').getByRole('link', { name: 'Kalendarz' }).first().click();
+    await expect(page).toHaveURL(/\/wydarzenia/);
   });
 
   test('navigates to series page', async ({ page }) => {
     await page.goto('/series');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   });
 
   test('navigates to shop page', async ({ page }) => {
     await page.goto('/shop');
-    await expect(page.locator('h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   });
 
   test('404 page for unknown routes', async ({ page }) => {

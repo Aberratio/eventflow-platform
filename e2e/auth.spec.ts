@@ -1,17 +1,13 @@
 import { test, expect } from '../playwright-fixture';
 
-// Helper to login as a specific role
-async function loginAs(page: any, email: string) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', email);
-  await page.fill('input[type="password"]', 'demo1234');
-  await page.click('button[type="submit"]');
-}
+import { loginAs, openDashboardSection } from './helpers';
+
+const LOGIN_ERROR = 'Nieprawidłowy email lub hasło.';
 
 test.describe('Authentication Flow', () => {
   test('login page renders correctly', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('text=Zaloguj się')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Zaloguj się' })).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
   });
@@ -21,7 +17,7 @@ test.describe('Authentication Flow', () => {
     await page.fill('input[type="email"]', 'bad@email.com');
     await page.fill('input[type="password"]', 'wrongpass');
     await page.click('button[type="submit"]');
-    await expect(page.locator('text=Nieprawidłowy')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(LOGIN_ERROR, { exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('shows error for wrong password', async ({ page }) => {
@@ -29,7 +25,7 @@ test.describe('Authentication Flow', () => {
     await page.fill('input[type="email"]', 'jan@example.com');
     await page.fill('input[type="password"]', 'badpassword');
     await page.click('button[type="submit"]');
-    await expect(page.locator('text=Nieprawidłowy')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(LOGIN_ERROR, { exact: true })).toBeVisible({ timeout: 10000 });
   });
 
   test('register page renders with form fields', async ({ page }) => {
@@ -58,33 +54,33 @@ test.describe('Authentication Flow', () => {
 
 test.describe('Participant Login & Dashboard', () => {
   test('participant login redirects to /participant', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
   });
 
   test('participant dashboard shows overview tab', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
-    await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
-    await expect(page.locator('text=Jan Kowalski')).toBeVisible({ timeout: 5000 });
+    await loginAs(page, 'participant');
+    await expect(page.getByText(/Witaj, Jan/).first()).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Przegląd/ })).toHaveAttribute(
+      'data-state',
+      'active',
+    );
   });
 
   test('participant can navigate dashboard tabs', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
-    await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
+    await loginAs(page, 'participant');
 
-    // Check that tab triggers are present
-    const tabNames = ['Rejestracje', 'Wyniki', 'Zamówienia', 'Wiadomości'];
-    for (const tabName of tabNames) {
-      const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
-      if (await tab.isVisible()) {
-        await tab.click();
-        await page.waitForTimeout(300);
-      }
+    for (const tabName of ['Rejestracje', 'Historia', 'Zamówienia', 'Wiadomości']) {
+      const tab = page.getByRole('tab', { name: new RegExp(tabName) });
+      await expect(tab).toBeVisible();
+      await tab.click();
+      await expect(tab).toHaveAttribute('data-state', 'active');
+      await expect(page.getByRole('tabpanel')).toBeVisible();
     }
   });
 
   test('participant registrations tab loads', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
     await page.goto('/participant?tab=registrations');
     await page.waitForTimeout(500);
@@ -93,7 +89,7 @@ test.describe('Participant Login & Dashboard', () => {
   });
 
   test('participant orders tab loads', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
     await page.goto('/participant?tab=orders');
     await page.waitForTimeout(500);
@@ -101,7 +97,7 @@ test.describe('Participant Login & Dashboard', () => {
   });
 
   test('participant can access profile page', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
     await page.goto('/profile');
     await expect(page.locator('body')).not.toBeEmpty();
@@ -110,18 +106,18 @@ test.describe('Participant Login & Dashboard', () => {
 
 test.describe('Organizer Login & Dashboard', () => {
   test('organizer login redirects to /organizer', async ({ page }) => {
-    await loginAs(page, 'marek@timing.pl');
+    await loginAs(page, 'organizer');
     await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
   });
 
   test('organizer dashboard shows overview', async ({ page }) => {
-    await loginAs(page, 'marek@timing.pl');
-    await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
-    await expect(page.locator('text=Marek Organizator')).toBeVisible({ timeout: 5000 });
+    await loginAs(page, 'organizer');
+    await expect(page.getByRole('heading', { name: 'Panel Organizatora' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Pulpit/ })).toHaveAttribute('data-state', 'active');
   });
 
   test('organizer can navigate to events page', async ({ page }) => {
-    await loginAs(page, 'marek@timing.pl');
+    await loginAs(page, 'organizer');
     await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
     await page.goto('/organizer/events');
     await page.waitForTimeout(500);
@@ -129,169 +125,122 @@ test.describe('Organizer Login & Dashboard', () => {
   });
 
   test('organizer can access new event form', async ({ page }) => {
-    await loginAs(page, 'marek@timing.pl');
+    await loginAs(page, 'organizer');
     await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
     await page.goto('/organizer/events/new');
     await page.waitForTimeout(500);
     await expect(page.locator('body')).not.toBeEmpty();
   });
 
-  test('organizer dashboard has profile tab', async ({ page }) => {
-    await loginAs(page, 'marek@timing.pl');
-    await expect(page).toHaveURL(/\/organizer/, { timeout: 10000 });
-    const profileTab = page.locator('[role="tab"]:has-text("Profil")');
-    if (await profileTab.isVisible()) {
-      await profileTab.click();
-      await page.waitForTimeout(300);
-    }
+  test('organizer dashboard switches to the events tab', async ({ page }) => {
+    await loginAs(page, 'organizer');
+    const tab = page.getByRole('tab', { name: /Moje wydarzenia/ });
+    await tab.click();
+    await expect(tab).toHaveAttribute('data-state', 'active');
+    await expect(page.getByRole('heading', { name: 'Wszystkie wydarzenia' })).toBeVisible();
   });
 });
 
 test.describe('Moderator Login & Dashboard', () => {
   test('moderator login redirects to /moderator', async ({ page }) => {
-    await loginAs(page, 'monika@zmierzymyczas.pl');
+    await loginAs(page, 'moderator');
     await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
   });
 
   test('moderator dashboard shows overview', async ({ page }) => {
-    await loginAs(page, 'monika@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
-    await expect(page.locator('text=Monika Moderator')).toBeVisible({ timeout: 5000 });
+    await loginAs(page, 'moderator');
+    await expect(page.getByRole('heading', { name: 'Panel Moderatora' })).toBeVisible();
+    await expect(page.getByText(/Witaj, Monika/)).toBeVisible();
   });
 
-  test('moderator can navigate tabs', async ({ page }) => {
-    await loginAs(page, 'monika@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
+  test('moderator can navigate sections', async ({ page }) => {
+    await loginAs(page, 'moderator');
 
-    const tabNames = ['Moderacja', 'Zamówienia', 'Użytkownicy'];
-    for (const tabName of tabNames) {
-      const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
-      if (await tab.isVisible()) {
-        await tab.click();
-        await page.waitForTimeout(300);
-      }
-    }
+    await openDashboardSection(page, 'Moderacja');
+    await expect(
+      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzen do sprawdzenia/).first(),
+    ).toBeVisible();
+    await openDashboardSection(page, 'Zamówienia');
+    await expect(page.getByText(/Zamówienia \(\d+\)/).first()).toBeVisible();
   });
 
-  test('moderator orders tab loads', async ({ page }) => {
-    await loginAs(page, 'monika@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
-    const ordersTab = page.locator('[role="tab"]:has-text("Zamówienia")');
-    if (await ordersTab.isVisible()) {
-      await ordersTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
-  });
-
-  test('moderator users tab loads in read-only mode', async ({ page }) => {
-    await loginAs(page, 'monika@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/moderator/, { timeout: 10000 });
-    const usersTab = page.locator('[role="tab"]:has-text("Użytkownicy")');
-    if (await usersTab.isVisible()) {
-      await usersTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('moderator users sections load in read-only mode', async ({ page }) => {
+    await loginAs(page, 'moderator');
+    await openDashboardSection(page, 'Uczestnicy');
+    await expect(page.locator('table, [data-testid="empty-state"]').first()).toBeVisible();
+    await openDashboardSection(page, 'Organizatorzy');
+    await expect(page.locator('table, [data-testid="empty-state"]').first()).toBeVisible();
   });
 });
 
 test.describe('Admin Login & Dashboard', () => {
   test('admin login redirects to /admin', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
+    await loginAs(page, 'admin');
     await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
   });
 
   test('admin dashboard shows overview', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    await expect(page.locator('text=Admin')).toBeVisible({ timeout: 5000 });
+    await loginAs(page, 'admin');
+    await expect(page.getByRole('heading', { name: 'Panel Administratora' })).toBeVisible();
   });
 
-  test('admin can navigate all tabs', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
+  test('admin can navigate all sections', async ({ page }) => {
+    await loginAs(page, 'admin');
 
-    const tabNames = ['Wydarzenia', 'Sklep', 'Zamówienia', 'Partnerzy', 'Strony', 'Ustawienia'];
-    for (const tabName of tabNames) {
-      const tab = page.locator(`[role="tab"]:has-text("${tabName}")`);
-      if (await tab.isVisible()) {
-        await tab.click();
-        await page.waitForTimeout(300);
-      }
+    const sections: Array<[string, RegExp]> = [
+      ['Wydarzenia', /\/admin\/events/],
+      ['Produkty', /\/admin\/shop/],
+      ['Zamówienia', /\/admin\/orders/],
+      ['Partnerzy', /\/admin\/partners/],
+      ['Strony', /\/admin\/pages/],
+      ['Ustawienia', /\/admin\/settings/],
+    ];
+    for (const [label, url] of sections) {
+      await openDashboardSection(page, label);
+      await expect(page).toHaveURL(url);
     }
   });
 
-  test('admin events tab shows event list', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const eventsTab = page.locator('[role="tab"]:has-text("Wydarzenia")');
-    if (await eventsTab.isVisible()) {
-      await eventsTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin events section shows event list', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Wydarzenia');
+    await expect(page.locator('table, [data-testid="empty-state"]').first()).toBeVisible();
   });
 
-  test('admin shop tab loads products', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const shopTab = page.locator('[role="tab"]:has-text("Sklep")');
-    if (await shopTab.isVisible()) {
-      await shopTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin shop section loads products', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Produkty');
+    await expect(page.getByRole('heading', { name: 'Zarządzanie sklepem' })).toBeVisible();
   });
 
-  test('admin orders tab loads', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const ordersTab = page.locator('[role="tab"]:has-text("Zamówienia")');
-    if (await ordersTab.isVisible()) {
-      await ordersTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin orders section loads', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Zamówienia');
+    await expect(page.getByRole('heading', { name: 'Zamówienia' })).toBeVisible();
   });
 
-  test('admin partners tab loads', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const partnersTab = page.locator('[role="tab"]:has-text("Partnerzy")');
-    if (await partnersTab.isVisible()) {
-      await partnersTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin partners section loads', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Partnerzy');
+    await expect(page.getByRole('heading', { name: 'Nasi partnerzy' }).first()).toBeVisible();
   });
 
-  test('admin settings tab loads', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const settingsTab = page.locator('[role="tab"]:has-text("Ustawienia")');
-    if (await settingsTab.isVisible()) {
-      await settingsTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin settings section loads', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Ustawienia');
+    await expect(page.getByRole('heading', { name: 'Ustawienia platformy' })).toBeVisible();
   });
 
-  test('admin pages/cms tab loads', async ({ page }) => {
-    await loginAs(page, 'admin@zmierzymyczas.pl');
-    await expect(page).toHaveURL(/\/admin/, { timeout: 10000 });
-    const pagesTab = page.locator('[role="tab"]:has-text("Strony")');
-    if (await pagesTab.isVisible()) {
-      await pagesTab.click();
-      await page.waitForTimeout(500);
-      await expect(page.locator('body')).not.toBeEmpty();
-    }
+  test('admin pages/cms section loads', async ({ page }) => {
+    await loginAs(page, 'admin');
+    await openDashboardSection(page, 'Strony');
+    await expect(page.getByText('Strony informacyjne')).toBeVisible();
   });
 });
 
 test.describe('Logout Flow', () => {
   test('user can logout and return to public site', async ({ page }) => {
-    await loginAs(page, 'jan@example.com');
+    await loginAs(page, 'participant');
     await expect(page).toHaveURL(/\/participant/, { timeout: 10000 });
 
     // Look for logout button

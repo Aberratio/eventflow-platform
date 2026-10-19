@@ -1,6 +1,7 @@
 import { test, expect } from '../playwright-fixture';
 import type { ConsoleMessage, Page } from '@playwright/test';
-import { loginAs } from './helpers';
+import { ensureOrganizerCapacity } from './api';
+import { advanceThroughWizard, isoDaysFromToday, loginAs, pickDate } from './helpers';
 
 // PP.16: the event wizard crashed on step 1 (both create and edit) because RichTextEditor's TipTap
 // instance could be destroyed by its own 1ms timer before the component's sync effect ran, throwing
@@ -24,89 +25,13 @@ async function assertNoErrorScreen(page: Page) {
   await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);
 }
 
-const POLISH_MONTHS = [
-  'styczeń',
-  'luty',
-  'marzec',
-  'kwiecień',
-  'maj',
-  'czerwiec',
-  'lipiec',
-  'sierpień',
-  'wrzesień',
-  'październik',
-  'listopad',
-  'grudzień',
-];
-
-// The date fields (#date, #deadline) are a react-day-picker popover, not a fillable text input (a UI
-// drift from the older event-workflows.spec.ts, which still calls .fill() on them — out of scope for
-// PP.16, see event-workflows.spec.ts note below). Open the popover, page to the target month, then
-// click the day cell that is not an "outside" (adjacent month) day.
-async function pickDate(page: Page, triggerId: string, isoDate: string) {
-  const [year, month, day] = isoDate.split('-').map(Number);
-
-  await page.locator(`#${triggerId}`).click();
-  const dialog = page.getByRole('dialog').last();
-  const caption = dialog.locator('[aria-live="polite"]');
-  const initialText = (await caption.textContent())?.trim() ?? '';
-  const [initMonthName, initYearStr] = initialText.split(' ');
-  const initMonthIndex = POLISH_MONTHS.indexOf(initMonthName);
-  const initYear = Number(initYearStr);
-  const diffMonths = year * 12 + (month - 1) - (initYear * 12 + initMonthIndex);
-
-  const button = dialog.getByRole('button', {
-    name: diffMonths >= 0 ? 'Go to next month' : 'Go to previous month',
-  });
-  for (let i = 0; i < Math.abs(diffMonths); i++) {
-    await button.click();
-  }
-
-  await dialog
-    .locator('button[role="gridcell"]:not(.day-outside)', { hasText: new RegExp(`^${day}$`) })
-    .click();
-  await expect(dialog).toHaveCount(0);
-}
-
-async function advanceThroughWizard(page: Page, finalButtonName: RegExp, maxIterations = 25) {
-  for (let i = 0; i < maxIterations; i++) {
-    if (
-      await page
-        .getByRole('button', { name: finalButtonName })
-        .isVisible()
-        .catch(() => false)
-    ) {
-      return;
-    }
-
-    await page.getByRole('button', { name: 'Zapisz i przejdź dalej' }).click();
-    await assertNoErrorScreen(page);
-
-    // If the distances sub-step is empty (create flow only — the edit flow's seeded event already has
-    // distances), the click above surfaces a validation error instead of advancing. Add one distance
-    // and retry.
-    const distanceValidationError = page.getByText('Dodaj przynajmniej jeden dystans');
-    if (await distanceValidationError.isVisible().catch(() => false)) {
-      await page
-        .getByRole('button', { name: /Dodaj pierwszy dystans|Dodaj dystans/i })
-        .first()
-        .click();
-      await page.getByPlaceholder('np. Maraton').first().fill('5K');
-      await page.getByPlaceholder('42.195').first().fill('5');
-      await page.getByPlaceholder('150').first().fill('60');
-      await page.getByPlaceholder('500').first().fill('200');
-      await page.getByRole('button', { name: 'Zapisz i przejdź dalej' }).click();
-      await assertNoErrorScreen(page);
-    }
-  }
-
-  throw new Error(
-    `Wizard did not reach the "${finalButtonName}" step within ${maxIterations} clicks`,
-  );
-}
-
 test.describe('Event editor (PP.16)', () => {
-  test('organizer creates a draft event with a rich-text description', async ({ page }) => {
+  test('organizer creates a draft event with a rich-text description', async ({
+    page,
+    request,
+  }) => {
+    test.slow();
+    await ensureOrganizerCapacity(request);
     const issues = trackConsoleIssues(page);
     await loginAs(page, 'organizer');
 
@@ -115,8 +40,8 @@ test.describe('Event editor (PP.16)', () => {
     await assertNoErrorScreen(page);
 
     await page.locator('#name').fill(`E2E Edytor ${Date.now()}`);
-    await pickDate(page, 'date', '2026-12-12');
-    await pickDate(page, 'deadline', '2026-12-01');
+    await pickDate(page, 'date', isoDaysFromToday(60));
+    await pickDate(page, 'deadline', isoDaysFromToday(50));
     await page.locator('#location').fill('Stadion E2E');
     await page.locator('#city').fill('Warszawa');
 
@@ -143,7 +68,9 @@ test.describe('Event editor (PP.16)', () => {
     await advanceThroughWizard(page, /Utwórz wydarzenie/);
 
     const [response] = await Promise.all([
-      page.waitForResponse((r) => r.url().endsWith('/events') && r.request().method() === 'POST'),
+      page.waitForResponse((r) => r.url().endsWith('/events') && r.request().method() === 'POST', {
+        timeout: 20000,
+      }),
       page.getByRole('button', { name: /Utwórz wydarzenie/ }).click(),
     ]);
 

@@ -304,6 +304,25 @@ describe('httpAdapter contract mapping', () => {
     ).rejects.toThrow('Wybierz aktywne konto organizatora');
   });
 
+  it('maps the no-credit submit error to a Polish message', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      mockJsonResponse(
+        {
+          success: false,
+          error: {
+            code: 'event_submit_no_organizer_credit',
+            message: 'No available organizer package credit to submit this event',
+          },
+        },
+        409,
+      ),
+    );
+
+    await expect(httpAdapter.submitEvent('e1')).rejects.toThrow(
+      'Brak dostępnego pakietu organizatora. Kup pakiet, aby oddać wydarzenie do sprawdzenia.',
+    );
+  });
+
   it('posts to /events/external for a barebones external event (E6.4)', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
