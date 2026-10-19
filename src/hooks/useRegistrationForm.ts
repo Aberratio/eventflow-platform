@@ -643,8 +643,12 @@ export const useRegistrationForm = (
   };
   const handleBack = () => setStep(getPrevStep());
 
-  const buildSubmitData = (): RegistrationData | null => {
-    if (!agreedToTerms || !selectedDistance) return null;
+  /**
+   * The form as filled in so far, as `RegistrationData`. Unlike `buildSubmitData` it does not need the
+   * terms to be accepted, so the summary can ask the server for a price (B-02) before the final tick.
+   */
+  const buildRegistrationData = (): RegistrationData | null => {
+    if (!selectedDistance) return null;
 
     return {
       distanceId: selectedDistanceId,
@@ -678,6 +682,9 @@ export const useRegistrationForm = (
       insuranceVariantId: selectedInsuranceVariantId || undefined,
     };
   };
+
+  const buildSubmitData = (): RegistrationData | null =>
+    agreedToTerms ? buildRegistrationData() : null;
 
   const isLastStep = step === activeSteps[activeSteps.length - 1].id;
   const isFirstStep = step === activeSteps[0].id;
@@ -774,6 +781,7 @@ export const useRegistrationForm = (
     getFinalTeamName,
     getFinalTeamId,
     getCreateTeamFlag,
+    buildRegistrationData,
     buildSubmitData,
     isLastStep,
     isFirstStep,
