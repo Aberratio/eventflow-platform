@@ -29,6 +29,9 @@ export interface EditableResult {
   userName?: string;
   time: string;
   status: ResultStatus;
+  netTime?: string | null;
+  position?: number | null;
+  categoryPosition?: number | null;
 }
 
 interface EditResultDialogProps {
@@ -41,13 +44,16 @@ interface EditResultDialogProps {
 }
 
 const TIME_PATTERN = /^\d{1,2}:\d{2}:\d{2}$/;
+const PLACE_PATTERN = /^[1-9]\d*$/;
+
+const placeText = (place?: number | null) => (place ? String(place) : '');
 
 function toSeconds(time: string): number {
   const [h, m, s] = time.split(':').map(Number);
   return h * 3600 + m * 60 + s;
 }
 
-/** G-03: correct a result's time/status, with the reason that lands in the correction trail. */
+/** G-03: correct a result's gross/net time, status and places, with the reason that lands in the correction trail. */
 export const EditResultDialog = ({
   open,
   onOpenChange,
@@ -57,6 +63,9 @@ export const EditResultDialog = ({
 }: EditResultDialogProps) => {
   const { toast } = useToast();
   const [time, setTime] = useState(result.time);
+  const [netTime, setNetTime] = useState(result.netTime ?? '');
+  const [position, setPosition] = useState(placeText(result.position));
+  const [categoryPosition, setCategoryPosition] = useState(placeText(result.categoryPosition));
   const [status, setStatus] = useState<ResultStatus>(result.status);
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +74,9 @@ export const EditResultDialog = ({
   useEffect(() => {
     if (open) {
       setTime(result.time);
+      setNetTime(result.netTime ?? '');
+      setPosition(placeText(result.position));
+      setCategoryPosition(placeText(result.categoryPosition));
       setStatus(result.status);
       setReason('');
       setError(null);
@@ -72,6 +84,7 @@ export const EditResultDialog = ({
   }, [open, result]);
 
   const usesTime = status === 'finished' || status === 'dnf';
+  const usesPlaces = status === 'finished';
 
   const handleSubmit = async () => {
     const trimmedReason = reason.trim();
@@ -87,12 +100,35 @@ export const EditResultDialog = ({
       setError('Podaj czas ukończenia (HH:MM:SS).');
       return;
     }
+    if (usesTime && netTime && !TIME_PATTERN.test(netTime)) {
+      setError('Nieprawidłowy format czasu netto (użyj HH:MM:SS).');
+      return;
+    }
+    if (usesPlaces && position && !PLACE_PATTERN.test(position)) {
+      setError('Miejsce musi być dodatnią liczbą całkowitą.');
+      return;
+    }
+    if (usesPlaces && categoryPosition && !PLACE_PATTERN.test(categoryPosition)) {
+      setError('Miejsce w kategorii musi być dodatnią liczbą całkowitą.');
+      return;
+    }
     setError(null);
 
     const payload: Parameters<typeof updateResult>[1] = { status };
     if (usesTime && TIME_PATTERN.test(time)) {
       payload.time = time;
       payload.timeInSeconds = toSeconds(time);
+    }
+    // Net time and places are sent only when changed; an emptied field sends null.
+    if (usesTime && netTime !== (result.netTime ?? '')) {
+      payload.netTime = netTime || null;
+      payload.netTimeInSeconds = netTime ? toSeconds(netTime) : null;
+    }
+    if (usesPlaces && position !== placeText(result.position)) {
+      payload.position = position ? Number(position) : null;
+    }
+    if (usesPlaces && categoryPosition !== placeText(result.categoryPosition)) {
+      payload.categoryPosition = categoryPosition ? Number(categoryPosition) : null;
     }
     if (trimmedReason) payload.reason = trimmedReason;
 
@@ -154,6 +190,42 @@ export const EditResultDialog = ({
                 className="font-mono"
               />
             </div>
+          )}
+
+          {usesTime && (
+            <div className="space-y-2">
+              <Label htmlFor="edit-result-net-time">Czas netto</Label>
+              <Input
+                id="edit-result-net-time"
+                placeholder="HH:MM:SS"
+                value={netTime}
+                onChange={(e) => setNetTime(e.target.value)}
+                className="font-mono"
+              />
+            </div>
+          )}
+
+          {usesPlaces && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="edit-result-position">Miejsce (open)</Label>
+                <Input
+                  id="edit-result-position"
+                  inputMode="numeric"
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-result-category-position">Miejsce w kategorii</Label>
+                <Input
+                  id="edit-result-category-position"
+                  inputMode="numeric"
+                  value={categoryPosition}
+                  onChange={(e) => setCategoryPosition(e.target.value)}
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-2">
