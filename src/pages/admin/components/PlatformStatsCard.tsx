@@ -125,23 +125,25 @@ const EventStatusList = ({ data }: { data: PlatformStats }) => {
       {/* Accessible text alternative to the bars above — same data,
           screen-reader only (WCAG 2.1 AA: no information conveyed purely
           through an unlabeled visual bar). */}
-      <table className="sr-only">
-        <caption>Liczba Wydarzeń wg statusu publikacyjnego</caption>
-        <thead>
-          <tr>
-            <th scope="col">Status</th>
-            <th scope="col">Liczba Wydarzeń</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.status}>
-              <td>{statusLabels[item.status] ?? item.status}</td>
-              <td>{item.count}</td>
+      <div className="sr-only">
+        <table>
+          <caption>Liczba Wydarzeń wg statusu publikacyjnego</caption>
+          <thead>
+            <tr>
+              <th scope="col">Status</th>
+              <th scope="col">Liczba Wydarzeń</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.status}>
+                <td>{statusLabels[item.status] ?? item.status}</td>
+                <td>{item.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 };
