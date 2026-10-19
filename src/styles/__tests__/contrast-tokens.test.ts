@@ -7,7 +7,7 @@ const read = (f: string) => readFileSync(resolve(__dirname, '../tokens', f), 'ut
 const css = read('palette.css') + read('theme-dark.css');
 
 function hsl(name: string, seen = new Set<string>()): [number, number, number] {
-  const m = css.match(new RegExp(`${name}:\s*([^;]+);`));
+  const m = css.match(new RegExp(`${name}: *([^;]+);`));
   if (!m) throw new Error(`token ${name} not found`);
   const v = m[1].replace(/\/\*.*?\*\//g, '').trim();
   const ref = v.match(/^var\((--[\w-]+)\)$/);
