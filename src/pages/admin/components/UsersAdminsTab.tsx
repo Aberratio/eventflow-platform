@@ -44,6 +44,9 @@ const roleLabels: Record<Extract<UserRole, 'admin' | 'superadmin'>, string> = {
   superadmin: 'Superadmin',
 };
 
+/** Staff accounts listed here: admins and (umowa §5.8) moderators. */
+const staffRoleLabel = (role: UserRole): string =>
+  role === 'superadmin' ? 'Superadmin' : role === 'moderator' ? 'Moderator' : 'Administrator';
 const formatLastLogin = (iso?: string | null): string =>
   iso ? new Date(iso).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' }) : 'Nigdy';
 
@@ -65,7 +68,9 @@ export const UsersAdminsTab = () => {
 
   const admins = [
     ...(usersResponse?.data ?? [])
-      .filter((user) => user.role === 'admin' || user.role === 'superadmin')
+      .filter(
+        (user) => user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator',
+      )
       .map((user) => ({ ...user, role: roleOverrides[user.id] ?? user.role })),
     ...createdAdmins,
   ];
@@ -171,7 +176,7 @@ export const UsersAdminsTab = () => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge variant={user.role === 'superadmin' ? 'destructive' : 'default'}>
-                    {user.role === 'superadmin' ? 'Superadmin' : 'Administrator'}
+                    {staffRoleLabel(user.role)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -226,9 +231,7 @@ export const UsersAdminsTab = () => {
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span className="text-sm">
                 Konto z uprawnieniami:{' '}
-                <span className="font-medium">
-                  {selectedUser.role === 'superadmin' ? 'Superadmin' : 'Administrator'}
-                </span>
+                <span className="font-medium">{staffRoleLabel(selectedUser.role)}</span>
               </span>
             </div>
           )

@@ -88,7 +88,7 @@ export interface MyCompetitor {
   /** E1.12: kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
   identityCode: string;
   competitorUserId?: string | null;
-  /** G-09: absent in GET /care today (server gap) — treated as false until toggled in this session. */
+  /** G-09: current masking state of this ward, returned by GET /care. */
   isAnonymized?: boolean;
 }
 

@@ -32,6 +32,10 @@ export interface Ticket {
   bibNumber: string;
   category: string;
   registrationId: string;
+  /** G-12 (server PR #38): status of the Zapis this ticket belongs to. */
+  registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
+  /** G-12: start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
+  qrCode?: string | null;
   /**
    * E3.6 (issue 12 §4): the Odprawa fact reported back by Biuro Zawodów —
    * set once BZ confirms check-in, undefined/null beforehand. `checkedInBy`
