@@ -302,6 +302,10 @@ function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
 }
 
+/** B-03: global templates live under /admin, per-event ones under /events/{id}. */
+const mailTemplatesBase = (eventId?: string | null): string =>
+  eventId ? `/events/${encodeURIComponent(eventId)}/mail-templates` : '/admin/mail-templates';
+
 export const httpAdapter: ApiAdapter = {
   getEvents: (filters) =>
     paginated<Event>('/events', filters as Record<string, QueryValue>).then((r) => ({
@@ -675,23 +679,21 @@ export const httpAdapter: ApiAdapter = {
   reviewVirtualResult: (id, status, reason) =>
     request(`/virtual-results/${encodeURIComponent(id)}/review`, json('PATCH', { status, reason })),
 
-  getEmailTemplates: (eventId) => paginated('/email-templates', { eventId: eventId ?? undefined }),
-  getEmailTemplateById: (id) => request(`/email-templates/${encodeURIComponent(id)}`),
-  getEmailSendLogs: (eventId) => request(`/email-send-logs${query({ eventId })}`),
-  createEmailTemplate: (payload) => request('/email-templates', json('POST', payload)),
-  updateEmailTemplate: (id, data) =>
-    request(`/email-templates/${encodeURIComponent(id)}`, json('PATCH', data)),
-  deleteEmailTemplate: (id) =>
-    request(`/email-templates/${encodeURIComponent(id)}`, json('DELETE')),
-  toggleEmailTemplate: (id, active) =>
-    request(`/email-templates/${encodeURIComponent(id)}/active`, json('PATCH', { active })),
-  sendEmailNow: (templateId, recipientIds) =>
+  getMailTemplates: (eventId) => request(mailTemplatesBase(eventId)),
+  saveMailTemplate: (mailType, payload, eventId) =>
+    request(`${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}`, json('PUT', payload)),
+  resetMailTemplate: (mailType, eventId) =>
+    request(`${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}`, json('DELETE')),
+  previewMailTemplate: (mailType, payload, eventId) =>
     request(
-      `/email-templates/${encodeURIComponent(templateId)}/send`,
-      json('POST', { recipientIds }),
+      `${mailTemplatesBase(eventId)}/${encodeURIComponent(mailType)}/preview`,
+      json('POST', payload),
     ),
-  previewEmailTemplate: (requestPayload) =>
-    request('/email-templates/preview', json('POST', requestPayload)),
+  getMailLog: (filters, eventId) =>
+    paginated(
+      `${eventId ? `/events/${encodeURIComponent(eventId)}` : '/admin'}/mail-log`,
+      filters as Record<string, QueryValue>,
+    ),
 
   getCare: () => request('/care'),
   grantCareByEmail: (email) => request('/care', json('POST', { email })),

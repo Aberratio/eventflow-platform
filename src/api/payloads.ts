@@ -35,7 +35,11 @@ import type {
   Challenge,
   Partner,
 } from '@/types';
-import type { CreateEmailTemplatePayload, EmailPreviewRequest } from '@/types/email';
+import type {
+  SaveMailTemplatePayload,
+  MailTemplatePreviewRequest,
+  MailLogFilters,
+} from '@/types/email';
 
 // ──────────────── Events ────────────────
 
@@ -371,4 +375,4 @@ export type UpdatePartnerPayload = Partial<CreatePartnerPayload>;
 
 // ──────────────── Re-exports for convenience ────────────────
 
-export type { CreateEmailTemplatePayload, EmailPreviewRequest };
+export type { SaveMailTemplatePayload, MailTemplatePreviewRequest, MailLogFilters };
