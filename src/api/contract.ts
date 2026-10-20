@@ -63,6 +63,7 @@ import type {
   User,
   UserRole,
   Registration,
+  RegistrationChange,
   RegistrationQuote,
   PublicStartListEntry,
   RelayTeam,
@@ -294,6 +295,8 @@ export interface ApiAdapter {
     data: UpdateRegistrationPayload,
   ): Promise<ApiResponse<Registration>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
+  /** R-02: historia zmian jednego zapisu (właściciel i organizator), od najstarszej. */
+  getRegistrationChanges(id: string): Promise<ApiResponse<RegistrationChange[]>>;
   updatePaymentDetails(
     id: string,
     paymentDetails: PaymentDetails,

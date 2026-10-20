@@ -15,11 +15,14 @@ import {
   QrCode,
   CheckCircle2,
   CreditCard,
+  History,
+  LogOut,
 } from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
 import { canRetryPayment } from '@/lib/unpaidRegistration';
+import { evaluateSelfService, selfServiceDeniedMessage } from '@/lib/selfService';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface RegistrationListRowProps {
@@ -31,6 +34,10 @@ interface RegistrationListRowProps {
   onRequestRefund?: () => void;
   /** B-05: „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. */
   onRetryPayment?: () => void;
+  /** R-02: „Zrezygnuj” — offered only while the self-service window is open; omitted = never offered. */
+  onCancel?: () => void;
+  /** R-02: „Historia zapisu” — omitted = not offered. */
+  onShowHistory?: () => void;
 }
 
 export const RegistrationListRow = ({
@@ -40,6 +47,8 @@ export const RegistrationListRow = ({
   onSubmitResult,
   onRequestRefund,
   onRetryPayment,
+  onCancel,
+  onShowHistory,
 }: RegistrationListRowProps) => {
   const [showStartCode, setShowStartCode] = useState(false);
   const now = new Date();
@@ -74,7 +83,9 @@ export const RegistrationListRow = ({
           ? 'Potwierdzony'
           : registration.status === 'expired'
             ? 'Wygasł'
-            : 'Oczekuje'}
+            : registration.status === 'cancelled' || registration.status === 'removed'
+              ? 'Anulowany'
+              : 'Oczekuje'}
       </Badge>
       {registration.refund && (
         <Badge variant="outline" className="text-xs">
@@ -135,6 +146,48 @@ export const RegistrationListRow = ({
         Ponów płatność
       </Button>
     );
+
+  const selfService = onCancel ? evaluateSelfService(event, registration, now) : null;
+  const cancelButton = selfService?.allowed && onCancel && (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onCancel();
+      }}
+      className="h-7 text-xs"
+    >
+      <LogOut className="mr-1 h-3 w-3" />
+      Zrezygnuj
+    </Button>
+  );
+  const cancelUnavailable =
+    selfService && !selfService.allowed
+      ? selfServiceDeniedMessage(
+          selfService.reason,
+          selfService.deadline
+            ? format(selfService.deadline, 'd MMMM yyyy, HH:mm', { locale: pl })
+            : null,
+        )
+      : null;
+
+  const historyButton = onShowHistory && (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onShowHistory();
+      }}
+      className="h-7 text-xs"
+    >
+      <History className="mr-1 h-3 w-3" />
+      Historia zapisu
+    </Button>
+  );
 
   const submitButton = (label: string, variant: 'default' | 'outline' = 'default') => (
     <Button
@@ -281,6 +334,11 @@ export const RegistrationListRow = ({
       {startCodeTrigger}
       {refundButton}
       {retryButton}
+      {cancelButton}
+      {historyButton}
+      {cancelUnavailable && (
+        <span className="basis-full text-xs text-muted-foreground">{cancelUnavailable}</span>
+      )}
       {startCodeReveal}
     </div>
   );

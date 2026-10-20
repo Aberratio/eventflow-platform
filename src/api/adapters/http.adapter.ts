@@ -561,6 +561,7 @@ export const httpAdapter: ApiAdapter = {
     request(`/registrations/${encodeURIComponent(id)}`, json('PATCH', data)),
   cancelRegistration: (id) =>
     request(`/registrations/${encodeURIComponent(id)}/cancel`, json('POST')),
+  getRegistrationChanges: (id) => request(`/registrations/${encodeURIComponent(id)}/changes`),
   updatePaymentDetails: (id, paymentDetails) =>
     request(
       `/registrations/${encodeURIComponent(id)}/payment-details`,

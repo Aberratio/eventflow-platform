@@ -23,6 +23,21 @@ export interface SettlementItem {
  * ręcznie, w pełni zbudowane tym tickietem). `amount` is the server-computed saldo
  * (never client-supplied) — the client only ever displays it.
  */
+/**
+ * R-02: wpis w historii zapisu (`GET /registrations/{id}/changes`). `from`/`to` to migawki
+ * zależne od typu — rezygnacja: `{ status, distanceId }` → `{ status, refundRequested }`.
+ */
+export interface RegistrationChange {
+  id: string;
+  registrationId: string;
+  type: 'cancelled' | 'distance_changed' | 'transferred';
+  from: Record<string, unknown> | null;
+  to: Record<string, unknown> | null;
+  actorId: string | null;
+  actorRole: string | null;
+  createdAt: string;
+}
+
 export interface RefundState {
   status: 'requested' | 'approved' | 'refunded';
   requestedAt?: string;

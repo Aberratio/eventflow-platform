@@ -50,6 +50,73 @@ const registration: Registration = {
   bibNumber: '123',
 };
 
+describe('RegistrationListRow self-service cancellation (R-02)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const liveEvent: Event = {
+    ...event,
+    isVirtual: false,
+    date: '2026-09-20',
+    startDate: undefined,
+    endDate: undefined,
+  };
+
+  it('offers "Zrezygnuj" inside the window and calls onCancel', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+    const onCancel = vi.fn();
+
+    render(
+      <RegistrationListRow registration={registration} event={liveEvent} onCancel={onCancel} />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zrezygnuj' })[0]);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the button after the cut-off and explains why', () => {
+    vi.setSystemTime(new Date('2026-09-15T10:00:00Z'));
+
+    render(
+      <RegistrationListRow registration={registration} event={liveEvent} onCancel={vi.fn()} />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zrezygnuj' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Termin samodzielnej rezygnacji minął/)).not.toHaveLength(0);
+  });
+
+  it('shows the organizer message when self-service is switched off', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={{ ...liveEvent, selfServiceEnabled: false }}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zrezygnuj' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Organizator wyłączył samodzielną rezygnację/)).not.toHaveLength(0);
+  });
+
+  it('offers the history when asked to', () => {
+    const onShowHistory = vi.fn();
+
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onShowHistory={onShowHistory}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Historia zapisu' })[0]);
+    expect(onShowHistory).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('RegistrationListRow virtual result action', () => {
   afterEach(() => {
     vi.useRealTimers();
