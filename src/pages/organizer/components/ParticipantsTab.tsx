@@ -44,6 +44,8 @@ import { SendMessageDialog } from '@/components/SendMessageDialog';
 import SwapTeamMemberDialog from '@/components/team/SwapTeamMemberDialog';
 import { ChangeDistanceDialog } from '@/components/registration/ChangeDistanceDialog';
 import { canChangeDistance } from '@/lib/distanceChange';
+import { TransferRegistrationDialog } from '@/components/registration/TransferRegistrationDialog';
+import { canTransferRegistration } from '@/lib/registrationTransfer';
 import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration } from '@/types';
 import {
@@ -64,6 +66,7 @@ import {
   UserMinus,
   ArrowLeftRight,
   Shuffle,
+  UserCog,
   FileText,
   Printer,
   CreditCard,
@@ -175,6 +178,9 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [bibDialogOpen, setBibDialogOpen] = useState(false);
   const [swapRegistration, setSwapRegistration] = useState<Registration | null>(null);
   const [changeDistanceRegistration, setChangeDistanceRegistration] = useState<Registration | null>(
+    null,
+  );
+  const [transferRegistrationTarget, setTransferRegistrationTarget] = useState<Registration | null>(
     null,
   );
   const [bibNumber, setBibNumber] = useState('');
@@ -746,6 +752,17 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                       <Shuffle className="h-4 w-4" />
                                     </Button>
                                   )}
+                                  {canTransferRegistration(reg) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Przenieś zapis"
+                                      aria-label={`Przenieś zapis ${reg.userName}`}
+                                      onClick={() => setTransferRegistrationTarget(reg)}
+                                    >
+                                      <UserCog className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                   {reg.status !== 'confirmed' && (
                                     <Button
                                       variant="ghost"
@@ -798,6 +815,22 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             registration={changeDistanceRegistration}
             event={event}
             onChanged={(updated) =>
+              setLocalRegistrations((prev) =>
+                prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+              )
+            }
+          />
+        )}
+
+        {transferRegistrationTarget && (
+          <TransferRegistrationDialog
+            open
+            onOpenChange={(next) => {
+              if (!next) setTransferRegistrationTarget(null);
+            }}
+            registration={transferRegistrationTarget}
+            event={event}
+            onTransferred={(updated) =>
               setLocalRegistrations((prev) =>
                 prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
               )

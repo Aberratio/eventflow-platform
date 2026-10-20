@@ -240,6 +240,21 @@ export type DistanceChangeResult = Registration & {
   change: DistanceChangeQuote;
 };
 
+/**
+ * R-02 (zakres P2): the Zapis after `POST /registrations/{id}/transfer`. Nothing is paid or refunded by
+ * the transfer: `balanceDueMinor` / `overpaymentMinor` (grosze) only report what the new person's NNW
+ * insurance changed, for the organizer to settle by hand.
+ */
+export type TransferRegistrationResult = Registration & {
+  balanceDueMinor: number;
+  overpaymentMinor: number;
+  transfer: {
+    from: { competitorId: string; name: string };
+    to: { competitorId: string; name: string };
+    changeId: string;
+  };
+};
+
 /** B-02: one line of the Rozliczenie a Zapis would get — the response of `POST /registrations/quote`. */
 export interface RegistrationQuoteItem {
   name: string;
