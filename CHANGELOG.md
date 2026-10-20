@@ -18,6 +18,10 @@ as the first version.
   challenges.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
+- Registration form per distance: in the form editor, organizers pick the
+  whole event or one distance, see inherited fields, override them for that
+  distance (or reset), and add distance-only fields. The registration form
+  shows the form of the chosen distance.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.

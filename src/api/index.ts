@@ -341,6 +341,14 @@ export const getPublicFormFields: ApiAdapter['getPublicFormFields'] = (...args) 
   ensureAdapter().then((a) => a.getPublicFormFields(...args));
 export const getFormFields: ApiAdapter['getFormFields'] = (...args) =>
   ensureAdapter().then((a) => a.getFormFields(...args));
+export const getDistanceFormFields: ApiAdapter['getDistanceFormFields'] = (...args) =>
+  ensureAdapter().then((a) => a.getDistanceFormFields(...args));
+export const createDistanceFormField: ApiAdapter['createDistanceFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.createDistanceFormField(...args));
+export const overrideFormField: ApiAdapter['overrideFormField'] = (...args) =>
+  ensureAdapter().then((a) => a.overrideFormField(...args));
+export const resetFormFieldOverride: ApiAdapter['resetFormFieldOverride'] = (...args) =>
+  ensureAdapter().then((a) => a.resetFormFieldOverride(...args));
 export const createFormField: ApiAdapter['createFormField'] = (...args) =>
   ensureAdapter().then((a) => a.createFormField(...args));
 export const updateFormField: ApiAdapter['updateFormField'] = (...args) =>

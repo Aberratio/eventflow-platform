@@ -734,8 +734,34 @@ export const httpAdapter: ApiAdapter = {
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
   // E1.13: the server's 422 text is field-specific ("To pole jest wymagane."), so keep it
   // instead of the generic validation_error copy.
-  getPublicFormFields: (eventId) =>
-    request(`/events/${encodeURIComponent(eventId)}/form-fields/public`),
+  getPublicFormFields: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/public${
+        distanceId ? `?distanceId=${encodeURIComponent(distanceId)}` : ''
+      }`,
+    ),
+  getDistanceFormFields: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields`,
+    ),
+  createDistanceFormField: (eventId, distanceId, data) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields`,
+      json('POST', data),
+      true,
+    ),
+  overrideFormField: (eventId, distanceId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields/${encodeURIComponent(fieldId)}/override`,
+      json('POST'),
+      true,
+    ),
+  resetFormFieldOverride: (eventId, distanceId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields/${encodeURIComponent(fieldId)}/override`,
+      json('DELETE'),
+      true,
+    ),
   getFormFields: (eventId) => request(`/events/${encodeURIComponent(eventId)}/form-fields`),
   createFormField: (eventId, data) =>
     request(`/events/${encodeURIComponent(eventId)}/form-fields`, json('POST', data), true),

@@ -787,6 +787,11 @@ export interface FormField {
   options: FormFieldOption[] | null;
   createdAt?: string;
   updatedAt?: string;
+  /**
+   * R-04, only on a distance's effective form: where the position comes from — `event` (inherited
+   * as is), `override` (this distance replaces it) or `distance` (exists on this distance only).
+   */
+  source?: 'event' | 'override' | 'distance';
 }
 
 export interface CreateFormFieldPayload {
