@@ -678,8 +678,11 @@ export const httpAdapter: ApiAdapter = {
   archiveChallenge: (id) => request(`/challenges/${encodeURIComponent(id)}/archive`, json('POST')),
   getChallengeParticipations: (challengeId, userId) =>
     request(`/challenge-participations${query({ challengeId, userId })}`),
-  joinChallenge: (challengeId) =>
-    request(`/challenges/${encodeURIComponent(challengeId)}/join`, json('POST')),
+  joinChallenge: (challengeId, competitorId) =>
+    request(
+      `/challenges/${encodeURIComponent(challengeId)}/join`,
+      json('POST', competitorId ? { competitorId } : undefined),
+    ),
   submitChallengeEntry: (data) => request('/challenge-entries', json('POST', data)),
   reviewChallengeEntry: (entryId, status, reason) =>
     request(

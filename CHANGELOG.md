@@ -29,5 +29,8 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Participant challenges (zakres P2, to be confirmed by the client): the
+  "My challenges" tab also lists the challenges of wards under care, grouped
+  by competitor, and a caregiver can join a challenge on behalf of a ward.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
