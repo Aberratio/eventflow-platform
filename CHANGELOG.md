@@ -14,6 +14,9 @@ as the first version.
 
 ### Added
 
+- Mobile fixes: the Tickets tab no longer breaks on a missing event date,
+  and organizer and admin tabs no longer overflow the page at 360 px.
+
 - Public event catalogue with event details, live results, series and
   challenges.
 - Event registration, including an embeddable registration form for
