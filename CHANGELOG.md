@@ -23,6 +23,8 @@ as the first version.
   change, a profile page and public athlete profiles.
 - Participant dashboard with printable tickets and team invitations for
   captains.
+- The participant dashboard no longer shows the non-working Messages tab,
+  and the organizer's placeholder "Message" button is gone.
 - Organizer, moderator and admin panels for running events, registrations,
   results and the shop.
 - Info pages, and dedicated error pages for missing pages, forbidden access,
