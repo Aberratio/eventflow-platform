@@ -157,7 +157,12 @@ export const bibRangeFieldErrors = (
   for (let i = 0; i < index; i++) {
     const otherFrom = parseRangeBound(distances[i].bibRangeFrom);
     const otherTo = parseRangeBound(distances[i].bibRangeTo);
-    if (otherFrom === null || otherTo === null || Number.isNaN(otherFrom) || Number.isNaN(otherTo)) {
+    if (
+      otherFrom === null ||
+      otherTo === null ||
+      Number.isNaN(otherFrom) ||
+      Number.isNaN(otherTo)
+    ) {
       continue;
     }
     if (from <= otherTo && to >= otherFrom) {

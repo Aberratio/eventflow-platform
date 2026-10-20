@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -133,7 +132,8 @@ export const BibNumberAssignment = ({
     try {
       const response = await assignBibNumbers(event.id, {
         distanceIds: [...selectedDistances],
-        order: sortingOption === 'name_paid' || sortingOption === 'name_all' ? 'name' : 'registered',
+        order:
+          sortingOption === 'name_paid' || sortingOption === 'name_all' ? 'name' : 'registered',
         paidOnly: sortingOption === 'date_paid' || sortingOption === 'name_paid',
       });
       const result = response.data;
@@ -145,13 +145,13 @@ export const BibNumberAssignment = ({
         .filter((s) => s.reason === 'range_exhausted')
         .reduce((sum, s) => sum + s.count, 0);
       const assigned = result?.assigned ?? 0;
+      const exhaustedNote =
+        exhausted > 0
+          ? ` ${exhausted} uczestników bez numeru: zakres numerów dystansu jest wyczerpany.`
+          : '';
       toast({
         title: 'Numery przydzielone',
-        description:
-          `Przydzielono numery ${assigned} ${assigned === 1 ? 'uczestnikowi' : 'uczestnikom'}.` +
-          (exhausted > 0
-            ? ` ${exhausted} uczestników bez numeru: zakres numerów dystansu jest wyczerpany.`
-            : ''),
+        description: `Przydzielono numery ${assigned} ${assigned === 1 ? 'uczestnikowi' : 'uczestnikom'}.${exhaustedNote}`,
         variant: exhausted > 0 ? 'destructive' : undefined,
       });
     } catch (error) {
@@ -181,11 +181,10 @@ export const BibNumberAssignment = ({
       registrations.map((r) => (cleared.has(r.id) ? { ...r, bibNumber: undefined } : r)),
     );
     const failed = targets.length - cleared.size;
+    const failedNote = failed > 0 ? ` Nie udało się usunąć ${failed}.` : '';
     toast({
       title: failed > 0 ? 'Nie wszystkie numery usunięto' : 'Numery usunięte',
-      description:
-        `Usunięto numery ${cleared.size} ${cleared.size === 1 ? 'uczestnikowi' : 'uczestnikom'}.` +
-        (failed > 0 ? ` Nie udało się usunąć ${failed}.` : ''),
+      description: `Usunięto numery ${cleared.size} ${cleared.size === 1 ? 'uczestnikowi' : 'uczestnikom'}.${failedNote}`,
       variant: failed > 0 ? 'destructive' : undefined,
     });
   };
@@ -222,7 +221,6 @@ export const BibNumberAssignment = ({
               </SelectContent>
             </Select>
           </div>
-
         </div>
 
         {/* Distance selection */}
