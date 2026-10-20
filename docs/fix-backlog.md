@@ -20,20 +20,20 @@ Aktualizacja 2026-10-19 (późny wieczór): bez zmian – nic nowego nie zmergow
 
 ### Noc 2026-10-19/20 – P2, CI, WCAG, UX (wszystko draft / lokalnie, nic niezmergowane)
 
-Push i `gh pr create` agentów były częściowo blokowane przez klasyfikator uprawnień – część gałęzi jest tylko wypchnięta albo tylko lokalna.
+Push i `gh pr create` agentów były w nocy blokowane; 2026-10-20 wszystko wypchnięte i otwarte jako draft PR (zgoda Joanny). R-08 przerobione wg decyzji (statusy, zakres organizatora; mig. 103 zmieniona w miejscu – na bazach z zaaplikowaną 103: DROP TABLE `competitor_duplicate_reports` i usunąć wiersz 103 z `schema_migrations`). Do sprawdzenia: `ChallengeCompletionTest::testJoinAutoApprovalCrossesThresholdAndCompletionDetectedOnce` czerwony w pełnym Integration na gałęzi R-08 (QA-TEST-02, niezweryfikowany na master).
 
 | ID | Co | Gdzie |
 |---|---|---|
 | CI | `test.yml` tylko gotowe PR-y + concurrency + paths-ignore, bez push master; `e2e-bz` po merge, ręcznie i co tydzień | S #54 |
 | R-08 | Zgłoszenie duplikatu (opiekun/organizator), kolejka dla moderatora/admina; mig. 103. Spec 22 niedostępna (hook) – założenia: organizator może zgłosić dowolny profil, brak akcji „odrzuć/scalone” | S #55, F #30 |
 | M-04 | Klient `zmierzymy-czas` w `email_clients`; mig. CM 014; nowa zmienna `ZMIERZYMY_CZAS_API_KEY` (CM), potem przestawić klucz w serwerze | CM #5 |
-| R-05 | Zadanie `retention.purge`: odpowiedzi poufne 12 mies. po końcu wydarzenia, rejestr aktywności 12 mies. (okres do potwierdzenia RODO) | S gałąź `fix/r05-retention-jobs` (bez PR) |
-| R-09 | `Anonim #<8 hex>` (skrót z id zawodnika) – **zmiana kontraktu** `userName` | S gałąź `fix/r09-anonymous-label` (bez PR) |
-| R-12 | Testy: podłoga ceny i współbieżność licznika miejsc (6 procesów) – błędu nie ma | S `test/r12-price-and-capacity` (tylko lokalnie, `.wt/p2-server`) |
-| QA-LOCAL-01 | Błędny fixture (brak K40 na dystansie), nie kod | S gałąź `fix/qa-local-01-dnf-sample` (bez PR) |
-| R-15 | Inter self-hostowany, hosty Google usunięte z CSP | F `fix/r15-fonts-consent` (lokalnie, `.wt/p2-front`) |
-| R-16 | Escape zamyka menu mobilne, fokus wraca na przycisk | F `fix/r16-mobile-menu-escape` (lokalnie) |
-| R-11 | Usunięte tylko nieużywane `getMessage/sendMessage/markAsRead`. **Decyzja:** zakładka „Wiadomości” uczestnika woła `/users/{id}/messages` (poza umową) – usunąć? | F `chore/r11-remove-messages` (lokalnie) |
+| R-05 | Zadanie `retention.purge`: odpowiedzi poufne 12 mies. po końcu wydarzenia, rejestr aktywności 12 mies. (okres do potwierdzenia RODO) | S #59 (env `RETENTION_CONFIDENTIAL_ANSWERS_DAYS`=90, `RETENTION_ACTIVITY_LOG_MONTHS`=12) |
+| R-09 | `Anonim #<8 hex>` (skrót z id zawodnika) – **zmiana kontraktu** `userName` | S #60 |
+| R-12 | Testy: podłoga ceny i współbieżność licznika miejsc (6 procesów) – błędu nie ma | S #61 |
+| QA-LOCAL-01 | Błędny fixture (brak K40 na dystansie), nie kod | S #62 |
+| R-15 | Inter self-hostowany, hosty Google usunięte z CSP | F #39 |
+| R-16 | Escape zamyka menu mobilne, fokus wraca na przycisk | F #40 |
+| R-11 | Usunięte tylko nieużywane `getMessage/sendMessage/markAsRead`. **Decyzja:** zakładka „Wiadomości” uczestnika woła `/users/{id}/messages` (poza umową) – usunąć? | F #41 (zakładka i atrapa `SendMessageDialog` usunięte) |
 | WCAG | Audyt 2.2 AA (68 ekranów × 2 viewporty), 25 pozycji (14 P1); raport `docs/a11y-audit.md` | F #31–#34 (mechaniczne konflikty w `Footer.tsx`/`Index.tsx` między #32–#34) |
 | UX | Audyt użyteczności mobile, raport `docs/ux-audit.md`; poprawki blokujące: bilet bez daty (500), overflow paneli na 360 px | F #35 |
 | Redesign | Plan: `docs/redesign-plan.md` | ten PR |
