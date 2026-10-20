@@ -21,6 +21,8 @@ as the first version.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
+- Accessibility: a "skip to content" link, a single main landmark per page
+  and a consistent heading hierarchy.
 - Participant dashboard with printable tickets and team invitations for
   captains.
 - Organizer, moderator and admin panels for running events, registrations,
