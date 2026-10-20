@@ -54,9 +54,9 @@ export const Footer = () => {
           <div className="grid grid-cols-2 gap-6 md:contents">
             {/* Informacje */}
             <div>
-              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+              <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 Informacje
-              </h4>
+              </h2>
               <ul className="space-y-2.5 text-sm">
                 {footerPages.map((page) => (
                   <li key={page.id}>
@@ -73,9 +73,9 @@ export const Footer = () => {
 
             {/* Prawne */}
             <div>
-              <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+              <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
                 Prawne
-              </h4>
+              </h2>
               <ul className="space-y-2.5 text-sm">
                 <li>
                   <Link
@@ -116,9 +116,9 @@ export const Footer = () => {
 
           {/* Kontakt & Social */}
           <div>
-            <h4 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
+            <h2 className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-white/55">
               Kontakt
-            </h4>
+            </h2>
             <ul className="mb-5 space-y-2.5 text-sm">
               <li>
                 <a

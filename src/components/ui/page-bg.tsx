@@ -52,7 +52,7 @@ interface PageContentProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const PageContent = React.forwardRef<HTMLElement, PageContentProps>(
-  ({ as: Tag = 'main', maxWidth = '1200px', className, children, style, ...props }, ref) => (
+  ({ as: Tag = 'div', maxWidth = '1200px', className, children, style, ...props }, ref) => (
     <Tag
       ref={ref}
       className={cn('relative mx-auto w-full px-4 pb-10 sm:px-6 lg:px-8', className)}
