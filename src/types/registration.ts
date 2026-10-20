@@ -208,6 +208,38 @@ export interface PublicStartListEntry {
   formFields: PublicStartListField[];
 }
 
+/**
+ * R-02 (zakres P2): the numbers of a change of Dystans — the response of `POST /registrations/{id}/distance-change/quote`
+ * and the `change` part of the change itself. Money in PLN, `*Minor` in grosze. `blockedReason` is set when
+ * this caller may not (or cannot yet) make the change, e.g. `balance_due_requires_organizer` for a dearer Dystans.
+ */
+export interface DistanceChangeQuote {
+  registrationId: string;
+  from: { distanceId: string; distanceName: string };
+  to: { distanceId: string; distanceName: string };
+  category: string;
+  currentTotal: number;
+  newTotal: number;
+  paidAmount: number;
+  /** newTotal − paidAmount for a paid Zapis; 0 for an unpaid one. */
+  balance: number;
+  balanceDueMinor: number;
+  refundDueMinor: number;
+  settlementItems: { name: string; basis: string; amount: number }[];
+  discountDropped: boolean;
+  bibCleared: boolean;
+  blockedReason: string | null;
+  blockedMessage: string | null;
+}
+
+/** R-02: the changed Zapis plus what the change cost (`POST /registrations/{id}/distance-change`). */
+export type DistanceChangeResult = Registration & {
+  balanceDueMinor: number;
+  refundDueMinor: number;
+  refundRequested: boolean;
+  change: DistanceChangeQuote;
+};
+
 /** B-02: one line of the Rozliczenie a Zapis would get — the response of `POST /registrations/quote`. */
 export interface RegistrationQuoteItem {
   name: string;

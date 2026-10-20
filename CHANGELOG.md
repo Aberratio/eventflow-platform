@@ -33,5 +33,12 @@ as the first version.
   organizer's cut-off date (zakres P2, do potwierdzenia przez Zamawiającego),
   see the registration history, and organizers set the "Samoobsługa zapisów"
   switch and cut-off date in the event form.
+- "Zmień dystans" for a registration (zakres P2, do potwierdzenia przez
+  Zamawiającego): participants pick another distance or fee variant inside the
+  same self-service window, see the new price and the balance before
+  confirming, and are told when a dearer distance has to be settled with the
+  organizer; organizers can change the distance of any registration from the
+  participants list. A cheaper distance files a refund request for the
+  overpayment.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main

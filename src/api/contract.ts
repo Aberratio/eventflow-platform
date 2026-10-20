@@ -56,6 +56,7 @@ import type {
   UpdateInfoPagePayload,
   CreatePartnerPayload,
   UpdatePartnerPayload,
+  ChangeDistancePayload,
 } from './payloads';
 import type {
   Event,
@@ -64,6 +65,8 @@ import type {
   UserRole,
   Registration,
   RegistrationChange,
+  DistanceChangeQuote,
+  DistanceChangeResult,
   RegistrationQuote,
   PublicStartListEntry,
   RelayTeam,
@@ -297,6 +300,16 @@ export interface ApiAdapter {
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
   /** R-02: historia zmian jednego zapisu (właściciel i organizator), od najstarszej. */
   getRegistrationChanges(id: string): Promise<ApiResponse<RegistrationChange[]>>;
+  /** R-02 (zakres P2): co da zmiana dystansu — nowa cena i saldo; nic nie zapisuje. */
+  quoteDistanceChange(
+    id: string,
+    data: ChangeDistancePayload,
+  ): Promise<ApiResponse<DistanceChangeQuote>>;
+  /** R-02 (zakres P2): zmiana dystansu/wariantu zapisu (właściciel w oknie, organizator zawsze). */
+  changeRegistrationDistance(
+    id: string,
+    data: ChangeDistancePayload,
+  ): Promise<ApiResponse<DistanceChangeResult>>;
   updatePaymentDetails(
     id: string,
     paymentDetails: PaymentDetails,

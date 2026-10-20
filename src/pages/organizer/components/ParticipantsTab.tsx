@@ -42,6 +42,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SendMessageDialog } from '@/components/SendMessageDialog';
 import SwapTeamMemberDialog from '@/components/team/SwapTeamMemberDialog';
+import { ChangeDistanceDialog } from '@/components/registration/ChangeDistanceDialog';
+import { canChangeDistance } from '@/lib/distanceChange';
 import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration } from '@/types';
 import {
@@ -61,6 +63,7 @@ import {
   Users,
   UserMinus,
   ArrowLeftRight,
+  Shuffle,
   FileText,
   Printer,
   CreditCard,
@@ -171,6 +174,9 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [selectedParticipant, setSelectedParticipant] = useState<Registration | null>(null);
   const [bibDialogOpen, setBibDialogOpen] = useState(false);
   const [swapRegistration, setSwapRegistration] = useState<Registration | null>(null);
+  const [changeDistanceRegistration, setChangeDistanceRegistration] = useState<Registration | null>(
+    null,
+  );
   const [bibNumber, setBibNumber] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] = useState(false);
@@ -729,6 +735,17 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                       <ArrowLeftRight className="h-4 w-4" />
                                     </Button>
                                   )}
+                                  {canChangeDistance(reg) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      title="Zmień dystans"
+                                      aria-label={`Zmień dystans ${reg.userName}`}
+                                      onClick={() => setChangeDistanceRegistration(reg)}
+                                    >
+                                      <Shuffle className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                   {reg.status !== 'confirmed' && (
                                     <Button
                                       variant="ghost"
@@ -770,6 +787,23 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             </CardContent>
           </Card>
         </TabsContent>
+
+        {changeDistanceRegistration && (
+          <ChangeDistanceDialog
+            open
+            isManager
+            onOpenChange={(next) => {
+              if (!next) setChangeDistanceRegistration(null);
+            }}
+            registration={changeDistanceRegistration}
+            event={event}
+            onChanged={(updated) =>
+              setLocalRegistrations((prev) =>
+                prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)),
+              )
+            }
+          />
+        )}
 
         {swapRegistration?.teamId && (
           <SwapTeamMemberDialog
