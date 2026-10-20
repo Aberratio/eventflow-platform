@@ -29,5 +29,6 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Accessibility: text colours meet the 4.5:1 contrast ratio.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
