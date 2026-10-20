@@ -16,6 +16,9 @@ as the first version.
 
 - Public event catalogue with event details, live results, series and
   challenges.
+- Caregivers and organizers can report a possible duplicate competitor
+  profile; moderators and admins review the reports in a queue with a status
+  filter and can reject them with a reason.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
 - Shop with product pages, cart and order confirmation.
