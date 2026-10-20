@@ -20,6 +20,7 @@ as the first version.
   organizers' own websites, and confirmation pages.
 - The embedded registration form shows the price calculated by the server,
   like the main registration page.
+- Results tables show the place by gender next to the open and category places.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
