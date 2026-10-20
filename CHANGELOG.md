@@ -29,5 +29,8 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Organizer discount codes: a "Generuj partię" dialog creates up to 1000 unique
+  codes at once (prefix, value, usage limit, validity), lists the batches and
+  downloads each one as a CSV.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
