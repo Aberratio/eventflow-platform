@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cancelEvent, deleteEvent, setEventIsTest, setEventVisibility, submitEvent } from '@/api';
+import { isEventOwnerLevel } from '@/lib/eventTeam';
 import type { Event, UserRole } from '@/types';
 import { appLogger } from '@/lib/logger';
 import {
@@ -80,10 +81,8 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
   const wasSentBack = Boolean(event.rejectionReason) && canSubmitReview;
   // Cancelling is restricted to the owning organizer or an admin/superadmin — never a
   // moderator (spec 08, "Co widzi każda rola").
-  const isOwnerOrAdmin =
-    currentUser?.role === 'admin' ||
-    currentUser?.role === 'superadmin' ||
-    (currentUser?.role === 'organizer' && currentUser.id === event.organizerId);
+  // R-01 (zakres P2): a Co-manager is neither - the Owner-only actions below stay hidden for them.
+  const isOwnerOrAdmin = isEventOwnerLevel(currentUser, event);
   const canCancel = event.publicationStatus === 'published' && isOwnerOrAdmin;
   const isDraft = event.publicationStatus === 'draft';
 
@@ -442,7 +441,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         </Card>
       )}
 
-      {canDeleteUpcoming && (
+      {canDeleteUpcoming && isOwnerOrAdmin && (
         <Card className="border-destructive/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">

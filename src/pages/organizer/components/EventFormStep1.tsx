@@ -1776,7 +1776,17 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
       )}
 
       {/* ── payment: Płatności ── */}
-      {activeSubStep === 'payment' && (
+      {activeSubStep === 'payment' && !form.canEditPayments && (
+        <Alert className="border-muted bg-muted/50">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Płatności ustawia właściciel wydarzenia</AlertTitle>
+          <AlertDescription>
+            Konfigurację płatności może zmieniać tylko właściciel wydarzenia. Pozostałe ustawienia
+            możesz edytować i zapisać.
+          </AlertDescription>
+        </Alert>
+      )}
+      {activeSubStep === 'payment' && form.canEditPayments && (
         <Card>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2">

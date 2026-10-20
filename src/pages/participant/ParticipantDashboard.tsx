@@ -29,6 +29,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import ParticipantOverviewTab from './components/ParticipantOverviewTab';
+import CoManagedEventsNotice from './components/CoManagedEventsNotice';
 import ParticipantRegistrationsTab from './components/ParticipantRegistrationsTab';
 import ParticipantHistoryTab from './components/ParticipantHistoryTab';
 import ParticipantRecordsTab from './components/ParticipantRecordsTab';
@@ -138,6 +139,7 @@ const ParticipantDashboard = () => {
           events={eventsResp?.data ?? []}
           onRetried={() => queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] })}
         />
+        <CoManagedEventsNotice />
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5 sm:space-y-6">
           {/* Mobile: horizontal scroll tabs */}

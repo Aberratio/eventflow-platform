@@ -52,10 +52,14 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
+  // R-01 (zakres P2): a participant who only co-manages Events has no organizer package or limit,
+  // and cannot create Events - the limit endpoint and the "new event" button are organizer-only.
+  const isOrganizer = user?.role === 'organizer';
+
   const { data: eventLimitResponse } = useQuery({
     queryKey: ['organizer-event-limit', user?.id],
     queryFn: () => getOrganizerEventLimit(user?.id || ''),
-    enabled: Boolean(user?.id),
+    enabled: Boolean(user?.id) && isOrganizer,
   });
 
   const myEvents = eventsResponse?.data ?? [];
@@ -72,16 +76,22 @@ const OrganizerEventsPage = () => {
   return (
     <Layout>
       <div className="container py-8">
-        <Button variant="ghost" onClick={() => navigate('/organizer')} className="mb-4">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(isOrganizer ? '/organizer' : '/participant')}
+          className="mb-4"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">Moje wydarzenia</h1>
-          <Button onClick={() => navigate('/organizer/events/new')} disabled={!canCreateEvent}>
-            <Plus className="mr-2 h-4 w-4" />{' '}
-            {canCreateEvent ? 'Nowe wydarzenie' : 'Limit wyczerpany'}
-          </Button>
+          {isOrganizer && (
+            <Button onClick={() => navigate('/organizer/events/new')} disabled={!canCreateEvent}>
+              <Plus className="mr-2 h-4 w-4" />{' '}
+              {canCreateEvent ? 'Nowe wydarzenie' : 'Limit wyczerpany'}
+            </Button>
+          )}
         </div>
 
         {eventLimit && (
@@ -140,6 +150,9 @@ const OrganizerEventsPage = () => {
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate text-base font-semibold">{event.name}</h3>
                         {getStatusBadge(event.publicationStatus)}
+                        {event.teamRole === 'co_manager' && (
+                          <Badge variant="secondary">Współzarządzający</Badge>
+                        )}
                       </div>
                       <div className="mt-1.5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">

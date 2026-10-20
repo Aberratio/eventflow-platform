@@ -128,6 +128,13 @@ import type {
   EmailPreviewResult,
 } from '@/types/email';
 import type { SalesStats, PlatformStats } from '@/types/admin';
+import type {
+  EventTeam,
+  EventTeamMember,
+  EventTeamMemberWithMail,
+  TeamInvitationAcceptance,
+  TeamInvitationPreview,
+} from '@/types/eventTeam';
 
 // ─────────────────────────────────────────────────────────
 // API Adapter Interface
@@ -141,6 +148,25 @@ export interface ApiAdapter {
   createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>>;
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;
   deleteEvent(id: string): Promise<ApiResponse<void>>;
+  /**
+   * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): the Event Team. The roster, invitations
+   * and revocations are Owner/admin only (403 for a Co-manager).
+   */
+  getEventTeam(eventId: string): Promise<ApiResponse<EventTeam>>;
+  inviteEventTeamMember(
+    eventId: string,
+    email: string,
+  ): Promise<ApiResponse<EventTeamMemberWithMail>>;
+  resendEventTeamInvitation(
+    eventId: string,
+    memberId: string,
+  ): Promise<ApiResponse<EventTeamMemberWithMail>>;
+  /** Takes the access away (status -> revoked); also kills a pending invitation link. */
+  revokeEventTeamMember(eventId: string, memberId: string): Promise<ApiResponse<EventTeamMember>>;
+  /** Public preview of an invitation (masked address); 404 unknown/revoked, 410 expired. */
+  getTeamInvitation(token: string): Promise<ApiResponse<TeamInvitationPreview>>;
+  /** Authenticated; 403 `invitation_email_mismatch` for another Account, 410 `invitation_expired`. */
+  acceptTeamInvitation(token: string): Promise<ApiResponse<TeamInvitationAcceptance>>;
   /** draft/rejected -> submitted. Also irreversibly clears `isTest`. */
   submitEvent(id: string): Promise<ApiResponse<Event>>;
   /** submitted -> published (single action, no separate resting "approved" state). */

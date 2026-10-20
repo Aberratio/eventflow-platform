@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { isEventOwnerLevel } from '@/lib/eventTeam';
 import {
   Event,
   SportDiscipline,
@@ -233,6 +234,8 @@ export const useEventFormState = () => {
   const { user } = useAuth();
   const isEditing = Boolean(id);
   const [existingEvent, setExistingEvent] = useState<Event | null>(null);
+  // R-01 (zakres P2): payment configuration is the Owner's (and admin's) - a Co-manager edits the rest.
+  const canEditPayments = !existingEvent || isEventOwnerLevel(user, existingEvent);
   const canChooseOrganizer =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
   const canManageFeatured = canChooseOrganizer;
@@ -1166,6 +1169,7 @@ export const useEventFormState = () => {
       }
     }
     if (
+      canEditPayments &&
       registrationMode !== 'external_embed' &&
       paymentConfigType === 'organizer_bank' &&
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
@@ -1864,6 +1868,7 @@ export const useEventFormState = () => {
   return {
     // Meta
     isEditing,
+    canEditPayments,
     originalIsPrivate: existingEvent?.visibility === 'private',
     privacyChanged: isEditing && (existingEvent?.visibility === 'private') !== isPrivate,
     step,

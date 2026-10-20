@@ -29,5 +29,11 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Event team (zakres P2, do potwierdzenia przez Zamawiającego): the owner invites
+  co-managers by e-mail from a new "Zespół" tab, can resend or revoke an
+  invitation and take access away. An invitation page accepts the invite
+  after login; co-managed events appear in the organizer panel with a
+  "Współzarządzający" badge, and owner-only actions (team, payments, delete)
+  stay hidden for co-managers.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
