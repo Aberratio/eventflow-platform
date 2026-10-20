@@ -5,8 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GradientDivider } from '@/components/ui/gradient-divider';
-import { Registration, Result, PersonalRecord, Message } from '@/types';
-import { Calendar, Trophy, Medal, Mail, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { Registration, Result, PersonalRecord } from '@/types';
+import { Calendar, Trophy, Medal, MapPin, Clock, ArrowRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 
@@ -14,14 +14,12 @@ interface ParticipantOverviewTabProps {
   upcomingRegistrations: Registration[];
   results: Result[];
   personalRecords: PersonalRecord[];
-  unreadMessages: Message[];
 }
 
 const ParticipantOverviewTab = ({
   upcomingRegistrations,
   results,
   personalRecords,
-  unreadMessages,
 }: ParticipantOverviewTabProps) => {
   const { data: eventsResponse } = useQuery({
     queryKey: ['events', 'participant-overview'],
@@ -61,18 +59,12 @@ const ParticipantOverviewTab = ({
       icon: Medal,
       gradient: 'from-primary/10 to-warning/5',
     },
-    {
-      label: 'Nowe wiadomości',
-      value: unreadMessages.length,
-      icon: Mail,
-      gradient: 'from-muted to-muted/50',
-    },
   ];
 
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {stats.map((stat, index) => (
           <Card key={index} className="overflow-hidden border-border/50">
             <CardContent className="relative pb-4 pt-4 sm:pt-5">

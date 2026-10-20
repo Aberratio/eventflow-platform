@@ -31,14 +31,6 @@ test.describe('Participant Dashboard', () => {
     await expect(page.getByRole('tabpanel')).toBeVisible();
   });
 
-  test('messages tab displays', async ({ page }) => {
-    const tab = page.getByRole('tab', { name: /Wiadomości/ });
-    await expect(tab).toBeVisible();
-    await tab.click();
-    await expect(tab).toHaveAttribute('data-state', 'active');
-    await expect(page.getByRole('tabpanel')).toBeVisible();
-  });
-
   test('orders tab displays order history', async ({ page }) => {
     const tab = page.getByRole('tab', { name: /Zamówienia/ });
     await expect(tab).toBeVisible();
