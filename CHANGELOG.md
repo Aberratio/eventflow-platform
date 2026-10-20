@@ -21,6 +21,9 @@ as the first version.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
+- Login shows how long to wait ("Zbyt wiele nieudanych prób logowania...")
+  and disables the button when the server temporarily blocks further
+  attempts after repeated failures.
 - Participant dashboard with printable tickets and team invitations for
   captains.
 - Organizer, moderator and admin panels for running events, registrations,

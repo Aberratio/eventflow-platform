@@ -117,6 +117,25 @@ describe('LoginPage', () => {
     });
   });
 
+  it('po 429 pokazuje czas oczekiwania i blokuje przycisk', async () => {
+    mockLoginWithCredentials.mockRejectedValueOnce(
+      new ApiRequestError('Zbyt wiele prób', 'too_many_login_attempts', 429, {
+        retryAfterSeconds: 240,
+      }),
+    );
+    render(<LoginPage />);
+
+    await userEvent.type(screen.getByPlaceholderText('twoj@email.com'), 'jan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('••••••••'), 'zle-haslo');
+    fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za 4 min.',
+    );
+    expect(screen.getByRole('button', { name: 'Zaloguj się' })).toBeDisabled();
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
   it('dla błędnych danych nadal pokazuje ogólny komunikat', async () => {
     mockLoginWithCredentials.mockResolvedValueOnce(false);
     render(<LoginPage />);
