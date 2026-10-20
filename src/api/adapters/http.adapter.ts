@@ -559,6 +559,8 @@ export const httpAdapter: ApiAdapter = {
   quoteRegistration: (data) => request('/registrations/quote', json('POST', data)),
   updateRegistration: (id, data) =>
     request(`/registrations/${encodeURIComponent(id)}`, json('PATCH', data)),
+  assignBibNumbers: (eventId, data) =>
+    request(`/events/${encodeURIComponent(eventId)}/bib-numbers/assign`, json('POST', data)),
   cancelRegistration: (id) =>
     request(`/registrations/${encodeURIComponent(id)}/cancel`, json('POST')),
   updatePaymentDetails: (id, paymentDetails) =>

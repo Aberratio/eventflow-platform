@@ -114,3 +114,59 @@ export const isBibNumberTaken = (
     return parseInt(r.bibNumber, 10) === num;
   });
 };
+
+/** R-13: a distance's start number range as typed in the event form (blank string = empty). */
+export interface BibRangeInput {
+  name?: string;
+  bibRangeFrom: string;
+  bibRangeTo: string;
+}
+
+const parseRangeBound = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (trimmed === '') return null;
+  const n = Number(trimmed);
+  return Number.isInteger(n) ? n : Number.NaN;
+};
+
+/**
+ * R-13: field errors (`distance_<i>_bibRangeFrom` / `_bibRangeTo`) for the start number ranges of
+ * one event: both bounds or none, 1 <= from <= to, and no overlap with an earlier distance.
+ * Mirrors the server's validation so the organizer sees the problem before saving.
+ */
+export const bibRangeFieldErrors = (
+  distances: BibRangeInput[],
+  index: number,
+): Record<string, string> => {
+  const dist = distances[index];
+  const from = parseRangeBound(dist.bibRangeFrom);
+  const to = parseRangeBound(dist.bibRangeTo);
+  if (from === null && to === null) return {};
+  if (from === null) {
+    return { [`distance_${index}_bibRangeFrom`]: 'Podaj początek zakresu numerów' };
+  }
+  if (to === null) {
+    return { [`distance_${index}_bibRangeTo`]: 'Podaj koniec zakresu numerów' };
+  }
+  if (Number.isNaN(from) || Number.isNaN(to) || from < 1 || to < from) {
+    return {
+      [`distance_${index}_bibRangeTo`]:
+        'Zakres musi składać się z liczb całkowitych: od co najmniej 1, a „do” nie mniejsze niż „od”',
+    };
+  }
+  for (let i = 0; i < index; i++) {
+    const otherFrom = parseRangeBound(distances[i].bibRangeFrom);
+    const otherTo = parseRangeBound(distances[i].bibRangeTo);
+    if (otherFrom === null || otherTo === null || Number.isNaN(otherFrom) || Number.isNaN(otherTo)) {
+      continue;
+    }
+    if (from <= otherTo && to >= otherFrom) {
+      return {
+        [`distance_${index}_bibRangeFrom`]: `Zakres ${from}–${to} nachodzi na zakres dystansu „${
+          distances[i].name || `#${i + 1}`
+        }” (${otherFrom}–${otherTo})`,
+      };
+    }
+  }
+  return {};
+};

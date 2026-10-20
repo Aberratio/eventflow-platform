@@ -29,5 +29,8 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Start number ranges per distance in the event form (overlapping ranges are
+  flagged), a server-side "assign start numbers" action that fills each range,
+  and manual start numbers that are checked for uniqueness and range.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main

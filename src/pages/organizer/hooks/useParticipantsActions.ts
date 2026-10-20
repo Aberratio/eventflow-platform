@@ -3,7 +3,13 @@ import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { formatDate } from '@/lib/format';
-import { approveRefund, completeRefund, markRegistrationPaid, exportStartList } from '@/api';
+import {
+  approveRefund,
+  completeRefund,
+  markRegistrationPaid,
+  exportStartList,
+  updateRegistration,
+} from '@/api';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
@@ -76,14 +82,35 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     });
   };
 
-  const handleAssignBib = (participantId: string, bibNumber: string, participantName: string) => {
-    setLocalRegistrations((prev) =>
-      prev.map((r) => (r.id === participantId ? { ...r, bibNumber } : r)),
-    );
-    toast({
-      title: 'Numer startowy przypisany',
-      description: `Przypisano numer ${bibNumber} dla ${participantName}.`,
-    });
+  /**
+   * R-13: manual start number override. The server checks that the number is unique within the
+   * event (409) and inside the distance range (422); on failure nothing changes locally.
+   * Resolves true when the number was saved.
+   */
+  const handleAssignBib = async (
+    participantId: string,
+    bibNumber: string,
+    participantName: string,
+  ): Promise<boolean> => {
+    try {
+      const response = await updateRegistration(participantId, { bibNumber });
+      const saved = response.data?.bibNumber ?? bibNumber;
+      setLocalRegistrations((prev) =>
+        prev.map((r) => (r.id === participantId ? { ...r, bibNumber: saved } : r)),
+      );
+      toast({
+        title: 'Numer startowy przypisany',
+        description: `Przypisano numer ${saved} dla ${participantName}.`,
+      });
+      return true;
+    } catch (error) {
+      toast({
+        title: 'Nie udało się przypisać numeru',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+      return false;
+    }
   };
 
   const handlePaymentUpdate = (registrationId: string, updatedDetails: PaymentDetails) => {
