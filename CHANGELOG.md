@@ -29,5 +29,8 @@ as the first version.
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
+- Admin panel: "Rozliczenia (trasa A)" settlement report for gateway payments,
+  with period and event filters, per-event totals (payments, refunds,
+  commission, amount to pay out), line items and CSV/XLSX export.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main

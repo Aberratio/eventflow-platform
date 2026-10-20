@@ -127,7 +127,12 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
 } from '@/types/email';
-import type { SalesStats, PlatformStats } from '@/types/admin';
+import type {
+  SalesStats,
+  PlatformStats,
+  SettlementReport,
+  SettlementReportParams,
+} from '@/types/admin';
 
 // ─────────────────────────────────────────────────────────
 // API Adapter Interface
@@ -540,6 +545,10 @@ export interface ApiAdapter {
   // E8.3: minimal platform-admin cross-section — Events by publication_status,
   // Organizer count, active package-credit total. Admin-only (not moderator).
   getPlatformStats(): Promise<ApiResponse<PlatformStats>>;
+  // R-03 (spec 13, trasa A): admin-only settlement report (amounts in minor units) and its
+  // CSV/XLSX download (same browser-download idiom as exportStartList).
+  getSettlementReport(params: SettlementReportParams): Promise<ApiResponse<SettlementReport>>;
+  exportSettlementReport(params: SettlementReportParams, format: 'csv' | 'xlsx'): Promise<void>;
 
   // ── CMS ──
   getInfoPages(): Promise<ApiResponse<InfoPage[]>>;

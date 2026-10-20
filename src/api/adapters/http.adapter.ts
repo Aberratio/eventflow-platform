@@ -777,6 +777,12 @@ export const httpAdapter: ApiAdapter = {
   getOnlineSessions: () => request('/admin/online-sessions'),
   getSalesStats: () => request('/admin/sales-stats'),
   getPlatformStats: () => request('/admin/platform-stats'),
+  getSettlementReport: (params) => request(`/admin/settlements${query({ ...params })}`),
+  exportSettlementReport: (params, format) =>
+    downloadFile(
+      `/admin/settlements/export${query({ ...params, format })}`,
+      `rozliczenie.${format}`,
+    ),
 
   getInfoPages: () => request('/info-pages'),
   getInfoPageBySlug: (slug) => nullOn404(request(`/info-pages/slug/${encodeURIComponent(slug)}`)),
