@@ -19,6 +19,7 @@ as the first version.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
 - Shop with product pages, cart and order confirmation.
+- Escape closes the mobile menu and returns focus to the menu button.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
 - Participant dashboard with printable tickets and team invitations for
