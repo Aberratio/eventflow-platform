@@ -56,11 +56,11 @@ fits: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed` or `Security`.
    Release whose notes are that version's changelog section. It fails if the
    section is missing, so a tag never ships without notes.
 
-3. **Deploy the tag.** In GitHub, go to _Actions → Deploy frontend → Run workflow_,
-   choose the tag under _Use workflow from_ and set the target to
-   `production`. Keep the default `deploy_method` and do not skip tests. Production always runs from a tag, never
-   from a branch, so what is deployed is exactly what the release notes
-   describe.
+3. **Deploy the tag.** In GitHub, go to _Actions → Deploy frontend → Run
+   workflow_, choose the tag under _Use workflow from_ and set
+   `deploy_target` to `production`. Keep the default `deploy_method` and
+   leave `skipTests` off. Production always runs from a tag, never from a
+   branch, so what is deployed is exactly what the release notes describe.
 
 4. **Verify.** Open production in a private window and walk through the event
    catalogue, an event page and login.
