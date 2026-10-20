@@ -27,6 +27,8 @@ as the first version.
   captains.
 - Organizer, moderator and admin panels for running events, registrations,
   results and the shop.
+- Accessibility: form fields, filters and icon buttons have accessible
+  names, and the show-password toggle is a larger touch target.
 - Info pages, and dedicated error pages for missing pages, forbidden access,
   server errors and maintenance.
 - The footer shows the running version, or the commit for a deploy that is
