@@ -18,6 +18,8 @@ as the first version.
   challenges.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
+- The embedded registration form shows the price calculated by the server,
+  like the main registration page.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
