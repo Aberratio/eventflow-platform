@@ -13,6 +13,7 @@ const cancelRegistration = vi.fn();
 const updatePaymentDetails = vi.fn();
 const exportStartList = vi.fn();
 const toastSpy = vi.fn();
+const updateRegistration = vi.fn();
 
 vi.mock('@/api', () => ({
   approveRefund: (...args: unknown[]) => approveRefund(...args),
@@ -21,6 +22,7 @@ vi.mock('@/api', () => ({
   cancelRegistration: (...args: unknown[]) => cancelRegistration(...args),
   updatePaymentDetails: (...args: unknown[]) => updatePaymentDetails(...args),
   exportStartList: (...args: unknown[]) => exportStartList(...args),
+  updateRegistration: (...args: unknown[]) => updateRegistration(...args),
 }));
 
 vi.mock('@/hooks/use-toast', () => ({
@@ -244,17 +246,36 @@ describe('useParticipantsActions', () => {
     expect(result.current.localRegistrations[0].status).toBe('cancelled');
   });
 
-  it('handleAssignBib assigns bib number to participant', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
+  it('handleAssignBib saves the number through the API and refetches (R-13)', async () => {
+    updateRegistration.mockResolvedValueOnce({
+      success: true,
+      data: { ...mockRegistrations[1], bibNumber: '202' },
+    });
+    const { result, invalidate } = renderActions();
+
+    let saved = false;
+    await act(async () => {
+      saved = await result.current.handleAssignBib('reg-2', '202', 'Anna Nowak');
     });
 
-    act(() => {
-      result.current.handleAssignBib('reg-2', '202', 'Anna Nowak');
+    expect(saved).toBe(true);
+    expect(updateRegistration).toHaveBeenCalledWith('reg-2', { bibNumber: '202' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['event-registrations', 'evt-1'] });
+  });
+
+  it('handleAssignBib keeps the old number when the server rejects it (409 collision)', async () => {
+    updateRegistration.mockRejectedValueOnce(new Error('Numer startowy 101 jest już przypisany.'));
+    const { result, invalidate } = renderActions();
+
+    let saved = true;
+    await act(async () => {
+      saved = await result.current.handleAssignBib('reg-2', '101', 'Anna Nowak');
     });
 
-    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-2');
-    expect(updated?.bibNumber).toBe('202');
+    expect(saved).toBe(false);
+    expect(invalidate).not.toHaveBeenCalled();
+    const unchanged = result.current.localRegistrations.find((r) => r.id === 'reg-2');
+    expect(unchanged?.bibNumber).toBe('');
   });
 
   it('handlePaymentUpdate saves payment details through the API and refetches', async () => {

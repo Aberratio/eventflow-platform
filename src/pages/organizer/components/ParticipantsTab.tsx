@@ -238,9 +238,14 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     setDeleteUnpaidDialogOpen(false);
   };
 
-  const onAssignBib = () => {
+  const onAssignBib = async () => {
     if (!selectedParticipant || !bibNumber) return;
-    handleAssignBib(selectedParticipant.id, bibNumber, selectedParticipant.userName);
+    const saved = await handleAssignBib(
+      selectedParticipant.id,
+      bibNumber,
+      selectedParticipant.userName,
+    );
+    if (!saved) return;
     setBibDialogOpen(false);
     setBibNumber('');
     setSelectedParticipant(null);

@@ -906,6 +906,34 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     />
                     <FieldError message={fe[`distance_${index}_limit`]} />
                   </div>
+                  <div className="space-y-2">
+                    <HelpLabel description="Zakres numerów startowych tego dystansu (np. 1–99). Zakresy dystansów jednego wydarzenia nie mogą się nakładać. Puste pola oznaczają brak zakresu - numery nadajesz wtedy ręcznie.">
+                      Numery startowe
+                    </HelpLabel>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        aria-label="Numery startowe od"
+                        value={dist.bibRangeFrom}
+                        onChange={(e) => form.updateDistance(index, 'bibRangeFrom', e.target.value)}
+                        placeholder="od"
+                        className={inputError(!!fe[`distance_${index}_bibRangeFrom`])}
+                      />
+                      <span aria-hidden="true">–</span>
+                      <Input
+                        type="number"
+                        min="1"
+                        aria-label="Numery startowe do"
+                        value={dist.bibRangeTo}
+                        onChange={(e) => form.updateDistance(index, 'bibRangeTo', e.target.value)}
+                        placeholder="do"
+                        className={inputError(!!fe[`distance_${index}_bibRangeTo`])}
+                      />
+                    </div>
+                    <FieldError message={fe[`distance_${index}_bibRangeFrom`]} />
+                    <FieldError message={fe[`distance_${index}_bibRangeTo`]} />
+                  </div>
                 </div>
 
                 <div className="grid gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
