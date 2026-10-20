@@ -854,5 +854,11 @@ export const httpAdapter: ApiAdapter = {
       `/competitors/${encodeURIComponent(competitorId)}/duplicate-reports`,
       json('POST', payload),
     ),
-  listCompetitorDuplicateReports: () => request('/admin/competitors/duplicate-reports'),
+  listCompetitorDuplicateReports: (status) =>
+    request(`/admin/competitors/duplicate-reports${status ? `?status=${status}` : ''}`),
+  rejectCompetitorDuplicateReport: (id, reason) =>
+    request(
+      `/admin/competitors/duplicate-reports/${encodeURIComponent(id)}`,
+      json('PATCH', { status: 'rejected', ...(reason ? { reason } : {}) }),
+    ),
 };

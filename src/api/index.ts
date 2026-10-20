@@ -534,3 +534,6 @@ export const reportCompetitorDuplicate: ApiAdapter['reportCompetitorDuplicate'] 
 export const listCompetitorDuplicateReports: ApiAdapter['listCompetitorDuplicateReports'] = (
   ...args
 ) => ensureAdapter().then((a) => a.listCompetitorDuplicateReports(...args));
+export const rejectCompetitorDuplicateReport: ApiAdapter['rejectCompetitorDuplicateReport'] = (
+  ...args
+) => ensureAdapter().then((a) => a.rejectCompetitorDuplicateReport(...args));

@@ -312,6 +312,9 @@ export interface CompetitorDuplicateReportProfile {
   birthDate: string | null;
 }
 
+/** open -> rejected (Moderator/Admin) albo merged (ustawiane przez scalenie profili). */
+export type CompetitorDuplicateReportStatus = 'open' | 'rejected' | 'merged';
+
 export interface CompetitorDuplicateReport {
   id: string;
   competitorId: string;
@@ -321,6 +324,7 @@ export interface CompetitorDuplicateReport {
   reporterName: string | null;
   reporterRole: string;
   note: string;
-  status: 'open' | 'dismissed' | 'merged';
+  status: CompetitorDuplicateReportStatus;
+  rejectReason: string | null;
   createdAt: string;
 }
