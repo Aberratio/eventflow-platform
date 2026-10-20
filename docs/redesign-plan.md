@@ -1,6 +1,6 @@
 # Redesign ZmierzymyCzas – plan (propozycja, 2026-10-20)
 
-Źródła: `docs/ux-audit.md` (PR #35), `docs/a11y-audit.md` (PR #31). Status: do akceptacji przez Joannę.
+Źródła: `docs/ux-audit.md` (PR #35), `docs/a11y-audit.md` (PR #31). Status: **odłożone (decyzja Joanny 2026-10-20)** – wracamy, gdy będą dostępne propozycje z Claude Design (zrobione na innym komputerze, z tej sesji niewidoczne).
 
 ## 0. Wejście – czego potrzebujemy przed startem
 

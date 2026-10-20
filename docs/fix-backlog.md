@@ -38,6 +38,13 @@ Push i `gh pr create` agentów były częściowo blokowane przez klasyfikator up
 | UX | Audyt użyteczności mobile, raport `docs/ux-audit.md`; poprawki blokujące: bilet bez daty (500), overflow paneli na 360 px | F #35 |
 | Redesign | Plan: `docs/redesign-plan.md` | ten PR |
 
+Decyzje 2026-10-20 (Joanna, wg rekomendacji Tech Leada): R-11 – usunąć zakładkę „Wiadomości” w całości (trasy `/users/{id}/messages` nie ma na serwerze, dziś 404); R-05 – okresy retencji z konfiguracji, domyślnie 90 dni dla odpowiedzi poufnych i 12 mies. dla rejestru aktywności (wartości do potwierdzenia z klientem); R-08 – organizator zgłasza tylko zawodników ze swoich wydarzeń, statusy `open`/`rejected`/`merged`, scalenie profili zamyka zgłoszenie; R-09 – do merge po sprawdzeniu rankingu serii. Redesign odłożony (`docs/redesign-plan.md`).
+
+**Propozycja funkcji N-01 „Powiadomienia” (poza umową – do uzgodnienia z klientem):**
+- Transakcyjne (zawsze, mail przez CM + dziennik w panelu): koniec zapisów / termin płatności, start jutro, zmiana terminu lub miejsca, opublikowane wyniki. Część już jest (`PaymentRemindersJob`, `ResultsPublicationNotifier`).
+- Marketingowe („kolejna edycja wydarzenia, w którym startowałeś”, nowy cykl, nowe Wyzwanie): osobna, jawna zgoda (Prawo komunikacji elektronicznej – uzasadniony interes z RODO nie wystarcza), link „wypisz się”, preferencje w profilu; wymaga powiązania edycji wydarzeń (seria albo pole „poprzednia edycja”).
+- Kolejność: zgody i preferencje → maile → dziennik w panelu → (później) push.
+
 Nowe defekty:
 - **QA-TEST-01:** `ParticipantTicketsTab (G-12)` w vitest pada po północy czasu lokalnego (fixture z datami względnymi vs UTC).
 - **QA-DEV-01:** odpowiedź 404 API na dev zawiera stack trace (tryb debug).
