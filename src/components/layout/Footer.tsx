@@ -2,6 +2,9 @@ import { getInfoPages } from '@/api';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Timer, Facebook, Instagram, Youtube, Twitter, Cookie, Mail, Phone } from 'lucide-react';
+import { resolveAppVersion } from '@/lib/appVersion';
+
+const appVersion = resolveAppVersion();
 
 export const Footer = () => {
   const { data: pagesResp } = useQuery({
@@ -158,6 +161,11 @@ export const Footer = () => {
           </p>
           <p className="text-xs text-white/55">
             Made with <span className="text-primary/60">♥</span> for runners
+            {appVersion ? (
+              <span className="ml-2 font-mono" title={appVersion.title}>
+                {appVersion.label}
+              </span>
+            ) : null}
           </p>
         </div>
       </div>
