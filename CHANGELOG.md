@@ -30,4 +30,12 @@ as the first version.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
 
+### Fixed
+
+- Organizer participant actions (confirming a payment, cancelling a
+  registration, cancelling selected or unpaid registrations and saving payment
+  details) are now saved on the server and no longer disappear after a reload;
+  errors show the server's message. The "Remove" and "Restore" actions, which
+  had no server support, were removed.
+
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main

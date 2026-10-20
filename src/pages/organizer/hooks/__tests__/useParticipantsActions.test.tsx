@@ -1,21 +1,35 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useParticipantsActions } from '../useParticipantsActions';
 import { Event, Registration } from '@/types';
 
 const approveRefund = vi.fn();
 const completeRefund = vi.fn();
 const markRegistrationPaid = vi.fn();
+const cancelRegistration = vi.fn();
+const updatePaymentDetails = vi.fn();
 const exportStartList = vi.fn();
+const toastSpy = vi.fn();
 
 vi.mock('@/api', () => ({
   approveRefund: (...args: unknown[]) => approveRefund(...args),
   completeRefund: (...args: unknown[]) => completeRefund(...args),
   markRegistrationPaid: (...args: unknown[]) => markRegistrationPaid(...args),
+  cancelRegistration: (...args: unknown[]) => cancelRegistration(...args),
+  updatePaymentDetails: (...args: unknown[]) => updatePaymentDetails(...args),
   exportStartList: (...args: unknown[]) => exportStartList(...args),
 }));
+
+vi.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({ toast: toastSpy }),
+}));
+
+beforeEach(() => {
+  vi.resetAllMocks();
+});
 
 const mockEvent: Event = {
   id: 'evt-1',
@@ -78,9 +92,21 @@ const mockRegistrations: Registration[] = [
   } as Registration,
 ];
 
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>{children}</BrowserRouter>
+  </QueryClientProvider>
 );
+
+const renderActions = () => {
+  const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+  const rendered = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+    wrapper,
+  });
+  return { ...rendered, invalidate };
+};
 
 describe('useParticipantsActions', () => {
   it('initializes with correct counts', () => {
@@ -92,79 +118,130 @@ describe('useParticipantsActions', () => {
     expect(result.current.unpaidCount).toBe(2);
   });
 
-  it('handleStatusChange updates registration status', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
+  it('handleStatusChange(confirmed) calls mark-paid and refetches instead of patching locally', async () => {
+    markRegistrationPaid.mockResolvedValueOnce({ success: true, data: mockRegistrations[1] });
+    const { result, invalidate } = renderActions();
+
+    let ok: boolean | undefined;
+    await act(async () => {
+      ok = await result.current.handleStatusChange(mockRegistrations[1], 'confirmed');
     });
 
-    act(() => {
-      result.current.handleStatusChange(mockRegistrations[1], 'confirmed');
-    });
-
-    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-2');
-    expect(updated?.status).toBe('confirmed');
-    expect(result.current.unpaidCount).toBe(1);
+    expect(ok).toBe(true);
+    expect(markRegistrationPaid).toHaveBeenCalledWith('reg-2');
+    expect(cancelRegistration).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['event-registrations', 'evt-1'] });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['registrations', 'event', 'evt-1'] });
+    // no optimistic patch: the list changes only when the server data does
+    expect(result.current.localRegistrations.find((r) => r.id === 'reg-2')?.status).toBe('pending');
   });
 
-  it('handleRemoveParticipant sets status to removed', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
+  it('handleStatusChange(cancelled) calls the cancel route', async () => {
+    cancelRegistration.mockResolvedValueOnce({ success: true, data: mockRegistrations[0] });
+    const { result, invalidate } = renderActions();
+
+    await act(async () => {
+      await result.current.handleStatusChange(mockRegistrations[0], 'cancelled');
     });
 
-    act(() => {
-      result.current.handleRemoveParticipant(mockRegistrations[0]);
-    });
-
-    const removed = result.current.localRegistrations.find((r) => r.id === 'reg-1');
-    expect(removed?.status).toBe('removed');
-    expect(removed?.removedAt).toBeDefined();
-    expect(result.current.removedCount).toBe(1);
-    expect(result.current.activeCount).toBe(2);
+    expect(cancelRegistration).toHaveBeenCalledWith('reg-1');
+    expect(markRegistrationPaid).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalled();
   });
 
-  it('handleRestoreParticipant restores removed participant', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
+  it.each(['confirmed', 'cancelled'] as const)(
+    'handleStatusChange(%s) shows the server message and does not refetch on error',
+    async (status) => {
+      const error = new Error('Zapis nie jest opłacany przelewem.');
+      markRegistrationPaid.mockRejectedValueOnce(error);
+      cancelRegistration.mockRejectedValueOnce(error);
+      const { result, invalidate } = renderActions();
+
+      let ok: boolean | undefined;
+      await act(async () => {
+        ok = await result.current.handleStatusChange(mockRegistrations[1], status);
+      });
+
+      expect(ok).toBe(false);
+      expect(invalidate).not.toHaveBeenCalled();
+      expect(toastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'Zapis nie jest opłacany przelewem.',
+          variant: 'destructive',
+        }),
+      );
+    },
+  );
+
+  it('handleBulkCancel cancels each selected registration through the API', async () => {
+    cancelRegistration.mockResolvedValue({ success: true, data: mockRegistrations[0] });
+    const { result, invalidate } = renderActions();
+
+    await act(async () => {
+      await result.current.handleBulkCancel(new Set(['reg-1', 'reg-2']));
     });
 
-    act(() => {
-      result.current.handleRemoveParticipant(mockRegistrations[0]);
-    });
-    expect(result.current.removedCount).toBe(1);
-
-    act(() => {
-      result.current.handleRestoreParticipant(result.current.localRegistrations[0]);
-    });
-    const restored = result.current.localRegistrations.find((r) => r.id === 'reg-1');
-    expect(restored?.status).toBe('pending');
-    expect(restored?.removedAt).toBeUndefined();
-    expect(result.current.removedCount).toBe(0);
+    expect(cancelRegistration).toHaveBeenCalledTimes(2);
+    expect(cancelRegistration).toHaveBeenCalledWith('reg-1');
+    expect(cancelRegistration).toHaveBeenCalledWith('reg-2');
+    expect(invalidate).toHaveBeenCalled();
   });
 
-  it('handleBulkDelete removes multiple participants', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
+  it('handleBulkCancel reports partial failure with the server message', async () => {
+    cancelRegistration
+      .mockResolvedValueOnce({ success: true, data: mockRegistrations[0] })
+      .mockRejectedValueOnce(new Error('Brak uprawnień.'));
+    const { result, invalidate } = renderActions();
+
+    await act(async () => {
+      await result.current.handleBulkCancel(new Set(['reg-1', 'reg-2']));
     });
 
-    act(() => {
-      result.current.handleBulkDelete(new Set(['reg-1', 'reg-2']));
-    });
-
-    expect(result.current.removedCount).toBe(2);
-    expect(result.current.activeCount).toBe(1);
+    expect(invalidate).toHaveBeenCalled(); // one succeeded -> refresh
+    expect(toastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: 'destructive',
+        description: expect.stringContaining('Brak uprawnień.'),
+      }),
+    );
   });
 
-  it('handleDeleteUnpaid removes only pending registrations', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
+  it('handleBulkCancel does not refetch when every call fails', async () => {
+    cancelRegistration.mockRejectedValue(new Error('Błąd serwera.'));
+    const { result, invalidate } = renderActions();
+
+    await act(async () => {
+      await result.current.handleBulkCancel(new Set(['reg-1']));
+    });
+
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+
+  it('handleCancelUnpaid cancels only pending registrations', async () => {
+    cancelRegistration.mockResolvedValue({ success: true, data: mockRegistrations[1] });
+    const { result } = renderActions();
+
+    await act(async () => {
+      await result.current.handleCancelUnpaid();
+    });
+
+    expect(cancelRegistration).toHaveBeenCalledTimes(2);
+    expect(cancelRegistration).toHaveBeenCalledWith('reg-2');
+    expect(cancelRegistration).toHaveBeenCalledWith('reg-3');
+    expect(cancelRegistration).not.toHaveBeenCalledWith('reg-1');
+  });
+
+  it('follows the server list when the registrations prop changes', () => {
+    const { result, rerender } = renderHook(({ regs }) => useParticipantsActions(mockEvent, regs), {
       wrapper,
+      initialProps: { regs: mockRegistrations },
     });
+    expect(result.current.localRegistrations).toHaveLength(3);
 
-    act(() => {
-      result.current.handleDeleteUnpaid();
-    });
+    rerender({ regs: [{ ...mockRegistrations[1], status: 'cancelled' }] });
 
-    expect(result.current.removedCount).toBe(2); // reg-2, reg-3 were pending
-    expect(result.current.activeCount).toBe(1); // reg-1 was confirmed
+    expect(result.current.localRegistrations).toHaveLength(1);
+    expect(result.current.localRegistrations[0].status).toBe('cancelled');
   });
 
   it('handleAssignBib assigns bib number to participant', () => {
@@ -180,10 +257,9 @@ describe('useParticipantsActions', () => {
     expect(updated?.bibNumber).toBe('202');
   });
 
-  it('handlePaymentUpdate updates payment details', () => {
-    const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {
-      wrapper,
-    });
+  it('handlePaymentUpdate saves payment details through the API and refetches', async () => {
+    const { result, invalidate } = renderActions();
+    updatePaymentDetails.mockResolvedValueOnce({ success: true, data: mockRegistrations[0] });
 
     const paymentDetails = {
       startFeePaid: true,
@@ -193,12 +269,38 @@ describe('useParticipantsActions', () => {
       merchandisePayments: [],
     };
 
-    act(() => {
-      result.current.handlePaymentUpdate('reg-1', paymentDetails);
+    let ok: boolean | undefined;
+    await act(async () => {
+      ok = await result.current.handlePaymentUpdate('reg-1', paymentDetails);
     });
 
-    const updated = result.current.localRegistrations.find((r) => r.id === 'reg-1');
-    expect(updated?.paymentDetails).toEqual(paymentDetails);
+    expect(ok).toBe(true);
+    expect(updatePaymentDetails).toHaveBeenCalledWith('reg-1', paymentDetails);
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['event-registrations', 'evt-1'] });
+  });
+
+  it('handlePaymentUpdate surfaces the server error and reports failure', async () => {
+    updatePaymentDetails.mockRejectedValueOnce(new Error('Brak dostępu do płatności.'));
+    const { result, invalidate } = renderActions();
+
+    let ok: boolean | undefined;
+    await act(async () => {
+      ok = await result.current.handlePaymentUpdate('reg-1', {
+        startFeePaid: true,
+        startFeeAmount: 100,
+        insurancePaid: false,
+        merchandisePayments: [],
+      });
+    });
+
+    expect(ok).toBe(false);
+    expect(invalidate).not.toHaveBeenCalled();
+    expect(toastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: 'Brak dostępu do płatności.',
+        variant: 'destructive',
+      }),
+    );
   });
 
   it('handleApproveRefund calls the API and updates local state from the response', async () => {

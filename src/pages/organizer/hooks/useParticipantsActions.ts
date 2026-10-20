@@ -1,80 +1,109 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Event, Registration, PaymentDetails } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { formatDate } from '@/lib/format';
-import { approveRefund, completeRefund, markRegistrationPaid, exportStartList } from '@/api';
+import { QUERY_KEYS } from '@/constants';
+import {
+  approveRefund,
+  completeRefund,
+  markRegistrationPaid,
+  cancelRegistration,
+  updatePaymentDetails,
+  exportStartList,
+} from '@/api';
+
+const FALLBACK_ERROR = 'Spróbuj ponownie za chwilę.';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [localRegistrations, setLocalRegistrations] =
     useState<Registration[]>(initialRegistrations);
 
-  const handleStatusChange = (registration: Registration, newStatus: 'confirmed' | 'cancelled') => {
+  // The list is owned by the server: follow the query data whenever it is refetched.
+  // (An empty -> empty change is ignored so an unstable `[]` default cannot loop.)
+  useEffect(() => {
     setLocalRegistrations((prev) =>
-      prev.map((r) => (r.id === registration.id ? { ...r, status: newStatus } : r)),
+      prev.length === 0 && initialRegistrations.length === 0 ? prev : initialRegistrations,
     );
+  }, [initialRegistrations]);
+
+  const refreshRegistrations = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['event-registrations', event.id] }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.registrationsByEvent(event.id) }),
+    ]);
+
+  const failureToast = (title: string, error: unknown) =>
+    toast({
+      title,
+      description: error instanceof Error && error.message ? error.message : FALLBACK_ERROR,
+      variant: 'destructive',
+    });
+
+  /**
+   * "Potwierdź" = server transition pending -> confirmed, which exists only as
+   * POST /registrations/{id}/mark-paid (manual bank-transfer route); "Anuluj" =
+   * POST /registrations/{id}/cancel. Neither is patched locally: on success the
+   * list is refetched, on failure the server message is shown.
+   */
+  const handleStatusChange = async (
+    registration: Registration,
+    newStatus: 'confirmed' | 'cancelled',
+  ): Promise<boolean> => {
+    try {
+      if (newStatus === 'confirmed') {
+        await markRegistrationPaid(registration.id);
+      } else {
+        await cancelRegistration(registration.id);
+      }
+    } catch (error) {
+      failureToast(
+        newStatus === 'confirmed'
+          ? 'Nie udało się potwierdzić zapisu'
+          : 'Nie udało się anulować zapisu',
+        error,
+      );
+      return false;
+    }
+    await refreshRegistrations();
     toast({
       title: 'Status zaktualizowany',
       description: `Zmieniono status ${registration.userName} na ${newStatus === 'confirmed' ? 'potwierdzony' : 'anulowany'}.`,
     });
+    return true;
   };
 
-  const handleRemoveParticipant = (registration: Registration) => {
-    setLocalRegistrations((prev) =>
-      prev.map((r) =>
-        r.id === registration.id
-          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-          : r,
-      ),
-    );
+  /** Cancels many Zapisy (one POST /registrations/{id}/cancel each) and reports partial failures. */
+  const cancelMany = async (ids: string[], title: string): Promise<void> => {
+    const outcomes = await Promise.allSettled(ids.map((id) => cancelRegistration(id)));
+    const failed = outcomes.filter((o): o is PromiseRejectedResult => o.status === 'rejected');
+    const done = outcomes.length - failed.length;
+    if (done > 0) await refreshRegistrations();
+    if (failed.length === 0) {
+      toast({ title, description: `Anulowano zapisy: ${done}.` });
+      return;
+    }
+    const reason = failed[0].reason;
     toast({
-      title: 'Uczestnik usunięty',
-      description: `${registration.userName} został usunięty z listy uczestników.`,
+      title: 'Nie wszystkie zapisy zostały anulowane',
+      description: `Anulowano: ${done}, błędy: ${failed.length}. ${
+        reason instanceof Error && reason.message ? reason.message : FALLBACK_ERROR
+      }`,
+      variant: 'destructive',
     });
   };
 
-  const handleRestoreParticipant = (registration: Registration) => {
-    setLocalRegistrations((prev) =>
-      prev.map((r) =>
-        r.id === registration.id ? { ...r, status: 'pending' as const, removedAt: undefined } : r,
-      ),
-    );
-    toast({
-      title: 'Uczestnik przywrócony',
-      description: `${registration.userName} został przywrócony na listę uczestników.`,
-    });
-  };
+  const handleBulkCancel = (selectedIds: Set<string>) =>
+    cancelMany([...selectedIds], 'Zapisy anulowane');
 
-  const handleBulkDelete = (selectedIds: Set<string>) => {
-    const count = selectedIds.size;
-    setLocalRegistrations((prev) =>
-      prev.map((r) =>
-        selectedIds.has(r.id)
-          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-          : r,
-      ),
+  const handleCancelUnpaid = () =>
+    cancelMany(
+      localRegistrations.filter((r) => r.status === 'pending').map((r) => r.id),
+      'Nieopłacone zapisy anulowane',
     );
-    toast({
-      title: 'Uczestnicy usunięci',
-      description: `Usunięto ${count} ${count === 1 ? 'uczestnika' : 'uczestników'} z listy.`,
-    });
-  };
-
-  const handleDeleteUnpaid = () => {
-    const unpaidIds = localRegistrations.filter((r) => r.status === 'pending').map((r) => r.id);
-    setLocalRegistrations((prev) =>
-      prev.map((r) =>
-        unpaidIds.includes(r.id)
-          ? { ...r, status: 'removed' as const, removedAt: new Date().toISOString() }
-          : r,
-      ),
-    );
-    toast({
-      title: 'Nieopłaceni usunięci',
-      description: `Usunięto ${unpaidIds.length} nieopłaconych uczestników.`,
-    });
-  };
 
   const handleAssignBib = (participantId: string, bibNumber: string, participantName: string) => {
     setLocalRegistrations((prev) =>
@@ -86,10 +115,19 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     });
   };
 
-  const handlePaymentUpdate = (registrationId: string, updatedDetails: PaymentDetails) => {
-    setLocalRegistrations((prev) =>
-      prev.map((r) => (r.id === registrationId ? { ...r, paymentDetails: updatedDetails } : r)),
-    );
+  /** PATCH /registrations/{id}/payment-details; resolves true only when the server accepted it. */
+  const handlePaymentUpdate = async (
+    registrationId: string,
+    updatedDetails: PaymentDetails,
+  ): Promise<boolean> => {
+    try {
+      await updatePaymentDetails(registrationId, updatedDetails);
+    } catch (error) {
+      failureToast('Nie udało się zapisać płatności', error);
+      return false;
+    }
+    await refreshRegistrations();
+    return true;
   };
 
   /**
@@ -254,10 +292,8 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     localRegistrations,
     setLocalRegistrations,
     handleStatusChange,
-    handleRemoveParticipant,
-    handleRestoreParticipant,
-    handleBulkDelete,
-    handleDeleteUnpaid,
+    handleBulkCancel,
+    handleCancelUnpaid,
     handleAssignBib,
     handlePaymentUpdate,
     handleApproveRefund,
