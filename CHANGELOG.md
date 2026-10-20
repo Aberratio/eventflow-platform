@@ -27,5 +27,7 @@ as the first version.
   results and the shop.
 - Info pages, and dedicated error pages for missing pages, forbidden access,
   server errors and maintenance.
+- The footer shows the running version, or the commit for a deploy that is
+  not a release.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
