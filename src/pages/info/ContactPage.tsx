@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -18,8 +18,7 @@ const ContactPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: 'Wiadomość wysłana',
+    toast.success('Wiadomość wysłana', {
       description: 'Dziękujemy za kontakt! Odpowiemy najszybciej jak to możliwe.',
     });
     setFormData({ name: '', email: '', subject: '', message: '' });

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { CompetitorDuplicateReportProfile, CompetitorDuplicateReportStatus } from '@/types';
 
 type StatusFilter = CompetitorDuplicateReportStatus | 'all';
@@ -53,12 +53,12 @@ export const DuplicateReportsQueue = ({
   const reject = useMutation({
     mutationFn: (id: string) => rejectCompetitorDuplicateReport(id, reason.trim() || undefined),
     onSuccess: () => {
-      toast({ title: 'Zgłoszenie odrzucone' });
+      toast.success('Zgłoszenie odrzucone');
       setRejectingId(null);
       setReason('');
       void queryClient.invalidateQueries({ queryKey: ['competitors', 'duplicate-reports'] });
     },
-    onError: () => toast({ title: 'Nie udało się odrzucić zgłoszenia', variant: 'destructive' }),
+    onError: () => toast.error('Nie udało się odrzucić zgłoszenia'),
   });
 
   return (

@@ -6,15 +6,13 @@ import { VirtualResultsSubmissionDialog } from '../VirtualResultsSubmissionDialo
 import type { Event } from '@/types';
 
 const submitVirtualResult = vi.fn();
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', () => ({
   submitVirtualResult: (...args: unknown[]) => submitVirtualResult(...args),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 const event: Event = {
   id: 'event-virtual',

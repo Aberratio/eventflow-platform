@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Registration } from '@/types';
 
 interface AddResultDialogProps {
@@ -40,7 +40,6 @@ export const AddResultDialog = ({
   registrations,
   onAddResult,
 }: AddResultDialogProps) => {
-  const { toast } = useToast();
   const [bibNumber, setBibNumber] = useState('');
   const [time, setTime] = useState('');
   const [netTime, setNetTime] = useState('');
@@ -48,39 +47,23 @@ export const AddResultDialog = ({
 
   const handleSubmit = () => {
     if (!bibNumber) {
-      toast({
-        title: 'Błąd',
-        description: 'Podaj numer startowy',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Podaj numer startowy' });
       return;
     }
 
     if (status === 'finished' && !time) {
-      toast({
-        title: 'Błąd',
-        description: 'Podaj czas dla ukończonego biegu',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Podaj czas dla ukończonego biegu' });
       return;
     }
 
     // Validate time format
     if (time && !/^\d{1,2}:\d{2}:\d{2}$/.test(time)) {
-      toast({
-        title: 'Błąd',
-        description: 'Nieprawidłowy format czasu (użyj HH:MM:SS)',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Nieprawidłowy format czasu (użyj HH:MM:SS)' });
       return;
     }
 
     if (netTime && !/^\d{1,2}:\d{2}:\d{2}$/.test(netTime)) {
-      toast({
-        title: 'Błąd',
-        description: 'Nieprawidłowy format czasu netto (użyj HH:MM:SS)',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Nieprawidłowy format czasu netto (użyj HH:MM:SS)' });
       return;
     }
 
@@ -103,10 +86,7 @@ export const AddResultDialog = ({
     setStatus('finished');
     onOpenChange(false);
 
-    toast({
-      title: 'Wynik dodany',
-      description: `Dodano wynik dla numeru ${bibNumber}`,
-    });
+    toast.success('Wynik dodany', { description: `Dodano wynik dla numeru ${bibNumber}` });
   };
 
   // Filter registrations for autocomplete suggestions

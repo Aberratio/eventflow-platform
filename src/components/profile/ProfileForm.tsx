@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Camera, Loader2, Save } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { resendEmailVerification, uploadAvatar } from '@/api';
@@ -51,12 +51,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
     setResending(true);
     try {
       await resendEmailVerification();
-      toast({ title: 'Wysłaliśmy link weryfikacyjny.' });
+      toast.success('Wysłaliśmy link weryfikacyjny.');
     } catch (error) {
-      toast({
-        title: 'Nie udało się wysłać linku',
+      toast.error('Nie udało się wysłać linku', {
         description: error instanceof Error ? error.message : undefined,
-        variant: 'destructive',
       });
     } finally {
       setResending(false);
@@ -75,14 +73,12 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
       const response = await uploadAvatar(file);
       if (response.data?.url) {
         setAvatarPreview(response.data.url);
-        toast({ title: 'Zdjęcie profilowe zaktualizowane' });
+        toast.success('Zdjęcie profilowe zaktualizowane');
       }
     } catch (error) {
       setAvatarPreview(previousPreview);
-      toast({
-        title: 'Błąd uploadu zdjęcia',
+      toast.error('Błąd uploadu zdjęcia', {
         description: error instanceof Error ? error.message : 'Nie udało się wgrać zdjęcia.',
-        variant: 'destructive',
       });
     } finally {
       setUploadingAvatar(false);
@@ -103,10 +99,10 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
         address,
       });
       if (updated) {
-        toast({ title: 'Zapisano zmiany', description: 'Twoje dane zostały zaktualizowane.' });
+        toast.success('Zapisano zmiany', { description: 'Twoje dane zostały zaktualizowane.' });
       }
     } catch {
-      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+      toast.error('Błąd zapisu');
     } finally {
       setSaving(false);
     }

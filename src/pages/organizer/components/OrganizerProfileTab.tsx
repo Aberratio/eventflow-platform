@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const OrganizerProfileTab = () => {
   const { user, updateCurrentUser } = useAuth();
@@ -32,9 +32,9 @@ const OrganizerProfileTab = () => {
         website: organizerData.website || undefined,
         description: organizerData.description || undefined,
       });
-      toast({ title: 'Zapisano dane organizatora' });
+      toast.success('Zapisano dane organizatora');
     } catch {
-      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+      toast.error('Błąd zapisu');
     } finally {
       setSaving(false);
     }

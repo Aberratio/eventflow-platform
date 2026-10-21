@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { assignBibNumbers, updateRegistration } from '@/api';
 import { Event, Registration } from '@/types';
 import { Hash, Trash2, AlertCircle } from 'lucide-react';
@@ -39,7 +39,6 @@ export const BibNumberAssignment = ({
   registrations,
   onRegistrationsChange,
 }: BibNumberAssignmentProps) => {
-  const { toast } = useToast();
   const [sortingOption, setSortingOption] = useState<SortingOption>('date_paid');
   const [isAssigning, setIsAssigning] = useState(false);
   const [selectedDistances, setSelectedDistances] = useState<Set<string>>(
@@ -120,10 +119,8 @@ export const BibNumberAssignment = ({
   const handleAssignBibNumbers = async () => {
     const eligible = getEligibleParticipants();
     if (eligible.length === 0) {
-      toast({
-        title: 'Brak uczestników',
+      toast.error('Brak uczestników', {
         description: 'Nie znaleziono uczestników spełniających kryteria.',
-        variant: 'destructive',
       });
       return;
     }
@@ -149,16 +146,13 @@ export const BibNumberAssignment = ({
         exhausted > 0
           ? ` ${exhausted} uczestników bez numeru: zakres numerów dystansu jest wyczerpany.`
           : '';
-      toast({
-        title: 'Numery przydzielone',
+      const notify = exhausted > 0 ? toast.error : toast.success;
+      notify('Numery przydzielone', {
         description: `Przydzielono numery ${assigned} ${assigned === 1 ? 'uczestnikowi' : 'uczestnikom'}.${exhaustedNote}`,
-        variant: exhausted > 0 ? 'destructive' : undefined,
       });
     } catch (error) {
-      toast({
-        title: 'Nie udało się przydzielić numerów',
+      toast.error('Nie udało się przydzielić numerów', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsAssigning(false);
@@ -182,10 +176,9 @@ export const BibNumberAssignment = ({
     );
     const failed = targets.length - cleared.size;
     const failedNote = failed > 0 ? ` Nie udało się usunąć ${failed}.` : '';
-    toast({
-      title: failed > 0 ? 'Nie wszystkie numery usunięto' : 'Numery usunięte',
+    const notify = failed > 0 ? toast.error : toast.success;
+    notify(failed > 0 ? 'Nie wszystkie numery usunięto' : 'Numery usunięte', {
       description: `Usunięto numery ${cleared.size} ${cleared.size === 1 ? 'uczestnikowi' : 'uczestnikom'}.${failedNote}`,
-      variant: failed > 0 ? 'destructive' : undefined,
     });
   };
 

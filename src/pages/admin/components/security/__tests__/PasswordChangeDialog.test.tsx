@@ -3,15 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PasswordChangeDialog } from '../PasswordChangeDialog';
 
 const changePassword = vi.fn();
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', () => ({
   changePassword: (...args: unknown[]) => changePassword(...args),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => toast(...args),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('@/lib/logger', () => ({
   appLogger: { auth: vi.fn() },
@@ -36,6 +34,8 @@ describe('PasswordChangeDialog', () => {
   beforeEach(() => {
     changePassword.mockReset();
     toast.mockReset();
+    toast.success.mockReset();
+    toast.error.mockReset();
     onOpenChange.mockReset();
     onPasswordChanged.mockReset();
   });
@@ -54,7 +54,7 @@ describe('PasswordChangeDialog', () => {
     );
     await waitFor(() => expect(onPasswordChanged).toHaveBeenCalledTimes(1));
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hasło zmienione' }));
+    expect(toast.success).toHaveBeenCalledWith('Hasło zmienione', expect.anything());
   });
 
   it('keeps the dialog open with a destructive toast when the API rejects the change', async () => {
@@ -64,12 +64,9 @@ describe('PasswordChangeDialog', () => {
     submit();
 
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Nie udało się zmienić hasła',
-          description: 'Obecne hasło jest nieprawidłowe.',
-          variant: 'destructive',
-        }),
+      expect(toast.error).toHaveBeenCalledWith(
+        'Nie udało się zmienić hasła',
+        expect.objectContaining({ description: 'Obecne hasło jest nieprawidłowe.' }),
       ),
     );
     expect(onPasswordChanged).not.toHaveBeenCalled();
@@ -101,8 +98,9 @@ describe('PasswordChangeDialog', () => {
     submit();
 
     expect(changePassword).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({ description: message, variant: 'destructive' }),
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ description: message }),
     );
   });
 });

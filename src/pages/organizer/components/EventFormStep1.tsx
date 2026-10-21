@@ -1,4 +1,5 @@
 ﻿import { disciplineLabels, uploadEventImage, getEventBackgrounds } from '@/api';
+import { toast } from 'sonner';
 import { safeUrl } from '@/lib/safeUrl';
 import { EventSelfServiceSection } from './EventSelfServiceSection';
 import {
@@ -108,7 +109,6 @@ interface EventImageUploadFieldProps {
   aspectRatio: number;
   outputWidth: number;
   cropTitle: string;
-  toast: EventFormState['toast'];
   showPreview?: boolean;
   previewClassName?: string;
   previewImageClassName?: string;
@@ -157,7 +157,6 @@ const EventImageUploadField = ({
   aspectRatio,
   outputWidth,
   cropTitle,
-  toast,
   showPreview = true,
   previewClassName,
   previewImageClassName = 'object-cover',
@@ -178,10 +177,8 @@ const EventImageUploadField = ({
   const handleFileChange = (file?: File) => {
     if (!file) return;
     if (!isSupportedImageFile(file)) {
-      toast({
-        title: 'Nieprawidłowy plik',
+      toast.error('Nieprawidłowy plik', {
         description: 'Wybierz obraz w formacie JPG, PNG albo WebP.',
-        variant: 'destructive',
       });
       return;
     }
@@ -213,10 +210,8 @@ const EventImageUploadField = ({
 
   const handleUpload = async (_crop: unknown, croppedBlob?: Blob) => {
     if (!croppedBlob) {
-      toast({
-        title: 'Nie udało się przyciąć obrazu',
+      toast.error('Nie udało się przyciąć obrazu', {
         description: 'Spróbuj wybrać plik ponownie.',
-        variant: 'destructive',
       });
       return;
     }
@@ -244,15 +239,10 @@ const EventImageUploadField = ({
         );
         onChange(response.data.url);
       }
-      toast({
-        title: 'Obraz zapisany',
-        description: 'Wgrano i sformatowano obraz wydarzenia.',
-      });
+      toast.success('Obraz zapisany', { description: 'Wgrano i sformatowano obraz wydarzenia.' });
     } catch (error) {
-      toast({
-        title: 'Nie udało się wgrać obrazu',
+      toast.error('Nie udało się wgrać obrazu', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -1513,8 +1503,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                             const slug = form.name ? form.generateSlug(form.name) : 'wydarzenie';
                             const url = `${window.location.origin}/events/${slug}?access=${form.accessCode}`;
                             navigator.clipboard.writeText(url);
-                            form.toast({
-                              title: 'Skopiowano',
+                            toast.success('Skopiowano', {
                               description:
                                 'Link do prywatnego wydarzenia został skopiowany do schowka.',
                             });
@@ -1672,7 +1661,6 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               aspectRatio={16 / 9}
               outputWidth={1200}
               cropTitle="Dopasuj glowny obraz wydarzenia"
-              toast={form.toast}
               showPreview={false}
             />
             <MainEventImagePlacementPreview form={form} />
@@ -1719,7 +1707,6 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   aspectRatio={16 / 9}
                   outputWidth={1600}
                   cropTitle="Dopasuj baner wydarzenia"
-                  toast={form.toast}
                   previewClassName="max-w-64"
                 />
                 <div className="space-y-4">
@@ -1774,7 +1761,6 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     aspectRatio={logoShapeConfig.aspectRatio}
                     outputWidth={logoShapeConfig.outputWidth}
                     cropTitle="Dopasuj logo organizatora"
-                    toast={form.toast}
                     previewClassName={logoShapeConfig.previewClassName}
                     previewImageClassName="bg-background object-contain p-1"
                   />

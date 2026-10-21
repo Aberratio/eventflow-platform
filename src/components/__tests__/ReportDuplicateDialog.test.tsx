@@ -12,7 +12,7 @@ vi.mock('@/api', () => ({
   checkCompetitorDuplicates: mockCheck,
   reportCompetitorDuplicate: mockReport,
 }));
-vi.mock('@/hooks/use-toast', () => ({ toast: vi.fn() }));
+vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
 const renderDialog = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

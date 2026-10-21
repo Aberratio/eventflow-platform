@@ -15,7 +15,7 @@ import type { OrganizerEventLimit, User } from '@/types';
 // in the wiring between the two would be caught here, not just at the hook
 // or component level in isolation.
 
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const navigate = vi.fn();
 
 const organizer: User = {
@@ -42,9 +42,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ user: organizer }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
@@ -76,6 +74,8 @@ const renderHarness = () => {
 describe('EventFormStep1 Biuro Zawodow integration section', () => {
   beforeEach(() => {
     toast.mockClear();
+    toast.success.mockClear();
+    toast.error.mockClear();
     navigate.mockClear();
     vi.mocked(createEvent).mockClear();
     vi.mocked(getOrganizerEventLimit).mockClear();

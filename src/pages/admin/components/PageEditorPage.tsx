@@ -19,7 +19,7 @@ import {
 import { EditorHint } from '@/components/admin/EditorHint';
 import { SectionEditor } from './SectionEditor';
 import { InfoPage, InfoPageSection } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { appLogger } from '@/lib/logger';
 import {
   ArrowLeft,
@@ -82,7 +82,6 @@ const sectionHints: Record<string, string> = {
 export const PageEditorPage = () => {
   const { pageId } = useParams<{ pageId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const isNewPage = pageId === 'new';
 
@@ -131,11 +130,11 @@ export const PageEditorPage = () => {
       if (existingPage) {
         setFormData(existingPage);
       } else if (existingPage === null) {
-        toast({ title: 'Nie znaleziono strony', variant: 'destructive' });
+        toast.error('Nie znaleziono strony');
         navigate('/admin?tab=pages');
       }
     }
-  }, [existingPage, isNewPage, navigate, toast]);
+  }, [existingPage, isNewPage, navigate]);
 
   const saveMutation = useMutation({
     mutationFn: (data: InfoPage) =>
@@ -156,14 +155,13 @@ export const PageEditorPage = () => {
           },
         },
       );
-      toast({
-        title: isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany',
+      toast.success(isNewPage ? 'Utworzono stronę' : 'Zapisano zmiany', {
         description: `Strona "${data.title}" została ${isNewPage ? 'utworzona' : 'zaktualizowana'}.`,
       });
       navigate('/admin?tab=pages');
     },
     onError: () => {
-      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+      toast.error('Błąd zapisu');
     },
   });
 
@@ -235,11 +233,11 @@ export const PageEditorPage = () => {
 
   const handleSave = () => {
     if (!formData.title.trim()) {
-      toast({ title: 'Podaj tytuł strony', variant: 'destructive' });
+      toast.error('Podaj tytuł strony');
       return;
     }
     if (!formData.slug.trim()) {
-      toast({ title: 'Podaj slug URL', variant: 'destructive' });
+      toast.error('Podaj slug URL');
       return;
     }
     saveMutation.mutate(formData);

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import TeamRosterDialog from '@/components/team/TeamRosterDialog';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { buildTeamInviteLink } from '@/lib/teamInvite';
 import type { Event, Registration } from '@/types';
 
@@ -62,9 +62,9 @@ const CaptainTeamInvites = ({ items }: CaptainTeamInvitesProps) => {
         response.data.inviteToken,
       );
       await navigator.clipboard.writeText(link);
-      toast({ title: 'Skopiowano link zaproszenia' });
+      toast.success('Skopiowano link zaproszenia');
     } catch {
-      toast({ title: 'Nie udało się pobrać linku zaproszenia', variant: 'destructive' });
+      toast.error('Nie udało się pobrać linku zaproszenia');
     }
   };
 

@@ -15,7 +15,7 @@ import { ListContainer, ListEmptyState, RegistrationListRow } from '@/components
 import { VirtualResultsSubmissionDialog } from './VirtualResultsSubmissionDialog';
 import CaptainTeamInvites from './CaptainTeamInvites';
 import { QUERY_KEYS } from '@/constants';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { retryErrorMessage, retryRegistrationPayment } from '@/lib/unpaidRegistration';
 
 interface ParticipantRegistrationsTabProps {
@@ -40,7 +40,6 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
     event: Event;
   } | null>(null);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   // The owner cancels their own Zapis inside the organizer's window.
   const handleConfirmCancel = async () => {
@@ -48,19 +47,16 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
     setCancelPending(true);
     try {
       await cancelRegistration(cancelTarget.registration.id);
-      toast({
-        title: 'Zrezygnowano z udziału',
+      toast.success('Zrezygnowano z udziału', {
         description: hasPaidAmount(cancelTarget.registration)
           ? 'Złożyliśmy wniosek o zwrot — organizator rozpatrzy go zgodnie z zasadami wydarzenia.'
           : 'Miejsce wróciło do puli.',
       });
       setCancelTarget(null);
     } catch (error) {
-      toast({
-        title: 'Nie udało się zrezygnować',
+      toast.error('Nie udało się zrezygnować', {
         description:
           error instanceof ApiRequestError ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setCancelPending(false);
@@ -72,17 +68,12 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const handleRequestRefund = async (registration: Registration) => {
     try {
       await requestRefund(registration.id);
-      toast({
-        title: 'Wysłano prośbę o zwrot',
+      toast.success('Wysłano prośbę o zwrot', {
         description: 'Organizator lub administrator rozpatrzy Twóją prośbę.',
       });
       queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
     } catch {
-      toast({
-        title: 'Nie udało się wysłać prośby',
-        description: 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się wysłać prośby', { description: 'Spróbuj ponownie za chwilę.' });
     }
   };
   // Same button as in the unpaid banner — reopens the payment window / sends to the gateway.
@@ -90,14 +81,10 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
     try {
       const { redirected } = await retryRegistrationPayment(registration.id);
       if (!redirected) {
-        toast({ title: 'Okno płatności zostało ponownie otwarte' });
+        toast.success('Okno płatności zostało ponownie otwarte');
       }
     } catch (error) {
-      toast({
-        title: 'Nie udało się ponowić płatności',
-        description: retryErrorMessage(error),
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się ponowić płatności', { description: retryErrorMessage(error) });
     }
     queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
   };

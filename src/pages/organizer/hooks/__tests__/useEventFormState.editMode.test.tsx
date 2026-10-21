@@ -15,7 +15,7 @@ import type { Event, OrganizerEventLimit, User } from '@/types';
 // pins the hook's responsibility in the fix: when editing an existing event,
 // the loaded distance's registeredCount must reach `distances[i]`.
 
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const navigate = vi.fn();
 
 const organizer: User = {
@@ -39,9 +39,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ user: organizer }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
@@ -113,6 +111,8 @@ const existingEvent: Event = {
 describe('useEventFormState edit mode', () => {
   beforeEach(() => {
     toast.mockClear();
+    toast.success.mockClear();
+    toast.error.mockClear();
     navigate.mockClear();
     vi.mocked(getEventById).mockReset();
     vi.mocked(getOrganizers).mockReset();

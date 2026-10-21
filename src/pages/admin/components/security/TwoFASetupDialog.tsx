@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { QrCode, Smartphone } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type TwoFAMethod = 'app' | 'sms';
 
@@ -43,17 +43,12 @@ export const TwoFASetupDialog = ({
 
   const handleVerify = () => {
     if (verificationCode.length !== 6) {
-      toast({
-        title: 'Błąd',
-        description: 'Wprowadź 6-cyfrowy kod weryfikacyjny.',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Wprowadź 6-cyfrowy kod weryfikacyjny.' });
       return;
     }
     onSetupComplete(method);
     handleClose(false);
-    toast({
-      title: '2FA włączone',
+    toast.success('2FA włączone', {
       description: `Uwierzytelnianie dwuskładnikowe zostało aktywowane (${method === 'app' ? 'aplikacja' : 'SMS'}).`,
     });
   };
@@ -156,8 +151,7 @@ export const TwoFASetupDialog = ({
               variant="outline"
               className="w-full"
               onClick={() =>
-                toast({
-                  title: 'Kod wysłany',
+                toast.success('Kod wysłany', {
                   description: 'Kod weryfikacyjny został wysłany na podany numer.',
                 })
               }

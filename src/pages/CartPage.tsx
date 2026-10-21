@@ -29,7 +29,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CartItemCard } from '@/components/cart/CartItemCard';
 import { formatMoney } from '@/lib/format';
 import { OrderSummary } from '@/components/cart/OrderSummary';
@@ -174,7 +174,6 @@ const CartPage = () => {
     setLastOrder,
   } = useCart();
   const { user, refreshUser } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const { data: deliveryMethodsResp } = useQuery({
@@ -355,10 +354,8 @@ const CartPage = () => {
       void refreshUser();
       navigate('/order-success');
     } catch (error) {
-      toast({
-        title: 'Nie udało się złożyć zamówienia',
+      toast.error('Nie udało się złożyć zamówienia', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsProcessing(false);

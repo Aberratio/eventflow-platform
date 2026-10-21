@@ -30,7 +30,7 @@ import { ArrowLeft, AlertTriangle, Calendar, CheckCircle2, MapPin, UserCheck } f
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 import type { RegistrationParticipant } from '@/hooks/useRegistrationForm';
@@ -184,10 +184,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     if (isLoading) return;
     if (event && isExternalRegistrationEvent(event)) return;
     if (!previewMode && !isAuthenticated) {
-      toast({
-        title: 'Wymagane logowanie',
-        description: 'Zaloguj się, aby zapisać się na zawody.',
-      });
+      toast('Wymagane logowanie', { description: 'Zaloguj się, aby zapisać się na zawody.' });
       navigate('/login', { state: { returnTo: `/events/${slug}/register` } });
     }
   }, [event, isAuthenticated, isLoading, navigate, previewMode, slug]);
@@ -195,11 +192,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   useEffect(() => {
     if (event && isExternalRegistrationEvent(event)) return;
     if (event && !previewMode && !isRegistrationOpen) {
-      toast({
-        title: 'Zapisy zamknięte',
-        description: 'Zapisy na te zawody są zamknięte.',
-        variant: 'destructive',
-      });
+      toast.error('Zapisy zamknięte', { description: 'Zapisy na te zawody są zamknięte.' });
       navigate(`/events/${slug}`);
     }
   }, [event, isRegistrationOpen, navigate, previewMode, slug]);
@@ -434,10 +427,8 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       }
       const fieldErrors = registrationFormFieldErrors(error);
       if (fieldErrors.length > 0) setServerFieldErrors(fieldErrors);
-      toast({
-        title: 'Nie udało się zapisać rejestracji',
+      toast.error('Nie udało się zapisać rejestracji', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
       setIsSubmitting(false);
       return;

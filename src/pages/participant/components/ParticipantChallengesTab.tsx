@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Target, ArrowRight, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { ChallengeParticipation } from '@/types';
 
 const SELECT_CLASS =
@@ -70,15 +70,14 @@ const ParticipantChallengesTab = () => {
   const joinForWard = useMutation({
     mutationFn: () => joinChallenge(challengeToJoin, wardId),
     onSuccess: () => {
-      toast({
-        title: 'Zapisano na wyzwanie',
+      toast.success('Zapisano na wyzwanie', {
         description: 'Podopieczny bierze udział w wyzwaniu.',
       });
       setChallengeToJoin('');
       queryClient.invalidateQueries({ queryKey: ['challenge-participations'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 
