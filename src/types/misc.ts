@@ -7,18 +7,6 @@ export interface Partner {
   featured: boolean;
 }
 
-export interface Message {
-  id: string;
-  fromId: string;
-  fromName: string;
-  toId: string;
-  subject: string;
-  content: string;
-  sentAt: string;
-  read: boolean;
-  eventId?: string;
-}
-
 export interface Ticket {
   id: string;
   eventId: string;

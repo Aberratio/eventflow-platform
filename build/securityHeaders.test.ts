@@ -34,12 +34,10 @@ describe('buildCsp', () => {
     expect(scriptSrc).not.toContain('unsafe-eval');
   });
 
-  it('style-src allows unsafe-inline and Google Fonts; font-src allows gstatic', () => {
+  it('fonts are self-hosted: style-src and font-src do not allow Google hosts (R-15)', () => {
     const csp = buildCsp(baseOptions(), "'self'");
-    expect(directive(csp, 'style-src')).toBe(
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    );
-    expect(directive(csp, 'font-src')).toBe("font-src 'self' https://fonts.gstatic.com");
+    expect(directive(csp, 'style-src')).toBe("style-src 'self' 'unsafe-inline'");
+    expect(directive(csp, 'font-src')).toBe("font-src 'self'");
   });
 
   it('normal pages get frame-ancestors self', () => {

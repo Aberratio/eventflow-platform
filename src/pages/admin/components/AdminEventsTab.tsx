@@ -163,6 +163,7 @@ export const AdminEventsTab = () => {
                   <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
                       <Link
+                        aria-label="Podgląd wydarzenia"
                         to={
                           event.publicationStatus === 'draft' ||
                           event.publicationStatus === 'submitted' ||
@@ -175,7 +176,7 @@ export const AdminEventsTab = () => {
                       </Link>
                     </Button>
                     <Button variant="ghost" size="icon" asChild>
-                      <Link to={`/admin/events/${event.id}`}>
+                      <Link aria-label="Zarządzaj wydarzeniem" to={`/admin/events/${event.id}`}>
                         <Settings className="h-4 w-4" />
                       </Link>
                     </Button>

@@ -38,6 +38,8 @@ import type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  AssignBibNumbersPayload,
+  AssignBibNumbersResult,
   SwapTeamMemberPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
@@ -59,6 +61,9 @@ import type {
   ChangeDistancePayload,
 } from './payloads';
 import type {
+  DiscountCodeBatch,
+  DiscountCodeBatchDetail,
+  DiscountCodeBatchInput,
   Event,
   EventVisibility,
   User,
@@ -91,7 +96,6 @@ import type {
   ChallengeEntry,
   ChallengeEntryStatus,
   ChallengeRanking,
-  Message,
   Ticket,
   Certificate,
   Partner,
@@ -102,6 +106,9 @@ import type {
   CompetitorMergeComparison,
   CompetitorMergePayload,
   CompetitorMergeResult,
+  CompetitorDuplicateReport,
+  CompetitorDuplicateReportStatus,
+  ReportCompetitorDuplicatePayload,
   GlobalInsuranceSettings,
   ChallengePointsSettings,
   AdminActivityLog,
@@ -131,7 +138,12 @@ import type {
   EmailPreviewRequest,
   EmailPreviewResult,
 } from '@/types/email';
-import type { SalesStats, PlatformStats } from '@/types/admin';
+import type {
+  SalesStats,
+  PlatformStats,
+  SettlementReport,
+  SettlementReportParams,
+} from '@/types/admin';
 
 // ─────────────────────────────────────────────────────────
 // API Adapter Interface
@@ -297,6 +309,11 @@ export interface ApiAdapter {
     id: string,
     data: UpdateRegistrationPayload,
   ): Promise<ApiResponse<Registration>>;
+  /** R-13: gives the next free number inside each distance's range to registrations without one. */
+  assignBibNumbers(
+    eventId: string,
+    data: AssignBibNumbersPayload,
+  ): Promise<ApiResponse<AssignBibNumbersResult>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
   /** R-02: historia zmian jednego zapisu (właściciel i organizator), od najstarszej. */
   getRegistrationChanges(id: string): Promise<ApiResponse<RegistrationChange[]>>;
@@ -450,10 +467,6 @@ export interface ApiAdapter {
   getSeriesRanking(seriesId: string): Promise<ApiResponse<ChallengeRanking>>;
 
   // ── Messages ──
-  getMessages(userId: string): Promise<ApiResponse<Message[]>>;
-  getMessage(id: string): Promise<ApiResponse<Message | null>>;
-  sendMessage(data: Partial<Message>): Promise<ApiResponse<Message>>;
-  markAsRead(id: string): Promise<ApiResponse<Message>>;
 
   // ── Tickets ──
   getTickets(userId: string): Promise<ApiResponse<Ticket[]>>;
@@ -497,6 +510,22 @@ export interface ApiAdapter {
   /** Wykonuje (albo wstrzymuje) scalenie — patrz CompetitorMergeResult.status. */
   mergeCompetitors(payload: CompetitorMergePayload): Promise<ApiResponse<CompetitorMergeResult>>;
 
+  // ── R-08: zgłoszenia duplikatów Zawodnika ──
+  /** Opiekun / organizator zgłasza, że profil jest duplikatem innego (nic nie scala). */
+  reportCompetitorDuplicate(
+    competitorId: string,
+    payload: ReportCompetitorDuplicatePayload,
+  ): Promise<ApiResponse<CompetitorDuplicateReport>>;
+  /** Kolejka zgłoszeń dla Moderatora/Admina; domyślnie tylko otwarte. */
+  listCompetitorDuplicateReports(
+    status?: CompetitorDuplicateReportStatus | 'all',
+  ): Promise<ApiResponse<CompetitorDuplicateReport[]>>;
+  /** Moderator/Admin odrzuca otwarte zgłoszenie (opcjonalny powód). */
+  rejectCompetitorDuplicateReport(
+    id: string,
+    reason?: string,
+  ): Promise<ApiResponse<CompetitorDuplicateReport>>;
+
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
   updateGlobalInsuranceSettings(
@@ -523,8 +552,27 @@ export interface ApiAdapter {
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
   // E1.13: configurable registration form ("Pozycje formularza"). The public list is
   // unauthenticated (non-hidden positions only); the rest is organizer/staff-scoped.
-  getPublicFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  // R-04: with a `distanceId` the public list is that distance's effective form.
+  getPublicFormFields(eventId: string, distanceId?: string): Promise<ApiResponse<FormField[]>>;
   getFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  // R-04: per-distance form — effective list (event form + overrides + own fields), a distance-only
+  // field, copy-on-override of an inherited position and reset (inherit again).
+  getDistanceFormFields(eventId: string, distanceId: string): Promise<ApiResponse<FormField[]>>;
+  createDistanceFormField(
+    eventId: string,
+    distanceId: string,
+    data: CreateFormFieldPayload,
+  ): Promise<ApiResponse<FormField>>;
+  overrideFormField(
+    eventId: string,
+    distanceId: string,
+    fieldId: string,
+  ): Promise<ApiResponse<FormField>>;
+  resetFormFieldOverride(
+    eventId: string,
+    distanceId: string,
+    fieldId: string,
+  ): Promise<ApiResponse<{ reset: boolean }>>;
   createFormField(eventId: string, data: CreateFormFieldPayload): Promise<ApiResponse<FormField>>;
   updateFormField(
     eventId: string,
@@ -548,7 +596,23 @@ export interface ApiAdapter {
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.
   // Same $canManageEvent gate as the rest of this group, server-side.
-  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx' | 'xml'): Promise<void>;
+  exportStartList(
+    eventId: string,
+    distanceId: string,
+    format: 'csv' | 'xlsx' | 'xml',
+  ): Promise<void>;
+  // R-07: discount code batches (generator over the ordinary event discount codes).
+  // Same event-manager gate as the start-list export; the CSV is a real file download.
+  createDiscountCodeBatch(
+    eventId: string,
+    input: DiscountCodeBatchInput,
+  ): Promise<ApiResponse<DiscountCodeBatchDetail>>;
+  getDiscountCodeBatches(eventId: string): Promise<ApiResponse<DiscountCodeBatch[]>>;
+  getDiscountCodeBatch(
+    eventId: string,
+    batchId: string,
+  ): Promise<ApiResponse<DiscountCodeBatchDetail>>;
+  exportDiscountCodeBatch(eventId: string, batchId: string): Promise<void>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;
@@ -556,6 +620,10 @@ export interface ApiAdapter {
   // E8.3: minimal platform-admin cross-section — Events by publication_status,
   // Organizer count, active package-credit total. Admin-only (not moderator).
   getPlatformStats(): Promise<ApiResponse<PlatformStats>>;
+  // R-03 (spec 13, trasa A): admin-only settlement report (amounts in minor units) and its
+  // CSV/XLSX download (same browser-download idiom as exportStartList).
+  getSettlementReport(params: SettlementReportParams): Promise<ApiResponse<SettlementReport>>;
+  exportSettlementReport(params: SettlementReportParams, format: 'csv' | 'xlsx'): Promise<void>;
 
   // ── CMS ──
   getInfoPages(): Promise<ApiResponse<InfoPage[]>>;

@@ -3,7 +3,7 @@ import { test, expect, skipCookieBanner } from '../support/fixtures';
 import { API, FRONT } from '../support/env';
 
 const MB = 1024 * 1024;
-const ALLOWED_HOSTS = new Set([new URL(FRONT).host, new URL(API).host, 'fonts.googleapis.com', 'fonts.gstatic.com']);
+const ALLOWED_HOSTS = new Set([new URL(FRONT).host, new URL(API).host]);
 const HASHED = /-[A-Za-z0-9_-]{6,}\.(js|css)(\?|$)/;
 
 interface Asset {

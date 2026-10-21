@@ -264,7 +264,8 @@ const AthleteProfilePage = () => {
                               <div className="flex items-center gap-1">
                                 {getPositionIcon(result.position)}
                                 <span className="text-muted-foreground">
-                                  #{result.position} (kat. #{result.categoryPosition})
+                                  #{result.position} (kat. #{result.categoryPosition}
+                                  {result.genderPosition ? `, płeć #${result.genderPosition}` : ''})
                                 </span>
                               </div>
                             )}

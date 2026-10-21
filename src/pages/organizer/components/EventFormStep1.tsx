@@ -286,7 +286,13 @@ const EventImageUploadField = ({
               <Crop className="mr-2 h-4 w-4" />
               Zmien przyciecie
             </Button>
-            <Button type="button" variant="outline" size="icon" onClick={handleRemove}>
+            <Button
+              aria-label="Usuń plik"
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleRemove}
+            >
               <Trash2 className="h-4 w-4" />
             </Button>
           </>
