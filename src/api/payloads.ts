@@ -214,6 +214,14 @@ export interface RegistrationMerchandiseSelection {
  * to Warianty — the server then falls back to pricing off
  * `distance.price`/`distance.priceTiers` directly.
  */
+/** R-02 (zakres P2): body of `POST /registrations/{id}/distance-change[/quote]`. */
+export interface ChangeDistancePayload {
+  distanceId: string;
+  /** Wariant opłaty na nowym dystansie (pominięty = cena dystansu). */
+  pricingVariantId?: string;
+  category?: string;
+}
+
 export interface CreateRegistrationPayload {
   eventId: string;
   eventName: string;

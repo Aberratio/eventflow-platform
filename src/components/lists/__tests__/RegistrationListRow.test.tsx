@@ -75,6 +75,46 @@ describe('RegistrationListRow self-service cancellation (R-02)', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it('offers "Zmień dystans" inside the window and hides it after the cut-off', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+    const onChangeDistance = vi.fn();
+
+    const { unmount } = render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onChangeDistance={onChangeDistance}
+      />,
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zmień dystans' })[0]);
+    expect(onChangeDistance).toHaveBeenCalledTimes(1);
+    unmount();
+
+    vi.setSystemTime(new Date('2026-09-15T10:00:00Z'));
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onChangeDistance={onChangeDistance}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Zmień dystans' })).not.toBeInTheDocument();
+  });
+
+  it('does not offer "Zmień dystans" for a relay-team registration', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, teamId: 'team-1' }}
+        event={liveEvent}
+        onChangeDistance={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zmień dystans' })).not.toBeInTheDocument();
+  });
+
   it('hides the button after the cut-off and explains why', () => {
     vi.setSystemTime(new Date('2026-09-15T10:00:00Z'));
 

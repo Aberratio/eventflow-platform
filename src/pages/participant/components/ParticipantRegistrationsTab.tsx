@@ -1,6 +1,7 @@
 import { cancelRegistration, getVirtualResultSubmissions, requestRefund } from '@/api';
 import { ApiRequestError } from '@/api/errors';
 import { CancelRegistrationDialog } from '@/components/registration/CancelRegistrationDialog';
+import { ChangeDistanceDialog } from '@/components/registration/ChangeDistanceDialog';
 import { hasPaidAmount } from '@/lib/selfService';
 import { RegistrationHistoryDialog } from '@/components/registration/RegistrationHistoryDialog';
 import { getAllEventsPaged } from '@/api/fetchAllPages';
@@ -31,6 +32,10 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   } | null>(null);
   const [cancelPending, setCancelPending] = useState(false);
   const [historyTarget, setHistoryTarget] = useState<{
+    registration: Registration;
+    event: Event;
+  } | null>(null);
+  const [changeDistanceTarget, setChangeDistanceTarget] = useState<{
     registration: Registration;
     event: Event;
   } | null>(null);
@@ -174,6 +179,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
             onRetryPayment={() => handleRetryPayment(registration)}
             onCancel={() => setCancelTarget({ registration, event })}
             onShowHistory={() => setHistoryTarget({ registration, event })}
+            onChangeDistance={() => setChangeDistanceTarget({ registration, event })}
           />
         ))}
       </ListContainer>
@@ -188,6 +194,20 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
           event={cancelTarget.event}
           pending={cancelPending}
           onConfirm={handleConfirmCancel}
+        />
+      )}
+      {changeDistanceTarget && (
+        <ChangeDistanceDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setChangeDistanceTarget(null);
+          }}
+          registration={changeDistanceTarget.registration}
+          event={changeDistanceTarget.event}
+          onChanged={() => {
+            queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+          }}
         />
       )}
       {historyTarget && (

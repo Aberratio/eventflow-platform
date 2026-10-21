@@ -564,6 +564,10 @@ export const httpAdapter: ApiAdapter = {
   cancelRegistration: (id) =>
     request(`/registrations/${encodeURIComponent(id)}/cancel`, json('POST')),
   getRegistrationChanges: (id) => request(`/registrations/${encodeURIComponent(id)}/changes`),
+  quoteDistanceChange: (id, data) =>
+    request(`/registrations/${encodeURIComponent(id)}/distance-change/quote`, json('POST', data)),
+  changeRegistrationDistance: (id, data) =>
+    request(`/registrations/${encodeURIComponent(id)}/distance-change`, json('POST', data)),
   updatePaymentDetails: (id, paymentDetails) =>
     request(
       `/registrations/${encodeURIComponent(id)}/payment-details`,

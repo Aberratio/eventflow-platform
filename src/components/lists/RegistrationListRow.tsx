@@ -17,11 +17,13 @@ import {
   CreditCard,
   History,
   LogOut,
+  Shuffle,
 } from 'lucide-react';
 import { endOfDay, format, isAfter, isBefore, startOfDay } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { ListRow } from './ListRow';
 import { canRetryPayment } from '@/lib/unpaidRegistration';
+import { canChangeDistance } from '@/lib/distanceChange';
 import { evaluateSelfService, selfServiceDeniedMessage } from '@/lib/selfService';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
@@ -38,6 +40,8 @@ interface RegistrationListRowProps {
   onCancel?: () => void;
   /** R-02: „Historia zapisu” — omitted = not offered. */
   onShowHistory?: () => void;
+  /** R-02: „Zmień dystans” — offered only while the self-service window is open; omitted = never offered. */
+  onChangeDistance?: () => void;
 }
 
 export const RegistrationListRow = ({
@@ -49,6 +53,7 @@ export const RegistrationListRow = ({
   onRetryPayment,
   onCancel,
   onShowHistory,
+  onChangeDistance,
 }: RegistrationListRowProps) => {
   const [showStartCode, setShowStartCode] = useState(false);
   const now = new Date();
@@ -147,7 +152,25 @@ export const RegistrationListRow = ({
       </Button>
     );
 
-  const selfService = onCancel ? evaluateSelfService(event, registration, now) : null;
+  const selfService =
+    onCancel || onChangeDistance ? evaluateSelfService(event, registration, now) : null;
+  const changeDistanceButton = selfService?.allowed &&
+    onChangeDistance &&
+    canChangeDistance(registration) && (
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onChangeDistance();
+        }}
+        className="h-7 text-xs"
+      >
+        <Shuffle className="mr-1 h-3 w-3" />
+        Zmień dystans
+      </Button>
+    );
   const cancelButton = selfService?.allowed && onCancel && (
     <Button
       size="sm"
@@ -164,7 +187,7 @@ export const RegistrationListRow = ({
     </Button>
   );
   const cancelUnavailable =
-    selfService && !selfService.allowed
+    onCancel && selfService && !selfService.allowed
       ? selfServiceDeniedMessage(
           selfService.reason,
           selfService.deadline
@@ -334,6 +357,7 @@ export const RegistrationListRow = ({
       {startCodeTrigger}
       {refundButton}
       {retryButton}
+      {changeDistanceButton}
       {cancelButton}
       {historyButton}
       {cancelUnavailable && (

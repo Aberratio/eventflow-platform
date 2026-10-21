@@ -159,6 +159,10 @@ export const cancelRegistration: ApiAdapter['cancelRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.cancelRegistration(...args));
 export const getRegistrationChanges: ApiAdapter['getRegistrationChanges'] = (...args) =>
   ensureAdapter().then((a) => a.getRegistrationChanges(...args));
+export const quoteDistanceChange: ApiAdapter['quoteDistanceChange'] = (...args) =>
+  ensureAdapter().then((a) => a.quoteDistanceChange(...args));
+export const changeRegistrationDistance: ApiAdapter['changeRegistrationDistance'] = (...args) =>
+  ensureAdapter().then((a) => a.changeRegistrationDistance(...args));
 export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args) =>
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
 export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>
@@ -499,6 +503,7 @@ export type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  ChangeDistancePayload,
   SwapTeamMemberPayload,
   SwapTeamMemberNewPerson,
   RegistrationMerchandiseSelection,
