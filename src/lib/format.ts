@@ -33,3 +33,19 @@ export function toIsoDate(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
+
+/**
+ * A duration in seconds as "H:MM:SS", rounded to a whole second. With
+ * `hours: 'auto'` the hour part is left out under one hour ("M:SS").
+ */
+export function formatDuration(
+  totalSeconds: number,
+  { hours = 'always' }: { hours?: 'always' | 'auto' } = {},
+): string {
+  const whole = Math.round(totalSeconds);
+  const h = Math.floor(whole / 3600);
+  const m = Math.floor((whole % 3600) / 60);
+  const s = String(whole % 60).padStart(2, '0');
+  if (h === 0 && hours === 'auto') return `${m}:${s}`;
+  return `${h}:${String(m).padStart(2, '0')}:${s}`;
+}
