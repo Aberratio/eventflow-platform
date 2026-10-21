@@ -72,6 +72,7 @@ import type {
   RegistrationChange,
   DistanceChangeQuote,
   DistanceChangeResult,
+  TransferRegistrationResult,
   RegistrationQuote,
   PublicStartListEntry,
   RelayTeam,
@@ -327,6 +328,11 @@ export interface ApiAdapter {
     id: string,
     data: ChangeDistancePayload,
   ): Promise<ApiResponse<DistanceChangeResult>>;
+  /** R-02 (zakres P2): organizator przenosi zapis na innego zawodnika (istniejącego albo nową osobę). */
+  transferRegistration(
+    id: string,
+    data: SwapTeamMemberPayload,
+  ): Promise<ApiResponse<TransferRegistrationResult>>;
   updatePaymentDetails(
     id: string,
     paymentDetails: PaymentDetails,

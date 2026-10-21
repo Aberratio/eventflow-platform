@@ -163,6 +163,8 @@ export const quoteDistanceChange: ApiAdapter['quoteDistanceChange'] = (...args) 
   ensureAdapter().then((a) => a.quoteDistanceChange(...args));
 export const changeRegistrationDistance: ApiAdapter['changeRegistrationDistance'] = (...args) =>
   ensureAdapter().then((a) => a.changeRegistrationDistance(...args));
+export const transferRegistration: ApiAdapter['transferRegistration'] = (...args) =>
+  ensureAdapter().then((a) => a.transferRegistration(...args));
 export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args) =>
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
 export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>

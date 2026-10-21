@@ -77,6 +77,11 @@ as the first version.
   organizer; organizers can change the distance of any registration from the
   participants list. A cheaper distance files a refund request for the
   overpayment.
+- "Przenieś zapis" in the organizer's participants list (zakres P2, do
+  potwierdzenia przez Zamawiającego): move a registration to another
+  competitor, found by name and date of birth or entered as a new person. The
+  confirmation explains that the start code is rotated, the form answers are
+  dropped and no money is settled between the two people.
 
 ### Fixed
 
