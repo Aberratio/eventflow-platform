@@ -78,6 +78,12 @@ export const ResultListRow = ({
       <span className="hidden text-sm text-muted-foreground sm:inline">
         {result.category}: <strong>{finished ? result.categoryPosition : '-'}</strong>
       </span>
+      {finished && result.gender && (result.genderPosition ?? 0) > 0 && (
+        <span className="hidden text-sm text-muted-foreground sm:inline">
+          {result.gender === 'K' ? 'Kobiety' : 'Mężczyźni'}:{' '}
+          <strong>{result.genderPosition}</strong>
+        </span>
+      )}
       <PublicationStatusBadge status={result.publicationStatus} className="text-[10px]" />
     </div>
   );
@@ -85,7 +91,12 @@ export const ResultListRow = ({
   const action = showDownload ? (
     <div className="flex gap-1">
       {onDownloadCertificate && (
-        <Button variant="ghost" size="icon" onClick={onDownloadCertificate}>
+        <Button
+          aria-label="Pobierz certyfikat"
+          variant="ghost"
+          size="icon"
+          onClick={onDownloadCertificate}
+        >
           <Download className="h-4 w-4" />
         </Button>
       )}

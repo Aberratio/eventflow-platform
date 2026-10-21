@@ -15,6 +15,7 @@ import { AdminEventBackgroundsTab } from './components/AdminEventBackgroundsTab'
 import { AdminSeriesTab } from './components/AdminSeriesTab';
 import { UsersAdminsTab } from './components/UsersAdminsTab';
 import { CompetitorMergeTab } from './components/CompetitorMergeTab';
+import { AdminSettlementsTab } from './components/AdminSettlementsTab';
 import {
   LayoutDashboard,
   Users,
@@ -31,6 +32,7 @@ import {
   ClipboardList,
   Image,
   GitMerge,
+  Wallet,
 } from 'lucide-react';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { AdminOrdersTab } from './components/AdminOrdersTab';
@@ -79,6 +81,10 @@ const navGroups: NavGroup[] = [
       { id: 'orders', label: 'Zamówienia', icon: ClipboardList },
       { id: 'challenges', label: 'Wyzwania', icon: Trophy },
     ],
+  },
+  {
+    label: 'Finanse',
+    items: [{ id: 'settlements', label: 'Rozliczenia (trasa A)', icon: Wallet }],
   },
   {
     label: 'Treści',
@@ -151,6 +157,8 @@ const AdminDashboard = () => {
         return <AdminOrdersTab />;
       case 'challenges':
         return <AdminChallengesTab />;
+      case 'settlements':
+        return <AdminSettlementsTab />;
       case 'partners':
         return <AdminPartnersTab />;
       case 'backgrounds':

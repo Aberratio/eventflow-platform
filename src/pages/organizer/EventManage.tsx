@@ -274,12 +274,17 @@ const EventManage = () => {
           <TabsList
             className={`grid h-auto w-full rounded-lg border border-border/80 bg-muted/20 p-0 ${isDraft ? (showTeamTab ? 'grid-cols-5' : 'grid-cols-4') : showTeamTab ? 'grid-cols-7' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
           >
-            <TabsTrigger value="overview" className="flex h-[52px] items-center gap-2 px-7 py-4">
+            <TabsTrigger
+              aria-label="Przegląd"
+              value="overview"
+              className="flex h-[52px] items-center gap-2 px-7 py-4"
+            >
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Przegląd</span>
             </TabsTrigger>
             {!isDraft && (
               <TabsTrigger
+                aria-label="Uczestnicy"
                 value="participants"
                 className="flex h-[52px] items-center gap-2 px-7 py-4"
               >
@@ -299,19 +304,35 @@ const EventManage = () => {
                 </span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="discounts" className="flex h-[52px] items-center gap-2 px-7 py-4">
+            <TabsTrigger
+              aria-label="Kody rabatowe"
+              value="discounts"
+              className="flex h-[52px] items-center gap-2 px-7 py-4"
+            >
               <Tag className="h-4 w-4" />
               <span className="hidden sm:inline">Kody rabatowe</span>
             </TabsTrigger>
-            <TabsTrigger value="form" className="flex h-[52px] items-center gap-2 px-7 py-4">
+            <TabsTrigger
+              aria-label="Formularz zapisów"
+              value="form"
+              className="flex h-[52px] items-center gap-2 px-7 py-4"
+            >
               <ClipboardList className="h-4 w-4" />
               <span className="hidden sm:inline">Formularz zapisów</span>
             </TabsTrigger>
-            <TabsTrigger value="emails" className="flex h-[52px] items-center gap-2 px-7 py-4">
+            <TabsTrigger
+              aria-label="Emaile"
+              value="emails"
+              className="flex h-[52px] items-center gap-2 px-7 py-4"
+            >
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emaile</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex h-[52px] items-center gap-2 px-7 py-4">
+            <TabsTrigger
+              aria-label="Ustawienia"
+              value="settings"
+              className="flex h-[52px] items-center gap-2 px-7 py-4"
+            >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Ustawienia</span>
             </TabsTrigger>
@@ -351,6 +372,7 @@ const EventManage = () => {
 
           <TabsContent value="discounts">
             <DiscountCodesEditor
+              eventId={visibleEvent.id}
               discountCodes={discountCodes}
               distances={visibleEvent.distances}
               onChange={handleDiscountCodesChange}
@@ -358,7 +380,7 @@ const EventManage = () => {
           </TabsContent>
 
           <TabsContent value="form">
-            <FormFieldsTab eventId={visibleEvent.id} />
+            <FormFieldsTab eventId={visibleEvent.id} distances={visibleEvent.distances} />
           </TabsContent>
 
           <TabsContent value="emails">

@@ -61,6 +61,7 @@ export const prepareResultsExport = (results: Result[]) => {
     Czas: result.time,
     Kategoria: result.category,
     'Pozycja w kategorii': result.categoryPosition,
+    'Pozycja wg płci': result.genderPosition ?? '',
     Status: getResultStatusLabel(result.status),
   }));
 };

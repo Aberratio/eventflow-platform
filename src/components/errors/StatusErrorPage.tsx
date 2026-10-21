@@ -70,9 +70,9 @@ const renderAction = (action: ErrorAction) => {
       </span>
       <span className="flex-1">
         <span className="block text-sm font-medium text-white">{action.label}</span>
-        <span className="block text-xs text-white/40">{action.description}</span>
+        <span className="block text-xs text-white/55">{action.description}</span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-white/25" />
+      <ChevronRight className="h-4 w-4 shrink-0 text-white/55" />
     </>
   );
   const className =
@@ -171,7 +171,7 @@ export const StatusErrorPage = ({
 
       {details && (
         <div className="border-white/8 mb-8 w-full max-w-md rounded-xl border bg-white/[0.03] px-4 py-3">
-          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-white/40">
+          <div className="mb-1 flex items-center gap-2 text-xs font-medium text-white/55">
             <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
             Szczegóły błędu
           </div>
@@ -225,10 +225,10 @@ export const StatusErrorPage = ({
         </div>
       </div>
 
-      <p className="mb-3 mt-10 text-sm text-white/30">
+      <p className="mb-3 mt-10 text-sm text-white/55">
         Jeśli problem będzie się powtarzał, skontaktuj się z nami.
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/40">
+      <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/55">
         <a
           href="mailto:kontakt@zmierzymyczas.pl"
           className="inline-flex items-center gap-1.5 transition-colors hover:text-white/70"

@@ -70,7 +70,7 @@ export const ChallengeRankingCard = ({ challengeId }: { challengeId: string }) =
               </TableHeader>
               <TableBody>
                 {ranking.entries.map((entry) => (
-                  <TableRow key={entry.userId}>
+                  <TableRow key={entry.competitorId ?? entry.userId}>
                     <TableCell className="font-medium">{entry.rank}</TableCell>
                     <TableCell>
                       <span>{entry.name}</span>

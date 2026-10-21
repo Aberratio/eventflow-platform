@@ -8,7 +8,6 @@ export const PARTICIPANT_TAB_IDS = [
   'orders',
   'profile',
   'authorizations',
-  'messages',
 ] as const;
 export type ParticipantTabId = (typeof PARTICIPANT_TAB_IDS)[number];
 

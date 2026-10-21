@@ -8,6 +8,10 @@ import type { FormField } from '@/types';
 
 const api = vi.hoisted(() => ({
   getFormFields: vi.fn(),
+  getDistanceFormFields: vi.fn(),
+  createDistanceFormField: vi.fn(),
+  overrideFormField: vi.fn(),
+  resetFormFieldOverride: vi.fn(),
   createFormField: vi.fn(),
   updateFormField: vi.fn(),
   deleteFormField: vi.fn(),
@@ -225,5 +229,83 @@ describe('FormFieldsTab (E1.13)', () => {
     await userEvent.click(screen.getByLabelText('Usuń: Rozmiar koszulki'));
     await userEvent.click(screen.getByRole('button', { name: 'Usuń pole' }));
     await waitFor(() => expect(api.deleteFormField).toHaveBeenCalledWith('e1', 'c1'));
+  });
+});
+
+describe('FormFieldsTab per distance (R-04)', () => {
+  const distances = [{ id: 'd1', name: '10 km' }];
+  const effective: FormField[] = [
+    { ...list[1], source: 'event' },
+    {
+      ...list[3],
+      id: 'o1',
+      distanceId: 'd1',
+      source: 'override',
+      labelOverride: 'Rozmiar (10 km)',
+    },
+    field({
+      id: 'x1',
+      kind: 'custom',
+      fieldKey: 'custom_only',
+      labelOverride: 'Tylko 10 km',
+      fieldType: 'short_text',
+      state: 'shown',
+      distanceId: 'd1',
+      source: 'distance',
+    }),
+  ];
+
+  const openDistance = async () => {
+    api.getDistanceFormFields.mockResolvedValue({ success: true, data: effective });
+    render(<FormFieldsTab eventId="e1" distances={distances} />);
+    await userEvent.click(await screen.findByLabelText('Formularz dla'));
+    await userEvent.click(await screen.findByRole('option', { name: 'Dystans: 10 km' }));
+    await screen.findByText('Tylko 10 km');
+  };
+
+  it('has no selector without distances', async () => {
+    render(<FormFieldsTab eventId="e1" />);
+    await screen.findByText('Rozmiar koszulki');
+    expect(screen.queryByLabelText('Formularz dla')).not.toBeInTheDocument();
+  });
+
+  it('marks inherited, overridden and distance-only fields and locks the inherited one', async () => {
+    await openDistance();
+    expect(api.getDistanceFormFields).toHaveBeenCalledWith('e1', 'd1');
+    expect(screen.getByText('Odziedziczone')).toBeInTheDocument();
+    expect(screen.getByText('Nadpisane na dystansie')).toBeInTheDocument();
+    expect(screen.getByText('Tylko ten dystans')).toBeInTheDocument();
+    const inherited = screen.getByRole('group', { name: 'Stan pola: Telefon' });
+    expect(inherited.querySelectorAll('button:disabled')).toHaveLength(3);
+    expect(screen.getByLabelText('Edytuj: Telefon')).toBeDisabled();
+    expect(screen.getByLabelText('Przesuń w górę: Telefon')).toBeDisabled();
+  });
+
+  it('overrides an inherited field and resets an overridden one', async () => {
+    api.overrideFormField.mockResolvedValue({ success: true, data: {} });
+    api.resetFormFieldOverride.mockResolvedValue({ success: true, data: { reset: true } });
+    await openDistance();
+
+    await userEvent.click(screen.getByLabelText('Nadpisz na dystansie: Telefon'));
+    await waitFor(() => expect(api.overrideFormField).toHaveBeenCalledWith('e1', 'd1', 's2'));
+
+    await userEvent.click(screen.getByLabelText('Przywróć dziedziczenie: Rozmiar (10 km)'));
+    await waitFor(() => expect(api.resetFormFieldOverride).toHaveBeenCalledWith('e1', 'd1', 'o1'));
+  });
+
+  it('adds a distance-only field through the distance endpoint', async () => {
+    api.createDistanceFormField.mockResolvedValue({ success: true, data: effective[2] });
+    await openDistance();
+    await userEvent.click(screen.getByRole('button', { name: /Dodaj pole/ }));
+    await userEvent.type(screen.getByLabelText('Etykieta'), 'Notatka');
+    await userEvent.click(screen.getByRole('button', { name: 'Dodaj pole' }));
+
+    await waitFor(() => expect(api.createDistanceFormField).toHaveBeenCalledTimes(1));
+    expect(api.createDistanceFormField).toHaveBeenCalledWith(
+      'e1',
+      'd1',
+      expect.objectContaining({ label: 'Notatka' }),
+    );
+    expect(api.createFormField).not.toHaveBeenCalled();
   });
 });

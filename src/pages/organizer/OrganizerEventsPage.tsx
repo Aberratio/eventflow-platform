@@ -84,7 +84,7 @@ const OrganizerEventsPage = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Powrót do panelu
         </Button>
 
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-bold">Moje wydarzenia</h1>
           {isOrganizer && (
             <Button onClick={() => navigate('/organizer/events/new')} disabled={!canCreateEvent}>
@@ -118,7 +118,7 @@ const OrganizerEventsPage = () => {
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
           className="mb-6"
         >
-          <TabsList>
+          <TabsList className="max-w-full justify-start overflow-x-auto">
             {Object.entries(statusLabels).map(([key, label]) => (
               <TabsTrigger key={key} value={key}>
                 {label}

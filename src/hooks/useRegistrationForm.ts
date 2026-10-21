@@ -258,8 +258,9 @@ export const useRegistrationForm = (
   // in the order the organizer set; this form renders the custom ones. A failed load simply
   // leaves the fixed fields (the registration must not depend on this optional list).
   const { data: publicFormFields } = useQuery({
-    queryKey: ['form-fields', 'public', event.id],
-    queryFn: () => getPublicFormFields(event.id),
+    // R-04: the form of the chosen distance (event form + its overrides + its own fields).
+    queryKey: ['form-fields', 'public', event.id, selectedDistanceId],
+    queryFn: () => getPublicFormFields(event.id, selectedDistanceId || undefined),
     select: (r) => r.data ?? [],
     retry: false,
   });
