@@ -200,7 +200,11 @@ const HeroEventCard = ({ event }: { event: Event }) => (
       </div>
     </Link>
     <div className="mt-4 flex items-center justify-center gap-3">
-      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+      <button
+        type="button"
+        aria-label="Poprzednie"
+        className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white"
+      >
         <ArrowLeft className="h-4 w-4" />
       </button>
       <div className="flex gap-1.5">
@@ -209,7 +213,11 @@ const HeroEventCard = ({ event }: { event: Event }) => (
         <span className="bg-white/18 h-1 w-3 rounded-full" />
         <span className="bg-white/18 h-1 w-3 rounded-full" />
       </div>
-      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+      <button
+        type="button"
+        aria-label="Następne"
+        className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white"
+      >
         <ArrowRight className="h-4 w-4" />
       </button>
     </div>

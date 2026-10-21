@@ -85,7 +85,12 @@ export const ResultListRow = ({
   const action = showDownload ? (
     <div className="flex gap-1">
       {onDownloadCertificate && (
-        <Button variant="ghost" size="icon" onClick={onDownloadCertificate}>
+        <Button
+          aria-label="Pobierz certyfikat"
+          variant="ghost"
+          size="icon"
+          onClick={onDownloadCertificate}
+        >
           <Download className="h-4 w-4" />
         </Button>
       )}

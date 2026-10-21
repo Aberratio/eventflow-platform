@@ -79,7 +79,11 @@ const ParticipantChallengesTab = () => {
                     {participation.completedCount}/{challenge.rule.minCompleted}
                   </span>
                 </div>
-                <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+                <Progress
+                  aria-label="Postęp wyzwania"
+                  value={Math.min(progressPercent, 100)}
+                  className="h-2"
+                />
               </div>
 
               <div className="flex flex-wrap gap-2 text-xs">
