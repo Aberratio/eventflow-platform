@@ -71,7 +71,7 @@ export const ModeratorOrdersTab = () => {
     queryFn: () => getOrders(),
     select: (r) => r.data ?? [],
   });
-  const orders = ordersResp ?? [];
+  const orders = useMemo(() => ordersResp ?? [], [ordersResp]);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState<ShopOrder['status'] | 'all'>('all');
   const [viewingOrder, setViewingOrder] = useState<ShopOrder | null>(null);
@@ -82,7 +82,7 @@ export const ModeratorOrdersTab = () => {
     queryKey: ['users', 'moderator-order-customers'],
     queryFn: () => getAllUsers(),
   });
-  const users = usersResponse?.data ?? [];
+  const users = useMemo(() => usersResponse?.data ?? [], [usersResponse]);
 
   const statusMutation = useMutation({
     mutationFn: ({

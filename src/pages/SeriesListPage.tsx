@@ -38,7 +38,7 @@ const SeriesListPage = () => {
     queryFn: () => getEvents(),
   });
 
-  const allSeries = seriesData?.data ?? [];
+  const allSeries = useMemo(() => seriesData?.data ?? [], [seriesData]);
   const allEvents = eventsData?.data ?? [];
 
   const filteredSeries = useMemo(() => {

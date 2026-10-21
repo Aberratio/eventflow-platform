@@ -91,7 +91,7 @@ export const AdminShopTab = () => {
     },
   });
 
-  const products = productsData?.data ?? [];
+  const products = useMemo(() => productsData?.data ?? [], [productsData]);
   const categories = categoriesData?.data ?? [];
   const categoryLabels = Object.fromEntries(categories.map((item) => [item.id, item.name]));
 
