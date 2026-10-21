@@ -39,6 +39,9 @@ as the first version.
   change, a profile page and public athlete profiles.
 - Accessibility: a "skip to content" link, a single main landmark per page
   and a consistent heading hierarchy.
+- Login shows how long to wait ("Zbyt wiele nieudanych prób logowania...")
+  and disables the button when the server temporarily blocks further
+  attempts after repeated failures.
 - Participant dashboard with printable tickets and team invitations for
   captains.
 - The participant dashboard no longer shows the non-working Messages tab,
