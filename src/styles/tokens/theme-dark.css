@@ -25,7 +25,7 @@
   /* WCAG AA fix: raised from 43% lightness (~3.5:1, failed AA for normal text)
      to 51% (~4.5-4.9:1 against page/card backgrounds) — muted-foreground is
      used site-wide for body copy, not just large/decorative text. */
-  --text-muted: 214 8% 51%;
+  --text-muted: 214 8% 60%;
 
   /* Page background */
   --page-bg: #06101d;
@@ -84,8 +84,15 @@
 
   /* Gradient presets */
   /* Fixed background overlays for dark pages */
-  --overlay-gradient-blue: radial-gradient(circle at 8% 5%, rgba(37, 99, 235, 0.18), transparent 30%), radial-gradient(circle at 86% 8%, rgba(14, 165, 233, 0.10), transparent 24%);
-  --overlay-gradient-fade: linear-gradient(180deg, rgba(5, 11, 20, 0) 0%, rgba(5, 11, 20, 0.60) 58%, rgba(5, 11, 20, 0.94) 100%);
+  --overlay-gradient-blue:
+    radial-gradient(circle at 8% 5%, rgba(37, 99, 235, 0.18), transparent 30%),
+    radial-gradient(circle at 86% 8%, rgba(14, 165, 233, 0.1), transparent 24%);
+  --overlay-gradient-fade: linear-gradient(
+    180deg,
+    rgba(5, 11, 20, 0) 0%,
+    rgba(5, 11, 20, 0.6) 58%,
+    rgba(5, 11, 20, 0.94) 100%
+  );
   --overlay-card-fade: linear-gradient(to top, #07101d, rgba(7, 16, 29, 0.55), rgba(0, 0, 0, 0.1));
   --overlay-card-fade-light: linear-gradient(to top, #07101d, rgba(7, 16, 29, 0.35), transparent);
 
@@ -135,6 +142,7 @@
   /* Brand colors */
   --primary: var(--color-brand-navy);
   --primary-foreground: 0 0% 100%;
+  --primary-text: var(--color-brand-navy-light); /* tekst na ciemnym tle >= 4.5:1 */
 
   /* Secondary / muted */
   --secondary: 216 15% 12%;
@@ -149,6 +157,7 @@
 
   /* Semantic */
   --destructive: var(--color-danger);
+  --destructive-solid: 357 60% 48%; /* tło pod białym tekstem >= 4.5:1 */
   --destructive-foreground: 0 0% 100%;
 
   --success: var(--color-success);
