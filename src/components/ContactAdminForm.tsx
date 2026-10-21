@@ -51,7 +51,7 @@ export const ContactAdminForm = ({ trigger }: ContactAdminFormProps) => {
     },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (_data: ContactFormData) => {
     setIsSubmitting(true);
     // Mock submission
     await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -11,7 +11,13 @@ interface Endpoint {
   keys?: Shape;
 }
 
-const EVENT_KEYS: Shape = { id: 'string', slug: 'string', name: 'string', date: 'string', publicationStatus: 'string' };
+const EVENT_KEYS: Shape = {
+  id: 'string',
+  slug: 'string',
+  name: 'string',
+  date: 'string',
+  publicationStatus: 'string',
+};
 
 /** Public GET endpoints from routes.php. Paths with {slug}/{id} are filled from the seed in the tests below. */
 const LISTS: Endpoint[] = [
@@ -66,7 +72,10 @@ async function timed(
   } catch {
     json = null;
   }
-  test.info().annotations.push({ type: 'timing', description: `${method} ${path} -> ${res.status()} in ${ms} ms` });
+  test.info().annotations.push({
+    type: 'timing',
+    description: `${method} ${path} -> ${res.status()} in ${ms} ms`,
+  });
   return { status: res.status(), contentType, json, ms };
 }
 
@@ -109,14 +118,18 @@ test.describe('API contract: public endpoints @api', () => {
       expect(r.status).toBe(200);
       expect(r.contentType).toContain('application/json');
       // Either the ok() envelope or the paginated one (data + total, no success flag).
-      if (r.json.success === undefined) expect(typeof r.json.total, `${ep.path} paginated total`).toBe('number');
+      if (r.json.success === undefined)
+        expect(typeof r.json.total, `${ep.path} paginated total`).toBe('number');
       else expect(r.json.success).toBe(true);
       expect(Array.isArray(r.json.data), 'data is an array').toBe(true);
       for (const item of r.json.data.slice(0, 20)) checkShape(item, ep.keys, `${ep.path} item`);
     });
   }
 
-  test('GET detail endpoints by slug/id (events, series, shop, challenges, info-pages)', async ({ request, seed }) => {
+  test('GET detail endpoints by slug/id (events, series, shop, challenges, info-pages)', async ({
+    request,
+    seed,
+  }) => {
     const ev = seed.events[0];
     test.skip(!ev, 'no events in seed');
     const targets: Array<{ path: string; keys?: Shape }> = [
@@ -127,11 +140,22 @@ test.describe('API contract: public endpoints @api', () => {
       { path: `/events/${ev.id}/form-fields/public` },
     ];
     if (seed.series[0]) {
-      targets.push({ path: `/series/slug/${seed.series[0].slug}`, keys: { id: 'string', slug: 'string', name: 'string' } });
+      targets.push({
+        path: `/series/slug/${seed.series[0].slug}`,
+        keys: { id: 'string', slug: 'string', name: 'string' },
+      });
       targets.push({ path: `/series/${seed.series[0].id}/ranking` });
     }
-    if (seed.products[0]) targets.push({ path: `/shop/products/slug/${seed.products[0].slug}`, keys: { id: 'string', slug: 'string', name: 'string' } });
-    if (seed.challenges[0]) targets.push({ path: `/challenges/slug/${seed.challenges[0].slug}`, keys: { id: 'string', slug: 'string', name: 'string' } });
+    if (seed.products[0])
+      targets.push({
+        path: `/shop/products/slug/${seed.products[0].slug}`,
+        keys: { id: 'string', slug: 'string', name: 'string' },
+      });
+    if (seed.challenges[0])
+      targets.push({
+        path: `/challenges/slug/${seed.challenges[0].slug}`,
+        keys: { id: 'string', slug: 'string', name: 'string' },
+      });
     for (const t of targets) {
       const r = await timed(request, 'GET', t.path);
       expect(r.status, t.path).toBe(200);
@@ -195,7 +219,10 @@ test.describe('API contract: pagination @api', () => {
     expect(m1.totalPages).toBe(Math.max(1, Math.ceil(m1.total / 3)));
     const ids1 = p1.json.data.map((e: { id: string }) => e.id);
     const ids2 = p2.json.data.map((e: { id: string }) => e.id);
-    expect(ids1.filter((id: string) => ids2.includes(id)), 'overlap between pages').toEqual([]);
+    expect(
+      ids1.filter((id: string) => ids2.includes(id)),
+      'overlap between pages',
+    ).toEqual([]);
     if (m1.total > 3) expect(ids2.length).toBeGreaterThan(0);
   });
 
@@ -256,21 +283,30 @@ test.describe('API contract: errors @api', () => {
 
   test('wrong method on /health -> 405 JSON (records actual response)', async ({ request }) => {
     const r = await timed(request, 'DELETE', '/health');
-    test.info().annotations.push({ type: 'wrong-method', description: `DELETE /health -> ${r.status} ${r.contentType} ${JSON.stringify(r.json)}` });
+    test.info().annotations.push({
+      type: 'wrong-method',
+      description: `DELETE /health -> ${r.status} ${r.contentType} ${JSON.stringify(r.json)}`,
+    });
     expect(r.status).toBe(405);
     expect(r.contentType).toContain('application/json');
     expectErrorEnvelope(r, 'DELETE /health');
   });
 
-  test('POST /auth/login with empty body, broken JSON and missing fields -> 4xx envelope, not 500', async ({ request }) => {
+  test('POST /auth/login with empty body, broken JSON and missing fields -> 4xx envelope, not 500', async ({
+    request,
+  }) => {
     const email = `qa-contract-${Date.now().toString(36)}@example.com`;
     const empty = await timed(request, 'POST', '/auth/login');
     const broken = await timed(request, 'POST', '/auth/login', {
       headers: { 'Content-Type': 'application/json' },
-      data: '{"email": "' + email + '", ',
+      data: `{"email": "${email}", `,
     });
     const missing = await timed(request, 'POST', '/auth/login', { data: { email } });
-    for (const [name, r] of [['empty', empty], ['broken', broken], ['missing password', missing]] as const) {
+    for (const [name, r] of [
+      ['empty', empty],
+      ['broken', broken],
+      ['missing password', missing],
+    ] as const) {
       expect(r.status, `${name} status`).toBeGreaterThanOrEqual(400);
       expect(r.status, `${name} status`).toBeLessThan(500);
       expectErrorEnvelope(r, name);

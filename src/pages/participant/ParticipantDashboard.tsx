@@ -191,7 +191,6 @@ const ParticipantDashboard = () => {
           <TabsContent value="authorizations" className="mt-0">
             <ParticipantAuthorizationsTab />
           </TabsContent>
-
         </Tabs>
       </div>
     </Layout>

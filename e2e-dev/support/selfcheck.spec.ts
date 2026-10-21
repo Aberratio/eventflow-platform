@@ -23,7 +23,10 @@ test.describe('support helpers @smoke', () => {
 
   test.describe('accounts', () => {
     requireAccounts();
-    test('participant logs in through the API and the page is signed in', async ({ page, request }) => {
+    test('participant logs in through the API and the page is signed in', async ({
+      page,
+      request,
+    }) => {
       expect(hasPassword()).toBe(true);
       const session = await login(request, 'participant');
       expect(session.user.role).toBe('participant');

@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect, skipCookieBanner } from '../support/fixtures';
 import { getData } from '../support/api';
-import { FRONT } from '../support/env';
 
 interface Meta {
   title: string;
@@ -15,7 +14,8 @@ interface Meta {
 
 async function readMeta(page: Page): Promise<Meta> {
   return page.evaluate(() => {
-    const attr = (sel: string, name: string) => document.querySelector(sel)?.getAttribute(name) ?? null;
+    const attr = (sel: string, name: string) =>
+      document.querySelector(sel)?.getAttribute(name) ?? null;
     return {
       title: document.title,
       description: attr('meta[name="description"]', 'content'),
@@ -41,15 +41,42 @@ const isAbsoluteUrl = (v: string | null): boolean => {
 const TRACKING = /[?&](utm_[a-z]+|fbclid|gclid)=/i;
 
 test.describe('SEO and meta @seo', () => {
-  test('public pages carry title, description, Open Graph and canonical @smoke', async ({ page, seed, request }) => {
+  test('public pages carry title, description, Open Graph and canonical @smoke', async ({
+    page,
+    seed,
+    request,
+  }) => {
     test.fail(true, 'static title/description for every route, no og:image, no canonical');
-    const targets: { path: string; label: string; expectName?: string }[] = [{ path: '/', label: 'home' }, { path: '/events', label: 'events list' }];
-    if (seed.upcoming[0]) targets.push({ path: `/events/${seed.upcoming[0].slug}`, label: 'upcoming event', expectName: seed.upcoming[0].name });
-    if (seed.past[0]) targets.push({ path: `/events/${seed.past[0].slug}`, label: 'past event', expectName: seed.past[0].name });
+    const targets: { path: string; label: string; expectName?: string }[] = [
+      { path: '/', label: 'home' },
+      { path: '/events', label: 'events list' },
+    ];
+    if (seed.upcoming[0])
+      targets.push({
+        path: `/events/${seed.upcoming[0].slug}`,
+        label: 'upcoming event',
+        expectName: seed.upcoming[0].name,
+      });
+    if (seed.past[0])
+      targets.push({
+        path: `/events/${seed.past[0].slug}`,
+        label: 'past event',
+        expectName: seed.past[0].name,
+      });
     targets.push({ path: '/series', label: 'series list' });
-    if (seed.series[0]) targets.push({ path: `/series/${seed.series[0].slug}`, label: 'series', expectName: seed.series[0].name });
+    if (seed.series[0])
+      targets.push({
+        path: `/series/${seed.series[0].slug}`,
+        label: 'series',
+        expectName: seed.series[0].name,
+      });
     targets.push({ path: '/shop', label: 'shop' });
-    if (seed.products[0]) targets.push({ path: `/shop/${seed.products[0].slug}`, label: 'product', expectName: seed.products[0].name });
+    if (seed.products[0])
+      targets.push({
+        path: `/shop/${seed.products[0].slug}`,
+        label: 'product',
+        expectName: seed.products[0].name,
+      });
     targets.push({ path: '/challenges', label: 'challenges' });
     const infoPages = await getData<{ slug: string }[]>(request, '/info-pages');
     if (infoPages[0]) targets.push({ path: `/info/${infoPages[0].slug}`, label: 'info page' });
@@ -64,16 +91,41 @@ test.describe('SEO and meta @seo', () => {
 
       expect.soft(m.title.trim(), `${t.path} (${t.label}): <title> is empty`).not.toBe('');
       if (t.expectName) {
-        expect.soft(m.title, `${t.path} (${t.label}): <title> must contain "${t.expectName}"`).toContain(t.expectName);
+        expect
+          .soft(m.title, `${t.path} (${t.label}): <title> must contain "${t.expectName}"`)
+          .toContain(t.expectName);
       }
-      expect.soft((m.description ?? '').trim(), `${t.path} (${t.label}): meta description is missing`).not.toBe('');
-      expect.soft((m.ogTitle ?? '').trim(), `${t.path} (${t.label}): og:title is missing`).not.toBe('');
-      expect.soft((m.ogDescription ?? '').trim(), `${t.path} (${t.label}): og:description is missing`).not.toBe('');
-      expect.soft(isAbsoluteUrl(m.ogImage), `${t.path} (${t.label}): og:image must be an absolute URL, got "${m.ogImage}"`).toBe(true);
-      expect.soft(isAbsoluteUrl(m.canonical), `${t.path} (${t.label}): canonical must be an absolute URL, got "${m.canonical}"`).toBe(true);
-      expect.soft(m.canonical ?? '', `${t.path} (${t.label}): canonical must not carry tracking params`).not.toMatch(TRACKING);
+      expect
+        .soft((m.description ?? '').trim(), `${t.path} (${t.label}): meta description is missing`)
+        .not.toBe('');
+      expect
+        .soft((m.ogTitle ?? '').trim(), `${t.path} (${t.label}): og:title is missing`)
+        .not.toBe('');
+      expect
+        .soft((m.ogDescription ?? '').trim(), `${t.path} (${t.label}): og:description is missing`)
+        .not.toBe('');
+      expect
+        .soft(
+          isAbsoluteUrl(m.ogImage),
+          `${t.path} (${t.label}): og:image must be an absolute URL, got "${m.ogImage}"`,
+        )
+        .toBe(true);
+      expect
+        .soft(
+          isAbsoluteUrl(m.canonical),
+          `${t.path} (${t.label}): canonical must be an absolute URL, got "${m.canonical}"`,
+        )
+        .toBe(true);
+      expect
+        .soft(m.canonical ?? '', `${t.path} (${t.label}): canonical must not carry tracking params`)
+        .not.toMatch(TRACKING);
     }
-    expect.soft(new Set(titles).size, `titles must be unique across pages, got: ${JSON.stringify(titles)}`).toBe(titles.length);
+    expect
+      .soft(
+        new Set(titles).size,
+        `titles must be unique across pages, got: ${JSON.stringify(titles)}`,
+      )
+      .toBe(titles.length);
   });
 
   test('robots.txt is served as text and dev blocks indexing', async ({ request }) => {
@@ -98,7 +150,9 @@ test.describe('SEO and meta @seo', () => {
     test.fail(true, '/sitemap.xml returns the SPA HTML shell');
     const res = await request.get('/sitemap.xml');
     expect(res.status(), 'sitemap status').toBe(200);
-    expect(res.headers()['content-type'], 'sitemap content-type').toMatch(/(application|text)\/xml/);
+    expect(res.headers()['content-type'], 'sitemap content-type').toMatch(
+      /(application|text)\/xml/,
+    );
     expect(await res.text(), 'sitemap body must contain <urlset>').toContain('<urlset');
   });
 
@@ -118,11 +172,24 @@ test.describe('SEO and meta @seo', () => {
     }
   });
 
-  test('deep links return SPA HTML and render their content @seo', async ({ page, request, seed }) => {
+  test('deep links return SPA HTML and render their content @seo', async ({
+    page,
+    request,
+    seed,
+  }) => {
     const deep: { path: string; name: string }[] = [];
-    if (seed.upcoming[0]) deep.push({ path: `/events/${seed.upcoming[0].slug}/info`, name: seed.upcoming[0].name });
-    if (seed.products[0]) deep.push({ path: `/shop/${seed.products[0].slug}`, name: seed.products[0].name ?? seed.products[0].slug });
-    if (seed.series[0]) deep.push({ path: `/series/${seed.series[0].slug}`, name: seed.series[0].name ?? seed.series[0].slug });
+    if (seed.upcoming[0])
+      deep.push({ path: `/events/${seed.upcoming[0].slug}/info`, name: seed.upcoming[0].name });
+    if (seed.products[0])
+      deep.push({
+        path: `/shop/${seed.products[0].slug}`,
+        name: seed.products[0].name ?? seed.products[0].slug,
+      });
+    if (seed.series[0])
+      deep.push({
+        path: `/series/${seed.series[0].slug}`,
+        name: seed.series[0].name ?? seed.series[0].slug,
+      });
     test.skip(deep.length === 0, 'brak wydarzenia, produktu ani serii w API');
 
     await skipCookieBanner(page);
@@ -132,7 +199,10 @@ test.describe('SEO and meta @seo', () => {
       expect(res.headers()['content-type'], `${d.path} content-type`).toMatch(/text\/html/);
 
       await page.goto(d.path);
-      await expect(page.getByText(d.name, { exact: false }).first(), `${d.path} renders "${d.name}"`).toBeVisible();
+      await expect(
+        page.getByText(d.name, { exact: false }).first(),
+        `${d.path} renders "${d.name}"`,
+      ).toBeVisible();
     }
   });
 });

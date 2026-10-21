@@ -22,7 +22,12 @@ function maxAgeOf(value: string | undefined): number {
 }
 
 /** OPTIONS preflight as a browser sends it. `call()` does not support OPTIONS, hence this helper. */
-async function preflight(request: APIRequestContext, path: string, method: string, origin: string): Promise<APIResponse> {
+async function preflight(
+  request: APIRequestContext,
+  path: string,
+  method: string,
+  origin: string,
+): Promise<APIResponse> {
   const res = await request.fetch(`${API}${path}`, {
     method: 'OPTIONS',
     headers: {
@@ -32,7 +37,8 @@ async function preflight(request: APIRequestContext, path: string, method: strin
     },
     failOnStatusCode: false,
   });
-  if (res.status() === 429) throw new DevThrottledError('OPTIONS', path, res.headers()['retry-after']);
+  if (res.status() === 429)
+    throw new DevThrottledError('OPTIONS', path, res.headers()['retry-after']);
   return res;
 }
 
@@ -52,11 +58,16 @@ test.describe('security headers and CORS @security', () => {
       expect(scriptSrc, `${path} script-src must not allow eval`).not.toMatch(/'unsafe-eval'/);
       expect(scriptSrc, `${path} script-src must not allow inline`).not.toMatch(/'unsafe-inline'/);
 
-      expect(maxAgeOf(h['strict-transport-security']), `${path} HSTS max-age`).toBeGreaterThanOrEqual(HSTS_MIN_AGE);
+      expect(
+        maxAgeOf(h['strict-transport-security']),
+        `${path} HSTS max-age`,
+      ).toBeGreaterThanOrEqual(HSTS_MIN_AGE);
       expect(h['x-content-type-options'], `${path} X-Content-Type-Options`).toBe('nosniff');
       expect(h['x-frame-options'], `${path} X-Frame-Options`).toMatch(/^(SAMEORIGIN|DENY)$/i);
       expect(h['referrer-policy'], `${path} Referrer-Policy`).toBeTruthy();
-      expect(h['referrer-policy'], `${path} Referrer-Policy must not leak full URL`).not.toBe('unsafe-url');
+      expect(h['referrer-policy'], `${path} Referrer-Policy must not leak full URL`).not.toBe(
+        'unsafe-url',
+      );
       expect(h['permissions-policy'], `${path} Permissions-Policy`).toBeTruthy();
       expect(h['x-powered-by'], `${path} must not send X-Powered-By`).toBeUndefined();
       expect(h['server'] ?? '', `${path} Server must not reveal a version`).not.toMatch(/\d/);
@@ -66,11 +77,16 @@ test.describe('security headers and CORS @security', () => {
   test('hashed JS asset is cached long, index.html is not cached', async ({ request }) => {
     const index = await request.get('/');
     expect(index.status()).toBe(200);
-    expect(index.headers()['cache-control'] ?? '', 'index.html Cache-Control').toContain('no-cache');
+    expect(index.headers()['cache-control'] ?? '', 'index.html Cache-Control').toContain(
+      'no-cache',
+    );
 
     const html = await index.text();
     const assets = [...new Set(html.match(/\/assets\/[^"'\s>]+\.js/g) ?? [])];
-    expect(assets.length, 'index.html must reference at least one /assets/*.js bundle').toBeGreaterThan(0);
+    expect(
+      assets.length,
+      'index.html must reference at least one /assets/*.js bundle',
+    ).toBeGreaterThan(0);
 
     const asset = await request.get(assets[0]);
     expect(asset.status(), `${assets[0]} status`).toBe(200);
@@ -87,8 +103,13 @@ test.describe('security headers and CORS @security', () => {
       const h = res.headers();
       expect(h['x-content-type-options'], `${path} X-Content-Type-Options`).toBe('nosniff');
       expect(h['x-frame-options'], `${path} X-Frame-Options`).toBe('DENY');
-      expect(parseCsp(h['content-security-policy'])['default-src'], `${path} CSP default-src`).toBe("'none'");
-      expect(maxAgeOf(h['strict-transport-security']), `${path} HSTS max-age`).toBeGreaterThanOrEqual(HSTS_MIN_AGE);
+      expect(parseCsp(h['content-security-policy'])['default-src'], `${path} CSP default-src`).toBe(
+        "'none'",
+      );
+      expect(
+        maxAgeOf(h['strict-transport-security']),
+        `${path} HSTS max-age`,
+      ).toBeGreaterThanOrEqual(HSTS_MIN_AGE);
     }
   });
 
@@ -97,27 +118,48 @@ test.describe('security headers and CORS @security', () => {
       const res = await preflight(request, '/events', method, FRONT_ORIGIN);
       const h = res.headers();
       expect(h['access-control-allow-origin'], 'Access-Control-Allow-Origin').toBe(FRONT_ORIGIN);
-      const allowed = (h['access-control-allow-methods'] ?? '').split(',').map((m) => m.trim().toUpperCase());
+      const allowed = (h['access-control-allow-methods'] ?? '')
+        .split(',')
+        .map((m) => m.trim().toUpperCase());
       expect(allowed, `Access-Control-Allow-Methods must include ${method}`).toContain(method);
-      expect(h['access-control-allow-credentials'], 'credentials must never be allowed').toBeUndefined();
+      expect(
+        h['access-control-allow-credentials'],
+        'credentials must never be allowed',
+      ).toBeUndefined();
     });
   }
 
   // Hypothesis H2: the API has PUT routes (e.g. PUT /events/{eventId}/form-fields/reorder), but
   // CorsMiddleware lists only "GET, POST, PATCH, DELETE, OPTIONS". A browser PUT fails preflight.
   test('preflight from the front origin allows PUT', async ({ request }) => {
-    const res = await preflight(request, '/events/qa-placeholder/form-fields/reorder', 'PUT', FRONT_ORIGIN);
-    const allowed = (res.headers()['access-control-allow-methods'] ?? '').split(',').map((m) => m.trim().toUpperCase());
+    const res = await preflight(
+      request,
+      '/events/qa-placeholder/form-fields/reorder',
+      'PUT',
+      FRONT_ORIGIN,
+    );
+    const allowed = (res.headers()['access-control-allow-methods'] ?? '')
+      .split(',')
+      .map((m) => m.trim().toUpperCase());
     expect(allowed, 'Access-Control-Allow-Methods must include PUT').toContain('PUT');
   });
 
   test('foreign origin gets no Allow-Origin and never Allow-Credentials', async ({ request }) => {
     const pre = await preflight(request, '/events', 'GET', EVIL_ORIGIN);
-    expect(pre.headers()['access-control-allow-origin'], 'preflight ACAO for foreign origin').toBeUndefined();
+    expect(
+      pre.headers()['access-control-allow-origin'],
+      'preflight ACAO for foreign origin',
+    ).toBeUndefined();
     expect(pre.headers()['access-control-allow-credentials'], 'preflight ACAC').toBeUndefined();
 
     const res = await call(request, 'GET', '/events', { headers: { Origin: EVIL_ORIGIN } });
-    expect(res.headers()['access-control-allow-origin'], 'GET ACAO for foreign origin').toBeUndefined();
-    expect(res.headers()['access-control-allow-credentials'], 'GET ACAC for foreign origin').toBeUndefined();
+    expect(
+      res.headers()['access-control-allow-origin'],
+      'GET ACAO for foreign origin',
+    ).toBeUndefined();
+    expect(
+      res.headers()['access-control-allow-credentials'],
+      'GET ACAC for foreign origin',
+    ).toBeUndefined();
   });
 });

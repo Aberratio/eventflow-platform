@@ -69,7 +69,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         challenges,
         upcoming: events.filter((e) => (e.date ?? '') >= t),
         past: events.filter((e) => (e.date ?? '9999') < t),
-        openForRegistration: events.filter((e) => e.registrationStatus === 'open' && (e.date ?? '') >= t),
+        openForRegistration: events.filter(
+          (e) => e.registrationStatus === 'open' && (e.date ?? '') >= t,
+        ),
       });
     },
     { scope: 'worker' },
@@ -83,7 +85,8 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       page.on('response', (r) => {
         if (!r.url().startsWith(API)) return;
         if (r.status() >= 500) list.push(`API ${r.status()}: ${r.request().method()} ${r.url()}`);
-        if (r.status() === 429) list.push(`DEV_THROTTLED: 429 on ${r.request().method()} ${r.url()}`);
+        if (r.status() === 429)
+          list.push(`DEV_THROTTLED: 429 on ${r.request().method()} ${r.url()}`);
       });
       await use({ list, allow: (p) => allowed.push(p) });
       const real = list.filter((p) => !allowed.some((a) => a.test(p)));
@@ -108,7 +111,13 @@ export async function skipCookieBanner(page: Page): Promise<void> {
       // CookiePreferences in src/components/CookieConsent.tsx; the banner shows only when the key is absent.
       localStorage.setItem(
         'cookie-consent',
-        JSON.stringify({ necessary: true, analytics: false, marketing: false, functional: true, timestamp: new Date().toISOString() }),
+        JSON.stringify({
+          necessary: true,
+          analytics: false,
+          marketing: false,
+          functional: true,
+          timestamp: new Date().toISOString(),
+        }),
       );
     } catch {
       /* storage blocked */

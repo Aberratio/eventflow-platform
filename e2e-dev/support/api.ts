@@ -8,7 +8,9 @@ import { API } from './env';
  */
 export class DevThrottledError extends Error {
   constructor(method: string, path: string, retryAfter: string | undefined) {
-    super(`DEV_THROTTLED: ${method} ${path} got 429 (Retry-After: ${retryAfter ?? '?'}s). Lower workers or wait.`);
+    super(
+      `DEV_THROTTLED: ${method} ${path} got 429 (Retry-After: ${retryAfter ?? '?'}s). Lower workers or wait.`,
+    );
   }
 }
 
@@ -50,7 +52,11 @@ export async function call(
 }
 
 /** GET expecting 2xx; returns the `data` field of the envelope. */
-export async function getData<T>(request: APIRequestContext, path: string, opts: CallOptions = {}): Promise<T> {
+export async function getData<T>(
+  request: APIRequestContext,
+  path: string,
+  opts: CallOptions = {},
+): Promise<T> {
   const res = await call(request, 'GET', path, opts);
   expect(res.ok(), `GET ${path} -> ${res.status()}`).toBeTruthy();
   const json = (await res.json()) as ApiEnvelope<T>;

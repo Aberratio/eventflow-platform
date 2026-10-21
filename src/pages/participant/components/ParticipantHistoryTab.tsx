@@ -75,7 +75,7 @@ const ParticipantHistoryTab = ({ results, certificates }: ParticipantHistoryTabP
     {} as Record<string, typeof filteredResults>,
   );
 
-  const handleDownloadCertificate = (certificateId: string) => {
+  const handleDownloadCertificate = (_certificateId: string) => {
     toast.success('Pobieranie dyplomu...');
   };
 

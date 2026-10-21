@@ -36,7 +36,9 @@ const registration = (status: string) => ({
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+    >
       <MemoryRouter initialEntries={['/participant/tickets/reg-1/print']}>
         <Routes>
           <Route path="/participant/tickets/:registrationId/print" element={<TicketPrintPage />} />
@@ -48,10 +50,20 @@ const renderPage = () =>
 describe('TicketPrintPage', () => {
   beforeEach(() => {
     api.getEventById.mockResolvedValue({
-      data: { id: 'ev-1', name: 'Bieg Testowy', date: '2026-09-15', location: 'Park Miejski', city: 'Łódź' },
+      data: {
+        id: 'ev-1',
+        name: 'Bieg Testowy',
+        date: '2026-09-15',
+        location: 'Park Miejski',
+        city: 'Łódź',
+      },
     });
     api.getCare.mockResolvedValue({
-      data: { myProfile: { id: 'comp-1', identityCode: IDENTITY_CODE }, myCompetitors: [], caregivers: [] },
+      data: {
+        myProfile: { id: 'comp-1', identityCode: IDENTITY_CODE },
+        myCompetitors: [],
+        caregivers: [],
+      },
     });
   });
 

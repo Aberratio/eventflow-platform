@@ -8,7 +8,15 @@ describe('SeriesStandingsTable event column links', () => {
   it('links event headers by slug', () => {
     render(
       <SeriesStandingsTable
-        standings={[{ userId: 'u1', userName: 'Jan', totalPoints: 10, eventsCount: 1, eventPoints: { 'evt-9': 10 } }]}
+        standings={[
+          {
+            userId: 'u1',
+            userName: 'Jan',
+            totalPoints: 10,
+            eventsCount: 1,
+            eventPoints: { 'evt-9': 10 },
+          },
+        ]}
         completedEvents={[{ id: 'evt-9', slug: 'bieg-9', name: 'Bieg dziewiaty' } as Event]}
         genderFilter="all"
         onGenderFilterChange={vi.fn()}

@@ -324,7 +324,9 @@ export interface CreateResultPayload {
   birthYear?: number;
 }
 
-export type UpdateResultPayload = Partial<Omit<CreateResultPayload, 'position' | 'categoryPosition'>> & {
+export type UpdateResultPayload = Partial<
+  Omit<CreateResultPayload, 'position' | 'categoryPosition'>
+> & {
   /** Corrected place (open / in category): a positive integer, or null to keep the computed ranking. */
   position?: number | null;
   categoryPosition?: number | null;

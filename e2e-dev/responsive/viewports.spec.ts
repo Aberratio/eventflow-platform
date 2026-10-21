@@ -74,12 +74,15 @@ function measureLayout(minTap: number) {
     return `${el.tagName.toLowerCase()}${el.id ? `#${CSS.escape(el.id)}` : ''}${cls}`;
   };
   const text = (el: Element): string =>
-    (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40) || el.getAttribute('aria-label') || '';
+    (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 40) ||
+    el.getAttribute('aria-label') ||
+    '';
   const visible = (el: Element): boolean => {
     const r = el.getBoundingClientRect();
     if (r.width <= 1 || r.height <= 1) return false;
     const cs = getComputedStyle(el);
-    if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return false;
+    if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0)
+      return false;
     return !el.closest('[aria-hidden="true"]');
   };
   const clippedByAncestor = (el: Element): boolean => {
@@ -120,7 +123,8 @@ function measureLayout(minTap: number) {
     if (
       el.tagName === 'A' &&
       getComputedStyle(el).display === 'inline' &&
-      (el.parentElement?.textContent ?? '').trim().length > (el.textContent ?? '').trim().length + 10
+      (el.parentElement?.textContent ?? '').trim().length >
+        (el.textContent ?? '').trim().length + 10
     ) {
       return;
     }
@@ -135,7 +139,8 @@ function measureLayout(minTap: number) {
       const ny = Math.min(Math.max(cy, o.top), o.bottom);
       return (nx - cx) ** 2 + (ny - cy) ** 2 < rad * rad;
     });
-    if (!crowded) tapTargets.push(`${label(el)} "${text(el)}" ${Math.round(r.width)}x${Math.round(r.height)}`);
+    if (!crowded)
+      tapTargets.push(`${label(el)} "${text(el)}" ${Math.round(r.width)}x${Math.round(r.height)}`);
   });
 
   // Clipped texts: a box with overflow hidden/clip, no ellipsis, that holds text and does not fit.
@@ -206,7 +211,10 @@ for (const vp of [...VIEWPORTS, ...LANDSCAPE]) {
             await burger.click();
             const menu = page.locator('#mobile-nav-menu');
             await expect
-              .soft(menu.getByRole('link', { name: /Kalendarz wydarzeń/ }), 'menu mobilne ma link do wydarzeń')
+              .soft(
+                menu.getByRole('link', { name: /Kalendarz wydarzeń/ }),
+                'menu mobilne ma link do wydarzeń',
+              )
               .toBeVisible();
             await page.getByRole('button', { name: 'Zamknij menu' }).click();
             await expect.soft(menu, 'menu mobilne zamyka się').toBeHidden();
@@ -214,27 +222,42 @@ for (const vp of [...VIEWPORTS, ...LANDSCAPE]) {
         }
         if (vp.width >= 1024) {
           await expect
-            .soft(page.getByRole('link', { name: 'Kalendarz', exact: true }).first(), 'nawigacja desktopowa widoczna')
+            .soft(
+              page.getByRole('link', { name: 'Kalendarz', exact: true }).first(),
+              'nawigacja desktopowa widoczna',
+            )
             .toBeVisible();
         }
 
         // /events on small screens: search, filter drawer and a select are usable.
         if (route.kind === 'events' && vp.width < 1024) {
           await expect
-            .soft(page.locator('input[placeholder="Szukaj wydarzeń..."]:visible').first(), 'pole wyszukiwania widoczne')
+            .soft(
+              page.locator('input[placeholder="Szukaj wydarzeń..."]:visible').first(),
+              'pole wyszukiwania widoczne',
+            )
             .toBeVisible();
 
-          const filtersTrigger = page.locator('main button:has(svg.lucide-sliders-horizontal)').first();
+          const filtersTrigger = page
+            .locator('main button:has(svg.lucide-sliders-horizontal)')
+            .first();
           await expect.soft(filtersTrigger, 'przycisk filtrów widoczny').toBeVisible();
           if (await filtersTrigger.isVisible()) {
             const named =
-              (await filtersTrigger.getAttribute('aria-label')) || ((await filtersTrigger.textContent()) ?? '').trim();
+              (await filtersTrigger.getAttribute('aria-label')) ||
+              ((await filtersTrigger.textContent()) ?? '').trim();
             if (!named) {
-              test.info().annotations.push({ type: 'a11y', description: 'Przycisk filtrów bez nazwy dostępnej (tryb icon)' });
+              test.info().annotations.push({
+                type: 'a11y',
+                description: 'Przycisk filtrów bez nazwy dostępnej (tryb icon)',
+              });
             }
             await filtersTrigger.click();
             await expect
-              .soft(page.getByText('Filtry wydarzeń', { exact: true }), 'drawer filtrów się otwiera')
+              .soft(
+                page.getByText('Filtry wydarzeń', { exact: true }),
+                'drawer filtrów się otwiera',
+              )
               .toBeVisible();
             await page.keyboard.press('Escape');
             await expect
@@ -245,14 +268,18 @@ for (const vp of [...VIEWPORTS, ...LANDSCAPE]) {
           const select = page.locator('main [role="combobox"]:visible').first();
           await expect.soft(select, 'select widoczny').toBeVisible();
           await select.click();
-          await expect.soft(page.getByRole('option').first(), 'select otwiera listę opcji').toBeVisible();
+          await expect
+            .soft(page.getByRole('option').first(), 'select otwiera listę opcji')
+            .toBeVisible();
           await page.keyboard.press('Escape');
         }
 
         // Past event results: the table scrolls inside its container, not the whole page.
         if (route.kind === 'results') {
           // Category accordion rows carry a chevron; the distance toggles above them do not.
-          const category = page.locator('[role="tabpanel"] button:has(svg.lucide-chevron-right)').first();
+          const category = page
+            .locator('[role="tabpanel"] button:has(svg.lucide-chevron-right)')
+            .first();
           await expect.soft(category, 'kategoria wyników widoczna').toBeVisible();
           await category.click();
           const table = page.locator('[role="tabpanel"] table:visible').first();
@@ -273,7 +300,10 @@ for (const vp of [...VIEWPORTS, ...LANDSCAPE]) {
           if (box) {
             expect.soft(box.overflowX, 'overflow-x kontenera tabeli').toMatch(/auto|scroll/);
             if (box.tableW > box.clientW) {
-              test.info().annotations.push({ type: 'info', description: 'tabela szersza niż kontener (przewija się w kontenerze)' });
+              test.info().annotations.push({
+                type: 'info',
+                description: 'tabela szersza niż kontener (przewija się w kontenerze)',
+              });
             }
           }
           const after = await page.evaluate(measureLayout, MIN_TAP_TARGET);

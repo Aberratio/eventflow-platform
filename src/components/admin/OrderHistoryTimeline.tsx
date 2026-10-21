@@ -97,7 +97,7 @@ export const OrderHistoryTimeline = ({ entries }: OrderHistoryTimelineProps) => 
         {/* vertical line */}
         <div className="absolute bottom-2 left-4 top-2 w-px bg-border" />
 
-        {sorted.map((entry, idx) => {
+        {sorted.map((entry) => {
           const Icon = actionIcons[entry.action] || FileText;
           return (
             <div key={entry.id} className="relative flex gap-4 py-3">

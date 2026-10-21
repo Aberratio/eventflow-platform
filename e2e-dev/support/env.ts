@@ -1,6 +1,7 @@
 // Targets of the dev suite. Override with DEV_BASE_URL / DEV_API_URL.
 export const FRONT = process.env.DEV_BASE_URL || 'https://portal-dev.zmierzymyczas.kokot.it';
-export const API = process.env.DEV_API_URL || 'https://portal-api-dev.zmierzymyczas.kokot.it/api/v1';
+export const API =
+  process.env.DEV_API_URL || 'https://portal-api-dev.zmierzymyczas.kokot.it/api/v1';
 
 /** YYYY-MM-DD in local time, the format the API uses for event dates. */
 export const today = (): string => new Date().toISOString().slice(0, 10);

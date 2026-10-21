@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Registration, Event, PaymentDetails, MerchandisePaymentStatus } from '@/types';
+import { Registration, Event, PaymentDetails } from '@/types';
 import { Check, X, Mail, CreditCard, Calendar, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';

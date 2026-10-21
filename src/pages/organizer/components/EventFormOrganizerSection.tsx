@@ -31,12 +31,10 @@ interface EventFormOrganizerSectionProps {
 }
 
 const SponsorLogoUpload = ({
-  sponsorId,
   logoUrl,
   onUpload,
   onRemove,
 }: {
-  sponsorId: string;
   logoUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
@@ -543,7 +541,6 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                       Logo
                     </HelpLabel>
                     <SponsorLogoUpload
-                      sponsorId={sponsor.id}
                       logoUrl={sponsor.logoUrl}
                       onUpload={(url) => form.updateSponsor(sponsor.id, { logoUrl: url })}
                       onRemove={() => form.updateSponsor(sponsor.id, { logoUrl: undefined })}

@@ -14,7 +14,7 @@
     "build:local": "vite build --mode development",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 71",
+    "lint": "eslint . --max-warnings 27",
     "lint:fix": "eslint . --fix",
     "lint:warn": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"*.{js,ts,json}\"",

@@ -24,7 +24,10 @@ const first = <T>(a: T[]): T | undefined => a[0];
 const ROUTES: Route[] = [
   { name: 'home', path: () => '/' },
   { name: 'events', path: () => '/events' },
-  { name: 'event detail (upcoming)', path: (s) => first(s.upcoming) && `/events/${first(s.upcoming)!.slug}` },
+  {
+    name: 'event detail (upcoming)',
+    path: (s) => first(s.upcoming) && `/events/${first(s.upcoming)!.slug}`,
+  },
   {
     name: 'event detail (past)',
     path: (s) => {
@@ -45,7 +48,10 @@ const ROUTES: Route[] = [
   { name: 'product', path: (s) => first(s.products) && `/shop/${first(s.products)!.slug}` },
   { name: 'cart (empty)', path: () => '/cart' },
   { name: 'challenges', path: () => '/challenges' },
-  { name: 'challenge detail', path: (s) => first(s.challenges) && `/challenges/${first(s.challenges)!.slug}` },
+  {
+    name: 'challenge detail',
+    path: (s) => first(s.challenges) && `/challenges/${first(s.challenges)!.slug}`,
+  },
   { name: 'live results', path: () => '/wyniki/live' },
   { name: 'login', path: () => '/login' },
   { name: 'register', path: () => '/register' },
@@ -59,7 +65,6 @@ async function settle(page: Page) {
   await page.waitForLoadState('networkidle').catch(() => undefined);
 }
 
-
 /**
  * Confirmed defects (probe via axe on dev, 2026-10-19), keyed by scan label prefix. Every scan carries
  * color-contrast; the others are limited to the listed states. Those scans are expected to fail (test.fail)
@@ -67,18 +72,24 @@ async function settle(page: Page) {
  */
 const KNOWN: Record<string, RegExp> = {
   'color-contrast': /./,
-  'button-name': /^(home|events|event register (anonymous)|series list|shop)-|^(cookie-banner|cookie-settings|mobile-menu)$/,
+  'button-name':
+    /^(home|events|event register (anonymous)|series list|shop)-|^(cookie-banner|cookie-settings|mobile-menu)$/,
   'aria-hidden-focus': /^event register (anonymous)-/,
   list: /^event register (anonymous)-/,
   'target-size': /^(login|register)/,
 };
 
 async function audit(page: Page, label: string, testInfo: TestInfo) {
-  const rules = Object.entries(KNOWN).filter(([, re]) => re.test(label)).map(([id]) => id);
+  const rules = Object.entries(KNOWN)
+    .filter(([, re]) => re.test(label))
+    .map(([id]) => id);
   test.fail(rules.length > 0, `known axe violations (${rules.join(', ')}); see the QA report`);
   await settle(page);
   const { all, blocking } = await scanA11y(page);
-  await testInfo.attach(`axe-${label}.json`, { body: JSON.stringify(all, null, 2), contentType: 'application/json' });
+  await testInfo.attach(`axe-${label}.json`, {
+    body: JSON.stringify(all, null, 2),
+    contentType: 'application/json',
+  });
   expect(blocking, `critical/serious axe violations on ${label}`).toEqual([]);
 }
 
@@ -124,7 +135,10 @@ test.describe('@a11y axe: states', () => {
     await page.goto(`/shop/${product.slug}`);
     await settle(page);
     const add = page.getByRole('button', { name: 'Dodaj do koszyka' });
-    test.skip(!(await add.isEnabled().catch(() => false)), 'product cannot be added without options');
+    test.skip(
+      !(await add.isEnabled().catch(() => false)),
+      'product cannot be added without options',
+    );
     await add.click();
     await page.goto('/cart');
     await expect(page.getByRole('heading', { name: 'Koszyk' })).toBeVisible();
@@ -153,7 +167,9 @@ test.describe('@a11y axe: states', () => {
       await page.goto(path);
       await expect(page.locator('h1, h2').first()).toBeVisible();
       await page.locator('form button[type="submit"]').first().click();
-      await expect(page.locator('[id$="-form-item-message"], [role="alert"]').first()).toBeVisible();
+      await expect(
+        page.locator('[id$="-form-item-message"], [role="alert"]').first(),
+      ).toBeVisible();
       await audit(page, `${path.slice(1)}-errors`, testInfo);
     });
   }

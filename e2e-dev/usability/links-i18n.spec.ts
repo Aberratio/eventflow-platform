@@ -15,9 +15,11 @@ const I18N_KEY = /\b[a-z]+(?:\.[a-z_]+){2,}\b/g;
 const BAD_VALUE = /\b(?:undefined|null|NaN)\b|\[object Object\]|Invalid Date/g;
 const NOT_FOUND = /ta strona nie istnieje/i;
 const ISO_DATE = /\b\d{4}-\d{2}-\d{2}\b/;
-const EN_MONTH = /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+const EN_MONTH =
+  /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b/;
 const PL_DOTTED = /\b\d{2}\.\d{2}\.\d{4}\b/;
-const PL_MONTH = /\b\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\b/i;
+const PL_MONTH =
+  /\b\d{1,2}\s+(?:stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\b/i;
 const PRICE_PL = /\d[\d\s\u00a0]*,\d{2}\s?zł/;
 const PRICE_BAD = /\d\.\d{2}\s?zł|\bPLN\b/;
 
@@ -26,14 +28,21 @@ test.describe('@usability links and i18n', () => {
     await skipCookieBanner(page);
   });
 
-  test('@usability @smoke crawl: martwe linki, surowe teksty, ceny i daty', async ({ page, seed }) => {
+  test('@usability @smoke crawl: martwe linki, surowe teksty, ceny i daty', async ({
+    page,
+    seed,
+  }) => {
     test.setTimeout(20 * 60 * 1000);
 
     const productPath = seed.products[0] ? `/shop/${seed.products[0].slug}` : null;
     const eventCandidate = seed.upcoming[0] ?? seed.past[0];
     const eventPath = eventCandidate ? `/events/${eventCandidate.slug}` : null;
 
-    const queue: string[] = [...START, ...(productPath ? [productPath] : []), ...(eventPath ? [eventPath] : [])];
+    const queue: string[] = [
+      ...START,
+      ...(productPath ? [productPath] : []),
+      ...(eventPath ? [eventPath] : []),
+    ];
     const from = new Map<string, string>();
     const seen = new Set<string>();
     const bodies = new Map<string, string>();
@@ -53,7 +62,10 @@ test.describe('@usability links and i18n', () => {
       const origin = from.get(path) ? ` (link z ${from.get(path)})` : '';
       expect.soft(response?.status() ?? 0, `${path}${origin}: status HTTP`).toBeLessThan(400);
       expect
-        .soft(await page.locator('header').count(), `${path}${origin}: brak nagłówka serwisu (layout)`)
+        .soft(
+          await page.locator('header').count(),
+          `${path}${origin}: brak nagłówka serwisu (layout)`,
+        )
         .toBeGreaterThan(0);
 
       const body = await page.locator('body').innerText();
@@ -79,7 +91,9 @@ test.describe('@usability links and i18n', () => {
           if (a.href.startsWith(FRONT)) continue;
           external.push(a.href);
           if (a.target === '_blank') {
-            expect.soft(a.rel ?? '', `${path}: ${a.href} target=_blank bez rel=noopener`).toContain('noopener');
+            expect
+              .soft(a.rel ?? '', `${path}: ${a.href} target=_blank bez rel=noopener`)
+              .toContain('noopener');
           }
           continue;
         }
@@ -99,11 +113,20 @@ test.describe('@usability links and i18n', () => {
       for (const n of names) labels.add(n);
     }
 
-    test.info().annotations.push({ type: 'info', description: `odwiedzono ${visited} stron (limit ${MAX_PAGES})` });
+    test.info().annotations.push({
+      type: 'info',
+      description: `odwiedzono ${visited} stron (limit ${MAX_PAGES})`,
+    });
     if (queue.length > 0) {
-      test.info().annotations.push({ type: 'info', description: `nieodwiedzone linki po limicie: ${queue.length}` });
+      test.info().annotations.push({
+        type: 'info',
+        description: `nieodwiedzone linki po limicie: ${queue.length}`,
+      });
     }
-    test.info().annotations.push({ type: 'info', description: `zewnętrzne linki (niewizytowane): ${external.length}` });
+    test.info().annotations.push({
+      type: 'info',
+      description: `zewnętrzne linki (niewizytowane): ${external.length}`,
+    });
 
     // Prices on the shop list and on a product page.
     const shopBody = bodies.get('/shop');
@@ -125,28 +148,43 @@ test.describe('@usability links and i18n', () => {
     };
     const listBody = bodies.get('/events');
     if (listBody) {
-      test.info().annotations.push({ type: 'info', description: `format dat na /events: ${dateFormat(listBody)}` });
+      test.info().annotations.push({
+        type: 'info',
+        description: `format dat na /events: ${dateFormat(listBody)}`,
+      });
       expect.soft(ISO_DATE.test(listBody), '/events: data ISO w tekście').toBe(false);
       expect.soft(EN_MONTH.test(listBody), '/events: angielska nazwa miesiąca').toBe(false);
       expect.soft(dateFormat(listBody), '/events: daty po polsku').not.toBe('brak');
     }
     if (eventPath && bodies.has(eventPath)) {
       const detailBody = bodies.get(eventPath)!;
-      test.info().annotations.push({ type: 'info', description: `format dat na detalu: ${dateFormat(detailBody)}` });
+      test.info().annotations.push({
+        type: 'info',
+        description: `format dat na detalu: ${dateFormat(detailBody)}`,
+      });
       expect.soft(ISO_DATE.test(detailBody), `${eventPath}: data ISO w tekście`).toBe(false);
       expect.soft(EN_MONTH.test(detailBody), `${eventPath}: angielska nazwa miesiąca`).toBe(false);
       expect.soft(dateFormat(detailBody), `${eventPath}: daty po polsku`).not.toBe('brak');
     }
 
     // Naming: annotation only, never a failure.
-    const pick = (re: RegExp) => Array.from(labels).filter((l) => re.test(l)).slice(0, 15);
+    const pick = (re: RegExp) =>
+      Array.from(labels)
+        .filter((l) => re.test(l))
+        .slice(0, 15);
     const eventNames = pick(/Wydarzeni|Zawod|Kalendarz/);
     const signupNames = pick(/Zapisy|Rejestracj|Zapisz/);
     if (eventNames.length > 0) {
-      test.info().annotations.push({ type: 'naming', description: `nazwy wydarzeń: ${eventNames.join(' | ')}` });
+      test.info().annotations.push({
+        type: 'naming',
+        description: `nazwy wydarzeń: ${eventNames.join(' | ')}`,
+      });
     }
     if (signupNames.length > 0) {
-      test.info().annotations.push({ type: 'naming', description: `nazwy zapisów: ${signupNames.join(' | ')}` });
+      test.info().annotations.push({
+        type: 'naming',
+        description: `nazwy zapisów: ${signupNames.join(' | ')}`,
+      });
     }
   });
 });

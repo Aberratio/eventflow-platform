@@ -35,7 +35,13 @@ export async function fetchAllPages<T>(
   }
 
   const data = pages.flat();
-  return { data, total: Math.max(total, data.length), page: 1, pageSize: data.length, totalPages: 1 };
+  return {
+    data,
+    total: Math.max(total, data.length),
+    page: 1,
+    pageSize: data.length,
+    totalPages: 1,
+  };
 }
 
 export const getAllEventsPaged = (filters: EventFilters = {}) =>
