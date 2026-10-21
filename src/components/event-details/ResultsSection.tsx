@@ -392,6 +392,11 @@ const FlatResultsTable = ({
                 <TableCell className="hidden md:table-cell">
                   {finished ? `${result.categoryPosition}. ` : ''}
                   {result.category}
+                  {finished && result.gender && (result.genderPosition ?? 0) > 0 && (
+                    <span className="block text-xs text-muted-foreground">
+                      {result.gender === 'K' ? 'Kobiety' : 'Mężczyźni'}: {result.genderPosition}.
+                    </span>
+                  )}
                 </TableCell>
               </TableRow>
             );

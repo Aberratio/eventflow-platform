@@ -20,6 +20,8 @@ export interface Result {
   netTimeInSeconds?: number | null;
   position: number;
   categoryPosition: number;
+  /** G-03: miejsce wg płci (wśród zawodników tej samej płci w klasyfikacji); 0 = brak płci / nie ukończył. */
+  genderPosition?: number;
   status: 'finished' | 'dnf' | 'dns' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;

@@ -30,6 +30,9 @@ as the first version.
   whole event or one distance, see inherited fields, override them for that
   distance (or reset), and add distance-only fields. The registration form
   shows the form of the chosen distance.
+- The embedded registration form shows the price calculated by the server,
+  like the main registration page.
+- Results tables show the place by gender next to the open and category places.
 - Shop with product pages, cart and order confirmation.
 - Escape closes the mobile menu and returns focus to the menu button.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
