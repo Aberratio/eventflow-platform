@@ -281,15 +281,27 @@ export interface CreateRegistrationPayload {
 export type UpdateRegistrationPayload = Partial<
   Pick<
     Registration,
-    | 'status'
-    | 'bibNumber'
-    | 'teamName'
-    | 'teamId'
-    | 'pricePaid'
-    | 'discountAmount'
-    | 'paymentDetails'
+    'status' | 'teamName' | 'teamId' | 'pricePaid' | 'discountAmount' | 'paymentDetails'
   >
->;
+> & {
+  /** R-13: `null` clears the start number. */
+  bibNumber?: string | null;
+};
+
+/** R-13: `POST /events/{eventId}/bib-numbers/assign` body. */
+export interface AssignBibNumbersPayload {
+  /** Omit to assign in every distance that has a range. */
+  distanceIds?: string[];
+  order?: 'registered' | 'name';
+  /** Default (server) true: only confirmed registrations get a number. */
+  paidOnly?: boolean;
+}
+
+export interface AssignBibNumbersResult {
+  assigned: number;
+  assignments: { registrationId: string; bibNumber: string }[];
+  skipped: { distanceId: string; reason: 'no_range' | 'range_exhausted'; count: number }[];
+}
 
 // ──────────────── Results ────────────────
 

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +22,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { assignBibNumbers, updateRegistration } from '@/api';
 import { Event, Registration } from '@/types';
 import { Hash, Trash2, AlertCircle } from 'lucide-react';
 
@@ -41,7 +41,7 @@ export const BibNumberAssignment = ({
 }: BibNumberAssignmentProps) => {
   const { toast } = useToast();
   const [sortingOption, setSortingOption] = useState<SortingOption>('date_paid');
-  const [startNumber, setStartNumber] = useState('1');
+  const [isAssigning, setIsAssigning] = useState(false);
   const [selectedDistances, setSelectedDistances] = useState<Set<string>>(
     new Set(event.distances.map((d) => d.id)),
   );
@@ -64,6 +64,16 @@ export const BibNumberAssignment = ({
     });
   }, [event.distances, registrations]);
 
+  const rangedDistanceIds = useMemo(
+    () =>
+      new Set(
+        event.distances
+          .filter((d) => d.bibRangeFrom != null && d.bibRangeTo != null)
+          .map((d) => d.id),
+      ),
+    [event.distances],
+  );
+
   // Get eligible participants based on sorting option
   const getEligibleParticipants = () => {
     const paidOnly = sortingOption === 'date_paid' || sortingOption === 'name_paid';
@@ -76,6 +86,8 @@ export const BibNumberAssignment = ({
       if (r.status === 'removed' || r.status === 'cancelled') return false;
       // Must match selected distances
       if (!selectedDistances.has(r.distanceId)) return false;
+      // R-13: automatic numbering needs a range on the distance
+      if (!rangedDistanceIds.has(r.distanceId)) return false;
       // If paid only, must be confirmed
       if (paidOnly && r.status !== 'confirmed') return false;
       return true;
@@ -105,17 +117,7 @@ export const BibNumberAssignment = ({
     setSelectedDistances(newSet);
   };
 
-  const handleAssignBibNumbers = () => {
-    const start = parseInt(startNumber, 10);
-    if (isNaN(start) || start < 1) {
-      toast({
-        title: 'Błąd',
-        description: 'Numer początkowy musi być liczbą większą od 0.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+  const handleAssignBibNumbers = async () => {
     const eligible = getEligibleParticipants();
     if (eligible.length === 0) {
       toast({
@@ -126,63 +128,64 @@ export const BibNumberAssignment = ({
       return;
     }
 
-    // Collect all used bib numbers
-    const usedNumbers = new Set(
-      registrations
-        .filter((r) => r.bibNumber)
-        .map((r) => parseInt(r.bibNumber!, 10))
-        .filter((n) => !isNaN(n)),
-    );
-
-    let currentNumber = start;
-    const updatedRegistrations = [...registrations];
-    let assignedCount = 0;
-
-    eligible.forEach((participant) => {
-      // Skip used numbers
-      while (usedNumbers.has(currentNumber)) {
-        currentNumber++;
-      }
-
-      // Find and update registration
-      const index = updatedRegistrations.findIndex((r) => r.id === participant.id);
-      if (index !== -1) {
-        updatedRegistrations[index] = {
-          ...updatedRegistrations[index],
-          bibNumber: String(currentNumber).padStart(3, '0'),
-        };
-        usedNumbers.add(currentNumber);
-        currentNumber++;
-        assignedCount++;
-      }
-    });
-
-    onRegistrationsChange(updatedRegistrations);
-
-    toast({
-      title: 'Numery przydzielone',
-      description: `Przydzielono numery ${assignedCount} ${assignedCount === 1 ? 'uczestnikowi' : 'uczestnikom'}.`,
-    });
+    setIsAssigning(true);
+    try {
+      const response = await assignBibNumbers(event.id, {
+        distanceIds: [...selectedDistances],
+        order:
+          sortingOption === 'name_paid' || sortingOption === 'name_all' ? 'name' : 'registered',
+        paidOnly: sortingOption === 'date_paid' || sortingOption === 'name_paid',
+      });
+      const result = response.data;
+      const byId = new Map((result?.assignments ?? []).map((a) => [a.registrationId, a.bibNumber]));
+      onRegistrationsChange(
+        registrations.map((r) => (byId.has(r.id) ? { ...r, bibNumber: byId.get(r.id) } : r)),
+      );
+      const exhausted = (result?.skipped ?? [])
+        .filter((s) => s.reason === 'range_exhausted')
+        .reduce((sum, s) => sum + s.count, 0);
+      const assigned = result?.assigned ?? 0;
+      const exhaustedNote =
+        exhausted > 0
+          ? ` ${exhausted} uczestników bez numeru: zakres numerów dystansu jest wyczerpany.`
+          : '';
+      toast({
+        title: 'Numery przydzielone',
+        description: `Przydzielono numery ${assigned} ${assigned === 1 ? 'uczestnikowi' : 'uczestnikom'}.${exhaustedNote}`,
+        variant: exhausted > 0 ? 'destructive' : undefined,
+      });
+    } catch (error) {
+      toast({
+        title: 'Nie udało się przydzielić numerów',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAssigning(false);
+    }
   };
 
-  const handleRemoveAllBibNumbers = () => {
-    const updatedRegistrations = registrations.map((r) => {
-      if (selectedDistances.has(r.distanceId) && r.bibNumber) {
-        return { ...r, bibNumber: undefined };
-      }
-      return r;
-    });
-
-    const removedCount = registrations.filter(
-      (r) => selectedDistances.has(r.distanceId) && r.bibNumber,
-    ).length;
-
-    onRegistrationsChange(updatedRegistrations);
+  const handleRemoveAllBibNumbers = async () => {
+    const targets = registrations.filter((r) => selectedDistances.has(r.distanceId) && r.bibNumber);
     setConfirmDeleteOpen(false);
-
+    const cleared = new Set<string>();
+    for (const target of targets) {
+      try {
+        await updateRegistration(target.id, { bibNumber: null });
+        cleared.add(target.id);
+      } catch {
+        // reported once below
+      }
+    }
+    onRegistrationsChange(
+      registrations.map((r) => (cleared.has(r.id) ? { ...r, bibNumber: undefined } : r)),
+    );
+    const failed = targets.length - cleared.size;
+    const failedNote = failed > 0 ? ` Nie udało się usunąć ${failed}.` : '';
     toast({
-      title: 'Numery usunięte',
-      description: `Usunięto numery ${removedCount} ${removedCount === 1 ? 'uczestnikowi' : 'uczestnikom'}.`,
+      title: failed > 0 ? 'Nie wszystkie numery usunięto' : 'Numery usunięte',
+      description: `Usunięto numery ${cleared.size} ${cleared.size === 1 ? 'uczestnikowi' : 'uczestnikom'}.${failedNote}`,
+      variant: failed > 0 ? 'destructive' : undefined,
     });
   };
 
@@ -200,7 +203,7 @@ export const BibNumberAssignment = ({
       </CardHeader>
       <CardContent className="space-y-6 p-6">
         {/* Settings row */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           <div className="space-y-2">
             <Label>Sortowanie</Label>
             <Select
@@ -217,18 +220,6 @@ export const BibNumberAssignment = ({
                 <SelectItem value="name_all">Po nazwisku (wszyscy)</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="startNumber">Numer początkowy</Label>
-            <Input
-              id="startNumber"
-              type="number"
-              min="1"
-              value={startNumber}
-              onChange={(e) => setStartNumber(e.target.value)}
-              placeholder="1"
-            />
           </div>
         </div>
 
@@ -251,6 +242,14 @@ export const BibNumberAssignment = ({
                   className="flex min-w-0 flex-1 cursor-pointer items-center gap-2"
                 >
                   <span className="truncate">{distance.name}</span>
+                  <Badge
+                    variant={distance.bibRangeFrom != null ? 'secondary' : 'outline'}
+                    className="shrink-0"
+                  >
+                    {distance.bibRangeFrom != null && distance.bibRangeTo != null
+                      ? `Zakres ${distance.bibRangeFrom}–${distance.bibRangeTo}`
+                      : 'Brak zakresu'}
+                  </Badge>
                   <Badge variant="outline" className="ml-auto shrink-0">
                     {distance.withoutNumber} bez numeru
                   </Badge>
@@ -280,7 +279,7 @@ export const BibNumberAssignment = ({
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             onClick={handleAssignBibNumbers}
-            disabled={eligibleCount === 0 || selectedDistances.size === 0}
+            disabled={eligibleCount === 0 || selectedDistances.size === 0 || isAssigning}
             className="flex-1"
           >
             <Hash className="mr-2 h-4 w-4" />

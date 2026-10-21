@@ -85,6 +85,12 @@ describe('prepareResultsExport', () => {
     const out = prepareResultsExport(results);
     expect(out[0]['Pozycja']).toBe(1);
     expect(out[0]['Czas']).toBe('01:23:45');
+    expect(out[0]['Pozycja wg płci']).toBe('');
+    expect(
+      prepareResultsExport([{ ...results[0], gender: 'K', genderPosition: 3 }])[0][
+        'Pozycja wg płci'
+      ],
+    ).toBe(3);
     expect(out[0]['Status']).toBe('Ukończył');
   });
 });

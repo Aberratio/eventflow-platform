@@ -129,3 +129,40 @@ describe('httpAdapter form-field routes (E1.13)', () => {
     });
   });
 });
+
+describe('httpAdapter per-distance form routes (R-04)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn());
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('asks the public form for one distance via ?distanceId=', async () => {
+    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: [] }));
+    await httpAdapter.getPublicFormFields('e1', 'd 1');
+    expect(lastCall().url).toBe(`${BASE}/events/e1/form-fields/public?distanceId=d%201`);
+    await httpAdapter.getPublicFormFields('e1');
+    expect(lastCall().url).toBe(`${BASE}/events/e1/form-fields/public`);
+  });
+
+  it('reads, extends, overrides and resets the distance form on the distance routes', async () => {
+    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: [] }));
+    await httpAdapter.getDistanceFormFields('e1', 'd1');
+    expect(lastCall().url).toBe(`${BASE}/events/e1/distances/d1/form-fields`);
+
+    await httpAdapter.createDistanceFormField('e1', 'd1', { fieldType: 'short_text', label: 'X' });
+    expect(lastCall().url).toBe(`${BASE}/events/e1/distances/d1/form-fields`);
+    expect(lastCall().init.method).toBe('POST');
+    expect(lastCall().body).toEqual({ fieldType: 'short_text', label: 'X' });
+
+    await httpAdapter.overrideFormField('e1', 'd1', 'f1');
+    expect(lastCall().url).toBe(`${BASE}/events/e1/distances/d1/form-fields/f1/override`);
+    expect(lastCall().init.method).toBe('POST');
+
+    await httpAdapter.resetFormFieldOverride('e1', 'd1', 'f1');
+    expect(lastCall().url).toBe(`${BASE}/events/e1/distances/d1/form-fields/f1/override`);
+    expect(lastCall().init.method).toBe('DELETE');
+  });
+});

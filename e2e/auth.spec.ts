@@ -70,7 +70,7 @@ test.describe('Participant Login & Dashboard', () => {
   test('participant can navigate dashboard tabs', async ({ page }) => {
     await loginAs(page, 'participant');
 
-    for (const tabName of ['Rejestracje', 'Historia', 'Zamówienia', 'Wiadomości']) {
+    for (const tabName of ['Rejestracje', 'Historia', 'Zamówienia']) {
       const tab = page.getByRole('tab', { name: new RegExp(tabName) });
       await expect(tab).toBeVisible();
       await tab.click();

@@ -219,7 +219,7 @@ export const AdminOverviewTab = () => {
       </Card>
 
       {/* Top Products & Orders by Status */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -288,7 +288,7 @@ export const AdminOverviewTab = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardContent className="pt-6">
             <h3 className="mb-4 font-semibold">Ostatnie rejestracje</h3>

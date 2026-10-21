@@ -680,7 +680,7 @@ const EventsPage = () => {
             statusCounts={statusCounts}
           />
 
-          <main className="min-w-0 flex-1 overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
             {/* ── Mobile ── */}
             <div className="lg:hidden">
               <div className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-8">
@@ -729,7 +729,7 @@ const EventsPage = () => {
                     value={String(filters.selectedYear)}
                     onValueChange={(value) => updateFilter('selectedYear', Number(value))}
                   >
-                    <SelectTrigger className="h-16 rounded-xl border-white/10 bg-white/[0.03] px-5 text-left sm:h-[78px]">
+                    <SelectTrigger aria-label="Rok" className="h-16 rounded-xl border-white/10 bg-white/[0.03] px-5 text-left sm:h-[78px]">
                       <CalendarDays className="mr-4 h-7 w-7 text-muted-foreground" />
                       <div className="min-w-0">
                         <div className="text-sm text-muted-foreground sm:text-lg">Rok</div>
@@ -838,7 +838,7 @@ const EventsPage = () => {
                       value={String(filters.selectedYear)}
                       onValueChange={(value) => updateFilter('selectedYear', Number(value))}
                     >
-                      <SelectTrigger className="h-11 min-w-[150px] border-white/10 bg-background/50">
+                      <SelectTrigger aria-label="Rok" className="h-11 min-w-[150px] border-white/10 bg-background/50">
                         <CalendarDays className="mr-2 h-4 w-4 text-muted-foreground" />
                         <SelectValue />
                       </SelectTrigger>
@@ -880,7 +880,7 @@ const EventsPage = () => {
                         )
                       }
                     >
-                      <SelectTrigger className="h-11 min-w-[180px] border-white/10 bg-background/50">
+                      <SelectTrigger aria-label="Dyscyplina" className="h-11 min-w-[180px] border-white/10 bg-background/50">
                         <Bike className="mr-2 h-4 w-4 text-muted-foreground" />
                         <SelectValue />
                       </SelectTrigger>
@@ -939,7 +939,7 @@ const EventsPage = () => {
                 )}
               </div>
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </Layout>

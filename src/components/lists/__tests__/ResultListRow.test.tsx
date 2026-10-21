@@ -36,3 +36,19 @@ describe('ResultListRow event link (L-03)', () => {
     );
   });
 });
+
+describe('ResultListRow place by gender (G-03)', () => {
+  it('shows the place by gender next to the open and category places', () => {
+    render(
+      <ResultListRow result={{ ...result, gender: 'K', genderPosition: 3 }} showEvent={false} />,
+    );
+    expect(screen.getAllByText(/Kobiety/)[0]).toHaveTextContent('Kobiety: 3');
+  });
+
+  it('shows nothing when the gender place is unknown', () => {
+    render(
+      <ResultListRow result={{ ...result, gender: 'M', genderPosition: 0 }} showEvent={false} />,
+    );
+    expect(screen.queryByText(/Mężczyźni/)).not.toBeInTheDocument();
+  });
+});

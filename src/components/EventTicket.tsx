@@ -13,10 +13,17 @@ interface EventTicketProps {
   ticket: Ticket;
 }
 
+/** A ticket whose date is missing/unparseable must not crash the whole tab (RangeError). */
+const formatEventDate = (value?: string | null): string => {
+  const d = value ? new Date(value) : null;
+  return d && !Number.isNaN(d.getTime())
+    ? format(d, 'd MMMM yyyy', { locale: pl })
+    : 'Data wkrótce';
+};
+
 export const EventTicket = ({ ticket }: EventTicketProps) => {
   // G-01 (spec 11 pkt 4): kod startowy ważny tylko dla Zapisu opłaconego/potwierdzonego.
-  const qrValue =
-    ticket.registrationStatus === 'confirmed' && ticket.qrCode ? ticket.qrCode : null;
+  const qrValue = ticket.registrationStatus === 'confirmed' && ticket.qrCode ? ticket.qrCode : null;
   const inactiveMessage =
     ticket.registrationStatus === 'pending'
       ? 'Bilet pojawi się po opłaceniu zapisu.'
@@ -59,7 +66,7 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
             <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>{format(new Date(ticket.eventDate), 'd MMMM yyyy', { locale: pl })}</span>
+                <span>{formatEventDate(ticket.eventDate)}</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MapPin className="h-4 w-4" />
