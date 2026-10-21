@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,18 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const DEFAULT_LOCKOUT_SECONDS = 60;
+
+/** R-10: seconds to wait, from the 429 `error.details.retryAfterSeconds` (mirrors Retry-After). */
+function lockoutSeconds(error: ApiRequestError): number {
+  const value = (error.details as { retryAfterSeconds?: unknown } | undefined)?.retryAfterSeconds;
+  return typeof value === 'number' && value > 0 ? Math.ceil(value) : DEFAULT_LOCKOUT_SECONDS;
+}
+
+function lockoutMessage(seconds: number): string {
+  return `Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za ${Math.max(1, Math.ceil(seconds / 60))} min.`;
+}
+
 const LoginPage = () => {
   const { loginWithCredentials, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -41,6 +53,18 @@ const LoginPage = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const lockedUntil = useRef(0);
+
+  const isLocked = secondsLeft > 0;
+  useEffect(() => {
+    if (!isLocked) return;
+    const timer = setInterval(() => {
+      const left = Math.ceil((lockedUntil.current - Date.now()) / 1000);
+      setSecondsLeft(left > 0 ? left : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isLocked]);
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
 
@@ -82,7 +106,11 @@ const LoginPage = () => {
         });
       }
     } catch (error) {
-      if (error instanceof ApiRequestError && error.code === 'account_blocked') {
+      if (error instanceof ApiRequestError && error.status === 429) {
+        const seconds = lockoutSeconds(error);
+        lockedUntil.current = Date.now() + seconds * 1000;
+        setSecondsLeft(seconds);
+      } else if (error instanceof ApiRequestError && error.code === 'account_blocked') {
         toast({ title: 'Konto zablokowane', description: error.message, variant: 'destructive' });
       } else {
         throw error;
@@ -169,7 +197,12 @@ const LoginPage = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLocked && (
+                <p role="alert" className="text-sm font-medium text-destructive">
+                  {lockoutMessage(secondsLeft)}
+                </p>
+              )}
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading || isLocked}>
                 {isLoading ? 'Logowanie...' : 'Zaloguj się'}
               </Button>
             </form>

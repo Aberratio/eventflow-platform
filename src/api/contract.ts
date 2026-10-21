@@ -38,6 +38,8 @@ import type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  AssignBibNumbersPayload,
+  AssignBibNumbersResult,
   SwapTeamMemberPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
@@ -56,6 +58,7 @@ import type {
   UpdateInfoPagePayload,
   CreatePartnerPayload,
   UpdatePartnerPayload,
+  ChangeDistancePayload,
 } from './payloads';
 import type {
   DiscountCodeBatch,
@@ -66,6 +69,10 @@ import type {
   User,
   UserRole,
   Registration,
+  RegistrationChange,
+  DistanceChangeQuote,
+  DistanceChangeResult,
+  TransferRegistrationResult,
   RegistrationQuote,
   PublicStartListEntry,
   RelayTeam,
@@ -138,6 +145,13 @@ import type {
   SettlementReport,
   SettlementReportParams,
 } from '@/types/admin';
+import type {
+  EventTeam,
+  EventTeamMember,
+  EventTeamMemberWithMail,
+  TeamInvitationAcceptance,
+  TeamInvitationPreview,
+} from '@/types/eventTeam';
 
 // ─────────────────────────────────────────────────────────
 // API Adapter Interface
@@ -151,6 +165,25 @@ export interface ApiAdapter {
   createEvent(data: CreateEventPayload): Promise<ApiResponse<Event>>;
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;
   deleteEvent(id: string): Promise<ApiResponse<void>>;
+  /**
+   * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): the Event Team. The roster, invitations
+   * and revocations are Owner/admin only (403 for a Co-manager).
+   */
+  getEventTeam(eventId: string): Promise<ApiResponse<EventTeam>>;
+  inviteEventTeamMember(
+    eventId: string,
+    email: string,
+  ): Promise<ApiResponse<EventTeamMemberWithMail>>;
+  resendEventTeamInvitation(
+    eventId: string,
+    memberId: string,
+  ): Promise<ApiResponse<EventTeamMemberWithMail>>;
+  /** Takes the access away (status -> revoked); also kills a pending invitation link. */
+  revokeEventTeamMember(eventId: string, memberId: string): Promise<ApiResponse<EventTeamMember>>;
+  /** Public preview of an invitation (masked address); 404 unknown/revoked, 410 expired. */
+  getTeamInvitation(token: string): Promise<ApiResponse<TeamInvitationPreview>>;
+  /** Authenticated; 403 `invitation_email_mismatch` for another Account, 410 `invitation_expired`. */
+  acceptTeamInvitation(token: string): Promise<ApiResponse<TeamInvitationAcceptance>>;
   /** draft/rejected -> submitted. Also irreversibly clears `isTest`. */
   submitEvent(id: string): Promise<ApiResponse<Event>>;
   /** submitted -> published (single action, no separate resting "approved" state). */
@@ -303,7 +336,29 @@ export interface ApiAdapter {
     id: string,
     data: UpdateRegistrationPayload,
   ): Promise<ApiResponse<Registration>>;
+  /** R-13: gives the next free number inside each distance's range to registrations without one. */
+  assignBibNumbers(
+    eventId: string,
+    data: AssignBibNumbersPayload,
+  ): Promise<ApiResponse<AssignBibNumbersResult>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
+  /** R-02: historia zmian jednego zapisu (właściciel i organizator), od najstarszej. */
+  getRegistrationChanges(id: string): Promise<ApiResponse<RegistrationChange[]>>;
+  /** R-02 (zakres P2): co da zmiana dystansu — nowa cena i saldo; nic nie zapisuje. */
+  quoteDistanceChange(
+    id: string,
+    data: ChangeDistancePayload,
+  ): Promise<ApiResponse<DistanceChangeQuote>>;
+  /** R-02 (zakres P2): zmiana dystansu/wariantu zapisu (właściciel w oknie, organizator zawsze). */
+  changeRegistrationDistance(
+    id: string,
+    data: ChangeDistancePayload,
+  ): Promise<ApiResponse<DistanceChangeResult>>;
+  /** R-02 (zakres P2): organizator przenosi zapis na innego zawodnika (istniejącego albo nową osobę). */
+  transferRegistration(
+    id: string,
+    data: SwapTeamMemberPayload,
+  ): Promise<ApiResponse<TransferRegistrationResult>>;
   updatePaymentDetails(
     id: string,
     paymentDetails: PaymentDetails,
@@ -414,7 +469,11 @@ export interface ApiAdapter {
     challengeId?: string,
     userId?: string,
   ): Promise<ApiResponse<ChallengeParticipation[]>>;
-  joinChallenge(challengeId: string): Promise<ApiResponse<ChallengeParticipation>>;
+  /** R-06: `competitorId` = a ward under the caller's care (403 otherwise); omitted = own profile. */
+  joinChallenge(
+    challengeId: string,
+    competitorId?: string,
+  ): Promise<ApiResponse<ChallengeParticipation>>;
   submitChallengeEntry(data: Partial<ChallengeEntry>): Promise<ApiResponse<ChallengeEntry>>;
   reviewChallengeEntry(
     entryId: string,

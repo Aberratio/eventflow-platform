@@ -1,5 +1,6 @@
 ﻿import { disciplineLabels, uploadEventImage, getEventBackgrounds } from '@/api';
 import { safeUrl } from '@/lib/safeUrl';
+import { EventSelfServiceSection } from './EventSelfServiceSection';
 import {
   EVENT_DOCUMENT_TYPE_LABELS,
   EventDocumentType,
@@ -1375,6 +1376,14 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               </div>
             </div>
 
+            <EventSelfServiceSection
+              enabled={form.selfServiceEnabled}
+              onEnabledChange={form.setSelfServiceEnabled}
+              deadline={form.selfServiceDeadline}
+              onDeadlineChange={form.setSelfServiceDeadline}
+              eventDate={form.date}
+            />
+
             {/* Virtual event toggle */}
             <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">
               <div className="flex items-start gap-3">
@@ -1782,7 +1791,17 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
       )}
 
       {/* ── payment: Płatności ── */}
-      {activeSubStep === 'payment' && (
+      {activeSubStep === 'payment' && !form.canEditPayments && (
+        <Alert className="border-muted bg-muted/50">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Płatności ustawia właściciel wydarzenia</AlertTitle>
+          <AlertDescription>
+            Konfigurację płatności może zmieniać tylko właściciel wydarzenia. Pozostałe ustawienia
+            możesz edytować i zapisać.
+          </AlertDescription>
+        </Alert>
+      )}
+      {activeSubStep === 'payment' && form.canEditPayments && (
         <Card>
           <CardHeader className="p-4 pb-3 sm:p-6">
             <CardTitle className="flex items-center gap-2">

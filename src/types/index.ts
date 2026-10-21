@@ -2,6 +2,7 @@
 export * from './branded';
 export * from './user';
 export * from './event';
+export * from './eventTeam';
 export * from './registration';
 export * from './result';
 export * from './shop';

@@ -51,6 +51,18 @@ export const updateEvent: ApiAdapter['updateEvent'] = (...args) =>
   ensureAdapter().then((a) => a.updateEvent(...args));
 export const deleteEvent: ApiAdapter['deleteEvent'] = (...args) =>
   ensureAdapter().then((a) => a.deleteEvent(...args));
+export const getEventTeam: ApiAdapter['getEventTeam'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventTeam(...args));
+export const inviteEventTeamMember: ApiAdapter['inviteEventTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.inviteEventTeamMember(...args));
+export const resendEventTeamInvitation: ApiAdapter['resendEventTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.resendEventTeamInvitation(...args));
+export const revokeEventTeamMember: ApiAdapter['revokeEventTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.revokeEventTeamMember(...args));
+export const getTeamInvitation: ApiAdapter['getTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamInvitation(...args));
+export const acceptTeamInvitation: ApiAdapter['acceptTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.acceptTeamInvitation(...args));
 export const submitEvent: ApiAdapter['submitEvent'] = (...args) =>
   ensureAdapter().then((a) => a.submitEvent(...args));
 export const approveEvent: ApiAdapter['approveEvent'] = (...args) =>
@@ -157,10 +169,20 @@ export const updateRegistration: ApiAdapter['updateRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.updateRegistration(...args));
 export const cancelRegistration: ApiAdapter['cancelRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.cancelRegistration(...args));
+export const getRegistrationChanges: ApiAdapter['getRegistrationChanges'] = (...args) =>
+  ensureAdapter().then((a) => a.getRegistrationChanges(...args));
+export const quoteDistanceChange: ApiAdapter['quoteDistanceChange'] = (...args) =>
+  ensureAdapter().then((a) => a.quoteDistanceChange(...args));
+export const changeRegistrationDistance: ApiAdapter['changeRegistrationDistance'] = (...args) =>
+  ensureAdapter().then((a) => a.changeRegistrationDistance(...args));
+export const transferRegistration: ApiAdapter['transferRegistration'] = (...args) =>
+  ensureAdapter().then((a) => a.transferRegistration(...args));
 export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args) =>
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
 export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>
   ensureAdapter().then((a) => a.requestRefund(...args));
+export const assignBibNumbers: ApiAdapter['assignBibNumbers'] = (...args) =>
+  ensureAdapter().then((a) => a.assignBibNumbers(...args));
 export const approveRefund: ApiAdapter['approveRefund'] = (...args) =>
   ensureAdapter().then((a) => a.approveRefund(...args));
 export const completeRefund: ApiAdapter['completeRefund'] = (...args) =>
@@ -495,6 +517,7 @@ export type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  ChangeDistancePayload,
   SwapTeamMemberPayload,
   SwapTeamMemberNewPerson,
   RegistrationMerchandiseSelection,

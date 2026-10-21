@@ -10,7 +10,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { bibRangeFieldErrors } from '@/lib/bibNumberUtils';
 import { useAuth } from '@/contexts/AuthContext';
+import { isEventOwnerLevel } from '@/lib/eventTeam';
 import {
   Event,
   SportDiscipline,
@@ -63,6 +65,9 @@ export interface DistanceFormData {
   /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
   officePrice: string;
   limit: string;
+  /** R-13: start (bib) number range of the Distance, blank = no range. */
+  bibRangeFrom: string;
+  bibRangeTo: string;
   infoHtml: string;
   priceTiers: PriceTier[];
   disabledCategoryIds: string[];
@@ -225,6 +230,15 @@ export const STEP_NAV_ITEMS: StepNavItem[] = [
   { id: 'summary', label: 'Podsumowanie', shortLabel: 'Podsumowanie', mainStep: 4 },
 ];
 
+/** ISO instant from the API -> `YYYY-MM-DDTHH:mm` in the organizer's local time ('' when unset). */
+function toLocalDateTimeValue(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export const useEventFormState = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -233,6 +247,8 @@ export const useEventFormState = () => {
   const { user } = useAuth();
   const isEditing = Boolean(id);
   const [existingEvent, setExistingEvent] = useState<Event | null>(null);
+  // R-01 (zakres P2): payment configuration is the Owner's (and admin's) - a Co-manager edits the rest.
+  const canEditPayments = !existingEvent || isEventOwnerLevel(user, existingEvent);
   const canChooseOrganizer =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
   const canManageFeatured = canChooseOrganizer;
@@ -270,6 +286,13 @@ export const useEventFormState = () => {
   );
   const [registrationUntilEventStart, setRegistrationUntilEventStart] = useState(
     existingEvent?.registrationUntilEventStart || false,
+  );
+  // R-02 (zakres P2): samodzielna rezygnacja zawodnika. Pusta data = domyślnie 7 dni przed startem.
+  const [selfServiceEnabled, setSelfServiceEnabled] = useState(
+    existingEvent?.selfServiceEnabled ?? true,
+  );
+  const [selfServiceDeadline, setSelfServiceDeadline] = useState(
+    toLocalDateTimeValue(existingEvent?.selfServiceDeadline),
   );
   const [location, setLocation] = useState(existingEvent?.location || '');
   const [locationMapsUrl, setLocationMapsUrl] = useState(existingEvent?.locationMapsUrl || '');
@@ -593,6 +616,8 @@ export const useEventFormState = () => {
       price: d.price.toString(),
       officePrice: officeVariantOf(d)?.price?.toString() || '',
       limit: d.limit?.toString() || '',
+      bibRangeFrom: d.bibRangeFrom?.toString() || '',
+      bibRangeTo: d.bibRangeTo?.toString() || '',
       infoHtml: d.infoHtml || '',
       priceTiers: d.priceTiers || [],
       disabledCategoryIds: initAllGlobalCatIds.filter(
@@ -726,6 +751,8 @@ export const useEventFormState = () => {
         price: d.price.toString(),
         officePrice: officeVariantOf(d)?.price?.toString() || '',
         limit: d.limit?.toString() || '',
+        bibRangeFrom: d.bibRangeFrom?.toString() || '',
+        bibRangeTo: d.bibRangeTo?.toString() || '',
         infoHtml: d.infoHtml || '',
         priceTiers: d.priceTiers || [],
         disabledCategoryIds: allGlobalCatIds.filter(
@@ -816,6 +843,8 @@ export const useEventFormState = () => {
         price: '',
         officePrice: '',
         limit: '',
+        bibRangeFrom: '',
+        bibRangeTo: '',
         infoHtml: '',
         priceTiers: [],
         disabledCategoryIds: [],
@@ -851,6 +880,8 @@ export const useEventFormState = () => {
         price: '',
         officePrice: '',
         limit: '',
+        bibRangeFrom: '',
+        bibRangeTo: '',
         infoHtml: '',
         priceTiers: [],
         disabledCategoryIds: [],
@@ -1166,6 +1197,7 @@ export const useEventFormState = () => {
       }
     }
     if (
+      canEditPayments &&
       registrationMode !== 'external_embed' &&
       paymentConfigType === 'organizer_bank' &&
       (!bankAccountNumber.trim() || !bankAccountHolder.trim())
@@ -1395,6 +1427,7 @@ export const useEventFormState = () => {
         errors[`distance_${i}_limit`] =
           'Limit uczestników musi być dodatnią liczbą całkowitą albo pusty';
       }
+      Object.assign(errors, bibRangeFieldErrors(distances, i));
       if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
         errors[`distance_${i}_officePrice`] =
           'Cena biurowa musi być poprawną liczbą i nie może być ujemna';
@@ -1668,6 +1701,8 @@ export const useEventFormState = () => {
         })(),
         infoHtml: dist.infoHtml || undefined,
         limit: parseNumberInput(dist.limit) ?? undefined,
+        bibRangeFrom: parseNumberInput(dist.bibRangeFrom) ?? undefined,
+        bibRangeTo: parseNumberInput(dist.bibRangeTo) ?? undefined,
         priceTiers: dist.priceTiers.map((tier) => ({
           ...tier,
           price: tier.price != null ? (parseNumberInput(tier.price) ?? undefined) : undefined,
@@ -1694,6 +1729,8 @@ export const useEventFormState = () => {
       registrationDeadline,
       registrationOpenDate: registrationOpenDate || undefined,
       registrationUntilEventStart,
+      selfServiceEnabled,
+      selfServiceDeadline: selfServiceDeadline ? new Date(selfServiceDeadline).toISOString() : null,
       bannerUrl: bannerUrl || undefined,
       originalBannerUrl: originalBannerUrl || undefined,
       bannerCropArea,
@@ -1864,6 +1901,7 @@ export const useEventFormState = () => {
   return {
     // Meta
     isEditing,
+    canEditPayments,
     originalIsPrivate: existingEvent?.visibility === 'private',
     privacyChanged: isEditing && (existingEvent?.visibility === 'private') !== isPrivate,
     step,
@@ -1895,6 +1933,10 @@ export const useEventFormState = () => {
     setRegistrationOpenDate,
     registrationUntilEventStart,
     setRegistrationUntilEventStart,
+    selfServiceEnabled,
+    setSelfServiceEnabled,
+    selfServiceDeadline,
+    setSelfServiceDeadline,
     location,
     setLocation,
     locationMapsUrl,

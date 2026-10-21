@@ -117,7 +117,10 @@ export interface ChallengeEntry {
  */
 export interface ChallengeRankingEntry {
   rank: number;
-  userId: string;
+  /** Null for a ward without an account - never the caregiver's id. */
+  userId: string | null;
+  /** R-06: ranking rows are per Zawodnik; use as the row key. */
+  competitorId?: string | null;
   /** Real name, or the fixed anonymization label — never both. */
   name: string;
   isAnonymized: boolean;
@@ -133,7 +136,11 @@ export interface ChallengeRanking {
 export interface ChallengeParticipation {
   id: string;
   challengeId: string;
+  /** The account that joined (mail recipient); for a ward it is the caregiver. */
   userId: string;
+  /** R-06: the Zawodnik taking part; null for legacy rows with no profile. */
+  competitorId?: string | null;
+  competitorName?: string | null;
   userName: string;
   joinedAt: string;
   entries: ChallengeEntry[];

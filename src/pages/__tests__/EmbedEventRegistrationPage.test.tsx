@@ -41,6 +41,7 @@ const { testEvent } = vi.hoisted(() => {
 const mockGetEventEmbedPublicConfig = vi.fn();
 const mockGetEventById = vi.fn().mockResolvedValue({ data: testEvent });
 const mockCreateRegistration = vi.fn();
+const mockQuoteRegistration = vi.fn();
 const mockNavigateToPaymentGateway = vi.fn();
 
 vi.mock('@/lib/paymentGatewayNavigation', () => ({
@@ -54,6 +55,7 @@ vi.mock('@/api', async () => {
     getEventEmbedPublicConfig: (...args: unknown[]) => mockGetEventEmbedPublicConfig(...args),
     getEventById: (...args: unknown[]) => mockGetEventById(...args),
     createRegistration: (...args: unknown[]) => mockCreateRegistration(...args),
+    quoteRegistration: (...args: unknown[]) => mockQuoteRegistration(...args),
   };
 });
 
@@ -82,9 +84,20 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@/components/registration/RegistrationForm', () => ({
-  RegistrationForm: ({ onComplete }: { onComplete?: (data: Record<string, unknown>) => void }) => (
+  RegistrationForm: ({
+    onComplete,
+    quote,
+  }: {
+    onComplete?: (data: Record<string, unknown>) => void;
+    quote?: (data: Record<string, unknown>) => Promise<unknown>;
+  }) => (
     <div>
       registration-form-fixture
+      <button
+        onClick={() => void quote?.({ distanceId: 'd1', distanceName: '10 km', category: 'Open' })}
+      >
+        quote-fixture
+      </button>
       <button
         onClick={() => onComplete?.({ distanceId: 'd1', distanceName: '10 km', category: 'Open' })}
       >
@@ -105,6 +118,7 @@ describe('EmbedEventRegistrationPage', () => {
       isAuthenticated: true,
     });
     mockCreateRegistration.mockReset();
+    mockQuoteRegistration.mockReset();
     mockNavigateToPaymentGateway.mockReset();
     Object.defineProperty(document, 'referrer', { value: '', configurable: true });
   });
@@ -192,6 +206,24 @@ describe('EmbedEventRegistrationPage', () => {
     const loginLink = await screen.findByRole('link', { name: 'Zaloguj się' });
     expect(loginLink).toHaveAttribute('href', '/login');
     expect(loginLink).toHaveAttribute('target', '_top');
+  });
+
+  it('prices through the server quote endpoint instead of a local preview (B-02)', async () => {
+    mockGetEventEmbedPublicConfig.mockResolvedValue({
+      data: { enabled: true, allowedOrigins: [] },
+    });
+    mockQuoteRegistration.mockResolvedValue({ data: { totalAmount: 50, settlementItems: [] } });
+    const user = userEvent.setup();
+
+    render(<EmbedEventRegistrationPage />);
+    await user.click(await screen.findByText('quote-fixture'));
+
+    await vi.waitFor(() => expect(mockQuoteRegistration).toHaveBeenCalledTimes(1));
+    const payload = mockQuoteRegistration.mock.calls[0][0];
+    expect(payload.eventId).toBe(testEvent.id);
+    expect(payload.distanceId).toBe('d1');
+    expect(payload.paymentDetails).toBeUndefined();
+    expect(mockCreateRegistration).not.toHaveBeenCalled();
   });
 
   it('does not claim any payment when creating the registration (PP.52)', async () => {

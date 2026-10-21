@@ -215,6 +215,9 @@ export interface Distance {
   ageCategories?: AgeCategory[];
   specialCategories?: SpecialCategory[];
   limit?: number;
+  /** R-13 (contract 5.1): start number range of the Distance; both null/absent = no range. */
+  bibRangeFrom?: number | null;
+  bibRangeTo?: number | null;
   registeredCount: number;
   paidCount?: number;
   /**
@@ -417,6 +420,11 @@ export interface Event {
   seriesId?: string;
   distances: Distance[];
   organizerId: string;
+  /**
+   * R-01 (zakres P2): present only on `GET /organizers/{id}/events` - the viewer's role in the Event
+   * Team ('owner' for their own events, 'co_manager' for the ones they co-manage).
+   */
+  teamRole?: 'owner' | 'co_manager';
   organizerName: string;
   organizerContact?: OrganizerContact;
   organizerInfo?: OrganizerInfo;
@@ -442,6 +450,12 @@ export interface Event {
   registrationDeadline: string;
   registrationOpenDate?: string;
   registrationUntilEventStart?: boolean;
+  /** R-02 (zakres P2): czy właściciel zapisu może sam zrezygnować (domyślnie tak). */
+  selfServiceEnabled?: boolean;
+  /** R-02: data graniczna ustawiona przez organizatora (ISO); brak = domyślnie 7 dni przed startem. */
+  selfServiceDeadline?: string | null;
+  /** R-02: data graniczna, która faktycznie obowiązuje (ISO) — własna albo domyślna. */
+  selfServiceEffectiveDeadline?: string | null;
   featured: boolean;
   liveResultsUrl?: string;
   isLive?: boolean;

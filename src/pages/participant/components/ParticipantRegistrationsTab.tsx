@@ -1,4 +1,9 @@
-import { getVirtualResultSubmissions, requestRefund } from '@/api';
+import { cancelRegistration, getVirtualResultSubmissions, requestRefund } from '@/api';
+import { ApiRequestError } from '@/api/errors';
+import { CancelRegistrationDialog } from '@/components/registration/CancelRegistrationDialog';
+import { ChangeDistanceDialog } from '@/components/registration/ChangeDistanceDialog';
+import { hasPaidAmount } from '@/lib/selfService';
+import { RegistrationHistoryDialog } from '@/components/registration/RegistrationHistoryDialog';
 import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,8 +26,48 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDistanceId, setSelectedDistanceId] = useState<string | undefined>(undefined);
+  const [cancelTarget, setCancelTarget] = useState<{
+    registration: Registration;
+    event: Event;
+  } | null>(null);
+  const [cancelPending, setCancelPending] = useState(false);
+  const [historyTarget, setHistoryTarget] = useState<{
+    registration: Registration;
+    event: Event;
+  } | null>(null);
+  const [changeDistanceTarget, setChangeDistanceTarget] = useState<{
+    registration: Registration;
+    event: Event;
+  } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // R-02 (zakres P2): the owner cancels their own Zapis inside the organizer's window.
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelPending(true);
+    try {
+      await cancelRegistration(cancelTarget.registration.id);
+      toast({
+        title: 'Zrezygnowano z udziału',
+        description: hasPaidAmount(cancelTarget.registration)
+          ? 'Złożyliśmy wniosek o zwrot — organizator rozpatrzy go zgodnie z zasadami wydarzenia.'
+          : 'Miejsce wróciło do puli.',
+      });
+      setCancelTarget(null);
+    } catch (error) {
+      toast({
+        title: 'Nie udało się zrezygnować',
+        description:
+          error instanceof ApiRequestError ? error.message : 'Spróbuj ponownie za chwilę.',
+        variant: 'destructive',
+      });
+    } finally {
+      setCancelPending(false);
+      queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    }
+  };
 
   const handleRequestRefund = async (registration: Registration) => {
     try {
@@ -132,9 +177,49 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
             onSubmitResult={() => handleOpenSubmissionDialog(event, registration.distanceId)}
             onRequestRefund={() => handleRequestRefund(registration)}
             onRetryPayment={() => handleRetryPayment(registration)}
+            onCancel={() => setCancelTarget({ registration, event })}
+            onShowHistory={() => setHistoryTarget({ registration, event })}
+            onChangeDistance={() => setChangeDistanceTarget({ registration, event })}
           />
         ))}
       </ListContainer>
+
+      {cancelTarget && (
+        <CancelRegistrationDialog
+          open
+          onOpenChange={(open) => {
+            if (!open && !cancelPending) setCancelTarget(null);
+          }}
+          registration={cancelTarget.registration}
+          event={cancelTarget.event}
+          pending={cancelPending}
+          onConfirm={handleConfirmCancel}
+        />
+      )}
+      {changeDistanceTarget && (
+        <ChangeDistanceDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setChangeDistanceTarget(null);
+          }}
+          registration={changeDistanceTarget.registration}
+          event={changeDistanceTarget.event}
+          onChanged={() => {
+            queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+          }}
+        />
+      )}
+      {historyTarget && (
+        <RegistrationHistoryDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setHistoryTarget(null);
+          }}
+          registrationId={historyTarget.registration.id}
+          eventName={historyTarget.event.name}
+        />
+      )}
 
       {selectedEvent && (
         <VirtualResultsSubmissionDialog
