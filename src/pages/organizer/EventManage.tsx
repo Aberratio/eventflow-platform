@@ -13,6 +13,7 @@ import { ParticipantsTab } from './components/ParticipantsTab';
 import { ResultsTab } from './components/ResultsTab';
 import { VirtualResultsVerificationTab } from './components/VirtualResultsVerificationTab';
 import { EventSettingsTab } from './components/EventSettingsTab';
+import { EventTeamTab } from './components/EventTeamTab';
 import { FormFieldsTab } from './components/FormFieldsTab';
 import { DiscountCodesEditor } from '@/pages/admin/components/DiscountCodesEditor';
 import {
@@ -25,12 +26,15 @@ import {
   Tag,
   Mail,
   ClipboardList,
+  UsersRound,
 } from 'lucide-react';
 import type { ApiResponse } from '@/api/types';
 import type { DiscountCode, Event } from '@/types';
 import { EmailTemplatesManager } from '@/components/email/EmailTemplatesManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useCoManagedEvents } from '@/hooks/useCoManagedEvents';
+import { isCoManagerOf, isEventOwnerLevel } from '@/lib/eventTeam';
 
 const eventManageTabs = [
   'overview',
@@ -40,6 +44,7 @@ const eventManageTabs = [
   'form',
   'emails',
   'settings',
+  'team',
 ] as const;
 
 type EventManageTab = (typeof eventManageTabs)[number];
@@ -73,7 +78,12 @@ const EventManage = () => {
   const sectionBasePath = isModeratorContext
     ? `/moderator/events/${id}`
     : `/organizer/events/${id}`;
-  const dashboardPath = isModeratorContext ? '/moderator' : '/organizer';
+  // A participant who only co-manages Events has no organizer dashboard (R-01, zakres P2).
+  const dashboardPath = isModeratorContext
+    ? '/moderator'
+    : user?.role === 'organizer'
+      ? '/organizer'
+      : '/organizer/events';
 
   const { data: eventResponse, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -86,8 +96,14 @@ const EventManage = () => {
   const visibleEvent = event && localStatus ? { ...event, publicationStatus: localStatus } : event;
   const hasVisibleEvent = Boolean(event);
   const isDraft = visibleEvent?.publicationStatus === 'draft';
+  const isOwnerLevel = isEventOwnerLevel(user, visibleEvent);
+  // The Zespół tab is the Owner's (and admin's): the server refuses the roster to anyone else.
+  const showTeamTab = isOwnerLevel && !isModeratorContext;
   const activeTab: EventManageTab =
-    isDraft && ['participants', 'results'].includes(requestedTab) ? 'overview' : requestedTab;
+    (isDraft && ['participants', 'results'].includes(requestedTab)) ||
+    (requestedTab === 'team' && !showTeamTab)
+      ? 'overview'
+      : requestedTab;
 
   const { data: registrationsResponse, isError: registrationsFailed } = useQuery({
     queryKey: ['event-registrations', id],
@@ -131,12 +147,23 @@ const EventManage = () => {
       !tab ||
       !isEventManageTab(tab) ||
       Boolean(legacyRequestedTab) ||
-      (isDraft && ['participants', 'results'].includes(tab));
+      (isDraft && ['participants', 'results'].includes(tab)) ||
+      (tab === 'team' && !showTeamTab);
 
     if (shouldRedirect) {
       navigate(`${sectionBasePath}/${activeTab}`, { replace: true });
     }
-  }, [activeTab, hasVisibleEvent, id, isDraft, legacyRequestedTab, navigate, sectionBasePath, tab]);
+  }, [
+    activeTab,
+    hasVisibleEvent,
+    id,
+    isDraft,
+    legacyRequestedTab,
+    navigate,
+    sectionBasePath,
+    showTeamTab,
+    tab,
+  ]);
 
   const handleDiscountCodesChange = (codes: DiscountCode[]) => {
     if (!visibleEvent) return;
@@ -144,15 +171,38 @@ const EventManage = () => {
     void saver.save(codes);
   };
 
+  // R-01 (zakres P2): a Co-manager is not the Owner; the organizer-panel list tells whether the
+  // Account co-manages this Event. Moderators and admins get their access from their role.
+  const needsTeamLookup =
+    Boolean(user) &&
+    Boolean(visibleEvent) &&
+    !isOwnerLevel &&
+    user?.role !== 'moderator' &&
+    !isModeratorContext;
+  const coManaged = useCoManagedEvents(needsTeamLookup);
+  const isCoManager = needsTeamLookup && isCoManagerOf(coManaged.allEvents, id);
+
   // Moderator access starts at `submitted` — a Szkic (draft) is visible only to its
   // owning organizer/team and to admins (spec 08, "Co widzi każda rola").
   const canManage =
     user?.role === 'admin' ||
     user?.role === 'superadmin' ||
     (user?.role === 'moderator' && visibleEvent?.publicationStatus !== 'draft') ||
-    (user?.role === 'organizer' && visibleEvent?.organizerId === user?.id);
+    (user?.role === 'organizer' && visibleEvent?.organizerId === user?.id) ||
+    isCoManager;
 
   if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-8">
+          <p className="text-muted-foreground">Ładowanie wydarzenia...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // The access decision for a non-owner waits for the co-managed list (no flash of "Brak dostępu").
+  if (needsTeamLookup && coManaged.isLoading) {
     return (
       <Layout>
         <div className="container py-8">
@@ -198,6 +248,11 @@ const EventManage = () => {
               >
                 {statusLabels[visibleEvent.publicationStatus]}
               </Badge>
+              {isCoManager && (
+                <Badge variant="secondary" className="ml-2 rounded-md px-2.5 py-1">
+                  Współzarządzający
+                </Badge>
+              )}
             </div>
           </div>
           <p className="mt-2 text-lg text-muted-foreground">
@@ -217,7 +272,7 @@ const EventManage = () => {
           className="space-y-6"
         >
           <TabsList
-            className={`grid h-auto w-full rounded-lg border border-border/80 bg-muted/20 p-0 ${isDraft ? 'grid-cols-4' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
+            className={`grid h-auto w-full rounded-lg border border-border/80 bg-muted/20 p-0 ${isDraft ? (showTeamTab ? 'grid-cols-5' : 'grid-cols-4') : showTeamTab ? 'grid-cols-7' : 'grid-cols-6'} lg:inline-grid lg:w-auto`}
           >
             <TabsTrigger
               aria-label="Przegląd"
@@ -281,6 +336,12 @@ const EventManage = () => {
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Ustawienia</span>
             </TabsTrigger>
+            {showTeamTab && (
+              <TabsTrigger value="team" className="flex h-[52px] items-center gap-2 px-7 py-4">
+                <UsersRound className="h-4 w-4" />
+                <span className="hidden sm:inline">Zespół</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview">
@@ -332,6 +393,12 @@ const EventManage = () => {
               currentUser={user ? { id: user.id, role: user.role } : null}
             />
           </TabsContent>
+
+          {showTeamTab && (
+            <TabsContent value="team">
+              <EventTeamTab eventId={visibleEvent.id} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </Layout>

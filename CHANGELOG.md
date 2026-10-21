@@ -85,6 +85,12 @@ as the first version.
 - Participant challenges (zakres P2, to be confirmed by the client): the
   "My challenges" tab also lists the challenges of wards under care, grouped
   by competitor, and a caregiver can join a challenge on behalf of a ward.
+- Event team (zakres P2, do potwierdzenia przez Zamawiającego): the owner invites
+  co-managers by e-mail from a new "Zespół" tab, can resend or revoke an
+  invitation and take access away. An invitation page accepts the invite
+  after login; co-managed events appear in the organizer panel with a
+  "Współzarządzający" badge, and owner-only actions (team, payments, delete)
+  stay hidden for co-managers.
 
 ### Fixed
 

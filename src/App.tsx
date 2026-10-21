@@ -12,6 +12,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { ScrollToTop } from './components/ScrollToTop';
 import { DevToolbox } from '@/components/dev/DevToolbox';
 import { ErrorBoundary } from '@/components/errors';
+import { EventManagementRoute } from '@/components/EventManagementRoute';
 import {
   EventsPageSkeleton,
   ShopPageSkeleton,
@@ -58,6 +59,7 @@ const StatusError = lazy(() => import('./pages/StatusError'));
 const ServerError = lazy(() => import('./pages/ServerError'));
 const ServiceUnavailable = lazy(() => import('./pages/ServiceUnavailable'));
 const Forbidden = lazy(() => import('./pages/Forbidden'));
+const TeamInvitationPage = lazy(() => import('./pages/TeamInvitationPage'));
 
 // Dashboard pages (heaviest — always lazy)
 const ParticipantDashboard = lazy(() => import('./pages/participant/ParticipantDashboard'));
@@ -493,9 +495,9 @@ const AppShell = () => {
             path="/organizer/events"
             element={
               <Lazy fallback={<EventsPageSkeleton />}>
-                <ProtectedRoute roles={organizerRoles}>
+                <EventManagementRoute>
                   <OrganizerEventsPage />
-                </ProtectedRoute>
+                </EventManagementRoute>
               </Lazy>
             }
           />
@@ -513,9 +515,9 @@ const AppShell = () => {
             path="/organizer/events/:id"
             element={
               <Lazy fallback={<DashboardSkeleton />}>
-                <ProtectedRoute roles={organizerRoles}>
+                <EventManagementRoute>
                   <EventManage />
-                </ProtectedRoute>
+                </EventManagementRoute>
               </Lazy>
             }
           />
@@ -523,9 +525,9 @@ const AppShell = () => {
             path="/organizer/events/:id/:tab"
             element={
               <Lazy fallback={<DashboardSkeleton />}>
-                <ProtectedRoute roles={organizerRoles}>
+                <EventManagementRoute>
                   <EventManage />
-                </ProtectedRoute>
+                </EventManagementRoute>
               </Lazy>
             }
           />
@@ -533,9 +535,9 @@ const AppShell = () => {
             path="/organizer/events/:id/edit"
             element={
               <Lazy fallback={<FormPageSkeleton />}>
-                <ProtectedRoute roles={organizerRoles}>
+                <EventManagementRoute>
                   <EventForm />
-                </ProtectedRoute>
+                </EventManagementRoute>
               </Lazy>
             }
           />
@@ -867,6 +869,14 @@ const AppShell = () => {
             element={
               <Lazy fallback={<EventsPageSkeleton />}>
                 <StatusError code="504" />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/team-invitations/:token"
+            element={
+              <Lazy fallback={<AuthPageSkeleton />}>
+                <TeamInvitationPage />
               </Lazy>
             }
           />

@@ -66,9 +66,16 @@ const OrganizerDashboard = () => {
   const getStatusBadge = (event: Event) => {
     const config = statusConfig[event.publicationStatus] || statusConfig.draft;
     return (
-      <Badge variant={config.variant} className="text-xs">
-        {config.label}
-      </Badge>
+      <span className="inline-flex items-center gap-1.5">
+        <Badge variant={config.variant} className="text-xs">
+          {config.label}
+        </Badge>
+        {event.teamRole === 'co_manager' && (
+          <Badge variant="secondary" className="text-xs">
+            Współzarządzający
+          </Badge>
+        )}
+      </span>
     );
   };
 

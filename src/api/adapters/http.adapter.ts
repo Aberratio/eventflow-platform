@@ -56,6 +56,13 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   pdf_text_not_detected: 'Nie udalo sie odczytac tekstu z PDF. To moze byc skan wymagajacy OCR.',
   pdf_table_not_detected:
     'Odczytano tekst z PDF, ale nie wykryto wierszy wynikow. Wgraj CSV/XLSX albo popraw dane po konwersji.',
+  // R-01 (zakres P2): the Event Team invitations.
+  invitation_not_found: 'To zaproszenie nie istnieje albo zostało odwołane.',
+  invitation_expired: 'To zaproszenie wygasło. Poproś organizatora o nowe.',
+  invitation_email_mismatch:
+    'To zaproszenie wysłano na inny adres e-mail. Zaloguj się na właściwe konto.',
+  team_member_owner: 'Ta osoba jest właścicielem tego wydarzenia.',
+  team_member_active: 'Ta osoba jest już współzarządzającym tego wydarzenia.',
   validation_error: 'Sprawdź poprawność danych i spróbuj ponownie.',
   invalid_current_password: 'Obecne hasło jest nieprawidłowe.',
   password_too_short: 'Nowe hasło musi mieć co najmniej 8 znaków.',
@@ -401,6 +408,22 @@ export const httpAdapter: ApiAdapter = {
       json('PATCH', toEventWritePayload(data)),
     ).then(eventOne),
   deleteEvent: (id) => request(`/events/${encodeURIComponent(id)}`, json('DELETE')),
+  getEventTeam: (eventId) => request(`/events/${encodeURIComponent(eventId)}/team`),
+  inviteEventTeamMember: (eventId, email) =>
+    request(`/events/${encodeURIComponent(eventId)}/team/invitations`, json('POST', { email })),
+  resendEventTeamInvitation: (eventId, memberId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/team/${encodeURIComponent(memberId)}/resend`,
+      json('POST'),
+    ),
+  revokeEventTeamMember: (eventId, memberId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/team/${encodeURIComponent(memberId)}`,
+      json('DELETE'),
+    ),
+  getTeamInvitation: (token) => request(`/team-invitations/${encodeURIComponent(token)}`),
+  acceptTeamInvitation: (token) =>
+    request(`/team-invitations/${encodeURIComponent(token)}/accept`, json('POST')),
   submitEvent: (id) =>
     request<Event>(`/events/${encodeURIComponent(id)}/submit`, json('POST')).then(eventOne),
   approveEvent: (id) =>

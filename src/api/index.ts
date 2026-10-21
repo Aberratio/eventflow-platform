@@ -51,6 +51,18 @@ export const updateEvent: ApiAdapter['updateEvent'] = (...args) =>
   ensureAdapter().then((a) => a.updateEvent(...args));
 export const deleteEvent: ApiAdapter['deleteEvent'] = (...args) =>
   ensureAdapter().then((a) => a.deleteEvent(...args));
+export const getEventTeam: ApiAdapter['getEventTeam'] = (...args) =>
+  ensureAdapter().then((a) => a.getEventTeam(...args));
+export const inviteEventTeamMember: ApiAdapter['inviteEventTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.inviteEventTeamMember(...args));
+export const resendEventTeamInvitation: ApiAdapter['resendEventTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.resendEventTeamInvitation(...args));
+export const revokeEventTeamMember: ApiAdapter['revokeEventTeamMember'] = (...args) =>
+  ensureAdapter().then((a) => a.revokeEventTeamMember(...args));
+export const getTeamInvitation: ApiAdapter['getTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.getTeamInvitation(...args));
+export const acceptTeamInvitation: ApiAdapter['acceptTeamInvitation'] = (...args) =>
+  ensureAdapter().then((a) => a.acceptTeamInvitation(...args));
 export const submitEvent: ApiAdapter['submitEvent'] = (...args) =>
   ensureAdapter().then((a) => a.submitEvent(...args));
 export const approveEvent: ApiAdapter['approveEvent'] = (...args) =>

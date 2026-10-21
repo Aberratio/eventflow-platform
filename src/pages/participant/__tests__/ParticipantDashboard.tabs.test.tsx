@@ -29,6 +29,7 @@ vi.mock('@/api', () => {
     getCertificates: empty,
     getMyOrders,
     getEvents: empty,
+    getEventsByOrganizer: empty,
     uploadAvatar: vi.fn(),
     changePassword: vi.fn(),
   };

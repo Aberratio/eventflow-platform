@@ -420,6 +420,11 @@ export interface Event {
   seriesId?: string;
   distances: Distance[];
   organizerId: string;
+  /**
+   * R-01 (zakres P2): present only on `GET /organizers/{id}/events` - the viewer's role in the Event
+   * Team ('owner' for their own events, 'co_manager' for the ones they co-manage).
+   */
+  teamRole?: 'owner' | 'co_manager';
   organizerName: string;
   organizerContact?: OrganizerContact;
   organizerInfo?: OrganizerInfo;
