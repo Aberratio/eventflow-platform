@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMoney, formatDate } from '../format';
+import { formatMoney, formatDate, formatDuration } from '../format';
 
 describe('formatMoney', () => {
   it('formats value as Polish currency', () => {
@@ -61,5 +61,25 @@ describe('formatDate', () => {
 
   it('returns "Invalid Date" text for unparsable input, matching native behavior', () => {
     expect(formatDate('not-a-date')).toBe(new Date('not-a-date').toLocaleDateString('pl-PL'));
+  });
+});
+
+describe('formatDuration', () => {
+  it('formats seconds as H:MM:SS', () => {
+    expect(formatDuration(0)).toBe('0:00:00');
+    expect(formatDuration(59)).toBe('0:00:59');
+    expect(formatDuration(3661)).toBe('1:01:01');
+    expect(formatDuration(36000)).toBe('10:00:00');
+  });
+
+  it('rounds to a whole second', () => {
+    expect(formatDuration(59.4)).toBe('0:00:59');
+    expect(formatDuration(59.5)).toBe('0:01:00');
+  });
+
+  it('leaves out the hour under one hour with hours: auto', () => {
+    expect(formatDuration(65, { hours: 'auto' })).toBe('1:05');
+    expect(formatDuration(3599, { hours: 'auto' })).toBe('59:59');
+    expect(formatDuration(3600, { hours: 'auto' })).toBe('1:00:00');
   });
 });
