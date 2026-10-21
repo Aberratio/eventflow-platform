@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { httpAdapter } from '../http.adapter';
 
-// R-02: POST /registrations/{id}/transfer
-describe('httpAdapter registration transfer (R-02)', () => {
+// POST /registrations/{id}/transfer
+describe('httpAdapter registration transfer', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

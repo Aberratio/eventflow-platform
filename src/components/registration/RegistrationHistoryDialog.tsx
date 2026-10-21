@@ -18,7 +18,7 @@ interface RegistrationHistoryDialogProps {
   eventName: string;
 }
 
-/** R-02: „Historia zapisu” — what changed on one Zapis, when and by whom, oldest first. */
+/** „Historia zapisu” — what changed on one Zapis, when and by whom, oldest first. */
 export const RegistrationHistoryDialog = ({
   open,
   onOpenChange,

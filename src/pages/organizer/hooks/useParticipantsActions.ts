@@ -151,7 +151,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   /**
-   * E1.5: organizator zatwierdza żądanie zwrotu ("do zwrotu"). Amount is always
+   * The organizer approves the refund request ("do zwrotu"). Amount is always
    * server-computed (the saldo ceiling) — the organizer never types a number here.
    */
   const handleApproveRefund = async (
@@ -180,9 +180,9 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   /**
-   * Trasa B (przelew tradycyjny): organizator ręcznie odznacza „zwrócono" po
-   * oddaniu pieniędzy ze swojego konta — jedyna droga zwrotu, jaką platforma może
-   * wykonać technicznie za organizatora (trasa A/bramka: E1.6/E1.7).
+   * Route B (traditional bank transfer): the organizer manually marks it "zwrócono" after
+   * returning the money from their own account — the only refund path the platform can
+   * carry out technically on the organizer's behalf (route A / gateway is not built).
    */
   const handleCompleteRefund = async (
     registration: Registration,
@@ -210,12 +210,12 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   };
 
   /**
-   * E1.8: trasa B (przelew tradycyjny) — organizator ręcznie potwierdza wpłatę
-   * po zweryfikowaniu jej na koncie bankowym. Wykonuje realną tranzycję
-   * pending -> confirmed po stronie serwera (RegistrationRepository::
-   * markManualPaymentPaid(), ta sama ścieżka co webhook trasy A) — w
-   * odróżnieniu od handlePaymentUpdate() powyżej, który jest tylko lokalnym
-   * podglądem odznaczania pojedynczych pozycji Rozliczenia.
+   * Route B (traditional bank transfer) — the organizer manually confirms a payment
+   * after verifying it on the bank account. Performs the real transition
+   * pending -> confirmed on the server (RegistrationRepository::
+   * markManualPaymentPaid(), the same path as the route-A webhook) — unlike
+   * handlePaymentUpdate() above, which is only a local preview of ticking
+   * single Rozliczenie items.
    */
   const handleMarkPaid = async (registration: Registration): Promise<Registration | undefined> => {
     try {
@@ -278,13 +278,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     generatePrintableHTML(`Lista startowa - ${event.name}`, columns, rows);
   };
 
-  // E2.6: server-driven start-list export (all form fields + numer startowy +
-  // status płatności, Windows-1250 CSV, XLSX or XML) for one Distance — distinct
+  // Server-driven start-list export (all form fields + numer startowy +
+  // payment status, Windows-1250 CSV, XLSX or XML) for one Distance — distinct
   // from handleExportCSV above, which is a client-side-only, fixed-column
   // export of whatever rows are already loaded in the browser. This one
   // hits GET /events/{id}/distances/{id}/start-list-export and leaves an
-  // activity-log entry server-side, per spec ("każdy eksport zostawia wpis
-  // w rejestrze aktywności").
+  // activity-log entry server-side, (every export leaves an entry
+  // in the activity log).
   const handleExportStartList = async (distanceId: string, format: 'csv' | 'xlsx' | 'xml') => {
     try {
       await exportStartList(event.id, distanceId, format);

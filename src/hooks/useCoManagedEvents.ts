@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { canReachEventManagement, coManagedEvents } from '@/lib/eventTeam';
 
 /**
- * R-01 (zakres P2): the Events the signed-in Account co-manages. Shares its cache entry with the
+ * The Events the signed-in Account co-manages. Shares its cache entry with the
  * organizer panel's event list (`organizer-events`), which carries `teamRole` per Event.
  */
 export function useCoManagedEvents(enabled = true) {

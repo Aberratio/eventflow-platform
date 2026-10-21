@@ -77,11 +77,11 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
   const canSubmitReview =
     event.publicationStatus === 'draft' || event.publicationStatus === 'rejected';
   // The server never rests an event in 'rejected': reject() writes 'draft' and keeps the reason
-  // (PP.15), so a draft with a reason is a draft the moderator sent back.
+  //, so a draft with a reason is a draft the moderator sent back.
   const wasSentBack = Boolean(event.rejectionReason) && canSubmitReview;
   // Cancelling is restricted to the owning organizer or an admin/superadmin — never a
-  // moderator (spec 08, "Co widzi każda rola").
-  // R-01 (zakres P2): a Co-manager is neither - the Owner-only actions below stay hidden for them.
+  // moderator.
+  // A Co-manager is neither - the Owner-only actions below stay hidden for them.
   const isOwnerOrAdmin = isEventOwnerLevel(currentUser, event);
   const canCancel = event.publicationStatus === 'published' && isOwnerOrAdmin;
   const isDraft = event.publicationStatus === 'draft';
@@ -121,7 +121,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         nextAccessCode,
       );
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie zmienic prywatnosci wydarzenia.');
+        throw new Error(response.message || 'Nie udało się zmienić prywatności wydarzenia.');
       }
       setIsPrivate(pendingIsPrivate);
       setAccessCode(response.data.accessCode || nextAccessCode || '');
@@ -141,15 +141,15 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       toast({
         title: pendingIsPrivate ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
         description: pendingIsPrivate
-          ? 'Wydarzenie nie bedzie widoczne publicznie.'
-          : 'Wydarzenie bedzie widoczne dla wszystkich.',
+          ? 'Wydarzenie nie będzie widoczne publicznie.'
+          : 'Wydarzenie będzie widoczne dla wszystkich.',
       });
       setPrivacyDialogOpen(false);
       setPendingIsPrivate(null);
     } catch (error) {
       toast({
-        title: 'Nie udalo sie zmienic prywatnosci',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        title: 'Nie udało się zmienić prywatności',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -162,17 +162,17 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       setIsSubmittingReview(true);
       const response = await submitEvent(event.id);
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie oddac wydarzenia do sprawdzenia.');
+        throw new Error(response.message || 'Nie udało się oddać wydarzenia do sprawdzenia.');
       }
       await invalidateEventQueries();
       toast({
         title: 'Wydarzenie oddane do sprawdzenia',
-        description: 'Admin lub moderator musi je zatwierdzic przed publikacja.',
+        description: 'Admin lub moderator musi je zatwierdzić przed publikacja.',
       });
     } catch (error) {
       toast({
-        title: 'Nie udalo sie oddac wydarzenia do sprawdzenia',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        title: 'Nie udało się oddać wydarzenia do sprawdzenia',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -185,7 +185,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       setIsCancelling(true);
       const response = await cancelEvent(event.id);
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie odwolac wydarzenia.');
+        throw new Error(response.message || 'Nie udało się odwołać wydarzenia.');
       }
       appLogger.event('status_change', `Odwolano wydarzenie "${event.name}"`, {
         targetType: 'event',
@@ -195,15 +195,15 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       });
       await invalidateEventQueries();
       toast({
-        title: 'Wydarzenie odwolane',
+        title: 'Wydarzenie odwołane',
         description: 'Uczestnicy zobacza informacje o odwolaniu wydarzenia.',
         variant: 'destructive',
       });
       setCancelDialogOpen(false);
     } catch (error) {
       toast({
-        title: 'Nie udalo sie odwolac wydarzenia',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        title: 'Nie udało się odwołać wydarzenia',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -216,19 +216,19 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       setIsTestSaving(true);
       const response = await setEventIsTest(event.id, checked);
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie zmienic trybu testowego.');
+        throw new Error(response.message || 'Nie udało się zmienić trybu testowego.');
       }
       await invalidateEventQueries();
       toast({
         title: checked ? 'Tryb testowy wlaczony' : 'Tryb testowy wylaczony',
         description: checked
-          ? 'Mozesz teraz przetestowac formularz zapisu przez bezposredni link.'
+          ? 'Możesz teraz przetestować formularz zapisu przez bezpośredni link.'
           : undefined,
       });
     } catch (error) {
       toast({
-        title: 'Nie udalo sie zmienic trybu testowego',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        title: 'Nie udało się zmienić trybu testowego',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -241,9 +241,9 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       setIsDeleting(true);
       const response = await deleteEvent(event.id);
       if (!response.success) {
-        throw new Error(response.message || 'Nie udalo sie usunac wydarzenia.');
+        throw new Error(response.message || 'Nie udało się usunąć wydarzenia.');
       }
-      appLogger.event('event_delete', `Oznaczono wydarzenie "${event.name}" jako usuniete`, {
+      appLogger.event('event_delete', `Oznaczono wydarzenie "${event.name}" jako usunięte`, {
         targetType: 'event',
         targetId: event.id,
         targetName: event.name,
@@ -253,7 +253,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         queryClient.invalidateQueries({ queryKey: ['organizer-event-limit', event.organizerId] }),
       ]);
       toast({
-        title: 'Wydarzenie usuniete',
+        title: 'Wydarzenie usunięte',
         description: 'Wydarzenie zniknie z panelu organizatora i list publicznych.',
         variant: 'destructive',
       });
@@ -261,11 +261,11 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       navigate('/organizer');
     } catch (error) {
       toast({
-        title: 'Nie udalo sie usunac wydarzenia',
+        title: 'Nie udało się usunąć wydarzenia',
         description:
           error instanceof Error
             ? error.message
-            : 'Usunac mozna tylko nadchodzace wydarzenie bez zapisow.',
+            : 'Usunąć można tylko nadchodzące wydarzenie bez zapisów.',
         variant: 'destructive',
       });
     } finally {
@@ -297,7 +297,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       <Card>
         <CardHeader>
           <CardTitle>Edycja wydarzenia</CardTitle>
-          <CardDescription>Zmien szczegoly wydarzenia, dystanse i kategorie</CardDescription>
+          <CardDescription>Zmień szczegóły wydarzenia, dystanse i kategorie</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={() => navigate(`/organizer/events/${event.id}/edit`)}>
@@ -320,7 +320,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
           </p>
           {wasSentBack && (
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              <strong>Powod odrzucenia:</strong> {event.rejectionReason}
+              <strong>Powód odrzucenia:</strong> {event.rejectionReason}
             </div>
           )}
           <div className="flex flex-wrap gap-2">
@@ -352,8 +352,8 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
               Tryb testowy
             </CardTitle>
             <CardDescription>
-              Pozwala przetestowac formularz zapisu przez bezposredni link, zanim oddasz wydarzenie
-              do sprawdzenia. Dostepny tylko dla szkicu — po oddaniu do sprawdzenia znika
+              Pozwala przetestować formularz zapisu przez bezpośredni link, zanim oddasz wydarzenie
+              do sprawdzenia. Dostępny tylko dla szkicu — po oddaniu do sprawdzenia znika
               bezpowrotnie.
             </CardDescription>
           </CardHeader>
@@ -381,8 +381,8 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
               Widocznosc
             </CardTitle>
             <CardDescription>
-              Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy moga dolaczyc tylko przez
-              specjalny link. Widocznosc mozna zmieniac tylko po publikacji wydarzenia.
+              Prywatne wydarzenie nie jest widoczne publicznie. Uczestnicy mogą dołączyć tylko przez
+              specjalny link. Widoczność można zmieniać tylko po publikacji wydarzenia.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -400,7 +400,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
             {isPrivate && (
               <div className="space-y-3 border-t pt-2">
                 <div className="space-y-2">
-                  <Label>Kod dostepu</Label>
+                  <Label>Kod dostępu</Label>
                   <div className="flex gap-2">
                     <Input value={accessCode} readOnly className="font-mono" />
                     <Button
@@ -446,10 +446,10 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
-              Usuniecie nadchodzacego wydarzenia
+              Usunięcie nadchodzącego wydarzenia
             </CardTitle>
             <CardDescription>
-              Wydarzenie bez zapisow moze zostac usuniete przed terminem.
+              Wydarzenie bez zapisów może zostać usunięte przed terminem.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -463,10 +463,10 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Odwolac wydarzenie?</AlertDialogTitle>
+            <AlertDialogTitle>Odwołać wydarzenie?</AlertDialogTitle>
             <AlertDialogDescription>
-              To dzialanie jest nieodwracalne. Wydarzenie zostanie oznaczone jako odwolane, a
-              wszyscy uzytkownicy zobacza o tym informacje na stronie wydarzenia.
+              To działanie jest nieodwracalne. Wydarzenie zostanie oznaczone jako odwołane, a
+              wszyscy użytkownicy zobacza o tym informacje na stronie wydarzenia.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -485,9 +485,9 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Czy na pewno chcesz usunac to wydarzenie?</AlertDialogTitle>
+            <AlertDialogTitle>Czy na pewno chcesz usunąć to wydarzenie?</AlertDialogTitle>
             <AlertDialogDescription>
-              Wydarzenie zostanie oznaczone jako usuniete i zniknie z panelu organizatora oraz list
+              Wydarzenie zostanie oznaczone jako usunięte i zniknie z panelu organizatora oraz list
               publicznych.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -498,13 +498,13 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Usuwanie...' : 'Usun wydarzenie'}
+              {isDeleting ? 'Usuwanie...' : 'Usuń wydarzenie'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* E8.11: same organizer-owns-event-or-admin gate the write endpoint
+      {/* Same organizer-owns-event-or-admin gate the write endpoint
           itself enforces server-side (`isOwnerOrAdmin`, already used above
           for the cancel action) — a moderator can view this tab but should
           not see/manage embed configuration. */}

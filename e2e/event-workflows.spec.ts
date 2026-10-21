@@ -73,7 +73,7 @@ test.describe('Event workflow - organizer', () => {
     await page.locator('#location').fill('Stadion E2E');
     await page.locator('#city').fill('Warszawa');
     await page.getByRole('button', { name: WIZARD_NEXT_BUTTON }).click();
-    await expect(page.locator('body')).toContainText('Termin rejestracji nie moze');
+    await expect(page.locator('body')).toContainText('Termin rejestracji nie może');
 
     await pickDate(page, 'deadline', isoDaysFromToday(60));
 
@@ -87,7 +87,7 @@ test.describe('Event workflow - organizer', () => {
 
     await addFirstDistance(page, '-1');
     await page.getByRole('button', { name: WIZARD_NEXT_BUTTON }).click();
-    await expect(page.locator('body')).toContainText('nie moze byc ujemna');
+    await expect(page.locator('body')).toContainText('nie może być ujemna');
 
     await page.getByPlaceholder('150').first().fill('60');
     await advanceThroughWizard(page, /Utwórz wydarzenie/);
@@ -116,7 +116,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
 
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e19');
-    await expect(page.getByText(/Powod odrzucenia:/).locator('..')).toContainText(
+    await expect(page.getByText(/Powód odrzucenia:/).locator('..')).toContainText(
       e19.rejectionReason as string,
     );
     const submit = page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' });
@@ -143,7 +143,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
     await expect(page.getByText(pending.name, { exact: true })).toBeVisible();
 
     page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toMatch(/powod|poprawy/i);
+      expect(dialog.message()).toMatch(/powód|poprawy/i);
       await dialog.accept(SEND_BACK_REASON);
     });
     await queueCard(page, pending.name)
@@ -162,7 +162,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
   }) => {
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e2e-pending');
-    await expect(page.getByText(/Powod odrzucenia:/).locator('..')).toContainText(SEND_BACK_REASON);
+    await expect(page.getByText(/Powód odrzucenia:/).locator('..')).toContainText(SEND_BACK_REASON);
     await page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' }).click();
 
     await expect(page.getByText('Wydarzenie oddane do sprawdzenia', { exact: true })).toBeVisible();

@@ -208,7 +208,7 @@ describe('EmbedEventRegistrationPage', () => {
     expect(loginLink).toHaveAttribute('target', '_top');
   });
 
-  it('prices through the server quote endpoint instead of a local preview (B-02)', async () => {
+  it('prices through the server quote endpoint instead of a local preview', async () => {
     mockGetEventEmbedPublicConfig.mockResolvedValue({
       data: { enabled: true, allowedOrigins: [] },
     });
@@ -226,7 +226,7 @@ describe('EmbedEventRegistrationPage', () => {
     expect(mockCreateRegistration).not.toHaveBeenCalled();
   });
 
-  it('does not claim any payment when creating the registration (PP.52)', async () => {
+  it('does not claim any payment when creating the registration', async () => {
     mockGetEventEmbedPublicConfig.mockResolvedValue({
       data: { enabled: true, allowedOrigins: [] },
     });
@@ -242,7 +242,7 @@ describe('EmbedEventRegistrationPage', () => {
     expect(payload.distanceId).toBe('d1');
   });
 
-  it('redirects to the payment gateway when the server opened a session (PP.52)', async () => {
+  it('redirects to the payment gateway when the server opened a session', async () => {
     mockGetEventEmbedPublicConfig.mockResolvedValue({
       data: { enabled: true, allowedOrigins: [] },
     });

@@ -5,7 +5,7 @@ import { useCoManagedEvents } from '@/hooks/useCoManagedEvents';
 import { DashboardSkeleton } from '@/components/skeletons';
 
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): route guard for the organizer's event
+ * Route guard for the organizer's event
  * management pages. An organizer passes as before; any other signed-in Account passes only when it is
  * a Co-manager of at least one Event (found via the organizer-panel event list). Creating Events and the
  * organizer dashboard keep their organizer-only guards. The server remains the authority.

@@ -2,6 +2,7 @@ import type { ApiAdapter } from '../contract';
 import type { ApiResponse, PaginatedResponse } from '../types';
 import type { ResultImportBatch, ShopOrder, User } from '@/types';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
+import { TEAM_INVITATION_ERROR_MESSAGES } from '@/lib/eventTeam';
 import { resolveApiAssetUrl } from '@/lib/utils';
 import { ApiRequestError } from '../errors';
 import { toEventWritePayload } from '../eventChildren';
@@ -24,7 +25,7 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   event_submit_no_organizer_credit:
     'Brak dostępnego pakietu organizatora. Kup pakiet, aby oddać wydarzenie do sprawdzenia.',
   published_organizer_locked:
-    'Nie mozna przeniesc opublikowanego wydarzenia do innego organizatora.',
+    'Nie można przenieść opublikowanego wydarzenia do innego organizatora.',
   event_delete_forbidden:
     'Usunąć można tylko szkic wydarzenia bez otwartych zapisów. Wydarzenia po starcie przenieś do archiwum.',
   event_archive_before_start: 'Archiwizować można tylko wydarzenia, które już się zakończyły.',
@@ -35,7 +36,7 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   discount_code_used_up: 'Kod rabatowy został już wykorzystany maksymalną liczbę razy.',
   discount_code_distance_mismatch: 'Kod rabatowy nie dotyczy wybranego dystansu.',
   registration_distance_invalid: 'Wybrany dystans jest nieprawidłowy.',
-  // E7.2: surfaced both when submitting the registration form (existing E7.1
+  // Surfaced both when submitting the registration form (existing
   // 409/404s from RegistrationRepository::resolveTeamForRegistration) and
   // when resolving a `?joinTeam=` invitation link up front (GET /teams/{id},
   // `team_not_found`) — same wording either way, so an invitee sees one
@@ -52,15 +53,12 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   virtual_result_registration_required: 'Nie znaleziono aktywnej rejestracji na ten dystans.',
   virtual_result_duplicate: 'Wynik dla tego dystansu został już zgłoszony.',
   result_event_not_open:
-    'Wyniki mozna wgrywac tylko do wydarzen trwajacych albo zakonczonych, ktorymi zarzadzasz.',
-  pdf_text_not_detected: 'Nie udalo sie odczytac tekstu z PDF. To moze byc skan wymagajacy OCR.',
+    'Wyniki można wgrywać tylko do wydarzeń trwających albo zakończonych, którymi zarządzasz.',
+  pdf_text_not_detected: 'Nie udało się odczytać tekstu z PDF. To może być skan wymagający OCR.',
   pdf_table_not_detected:
-    'Odczytano tekst z PDF, ale nie wykryto wierszy wynikow. Wgraj CSV/XLSX albo popraw dane po konwersji.',
-  // R-01 (zakres P2): the Event Team invitations.
-  invitation_not_found: 'To zaproszenie nie istnieje albo zostało odwołane.',
-  invitation_expired: 'To zaproszenie wygasło. Poproś organizatora o nowe.',
-  invitation_email_mismatch:
-    'To zaproszenie wysłano na inny adres e-mail. Zaloguj się na właściwe konto.',
+    'Odczytano tekst z PDF, ale nie wykryto wierszy wyników. Wgraj CSV/XLSX albo popraw dane po konwersji.',
+  // The Event Team invitations.
+  ...TEAM_INVITATION_ERROR_MESSAGES,
   team_member_owner: 'Ta osoba jest właścicielem tego wydarzenia.',
   team_member_active: 'Ta osoba jest już współzarządzającym tego wydarzenia.',
   validation_error: 'Sprawdź poprawność danych i spróbuj ponownie.',
@@ -212,7 +210,7 @@ function nullOn404<T>(promise: Promise<ApiResponse<T | null>>): Promise<ApiRespo
   });
 }
 
-// TD.18: PHP/PDO returns DECIMAL columns as numeric strings ("45.00"), not
+// PHP/PDO returns DECIMAL columns as numeric strings ("45.00"), not
 // JSON numbers — `shop_orders`' money columns (productTotal/deliveryPrice/
 // paymentSurcharge/totalPrice) come back that way from every one of these
 // endpoints. `ShopOrder`'s TypeScript type says `number`, so nothing else in
@@ -233,7 +231,7 @@ function normalizeShopOrder(order: ShopOrder): ShopOrder {
   };
 }
 
-// PP.103: same root cause as TD.18, for the Event payload. `event_distances`
+// Same root cause as above, for the Event payload. `event_distances`
 // (price, length), `event_distance_pricing_variants.price`,
 // `event_merchandise` (price, originalPrice) and `event_discount_codes.
 // discountValue` are DECIMAL columns, so PHP/PDO serialises them as numeric
@@ -321,7 +319,7 @@ async function requestForm<T>(endpoint: string, formData: FormData): Promise<Api
 }
 
 /**
- * E2.6: fetches a server-generated file (CSV/XLSX export) and triggers a
+ * Fetches a server-generated file (CSV/XLSX export) and triggers a
  * real browser download — the one case in this adapter where the response
  * body isn't JSON, so it can't go through request(). Mirrors the existing
  * client-side download idiom (lib/exportUtils.ts's exportToCSV/exportToXML:
@@ -384,7 +382,7 @@ function json(method: string, data?: unknown): RequestInit {
   return { method, body: data === undefined ? undefined : JSON.stringify(data) };
 }
 
-/** B-03: global templates live under /admin, per-event ones under /events/{id}. */
+/** Global templates live under /admin, per-event ones under /events/{id}. */
 const mailTemplatesBase = (eventId?: string | null): string =>
   eventId ? `/events/${encodeURIComponent(eventId)}/mail-templates` : '/admin/mail-templates';
 
@@ -549,7 +547,7 @@ export const httpAdapter: ApiAdapter = {
   requestEmailChange: (payload) => request('/auth/email/change', json('POST', payload)),
   confirmEmailChange: (payload) => request('/auth/email/change/confirm', json('POST', payload)),
   async changePassword(payload) {
-    // PP.7: a password change ends every session, including this device's old token; the server answers
+    // A password change ends every session, including this device's old token; the server answers
     // with a fresh one. Store it before the next request so this device stays signed in.
     const raw = await request<{ token?: string } | null>(
       '/auth/password/change',
@@ -763,7 +761,7 @@ export const httpAdapter: ApiAdapter = {
     ),
   getFormFieldAggregates: (eventId) =>
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
-  // E1.13: the server's 422 text is field-specific ("To pole jest wymagane."), so keep it
+  // The server's 422 text is field-specific ("To pole jest wymagane."), so keep it
   // instead of the generic validation_error copy.
   getPublicFormFields: (eventId, distanceId) =>
     request(

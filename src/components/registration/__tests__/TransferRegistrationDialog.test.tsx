@@ -37,7 +37,7 @@ const renderDialog = (props: { onTransferred?: () => void } = {}) =>
 const type = (label: string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
-describe('TransferRegistrationDialog (R-02)', () => {
+describe('TransferRegistrationDialog', () => {
   beforeEach(() => {
     api.checkCompetitorDuplicates.mockReset();
     api.transferRegistration.mockReset();

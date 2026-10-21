@@ -42,7 +42,7 @@ interface EventTeamTabProps {
 }
 
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): the Event Team tab - the Owner plus the
+ * The Event Team tab - the Owner plus the
  * Co-managers. Rendered only for the Owner/admin; the server refuses everyone else (403).
  */
 export const EventTeamTab = ({ eventId }: EventTeamTabProps) => {

@@ -366,7 +366,7 @@ describe('useParticipantsActions', () => {
     expect(updated?.status).toBe('cancelled');
   });
 
-  it('handleMarkPaid calls the API and updates local state from the response (E1.8, trasa B)', async () => {
+  it('handleMarkPaid calls the API and updates local state from the response (trasa B)', async () => {
     const updatedRegistration: Registration = {
       ...mockRegistrations[1],
       status: 'confirmed',
@@ -410,7 +410,6 @@ describe('useParticipantsActions', () => {
     expect(unchanged?.status).toBe('pending');
   });
 
-  // E2.6
   it('handleExportStartList calls the API with the event, distance and requested format', async () => {
     exportStartList.mockResolvedValueOnce(undefined);
     const { result } = renderHook(() => useParticipantsActions(mockEvent, mockRegistrations), {

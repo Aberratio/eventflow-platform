@@ -140,7 +140,7 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(createEvent).not.toHaveBeenCalled();
     expect(result.current.sectionValidationErrors.gadgets).toEqual(
-      expect.arrayContaining([expect.stringContaining('Cena gadzetu')]),
+      expect.arrayContaining([expect.stringContaining('Cena gadżetu')]),
     );
   });
 

@@ -1,12 +1,12 @@
 import type { Event, Registration } from '@/types';
 
 /**
- * R-02 (zakres P2): the owner's view of the server's SelfServicePolicy. The server stays the
+ * The owner's view of the server's SelfServicePolicy. The server stays the
  * authority (a closed window answers 409); this only decides whether to OFFER the action and what
  * to tell the participant. Shared by every self-service action (rezygnacja now; zmiana dystansu later).
  */
 
-/** Domyślnie samoobsługa kończy się tyle dni przed startem, jeśli organizator nie ustawił daty. */
+/** By default self-service ends this many days before the start, unless the organizer set a date. */
 export const DEFAULT_SELF_SERVICE_LEAD_DAYS = 7;
 
 export type SelfServiceVerdict =

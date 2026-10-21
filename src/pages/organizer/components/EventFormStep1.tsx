@@ -179,7 +179,7 @@ const EventImageUploadField = ({
     if (!file) return;
     if (!isSupportedImageFile(file)) {
       toast({
-        title: 'Nieprawidlowy plik',
+        title: 'Nieprawidłowy plik',
         description: 'Wybierz obraz w formacie JPG, PNG albo WebP.',
         variant: 'destructive',
       });
@@ -214,8 +214,8 @@ const EventImageUploadField = ({
   const handleUpload = async (_crop: unknown, croppedBlob?: Blob) => {
     if (!croppedBlob) {
       toast({
-        title: 'Nie udalo sie przyciac obrazu',
-        description: 'Sprobuj wybrac plik ponownie.',
+        title: 'Nie udało się przyciąć obrazu',
+        description: 'Spróbuj wybrać plik ponownie.',
         variant: 'destructive',
       });
       return;
@@ -250,8 +250,8 @@ const EventImageUploadField = ({
       });
     } catch (error) {
       toast({
-        title: 'Nie udalo sie wgrac obrazu',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        title: 'Nie udało się wgrać obrazu',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -267,7 +267,7 @@ const EventImageUploadField = ({
         <Button type="button" variant="outline" asChild disabled={isUploading}>
           <label className="cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
-            {value ? 'Zmien obraz' : 'Wgraj obraz'}
+            {value ? 'Zmień obraz' : 'Wgraj obraz'}
             <input
               ref={fileInputRef}
               type="file"
@@ -284,7 +284,7 @@ const EventImageUploadField = ({
           <>
             <Button type="button" variant="outline" onClick={handleRecrop} disabled={isUploading}>
               <Crop className="mr-2 h-4 w-4" />
-              Zmien przyciecie
+              Zmień przycięcie
             </Button>
             <Button
               aria-label="Usuń plik"
@@ -475,19 +475,19 @@ const logoShapeOptions: Array<{
   {
     value: 'square',
     label: 'Kwadrat',
-    description: 'Dla symboli i znakow o rownych bokach.',
+    description: 'Dla symboli i znaków o równych bokach.',
     icon: Square,
   },
   {
     value: 'landscape',
     label: 'Poziom',
-    description: 'Dla szerokich logotypow z tekstem.',
+    description: 'Dla szerokich logotypów z tekstem.',
     icon: RectangleHorizontal,
   },
   {
     value: 'portrait',
     label: 'Pion',
-    description: 'Dla wysokich herbow i znakow pionowych.',
+    description: 'Dla wysokich herbów i znaków pionowych.',
     icon: RectangleVertical,
   },
 ];
@@ -576,9 +576,9 @@ const EventImagesPlacementPreview = ({ form }: EventImagesPlacementPreviewProps)
     <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h4 className="text-sm font-semibold">Podglad umiejscowienia obrazow</h4>
+          <h4 className="text-sm font-semibold">Podgląd umiejscowienia obrazów</h4>
           <p className="text-xs text-muted-foreground">
-            Tak baner i logo beda laczone na publicznej stronie wydarzenia.
+            Tak baner i logo będą łączone na publicznej stronie wydarzenia.
           </p>
         </div>
         <Badge variant="outline" className="text-[10px]">
@@ -1080,10 +1080,10 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
   const [registrationTypeOpen, setRegistrationTypeOpen] = useState(false);
   const logoShapeConfig = getLogoShapeConfig(form.organizerLogoShape);
   const registrationTypeLabel = isEmbedRegistration
-    ? 'Zewnetrzny formularz embed'
+    ? 'Zewnętrzny formularz embed'
     : 'Formularz Zmierzymy Czas';
   const registrationTypeSummary = isEmbedRegistration
-    ? 'Zapisy po stronie organizatora lub zewnetrznego systemu'
+    ? 'Zapisy po stronie organizatora lub zewnętrznego systemu'
     : 'Zapisy po stronie Zmierzymy Czas';
 
   return (
@@ -1137,12 +1137,12 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       >
                         <Settings2 className="h-4 w-4 text-primary" /> Formularz Zmierzymy Czas
                         <Badge variant="secondary" className="text-[10px]">
-                          najczestszy wybor
+                          najczęstszy wybór
                         </Badge>
                       </Label>
-                      <FieldHelp description="Zapisy sa obslugiwane przez formularz i platnosci w systemie Zmierzymy Czas." />
+                      <FieldHelp description="Zapisy są obsługiwane przez formularz i płatności w systemie Zmierzymy Czas." />
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Uczestnik zapisuje sie bezposrednio w biurze zawodow.
+                        Uczestnik zapisuje się bezpośrednio w biurze zawodów.
                       </p>
                     </div>
                   </div>
@@ -1161,11 +1161,11 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       >
                         <ExternalLink className="h-4 w-4 text-primary" /> Zewnetrzny formularz embed
                       </Label>
-                      <FieldHelp description="Na stronie wydarzenia pokazujemy ramke Zmierzymy Czas, a w srodku osadzamy formularz zapisow z podanego linku." />
+                      <FieldHelp description="Na stronie wydarzenia pokazujemy ramke Zmierzymy Czas, a w środku osadzamy formularz zapisów z podanego linku." />
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Zmierzymy Czas nie dostarcza formularza zapisow w tym wariancie. Zapisy,
-                        platnosci i lista uczestnikow sa w calosci po stronie organizatora lub
-                        zewnetrznego systemu.
+                        Zmierzymy Czas nie dostarcza formularza zapisów w tym wariancie. Zapisy,
+                        płatności i lista uczestników są w całości po stronie organizatora lub
+                        zewnętrznego systemu.
                       </p>
                     </div>
                   </div>
@@ -1174,10 +1174,10 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 {isEmbedRegistration && (
                   <Alert className="border-primary/30 bg-primary/5">
                     <Info className="h-4 w-4" />
-                    <AlertTitle>Embed: zapisy sa po stronie organizatora</AlertTitle>
+                    <AlertTitle>Embed: zapisy są po stronie organizatora</AlertTitle>
                     <AlertDescription>
-                      Dla zawodow typu embed nie pokazujemy konfiguracji formularza rejestracji, pol
-                      platnosci ani opcji publicznej listy uczestnikow. Zmierzymy Czas pokazuje
+                      Dla zawodów typu embed nie pokazujemy konfiguracji formularza rejestracji, pól
+                      płatności ani opcji publicznej listy uczestników. Zmierzymy Czas pokazuje
                       tylko osadzony formularz z podanego linku.
                     </AlertDescription>
                   </Alert>
@@ -1188,7 +1188,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     <div className="space-y-2">
                       <HelpLabel
                         htmlFor="externalRegistrationUrl"
-                        description="Pelny adres strony lub formularza zapisow, ktory ma zostac osadzony w widoku wydarzenia."
+                        description="Pełny adres strony lub formularza zapisów, który ma zostać osadzony w widoku wydarzenia."
                       >
                         Link do zewnętrznego formularza *
                       </HelpLabel>
@@ -1203,7 +1203,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <HelpLabel description="Opcjonalny poczatek dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                        <HelpLabel description="Opcjonalny początek dostępności osadzonego formularza zapisów na stronie wydarzenia.">
                           Data rozpoczęcia (opcjonalnie)
                         </HelpLabel>
                         <DateInput
@@ -1212,7 +1212,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         />
                       </div>
                       <div className="space-y-2">
-                        <HelpLabel description="Opcjonalny koniec dostepnosci osadzonego formularza zapisow na stronie wydarzenia.">
+                        <HelpLabel description="Opcjonalny koniec dostępności osadzonego formularza zapisów na stronie wydarzenia.">
                           Data zakończenia (opcjonalnie)
                         </HelpLabel>
                         <DateInput value={form.embedEndDate} onValueChange={form.setEmbedEndDate} />
@@ -1238,7 +1238,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 <div className="space-y-2 md:col-span-2">
                   <HelpLabel
                     htmlFor="organizer"
-                    description="Wskazuje konto organizatora, do ktorego zostanie przypisane wydarzenie, limit wydarzen i pozniejsze zarzadzanie."
+                    description="Wskazuje konto organizatora, do którego zostanie przypisane wydarzenie, limit wydarzeń i późniejsze zarządzanie."
                   >
                     Organizator *
                   </HelpLabel>
@@ -1279,7 +1279,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               <div className="space-y-2">
                 <HelpLabel
                   htmlFor="name"
-                  description="Publiczna nazwa wydarzenia widoczna na listach, stronie szczegolow, w rejestracji i komunikacji z uczestnikami."
+                  description="Publiczna nazwa wydarzenia widoczna na listach, stronie szczegółów, w rejestracji i komunikacji z uczestnikami."
                 >
                   Nazwa wydarzenia *
                 </HelpLabel>
@@ -1298,7 +1298,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             <div className="space-y-2">
               <HelpLabel
                 htmlFor="date"
-                description="Glowna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzen i szczegolach zawodow."
+                description="Główna data startu wydarzenia pokazywana uczestnikom w kalendarzu, listach wydarzeń i szczegółach zawodów."
               >
                 Data wydarzenia *
               </HelpLabel>
@@ -1406,7 +1406,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="isVirtual" className="cursor-pointer font-medium">
                     Wydarzenie wirtualne
                   </Label>
-                  <FieldHelp description="Wlaczenie tej opcji oznacza, ze uczestnik realizuje aktywnosc samodzielnie poza jedna fizyczna lokalizacja i moze podac wynik w okreslonym oknie." />
+                  <FieldHelp description="Włączenie tej opcji oznacza, ze uczestnik realizuje aktywność samodzielnie poza jedna fizyczna lokalizacja i może podać wynik w określonym oknie." />
                 </div>
               </div>
               {form.isVirtual && (
@@ -1422,7 +1422,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 <div className="space-y-2">
                   <HelpLabel
                     htmlFor="startDate"
-                    description="Pierwszy dzien, od ktorego uczestnicy wydarzenia wirtualnego moga wykonywac aktywnosc i przesylac wynik."
+                    description="Pierwszy dzień, od którego uczestnicy wydarzenia wirtualnego mogą wykonywać aktywność i przesyłać wynik."
                   >
                     Data rozpoczęcia okna *
                   </HelpLabel>
@@ -1438,7 +1438,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 <div className="space-y-2">
                   <HelpLabel
                     htmlFor="endDate"
-                    description="Ostatni dzien okna wirtualnego. Po tej dacie uczestnicy nie powinni juz dodawac nowych wynikow dla tego wydarzenia."
+                    description="Ostatni dzień okna wirtualnego. Po tej dacie uczestnicy nie powinni już dodawać nowych wyników dla tego wydarzenia."
                   >
                     Data zakończenia okna *
                   </HelpLabel>
@@ -1471,7 +1471,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="isPrivate" className="cursor-pointer font-medium">
                     Wydarzenie prywatne
                   </Label>
-                  <FieldHelp description="Ukrywa wydarzenie z publicznych list. Dostep maja tylko osoby, ktore otrzymaja specjalny link z kodem dostepu." />
+                  <FieldHelp description="Ukrywa wydarzenie z publicznych list. Dostęp maja tylko osoby, które otrzymają specjalny link z kodem dostępu." />
                 </div>
               </div>
               {form.isPrivate && (
@@ -1483,7 +1483,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <div className="space-y-2">
                     <HelpLabel
                       htmlFor="accessCode"
-                      description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejsc na strone wydarzenia mimo braku widocznosci publicznej."
+                      description="Kod dodawany do prywatnego linku wydarzenia. Pozwala uczestnikom wejść na stronę wydarzenia mimo braku widoczności publicznej."
                     >
                       Kod dostępu
                     </HelpLabel>
@@ -1531,8 +1531,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               )}
             </div>
 
-            {/* E3.2: Biuro Zawodów (BZ) integration toggle — pasted organization
-                token/identifier, issue 12 §3. The platform never creates a BZ
+            {/* Biuro Zawodów (BZ) integration toggle — pasted organization
+                token/identifier. The platform never creates a BZ
                 organization itself: the organizer sets one up in BZ beforehand
                 and pastes its token here. Distinct from the "Biuro zawodów"
                 logistics info elsewhere in this form (race-day office hours) —
@@ -1549,18 +1549,18 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="bzIntegrationEnabled" className="cursor-pointer font-medium">
                     Integracja z Biurem Zawodów (BZ)
                   </Label>
-                  <FieldHelp description="Wlacza synchronizacje tego Wydarzenia z istniejaca organizacja w Biurze Zawodow. Platforma nie zaklada organizacji w BZ automatycznie — zalozenie jej lezy po stronie organizatora, poza tym systemem." />
+                  <FieldHelp description="Włącza synchronizacje tego Wydarzenia z istniejąca organizacja w Biurze Zawodów. Platforma nie zakłada organizacji w BZ automatycznie — założenie jej leży po stronie organizatora, poza tym systemem." />
                 </div>
               </div>
               {form.bzIntegrationEnabled && (
                 <div className="space-y-2 sm:pl-7">
                   <p className="text-sm text-muted-foreground">
-                    Wklej identyfikator/token organizacji, ktora zalozyles wczesniej w Biurze
+                    Wklej identyfikator/token organizacji, która założyłeś wcześniej w Biurze
                     Zawodow.
                   </p>
                   <HelpLabel
                     htmlFor="bzOrganizationToken"
-                    description="Token/identyfikator organizacji w Biurze Zawodow. Wymagany do wlaczenia integracji — bez niego platforma nie wie, do ktorej organizacji w BZ przypisac to Wydarzenie."
+                    description="Token/identyfikator organizacji w Biurze Zawodów. Wymagany do włączenia integracji — bez niego platforma nie wie, do której organizacji w BZ przypisać to Wydarzenie."
                   >
                     Token organizacji BZ *
                   </HelpLabel>
@@ -1599,7 +1599,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <div className="space-y-2">
                     <HelpLabel
                       htmlFor="city"
-                      description="Miasto wykorzystywane w filtrach, listach wydarzen i skroconych informacjach o lokalizacji."
+                      description="Miasto wykorzystywane w filtrach, listach wydarzeń i skróconych informacjach o lokalizacji."
                     >
                       Miasto *
                     </HelpLabel>
@@ -1648,7 +1648,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             <div className="space-y-2">
               <HelpLabel
                 htmlFor="description"
-                description="Sformatowany opis widoczny na stronie wydarzenia. Warto opisac trase, charakter zawodow, atrakcje i najwazniejsze informacje dla uczestnika."
+                description="Sformatowany opis widoczny na stronie wydarzenia. Warto opisać trasę, charakter zawodów, atrakcje i najważniejsze informacje dla uczestnika."
               >
                 Opis wydarzenia
               </HelpLabel>
@@ -1663,7 +1663,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
 
             <EventImageUploadField
               label="Glowny obraz wydarzenia"
-              description="Obraz uzywany w widokach publicznych, kartach i materialach promocyjnych w aplikacji."
+              description="Obraz używany w widokach publicznych, kartach i materiałach promocyjnych w aplikacji."
               recommendedSize="Zalecany format 16:9. Po wgraniu dopasujesz kadr przed zapisem."
               value={form.imageUrl}
               onChange={form.setImageUrl}
@@ -1687,7 +1687,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 <Label htmlFor="featured" className="cursor-pointer leading-5">
                   Wyróżnij wydarzenie na stronie głównej
                 </Label>
-                <FieldHelp description="Oznacza wydarzenie jako promowane. Moze pojawic sie wyzej lub w specjalnych sekcjach strony glownej." />
+                <FieldHelp description="Oznacza wydarzenie jako promowane. Może pojawić się wyżej lub w specjalnych sekcjach strony głównej." />
               </div>
             )}
           </CardContent>
@@ -1724,7 +1724,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 />
                 <div className="space-y-4">
                   <div className="space-y-3">
-                    <HelpLabel description="Wybierz uklad najblizszy realnym proporcjom logo. Ten wybor wplywa na kadrowanie, podglad i wyswietlanie na stronie wydarzenia.">
+                    <HelpLabel description="Wybierz układ najbliższy realnym proporcjom logo. Ten wybór wpływa na kadrowanie, podgląd i wyświetlanie na stronie wydarzenia.">
                       Typ logo organizatora
                     </HelpLabel>
                     <RadioGroup
@@ -1765,8 +1765,8 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
 
                   <EventImageUploadField
                     label="Logo organizatora"
-                    description="Logo wyswietlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodow."
-                    recommendedSize="Wybierz typ logo powyzej, a po wgraniu dopasujesz kadr do wybranych proporcji."
+                    description="Logo wyświetlane przy wydarzeniu jako identyfikacja organizatora lub marki zawodów."
+                    recommendedSize="Wybierz typ logo powyżej, a po wgraniu dopasujesz kadr do wybranych proporcji."
                     value={form.organizerLogoUrl}
                     onChange={form.setOrganizerLogoUrl}
                     originalValue={form.originalOrganizerLogoUrl}
@@ -1813,11 +1813,11 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               {isEmbedRegistration ? (
                 <Alert className="border-muted bg-muted/50">
                   <Info className="h-4 w-4" />
-                  <AlertTitle>Platnosci poza Zmierzymy Czas</AlertTitle>
+                  <AlertTitle>Płatności poza Zmierzymy Czas</AlertTitle>
                   <AlertDescription>
-                    Przy embedzie organizator sam ustala sposob przyjmowania oplat i rozlicza
-                    uczestnikow poza tym systemem. Dlatego nie wymagamy danych bramki, konta
-                    bankowego ani tytulu przelewu.
+                    Przy embedzie organizator sam ustala sposób przyjmowania opłat i rozlicza
+                    uczestników poza tym systemem. Dlatego nie wymagamy danych bramki, konta
+                    bankowego ani tytułu przelewu.
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -1842,7 +1842,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                           <CreditCard className="h-4 w-4 text-primary" /> Bramka płatnicza
                           (automatyczna)
                         </Label>
-                        <FieldHelp description="Platnosci sa obslugiwane przez bramke administratora serwisu. Organizator nie musi recznie potwierdzac przelewow." />
+                        <FieldHelp description="Płatności są obsługiwane przez bramkę administratora serwisu. Organizator nie musi ręcznie potwierdzać przelewów." />
                         <p className="mt-1 text-sm text-muted-foreground">
                           Płatności są przetwarzane automatycznie przez bramkę płatniczą
                           administratora serwisu.
@@ -1860,7 +1860,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                         >
                           <Building2 className="h-4 w-4 text-primary" /> Przelew bankowy (ręczny)
                         </Label>
-                        <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status platnosci trzeba pozniej potwierdzac recznie." />
+                        <FieldHelp description="Uczestnik dostaje dane do przelewu na konto organizatora, a status płatności trzeba później potwierdzać ręcznie." />
                         <p className="mt-1 text-sm text-muted-foreground">
                           Uczestnicy wpłacają na Twoje konto bankowe. Musisz ręcznie potwierdzać
                           otrzymane wpłaty.
@@ -1870,7 +1870,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                             <div className="space-y-2">
                               <HelpLabel
                                 htmlFor="bankAccountNumber"
-                                description="Numer rachunku, na ktory uczestnicy beda wysylac oplaty startowe przy platnosci przelewem bankowym."
+                                description="Numer rachunku, na który uczestnicy będą wysyłać opłaty startowe przy płatności przelewem bankowym."
                               >
                                 Numer konta bankowego *
                               </HelpLabel>
@@ -1889,7 +1889,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                             <div className="space-y-2">
                               <HelpLabel
                                 htmlFor="bankAccountHolder"
-                                description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji platnosci."
+                                description="Nazwa odbiorcy przelewu widoczna dla uczestnika w instrukcji płatności."
                               >
                                 Właściciel konta *
                               </HelpLabel>
@@ -1905,7 +1905,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                             <div className="space-y-2">
                               <HelpLabel
                                 htmlFor="transferTitle"
-                                description="Szablon tytulu przelewu pokazywany uczestnikowi. Zmienne zostana podstawione danymi wydarzenia, dystansu i uczestnika."
+                                description="Szablon tytułu przelewu pokazywany uczestnikowi. Zmienne zostaną podstawione danymi wydarzenia, dystansu i uczestnika."
                               >
                                 Wzór tytułu przelewu
                               </HelpLabel>
@@ -1929,7 +1929,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <div className="mt-6 space-y-4 border-t pt-4">
                     <div>
                       <Label className="font-medium">Okno płatności</Label>
-                      <FieldHelp description="Czas, po ktorym nieoplacony Zapis wygasa i zwalnia miejsce (oraz tanszy prog cenowy) dla kolejnej osoby. Bramka i przelew maja osobne okna, bo platnosc bramka jest natychmiastowa, a przelew ksieguje sie realnie kilka dni." />
+                      <FieldHelp description="Czas, po którym nieopłacony Zapis wygasa i zwalnia miejsce (oraz tańszy próg cenowy) dla kolejnej osoby. Bramka i przelew maja osobne okna, bo płatność bramka jest natychmiastowa, a przelew księguje się realnie kilka dni." />
                       <p className="mt-1 text-sm text-muted-foreground">
                         Po tym czasie nieopłacony Zapis wygasa i zwalnia miejsce kolejnej osobie.
                       </p>
@@ -1938,7 +1938,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       <div className="space-y-2">
                         <HelpLabel
                           htmlFor="gatewayWindowMinutes"
-                          description="Okno platnosci dla bramki (Tpay/PayNow) — platnosc jest natychmiastowa, wiec dluzsze oczekiwanie tylko blokuje tansza pule innym zapisujacym sie. Domyslnie 45 minut."
+                          description="Okno płatności dla bramki (Tpay/PayNow) — płatność jest natychmiastowa, więc dłuższe oczekiwanie tylko blokuje tańsza pule innym zapisującym się. Domyślnie 45 minut."
                         >
                           Okno bramki (minuty)
                         </HelpLabel>
@@ -1954,7 +1954,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                       <div className="space-y-2">
                         <HelpLabel
                           htmlFor="transferWindowDays"
-                          description="Okno platnosci dla przelewu tradycyjnego — realny czas ksiegowania wplaty. Domyslnie 3 dni robocze."
+                          description="Okno płatności dla przelewu tradycyjnego — realny czas księgowania wpłaty. Domyślnie 3 dni robocze."
                         >
                           Okno przelewu (dni)
                         </HelpLabel>
@@ -1991,7 +1991,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
             <div className="space-y-6">
               <DocumentsUploadSection form={form} />
               <div className="space-y-2">
-                <HelpLabel description="Tresci regulaminowe lub linki do dokumentow, ktore uczestnik powinien przeczytac przed zapisem.">
+                <HelpLabel description="Treści regulaminowe lub linki do dokumentów, które uczestnik powinien przeczytać przed zapisem.">
                   Regulamin
                 </HelpLabel>
                 <p className="text-sm text-muted-foreground">
@@ -2015,11 +2015,11 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                   <Label htmlFor="requireFinalAcceptance" className="cursor-pointer leading-5">
                     Wymagaj dodatkowej akceptacji przy rejestracji
                   </Label>
-                  <FieldHelp description="Dodaje do formularza zapisu dodatkowy checkbox z trescia, ktora uczestnik musi zaakceptowac przed wyslaniem rejestracji." />
+                  <FieldHelp description="Dodaje do formularza zapisu dodatkowy checkbox z treścią, która uczestnik musi zaakceptować przed wysłaniem rejestracji." />
                 </div>
                 {form.requireFinalAcceptance && (
                   <div className="space-y-2 sm:pl-7">
-                    <HelpLabel description="Tresci widoczna przy dodatkowym checkboxie akceptacji w formularzu rejestracji uczestnika.">
+                    <HelpLabel description="Treści widoczna przy dodatkowym checkboxie akceptacji w formularzu rejestracji uczestnika.">
                       Tekst akceptacji
                     </HelpLabel>
                     <p className="text-sm text-muted-foreground">
@@ -2083,16 +2083,16 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                     description={
                       {
                         collectPhone:
-                          'Wlacza pole telefonu kontaktowego w formularzu zapisu uczestnika.',
-                        collectClub: 'Wlacza pole klubu, druzyny lub organizacji uczestnika.',
+                          'Włącza pole telefonu kontaktowego w formularzu zapisu uczestnika.',
+                        collectClub: 'Włącza pole klubu, drużyny lub organizacji uczestnika.',
                         collectBirthDate:
-                          'Wlacza pole daty urodzenia potrzebne m.in. do kategorii wiekowych.',
+                          'Włącza pole daty urodzenia potrzebne m.in. do kategorii wiekowych.',
                         collectTeam:
-                          'Pozwala uczestnikom podac informacje potrzebne do zapisu druzynowego.',
+                          'Pozwala uczestnikom podać informacje potrzebne do zapisu drużynowego.',
                         collectInsurance:
-                          'Pokazuje uczestnikowi opcje zwiazane z ubezpieczeniem NNW, jesli sa skonfigurowane.',
+                          'Pokazuje uczestnikowi opcje związane z ubezpieczeniem NNW, jeśli są skonfigurowane.',
                         collectMerchandise:
-                          'Pokazuje uczestnikowi gadzety lub merchandise dostepne przy rejestracji.',
+                          'Pokazuje uczestnikowi gadżety lub merchandise dostępne przy rejestracji.',
                       }[field.key]
                     }
                   />
@@ -2113,7 +2113,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
           </CardHeader>
           <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
             <div className="space-y-2">
-              <HelpLabel description="Ustala domyslny porzadek publicznej listy uczestnikow wydarzenia. Uzytkownik zobaczy liste wedlug tej preferencji.">
+              <HelpLabel description="Ustala domyślny porządek publicznej listy uczestników wydarzenia. Użytkownik zobaczy listę według tej preferencji.">
                 Domyślne sortowanie
               </HelpLabel>
               <Select
@@ -2147,7 +2147,7 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
               <Label htmlFor="uppercaseNames" className="cursor-pointer text-sm leading-5">
                 Wymuś wielkie litery w nazwiskach (np. Jan KOWALSKI)
               </Label>
-              <FieldHelp description="Formatuje nazwiska na liscie uczestnikow wielkimi literami, aby ulatwic skanowanie list startowych." />
+              <FieldHelp description="Formatuje nazwiska na liście uczestników wielkimi literami, aby ułatwić skanowanie list startowych." />
             </div>
             <div className="space-y-2">
               <HelpLabel description="Decyduje, którzy zawodnicy są widoczni na publicznej liście startowej. W panelu organizatora zawsze widoczni są wszyscy.">

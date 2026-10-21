@@ -12,7 +12,7 @@ const event = (over: Partial<Event> = {}): Event =>
 
 const NOW = new Date('2026-06-01T12:00:00');
 
-describe('evaluateSelfService (R-02)', () => {
+describe('evaluateSelfService', () => {
   it('allows an active registration inside the default window', () => {
     const verdict = evaluateSelfService(event(), { status: 'confirmed' }, NOW);
     expect(verdict.allowed).toBe(true);

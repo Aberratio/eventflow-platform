@@ -22,7 +22,7 @@ const defaultDeadlineHint = (eventDate: string): string | null => {
 };
 
 /**
- * R-02 (zakres P2, do potwierdzenia przez Zamawiającego): „Samoobsługa zapisów”. One switch and one
+ * „Samoobsługa zapisów”. One switch and one
  * cut-off date per Wydarzenie; today it governs the participant's own cancellation, and later
  * self-service changes (dystans) share the same date. Organizers can always act themselves.
  */

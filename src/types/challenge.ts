@@ -22,14 +22,14 @@ export interface ChallengeEvent {
 }
 
 /**
- * E6.1 (issue 15 §1): "drzewo warunków, nie jeden płaski próg" — a
+ * A
  * Wyzwanie's completion rule is a tree of three leaf node types plus a
  * `group` composition node. AND is simply `requiredCount === children.length`
  * (a threshold is the same shape with a smaller `requiredCount`), so there is
  * one grouping mechanism, not a separate "AND" and "threshold" type.
  *
- * Points computation for `point_threshold` (E6.2), automatic verification
- * (E6.3) and reward unlock (E6.5) all read this tree later — this ticket only
+ * Points computation for `point_threshold`, automatic verification
+ * and reward unlock all read this tree later — this ticket only
  * builds and edits its shape.
  */
 export type ChallengeConditionNodeType =
@@ -55,7 +55,7 @@ export interface ChallengeConditionNode {
   requiredCount?: number | null;
   /** X in "zbierz >= X punktów" — `point_threshold` only. */
   pointsRequired?: number | null;
-  /** "N best results" scoring parameter — structural only, see E6.2. */
+  /** "N best results" scoring parameter — structural only. */
   bestResultsCount?: number | null;
   /** Optional completion window (ISO date), e.g. "w tym roku kalendarzowym". */
   windowStart?: string | null;
@@ -87,7 +87,7 @@ export interface Challenge {
   startDate?: string;
   endDate?: string;
   createdBy: string;
-  /** E6.1 condition tree — the same shape the server embeds via hydrate(). */
+  /** Condition tree — the same shape the server embeds via hydrate(). */
   conditionTree?: ChallengeConditionNode | null;
 }
 
@@ -107,8 +107,7 @@ export interface ChallengeEntry {
 }
 
 /**
- * E6.6 (issue 15 §6, "Ranking: publiczny, z respektowaniem anonimizacji"):
- * one row of a Wyzwanie's or Serii's public ranking. `hasPoints` on the
+ * One row of a Wyzwanie's or Serii's public ranking. `hasPoints` on the
  * parent response distinguishes a real point total from the binary
  * completed/not-completed fallback used when the Wyzwanie has no
  * `point_threshold` node anywhere in its condition tree (see
@@ -119,7 +118,7 @@ export interface ChallengeRankingEntry {
   rank: number;
   /** Null for a ward without an account - never the caregiver's id. */
   userId: string | null;
-  /** R-06: ranking rows are per Zawodnik; use as the row key. */
+  /** Ranking rows are per Zawodnik; use as the row key. */
   competitorId?: string | null;
   /** Real name, or the fixed anonymization label — never both. */
   name: string;
@@ -138,7 +137,7 @@ export interface ChallengeParticipation {
   challengeId: string;
   /** The account that joined (mail recipient); for a ward it is the caregiver. */
   userId: string;
-  /** R-06: the Zawodnik taking part; null for legacy rows with no profile. */
+  /** The Zawodnik taking part; null for legacy rows with no profile. */
   competitorId?: string | null;
   competitorName?: string | null;
   userName: string;
@@ -149,7 +148,7 @@ export interface ChallengeParticipation {
   rewardGranted: boolean;
   rewardGrantedAt?: string;
   /**
-   * E6.5 (issue 15 §4-5): written by ChallengeRepository::claimReward() the
+   * Written by ChallengeRepository::claimReward() the
    * moment a reward order is created — one entry per claim (today always at
    * most one, since a challenge unlocks a single reward claim per
    * participation; the array shape matches the DB column's JSON so it can

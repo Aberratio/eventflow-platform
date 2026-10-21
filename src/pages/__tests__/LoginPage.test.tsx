@@ -179,9 +179,9 @@ describe('LoginPage', () => {
     const passwordInput = screen.getByPlaceholderText('••••••••');
     expect(passwordInput).toHaveAttribute('type', 'password');
 
-    // Przycisk toggle jest jedynym type="button" wewnątrz pola hasła
+    // The toggle is the only type="button" inside the password field
     const toggleBtns = screen.getAllByRole('button');
-    // Przycisk submit ma type="submit", toggle ma type="button" i nie jest głównym buttonem
+    // The submit button has type="submit"; the toggle has type="button" and is not the main button
     const toggleBtn = toggleBtns.find(
       (btn) =>
         btn.getAttribute('type') === 'button' &&

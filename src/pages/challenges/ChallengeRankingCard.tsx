@@ -15,8 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Medal } from 'lucide-react';
 
 /**
- * E6.6 (issue 15 §6, "Ranking: publiczny, z respektowaniem anonimizacji"):
- * public, read-only ranking for one Wyzwanie — descending points, ex-aequo
+ * Public, read-only ranking for one Wyzwanie — descending points, ex-aequo
  * ties sharing a rank, anonymized competitors already masked by the server
  * (ChallengeRankingCalculator/CompetitorNamePresenter) — this component never
  * sees a real name for an anonymized competitor, so there is nothing to hide

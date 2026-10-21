@@ -1,6 +1,6 @@
 import type { RegistrationChange } from '@/types';
 
-/** R-02: Polish one-liner for a history entry; unknown types fall back to a neutral text. */
+/** Polish one-liner for a history entry; unknown types fall back to a neutral text. */
 export function describeRegistrationChange(change: RegistrationChange): string {
   switch (change.type) {
     case 'cancelled': {
@@ -18,7 +18,7 @@ export function describeRegistrationChange(change: RegistrationChange): string {
       return `Zmieniono dystans${names}${by}${refund}`;
     }
     case 'transferred':
-      return 'Zapis przeniesiono na inną osobę';
+      return 'Zapis przeniesiono na inną osóbę';
     default:
       return 'Zmiana zapisu';
   }

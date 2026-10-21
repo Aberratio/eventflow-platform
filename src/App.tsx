@@ -155,7 +155,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// E8.11/D-10: `/embed/*` and `/events/:slug/embed` routes render inside a third-party iframe on an external
+// `/embed/*` and `/events/:slug/embed` routes render inside a third-party iframe on an external
 // site — the normal site chrome (bottom nav, onboarding dialog, cookie
 // banner, dev toolbox) has no business showing up there, so this shell
 // suppresses it for that one path prefix. Split out from `App` because
@@ -351,7 +351,7 @@ const AppShell = () => {
             }
           />
           {/*
-                    E8.11: the dedicated, chrome-free embed route — organizer
+                    The dedicated, chrome-free embed route — organizer
                     sites <iframe> this. Keyed by the event's real `id` (not
                     `:slug` like every other registration route above)
                     because it mirrors the server's id-keyed embed contract

@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCoManagedEvents } from '@/hooks/useCoManagedEvents';
 
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): a participant who co-manages Events has
+ * A participant who co-manages Events has
  * no organizer dashboard, so the participant panel links to the list of those Events.
  */
 const CoManagedEventsNotice = () => {

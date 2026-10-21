@@ -108,7 +108,7 @@ describe('ParticipantDashboard tabs', () => {
     }
   });
 
-  it('loads orders through the self-scoped endpoint (PP.17)', async () => {
+  it('loads orders through the self-scoped endpoint', async () => {
     getMyOrders.mockResolvedValue({
       data: [
         {

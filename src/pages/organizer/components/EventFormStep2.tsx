@@ -643,18 +643,18 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <Label className="text-base font-medium">
                       Kategorie specjalne ({form.specialCategories.length})
                     </Label>
-                    <FieldHelp description="Kategorie specjalne dodaja dodatkowe klasyfikacje niezalezne od wieku, np. mieszkancy miasta, sluzby mundurowe albo pracownicy firmy." />
+                    <FieldHelp description="Kategorie specjalne dodaja dodatkowe klasyfikacje niezależne od wieku, np. mieszkańcy miasta, służby mundurowe albo pracownicy firmy." />
                   </div>
                   {form.specialCategories.length > 0 && (
                     <div className="space-y-2">
                       <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_1fr_40px]">
                         <span className="flex items-center gap-1">
                           Nazwa
-                          <FieldHelp description="Nazwa kategorii specjalnej widoczna dla uczestnikow i w klasyfikacjach." />
+                          <FieldHelp description="Nazwa kategorii specjalnej widoczna dla uczestników i w klasyfikacjach." />
                         </span>
                         <span className="flex items-center gap-1">
                           Opis (opcjonalnie)
-                          <FieldHelp description="Krotkie wyjasnienie warunkow przynaleznosci do kategorii specjalnej." />
+                          <FieldHelp description="Krótkie wyjaśnienie warunków przynależności do kategorii specjalnej." />
                         </span>
                         <span></span>
                       </div>
@@ -814,13 +814,13 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <span>Bez dodatkowej nazwy</span>
                         <FieldHelp
                           title="Bez dodatkowej nazwy"
-                          description='Zaznacz, jesli kilometraz wystarczy jako identyfikator dystansu - np. "5 km" zamiast "5 km / Dystans 5 km". Unikniesz powielania tej samej informacji w nazwie i w polu dlugosci.'
+                          description='Zaznacz, jeśli kilometraż wystarczy jako identyfikator dystansu - np. "5 km" zamiast "5 km / Dystans 5 km". Unikniesz powielania tej samej informacji w nazwie i w polu długości.'
                         />
                       </label>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <HelpLabel description="Dlugosc dystansu wraz z jednostka. Zostaw puste, jezeli zawody nie sa rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
+                    <HelpLabel description="Długość dystansu wraz z jednostka. Zostaw puste, jeżeli zawody nie są rozgrywane na konkretny dystans (np. orientacja, zawody punktowe).">
                       Długość
                     </HelpLabel>
                     {dist.noLength ? (
@@ -868,7 +868,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     )}
                   </div>
                   <div className="space-y-2">
-                    <HelpLabel description="Podstawowa oplata startowa za ten dystans w zlotowkach. Uzywana w koszyku, rejestracji i podsumowaniach platnosci.">
+                    <HelpLabel description="Podstawowa opłata startowa za ten dystans w złotówkach. Używana w koszyku, rejestracji i podsumowaniach płatności.">
                       Cena bazowa (PLN) *
                     </HelpLabel>
                     <Input
@@ -881,7 +881,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <FieldError message={fe[`distance_${index}_price`]} />
                   </div>
                   <div className="space-y-2">
-                    <HelpLabel description="Cena pobierana przy zapisie na miejscu, w biurze zawodow. Nie zmienia ceny online, ale jest widoczna w podgladzie wydarzenia.">
+                    <HelpLabel description="Cena pobierana przy zapisie na miejscu, w biurze zawodów. Nie zmienia ceny online, ale jest widoczna w podglądzie wydarzenia.">
                       Cena w biurze
                     </HelpLabel>
                     <Input
@@ -894,7 +894,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <FieldError message={fe[`distance_${index}_officePrice`]} />
                   </div>
                   <div className="space-y-2">
-                    <HelpLabel description="Maksymalna liczba zapisow na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
+                    <HelpLabel description="Maksymalna liczba zapisów na dany dystans. Puste pole oznacza brak konkretnego limitu w formularzu.">
                       Limit uczestników
                     </HelpLabel>
                     <Input
@@ -938,7 +938,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
 
                 <div className="grid gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
                   <div className="space-y-2">
-                    <HelpLabel description="Okresla, czy zapis na ten dystans jest indywidualny, czy sztafetowy. Dla sztafety uczestnik musi wybrac albo utworzyc druzyne.">
+                    <HelpLabel description="Określa, czy zapis na ten dystans jest indywidualny, czy sztafetowy. Dla sztafety uczestnik musi wybrać albo utworzyć drużynę.">
                       Typ startu
                     </HelpLabel>
                     <Select
@@ -967,8 +967,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                   {dist.startType === 'relay' && (
                     <>
                       <div className="space-y-2">
-                        <HelpLabel description="Minimalna liczba zawodnikow wymagana w jednej druzynie sztafetowej.">
-                          Od ilu zawodnikow *
+                        <HelpLabel description="Minimalna liczba zawodników wymagana w jednej drużynie sztafetowej.">
+                          Od ilu zawodników *
                         </HelpLabel>
                         <Input
                           type="number"
@@ -983,8 +983,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <FieldError message={fe[`distance_${index}_relayMinTeamSize`]} />
                       </div>
                       <div className="space-y-2">
-                        <HelpLabel description="Maksymalna liczba zawodnikow, ktorzy moga nalezec do jednej druzyny sztafetowej.">
-                          Do ilu zawodnikow *
+                        <HelpLabel description="Maksymalna liczba zawodników, którzy mogą należeć do jednej drużyny sztafetowej.">
+                          Do ilu zawodników *
                         </HelpLabel>
                         <Input
                           type="number"
@@ -999,8 +999,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <FieldError message={fe[`distance_${index}_relayMaxTeamSize`]} />
                       </div>
                       <div className="space-y-2">
-                        <HelpLabel description="Data, do ktorej kapitan druzyny musi uzupelnic wymagany sklad sztafety.">
-                          Deadline skladu *
+                        <HelpLabel description="Data, do której kapitan drużyny musi uzupełnić wymagany skład sztafety.">
+                          Deadline składu *
                         </HelpLabel>
                         <Input
                           type="date"
@@ -1033,8 +1033,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <FieldError message={fe[`distance_${index}_relaySwapDeadline`]} />
                       </div>
                       <div className="space-y-2">
-                        <HelpLabel description="Sposob wyliczenia wyniku druzyny z wynikow indywidualnych jej czlonkow: suma czasow, czas najlepszego czlonka, albo srednia. Wynik druzynowy to osobna, zawsze liczona na zywo klasyfikacja obok indywidualnej.">
-                          Regula wyniku druzynowego *
+                        <HelpLabel description="Sposób wyliczenia wyniku drużyny z wyników indywidualnych jej członków: suma czasów, czas najlepszego członka, albo średnia. Wynik drużynowy to osobna, zawsze liczona na żywo klasyfikacja obok indywidualnej.">
+                          Regula wyniku drużynowego *
                         </HelpLabel>
                         <Select
                           value={dist.teamAggregationRule}
@@ -1060,7 +1060,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <FieldError message={fe[`distance_${index}_teamAggregationRule`]} />
                       </div>
                       <div className="space-y-2">
-                        <HelpLabel description="Okresla, czy oplata startowa jest naliczana osobno kazdemu czlonkowi druzyny, czy w calosci kapitanowi (pozostali czlonkowie maja wtedy oplate zerowa).">
+                        <HelpLabel description="Określa, czy opłata startowa jest naliczana osobno każdemu członkowi drużyny, czy w całości kapitanowi (pozostali członkowie maja wtedy opłatę zerowa).">
                           Sposób naliczania opłaty
                         </HelpLabel>
                         <Select
@@ -1104,7 +1104,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                 <div className="space-y-2 border-t pt-4">
                   <div className="flex items-center gap-1.5">
                     <Label className="text-xs font-medium">Dokumenty dystansu</Label>
-                    <FieldHelp description="Wgraj dodatkowe dokumenty dla tego dystansu, np. regulamin, harmonogram lub mape trasy w PDF." />
+                    <FieldHelp description="Wgraj dodatkowe dokumenty dla tego dystansu, np. regulamin, harmonogram lub mapę trasy w PDF." />
                   </div>
                   {dist.distanceDocuments.map((doc) => (
                     <div key={doc.id} className="flex items-center gap-2 rounded-md border p-2">
@@ -1186,10 +1186,10 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     {isEmbedRegistration ? (
                       <Alert className="border-muted bg-muted/50">
                         <Info className="h-4 w-4" />
-                        <AlertTitle>Platnosci i progi poza systemem</AlertTitle>
+                        <AlertTitle>Płatności i progi poza systemem</AlertTitle>
                         <AlertDescription>
-                          Dla zawodow typu embed nie konfigurujemy progow cenowych ani sposobu
-                          pobierania oplat. Te zasady ustala i obsluguje organizator lub zewnetrzny
+                          Dla zawodów typu embed nie konfigurujemy progów cenowych ani sposobu
+                          pobierania opłat. Te zasady ustala i obsługuje organizator lub zewnętrzny
                           system poza panelem.
                         </AlertDescription>
                       </Alert>
@@ -1198,8 +1198,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                         <div className="flex items-start gap-2 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
                           <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                           <span>
-                            Kazdy prog moze miec date koncowa, limit uczestnikow, albo oba naraz —
-                            wygasa na tym, co nastapi wczesniej.
+                            Każdy próg może mieć date końcowa, limit uczestników, albo oba naraz —
+                            wygasa na tym, co nastąpi wcześniej.
                           </span>
                         </div>
 
@@ -1213,8 +1213,8 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                           <div className="space-y-2">
                             <div className="hidden gap-2 px-1 text-xs font-medium text-muted-foreground md:grid md:grid-cols-[1fr_140px_140px_130px_1fr_40px]">
                               <span>Nazwa</span>
-                              <span>Obowiazuje do</span>
-                              <span>Limit uczestnikow</span>
+                              <span>Obowiązuje do</span>
+                              <span>Limit uczestników</span>
                               <span>Cena w progu</span>
                               <span>Opis</span>
                               <span></span>
@@ -1297,7 +1297,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                                     <p className="flex items-start gap-1.5 text-xs text-amber-700 md:col-start-4">
                                       <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                                       <span>
-                                        Cena progu jest wyzsza od ceny bazowej. To tylko
+                                        Cena progu jest wyższa od ceny bazowej. To tylko
                                         ostrzezenie.
                                       </span>
                                     </p>
@@ -1348,7 +1348,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                       <Label className="text-sm text-muted-foreground">
                         Kategorie w tym dystansie (odznacz, aby wyłączyć)
                       </Label>
-                      <FieldHelp description="Pozwala wlaczyc lub wylaczyc wybrane kategorie dla konkretnego dystansu, gdy nie wszystkie klasyfikacje maja zastosowanie." />
+                      <FieldHelp description="Pozwala włączyć lub wyłączyć wybrane kategorie dla konkretnego dystansu, gdy nie wszystkie klasyfikacje maja zastosowanie." />
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {form.allCategories.map((cat) => {
@@ -1385,19 +1385,19 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <div className="grid gap-4 md:grid-cols-3">
                       <RouteUrlOrUploadField
                         label="Mapa trasy"
-                        description="Link do mapy trasy lub wgraj plik (obraz). Widoczne dla uczestnikow przed startem."
+                        description="Link do mapy trasy lub wgraj plik (obraz). Widoczne dla uczestników przed startem."
                         value={dist.routeMapUrl}
                         onChange={(v) => form.updateDistance(index, 'routeMapUrl', v)}
                       />
                       <RouteUrlOrUploadField
                         label="Profil przewyższeń"
-                        description="Link do profilu przewyzszen lub wgraj plik (obraz). Przydatne dla tras gorskich i trailowych."
+                        description="Link do profilu przewyższeń lub wgraj plik (obraz). Przydatne dla tras górskich i trailowych."
                         value={dist.routeElevationProfile}
                         onChange={(v) => form.updateDistance(index, 'routeElevationProfile', v)}
                       />
                       <RouteUrlOrUploadField
                         label="Plik GPX"
-                        description="Link do pliku GPX lub wgraj plik GPX. Uczestnik moze pobrac do zegarka lub aplikacji treningowej."
+                        description="Link do pliku GPX lub wgraj plik GPX. Uczestnik może pobrać do zegarka lub aplikacji treningowej."
                         value={dist.routeGpxUrl}
                         onChange={(v) => form.updateDistance(index, 'routeGpxUrl', v)}
                         acceptFiles=".gpx,application/gpx+xml"
@@ -1406,7 +1406,7 @@ export const EventFormStep2 = ({ form, activeSubStep = 'categories' }: EventForm
                     <div className="space-y-2">
                       <div className="flex items-center gap-1.5">
                         <Label className="text-xs font-medium">Dodatkowe pliki trasy</Label>
-                        <FieldHelp description="Dodaj kolejne materialy dla trasy z wyborem typu: mapa, profil przewyzszen, GPX, zdjecie, regulamin lub inny plik. Mozesz wgrac plik lub podac link." />
+                        <FieldHelp description="Dodaj kolejne materiały dla trasy z wyborem typu: mapa, profil przewyższeń, GPX, zdjęcie, regulamin lub inny plik. Możesz wgrać plik lub podać link." />
                       </div>
                       {dist.routeFiles.map((file) => (
                         <div

@@ -19,7 +19,7 @@ test.describe('Moderator Dashboard', () => {
   test('moderation tab loads events for review', async ({ page }) => {
     await openDashboardSection(page, 'Moderacja');
     await expect(
-      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzen do sprawdzenia/).first(),
+      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzeń do sprawdzenia/).first(),
     ).toBeVisible();
   });
 

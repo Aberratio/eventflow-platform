@@ -50,7 +50,7 @@ const registration: Registration = {
   bibNumber: '123',
 };
 
-describe('RegistrationListRow self-service cancellation (R-02)', () => {
+describe('RegistrationListRow self-service cancellation', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -224,7 +224,7 @@ describe('RegistrationListRow virtual result action', () => {
   });
 });
 
-describe('RegistrationListRow start code (E1.11)', () => {
+describe('RegistrationListRow start code', () => {
   it('shows a "Kod startowy" trigger when the registration has a qrCode', () => {
     render(
       <RegistrationListRow
@@ -255,7 +255,7 @@ describe('RegistrationListRow start code (E1.11)', () => {
   });
 });
 
-describe('RegistrationListRow check-in status (E3.6)', () => {
+describe('RegistrationListRow check-in status', () => {
   it('shows no check-in badge when the registration has never been checked in', () => {
     render(<RegistrationListRow registration={registration} event={event} />);
 
@@ -274,7 +274,7 @@ describe('RegistrationListRow check-in status (E3.6)', () => {
   });
 });
 
-describe('RegistrationListRow refund action (E1.5)', () => {
+describe('RegistrationListRow refund action', () => {
   it('offers "Poproś o zwrot" for a paid registration with no refund cycle yet', () => {
     const onRequestRefund = vi.fn();
 

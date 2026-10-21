@@ -32,15 +32,15 @@ interface RegistrationListRowProps {
   event: Event;
   virtualSubmission?: VirtualResultSubmission;
   onSubmitResult?: () => void;
-  /** E1.5: „poproś o zwrot" — omitted when the caller doesn't want the action offered here. */
+  /** „poproś o zwrot" — omitted when the caller doesn't want the action offered here. */
   onRequestRefund?: () => void;
-  /** B-05: „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. */
+  /** „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. */
   onRetryPayment?: () => void;
-  /** R-02: „Zrezygnuj” — offered only while the self-service window is open; omitted = never offered. */
+  /** „Zrezygnuj” — offered only while the self-service window is open; omitted = never offered. */
   onCancel?: () => void;
-  /** R-02: „Historia zapisu” — omitted = not offered. */
+  /** „Historia zapisu” — omitted = not offered. */
   onShowHistory?: () => void;
-  /** R-02: „Zmień dystans” — offered only while the self-service window is open; omitted = never offered. */
+  /** „Zmień dystans” — offered only while the self-service window is open; omitted = never offered. */
   onChangeDistance?: () => void;
 }
 
@@ -101,7 +101,7 @@ export const RegistrationListRow = ({
               : 'Zwrot: oczekuje na zatwierdzenie'}
         </Badge>
       )}
-      {/* E3.6 (issue 12 §4): "odprawiono Cię o 7:42" — the Odprawa fact Biuro
+      {/* "Odprawiono Cię o 7:42" — the Odprawa fact Biuro
           Zawodów reports back via return-sync, shown in the Zawodnik's own
           registration history right next to the other status badges; absent
           while un-checked-in, so no empty/placeholder badge appears for the
@@ -309,11 +309,10 @@ export const RegistrationListRow = ({
     return null;
   };
 
-  // E1.11: kod startowy QR — widoczny obok numeru startowego/dystansu, dokładnie
-  // tam, gdzie spec 11 pkt 5 każe pokazywać "Mój start". QR koduje sam token jako
-  // czysty tekst (bez URL-a/danych osobowych), zgodnie z rozstrzygnięciem — click
-  // to reveal zamiast renderować od razu w liście, żeby nie pokazywać cudzego
-  // sekretu przez ramię na współdzielonym ekranie.
+  // QR start code — shown next to the bib number / Dystans, exactly where "Mój start" is
+  // displayed. The QR encodes the bare token as plain text (no URL, no personal data).
+  // Click to reveal instead of rendering it in the list right away, so nobody's secret
+  // can be read over the shoulder on a shared screen.
   const startCodeTrigger = registration.qrCode && (
     <Button
       size="sm"

@@ -52,7 +52,7 @@ const OrganizerEventsPage = () => {
     enabled: Boolean(user?.id),
   });
 
-  // R-01 (zakres P2): a participant who only co-manages Events has no organizer package or limit,
+  // A participant who only co-manages Events has no organizer package or limit,
   // and cannot create Events - the limit endpoint and the "new event" button are organizer-only.
   const isOrganizer = user?.role === 'organizer';
 

@@ -14,8 +14,8 @@ const lastCall = () => {
   return { url: String(url), init: (init ?? {}) as RequestInit };
 };
 
-/** R-01 (zakres P2): the Event Team routes. */
-describe('httpAdapter event team (R-01)', () => {
+/** The Event Team routes. */
+describe('httpAdapter event team', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

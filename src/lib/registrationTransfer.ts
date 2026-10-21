@@ -3,7 +3,7 @@ import type { Registration, TransferRegistrationResult } from '@/types';
 import { formatMoney } from '@/lib/format';
 
 /**
- * R-02 (zakres P2): helpers of the organizer's „Przenieś zapis” flow. The server decides everything
+ * Helpers of the organizer's „Przenieś zapis” flow. The server decides everything
  * (who may, what changes); this only decides when the action is offered and words the outcome.
  */
 

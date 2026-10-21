@@ -12,30 +12,29 @@ export interface Result {
   time: string;
   timeInSeconds: number;
   /**
-   * Czas netto (spec 14 sekcja 2) - opcjonalny, nie kazdy pomiar ma mate
-   * startowa. Serwer zwraca go od E2.1 (ResultRepository::COLUMNS), ale
-   * typ klienta dotad go nie odzwierciedlal.
+   * Net time - optional, not every timing has a start mat.
+   * The server returns it (ResultRepository::COLUMNS).
    */
   netTime?: string | null;
   netTimeInSeconds?: number | null;
   position: number;
   categoryPosition: number;
-  /** G-03: miejsce wg płci (wśród zawodników tej samej płci w klasyfikacji); 0 = brak płci / nie ukończył. */
+  /** Place by gender (among Zawodnicy of the same gender in the classification); 0 = no gender / did not finish. */
   genderPosition?: number;
   status: 'finished' | 'dnf' | 'dns' | 'dsq';
   gender?: 'M' | 'K';
   birthYear?: number;
   /**
-   * Publikacja wyników (spec 14 Answer §6, E2.3) - wstepne od razu po
-   * imporcie/recznym wpisaniu, oficjalne dopiero po weryfikacji organizatora.
-   * Granulacja: Wydarzenie+Dystans (klasyfikacja), nie pojedynczy wiersz -
-   * wszystkie wyniki tej samej klasyfikacji dziela ta sama wartosc. Korekta
-   * pojedynczego wyniku (PATCH /results/{id}) NIE zmienia tego pola.
+   * Results publication - preliminary right after the import/manual entry,
+   * official only once the organizer has verified them.
+   * Granularity: Wydarzenie+Dystans (the classification), not a single row -
+   * all results of the same classification share the value. Correcting a
+   * single result (PATCH /results/{id}) does NOT change this field.
    */
   publicationStatus: 'preliminary' | 'official';
 }
 
-/** G-03: one row of GET /results/{id}/corrections - who, when, what changed (from -> to) and why. */
+/** One row of GET /results/{id}/corrections - who, when, what changed (from -> to) and why. */
 export type ResultCorrectionField = 'time' | 'netTime' | 'status' | 'position' | 'categoryPosition';
 
 export interface ResultCorrection {
@@ -146,7 +145,7 @@ export const TEAM_AGGREGATION_RULE_LABELS: Record<TeamAggregationRule, string> =
 };
 
 /**
- * E2.7 (spec 14 sekcja 4): live-computed row of the team/relay classification
+ * Live-computed row of the team/relay classification
  * for one event+distance - see server ResultRepository::teamClassification()
  * for the aggregation/edge-case rules this reflects (partial teams and teams
  * with a dnf/dns/dsq member are excluded server-side, never sent here).
@@ -162,7 +161,7 @@ export interface TeamClassificationEntry {
   position: number;
 }
 
-/** @deprecated LEGACY (E2.7) - see ResultRepository::teamResults()'s docblock on the server. No longer surfaced anywhere in the UI; kept only so the type of the still-existing GET /events/{eventId}/team-results endpoint has a home. */
+/** @deprecated LEGACY - see ResultRepository::teamResults()'s docblock on the server. No longer surfaced anywhere in the UI; kept only so the type of the still-existing GET /events/{eventId}/team-results endpoint has a home. */
 export interface TeamResult {
   id: string;
   eventId: string;
