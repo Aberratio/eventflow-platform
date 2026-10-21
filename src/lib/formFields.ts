@@ -1,3 +1,4 @@
+import { apiErrorCode } from '@/api/errors';
 import type {
   FormField,
   FormFieldAnswerValue,
@@ -266,4 +267,52 @@ export const modifierPreviewTotal = (
     }
   }
   return total;
+};
+
+export const FORM_FIELD_STATES: FormFieldState[] = ['hidden', 'shown', 'required'];
+export const CHOICE_FIELD_TYPES: FormFieldType[] = ['single_choice', 'multi_choice'];
+export const TEXT_FIELD_TYPES: FormFieldType[] = ['short_text', 'long_text'];
+
+/** A variant row being edited: the price stays a string until it is sent. */
+export interface DraftOption {
+  /** Present for a variant that already exists on the server — keeps its identity on save. */
+  key?: string;
+  label: string;
+  price: string;
+}
+
+export const parsePrice = (raw: string): number =>
+  raw.trim() === '' ? 0 : Number(raw.replace(',', '.'));
+
+export const toDraftOptions = (field: FormField): DraftOption[] =>
+  field.options && field.options.length > 0
+    ? field.options.map((o) => ({
+        key: o.key,
+        label: o.label,
+        price: o.price ? String(o.price) : '',
+      }))
+    : [{ label: '', price: '' }];
+
+export const toPayloadOptions = (drafts: DraftOption[]) =>
+  drafts
+    .filter((o) => o.label.trim() !== '')
+    .map((o) => ({
+      ...(o.key ? { key: o.key } : {}),
+      label: o.label.trim(),
+      price: parsePrice(o.price),
+    }));
+
+/** Polish text for a failed form-field call; the 409s of an in-place edit get an actionable one. */
+export const formFieldErrorText = (error: unknown): string => {
+  const code = apiErrorCode(error);
+  if (code === 'form_field_has_answers') {
+    return 'Nie można zmienić typu pola, które ma już odpowiedzi w zapisach. Dodaj nowe pole zamiast zmieniać typ.';
+  }
+  if (code === 'form_field_override_exists') {
+    return 'Ten dystans już nadpisuje to pole.';
+  }
+  if (code === 'form_field_option_in_use') {
+    return 'Nie można usunąć wariantu, który wybrali już zawodnicy. Zmień jego nazwę lub cenę albo zostaw go na liście.';
+  }
+  return error instanceof Error ? error.message : 'Nie udało się zapisać zmiany.';
 };
