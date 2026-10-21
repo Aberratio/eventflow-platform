@@ -243,7 +243,7 @@ const SearchPanel = ({
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        className="placeholder:text-white/38 min-w-0 flex-1 bg-transparent text-white outline-none"
+        className="placeholder:text-white/38 min-w-0 flex-1 bg-transparent text-white"
         placeholder="Szukaj wydarzenia, miasta lub dyscypliny..."
       />
     </label>

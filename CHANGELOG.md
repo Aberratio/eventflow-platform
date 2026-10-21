@@ -39,6 +39,8 @@ as the first version.
   names, and the show-password toggle is a larger touch target.
 - Info pages, and dedicated error pages for missing pages, forbidden access,
   server errors and maintenance.
+- Accessibility: a visible keyboard focus everywhere, cookie settings as a
+  proper modal dialog, and keyboard-reachable scrollable tables and drawers.
 - The footer shows the running version, or the commit for a deploy that is
   not a release.
 
