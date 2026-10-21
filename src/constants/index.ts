@@ -125,7 +125,6 @@ export const QUERY_KEYS = {
   challengeParticipations: ['challengeParticipations'] as const,
   challengeRanking: (challengeId: string) => ['challenges', challengeId, 'ranking'] as const,
   seriesRanking: (seriesId: string) => ['series', seriesId, 'ranking'] as const,
-  messages: ['messages'] as const,
   tickets: ['tickets'] as const,
   orders: ['orders'] as const,
   infoPages: ['infoPages'] as const,
@@ -137,6 +136,8 @@ export const QUERY_KEYS = {
   insuranceSettings: ['insuranceSettings'] as const,
   challengePointsSettings: ['challengePointsSettings'] as const,
   competitorMergeSearch: (q: string) => ['competitors', 'merge-search', q] as const,
+  competitorDuplicateReports: (status: string) =>
+    ['competitors', 'duplicate-reports', status] as const,
   competitorMergeComparison: (idA: string, idB: string) =>
     ['competitors', 'merge-comparison', idA, idB] as const,
 } as const;

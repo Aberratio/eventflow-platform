@@ -692,10 +692,6 @@ export const httpAdapter: ApiAdapter = {
     request(`/challenges/${encodeURIComponent(challengeId)}/ranking`),
   getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
-  getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
-  getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),
-  sendMessage: (data) => request('/messages', json('POST', data)),
-  markAsRead: (id) => request(`/messages/${encodeURIComponent(id)}/read`, json('POST')),
 
   getTickets: (userId) => request(`/users/${encodeURIComponent(userId)}/tickets`),
   getCertificates: (userId) => request(`/users/${encodeURIComponent(userId)}/certificates`),
@@ -849,4 +845,16 @@ export const httpAdapter: ApiAdapter = {
       `/admin/competitors/${encodeURIComponent(competitorIdA)}/merge-comparison/${encodeURIComponent(competitorIdB)}`,
     ),
   mergeCompetitors: (payload) => request('/admin/competitors/merge', json('POST', payload)),
+  reportCompetitorDuplicate: (competitorId, payload) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/duplicate-reports`,
+      json('POST', payload),
+    ),
+  listCompetitorDuplicateReports: (status) =>
+    request(`/admin/competitors/duplicate-reports${status ? `?status=${status}` : ''}`),
+  rejectCompetitorDuplicateReport: (id, reason) =>
+    request(
+      `/admin/competitors/duplicate-reports/${encodeURIComponent(id)}`,
+      json('PATCH', { status: 'rejected', ...(reason ? { reason } : {}) }),
+    ),
 };

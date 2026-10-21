@@ -25,7 +25,6 @@ vi.mock('@/api', () => {
     getRegistrationsByUser: empty,
     getResultsByUser: empty,
     getPersonalRecords: empty,
-    getMessages: empty,
     getTickets: empty,
     getCertificates: empty,
     getMyOrders,
@@ -87,6 +86,17 @@ describe('ParticipantDashboard tabs', () => {
       expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
     },
   );
+
+  it('has no Wiadomości tab (R-11: the server has no messages endpoint)', () => {
+    renderAt('/participant');
+    expect(screen.queryByRole('tab', { name: /Wiadomości/ })).toBeNull();
+    expect(screen.queryByText(/Nowe wiadomości/)).toBeNull();
+  });
+
+  it('falls back to overview for the removed /participant?tab=messages', () => {
+    renderAt('/participant?tab=messages');
+    expect(screen.getByRole('tab', { name: /Przegląd/ })).toHaveAttribute('aria-selected', 'true');
+  });
 
   it('every tab trigger has a panel', () => {
     renderAt('/participant');

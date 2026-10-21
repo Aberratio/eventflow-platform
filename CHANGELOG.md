@@ -16,15 +16,23 @@ as the first version.
 
 - Public event catalogue with event details, live results, series and
   challenges.
+- Caregivers and organizers can report a possible duplicate competitor
+  profile; moderators and admins review the reports in a queue with a status
+  filter and can reject them with a reason.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
+- Inter fonts are served from the platform's own domain, so no request goes
+  to Google before cookie consent.
 - Shop with product pages, cart and order confirmation.
+- Escape closes the mobile menu and returns focus to the menu button.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
 - Accessibility: a "skip to content" link, a single main landmark per page
   and a consistent heading hierarchy.
 - Participant dashboard with printable tickets and team invitations for
   captains.
+- The participant dashboard no longer shows the non-working Messages tab,
+  and the organizer's placeholder "Message" button is gone.
 - Organizer, moderator and admin panels for running events, registrations,
   results and the shop.
 - Accessibility: form fields, filters and icon buttons have accessible
