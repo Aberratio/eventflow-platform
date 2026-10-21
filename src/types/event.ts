@@ -215,6 +215,9 @@ export interface Distance {
   ageCategories?: AgeCategory[];
   specialCategories?: SpecialCategory[];
   limit?: number;
+  /** R-13 (contract 5.1): start number range of the Distance; both null/absent = no range. */
+  bibRangeFrom?: number | null;
+  bibRangeTo?: number | null;
   registeredCount: number;
   paidCount?: number;
   /**

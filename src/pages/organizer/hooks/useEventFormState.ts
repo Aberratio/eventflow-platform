@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { bibRangeFieldErrors } from '@/lib/bibNumberUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Event,
@@ -63,6 +64,9 @@ export interface DistanceFormData {
   /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
   officePrice: string;
   limit: string;
+  /** R-13: start (bib) number range of the Distance, blank = no range. */
+  bibRangeFrom: string;
+  bibRangeTo: string;
   infoHtml: string;
   priceTiers: PriceTier[];
   disabledCategoryIds: string[];
@@ -593,6 +597,8 @@ export const useEventFormState = () => {
       price: d.price.toString(),
       officePrice: officeVariantOf(d)?.price?.toString() || '',
       limit: d.limit?.toString() || '',
+      bibRangeFrom: d.bibRangeFrom?.toString() || '',
+      bibRangeTo: d.bibRangeTo?.toString() || '',
       infoHtml: d.infoHtml || '',
       priceTiers: d.priceTiers || [],
       disabledCategoryIds: initAllGlobalCatIds.filter(
@@ -726,6 +732,8 @@ export const useEventFormState = () => {
         price: d.price.toString(),
         officePrice: officeVariantOf(d)?.price?.toString() || '',
         limit: d.limit?.toString() || '',
+        bibRangeFrom: d.bibRangeFrom?.toString() || '',
+        bibRangeTo: d.bibRangeTo?.toString() || '',
         infoHtml: d.infoHtml || '',
         priceTiers: d.priceTiers || [],
         disabledCategoryIds: allGlobalCatIds.filter(
@@ -816,6 +824,8 @@ export const useEventFormState = () => {
         price: '',
         officePrice: '',
         limit: '',
+        bibRangeFrom: '',
+        bibRangeTo: '',
         infoHtml: '',
         priceTiers: [],
         disabledCategoryIds: [],
@@ -851,6 +861,8 @@ export const useEventFormState = () => {
         price: '',
         officePrice: '',
         limit: '',
+        bibRangeFrom: '',
+        bibRangeTo: '',
         infoHtml: '',
         priceTiers: [],
         disabledCategoryIds: [],
@@ -1395,6 +1407,7 @@ export const useEventFormState = () => {
         errors[`distance_${i}_limit`] =
           'Limit uczestników musi być dodatnią liczbą całkowitą albo pusty';
       }
+      Object.assign(errors, bibRangeFieldErrors(distances, i));
       if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
         errors[`distance_${i}_officePrice`] =
           'Cena biurowa musi być poprawną liczbą i nie może być ujemna';
@@ -1668,6 +1681,8 @@ export const useEventFormState = () => {
         })(),
         infoHtml: dist.infoHtml || undefined,
         limit: parseNumberInput(dist.limit) ?? undefined,
+        bibRangeFrom: parseNumberInput(dist.bibRangeFrom) ?? undefined,
+        bibRangeTo: parseNumberInput(dist.bibRangeTo) ?? undefined,
         priceTiers: dist.priceTiers.map((tier) => ({
           ...tier,
           price: tier.price != null ? (parseNumberInput(tier.price) ?? undefined) : undefined,

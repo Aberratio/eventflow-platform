@@ -38,6 +38,8 @@ import type {
   TokenPayload,
   EmailChangePayload,
   CreateRegistrationPayload,
+  AssignBibNumbersPayload,
+  AssignBibNumbersResult,
   SwapTeamMemberPayload,
   UpdateRegistrationPayload,
   CreateResultPayload,
@@ -303,6 +305,11 @@ export interface ApiAdapter {
     id: string,
     data: UpdateRegistrationPayload,
   ): Promise<ApiResponse<Registration>>;
+  /** R-13: gives the next free number inside each distance's range to registrations without one. */
+  assignBibNumbers(
+    eventId: string,
+    data: AssignBibNumbersPayload,
+  ): Promise<ApiResponse<AssignBibNumbersResult>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
   updatePaymentDetails(
     id: string,

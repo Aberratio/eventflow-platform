@@ -63,5 +63,8 @@ as the first version.
 - Admin panel: "Rozliczenia (trasa A)" settlement report for gateway payments,
   with period and event filters, per-event totals (payments, refunds,
   commission, amount to pay out), line items and CSV/XLSX export.
+- Start number ranges per distance in the event form (overlapping ranges are
+  flagged), a server-side "assign start numbers" action that fills each range,
+  and manual start numbers that are checked for uniqueness and range.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main

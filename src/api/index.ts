@@ -161,6 +161,8 @@ export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
 export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>
   ensureAdapter().then((a) => a.requestRefund(...args));
+export const assignBibNumbers: ApiAdapter['assignBibNumbers'] = (...args) =>
+  ensureAdapter().then((a) => a.assignBibNumbers(...args));
 export const approveRefund: ApiAdapter['approveRefund'] = (...args) =>
   ensureAdapter().then((a) => a.approveRefund(...args));
 export const completeRefund: ApiAdapter['completeRefund'] = (...args) =>
