@@ -445,6 +445,12 @@ export interface Event {
   registrationDeadline: string;
   registrationOpenDate?: string;
   registrationUntilEventStart?: boolean;
+  /** R-02 (zakres P2): czy właściciel zapisu może sam zrezygnować (domyślnie tak). */
+  selfServiceEnabled?: boolean;
+  /** R-02: data graniczna ustawiona przez organizatora (ISO); brak = domyślnie 7 dni przed startem. */
+  selfServiceDeadline?: string | null;
+  /** R-02: data graniczna, która faktycznie obowiązuje (ISO) — własna albo domyślna. */
+  selfServiceEffectiveDeadline?: string | null;
   featured: boolean;
   liveResultsUrl?: string;
   isLive?: boolean;

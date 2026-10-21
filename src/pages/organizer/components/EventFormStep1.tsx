@@ -1,5 +1,6 @@
 ﻿import { disciplineLabels, uploadEventImage, getEventBackgrounds } from '@/api';
 import { safeUrl } from '@/lib/safeUrl';
+import { EventSelfServiceSection } from './EventSelfServiceSection';
 import {
   EVENT_DOCUMENT_TYPE_LABELS,
   EventDocumentType,
@@ -1374,6 +1375,14 @@ export const EventFormStep1 = ({ form, activeSubStep = 'basic' }: EventFormStep1
                 </Label>
               </div>
             </div>
+
+            <EventSelfServiceSection
+              enabled={form.selfServiceEnabled}
+              onEnabledChange={form.setSelfServiceEnabled}
+              deadline={form.selfServiceDeadline}
+              onDeadlineChange={form.setSelfServiceDeadline}
+              eventDate={form.date}
+            />
 
             {/* Virtual event toggle */}
             <div className="space-y-3 rounded-md border bg-white/[0.025] p-3">

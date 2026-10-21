@@ -157,6 +157,8 @@ export const updateRegistration: ApiAdapter['updateRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.updateRegistration(...args));
 export const cancelRegistration: ApiAdapter['cancelRegistration'] = (...args) =>
   ensureAdapter().then((a) => a.cancelRegistration(...args));
+export const getRegistrationChanges: ApiAdapter['getRegistrationChanges'] = (...args) =>
+  ensureAdapter().then((a) => a.getRegistrationChanges(...args));
 export const updatePaymentDetails: ApiAdapter['updatePaymentDetails'] = (...args) =>
   ensureAdapter().then((a) => a.updatePaymentDetails(...args));
 export const requestRefund: ApiAdapter['requestRefund'] = (...args) =>

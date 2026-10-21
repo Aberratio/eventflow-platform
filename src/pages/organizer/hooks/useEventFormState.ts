@@ -229,6 +229,15 @@ export const STEP_NAV_ITEMS: StepNavItem[] = [
   { id: 'summary', label: 'Podsumowanie', shortLabel: 'Podsumowanie', mainStep: 4 },
 ];
 
+/** ISO instant from the API -> `YYYY-MM-DDTHH:mm` in the organizer's local time ('' when unset). */
+function toLocalDateTimeValue(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export const useEventFormState = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -274,6 +283,13 @@ export const useEventFormState = () => {
   );
   const [registrationUntilEventStart, setRegistrationUntilEventStart] = useState(
     existingEvent?.registrationUntilEventStart || false,
+  );
+  // R-02 (zakres P2): samodzielna rezygnacja zawodnika. Pusta data = domyślnie 7 dni przed startem.
+  const [selfServiceEnabled, setSelfServiceEnabled] = useState(
+    existingEvent?.selfServiceEnabled ?? true,
+  );
+  const [selfServiceDeadline, setSelfServiceDeadline] = useState(
+    toLocalDateTimeValue(existingEvent?.selfServiceDeadline),
   );
   const [location, setLocation] = useState(existingEvent?.location || '');
   const [locationMapsUrl, setLocationMapsUrl] = useState(existingEvent?.locationMapsUrl || '');
@@ -1709,6 +1725,8 @@ export const useEventFormState = () => {
       registrationDeadline,
       registrationOpenDate: registrationOpenDate || undefined,
       registrationUntilEventStart,
+      selfServiceEnabled,
+      selfServiceDeadline: selfServiceDeadline ? new Date(selfServiceDeadline).toISOString() : null,
       bannerUrl: bannerUrl || undefined,
       originalBannerUrl: originalBannerUrl || undefined,
       bannerCropArea,
@@ -1910,6 +1928,10 @@ export const useEventFormState = () => {
     setRegistrationOpenDate,
     registrationUntilEventStart,
     setRegistrationUntilEventStart,
+    selfServiceEnabled,
+    setSelfServiceEnabled,
+    selfServiceDeadline,
+    setSelfServiceDeadline,
     location,
     setLocation,
     locationMapsUrl,

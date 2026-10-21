@@ -94,6 +94,9 @@ export interface CreateEventPayload {
   /** E8.11: embed our own registration form on an external site via iframe. */
   embedEnabled?: boolean;
   embedAllowedOrigins?: string[];
+  /** R-02 (zakres P2): samodzielna rezygnacja zawodnika — przełącznik i data graniczna (null = domyślnie 7 dni przed startem). */
+  selfServiceEnabled?: boolean;
+  selfServiceDeadline?: string | null;
 }
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;

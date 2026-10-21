@@ -66,6 +66,10 @@ as the first version.
 - Start number ranges per distance in the event form (overlapping ranges are
   flagged), a server-side "assign start numbers" action that fills each range,
   and manual start numbers that are checked for uniqueness and range.
+- Participants can cancel their own registration from the dashboard until the
+  organizer's cut-off date (zakres P2, do potwierdzenia przez Zamawiającego),
+  see the registration history, and organizers set the "Samoobsługa zapisów"
+  switch and cut-off date in the event form.
 
 ### Fixed
 
