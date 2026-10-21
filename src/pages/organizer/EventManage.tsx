@@ -311,6 +311,7 @@ const EventManage = () => {
 
           <TabsContent value="discounts">
             <DiscountCodesEditor
+              eventId={visibleEvent.id}
               discountCodes={discountCodes}
               distances={visibleEvent.distances}
               onChange={handleDiscountCodesChange}

@@ -58,6 +58,9 @@ import type {
   UpdatePartnerPayload,
 } from './payloads';
 import type {
+  DiscountCodeBatch,
+  DiscountCodeBatchDetail,
+  DiscountCodeBatchInput,
   Event,
   EventVisibility,
   User,
@@ -551,6 +554,18 @@ export interface ApiAdapter {
     distanceId: string,
     format: 'csv' | 'xlsx' | 'xml',
   ): Promise<void>;
+  // R-07: discount code batches (generator over the ordinary event discount codes).
+  // Same event-manager gate as the start-list export; the CSV is a real file download.
+  createDiscountCodeBatch(
+    eventId: string,
+    input: DiscountCodeBatchInput,
+  ): Promise<ApiResponse<DiscountCodeBatchDetail>>;
+  getDiscountCodeBatches(eventId: string): Promise<ApiResponse<DiscountCodeBatch[]>>;
+  getDiscountCodeBatch(
+    eventId: string,
+    batchId: string,
+  ): Promise<ApiResponse<DiscountCodeBatchDetail>>;
+  exportDiscountCodeBatch(eventId: string, batchId: string): Promise<void>;
   getSecuritySettings(): Promise<ApiResponse<SecuritySettings>>;
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;

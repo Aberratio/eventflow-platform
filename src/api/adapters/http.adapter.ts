@@ -768,6 +768,23 @@ export const httpAdapter: ApiAdapter = {
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/start-list-export${query({ format })}`,
       `lista-startowa.${format}`,
     ),
+  createDiscountCodeBatch: (eventId, input) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches`,
+      json('POST', input),
+      true,
+    ),
+  getDiscountCodeBatches: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/discount-code-batches`),
+  getDiscountCodeBatch: (eventId, batchId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}`,
+    ),
+  exportDiscountCodeBatch: (eventId, batchId) =>
+    downloadFile(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}/export`,
+      'kody-rabatowe.csv',
+    ),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),

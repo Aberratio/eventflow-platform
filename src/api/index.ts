@@ -349,6 +349,14 @@ export const getRegistrationStats: ApiAdapter['getRegistrationStats'] = (...args
   ensureAdapter().then((a) => a.getRegistrationStats(...args));
 export const exportStartList: ApiAdapter['exportStartList'] = (...args) =>
   ensureAdapter().then((a) => a.exportStartList(...args));
+export const createDiscountCodeBatch: ApiAdapter['createDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.createDiscountCodeBatch(...args));
+export const getDiscountCodeBatches: ApiAdapter['getDiscountCodeBatches'] = (...args) =>
+  ensureAdapter().then((a) => a.getDiscountCodeBatches(...args));
+export const getDiscountCodeBatch: ApiAdapter['getDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.getDiscountCodeBatch(...args));
+export const exportDiscountCodeBatch: ApiAdapter['exportDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.exportDiscountCodeBatch(...args));
 export const getSecuritySettings: ApiAdapter['getSecuritySettings'] = (...args) =>
   ensureAdapter().then((a) => a.getSecuritySettings(...args));
 export const updateSecuritySettings: ApiAdapter['updateSecuritySettings'] = (...args) =>

@@ -344,6 +344,7 @@ export const AdminEventManage = () => {
               <PriceTiersEditor distances={distances} onChange={edited(setDistances)} />
 
               <DiscountCodesEditor
+                eventId={event.id}
                 discountCodes={discountCodes}
                 distances={distances}
                 onChange={edited(setDiscountCodes)}
