@@ -21,6 +21,8 @@ as the first version.
   filter and can reject them with a reason.
 - Event registration, including an embeddable registration form for
   organizers' own websites, and confirmation pages.
+- Inter fonts are served from the platform's own domain, so no request goes
+  to Google before cookie consent.
 - Shop with product pages, cart and order confirmation.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
