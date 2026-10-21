@@ -26,6 +26,10 @@ as the first version.
   organizers' own websites, and confirmation pages.
 - Inter fonts are served from the platform's own domain, so no request goes
   to Google before cookie consent.
+- Registration form per distance: in the form editor, organizers pick the
+  whole event or one distance, see inherited fields, override them for that
+  distance (or reset), and add distance-only fields. The registration form
+  shows the form of the chosen distance.
 - Shop with product pages, cart and order confirmation.
 - Escape closes the mobile menu and returns focus to the menu button.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail

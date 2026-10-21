@@ -319,7 +319,7 @@ const EventManage = () => {
           </TabsContent>
 
           <TabsContent value="form">
-            <FormFieldsTab eventId={visibleEvent.id} />
+            <FormFieldsTab eventId={visibleEvent.id} distances={visibleEvent.distances} />
           </TabsContent>
 
           <TabsContent value="emails">

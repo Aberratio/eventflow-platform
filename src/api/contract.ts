@@ -529,8 +529,27 @@ export interface ApiAdapter {
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
   // E1.13: configurable registration form ("Pozycje formularza"). The public list is
   // unauthenticated (non-hidden positions only); the rest is organizer/staff-scoped.
-  getPublicFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  // R-04: with a `distanceId` the public list is that distance's effective form.
+  getPublicFormFields(eventId: string, distanceId?: string): Promise<ApiResponse<FormField[]>>;
   getFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
+  // R-04: per-distance form — effective list (event form + overrides + own fields), a distance-only
+  // field, copy-on-override of an inherited position and reset (inherit again).
+  getDistanceFormFields(eventId: string, distanceId: string): Promise<ApiResponse<FormField[]>>;
+  createDistanceFormField(
+    eventId: string,
+    distanceId: string,
+    data: CreateFormFieldPayload,
+  ): Promise<ApiResponse<FormField>>;
+  overrideFormField(
+    eventId: string,
+    distanceId: string,
+    fieldId: string,
+  ): Promise<ApiResponse<FormField>>;
+  resetFormFieldOverride(
+    eventId: string,
+    distanceId: string,
+    fieldId: string,
+  ): Promise<ApiResponse<{ reset: boolean }>>;
   createFormField(eventId: string, data: CreateFormFieldPayload): Promise<ApiResponse<FormField>>;
   updateFormField(
     eventId: string,
