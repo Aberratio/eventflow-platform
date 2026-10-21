@@ -39,3 +39,51 @@ export interface PlatformStats {
   readonly organizerCount: number;
   readonly activePackageCredits: number;
 }
+
+/**
+ * R-03 (spec 13, trasa A): raport rozliczeniowy admina — wpłaty bramką minus zwroty minus
+ * prowizja = kwota do ręcznej wypłaty dla organizatora. Wszystkie kwoty w groszach (int).
+ */
+export interface SettlementTotals {
+  readonly paymentsCount: number;
+  readonly refundsCount: number;
+  readonly grossMinor: number;
+  readonly refundsMinor: number;
+  readonly commissionMinor: number;
+  readonly netMinor: number;
+}
+
+export interface SettlementEventTotals extends SettlementTotals {
+  readonly eventId: string;
+  readonly eventName: string;
+  readonly organizerName: string;
+}
+
+export interface SettlementLine {
+  readonly type: 'payment' | 'refund';
+  readonly occurredAt: string;
+  readonly eventId: string;
+  readonly eventName: string;
+  readonly organizerName: string;
+  readonly registrationId: string;
+  readonly bibNumber: string | null;
+  readonly participantName: string;
+  readonly gateway: string;
+  readonly reference: string;
+  readonly amountMinor: number;
+  readonly commissionMinor: number;
+}
+
+export interface SettlementReport {
+  readonly period: { readonly dateFrom: string; readonly dateTo: string };
+  readonly commissionRateBps: number;
+  readonly summary: SettlementTotals;
+  readonly events: SettlementEventTotals[];
+  readonly lines: SettlementLine[];
+}
+
+export interface SettlementReportParams {
+  readonly dateFrom: string;
+  readonly dateTo: string;
+  readonly eventId?: string;
+}

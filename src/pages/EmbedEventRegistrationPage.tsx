@@ -4,12 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, LogIn } from 'lucide-react';
 import { registrationFormFieldErrors } from '@/api/errors';
 import { answersToPayload } from '@/lib/formFields';
-import { getEventById, getEventEmbedPublicConfig, createRegistration } from '@/api';
+import {
+  getEventById,
+  getEventEmbedPublicConfig,
+  createRegistration,
+  quoteRegistration,
+} from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RegistrationForm, RegistrationData } from '@/components/registration/RegistrationForm';
 import type { Registration, RegistrationFormFieldError } from '@/types';
+import type { CreateRegistrationPayload } from '@/api/payloads';
 import { navigateToPaymentGateway } from '@/lib/paymentGatewayNavigation';
 import { TEST_REGISTRATION_MESSAGE, registrationClosedMessage } from '@/lib/registrationOutcome';
 import { formatMoney } from '@/lib/format';
@@ -92,6 +98,34 @@ const EmbedEventRegistrationPage = () => {
 
   const isLoading = isEmbedConfigLoading || (embedConfig?.enabled === true && isEventLoading);
 
+  // Payload of `createRegistration` AND of `quoteRegistration` (B-02): the quote prices exactly what
+  // the create call would send, so both are built here, once.
+  const buildCreatePayload = (data: RegistrationData): CreateRegistrationPayload | null => {
+    if (!user || !event) return null;
+    return {
+      eventId: event.id,
+      eventName: event.name,
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      distanceId: data.distanceId,
+      distanceName: data.distanceName,
+      category: data.category,
+      teamName: data.teamName,
+      teamId: data.teamId,
+      teamInviteToken: data.teamInviteToken,
+      createTeam: data.createTeam,
+      specialCategory: data.teamSpecialCategory,
+      pricingVariantId: data.pricingVariantId,
+      discountCode: data.discountCode,
+      merchandise: data.merchandise,
+      insuranceVariantId: data.insuranceVariantId,
+      // B-07: answers and identity are validated by the server in the create call itself.
+      formFieldAnswers: answersToPayload(data.formFieldAnswers),
+      identity: data.identity,
+    };
+  };
+
   const handleComplete = async (data: RegistrationData) => {
     if (!user || !event || isSubmitting) return;
     setIsSubmitting(true);
@@ -99,27 +133,9 @@ const EmbedEventRegistrationPage = () => {
     try {
       // Same money-free payload contract as the normal registration page
       // (E1.2) — only IDs/selections, server recomputes and freezes amounts.
-      const response = await createRegistration({
-        eventId: event.id,
-        eventName: event.name,
-        userId: user.id,
-        userName: user.name,
-        userEmail: user.email,
-        distanceId: data.distanceId,
-        distanceName: data.distanceName,
-        category: data.category,
-        teamName: data.teamName,
-        teamId: data.teamId,
-        createTeam: data.createTeam,
-        specialCategory: data.teamSpecialCategory,
-        pricingVariantId: data.pricingVariantId,
-        discountCode: data.discountCode,
-        merchandise: data.merchandise,
-        insuranceVariantId: data.insuranceVariantId,
-        // B-07: answers and identity are validated by the server in the create call itself.
-        formFieldAnswers: answersToPayload(data.formFieldAnswers),
-        identity: data.identity,
-      });
+      const payload = buildCreatePayload(data);
+      if (!payload) return;
+      const response = await createRegistration(payload);
       // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — pay there
       // (the helper breaks out of the iframe, E8.11).
       if (
@@ -318,6 +334,11 @@ const EmbedEventRegistrationPage = () => {
           onCancel={() => window.history.back()}
           disabled={isSubmitting}
           serverFieldErrors={serverFieldErrors}
+          quote={async (data) => {
+            const payload = buildCreatePayload(data);
+            if (!payload) throw new Error('Brak zalogowanego użytkownika.');
+            return quoteRegistration(payload);
+          }}
         />
       </div>
     </div>

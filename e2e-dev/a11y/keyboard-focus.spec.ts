@@ -97,6 +97,8 @@ async function tabThrough(page: Page, cap: number): Promise<{ stops: Stop[]; rea
   let reachedFooter = false;
   for (let i = 0; i < cap; i++) {
     await page.keyboard.press('Tab');
+    // Let `transition-all` finish: the focus ring is animated, a read at t=0 would see no outline yet.
+    await page.waitForTimeout(250);
     const stop = await page.evaluate<Stop | null>(() => {
       const el = document.activeElement as HTMLElement | null;
       if (!el || el === document.body || el === document.documentElement) return null;
