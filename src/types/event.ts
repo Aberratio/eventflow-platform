@@ -90,6 +90,46 @@ export interface DiscountCode {
   distanceIds?: string[];
   active: boolean;
   usedBy?: DiscountCodeUsage[];
+  batchId?: string;
+}
+
+/** R-07: a generated batch of discount codes (grouping label over ordinary discount codes). */
+export interface DiscountCodeBatch {
+  id: string;
+  eventId: string;
+  label: string;
+  prefix: string;
+  count: number;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  maxUses: number;
+  validFrom?: string | null;
+  validTo?: string | null;
+  createdAt: string;
+  usedTotal: number;
+  codesTotal: number;
+}
+
+export interface DiscountCodeBatchCode {
+  id: string;
+  code: string;
+  usedCount: number;
+  active: boolean;
+}
+
+export interface DiscountCodeBatchDetail extends DiscountCodeBatch {
+  codes: DiscountCodeBatchCode[];
+}
+
+export interface DiscountCodeBatchInput {
+  prefix?: string;
+  count: number;
+  label?: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  maxUses: number;
+  validFrom?: string;
+  validTo?: string;
 }
 
 export interface MerchandiseOrder {
@@ -787,6 +827,11 @@ export interface FormField {
   options: FormFieldOption[] | null;
   createdAt?: string;
   updatedAt?: string;
+  /**
+   * R-04, only on a distance's effective form: where the position comes from — `event` (inherited
+   * as is), `override` (this distance replaces it) or `distance` (exists on this distance only).
+   */
+  source?: 'event' | 'override' | 'distance';
 }
 
 export interface CreateFormFieldPayload {

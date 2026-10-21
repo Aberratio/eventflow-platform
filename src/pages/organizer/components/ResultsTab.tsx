@@ -228,7 +228,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       </Card>
 
       <Tabs defaultValue="individual" className="space-y-4">
-        <TabsList>
+        <TabsList className="h-auto max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="individual" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Wyniki indywidualne

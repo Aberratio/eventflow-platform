@@ -51,6 +51,7 @@ export const TierEditor = ({
             <span className="text-sm font-bold text-primary">{formatMoney(calculatedPrice)}</span>
           </div>
           <Button
+            aria-label="Usuń próg"
             variant="ghost"
             size="icon"
             onClick={onRemove}
