@@ -2,7 +2,6 @@ import {
   getRegistrationsByUser,
   getResultsByUser,
   getPersonalRecords,
-  getMessages,
   getTickets,
   getCertificates,
   getMyOrders,
@@ -21,7 +20,6 @@ import {
   Ticket,
   History,
   Medal,
-  Mail,
   UserCog,
   TicketIcon,
   Package,
@@ -32,7 +30,6 @@ import ParticipantOverviewTab from './components/ParticipantOverviewTab';
 import ParticipantRegistrationsTab from './components/ParticipantRegistrationsTab';
 import ParticipantHistoryTab from './components/ParticipantHistoryTab';
 import ParticipantRecordsTab from './components/ParticipantRecordsTab';
-import ParticipantMessagesTab from './components/ParticipantMessagesTab';
 import ParticipantProfileTab from './components/ParticipantProfileTab';
 import ParticipantTicketsTab from './components/ParticipantTicketsTab';
 import ParticipantOrdersTab from './components/ParticipantOrdersTab';
@@ -73,11 +70,6 @@ const ParticipantDashboard = () => {
     queryFn: () => getPersonalRecords(user!.id),
     enabled: Boolean(user?.id),
   });
-  const { data: messagesResp } = useQuery({
-    queryKey: ['messages', user?.id],
-    queryFn: () => getMessages(user!.id),
-    enabled: Boolean(user?.id),
-  });
   const { data: ticketsResp } = useQuery({
     queryKey: ['tickets', user?.id],
     queryFn: () => getTickets(user!.id),
@@ -98,8 +90,6 @@ const ParticipantDashboard = () => {
   const upcomingRegistrations = userRegistrations.filter((r) => r.status !== 'removed');
   const userResults = resultsResp?.data ?? [];
   const userCertificates = certificatesResp?.data ?? [];
-  const userMessages = messagesResp?.data ?? [];
-  const unreadMessages = userMessages.filter((m) => !m.read);
   const userRecords = recordsResp?.data ?? [];
   const userOrders = ordersResp?.data ?? [];
   const userTickets = ticketsResp?.data ?? [];
@@ -119,7 +109,6 @@ const ParticipantDashboard = () => {
     { id: 'orders', label: 'Zamówienia', icon: Package, badge: userOrders.length },
     { id: 'profile', label: 'Profil', icon: UserCog },
     { id: 'authorizations', label: 'Upoważnienia', icon: ShieldCheck },
-    { id: 'messages', label: 'Wiadomości', icon: Mail, badge: unreadMessages.length },
   ];
 
   return (
@@ -166,7 +155,6 @@ const ParticipantDashboard = () => {
               upcomingRegistrations={upcomingRegistrations}
               results={userResults}
               personalRecords={userRecords}
-              unreadMessages={unreadMessages}
             />
           </TabsContent>
 
@@ -202,9 +190,6 @@ const ParticipantDashboard = () => {
             <ParticipantAuthorizationsTab />
           </TabsContent>
 
-          <TabsContent value="messages" className="mt-0">
-            <ParticipantMessagesTab messages={userMessages} />
-          </TabsContent>
         </Tabs>
       </div>
     </Layout>

@@ -90,7 +90,6 @@ import type {
   ChallengeEntry,
   ChallengeEntryStatus,
   ChallengeRanking,
-  Message,
   Ticket,
   Certificate,
   Partner,
@@ -101,6 +100,9 @@ import type {
   CompetitorMergeComparison,
   CompetitorMergePayload,
   CompetitorMergeResult,
+  CompetitorDuplicateReport,
+  CompetitorDuplicateReportStatus,
+  ReportCompetitorDuplicatePayload,
   GlobalInsuranceSettings,
   ChallengePointsSettings,
   AdminActivityLog,
@@ -437,10 +439,6 @@ export interface ApiAdapter {
   getSeriesRanking(seriesId: string): Promise<ApiResponse<ChallengeRanking>>;
 
   // ── Messages ──
-  getMessages(userId: string): Promise<ApiResponse<Message[]>>;
-  getMessage(id: string): Promise<ApiResponse<Message | null>>;
-  sendMessage(data: Partial<Message>): Promise<ApiResponse<Message>>;
-  markAsRead(id: string): Promise<ApiResponse<Message>>;
 
   // ── Tickets ──
   getTickets(userId: string): Promise<ApiResponse<Ticket[]>>;
@@ -483,6 +481,22 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<CompetitorMergeComparison>>;
   /** Wykonuje (albo wstrzymuje) scalenie — patrz CompetitorMergeResult.status. */
   mergeCompetitors(payload: CompetitorMergePayload): Promise<ApiResponse<CompetitorMergeResult>>;
+
+  // ── R-08: zgłoszenia duplikatów Zawodnika ──
+  /** Opiekun / organizator zgłasza, że profil jest duplikatem innego (nic nie scala). */
+  reportCompetitorDuplicate(
+    competitorId: string,
+    payload: ReportCompetitorDuplicatePayload,
+  ): Promise<ApiResponse<CompetitorDuplicateReport>>;
+  /** Kolejka zgłoszeń dla Moderatora/Admina; domyślnie tylko otwarte. */
+  listCompetitorDuplicateReports(
+    status?: CompetitorDuplicateReportStatus | 'all',
+  ): Promise<ApiResponse<CompetitorDuplicateReport[]>>;
+  /** Moderator/Admin odrzuca otwarte zgłoszenie (opcjonalny powód). */
+  rejectCompetitorDuplicateReport(
+    id: string,
+    reason?: string,
+  ): Promise<ApiResponse<CompetitorDuplicateReport>>;
 
   // ── Insurance ──
   getGlobalInsuranceSettings(): Promise<ApiResponse<GlobalInsuranceSettings>>;
@@ -535,7 +549,11 @@ export interface ApiAdapter {
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.
   // Same $canManageEvent gate as the rest of this group, server-side.
-  exportStartList(eventId: string, distanceId: string, format: 'csv' | 'xlsx' | 'xml'): Promise<void>;
+  exportStartList(
+    eventId: string,
+    distanceId: string,
+    format: 'csv' | 'xlsx' | 'xml',
+  ): Promise<void>;
   // R-07: discount code batches (generator over the ordinary event discount codes).
   // Same event-manager gate as the start-list export; the CSV is a real file download.
   createDiscountCodeBatch(

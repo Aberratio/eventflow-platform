@@ -63,9 +63,9 @@ const START_CODE = `pqr_${'a1'.repeat(24)}`;
 describe('EventTicket start code QR (B-04, G-01)', () => {
   it('encodes the bare pqr_ start code (not JSON) for a confirmed Zapis', () => {
     const { container } = render(
-      
-        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }} />
-      ,
+      <EventTicket
+        ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }}
+      />,
     );
 
     const qr = container.querySelector('svg[data-qr-value]');
@@ -78,9 +78,7 @@ describe('EventTicket start code QR (B-04, G-01)', () => {
     'shows no QR and a status message for a %s Zapis',
     (registrationStatus) => {
       const { container } = render(
-        
-          <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus }} />
-        ,
+        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus }} />,
       );
 
       expect(container.querySelector('svg')?.getAttribute('data-qr-value')).toBeFalsy();
@@ -92,22 +90,31 @@ describe('EventTicket start code QR (B-04, G-01)', () => {
 
   it('says the ticket appears after payment for an unpaid Zapis', () => {
     render(
-      
-        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'pending' }} />
-      ,
+      <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'pending' }} />,
     );
     expect(screen.getByText(/Bilet pojawi się po opłaceniu zapisu/)).toBeInTheDocument();
   });
 
   it('links "Pobierz bilet" to the print page of the Zapis', () => {
     render(
-      
-        <EventTicket ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }} />
-      ,
+      <EventTicket
+        ticket={{ ...baseTicket, qrCode: START_CODE, registrationStatus: 'confirmed' }}
+      />,
     );
     expect(screen.getByRole('link', { name: /Pobierz bilet/ })).toHaveAttribute(
       'href',
       '/participant/tickets/registration-1/print',
     );
+  });
+});
+
+/** UX-mobile blocker: a ticket without a usable `eventDate` must not crash the whole Bilety tab. */
+describe('EventTicket without eventDate', () => {
+  it('renders the ticket instead of throwing "Invalid time value"', () => {
+    const ticket = { ...baseTicket, eventDate: undefined } as unknown as Ticket;
+
+    render(<EventTicket ticket={ticket} />);
+
+    expect(screen.getByText('Maraton Testowy')).toBeInTheDocument();
   });
 });

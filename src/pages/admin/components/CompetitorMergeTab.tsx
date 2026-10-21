@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getCompetitorMergeComparison, mergeCompetitors, searchCompetitorsForMerge } from '@/api';
 import { QUERY_KEYS } from '@/constants';
+import { DuplicateReportsQueue } from './DuplicateReportsQueue';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -223,6 +224,14 @@ export const CompetitorMergeTab = () => {
           archiwalny rekord ze stanem „scalony”, nigdy nie jest usuwany.
         </p>
       </div>
+
+      <DuplicateReportsQueue
+        onCompare={(a, b) => {
+          setIdA(a);
+          setIdB(b);
+          setSurvivorId(null);
+        }}
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         {[idA, idB].map((id, index) =>

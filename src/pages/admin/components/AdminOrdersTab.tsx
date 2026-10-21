@@ -56,7 +56,7 @@ const orderStatusLabels: Record<ShopOrder['status'], string> = {
 };
 
 const orderStatusColors: Record<ShopOrder['status'], string> = {
-  pending: 'bg-warning/20 text-warning-foreground border-warning',
+  pending: 'bg-warning/20 text-warning border-warning',
   paid: 'bg-primary/20 text-primary border-primary',
   shipped: 'bg-accent/20 text-accent-foreground border-accent',
   delivered: 'bg-success/20 text-success border-success',
@@ -206,7 +206,7 @@ export const AdminOrdersTab = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <div className="rounded-lg bg-accent/10 p-2">

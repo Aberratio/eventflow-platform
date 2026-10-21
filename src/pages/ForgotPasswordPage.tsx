@@ -97,17 +97,17 @@ const ForgotPasswordPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Adres email</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <FormControl>
                           <Input
                             type="email"
                             placeholder="twoj@email.com"
                             className="pl-10"
                             {...field}
                           />
-                        </div>
-                      </FormControl>
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

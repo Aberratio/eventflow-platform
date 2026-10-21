@@ -285,14 +285,6 @@ export const getSeriesRanking: ApiAdapter['getSeriesRanking'] = (...args) =>
   ensureAdapter().then((a) => a.getSeriesRanking(...args));
 
 // Messages
-export const getMessages: ApiAdapter['getMessages'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessages(...args));
-export const getMessage: ApiAdapter['getMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessage(...args));
-export const sendMessage: ApiAdapter['sendMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.sendMessage(...args));
-export const markAsRead: ApiAdapter['markAsRead'] = (...args) =>
-  ensureAdapter().then((a) => a.markAsRead(...args));
 
 // Tickets
 export const getTickets: ApiAdapter['getTickets'] = (...args) =>
@@ -537,3 +529,11 @@ export {
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';
+export const reportCompetitorDuplicate: ApiAdapter['reportCompetitorDuplicate'] = (...args) =>
+  ensureAdapter().then((a) => a.reportCompetitorDuplicate(...args));
+export const listCompetitorDuplicateReports: ApiAdapter['listCompetitorDuplicateReports'] = (
+  ...args
+) => ensureAdapter().then((a) => a.listCompetitorDuplicateReports(...args));
+export const rejectCompetitorDuplicateReport: ApiAdapter['rejectCompetitorDuplicateReport'] = (
+  ...args
+) => ensureAdapter().then((a) => a.rejectCompetitorDuplicateReport(...args));

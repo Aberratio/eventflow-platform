@@ -127,6 +127,7 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
               </Avatar>
               <button
                 type="button"
+                aria-label="Zmień zdjęcie profilowe"
                 onClick={handleAvatarClick}
                 disabled={uploadingAvatar}
                 className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
