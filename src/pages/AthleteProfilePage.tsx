@@ -26,17 +26,18 @@ const AthleteProfilePage = () => {
     queryKey: ['events', 'athlete-profile'],
     queryFn: () => getAllEventsPaged({ includeUnpublished: true, includePrivate: true }),
   });
-  const events = eventsResponse?.data ?? [];
+  const events = useMemo(() => eventsResponse?.data ?? [], [eventsResponse]);
 
   const { data: resultsResponse } = useQuery({
     queryKey: ['results-by-user', userId],
     queryFn: () => getResultsByUser(userId!),
     enabled: Boolean(userId),
   });
-  const userResults = resultsResponse?.data ?? [];
+  const userResults = useMemo(() => resultsResponse?.data ?? [], [resultsResponse]);
 
   const athleteResults = useMemo(() => {
-    return userResults.sort((a, b) => {
+    // Sort a copy: the array belongs to the query cache.
+    return [...userResults].sort((a, b) => {
       const eventA = events.find((e) => e.id === a.eventId);
       const eventB = events.find((e) => e.id === b.eventId);
       return new Date(eventB?.date || 0).getTime() - new Date(eventA?.date || 0).getTime();

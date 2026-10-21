@@ -37,7 +37,7 @@ const SeriesDetailsPage = () => {
     enabled: !!seriesId,
   });
   const series = seriesData?.data;
-  const allEvents = eventsData?.data ?? [];
+  const allEvents = useMemo(() => eventsData?.data ?? [], [eventsData]);
 
   const [genderFilter, setGenderFilter] = useState<'all' | 'M' | 'K'>('all');
 

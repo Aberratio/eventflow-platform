@@ -1,6 +1,6 @@
 import { getOrders } from '@/api';
 import { getAllUsers } from '@/api/fetchAllPages';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -85,10 +85,12 @@ export const AdminOrdersTab = () => {
     queryKey: ['users', 'order-customers'],
     queryFn: () => getAllUsers(),
   });
-  const users = usersResponse?.data ?? [];
+  const users = useMemo(() => usersResponse?.data ?? [], [usersResponse]);
 
-  const getCustomerName = (userId: string) =>
-    users.find((u) => u.id === userId)?.name || 'Nieznany';
+  const getCustomerName = useCallback(
+    (userId: string) => users.find((u) => u.id === userId)?.name || 'Nieznany',
+    [users],
+  );
   const getCustomerEmail = (userId: string) => users.find((u) => u.id === userId)?.email || '';
 
   const toggleSort = (field: SortField) => {
@@ -130,7 +132,7 @@ export const AdminOrdersTab = () => {
     });
 
     return result;
-  }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir, users]);
+  }, [orders, search, statusFilter, dateFrom, dateTo, sortField, sortDir, getCustomerName]);
 
   const prepareOrdersExport = () => {
     return filteredOrders.map((order) => ({
