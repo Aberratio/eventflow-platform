@@ -299,3 +299,32 @@ export interface OnlineSession {
   browser?: string;
   location?: string;
 }
+
+/** R-08 (spec 22): zgłoszenie możliwego duplikatu Zawodnika (opiekun/organizator -> Moderator/Admin). */
+export interface ReportCompetitorDuplicatePayload {
+  duplicateOfId: string;
+  note?: string;
+}
+
+export interface CompetitorDuplicateReportProfile {
+  firstName: string;
+  lastName: string;
+  birthDate: string | null;
+}
+
+/** open -> rejected (Moderator/Admin) albo merged (ustawiane przez scalenie profili). */
+export type CompetitorDuplicateReportStatus = 'open' | 'rejected' | 'merged';
+
+export interface CompetitorDuplicateReport {
+  id: string;
+  competitorId: string;
+  duplicateOfId: string;
+  competitor: CompetitorDuplicateReportProfile;
+  duplicateOf: CompetitorDuplicateReportProfile;
+  reporterName: string | null;
+  reporterRole: string;
+  note: string;
+  status: CompetitorDuplicateReportStatus;
+  rejectReason: string | null;
+  createdAt: string;
+}

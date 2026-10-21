@@ -96,6 +96,7 @@ export const EventFiltersDrawerTrigger = ({
         <Button
           variant="outline"
           size={triggerMode === 'icon' ? 'icon' : 'sm'}
+          aria-label={triggerMode === 'icon' ? 'Filtry' : undefined}
           className={cn(
             'shrink-0 lg:hidden',
             triggerMode === 'icon'

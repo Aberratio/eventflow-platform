@@ -559,8 +559,17 @@ export const httpAdapter: ApiAdapter = {
   quoteRegistration: (data) => request('/registrations/quote', json('POST', data)),
   updateRegistration: (id, data) =>
     request(`/registrations/${encodeURIComponent(id)}`, json('PATCH', data)),
+  assignBibNumbers: (eventId, data) =>
+    request(`/events/${encodeURIComponent(eventId)}/bib-numbers/assign`, json('POST', data)),
   cancelRegistration: (id) =>
     request(`/registrations/${encodeURIComponent(id)}/cancel`, json('POST')),
+  getRegistrationChanges: (id) => request(`/registrations/${encodeURIComponent(id)}/changes`),
+  quoteDistanceChange: (id, data) =>
+    request(`/registrations/${encodeURIComponent(id)}/distance-change/quote`, json('POST', data)),
+  changeRegistrationDistance: (id, data) =>
+    request(`/registrations/${encodeURIComponent(id)}/distance-change`, json('POST', data)),
+  transferRegistration: (id, data) =>
+    request(`/registrations/${encodeURIComponent(id)}/transfer`, json('POST', data)),
   updatePaymentDetails: (id, paymentDetails) =>
     request(
       `/registrations/${encodeURIComponent(id)}/payment-details`,
@@ -695,10 +704,6 @@ export const httpAdapter: ApiAdapter = {
     request(`/challenges/${encodeURIComponent(challengeId)}/ranking`),
   getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
-  getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
-  getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),
-  sendMessage: (data) => request('/messages', json('POST', data)),
-  markAsRead: (id) => request(`/messages/${encodeURIComponent(id)}/read`, json('POST')),
 
   getTickets: (userId) => request(`/users/${encodeURIComponent(userId)}/tickets`),
   getCertificates: (userId) => request(`/users/${encodeURIComponent(userId)}/certificates`),
@@ -737,8 +742,34 @@ export const httpAdapter: ApiAdapter = {
     request(`/events/${encodeURIComponent(eventId)}/form-field-aggregates`),
   // E1.13: the server's 422 text is field-specific ("To pole jest wymagane."), so keep it
   // instead of the generic validation_error copy.
-  getPublicFormFields: (eventId) =>
-    request(`/events/${encodeURIComponent(eventId)}/form-fields/public`),
+  getPublicFormFields: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/form-fields/public${
+        distanceId ? `?distanceId=${encodeURIComponent(distanceId)}` : ''
+      }`,
+    ),
+  getDistanceFormFields: (eventId, distanceId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields`,
+    ),
+  createDistanceFormField: (eventId, distanceId, data) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields`,
+      json('POST', data),
+      true,
+    ),
+  overrideFormField: (eventId, distanceId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields/${encodeURIComponent(fieldId)}/override`,
+      json('POST'),
+      true,
+    ),
+  resetFormFieldOverride: (eventId, distanceId, fieldId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/form-fields/${encodeURIComponent(fieldId)}/override`,
+      json('DELETE'),
+      true,
+    ),
   getFormFields: (eventId) => request(`/events/${encodeURIComponent(eventId)}/form-fields`),
   createFormField: (eventId, data) =>
     request(`/events/${encodeURIComponent(eventId)}/form-fields`, json('POST', data), true),
@@ -775,11 +806,34 @@ export const httpAdapter: ApiAdapter = {
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/start-list-export${query({ format })}`,
       `lista-startowa.${format}`,
     ),
+  createDiscountCodeBatch: (eventId, input) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches`,
+      json('POST', input),
+      true,
+    ),
+  getDiscountCodeBatches: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/discount-code-batches`),
+  getDiscountCodeBatch: (eventId, batchId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}`,
+    ),
+  exportDiscountCodeBatch: (eventId, batchId) =>
+    downloadFile(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}/export`,
+      'kody-rabatowe.csv',
+    ),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
   getOnlineSessions: () => request('/admin/online-sessions'),
   getSalesStats: () => request('/admin/sales-stats'),
   getPlatformStats: () => request('/admin/platform-stats'),
+  getSettlementReport: (params) => request(`/admin/settlements${query({ ...params })}`),
+  exportSettlementReport: (params, format) =>
+    downloadFile(
+      `/admin/settlements/export${query({ ...params, format })}`,
+      `rozliczenie.${format}`,
+    ),
 
   getInfoPages: () => request('/info-pages'),
   getInfoPageBySlug: (slug) => nullOn404(request(`/info-pages/slug/${encodeURIComponent(slug)}`)),
@@ -852,4 +906,16 @@ export const httpAdapter: ApiAdapter = {
       `/admin/competitors/${encodeURIComponent(competitorIdA)}/merge-comparison/${encodeURIComponent(competitorIdB)}`,
     ),
   mergeCompetitors: (payload) => request('/admin/competitors/merge', json('POST', payload)),
+  reportCompetitorDuplicate: (competitorId, payload) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/duplicate-reports`,
+      json('POST', payload),
+    ),
+  listCompetitorDuplicateReports: (status) =>
+    request(`/admin/competitors/duplicate-reports${status ? `?status=${status}` : ''}`),
+  rejectCompetitorDuplicateReport: (id, reason) =>
+    request(
+      `/admin/competitors/duplicate-reports/${encodeURIComponent(id)}`,
+      json('PATCH', { status: 'rejected', ...(reason ? { reason } : {}) }),
+    ),
 };

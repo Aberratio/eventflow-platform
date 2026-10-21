@@ -105,7 +105,13 @@ export const ResultsFilters = ({
 
       {/* Clear filters */}
       {hasFilters && (
-        <Button variant="ghost" size="icon" onClick={handleClearFilters} className="shrink-0">
+        <Button
+          aria-label="Wyczyść filtry"
+          variant="ghost"
+          size="icon"
+          onClick={handleClearFilters}
+          className="shrink-0"
+        >
           <X className="h-4 w-4" />
         </Button>
       )}

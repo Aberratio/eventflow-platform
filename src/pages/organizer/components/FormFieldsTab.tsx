@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ClipboardList, Lock, Pencil, Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ClipboardList,
+  Lock,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,10 +33,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  createDistanceFormField,
   createFormField,
   deleteFormField,
+  getDistanceFormFields,
   getFormFields,
+  overrideFormField,
   reorderFormFields,
+  resetFormFieldOverride,
   updateFormField,
 } from '@/api';
 import { apiErrorCode } from '@/api/errors';
@@ -56,14 +69,21 @@ const errorText = (error: unknown): string => {
   if (code === 'form_field_has_answers') {
     return 'Nie można zmienić typu pola, które ma już odpowiedzi w zapisach. Dodaj nowe pole zamiast zmieniać typ.';
   }
+  if (code === 'form_field_override_exists') {
+    return 'Ten dystans już nadpisuje to pole.';
+  }
   if (code === 'form_field_option_in_use') {
     return 'Nie można usunąć wariantu, który wybrali już zawodnicy. Zmień jego nazwę lub cenę albo zostaw go na liście.';
   }
   return error instanceof Error ? error.message : 'Nie udało się zapisać zmiany.';
 };
 
+const EVENT_SCOPE = '__event__';
+
 interface FormFieldsTabProps {
   eventId: string;
+  /** R-04: when given (and not empty) the form can be configured per distance as well. */
+  distances?: Array<{ id: string; name: string }>;
 }
 
 /**
@@ -71,10 +91,16 @@ interface FormFieldsTabProps {
  * positions (Nie / Pokaż / Wymagany, within what the server allows for each) and the custom
  * fields, in one ordered list. The server is authoritative: every rule we mirror here only
  * saves a round trip, a 422 text is always shown next to the field it came from.
+ *
+ * R-04: the scope selector switches between the whole event and one distance. A distance shows
+ * the event form as inherited; a position can be overridden there (a copy the organizer edits),
+ * reset to inherit again, and distance-only fields can be added.
  */
-export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
+export const FormFieldsTab = ({ eventId, distances = [] }: FormFieldsTabProps) => {
   const queryClient = useQueryClient();
-  const queryKey = ['form-fields', 'manage', eventId];
+  const [scope, setScope] = useState(EVENT_SCOPE);
+  const distanceId = scope === EVENT_SCOPE ? null : scope;
+  const queryKey = ['form-fields', 'manage', eventId, scope];
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<FormField | null>(null);
   const [creating, setCreating] = useState(false);
@@ -82,7 +108,8 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
 
   const { data: fields = [], isLoading } = useQuery({
     queryKey,
-    queryFn: () => getFormFields(eventId),
+    queryFn: () =>
+      distanceId ? getDistanceFormFields(eventId, distanceId) : getFormFields(eventId),
     select: (r) => r.data ?? [],
   });
 
@@ -116,6 +143,31 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
     onError: (error) => toast.error(errorText(error)),
   });
 
+  const override = useMutation({
+    mutationFn: (field: FormField) => overrideFormField(eventId, distanceId ?? '', field.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey });
+      void refreshPublic();
+      toast.success('Pole jest teraz nadpisane na tym dystansie.');
+    },
+    onError: (error) => toast.error(errorText(error)),
+  });
+
+  const resetOverride = useMutation({
+    mutationFn: (field: FormField) => resetFormFieldOverride(eventId, distanceId ?? '', field.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey });
+      void refreshPublic();
+      toast.success('Dystans znów dziedziczy to pole z wydarzenia.');
+    },
+    onError: (error) =>
+      toast.error(
+        apiErrorCode(error) === 'form_field_has_answers'
+          ? 'Nie można przywrócić dziedziczenia, bo zapisy mają już odpowiedzi w tym polu.'
+          : errorText(error),
+      ),
+  });
+
   const remove = useMutation({
     mutationFn: (field: FormField) => deleteFormField(eventId, field.id),
     onSuccess: () => {
@@ -145,10 +197,35 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
         </Button>
       </CardHeader>
       <CardContent className="space-y-2">
+        {distances.length > 0 && (
+          <div className="space-y-1 pb-2">
+            <Label htmlFor="ff-scope">Formularz dla</Label>
+            <Select value={scope} onValueChange={setScope}>
+              <SelectTrigger id="ff-scope" className="max-w-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={EVENT_SCOPE}>Całe wydarzenie</SelectItem>
+                {distances.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    Dystans: {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {distanceId && (
+              <p className="text-xs text-muted-foreground">
+                Pola odziedziczone z wydarzenia możesz nadpisać tylko dla tego dystansu albo dodać
+                pola widoczne wyłącznie na nim.
+              </p>
+            )}
+          </div>
+        )}
         {isLoading && <p className="text-sm text-muted-foreground">Ładowanie...</p>}
         {fields.map((field, index) => {
           const allowed = field.kind === 'system' ? allowedSystemStates(field.fieldKey) : STATES;
-          const locked = field.kind === 'system' && allowed.length === 1;
+          const inherited = distanceId !== null && field.source === 'event';
+          const locked = (field.kind === 'system' && allowed.length === 1) || inherited;
           return (
             <div
               key={field.id}
@@ -162,7 +239,7 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
                     size="icon"
                     className="h-6 w-6"
                     aria-label={`Przesuń w górę: ${formFieldLabel(field)}`}
-                    disabled={index === 0 || reorder.isPending}
+                    disabled={distanceId !== null || index === 0 || reorder.isPending}
                     onClick={() => {
                       const ids = moveFieldId(fields, field.id, -1);
                       if (ids) reorder.mutate(ids);
@@ -175,7 +252,9 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
                     size="icon"
                     className="h-6 w-6"
                     aria-label={`Przesuń w dół: ${formFieldLabel(field)}`}
-                    disabled={index === fields.length - 1 || reorder.isPending}
+                    disabled={
+                      distanceId !== null || index === fields.length - 1 || reorder.isPending
+                    }
                     onClick={() => {
                       const ids = moveFieldId(fields, field.id, 1);
                       if (ids) reorder.mutate(ids);
@@ -195,6 +274,9 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
                         {field.fieldType ? FORM_FIELD_TYPE_LABELS[field.fieldType] : 'Własne'}
                       </Badge>
                     )}
+                    {inherited && <Badge variant="outline">Odziedziczone</Badge>}
+                    {field.source === 'override' && <Badge>Nadpisane na dystansie</Badge>}
+                    {field.source === 'distance' && <Badge>Tylko ten dystans</Badge>}
                     {field.isConfidential && (
                       <Badge variant="destructive" className="gap-1">
                         <Lock className="h-3 w-3" /> Poufne
@@ -239,20 +321,44 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
                   variant="ghost"
                   size="icon"
                   aria-label={`Edytuj: ${formFieldLabel(field)}`}
+                  disabled={inherited}
                   onClick={() => setEditing(field)}
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                {field.kind === 'custom' && (
+                {inherited && (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Usuń: ${formFieldLabel(field)}`}
-                    onClick={() => setDeleting(field)}
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Nadpisz na dystansie: ${formFieldLabel(field)}`}
+                    disabled={override.isPending}
+                    onClick={() => override.mutate(field)}
                   >
-                    <Trash2 className="h-4 w-4 text-destructive" />
+                    Nadpisz na dystansie
                   </Button>
                 )}
+                {field.source === 'override' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Przywróć dziedziczenie: ${formFieldLabel(field)}`}
+                    disabled={resetOverride.isPending}
+                    onClick={() => resetOverride.mutate(field)}
+                  >
+                    <RotateCcw className="mr-1 h-4 w-4" /> Przywróć dziedziczenie
+                  </Button>
+                )}
+                {field.kind === 'custom' &&
+                  (distanceId === null || field.source === 'distance') && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Usuń: ${formFieldLabel(field)}`}
+                      onClick={() => setDeleting(field)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
               </div>
               {field.kind === 'custom' && field.options && field.options.length > 0 && (
                 <p className="text-xs text-muted-foreground">
@@ -278,6 +384,7 @@ export const FormFieldsTab = ({ eventId }: FormFieldsTabProps) => {
       {creating && (
         <CreateFieldDialog
           eventId={eventId}
+          distanceId={distanceId}
           onClose={() => setCreating(false)}
           onCreated={() => {
             setCreating(false);
@@ -417,10 +524,12 @@ const OptionsEditor = ({
 
 const CreateFieldDialog = ({
   eventId,
+  distanceId,
   onClose,
   onCreated,
 }: {
   eventId: string;
+  distanceId: string | null;
   onClose: () => void;
   onCreated: () => void;
 }) => {
@@ -467,7 +576,9 @@ const CreateFieldDialog = ({
     }
     setSaving(true);
     try {
-      await createFormField(eventId, payload);
+      await (distanceId
+        ? createDistanceFormField(eventId, distanceId, payload)
+        : createFormField(eventId, payload));
       onCreated();
     } catch (e) {
       setError(errorText(e));

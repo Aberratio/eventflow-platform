@@ -182,7 +182,7 @@ const HeroEventCard = ({ event }: { event: Event }) => (
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
             <span className="text-white/55">Od {formatMoney(minPrice(event))}</span>
-            <span className="text-white/25">•</span>
+            <span className="text-white/55">•</span>
             <span className="font-medium text-emerald-400">
               Pozostało {spotsLeft(event)} miejsc
             </span>
@@ -200,7 +200,11 @@ const HeroEventCard = ({ event }: { event: Event }) => (
       </div>
     </Link>
     <div className="mt-4 flex items-center justify-center gap-3">
-      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+      <button
+        type="button"
+        aria-label="Poprzednie"
+        className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/55 transition hover:text-white"
+      >
         <ArrowLeft className="h-4 w-4" />
       </button>
       <div className="flex gap-1.5">
@@ -209,7 +213,11 @@ const HeroEventCard = ({ event }: { event: Event }) => (
         <span className="bg-white/18 h-1 w-3 rounded-full" />
         <span className="bg-white/18 h-1 w-3 rounded-full" />
       </div>
-      <button className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/45 transition hover:text-white">
+      <button
+        type="button"
+        aria-label="Następne"
+        className="border-white/8 flex h-9 w-9 items-center justify-center rounded-full border bg-white/[0.03] text-white/55 transition hover:text-white"
+      >
         <ArrowRight className="h-4 w-4" />
       </button>
     </div>
@@ -230,12 +238,12 @@ const SearchPanel = ({
     className="mt-8 grid gap-2 rounded-lg border border-white/[0.12] p-2 shadow-xl shadow-black/10 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
     style={{ background: 'var(--glass-bg)' }}
   >
-    <label className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-white/45 focus-within:bg-white/[0.03]">
+    <label className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-white/55 focus-within:bg-white/[0.03]">
       <Search className="h-4 w-4 shrink-0" />
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        className="placeholder:text-white/38 min-w-0 flex-1 bg-transparent text-white outline-none"
+        className="min-w-0 flex-1 bg-transparent text-white placeholder:text-white/55"
         placeholder="Szukaj wydarzenia, miasta lub dyscypliny..."
       />
     </label>
@@ -267,7 +275,7 @@ const DisciplineGrid = () => (
       action={
         <Link
           to="/wydarzenia"
-          className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+          className="hidden shrink-0 items-center gap-1.5 text-sm text-white/55 transition-colors hover:text-white/70 sm:flex"
         >
           Zobacz wszystkie dyscypliny
           <ArrowRight className="h-3.5 w-3.5" />
@@ -283,7 +291,7 @@ const DisciplineGrid = () => (
         >
           <Icon className="h-8 w-8 text-primary transition group-hover:scale-105" />
           <h3 className="mt-3 text-sm font-bold text-white">{label}</h3>
-          <p className="mt-0.5 text-xs text-white/45">{count} wydarzeń</p>
+          <p className="mt-0.5 text-xs text-white/55">{count} wydarzeń</p>
         </Link>
       ))}
     </div>
@@ -302,7 +310,7 @@ const HomeEventImageCard = ({ event, mode }: { event: Event; mode: 'closing' | '
       mode === 'closing' ? (
         <div className="flex items-center gap-2 text-sm">
           <span className="text-white/55">Od {formatMoney(minPrice(event))}</span>
-          <span className="text-white/24">•</span>
+          <span className="text-white/55">•</span>
           <span className="font-medium text-emerald-400">Pozostało {spotsLeft(event)} miejsc</span>
         </div>
       ) : undefined
@@ -315,10 +323,7 @@ const TABLE_HEADER_LABELS = ['Data', 'Wydarzenie', 'Dyscyplina', 'Miasto', 'Zapi
 const UpcomingTableHeader = () => (
   <div className="grid grid-cols-[76px_1.4fr_150px_130px_150px_100px_28px] items-center gap-4 px-4 py-2.5">
     {TABLE_HEADER_LABELS.map((label) => (
-      <span
-        key={label}
-        className="text-[10px] font-bold uppercase tracking-widest text-white/[0.28]"
-      >
+      <span key={label} className="text-[10px] font-bold uppercase tracking-widest text-white/55">
         {label}
       </span>
     ))}
@@ -351,7 +356,7 @@ const UpcomingTable = ({ events }: { events: Event[] }) => (
           <div
             className={cn(
               'hidden text-sm font-medium md:flex md:items-center md:gap-2',
-              open ? 'text-emerald-400' : 'text-white/35',
+              open ? 'text-emerald-400' : 'text-white/55',
             )}
           >
             {open && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
@@ -506,7 +511,7 @@ const Index = () => {
 
               <SearchPanel query={query} setQuery={setQuery} onSubmit={handleSearch} />
 
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/45">
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/55">
                 <span className="mr-1">Popularne wyszukiwania:</span>
                 {['Bieganie', 'Kolarstwo', 'Triathlon', 'Ten weekend', 'W pobliżu mnie'].map(
                   (item) => (
@@ -534,7 +539,7 @@ const Index = () => {
               action={
                 <Link
                   to="/wydarzenia"
-                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/55 transition-colors hover:text-white/70 sm:flex"
                 >
                   Zobacz wszystkie
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -554,7 +559,7 @@ const Index = () => {
               action={
                 <Link
                   to="/wydarzenia"
-                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/55 transition-colors hover:text-white/70 sm:flex"
                 >
                   Zobacz wszystkie
                   <ArrowRight className="h-3.5 w-3.5" />
@@ -583,7 +588,7 @@ const Index = () => {
               action={
                 <Link
                   to="/events?status=past"
-                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/45 transition-colors hover:text-white/70 sm:flex"
+                  className="hidden shrink-0 items-center gap-1.5 text-sm text-white/55 transition-colors hover:text-white/70 sm:flex"
                 >
                   Zobacz wszystkie wyniki
                   <ArrowRight className="h-3.5 w-3.5" />

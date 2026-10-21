@@ -8,11 +8,30 @@ const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 
+/** Fallback accessible name for a trigger nobody labelled: the SelectValue placeholder. */
+function placeholderOf(children: React.ReactNode): string | undefined {
+  let found: string | undefined;
+  React.Children.forEach(children, (child) => {
+    if (
+      found ||
+      !React.isValidElement<{ placeholder?: unknown; children?: React.ReactNode }>(child)
+    )
+      return;
+    if (typeof child.props.placeholder === 'string') found = child.props.placeholder;
+    else found = placeholderOf(child.props.children);
+  });
+  return found;
+}
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
+    aria-label={
+      props['aria-label'] ??
+      (props['aria-labelledby'] || props.id ? undefined : placeholderOf(children))
+    }
     ref={ref}
     className={cn(
       'flex h-9 w-full items-center justify-between rounded-md border border-[color:var(--glass-border)] bg-black/10 px-3 py-2 text-sm text-foreground ring-offset-transparent transition-all placeholder:text-muted-foreground/80 focus:border-[color:var(--glass-border-accent)] focus:outline-none focus:ring-1 focus:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40 [&>span]:line-clamp-1',

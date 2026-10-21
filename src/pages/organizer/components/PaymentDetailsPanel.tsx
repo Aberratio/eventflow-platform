@@ -14,7 +14,10 @@ import { formatMoney } from '@/lib/format';
 interface PaymentDetailsPanelProps {
   registration: Registration;
   event: Event;
-  onPaymentUpdate: (registrationId: string, updatedDetails: PaymentDetails) => void;
+  onPaymentUpdate: (
+    registrationId: string,
+    updatedDetails: PaymentDetails,
+  ) => void | boolean | Promise<boolean | void>;
   onClose: () => void;
   /** E1.5: zatwierdza żądanie zwrotu ("do zwrotu"). Omitted hides the action. */
   onApproveRefund?: () => void;
@@ -100,8 +103,10 @@ export const PaymentDetailsPanel = ({
     });
   };
 
-  const handleSave = () => {
-    onPaymentUpdate(registration.id, details);
+  const handleSave = async () => {
+    // The hook shows the server error itself; keep the panel open so nothing is lost.
+    const saved = await onPaymentUpdate(registration.id, details);
+    if (saved === false) return;
     toast({
       title: 'Zapisano zmiany',
       description: 'Status płatności został zaktualizowany.',
@@ -138,7 +143,7 @@ export const PaymentDetailsPanel = ({
             <CreditCard className="h-5 w-5 text-primary" />
             Szczegóły płatności - {registration.userName}
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button aria-label="Zamknij" variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>

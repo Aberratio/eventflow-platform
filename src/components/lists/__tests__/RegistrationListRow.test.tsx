@@ -50,6 +50,113 @@ const registration: Registration = {
   bibNumber: '123',
 };
 
+describe('RegistrationListRow self-service cancellation (R-02)', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const liveEvent: Event = {
+    ...event,
+    isVirtual: false,
+    date: '2026-09-20',
+    startDate: undefined,
+    endDate: undefined,
+  };
+
+  it('offers "Zrezygnuj" inside the window and calls onCancel', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+    const onCancel = vi.fn();
+
+    render(
+      <RegistrationListRow registration={registration} event={liveEvent} onCancel={onCancel} />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zrezygnuj' })[0]);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers "Zmień dystans" inside the window and hides it after the cut-off', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+    const onChangeDistance = vi.fn();
+
+    const { unmount } = render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onChangeDistance={onChangeDistance}
+      />,
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'Zmień dystans' })[0]);
+    expect(onChangeDistance).toHaveBeenCalledTimes(1);
+    unmount();
+
+    vi.setSystemTime(new Date('2026-09-15T10:00:00Z'));
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onChangeDistance={onChangeDistance}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Zmień dystans' })).not.toBeInTheDocument();
+  });
+
+  it('does not offer "Zmień dystans" for a relay-team registration', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+
+    render(
+      <RegistrationListRow
+        registration={{ ...registration, teamId: 'team-1' }}
+        event={liveEvent}
+        onChangeDistance={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zmień dystans' })).not.toBeInTheDocument();
+  });
+
+  it('hides the button after the cut-off and explains why', () => {
+    vi.setSystemTime(new Date('2026-09-15T10:00:00Z'));
+
+    render(
+      <RegistrationListRow registration={registration} event={liveEvent} onCancel={vi.fn()} />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zrezygnuj' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Termin samodzielnej rezygnacji minął/)).not.toHaveLength(0);
+  });
+
+  it('shows the organizer message when self-service is switched off', () => {
+    vi.setSystemTime(new Date('2026-06-01T10:00:00Z'));
+
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={{ ...liveEvent, selfServiceEnabled: false }}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Zrezygnuj' })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/Organizator wyłączył samodzielną rezygnację/)).not.toHaveLength(0);
+  });
+
+  it('offers the history when asked to', () => {
+    const onShowHistory = vi.fn();
+
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onShowHistory={onShowHistory}
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Historia zapisu' })[0]);
+    expect(onShowHistory).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('RegistrationListRow virtual result action', () => {
   afterEach(() => {
     vi.useRealTimers();

@@ -94,6 +94,9 @@ export interface CreateEventPayload {
   /** E8.11: embed our own registration form on an external site via iframe. */
   embedEnabled?: boolean;
   embedAllowedOrigins?: string[];
+  /** R-02 (zakres P2): samodzielna rezygnacja zawodnika — przełącznik i data graniczna (null = domyślnie 7 dni przed startem). */
+  selfServiceEnabled?: boolean;
+  selfServiceDeadline?: string | null;
 }
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;
@@ -211,6 +214,14 @@ export interface RegistrationMerchandiseSelection {
  * to Warianty — the server then falls back to pricing off
  * `distance.price`/`distance.priceTiers` directly.
  */
+/** R-02 (zakres P2): body of `POST /registrations/{id}/distance-change[/quote]`. */
+export interface ChangeDistancePayload {
+  distanceId: string;
+  /** Wariant opłaty na nowym dystansie (pominięty = cena dystansu). */
+  pricingVariantId?: string;
+  category?: string;
+}
+
 export interface CreateRegistrationPayload {
   eventId: string;
   eventName: string;
@@ -270,15 +281,27 @@ export interface CreateRegistrationPayload {
 export type UpdateRegistrationPayload = Partial<
   Pick<
     Registration,
-    | 'status'
-    | 'bibNumber'
-    | 'teamName'
-    | 'teamId'
-    | 'pricePaid'
-    | 'discountAmount'
-    | 'paymentDetails'
+    'status' | 'teamName' | 'teamId' | 'pricePaid' | 'discountAmount' | 'paymentDetails'
   >
->;
+> & {
+  /** R-13: `null` clears the start number. */
+  bibNumber?: string | null;
+};
+
+/** R-13: `POST /events/{eventId}/bib-numbers/assign` body. */
+export interface AssignBibNumbersPayload {
+  /** Omit to assign in every distance that has a range. */
+  distanceIds?: string[];
+  order?: 'registered' | 'name';
+  /** Default (server) true: only confirmed registrations get a number. */
+  paidOnly?: boolean;
+}
+
+export interface AssignBibNumbersResult {
+  assigned: number;
+  assignments: { registrationId: string; bibNumber: string }[];
+  skipped: { distanceId: string; reason: 'no_range' | 'range_exhausted'; count: number }[];
+}
 
 // ──────────────── Results ────────────────
 
