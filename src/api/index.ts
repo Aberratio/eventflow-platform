@@ -529,3 +529,11 @@ export {
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';
+export const reportCompetitorDuplicate: ApiAdapter['reportCompetitorDuplicate'] = (...args) =>
+  ensureAdapter().then((a) => a.reportCompetitorDuplicate(...args));
+export const listCompetitorDuplicateReports: ApiAdapter['listCompetitorDuplicateReports'] = (
+  ...args
+) => ensureAdapter().then((a) => a.listCompetitorDuplicateReports(...args));
+export const rejectCompetitorDuplicateReport: ApiAdapter['rejectCompetitorDuplicateReport'] = (
+  ...args
+) => ensureAdapter().then((a) => a.rejectCompetitorDuplicateReport(...args));

@@ -849,4 +849,16 @@ export const httpAdapter: ApiAdapter = {
       `/admin/competitors/${encodeURIComponent(competitorIdA)}/merge-comparison/${encodeURIComponent(competitorIdB)}`,
     ),
   mergeCompetitors: (payload) => request('/admin/competitors/merge', json('POST', payload)),
+  reportCompetitorDuplicate: (competitorId, payload) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/duplicate-reports`,
+      json('POST', payload),
+    ),
+  listCompetitorDuplicateReports: (status) =>
+    request(`/admin/competitors/duplicate-reports${status ? `?status=${status}` : ''}`),
+  rejectCompetitorDuplicateReport: (id, reason) =>
+    request(
+      `/admin/competitors/duplicate-reports/${encodeURIComponent(id)}`,
+      json('PATCH', { status: 'rejected', ...(reason ? { reason } : {}) }),
+    ),
 };

@@ -29,6 +29,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ReportDuplicateDialog } from '@/components/ReportDuplicateDialog';
 import type { MyCompetitor, Caregiver } from '@/types';
 
 function initials(firstName: string, lastName: string): string {
@@ -465,20 +466,28 @@ const ParticipantAuthorizationsTab = () => {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        disabled={revokeMutation.isPending}
-                        onClick={() => revokeMutation.mutate(c.id)}
-                        title="Cofnij opiekę"
-                      >
-                        {revokeMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
+                      <div className="flex items-center">
+                        <ReportDuplicateDialog
+                          competitorId={c.competitorId}
+                          firstName={c.firstName}
+                          lastName={c.lastName}
+                          birthDate={c.birthDate}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          disabled={revokeMutation.isPending}
+                          onClick={() => revokeMutation.mutate(c.id)}
+                          title="Cofnij opiekę"
+                        >
+                          {revokeMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </li>
                   ))}
                 </ul>
