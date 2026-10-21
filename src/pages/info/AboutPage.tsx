@@ -1,6 +1,6 @@
 import { Layout } from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
-import { Timer, Users, Trophy, Target, Heart, Zap } from 'lucide-react';
+import { Timer, Users, Target, Heart, Zap } from 'lucide-react';
 
 const stats = [
   { value: '500+', label: 'Wydarzeń rocznie' },

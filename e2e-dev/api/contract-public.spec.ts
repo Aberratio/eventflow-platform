@@ -299,7 +299,7 @@ test.describe('API contract: errors @api', () => {
     const empty = await timed(request, 'POST', '/auth/login');
     const broken = await timed(request, 'POST', '/auth/login', {
       headers: { 'Content-Type': 'application/json' },
-      data: '{"email": "' + email + '", ',
+      data: `{"email": "${email}", `,
     });
     const missing = await timed(request, 'POST', '/auth/login', { data: { email } });
     for (const [name, r] of [

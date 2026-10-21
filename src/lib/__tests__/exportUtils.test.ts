@@ -164,11 +164,9 @@ describe('generatePrintableHTML', () => {
 });
 
 describe('exportToCSV', () => {
-  let createdUrl: string;
   let clickedLink: HTMLAnchorElement | null;
 
   beforeEach(() => {
-    createdUrl = '';
     clickedLink = null;
 
     URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');

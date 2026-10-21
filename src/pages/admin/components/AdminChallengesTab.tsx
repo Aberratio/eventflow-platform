@@ -49,7 +49,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
-import { ChallengeEntry, ChallengeEntryStatus } from '@/types';
+import { Challenge, ChallengeEntry, ChallengeEntryStatus } from '@/types';
 import { toast } from 'sonner';
 
 const statusLabels = {
@@ -99,7 +99,7 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
-      updateChallenge(id, { status: status as any }),
+      updateChallenge(id, { status: status as Challenge['status'] }),
     onSuccess: () => {
       invalidate();
       toast.success('Status wyzwania został zmieniony');

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GradientDivider } from '@/components/ui/gradient-divider';
 import { Registration, Result, PersonalRecord } from '@/types';
-import { Calendar, Trophy, Medal, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, Trophy, Medal, MapPin, ArrowRight } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { pl } from 'date-fns/locale';
 

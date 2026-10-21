@@ -37,9 +37,7 @@ import {
   Download,
   AlertCircle,
   Link2,
-  Building2,
   ChevronRight,
-  Medal,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
@@ -177,11 +175,9 @@ const InfoSection = ({
 );
 
 const LocationDetail = ({
-  label,
   locationLabel,
   locations,
 }: {
-  label: string;
   locationLabel: string;
   locations: NonNullable<EventLogisticsInfo[LogisticsKey]>['locations'];
 }) => {
@@ -271,11 +267,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
                 <RichTextDisplay html={field.infoHtml} className="text-sm text-foreground/70" />
               )}
               {isYes && (
-                <LocationDetail
-                  label={f.label}
-                  locationLabel={f.locationLabel}
-                  locations={field.locations}
-                />
+                <LocationDetail locationLabel={f.locationLabel} locations={field.locations} />
               )}
             </div>
           );
@@ -291,12 +283,6 @@ interface EventInfoTabProps {
   eventResults?: Result[];
   onGoToResults?: () => void;
 }
-
-const MEDAL_COLORS = [
-  'text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]',
-  'text-slate-300 drop-shadow-[0_0_4px_rgba(203,213,225,0.5)]',
-  'text-amber-600 drop-shadow-[0_0_4px_rgba(217,119,6,0.5)]',
-];
 
 const ResultsAnnouncementBanner = ({ onGoToResults }: { onGoToResults?: () => void }) => (
   <div className="relative overflow-hidden rounded-xl border border-yellow-400/25 bg-gradient-to-br from-yellow-400/10 via-amber-500/5 to-transparent p-5 shadow-[0_0_40px_rgba(250,204,21,0.08)]">
@@ -328,112 +314,6 @@ const ResultsAnnouncementBanner = ({ onGoToResults }: { onGoToResults?: () => vo
     </div>
   </div>
 );
-
-const WinnersWidget = ({ results }: { results: Result[] }) => {
-  const finished = results.filter((r) => r.status === 'finished');
-  if (finished.length === 0) return null;
-
-  const distances = Array.from(new Set(finished.map((r) => r.distanceName)));
-  const manyDistancesOrCategories =
-    distances.length > 2 || Array.from(new Set(finished.map((r) => r.category))).length > 4;
-
-  if (manyDistancesOrCategories) {
-    // The first place of the overall classification of each distance
-    const generalWinners = distances
-      .map((dist) => {
-        const distResults = finished
-          .filter((r) => r.distanceName === dist)
-          .sort((a, b) => a.position - b.position);
-        return distResults[0] ?? null;
-      })
-      .filter(Boolean) as Result[];
-
-    return (
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
-          Zwycięzcy — klasyfikacja generalna
-        </p>
-        <div className="space-y-2">
-          {generalWinners.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
-            >
-              <Medal className="h-4 w-4 shrink-0 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
-                <p className="text-xs text-foreground/50">{r.distanceName}</p>
-              </div>
-              <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Several categories — top 3 of each
-  const categories = Array.from(new Set(finished.map((r) => r.category))).filter(Boolean);
-  if (categories.length === 0) {
-    // No categories — top 3 overall
-    const top3 = [...finished].sort((a, b) => a.position - b.position).slice(0, 3);
-    return (
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">Podium</p>
-        <div className="space-y-2">
-          {top3.map((r, i) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
-            >
-              <Medal className={`h-4 w-4 shrink-0 ${MEDAL_COLORS[i]}`} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
-                {r.distanceName && <p className="text-xs text-foreground/50">{r.distanceName}</p>}
-              </div>
-              <span className="shrink-0 font-mono text-sm font-bold text-primary">{r.time}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {categories.map((cat) => {
-        const top3 = finished
-          .filter((r) => r.category === cat)
-          .sort((a, b) => a.categoryPosition - b.categoryPosition)
-          .slice(0, 3);
-        if (top3.length === 0) return null;
-        return (
-          <div key={cat} className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-foreground/45">
-              {cat}
-            </p>
-            <div className="space-y-1.5">
-              {top3.map((r, i) => (
-                <div
-                  key={r.id}
-                  className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2.5"
-                >
-                  <Medal className={`h-4 w-4 shrink-0 ${MEDAL_COLORS[i]}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold leading-tight">{r.userName}</p>
-                  </div>
-                  <span className="shrink-0 font-mono text-sm font-bold text-primary">
-                    {r.time}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: EventInfoTabProps) => {
   const hasResults = isPast && eventResults && eventResults.length > 0;
@@ -606,11 +486,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                     className="mb-2 text-sm text-foreground/70"
                   />
                 )}
-                <LocationDetail
-                  label="Biuro zawodów"
-                  locationLabel="Termin biura"
-                  locations={raceOffice.locations}
-                />
+                <LocationDetail locationLabel="Termin biura" locations={raceOffice.locations} />
               </div>
             )}
             {baggage?.status === 'yes' && (
@@ -624,11 +500,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
                     className="mb-2 text-sm text-foreground/70"
                   />
                 )}
-                <LocationDetail
-                  label="Pakiety startowe"
-                  locationLabel="Punkt odbioru"
-                  locations={baggage.locations}
-                />
+                <LocationDetail locationLabel="Punkt odbioru" locations={baggage.locations} />
               </div>
             )}
           </div>

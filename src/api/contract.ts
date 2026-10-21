@@ -132,14 +132,6 @@ import type {
   RegistrationStats,
 } from '@/types';
 import type {
-  EmailTemplate,
-  EmailSendLog,
-  CreateEmailTemplatePayload,
-  SendEmailResult,
-  EmailPreviewRequest,
-  EmailPreviewResult,
-} from '@/types/email';
-import type {
   SalesStats,
   PlatformStats,
   SettlementReport,

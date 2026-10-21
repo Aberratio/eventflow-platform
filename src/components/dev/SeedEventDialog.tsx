@@ -47,8 +47,6 @@ export function SeedEventDialog({ open, onClose }: SeedEventDialogProps) {
   const queryClient = useQueryClient();
   const isStaff =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
-  const isOrganizer = user?.role === 'organizer';
-  const canRun = isStaff || isOrganizer;
 
   const [participantCount, setParticipantCount] = useState(30);
   const [discipline, setDiscipline] = useState<string>('random');

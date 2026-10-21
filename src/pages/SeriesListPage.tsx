@@ -1,4 +1,4 @@
-import { getSeries, getEvents, seriesTypeLabels } from '@/api';
+import { getSeries, getEvents } from '@/api';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -18,12 +18,6 @@ import { QUERY_KEYS, SERIES_STATUS_LABELS } from '@/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHero, PageHeroTitle } from '@/components/ui/page-hero';
 import { StatPill } from '@/components/ui/stat-pill';
-
-const statusGroupConfig: Record<string, { accentColor: string }> = {
-  Aktywna: { accentColor: 'bg-success' },
-  Nadchodząca: { accentColor: 'bg-info' },
-  Zakończona: { accentColor: 'bg-muted-foreground' },
-};
 
 const SeriesListPage = () => {
   const [selectedType, setSelectedType] = useState<SeriesType | 'all'>('all');

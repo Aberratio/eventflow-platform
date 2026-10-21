@@ -161,7 +161,7 @@ async function tabThrough(
         .trim()
         .replace(/\s+/g, ' ');
       return {
-        desc: `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''} "${label.slice(0, 40)}"`,
+        desc: `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ''} "${label.slice(0, 40)}"`,
         y: Math.round(r.top + window.scrollY),
         visible: r.width > 0 && r.height > 0,
         indicator: outlineChanged || shadowChanged || otherChanged,

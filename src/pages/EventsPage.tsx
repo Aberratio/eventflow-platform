@@ -510,44 +510,6 @@ const MobileMonthGroup = ({ group }: { group: EventMonthGroup }) => (
   </section>
 );
 
-const MobileStatCard = ({
-  label,
-  count,
-  status,
-  onClick,
-  active,
-}: {
-  label: string;
-  count: number;
-  status: EventStatusKey;
-  onClick: () => void;
-  active: boolean;
-}) => {
-  const Icon = statusMeta[status].icon;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex min-h-[92px] items-center gap-3 rounded-xl border px-4 text-left transition-colors sm:min-h-[98px] sm:gap-5 sm:px-6',
-        statusMeta[status].tone,
-        active && 'ring-current/40 ring-1',
-      )}
-    >
-      <span className="bg-current/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
-        <Icon className="h-6 w-6" />
-      </span>
-      <span>
-        <span className="block text-sm text-foreground/75 sm:text-lg">{label}</span>
-        <span className="mt-1 block text-2xl font-bold leading-none text-foreground sm:text-3xl">
-          {count.toLocaleString('pl-PL')}
-        </span>
-      </span>
-    </button>
-  );
-};
-
 const validStatusParams: EventStatusKey[] = [
   'live',
   'open',

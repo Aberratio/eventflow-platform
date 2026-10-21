@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test';
 import { test, expect, skipCookieBanner } from '../support/fixtures';
 import { getData } from '../support/api';
-import { FRONT } from '../support/env';
 
 interface Meta {
   title: string;

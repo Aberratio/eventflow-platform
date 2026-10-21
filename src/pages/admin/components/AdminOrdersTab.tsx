@@ -3,7 +3,7 @@ import { getAllUsers } from '@/api/fetchAllPages';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { DateInput } from '@/components/ui/date-time-input';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
