@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { appLogger } from '@/lib/logger';
 import { changePassword } from '@/api';
 
@@ -77,23 +77,15 @@ export const PasswordChangeDialog = ({
   // gate. The strength meter below is advisory and never blocks a submit.
   const handleSubmit = async () => {
     if (form.new !== form.confirm) {
-      toast({ title: 'Błąd', description: 'Hasła nie są identyczne.', variant: 'destructive' });
+      toast.error('Błąd', { description: 'Hasła nie są identyczne.' });
       return;
     }
     if (form.new.length < 8) {
-      toast({
-        title: 'Błąd',
-        description: 'Nowe hasło musi mieć co najmniej 8 znaków.',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Nowe hasło musi mieć co najmniej 8 znaków.' });
       return;
     }
     if (form.new === form.current) {
-      toast({
-        title: 'Błąd',
-        description: 'Nowe hasło musi różnić się od obecnego.',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Nowe hasło musi różnić się od obecnego.' });
       return;
     }
 
@@ -102,10 +94,8 @@ export const PasswordChangeDialog = ({
       // The adapter stores the rotated session token the server returns.
       await changePassword({ oldPassword: form.current, newPassword: form.new });
     } catch (error) {
-      toast({
-        title: 'Nie udało się zmienić hasła',
+      toast.error('Nie udało się zmienić hasła', {
         description: error instanceof Error ? error.message : undefined,
-        variant: 'destructive',
       });
       return;
     } finally {
@@ -115,8 +105,7 @@ export const PasswordChangeDialog = ({
     onPasswordChanged();
     onOpenChange(false);
     setForm({ current: '', new: '', confirm: '' });
-    toast({
-      title: 'Hasło zmienione',
+    toast.success('Hasło zmienione', {
       description: 'Twoje hasło zostało pomyślnie zaktualizowane.',
     });
   };

@@ -19,10 +19,7 @@ vi.mock('@/api', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: vi.fn(),
-  useToast: () => ({ toast: vi.fn() }),
-}));
+vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
 /** The captain picks the member to swap out from the server-provided roster. */
 describe('TeamRosterDialog', () => {

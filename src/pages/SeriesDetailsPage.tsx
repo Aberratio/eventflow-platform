@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Award, ArrowLeft } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useMemo, useState } from 'react';
 import { SeriesHero } from './series/SeriesHero';
 import { SeriesStandingsTable, type SeriesStanding } from './series/SeriesStandingsTable';
@@ -16,7 +16,6 @@ import { QUERY_KEYS } from '@/constants';
 
 const SeriesDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { toast } = useToast();
   const {
     data: seriesData,
     isLoading: seriesLoading,
@@ -106,7 +105,7 @@ const SeriesDetailsPage = () => {
       Starty: s.eventsCount,
     }));
     exportToCSV(data, `klasyfikacja-${series.slug}`);
-    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+    toast.success('Eksport CSV', { description: 'Plik został pobrany.' });
   };
 
   const handleExportPDF = () => {

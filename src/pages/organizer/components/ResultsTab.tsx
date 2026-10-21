@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Event, Registration, EventResultDocument } from '@/types';
 import { Plus, FileText, CheckCircle2, Trophy, Users, AlertCircle } from 'lucide-react';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
@@ -41,7 +41,6 @@ interface LocalResult {
 }
 
 export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDistance, setSelectedDistance] = useState<string>(event.distances[0]?.id || '');
   const [entryMode, setEntryMode] = useState<'manual' | 'import'>('manual');
@@ -93,14 +92,14 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const handleAddResult = (result: LocalResult) => setLocalResults([...localResults, result]);
   const handleDeleteResult = (bibNumber: string) => {
     setLocalResults(localResults.filter((r) => r.bibNumber !== bibNumber));
-    toast({ title: 'Wynik usunięty', description: `Usunięto wynik dla numeru ${bibNumber}` });
+    toast.success('Wynik usunięty', { description: `Usunięto wynik dla numeru ${bibNumber}` });
   };
 
   const _handleImportCSV = () => {
-    toast({ title: 'Import CSV', description: 'Wybierz plik CSV z wynikami (symulacja)' });
+    toast('Import CSV', { description: 'Wybierz plik CSV z wynikami (symulacja)' });
     setTimeout(
       () =>
-        toast({ title: 'Import zakończony', description: 'Zaimportowano 25 wyników (symulacja)' }),
+        toast.success('Import zakończony', { description: 'Zaimportowano 25 wyników (symulacja)' }),
       1500,
     );
   };
@@ -109,17 +108,14 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
     mutationFn: () => publishOfficialResults(event.id, selectedDistance),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['event-results', event.id] });
-      toast({
-        title: 'Wyniki oficjalne',
+      toast.success('Wyniki oficjalne', {
         description: `Oznaczono ${response.data.updatedCount} wynik(ów) jako oficjalne.`,
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Błąd',
+      toast.error('Błąd', {
         description:
           error instanceof Error ? error.message : 'Nie udało się oznaczyć wyników jako oficjalne',
-        variant: 'destructive',
       });
     },
   });
@@ -142,7 +138,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
               : 'DSQ',
     }));
     exportToCSV(data, `wyniki-${event.slug}-${selectedDistanceData?.name || 'all'}`);
-    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+    toast.success('Eksport CSV', { description: 'Plik został pobrany.' });
   };
 
   const handleExportPDF = () => {
@@ -180,7 +176,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
 
   const handleDeleteDocument = (docId: string) => {
     setLocalDocuments(localDocuments.filter((d) => d.id !== docId));
-    toast({ title: 'Dokument usunięty', description: 'Dokument został usunięty' });
+    toast.success('Dokument usunięty', { description: 'Dokument został usunięty' });
   };
 
   return (

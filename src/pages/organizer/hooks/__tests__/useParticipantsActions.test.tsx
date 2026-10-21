@@ -12,7 +12,7 @@ const markRegistrationPaid = vi.fn();
 const cancelRegistration = vi.fn();
 const updatePaymentDetails = vi.fn();
 const exportStartList = vi.fn();
-const toastSpy = vi.fn();
+const toastSpy = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const updateRegistration = vi.fn();
 
 vi.mock('@/api', () => ({
@@ -25,9 +25,7 @@ vi.mock('@/api', () => ({
   updateRegistration: (...args: unknown[]) => updateRegistration(...args),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: toastSpy }),
-}));
+vi.mock('sonner', () => ({ toast: toastSpy }));
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -166,11 +164,9 @@ describe('useParticipantsActions', () => {
 
       expect(ok).toBe(false);
       expect(invalidate).not.toHaveBeenCalled();
-      expect(toastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          description: 'Zapis nie jest opłacany przelewem.',
-          variant: 'destructive',
-        }),
+      expect(toastSpy.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: 'Zapis nie jest opłacany przelewem.' }),
       );
     },
   );
@@ -200,11 +196,9 @@ describe('useParticipantsActions', () => {
     });
 
     expect(invalidate).toHaveBeenCalled(); // one succeeded -> refresh
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        variant: 'destructive',
-        description: expect.stringContaining('Brak uprawnień.'),
-      }),
+    expect(toastSpy.error).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ description: expect.stringContaining('Brak uprawnień.') }),
     );
   });
 
@@ -316,11 +310,9 @@ describe('useParticipantsActions', () => {
 
     expect(ok).toBe(false);
     expect(invalidate).not.toHaveBeenCalled();
-    expect(toastSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        description: 'Brak dostępu do płatności.',
-        variant: 'destructive',
-      }),
+    expect(toastSpy.error).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ description: 'Brak dostępu do płatności.' }),
     );
   });
 

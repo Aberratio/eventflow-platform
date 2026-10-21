@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { updateEvent } from '@/api';
 import type { Event } from '@/types';
 import { Code2, Copy, Plus, X } from 'lucide-react';
@@ -29,7 +29,6 @@ const ORIGIN_PATTERN = /^https?:\/\/[^/\s?#]+$/i;
  */
 export const EventEmbedSettingsCard = ({ event }: EventEmbedSettingsCardProps) => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [embedEnabled, setEmbedEnabled] = useState(event.embedEnabled ?? false);
   const [origins, setOrigins] = useState<string[]>(event.embedAllowedOrigins ?? []);
   const [newOrigin, setNewOrigin] = useState('');
@@ -78,8 +77,7 @@ export const EventEmbedSettingsCard = ({ event }: EventEmbedSettingsCardProps) =
         queryClient.invalidateQueries({ queryKey: ['event', event.id] }),
         queryClient.invalidateQueries({ queryKey: ['organizer-events', event.organizerId] }),
       ]);
-      toast({
-        title: 'Zapisano ustawienia osadzania',
+      toast.success('Zapisano ustawienia osadzania', {
         description: embedEnabled
           ? 'Formularz można teraz osadzić w dozwolonych witrynach.'
           : 'Osadzanie formularza jest wyłączone.',
@@ -90,10 +88,8 @@ export const EventEmbedSettingsCard = ({ event }: EventEmbedSettingsCardProps) =
       // apiErrorMessage() already turns the {error:{code,message}} shape
       // into a plain Error, so any edge case the client-side ORIGIN_PATTERN
       // check missed still shows up here.
-      toast({
-        title: 'Nie udało się zapisać ustawień osadzania',
+      toast.error('Nie udało się zapisać ustawień osadzania', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -102,7 +98,7 @@ export const EventEmbedSettingsCard = ({ event }: EventEmbedSettingsCardProps) =
 
   const copySnippet = () => {
     navigator.clipboard.writeText(embedSnippet);
-    toast({ title: 'Skopiowano', description: 'Fragment iframe skopiowany do schowka.' });
+    toast.success('Skopiowano', { description: 'Fragment iframe skopiowany do schowka.' });
   };
 
   return (

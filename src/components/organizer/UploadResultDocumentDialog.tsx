@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Distance, ResultClassificationType, EventResultDocument } from '@/types';
 import { Upload, FileText } from 'lucide-react';
 
@@ -37,7 +37,6 @@ export const UploadResultDocumentDialog = ({
   distances,
   onUpload,
 }: UploadResultDocumentDialogProps) => {
-  const { toast } = useToast();
   const [name, setName] = useState('');
   const [type, setType] = useState<ResultClassificationType>('open');
   const [distanceId, setDistanceId] = useState<string>('');
@@ -47,28 +46,17 @@ export const UploadResultDocumentDialog = ({
   const handleFileSelect = () => {
     // Simulate file selection
     setFileName('wyniki.pdf');
-    toast({
-      title: 'Plik wybrany',
-      description: 'wyniki.pdf',
-    });
+    toast('Plik wybrany', { description: 'wyniki.pdf' });
   };
 
   const handleSubmit = () => {
     if (!name) {
-      toast({
-        title: 'Błąd',
-        description: 'Podaj nazwę dokumentu',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Podaj nazwę dokumentu' });
       return;
     }
 
     if (!fileName) {
-      toast({
-        title: 'Błąd',
-        description: 'Wybierz plik PDF',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Wybierz plik PDF' });
       return;
     }
 
@@ -92,10 +80,7 @@ export const UploadResultDocumentDialog = ({
     setFileName('');
     onOpenChange(false);
 
-    toast({
-      title: 'Dokument dodany',
-      description: `Dokument "${name}" został dodany`,
-    });
+    toast.success('Dokument dodany', { description: `Dokument "${name}" został dodany` });
   };
 
   return (

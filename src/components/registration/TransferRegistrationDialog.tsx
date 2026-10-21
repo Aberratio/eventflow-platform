@@ -3,7 +3,7 @@ import { checkCompetitorDuplicates, transferRegistration } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   buildTransferPayload,
   canSubmitTransfer,
@@ -53,7 +53,6 @@ export const TransferRegistrationDialog = ({
   event,
   onTransferred,
 }: TransferRegistrationDialogProps) => {
-  const { toast } = useToast();
   const [mode, setMode] = useState<Mode>('existing');
   const [person, setPerson] = useState<TransferPersonForm>(EMPTY_PERSON);
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
@@ -98,10 +97,8 @@ export const TransferRegistrationDialog = ({
       setCandidates(res.data as unknown as Candidate[]);
       setChosen(null);
     } catch (error) {
-      toast({
-        title: 'Nie udało się wyszukać zawodnika',
+      toast.error('Nie udało się wyszukać zawodnika', {
         description: apiErrorMessage(error, 'Spróbuj ponownie za chwilę.'),
-        variant: 'destructive',
       });
     } finally {
       setSearching(false);
@@ -116,8 +113,7 @@ export const TransferRegistrationDialog = ({
           registration.id,
           buildTransferPayload(existingId, person),
         );
-        toast({
-          title: 'Zapis przeniesiony',
+        toast.success('Zapis przeniesiony', {
           description: `${targetName}. ${describeTransferOutcome(res.data)}`,
         });
         onTransferred?.(res.data);

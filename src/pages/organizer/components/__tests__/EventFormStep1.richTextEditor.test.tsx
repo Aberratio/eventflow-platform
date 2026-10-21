@@ -19,7 +19,7 @@ const FireTimersAfterCommit = () => {
   return null;
 };
 
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const navigate = vi.fn();
 let paramsReturn: Record<string, string> = {};
 
@@ -47,9 +47,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ user: organizer }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
@@ -79,6 +77,8 @@ describe('EventFormStep1 description editor', () => {
   beforeEach(() => {
     paramsReturn = {};
     toast.mockClear();
+    toast.success.mockClear();
+    toast.error.mockClear();
     navigate.mockClear();
     vi.mocked(getOrganizerEventLimit).mockClear();
     vi.mocked(getOrganizerEventLimit).mockResolvedValue({ success: true, data: limit });

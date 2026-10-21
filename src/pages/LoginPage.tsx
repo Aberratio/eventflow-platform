@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ApiRequestError } from '@/api/errors';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -50,7 +50,6 @@ const LoginPage = () => {
   const { loginWithCredentials, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -97,13 +96,9 @@ const LoginPage = () => {
     try {
       const success = await loginWithCredentials(data.email, data.password);
       if (success) {
-        toast({ title: 'Zalogowano pomyślnie', description: 'Witaj z powrotem!' });
+        toast.success('Zalogowano pomyślnie', { description: 'Witaj z powrotem!' });
       } else {
-        toast({
-          title: 'Błąd logowania',
-          description: 'Nieprawidłowy email lub hasło.',
-          variant: 'destructive',
-        });
+        toast.error('Błąd logowania', { description: 'Nieprawidłowy email lub hasło.' });
       }
     } catch (error) {
       if (error instanceof ApiRequestError && error.status === 429) {
@@ -111,7 +106,7 @@ const LoginPage = () => {
         lockedUntil.current = Date.now() + seconds * 1000;
         setSecondsLeft(seconds);
       } else if (error instanceof ApiRequestError && error.code === 'account_blocked') {
-        toast({ title: 'Konto zablokowane', description: error.message, variant: 'destructive' });
+        toast.error('Konto zablokowane', { description: error.message });
       } else {
         throw error;
       }

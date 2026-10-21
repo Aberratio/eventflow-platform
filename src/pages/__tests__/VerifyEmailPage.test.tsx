@@ -9,7 +9,7 @@ const verifyEmail = vi.fn();
 const resendEmailVerification = vi.fn();
 const refreshUser = vi.fn();
 let authenticated = false;
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', () => ({
   verifyEmail: (...args: unknown[]) => verifyEmail(...args),
@@ -18,10 +18,7 @@ vi.mock('@/api', () => ({
   getInfoPages: () => Promise.resolve({ success: true, data: [] }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => toast(...args),
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('@/contexts/AuthContext', async () => {
   const actual =
@@ -41,6 +38,8 @@ describe('VerifyEmailPage', () => {
     resendEmailVerification.mockReset();
     refreshUser.mockReset();
     toast.mockReset();
+    toast.success.mockReset();
+    toast.error.mockReset();
     authenticated = false;
   });
 
@@ -104,9 +103,7 @@ describe('VerifyEmailPage', () => {
 
     await waitFor(() => expect(resendEmailVerification).toHaveBeenCalledTimes(1));
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Wysłaliśmy link weryfikacyjny.' }),
-      ),
+      expect(toast.success).toHaveBeenCalledWith('Wysłaliśmy link weryfikacyjny.'),
     );
   });
 });

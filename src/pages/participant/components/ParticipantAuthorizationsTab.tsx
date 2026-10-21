@@ -28,7 +28,7 @@ import {
   RotateCw,
   EyeOff,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ReportDuplicateDialog } from '@/components/ReportDuplicateDialog';
 import type { MyCompetitor, Caregiver } from '@/types';
 
@@ -64,11 +64,11 @@ function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
   const rotateMutation = useMutation({
     mutationFn: (competitorId: string) => rotateIdentityCode(competitorId),
     onSuccess: () => {
-      toast({ title: 'Nowy kod tożsamości', description: 'Poprzedni kod przestał działać.' });
+      toast.success('Nowy kod tożsamości', { description: 'Poprzedni kod przestał działać.' });
       queryClient.invalidateQueries({ queryKey: ['care'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 
@@ -149,11 +149,11 @@ function AnonymizationCard({ options }: { options: AnonymizationOption[] }) {
       setCompetitorAnonymization(v.competitorId, v.isAnonymized),
     onSuccess: (_res, v) => {
       setOverrides((prev) => ({ ...prev, [v.competitorId]: v.isAnonymized }));
-      toast({ title: v.isAnonymized ? 'Anonimizacja włączona' : 'Anonimizacja wyłączona' });
+      toast.success(v.isAnonymized ? 'Anonimizacja włączona' : 'Anonimizacja wyłączona');
       queryClient.invalidateQueries({ queryKey: ['care'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 
@@ -207,12 +207,12 @@ const ParticipantAuthorizationsTab = () => {
   const grantByEmailMutation = useMutation({
     mutationFn: (e: string) => grantCareByEmail(e),
     onSuccess: () => {
-      toast({ title: 'Opieka nadana', description: `Konto może teraz zapisywać Cię na zawody.` });
+      toast.success('Opieka nadana', { description: `Konto może teraz zapisywać Cię na zawody.` });
       setEmail('');
       queryClient.invalidateQueries({ queryKey: ['care'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 
@@ -226,12 +226,11 @@ const ParticipantAuthorizationsTab = () => {
     onSuccess: (r) => {
       const warnings = r.data.duplicateWarnings ?? [];
       if (warnings.length > 0) {
-        toast({
-          title: 'Zawodnik dodany — uwaga na duplikat',
+        toast.success('Zawodnik dodany — uwaga na duplikat', {
           description: `Znaleźliśmy już profil o takim imieniu, nazwisku i dacie urodzenia. Jeśli to ta sama osoba, poproś drugiego opiekuna o nadanie Ci opieki nad istniejącym profilem zamiast tworzenia nowego.`,
         });
       } else {
-        toast({ title: 'Zawodnik dodany', description: 'Możesz teraz zapisywać go na zawody.' });
+        toast.success('Zawodnik dodany', { description: 'Możesz teraz zapisywać go na zawody.' });
       }
       setChildFirstName('');
       setChildLastName('');
@@ -239,18 +238,18 @@ const ParticipantAuthorizationsTab = () => {
       queryClient.invalidateQueries({ queryKey: ['care'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 
   const revokeMutation = useMutation({
     mutationFn: (id: string) => revokeCare(id),
     onSuccess: () => {
-      toast({ title: 'Opieka cofnięta' });
+      toast.success('Opieka cofnięta');
       queryClient.invalidateQueries({ queryKey: ['care'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Błąd', description: err.message, variant: 'destructive' });
+      toast.error('Błąd', { description: err.message });
     },
   });
 

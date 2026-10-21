@@ -6,7 +6,7 @@ import LoginPage from '../LoginPage';
 
 const mockLoginWithCredentials = vi.fn();
 const mockNavigate = vi.fn();
-const mockToast = vi.fn();
+const mockToast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/contexts/AuthContext', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -30,9 +30,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: mockToast }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 describe('LoginPage', () => {
   beforeEach(() => {
@@ -112,11 +110,7 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Konto zablokowane',
-        description: message,
-        variant: 'destructive',
-      });
+      expect(mockToast.error).toHaveBeenCalledWith('Konto zablokowane', { description: message });
     });
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Zaloguj się' })).toBeEnabled();
@@ -151,10 +145,8 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Zaloguj się' }));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Błąd logowania',
+      expect(mockToast.error).toHaveBeenCalledWith('Błąd logowania', {
         description: 'Nieprawidłowy email lub hasło.',
-        variant: 'destructive',
       });
     });
   });

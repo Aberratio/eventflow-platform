@@ -4,7 +4,7 @@ import { changeRegistrationDistance, quoteDistanceChange } from '@/api';
 import { ApiRequestError } from '@/api/errors';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { describeBalance } from '@/lib/distanceChange';
 import { formatMoney } from '@/lib/format';
 import type { Event, Registration } from '@/types';
@@ -35,7 +35,6 @@ export const ChangeDistanceDialog = ({
   isManager = false,
   onChanged,
 }: ChangeDistanceDialogProps) => {
-  const { toast } = useToast();
   const [distanceId, setDistanceId] = useState('');
   const [variantId, setVariantId] = useState('');
   const { pending, run, guardOpenChange } = useRegistrationAction(onOpenChange);
@@ -76,18 +75,15 @@ export const ChangeDistanceDialog = ({
           distanceId,
           ...(variantId ? { pricingVariantId: variantId } : {}),
         });
-        toast({
-          title: 'Zmieniono dystans',
+        toast.success('Zmieniono dystans', {
           description: `${quote.from.distanceName} → ${quote.to.distanceName}`,
         });
         onChanged?.(res.data);
         onOpenChange(false);
       },
       (error) =>
-        toast({
-          title: 'Nie udało się zmienić dystansu',
+        toast.error('Nie udało się zmienić dystansu', {
           description: apiErrorMessage(error, 'Spróbuj ponownie za chwilę.'),
-          variant: 'destructive',
         }),
     );
   };

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type ResultStatus = 'finished' | 'dnf' | 'dns' | 'dsq';
 
@@ -61,7 +61,6 @@ export const EditResultDialog = ({
   isOfficial,
   onSaved,
 }: EditResultDialogProps) => {
-  const { toast } = useToast();
   const [time, setTime] = useState(result.time);
   const [netTime, setNetTime] = useState(result.netTime ?? '');
   const [position, setPosition] = useState(placeText(result.position));
@@ -135,17 +134,14 @@ export const EditResultDialog = ({
     setSaving(true);
     try {
       await updateResult(result.id, payload);
-      toast({
-        title: 'Wynik skorygowany',
+      toast.success('Wynik skorygowany', {
         description: `Zapisano korektę dla numeru ${result.bibNumber}`,
       });
       onSaved();
       onOpenChange(false);
     } catch (e) {
-      toast({
-        title: 'Nie udało się zapisać korekty',
+      toast.error('Nie udało się zapisać korekty', {
         description: e instanceof Error ? e.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setSaving(false);

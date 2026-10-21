@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,7 +47,6 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 const RegisterPage = () => {
   const { loginWithCredentials } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -84,19 +83,14 @@ const RegisterPage = () => {
           form.setError('password', { message });
         }
       }
-      toast({
-        title: 'Nie udało się utworzyć konta',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się utworzyć konta', { description: message });
       setIsLoading(false);
       return;
     }
 
     // No name or e-mail in the log: the account exists, nothing else is worth keeping here.
     appLogger.auth('register', 'Zarejestrowano nowe konto', { metadata: { role: 'participant' } });
-    toast({
-      title: 'Konto zostało utworzone!',
+    toast.success('Konto zostało utworzone!', {
       description:
         'Link do potwierdzenia adresu e-mail jest wysyłany na podany adres. Jeśli nie dotrze, możesz poprosić o ponowne wysłanie w swoim profilu.',
     });

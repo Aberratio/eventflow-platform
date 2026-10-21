@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { RegistrationData } from '@/components/registration/RegistrationForm';
 import { PaymentConfig, Registration } from '@/types';
 import { useQuery } from '@tanstack/react-query';
@@ -139,10 +139,7 @@ const RegistrationSuccessPage = () => {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast({
-        title: 'Skopiowano',
-        description: `${label} został skopiowany do schowka`,
-      });
+      toast.success('Skopiowano', { description: `${label} został skopiowany do schowka` });
     });
   };
 

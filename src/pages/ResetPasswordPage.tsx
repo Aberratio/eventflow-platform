@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { confirmPasswordReset } from '@/api';
 import { apiErrorCode } from '@/api/errors';
 import { z } from 'zod';
@@ -33,7 +33,6 @@ const resetPasswordSchema = z
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPasswordPage = () => {
-  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -53,7 +52,7 @@ const ResetPasswordPage = () => {
     try {
       await confirmPasswordReset({ token, newPassword: password });
       setIsSuccess(true);
-      toast({ title: 'Hasło zmienione', description: 'Twoje hasło zostało pomyślnie zmienione.' });
+      toast.success('Hasło zmienione', { description: 'Twoje hasło zostało pomyślnie zmienione.' });
     } catch (error) {
       const code = apiErrorCode(error);
       if (code === 'invalid_token') {
@@ -61,11 +60,7 @@ const ResetPasswordPage = () => {
       } else if (code === 'password_too_short' || code === 'password_too_long') {
         form.setError('password', { message: (error as Error).message });
       } else {
-        toast({
-          title: 'Błąd',
-          description: 'Nie udało się zmienić hasła. Spróbuj ponownie.',
-          variant: 'destructive',
-        });
+        toast.error('Błąd', { description: 'Nie udało się zmienić hasła. Spróbuj ponownie.' });
       }
     } finally {
       setIsLoading(false);

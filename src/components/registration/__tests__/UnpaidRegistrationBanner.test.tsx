@@ -3,13 +3,13 @@ import { fireEvent, render, screen, waitFor } from '@/test/test-utils';
 import type { Event, Registration } from '@/types';
 
 const lib = vi.hoisted(() => ({ retryRegistrationPayment: vi.fn() }));
-const toast = vi.hoisted(() => vi.fn());
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 vi.mock('@/lib/unpaidRegistration', async (orig) => ({
   ...(await orig<typeof import('@/lib/unpaidRegistration')>()),
   retryRegistrationPayment: lib.retryRegistrationPayment,
 }));
 vi.mock('@/api', () => ({ retryPayment: vi.fn() }));
-vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
+vi.mock('sonner', () => ({ toast }));
 
 import { ApiRequestError } from '@/api/errors';
 import { UnpaidRegistrationBanner } from '../UnpaidRegistrationBanner';
@@ -96,11 +96,9 @@ describe('UnpaidRegistrationBanner', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /Zapłać teraz/ }));
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          description: expect.stringMatching(/limit/i),
-        }),
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: expect.stringMatching(/limit/i) }),
       ),
     );
   });

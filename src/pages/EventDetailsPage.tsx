@@ -31,7 +31,7 @@ import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Event } from '@/types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { LiveResultsEmbed } from '@/components/LiveResultsEmbed';
 import { GalleryAlbumsList } from '@/components/GalleryAlbumsList';
 import { RouteMap } from '@/components/RouteMap';
@@ -303,10 +303,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     }
 
     if (!isAuthenticated) {
-      toast({
-        title: 'Wymagane logowanie',
-        description: 'Zaloguj się, aby zapisać się na zawody.',
-      });
+      toast('Wymagane logowanie', { description: 'Zaloguj się, aby zapisać się na zawody.' });
       navigate('/login');
       return;
     }
@@ -315,8 +312,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: 'Link skopiowany',
+    toast.success('Link skopiowany', {
       description: 'Link do wydarzenia został skopiowany do schowka.',
     });
   };

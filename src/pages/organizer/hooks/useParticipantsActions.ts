@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Event, Registration, PaymentDetails } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { exportToCSV, generatePrintableHTML } from '@/lib/exportUtils';
 import { formatDate } from '@/lib/format';
 import { QUERY_KEYS } from '@/constants';
@@ -18,7 +18,6 @@ import {
 const FALLBACK_ERROR = 'Spróbuj ponownie za chwilę.';
 
 export const useParticipantsActions = (event: Event, initialRegistrations: Registration[]) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [localRegistrations, setLocalRegistrations] =
     useState<Registration[]>(initialRegistrations);
@@ -38,10 +37,8 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     ]);
 
   const failureToast = (title: string, error: unknown) =>
-    toast({
-      title,
+    toast.error(title, {
       description: error instanceof Error && error.message ? error.message : FALLBACK_ERROR,
-      variant: 'destructive',
     });
 
   /**
@@ -70,8 +67,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
       return false;
     }
     await refreshRegistrations();
-    toast({
-      title: 'Status zaktualizowany',
+    toast.success('Status zaktualizowany', {
       description: `Zmieniono status ${registration.userName} na ${newStatus === 'confirmed' ? 'potwierdzony' : 'anulowany'}.`,
     });
     return true;
@@ -84,16 +80,14 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
     const done = outcomes.length - failed.length;
     if (done > 0) await refreshRegistrations();
     if (failed.length === 0) {
-      toast({ title, description: `Anulowano zapisy: ${done}.` });
+      toast.success(title, { description: `Anulowano zapisy: ${done}.` });
       return;
     }
     const reason = failed[0].reason;
-    toast({
-      title: 'Nie wszystkie zapisy zostały anulowane',
+    toast.error('Nie wszystkie zapisy zostały anulowane', {
       description: `Anulowano: ${done}, błędy: ${failed.length}. ${
         reason instanceof Error && reason.message ? reason.message : FALLBACK_ERROR
       }`,
-      variant: 'destructive',
     });
   };
 
@@ -120,16 +114,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
       const response = await updateRegistration(participantId, { bibNumber });
       const saved = response.data?.bibNumber ?? bibNumber;
       await refreshRegistrations();
-      toast({
-        title: 'Numer startowy przypisany',
+      toast.success('Numer startowy przypisany', {
         description: `Przypisano numer ${saved} dla ${participantName}.`,
       });
       return true;
     } catch (error) {
-      toast({
-        title: 'Nie udało się przypisać numeru',
+      toast.error('Nie udało się przypisać numeru', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
       return false;
     }
@@ -164,16 +155,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
           prev.map((r) => (r.id === registration.id ? response.data! : r)),
         );
       }
-      toast({
-        title: 'Zwrot zatwierdzony',
+      toast.success('Zwrot zatwierdzony', {
         description: `Zwrot dla ${registration.userName} oczekuje na wykonanie.`,
       });
       return response.data ?? undefined;
     } catch {
-      toast({
-        title: 'Nie udało się zatwierdzić zwrotu',
+      toast.error('Nie udało się zatwierdzić zwrotu', {
         description: 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
       return undefined;
     }
@@ -194,17 +182,12 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
           prev.map((r) => (r.id === registration.id ? response.data! : r)),
         );
       }
-      toast({
-        title: 'Zwrot oznaczony jako zrealizowany',
+      toast.success('Zwrot oznaczony jako zrealizowany', {
         description: `Zapis ${registration.userName} został zaktualizowany.`,
       });
       return response.data ?? undefined;
     } catch {
-      toast({
-        title: 'Nie udało się oznaczyć zwrotu',
-        description: 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się oznaczyć zwrotu', { description: 'Spróbuj ponownie za chwilę.' });
       return undefined;
     }
   };
@@ -225,16 +208,13 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
           prev.map((r) => (r.id === registration.id ? response.data! : r)),
         );
       }
-      toast({
-        title: 'Wpłata potwierdzona',
+      toast.success('Wpłata potwierdzona', {
         description: `Zapis ${registration.userName} oznaczono jako opłacony.`,
       });
       return response.data ?? undefined;
     } catch {
-      toast({
-        title: 'Nie udało się potwierdzić wpłaty',
+      toast.error('Nie udało się potwierdzić wpłaty', {
         description: 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
       return undefined;
     }
@@ -259,7 +239,7 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
       'Data zapisu': formatDate(reg.registeredAt),
     }));
     exportToCSV(data, `lista-startowa-${event.slug}`);
-    toast({ title: 'Eksport CSV', description: 'Plik został pobrany.' });
+    toast.success('Eksport CSV', { description: 'Plik został pobrany.' });
   };
 
   const handleExportPDF = (filteredRegistrations: Registration[]) => {
@@ -288,15 +268,12 @@ export const useParticipantsActions = (event: Event, initialRegistrations: Regis
   const handleExportStartList = async (distanceId: string, format: 'csv' | 'xlsx' | 'xml') => {
     try {
       await exportStartList(event.id, distanceId, format);
-      toast({
-        title: `Eksport ${format.toUpperCase()}`,
+      toast.success(`Eksport ${format.toUpperCase()}`, {
         description: 'Lista startowa została pobrana.',
       });
     } catch {
-      toast({
-        title: 'Nie udało się pobrać listy startowej',
+      toast.error('Nie udało się pobrać listy startowej', {
         description: 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     }
   };
