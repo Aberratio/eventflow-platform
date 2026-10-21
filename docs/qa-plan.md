@@ -1,5 +1,7 @@
 # Plan testów QA – ZmierzymyCzas (dev)
 
+> English summary: QA test plan for the dev environment (Polish text): scope, environments, test accounts, risk areas and the task breakdown in `docs/qa-tasks/`.
+
 Wersja 1, 2026-10-19. Środowisko docelowe: dev.
 
 - Frontend: `https://portal-dev.zmierzymyczas.kokot.it`
@@ -17,7 +19,7 @@ Wersja 1, 2026-10-19. Środowisko docelowe: dev.
 - **Role**: anonim, participant, organizer, moderator, admin, superadmin. Grupy w API: `adminRoles` = admin, superadmin; `staffRoles` = + moderator; `eventManagerRoles` = + organizer; `publisherRoles` = admin, superadmin.
 - **API** (`src/Http/routes.php`, ok. 200 tras): 137 chronionych `AuthMiddleware` (30 dowolna zalogowana rola, 41 eventManager, 29 admin, 20 staff, 10 inne listy, 5 z kontrolą w handlerze), reszta publiczna lub z `optionalAuth`. Kontrola własności w handlerach (`$authorizeRegistration`, `$canManageEvent`, `$canManageEventMoney`, `$isSelf`). Webhooki Tpay/PayNow, `/dev/seed-event` (aktywny na staging, czyli na dev).
 - **Nagłówki**: front – CSP, HSTS, XFO SAMEORIGIN, nosniff, Referrer-Policy, Permissions-Policy (z `.htaccess` generowanego w buildzie); API – `default-src 'none'`, XFO DENY, HSTS. CORS bez `Allow-Credentials`, metody `GET, POST, PATCH, DELETE, OPTIONS`.
-- **Rate limiting w aplikacji**: tylko cooldown per użytkownik na reset hasła (60 s, 5/h). Globalny/IP limit logowania to backlog PP.10.
+- **Rate limiting w aplikacji**: tylko cooldown per użytkownik na reset hasła (60 s, 5/h). Globalny limit logowania per IP nie istnieje.
 
 ### 1.3 Inwentarz istniejących testów
 
@@ -53,7 +55,7 @@ Wersja 1, 2026-10-19. Środowisko docelowe: dev.
 ### Zależności (blokujące)
 | ID | Zależność | Blokuje |
 |---|---|---|
-| D1 | Konta z seeda (`jan@`, `anna@`, `piotr@`, `kasia@example.com`, `marek@timing.pl`, `ewa@runpoland.pl`, `tomasz@sportevents.pl`, `monika@`, `admin@`, `superadmin@zmierzymyczas.pl`) z hasłem `SEED_DEMO_PASSWORD` (serwer: commit `d75385f`, wymaga wdrożenia, ustawienia zmiennej w `.env` dev i `composer seed`); lokalnie tylko `E2E_DEV_PASSWORD` | wszystko zalogowane: rejestracja, panele, RBAC, IDOR, upload, część a11y/perf |
+| D1 | Konta z seeda (`jan@`, `anna@`, `piotr@`, `kasia@example.com`, `marek@timing.pl`, `ewa@runpoland.pl`, `tomasz@sportevents.pl`, `monika@`, `admin@`, `superadmin@zmierzymyczas.pl`) z hasłem `SEED_DEMO_PASSWORD` (ustawiane w `.env` serwera, potem `composer seed`); lokalnie tylko `E2E_DEV_PASSWORD` | wszystko zalogowane: rejestracja, panele, RBAC, IDOR, upload, część a11y/perf |
 | D2 | Decyzja w sprawie 429 (H1): whitelist IP runnera lub podniesienie limitu na dev, albo akceptacja wolnego zestawu (1–2 workery, cache danych API) | czas całości, smoke ≤ 2 min, load test |
 | D3 | Zgoda na tworzenie na dev: zapisów na wydarzenia, zamówień (przelew), uploadów; sposób sprzątania (anulowanie zapisu przez uczestnika, anulowanie zamówienia przez admina) | 03, 04, 14 |
 | D4 | Zgoda na lekki load test API (≤ 20 równoległych, ≤ 60 s) | 23 |
@@ -138,7 +140,7 @@ e2e-dev/
 
 ## 7. Taski
 
-Brief każdego tasku trafi do `docs/qa-tasks/<NN>-<slug>.md` (Faza 3). Model: S = Sonnet, H = Haiku, O = orkiestrator (ja).
+Brief każdego tasku trafi do `docs/qa-tasks/<NN>-<slug>.md` (Faza 3).
 
 | NN | Slug | Pliki | Model | Prio | Zależy od | Wymaga |
 |---|---|---|---|---|---|---|

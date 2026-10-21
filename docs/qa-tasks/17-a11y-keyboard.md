@@ -1,4 +1,4 @@
-# 17 a11y-keyboard (Sonnet, P1)
+# 17 a11y-keyboard (P1)
 **Cel:** kryteria WCAG wymagające interakcji, sprawdzane w kodzie testu.
 **Plik:** `e2e-dev/a11y/keyboard-focus.spec.ts`.
 **Kryteria akceptacji:**

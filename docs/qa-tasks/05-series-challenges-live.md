@@ -1,4 +1,4 @@
-# 05 series-challenges-live (Sonnet, P2)
+# 05 series-challenges-live (P2)
 **Cel:** serie i klasyfikacje, wyzwania, wyniki live i profil zawodnika działają dla anonima.
 **Plik:** `e2e-dev/functional/series-challenges-live.spec.ts`.
 **Kontekst:** trasy `/series`, `/series/:slug`, `/challenges`, `/challenges/:slug`, `/wyniki/live`, `/athlete/:userId`. API: `GET /series`, `/series/slug/{slug}`, `/series/{id}/ranking`, `/challenges`, `/challenges/slug/{slug}`, `/challenges/{id}/ranking`, `/events/live`, `/users/{userId}/results`, `/users/{userId}/personal-records`.

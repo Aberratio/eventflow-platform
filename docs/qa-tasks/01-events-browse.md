@@ -1,4 +1,4 @@
-# 01 events-browse (Sonnet, P1)
+# 01 events-browse (P1)
 **Cel:** przeglądanie listy wydarzeń jako anonim działa poprawnie.
 **Plik:** `e2e-dev/functional/events-browse.spec.ts` (tylko ten).
 **Kontekst:** trasy `/events` i `/wydarzenia` (`src/App.tsx`); strona listy i filtry: znajdź w `src/pages` (grep "Events"). API: `GET /events` (parametry: handler w `routes.php` ok. linii 1159; filtry, `page`, `pageSize`, wyszukiwanie), odpowiedź paginowana `meta`.

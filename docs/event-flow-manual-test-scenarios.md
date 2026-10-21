@@ -1,6 +1,8 @@
 # Scenariusze manualne: wydarzenia
 
-Zakres: pelny przeplyw wydarzen z perspektywy organizatora, admina, moderatora i uczestnika. Testuj na danych demo oraz na nowo utworzonym wydarzeniu. Role demo: organizator `marek@timing.pl`, moderator `monika@zmierzymyczas.pl`, uczestnik `jan@example.com`; haslo: `demo1234`.
+> English summary: manual test scenarios (Polish text) for the whole event flow from the organizer, admin, moderator and participant perspectives. Demo accounts get their password from the `SEED_DEMO_PASSWORD` server setting.
+
+Zakres: pelny przeplyw wydarzen z perspektywy organizatora, admina, moderatora i uczestnika. Testuj na danych demo oraz na nowo utworzonym wydarzeniu. Role demo: organizator `marek@timing.pl`, moderator `monika@zmierzymyczas.pl`, uczestnik `jan@example.com`; haslo kont demo jest ustawiane przez `SEED_DEMO_PASSWORD` w `.env` serwera (patrz `bin/seed.php` w `eventflow-server`); bez tej zmiennej konta demo nie maja uzywalnego hasla.
 
 ## 1. Organizator - tworzenie szkicu
 

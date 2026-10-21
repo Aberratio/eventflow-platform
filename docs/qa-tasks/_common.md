@@ -1,6 +1,6 @@
 # Wspólne zasady dla tasków QA (dev)
 
-Repo frontu: `C:\Repos\zmierzymy-czas\eventflow-platform` (Windows; Bash i PowerShell dostępne). API (tylko do czytania kodu): `C:\Repos\zmierzymy-czas\eventflow-server\src\Http\routes.php`.
+Repo frontu: ten katalog. API (tylko do czytania kodu): `src/Http/routes.php` w repozytorium `eventflow-server`.
 
 ## Środowisko
 - Front: `https://portal-dev.zmierzymyczas.kokot.it`, API: `https://portal-api-dev.zmierzymyczas.kokot.it/api/v1` (współdzielony dev; tylko ten host).
