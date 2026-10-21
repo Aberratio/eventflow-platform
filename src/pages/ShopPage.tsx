@@ -154,7 +154,7 @@ const ShopPage = () => {
       <div>
         <label className="mb-2 block text-sm font-medium">Sortuj</label>
         <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-          <SelectTrigger>
+          <SelectTrigger aria-label="Sortuj">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -281,7 +281,7 @@ const ShopPage = () => {
                 <div className="flex flex-col">
                   <label className="mb-1 text-xs font-medium text-muted-foreground">Sortuj</label>
                   <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
-                    <SelectTrigger className="w-[170px] bg-background">
+                    <SelectTrigger aria-label="Sortuj" className="w-[170px] bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

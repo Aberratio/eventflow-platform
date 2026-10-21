@@ -143,7 +143,7 @@ export const PaymentDetailsPanel = ({
             <CreditCard className="h-5 w-5 text-primary" />
             Szczegóły płatności - {registration.userName}
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button aria-label="Zamknij" variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>

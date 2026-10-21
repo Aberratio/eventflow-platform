@@ -343,6 +343,7 @@ export const AdminChallengesTab = ({ basePath = '/admin' }: AdminChallengesTabPr
                 </span>
                 <div className="flex items-center gap-2">
                   <Progress
+                    aria-label="Postęp wyzwania"
                     value={
                       (participation.completedCount /
                         Math.max(1, challenge?.rule.minCompleted ?? 1)) *

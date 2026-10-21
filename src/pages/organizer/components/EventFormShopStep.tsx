@@ -318,6 +318,7 @@ const GadgetCard = ({
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
         <Button
+          aria-label="Usuń"
           type="button"
           variant="ghost"
           size="icon"

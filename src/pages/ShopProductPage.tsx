@@ -180,7 +180,7 @@ const ShopProductPage = () => {
                 {categoryLabels[product.category] ?? product.category}
               </Badge>
               {product.featured && (
-                <Badge className="border border-warning/30 bg-warning/20 text-xs text-warning-foreground">
+                <Badge className="border border-warning/30 bg-warning/20 text-xs text-warning">
                   Wyróżniony
                 </Badge>
               )}

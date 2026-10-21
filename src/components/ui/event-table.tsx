@@ -60,19 +60,19 @@ const EventTableRow = React.forwardRef<HTMLAnchorElement, EventTableRowProps>(
         style={{ backgroundColor: 'var(--page-bg-surface)' }}
       >
         <span className="text-base font-bold leading-none text-white">{dateTile.day}</span>
-        <span className="mt-0.5 text-[9px] font-bold uppercase text-white/45">
+        <span className="mt-0.5 text-[9px] font-bold uppercase text-white/55">
           {dateTile.month}
         </span>
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="line-clamp-1 text-sm font-bold text-white">{title}</div>
-        {mobileMeta && <div className="mt-1 text-xs text-white/[0.42] md:hidden">{mobileMeta}</div>}
+        {mobileMeta && <div className="mt-1 text-xs text-white/55 md:hidden">{mobileMeta}</div>}
       </div>
 
       {children}
 
-      <ChevronRight className="h-4 w-4 shrink-0 text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/65" />
+      <ChevronRight className="h-4 w-4 shrink-0 text-white/55 transition group-hover:translate-x-0.5 group-hover:text-white/65" />
     </Link>
   ),
 );

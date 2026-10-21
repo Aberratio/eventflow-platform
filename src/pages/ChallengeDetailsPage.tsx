@@ -330,7 +330,7 @@ const ChallengeDetailsPage = () => {
                   {participation.completedCount}/{challenge.rule.minCompleted}
                 </span>
               </div>
-              <Progress value={Math.min(progress, 100)} />
+              <Progress aria-label="Twój postęp" value={Math.min(progress, 100)} />
             </CardContent>
           </Card>
         )}
