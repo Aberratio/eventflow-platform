@@ -74,7 +74,7 @@ export const AdminOrdersTab = () => {
     queryFn: () => getOrders(),
     select: (r) => r.data ?? [],
   });
-  const orders = ordersResp ?? [];
+  const orders = useMemo(() => ordersResp ?? [], [ordersResp]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ShopOrder['status'] | 'all'>('all');
   const [dateFrom, setDateFrom] = useState('');
