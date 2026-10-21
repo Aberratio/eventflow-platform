@@ -367,6 +367,10 @@ export const getSalesStats: ApiAdapter['getSalesStats'] = (...args) =>
   ensureAdapter().then((a) => a.getSalesStats(...args));
 export const getPlatformStats: ApiAdapter['getPlatformStats'] = (...args) =>
   ensureAdapter().then((a) => a.getPlatformStats(...args));
+export const getSettlementReport: ApiAdapter['getSettlementReport'] = (...args) =>
+  ensureAdapter().then((a) => a.getSettlementReport(...args));
+export const exportSettlementReport: ApiAdapter['exportSettlementReport'] = (...args) =>
+  ensureAdapter().then((a) => a.exportSettlementReport(...args));
 
 // CMS
 export const getInfoPages: ApiAdapter['getInfoPages'] = (...args) =>

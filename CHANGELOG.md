@@ -50,5 +50,8 @@ as the first version.
 - Organizer discount codes: a "Generuj partię" dialog creates up to 1000 unique
   codes at once (prefix, value, usage limit, validity), lists the batches and
   downloads each one as a CSV.
+- Admin panel: "Rozliczenia (trasa A)" settlement report for gateway payments,
+  with period and event filters, per-event totals (payments, refunds,
+  commission, amount to pay out), line items and CSV/XLSX export.
 
 [Unreleased]: https://github.com/Aberratio/eventflow-platform/commits/main
