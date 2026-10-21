@@ -58,7 +58,7 @@ export const ModerationReviewBar = ({ event }: ModerationReviewBarProps) => {
 
   const handleReject = () => {
     setRejectReasonPrompted(true);
-    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    const reason = window.prompt('Podaj powód odesłania wydarzenia do poprawy:');
     if (!reason?.trim()) {
       setRejectReasonPrompted(false);
       return;

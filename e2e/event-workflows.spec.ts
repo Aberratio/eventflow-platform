@@ -27,7 +27,7 @@ function queueCard(page: Page, eventName: string) {
   return page
     .locator('div')
     .filter({ has: page.getByText(eventName, { exact: true }) })
-    .filter({ has: page.getByRole('button', { name: /Zatwierdz/ }) })
+    .filter({ has: page.getByRole('button', { name: /Zatwierdź/ }) })
     .last();
 }
 
@@ -175,7 +175,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
     await openDashboardSection(page, 'Moderacja');
     await expect(page.getByText(pending.name, { exact: true })).toBeVisible();
     await queueCard(page, pending.name)
-      .getByRole('button', { name: /Zatwierdz/ })
+      .getByRole('button', { name: /Zatwierdź/ })
       .click();
 
     await expect(page.getByText(pending.name, { exact: true })).toBeHidden();

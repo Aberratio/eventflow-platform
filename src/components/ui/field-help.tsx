@@ -15,7 +15,7 @@ interface HelpLabelProps extends FieldHelpProps {
   className?: string;
 }
 
-export const FieldHelp = ({ title = 'Szczegoly pola', description }: FieldHelpProps) => (
+export const FieldHelp = ({ title = 'Szczegóły pola', description }: FieldHelpProps) => (
   <HoverCard openDelay={150} closeDelay={100}>
     <HoverCardTrigger asChild>
       <button

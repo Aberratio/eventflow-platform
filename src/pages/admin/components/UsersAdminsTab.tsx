@@ -88,7 +88,7 @@ export const UsersAdminsTab = () => {
 
   const handleAddAdmin = () => {
     if (!newAdmin.name.trim() || !newAdmin.email.trim()) {
-      toast.error('Podaj imie i email administratora');
+      toast.error('Podaj imię i email administratora');
       return;
     }
 
@@ -108,7 +108,7 @@ export const UsersAdminsTab = () => {
         status: 'active',
       },
     ]);
-    toast.success(`Konto administratora ${newAdmin.name} zostalo utworzone`);
+    toast.success(`Konto administratora ${newAdmin.name} zostało utworzone`);
     setNewAdmin({ name: '', email: '', phone: '' });
     setAddDialogOpen(false);
   };
@@ -118,7 +118,7 @@ export const UsersAdminsTab = () => {
 
     appLogger.user(
       'role_change',
-      `Zmieniono role administratora ${selectedUser.name} na ${roleLabels[selectedRole]}`,
+      `Zmieniono rolę administratora ${selectedUser.name} na ${roleLabels[selectedRole]}`,
       {
         targetType: 'user',
         targetId: selectedUser.id,
@@ -133,7 +133,7 @@ export const UsersAdminsTab = () => {
       ),
     );
     toast.success(
-      `Rola konta ${selectedUser.name} zostala zmieniona na ${roleLabels[selectedRole]}`,
+      `Rola konta ${selectedUser.name} została zmieniona na ${roleLabels[selectedRole]}`,
     );
     setRoleDialogOpen(false);
     setSelectedUser(null);
@@ -202,11 +202,11 @@ export const UsersAdminsTab = () => {
                         }}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
-                        Podglad / Edycja
+                        Podgląd / Edycja
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openRoleDialog(user)}>
                         <UserCog className="mr-2 h-4 w-4" />
-                        Zmien role
+                        Zmień rolę
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -245,7 +245,7 @@ export const UsersAdminsTab = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Imie i nazwisko</Label>
+              <Label>Imię i nazwisko</Label>
               <Input
                 value={newAdmin.name}
                 onChange={(event) => setNewAdmin({ ...newAdmin, name: event.target.value })}
@@ -271,7 +271,7 @@ export const UsersAdminsTab = () => {
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button onClick={handleAddAdmin}>Utworz konto</Button>
+            <Button onClick={handleAddAdmin}>Utwórz konto</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -279,7 +279,7 @@ export const UsersAdminsTab = () => {
       <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Zmien role: {selectedUser?.name}</DialogTitle>
+            <DialogTitle>Zmień rolę: {selectedUser?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <Label>Nowa rola</Label>

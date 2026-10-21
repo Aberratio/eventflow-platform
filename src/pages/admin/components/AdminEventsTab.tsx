@@ -117,7 +117,7 @@ export const AdminEventsTab = () => {
         </Button>
       </div>
 
-      {isLoading && <div className="text-sm text-muted-foreground">Ladowanie wydarzen...</div>}
+      {isLoading && <div className="text-sm text-muted-foreground">Ładowanie wydarzeń...</div>}
 
       <div className="overflow-x-auto rounded-lg border border-border/50">
         <Table>

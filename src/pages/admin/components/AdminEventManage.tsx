@@ -115,7 +115,7 @@ export const AdminEventManage = () => {
     return (
       <Layout>
         <div className="container py-8">
-          <p className="text-muted-foreground">Ladowanie wydarzenia...</p>
+          <p className="text-muted-foreground">Ładowanie wydarzenia...</p>
         </div>
       </Layout>
     );
@@ -141,41 +141,41 @@ export const AdminEventManage = () => {
       const tiers = distance.priceTiers || [];
       for (const tier of tiers) {
         if (!tier.name.trim()) {
-          toast.error('Kazdy prog cenowy musi miec nazwe');
+          toast.error('Każdy próg cenowy musi mieć nazwę');
           return false;
         }
         if (tier.endDate) {
           if (Number.isNaN(new Date(tier.endDate).getTime())) {
-            toast.error('Podaj prawidlowa date koncowa dla progu cenowego');
+            toast.error('Podaj prawidłową datę końcową dla progu cenowego');
             return false;
           }
           if (event.registrationDeadline && tier.endDate > event.registrationDeadline) {
-            toast.error('Data koncowa progu nie moze byc pozniejsza niz termin rejestracji');
+            toast.error('Data końcowa progu nie może być późniejsza niż termin rejestracji');
             return false;
           }
         }
         if (tier.participantLimit != null) {
           const participantLimit = Number(tier.participantLimit);
           if (!participantLimit || participantLimit <= 0 || !Number.isInteger(participantLimit)) {
-            toast.error('Limit uczestnikow w progu musi byc dodatnia liczba calkowita');
+            toast.error('Limit uczestników w progu musi być dodatnią liczbą całkowitą');
             return false;
           }
           if (distance.limit && participantLimit > distance.limit) {
-            toast.error('Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu');
+            toast.error('Limit uczestników w progu nie może być wyższy niż limit dystansu');
             return false;
           }
         }
       }
       const dates = tiers.map((tier) => tier.endDate).filter(Boolean);
       if (new Set(dates).size !== dates.length) {
-        toast.error('Daty koncowe progow cenowych nie moga sie powtarzac');
+        toast.error('Daty końcowe progów cenowych nie mogą się powtarzać');
         return false;
       }
       const participantLimits = tiers
         .map((tier) => tier.participantLimit)
         .filter((value): value is number => value != null);
       if (new Set(participantLimits).size !== participantLimits.length) {
-        toast.error('Limity uczestnikow w progach cenowych nie moga sie powtarzac');
+        toast.error('Limity uczestników w progach cenowych nie mogą się powtarzać');
         return false;
       }
     }

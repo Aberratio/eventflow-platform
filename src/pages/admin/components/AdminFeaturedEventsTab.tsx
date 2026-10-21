@@ -56,7 +56,7 @@ export const AdminFeaturedEventsTab = () => {
       await Promise.all(events.map((event) => updateEvent(event.id, { featured: event.featured })));
       toast.success('Polecane wydarzenia zostały zapisane');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zapisac zmian');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać zmian');
     }
   };
 

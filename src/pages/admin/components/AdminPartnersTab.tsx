@@ -29,7 +29,7 @@ const PartnersBannerPreview = ({ partners, variant }: PartnersBannerPreviewProps
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold md:text-3xl">Nasi partnerzy</h2>
           <p className={isDark ? 'mt-1 text-neutral-400' : 'mt-1 text-muted-foreground'}>
-            Wspolpracujemy z najlepszymi
+            Współpracujemy z najlepszymi
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
@@ -83,7 +83,7 @@ export const AdminPartnersTab = () => {
       })
       .catch((error) => {
         if (!cancelled)
-          toast.error(error instanceof Error ? error.message : 'Nie udalo sie pobrac partnerow');
+          toast.error(error instanceof Error ? error.message : 'Nie udało się pobrać partnerów');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -98,9 +98,9 @@ export const AdminPartnersTab = () => {
     try {
       await deletePartner(partner.id);
       setPartners((current) => current.filter((p) => p.id !== partner.id));
-      toast.success(`Partner ${partner.name} zostal usuniety`);
+      toast.success(`Partner ${partner.name} został usunięty`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie usunac partnera');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się usunąć partnera');
     }
   };
 
@@ -110,7 +110,7 @@ export const AdminPartnersTab = () => {
         <div>
           <h3 className="text-lg font-semibold">Partnerzy</h3>
           <p className="text-sm text-muted-foreground">
-            Zarzadzaj logotypami partnerow widocznymi na stronie glownej
+            Zarządzaj logotypami partnerów widocznymi na stronie głównej
           </p>
         </div>
         <Button onClick={() => navigate('/admin/partners/new')}>
@@ -120,11 +120,11 @@ export const AdminPartnersTab = () => {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Ladowanie partnerow...</p>
+        <p className="text-sm text-muted-foreground">Ładowanie partnerów...</p>
       ) : partners.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            Brak partnerow w bazie.
+            Brak partnerów w bazie.
           </CardContent>
         </Card>
       ) : (
@@ -132,7 +132,7 @@ export const AdminPartnersTab = () => {
           {featuredPartners.length > 0 && (
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium">Podglad banera na stronie glownej</h4>
+                <h4 className="font-medium">Podgląd banera na stronie głównej</h4>
                 <p className="text-sm text-muted-foreground">
                   Widoczne sa tylko partnerzy oznaczeni jako wyroznieni.
                 </p>
@@ -159,7 +159,7 @@ export const AdminPartnersTab = () => {
                         <div className="flex h-20 w-full items-center justify-center rounded-lg bg-neutral-950">
                           <img
                             src={partner.logoDarkUrl}
-                            alt={`${partner.name} - logo na ciemne tlo`}
+                            alt={`${partner.name} - logo na ciemne tło`}
                             className="max-h-16 max-w-full object-contain"
                           />
                         </div>
@@ -185,7 +185,7 @@ export const AdminPartnersTab = () => {
                           variant="outline"
                           className="border-primary/20 bg-primary/10 text-primary"
                         >
-                          Wyrozniony
+                          Wyróżniony
                         </Badge>
                       ) : (
                         <Badge variant="outline">Ukryty</Badge>

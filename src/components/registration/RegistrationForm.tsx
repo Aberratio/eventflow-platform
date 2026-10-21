@@ -849,7 +849,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
       </CardTitle>
       <CardDescription>
         {form.isRelayDistance
-          ? `Ten dystans wymaga druzyny${form.relayTeamSizeLabel ? `: ${form.relayTeamSizeLabel}` : ''}.`
+          ? `Ten dystans wymaga drużyny${form.relayTeamSizeLabel ? `: ${form.relayTeamSizeLabel}` : ''}.`
           : 'Zapisz się jako część drużyny'}
       </CardDescription>
     </CardHeader>
@@ -887,7 +887,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
             </label>
             <p className="mt-1 text-sm text-muted-foreground">
               {form.isRelayDistance
-                ? 'Utworz druzyne sztafetowa albo dolacz do druzyny, ktora ma jeszcze wolne miejsce.'
+                ? 'Utwórz drużynę sztafetową albo dołącz do drużyny, która ma jeszcze wolne miejsce.'
                 : 'Zaznacz, jeśli rejestrujesz się wraz z innymi osobami z tej samej drużyny lub klubu.'}
             </p>
           </div>

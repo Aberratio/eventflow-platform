@@ -34,7 +34,7 @@ export const AdminModerationTab = () => {
       toast.success('Wydarzenie zatwierdzone i opublikowane.');
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zatwierdzić wydarzenia');
     },
   });
 
@@ -43,17 +43,17 @@ export const AdminModerationTab = () => {
       rejectEvent(event.id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
-      toast.success('Wydarzenie odeslane do poprawy.');
+      toast.success('Wydarzenie odesłane do poprawy.');
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odrzucic wydarzenia');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się odrzucić wydarzenia');
     },
   });
 
   const approve = (event: Event) => approveMutation.mutate(event);
 
   const reject = (event: Event) => {
-    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    const reason = window.prompt('Podaj powód odesłania wydarzenia do poprawy:');
     if (!reason?.trim()) return;
     rejectMutation.mutate({ event, reason: reason.trim() });
   };
@@ -87,20 +87,20 @@ export const AdminModerationTab = () => {
             <Button variant="outline" size="sm" asChild>
               <a href={`/events/${event.slug}/preview`}>
                 <Eye className="mr-2 h-4 w-4" />
-                Podglad
+                Podgląd
               </a>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <a href={`/admin/events/${event.id}`}>
                 <FileText className="mr-2 h-4 w-4" />
-                Zarzadzaj
+                Zarządzaj
               </a>
             </Button>
             {event.publicationStatus === 'submitted' && (
               <>
                 <Button size="sm" onClick={() => approve(event)}>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Zatwierdz
+                  Zatwierdź
                 </Button>
                 <Button variant="destructive" size="sm" onClick={() => reject(event)}>
                   <XCircle className="mr-2 h-4 w-4" />
@@ -117,7 +117,7 @@ export const AdminModerationTab = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">Moderacja wydarzen</h2>
+        <h2 className="text-xl font-semibold">Moderacja wydarzeń</h2>
         <p className="text-muted-foreground">
           Admin lub moderator zatwierdza wydarzenie oddane do sprawdzenia. Zatwierdzenie publikuje
           je od razu.
@@ -134,7 +134,7 @@ export const AdminModerationTab = () => {
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Do sprawdzenia ({pendingEvents.length})</h3>
-        {renderEvents(pendingEvents, 'Brak wydarzen do sprawdzenia')}
+        {renderEvents(pendingEvents, 'Brak wydarzeń do sprawdzenia')}
       </div>
     </div>
   );

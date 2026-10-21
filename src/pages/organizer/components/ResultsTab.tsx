@@ -188,7 +188,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       {!canUploadResults && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Wyniki niedostepne dla tego statusu</AlertTitle>
+          <AlertTitle>Wyniki niedostępne dla tego statusu</AlertTitle>
           <AlertDescription>
             Wyniki mozna wgrywac tylko do wydarzen trwajacych albo zakonczonych.
           </AlertDescription>
