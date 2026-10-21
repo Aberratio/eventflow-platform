@@ -97,6 +97,7 @@ export const ModeratorDiscountCodesTab = () => {
 
       {selectedEvent && (
         <DiscountCodesEditor
+          eventId={selectedEvent.id}
           discountCodes={discountCodes}
           distances={selectedEvent.distances}
           onChange={handleDiscountCodesChange}

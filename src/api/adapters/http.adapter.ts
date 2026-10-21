@@ -692,10 +692,6 @@ export const httpAdapter: ApiAdapter = {
     request(`/challenges/${encodeURIComponent(challengeId)}/ranking`),
   getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
-  getMessages: (userId) => request(`/users/${encodeURIComponent(userId)}/messages`),
-  getMessage: (id) => request(`/messages/${encodeURIComponent(id)}`),
-  sendMessage: (data) => request('/messages', json('POST', data)),
-  markAsRead: (id) => request(`/messages/${encodeURIComponent(id)}/read`, json('POST')),
 
   getTickets: (userId) => request(`/users/${encodeURIComponent(userId)}/tickets`),
   getCertificates: (userId) => request(`/users/${encodeURIComponent(userId)}/certificates`),
@@ -771,6 +767,23 @@ export const httpAdapter: ApiAdapter = {
     downloadFile(
       `/events/${encodeURIComponent(eventId)}/distances/${encodeURIComponent(distanceId)}/start-list-export${query({ format })}`,
       `lista-startowa.${format}`,
+    ),
+  createDiscountCodeBatch: (eventId, input) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches`,
+      json('POST', input),
+      true,
+    ),
+  getDiscountCodeBatches: (eventId) =>
+    request(`/events/${encodeURIComponent(eventId)}/discount-code-batches`),
+  getDiscountCodeBatch: (eventId, batchId) =>
+    request(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}`,
+    ),
+  exportDiscountCodeBatch: (eventId, batchId) =>
+    downloadFile(
+      `/events/${encodeURIComponent(eventId)}/discount-code-batches/${encodeURIComponent(batchId)}/export`,
+      'kody-rabatowe.csv',
     ),
   getSecuritySettings: () => request('/admin/security-settings'),
   updateSecuritySettings: (data) => request('/admin/security-settings', json('PATCH', data)),
@@ -855,4 +868,16 @@ export const httpAdapter: ApiAdapter = {
       `/admin/competitors/${encodeURIComponent(competitorIdA)}/merge-comparison/${encodeURIComponent(competitorIdB)}`,
     ),
   mergeCompetitors: (payload) => request('/admin/competitors/merge', json('POST', payload)),
+  reportCompetitorDuplicate: (competitorId, payload) =>
+    request(
+      `/competitors/${encodeURIComponent(competitorId)}/duplicate-reports`,
+      json('POST', payload),
+    ),
+  listCompetitorDuplicateReports: (status) =>
+    request(`/admin/competitors/duplicate-reports${status ? `?status=${status}` : ''}`),
+  rejectCompetitorDuplicateReport: (id, reason) =>
+    request(
+      `/admin/competitors/duplicate-reports/${encodeURIComponent(id)}`,
+      json('PATCH', { status: 'rejected', ...(reason ? { reason } : {}) }),
+    ),
 };

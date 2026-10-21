@@ -185,7 +185,6 @@ test.describe('Interakcje — Panel uczestnika', () => {
       'Rejestracje',
       'Historia',
       'Zamówienia',
-      'Wiadomości',
       'Bilety',
       'Wyzwania',
       'Profil',

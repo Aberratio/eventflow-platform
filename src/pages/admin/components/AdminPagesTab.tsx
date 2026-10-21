@@ -139,7 +139,7 @@ export const AdminPagesTab = () => {
             {sortedPages.map((page, index) => (
               <div
                 key={page.id}
-                className="flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
+                className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Button
@@ -166,15 +166,15 @@ export const AdminPagesTab = () => {
                   {getIcon(page.icon)}
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1 basis-40">
+                  <div className="flex flex-wrap items-center gap-x-2">
                     <span className="font-medium">{page.title}</span>
                     <span className="text-sm text-muted-foreground">/info/{page.slug}</span>
                   </div>
                   <p className="truncate text-sm text-muted-foreground">{page.description}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={page.published ? 'default' : 'secondary'}>
                     {page.published ? 'Opublikowana' : 'Szkic'}
                   </Badge>
@@ -192,7 +192,7 @@ export const AdminPagesTab = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button aria-label="Akcje strony" variant="ghost" size="icon">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

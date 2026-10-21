@@ -285,14 +285,6 @@ export const getSeriesRanking: ApiAdapter['getSeriesRanking'] = (...args) =>
   ensureAdapter().then((a) => a.getSeriesRanking(...args));
 
 // Messages
-export const getMessages: ApiAdapter['getMessages'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessages(...args));
-export const getMessage: ApiAdapter['getMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessage(...args));
-export const sendMessage: ApiAdapter['sendMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.sendMessage(...args));
-export const markAsRead: ApiAdapter['markAsRead'] = (...args) =>
-  ensureAdapter().then((a) => a.markAsRead(...args));
 
 // Tickets
 export const getTickets: ApiAdapter['getTickets'] = (...args) =>
@@ -357,6 +349,14 @@ export const getRegistrationStats: ApiAdapter['getRegistrationStats'] = (...args
   ensureAdapter().then((a) => a.getRegistrationStats(...args));
 export const exportStartList: ApiAdapter['exportStartList'] = (...args) =>
   ensureAdapter().then((a) => a.exportStartList(...args));
+export const createDiscountCodeBatch: ApiAdapter['createDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.createDiscountCodeBatch(...args));
+export const getDiscountCodeBatches: ApiAdapter['getDiscountCodeBatches'] = (...args) =>
+  ensureAdapter().then((a) => a.getDiscountCodeBatches(...args));
+export const getDiscountCodeBatch: ApiAdapter['getDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.getDiscountCodeBatch(...args));
+export const exportDiscountCodeBatch: ApiAdapter['exportDiscountCodeBatch'] = (...args) =>
+  ensureAdapter().then((a) => a.exportDiscountCodeBatch(...args));
 export const getSecuritySettings: ApiAdapter['getSecuritySettings'] = (...args) =>
   ensureAdapter().then((a) => a.getSecuritySettings(...args));
 export const updateSecuritySettings: ApiAdapter['updateSecuritySettings'] = (...args) =>
@@ -533,3 +533,11 @@ export {
 
 // Legacy client (for backward compatibility)
 export { simulateDelay } from './client';
+export const reportCompetitorDuplicate: ApiAdapter['reportCompetitorDuplicate'] = (...args) =>
+  ensureAdapter().then((a) => a.reportCompetitorDuplicate(...args));
+export const listCompetitorDuplicateReports: ApiAdapter['listCompetitorDuplicateReports'] = (
+  ...args
+) => ensureAdapter().then((a) => a.listCompetitorDuplicateReports(...args));
+export const rejectCompetitorDuplicateReport: ApiAdapter['rejectCompetitorDuplicateReport'] = (
+  ...args
+) => ensureAdapter().then((a) => a.rejectCompetitorDuplicateReport(...args));

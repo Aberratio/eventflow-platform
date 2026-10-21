@@ -29,7 +29,9 @@ const ErrorPageShell = ({ tint = 'muted', children, className }: ErrorPageShellP
       className,
     )}
   >
-    <div className="mx-auto max-w-md space-y-8 text-center">{children}</div>
+    <main id="main-content" className="mx-auto max-w-md space-y-8 text-center">
+      {children}
+    </main>
   </div>
 );
 ErrorPageShell.displayName = 'ErrorPageShell';
