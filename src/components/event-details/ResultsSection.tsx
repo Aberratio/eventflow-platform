@@ -33,6 +33,7 @@ import { PublicationStatusBadge } from '@/components/results/PublicationStatusBa
 import { TeamClassificationCard } from '@/components/results/TeamClassificationCard';
 import { ResultImportWizardDialog } from '@/components/organizer/ResultImportWizardDialog';
 import { useAuthSafe } from '@/contexts/AuthContext';
+import { formatPace } from '@/lib/format';
 import { Event, Result } from '@/types';
 
 interface ResultsSectionProps {
@@ -48,13 +49,6 @@ const getMedalIcon = (position: number) => {
 };
 
 type DisplayMode = 'time' | 'pace' | 'speed';
-
-const formatPace = (timeInSeconds: number, distanceKm: number): string => {
-  const paceSeconds = timeInSeconds / distanceKm;
-  const mins = Math.floor(paceSeconds / 60);
-  const secs = Math.round(paceSeconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')} min/km`;
-};
 
 const formatSpeed = (timeInSeconds: number, distanceKm: number): string => {
   const kmh = (distanceKm / timeInSeconds) * 3600;

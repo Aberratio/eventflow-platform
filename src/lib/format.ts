@@ -49,3 +49,13 @@ export function formatDuration(
   if (h === 0 && hours === 'auto') return `${m}:${s}`;
   return `${h}:${String(m).padStart(2, '0')}:${s}`;
 }
+
+/**
+ * Average pace as "M:SS min/km". The pace is rounded to a whole second first,
+ * so 4:59.6 becomes "5:00", never "4:60".
+ */
+export function formatPace(timeInSeconds: number, distanceKm: number): string {
+  const pace = Math.round(timeInSeconds / distanceKm);
+  const s = String(pace % 60).padStart(2, '0');
+  return `${Math.floor(pace / 60)}:${s} min/km`;
+}
