@@ -11,7 +11,7 @@
     box-sizing: border-box;
   }
 
-  /* WCAG 2.4.7 / 2.4.11: domyślny, widoczny fokus klawiatury; komponenty z własnym ringiem go nadpisują. */
+  /* WCAG 2.4.7 / 2.4.11: default visible keyboard focus; components with their own ring override it. */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;

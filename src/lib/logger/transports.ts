@@ -10,13 +10,13 @@ const LEVEL_ICONS: Record<string, string> = {
 const storedLogs: LogEntry[] = [];
 
 /**
- * MockTransport — loguje do konsoli i przechowuje w pamięci (per przeglądarka).
+ * MockTransport — logs to the console and keeps entries in memory (per browser).
  *
- * Żaden transport nie wysyła tych wpisów na serwer. Rejestr aktywności
- * (audit log) jest pisany wyłącznie przez serwer, na podstawie tożsamości
- * z zweryfikowanego JWT — POST /admin/client-logs został usunięty, bo
- * pozwalał dowolnemu klientowi sfałszować wpis przypisany komuś innemu.
- * Ten transport służy tylko do lokalnego debugowania w przeglądarce.
+ * No transport sends these entries to the server. The activity log
+ * (audit log) is written by the server only, based on the identity
+ * from the verified JWT — POST /admin/client-logs was removed because
+ * it let any client forge an entry attributed to someone else.
+ * This transport is for local debugging in the browser only.
  */
 export class MockTransport implements LogTransport {
   async send(entries: LogEntry[]): Promise<void> {
@@ -54,12 +54,12 @@ export class MockTransport implements LogTransport {
   }
 }
 
-/** Zwraca wszystkie logi przechowywane w pamięci (przydatne do debugowania). */
+/** Returns all logs kept in memory (useful for debugging). */
 export function getStoredLogs(): ReadonlyArray<LogEntry> {
   return storedLogs;
 }
 
-/** Czyści logi w pamięci. */
+/** Clears the in-memory logs. */
 export function clearStoredLogs(): void {
   storedLogs.length = 0;
 }

@@ -40,8 +40,8 @@ export interface User {
 }
 
 /**
- * Zawodnik: profil danych startowych. Byt samodzielny — nie własność Konta,
- * może istnieć bez żadnego powiązanego Konta (np. dziecko zarejestrowane przez rodzica).
+ * Zawodnik: a profile of start data. A standalone entity — not owned by an account,
+ * it can exist without any linked account (e.g. a child registered by a parent).
  */
 export interface Competitor {
   id: string;
@@ -53,10 +53,10 @@ export interface Competitor {
   phone?: string;
   club?: string;
   /**
-   * Kod tożsamości QR (`zqr_` + 48 hex) — generowany zawsze, przy
-   * utworzeniu Zawodnika, więc zawsze obecny (ta sama konwencja co
-   * Registration.qrCode — klient nigdy nie musi obsługiwać braku).
-   * Bez wygasania; rotuje wyłącznie na żądanie (zob. rotateIdentityCode()).
+   * Identity QR code (`zqr_` + 48 hex) — always generated when the
+   * Zawodnik is created, so always present (same convention as
+   * Registration.qrCode — the client never has to handle its absence).
+   * It never expires; it rotates only on request (see rotateIdentityCode()).
    */
   identityCode: string;
   userId?: string | null;
@@ -73,7 +73,7 @@ export interface Competitor {
   isAnonymized?: boolean;
 }
 
-/** Zawodnik pod moją opieką — mogę go zapisywać na zawody. */
+/** A Zawodnik under my care — I can register them for events. */
 export interface MyCompetitor {
   id: string; // id relacji Opieki
   competitorId: string;
@@ -85,14 +85,14 @@ export interface MyCompetitor {
   email?: string;
   phone?: string;
   club?: string;
-  /** Kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
+  /** Identity code of this Zawodnik — see Competitor.identityCode. */
   identityCode: string;
   competitorUserId?: string | null;
   /** Current masking state of this ward, returned by GET /care. */
   isAnonymized?: boolean;
 }
 
-/** Konto, które sprawuje opiekę nade mną (może mnie zapisywać). */
+/** An account that has care of me (it can register me). */
 export interface Caregiver {
   id: string; // id relacji Opieki
   kontoId: string;
@@ -104,10 +104,10 @@ export interface Caregiver {
 
 export interface CareResponse {
   /**
-   * Własny profil Zawodnika wywołującego Konta (z identityCode) — każde
-   * Konto uczestnika dostaje go automatycznie przy rejestracji. Null tylko dla
-   * kont, które jeszcze nie mają swojego profilu Zawodnika (praktycznie nie
-   * zdarza się dla uczestników, ale typ zostaje szczery co do tego brzegu).
+   * The own Zawodnik profile of the calling account (with identityCode) — every
+   * participant account gets it automatically on sign-up. Null only for
+   * accounts that do not have a Zawodnik profile yet (practically never
+   * happens for participants, but the type stays honest about this edge).
    */
   myProfile: Competitor | null;
   myCompetitors: MyCompetitor[];
@@ -138,11 +138,11 @@ export interface GrantCareResult {
 }
 
 /**
- * Jeden zwycięski czas na
- * dystansie, wyliczany na żywo z historii Wyników/Zapisów tego Zawodnika
- * (patrz `ResultRepository::lifetimeRecordsForCompetitor()` po stronie
- * serwera) — nigdy nie jest to przechowywany osobno wiersz, więc scalanie
- * nigdy nie musi go ręcznie przepinać: przepięcie Zapisów wystarcza.
+ * One best time on a
+ * distance, computed live from the history of this Zawodnik's Wyniki/Zapisy
+ * (see `ResultRepository::lifetimeRecordsForCompetitor()` on the
+ * server) — it is never stored as a separate row, so merging
+ * never has to re-point it by hand: re-pointing the Zapisy is enough.
  */
 export interface CompetitorLifetimeRecord {
   distanceLabel: string;
@@ -159,13 +159,13 @@ export interface CompetitorLifetimeRecord {
 }
 
 /**
- * Wszystko, co dany profil "niesie" — widok "obok siebie" (spec Answer
- * §2 krok 2). `challengeParticipations` pokazuje udział w Wyzwaniach jego
- * WŁASNEGO Konta, jeśli je ma — Uczestnictwa są kluczowane po `user_id`
- * (Koncie), nie po Zawodniku, więc scalanie dwóch profili nigdy ich nie
- * przepina (dwaj różni Zawodnicy nigdy nie dzielą tego samego Konta —
- * `competitors.user_id` jest UNIQUE) i ta lista jest tu wyłącznie
- * informacyjna, dla pełnego obrazu profilu.
+ * Everything a profile "carries" — the side-by-side view
+ * `challengeParticipations` shows participation in the Wyzwania of its
+ * OWN account, if it has one — Uczestnictwa are keyed by `user_id`
+ * (the account), not by Zawodnik, so merging two profiles never re-points
+ * them (two different Zawodnicy never share the same account —
+ * `competitors.user_id` is UNIQUE) and this list is here purely
+ * informational, for a complete picture of the profile.
  */
 export interface CompetitorMergeProfileBundle {
   competitor: Competitor;
@@ -176,10 +176,10 @@ export interface CompetitorMergeProfileBundle {
 }
 
 /**
- * Dwa aktywne Zapisy (nie anulowane/usunięte/wygasłe) na ten sam Dystans tego
- * samego Wydarzenia, po jednym z każdego profilu.
- * `registrationIds` jest celowo nieuporządkowana para (obie strony
- * "kandydują" jednakowo, dopóki moderator nie wybierze zwycięzcy).
+ * Two active Zapisy (not cancelled/removed/expired) for the same Dystans of the
+ * same Wydarzenie, one from each profile.
+ * `registrationIds` is deliberately an unordered pair (both sides
+ * "compete" equally until a moderator picks the winner).
  */
 export interface CompetitorMergeConflict {
   eventId: string;
@@ -194,7 +194,7 @@ export interface CompetitorMergeComparison {
   conflicts: CompetitorMergeConflict[];
 }
 
-/** Pola, w których dwa profile Zawodnika mogą się rozjechać i wymagają jawnej decyzji moderatora. */
+/** Fields where two Zawodnik profiles may differ and need an explicit moderator decision. */
 export type CompetitorMergeComparableField =
   | 'firstName'
   | 'lastName'
@@ -204,7 +204,7 @@ export type CompetitorMergeComparableField =
   | 'phone'
   | 'club';
 
-/** Które konto (przeżywające czy wchłonięte) wygrywa dla danego rozbieżnego pola. */
+/** Which account (surviving or absorbed) wins for a given differing field. */
 export type CompetitorMergeFieldDecisions = Partial<
   Record<CompetitorMergeComparableField, 'survivor' | 'absorbed'>
 >;
@@ -212,7 +212,7 @@ export type CompetitorMergeFieldDecisions = Partial<
 export interface CompetitorMergeConflictResolution {
   eventId: string;
   distanceId: string;
-  /** Id Zapisu (z jednej z dwóch stron), który ma przetrwać ten konkretny konflikt. */
+  /** Id of the Zapis (from either side) that survives this particular conflict. */
   winnerRegistrationId: string;
 }
 
@@ -224,11 +224,11 @@ export interface CompetitorMergePayload {
 }
 
 /**
- * Trzy możliwe wyniki POST /admin/competitors/merge, wszystkie jako 200
- * (wstrzymanie na konflikcie to normalny, oczekiwany
- * krok tego przepływu, nie błąd HTTP; mirror idiomu `duplicateWarnings` z
- * POST /care). `status` jest dyskryminatorem — UI przełącza się na jego
- * podstawie, nie na kodzie HTTP.
+ * The three possible outcomes of POST /admin/competitors/merge, all returned as 200
+ * (pausing on a conflict is a normal, expected
+ * step of this flow, not an HTTP error; mirrors the `duplicateWarnings` idiom of
+ * POST /care). `status` is the discriminator — the UI switches on it,
+ * not on the HTTP code.
  */
 export type CompetitorMergeResult =
   | { status: 'field_decisions_required'; fields: CompetitorMergeComparableField[] }
@@ -300,7 +300,7 @@ export interface OnlineSession {
   location?: string;
 }
 
-/** Zgłoszenie możliwego duplikatu Zawodnika (opiekun/organizator -> Moderator/Admin). */
+/** A report of a possible Zawodnik duplicate (guardian/organizer -> Moderator/Admin). */
 export interface ReportCompetitorDuplicatePayload {
   duplicateOfId: string;
   note?: string;
@@ -312,7 +312,7 @@ export interface CompetitorDuplicateReportProfile {
   birthDate: string | null;
 }
 
-/** open -> rejected (Moderator/Admin) albo merged (ustawiane przez scalenie profili). */
+/** open -> rejected (Moderator/Admin) or merged (set by merging the profiles). */
 export type CompetitorDuplicateReportStatus = 'open' | 'rejected' | 'merged';
 
 export interface CompetitorDuplicateReport {

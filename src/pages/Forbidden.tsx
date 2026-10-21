@@ -14,7 +14,7 @@ const Forbidden = () => {
 
   return (
     <ErrorPageShell tint="warning">
-      {/* Barierka VIP z animacją */}
+      {/* VIP barrier with animation */}
       <div className="relative">
         <div className="flex items-center justify-center gap-2">
           <div className="h-12 w-2 animate-tape-wave rounded bg-warning" />
@@ -28,7 +28,7 @@ const Forbidden = () => {
         </div>
       </div>
 
-      {/* Ochroniarz kręcący głową */}
+      {/* Security guard shaking his head */}
       <div className="relative flex h-32 items-center justify-center">
         <div className="animate-shake-head text-7xl">🧑‍✈️</div>
         <div className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
@@ -41,7 +41,7 @@ const Forbidden = () => {
         </div>
       </div>
 
-      {/* Migająca akredytacja */}
+      {/* Blinking accreditation */}
       <div className={cn('transition-all duration-700', showContent ? 'opacity-100' : 'opacity-0')}>
         <div className="inline-block animate-pulse rounded-lg border-2 border-destructive/50 bg-card p-4">
           <div className="flex items-center gap-3">
@@ -58,7 +58,7 @@ const Forbidden = () => {
         </div>
       </div>
 
-      {/* Główna treść */}
+      {/* Main content */}
       <div
         className={cn(
           'space-y-4 transition-all delay-200 duration-700',

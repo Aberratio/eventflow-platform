@@ -26,7 +26,7 @@ const ServiceUnavailable = () => {
 
   return (
     <ErrorPageShell tint="info">
-      {/* Znak STOP z animacją */}
+      {/* STOP sign with animation */}
       <div className="relative">
         <div className="animate-pulse text-6xl">🛑</div>
         <div className="absolute -top-1 left-1/2 -translate-x-1/2 animate-blink rounded-full bg-warning px-3 py-1 text-xs font-bold text-warning-foreground">
@@ -55,7 +55,7 @@ const ServiceUnavailable = () => {
         </div>
       </div>
 
-      {/* Główna treść */}
+      {/* Main content */}
       <div
         className={cn(
           'space-y-4 transition-all delay-200 duration-700',

@@ -23,7 +23,7 @@ export const applyDiscount = (
 
 /**
  * A Próg (price tier) expires on whichever of its two independent, optional
- * limits is hit first ("co nastąpi wcześniej") — mirrors
+ * limits is hit first ("whichever comes first") — mirrors
  * RegistrationRepository::currentDistancePrice on the server.
  */
 export const isTierExpired = (tier: PriceTier, registeredCount: number): boolean => {
@@ -100,7 +100,7 @@ export const getCurrentPrice = (
  * discount off `distance.price`. Tiers are evaluated in configured order,
  * first non-expired one wins (`isTierExpired`), matching the server's
  * eventual authoritative computation. The server always recomputes and
- * freezes the real "opłata startowa" on the Zapis; this only drives the
+ * freezes the real entry fee ("opłata startowa") on the Zapis; this only drives the
  * client-side price preview shown before submit.
  */
 export const getVariantPrice = (

@@ -41,8 +41,8 @@ export interface PlatformStats {
 }
 
 /**
- * Raport rozliczeniowy admina — wpłaty bramką minus zwroty minus
- * prowizja = kwota do ręcznej wypłaty dla organizatora. Wszystkie kwoty w groszach (int).
+ * Admin settlement report — gateway payments minus refunds minus
+ * commission = the amount to pay out manually to the organizer. All amounts in grosze (int).
  */
 export interface SettlementTotals {
   readonly paymentsCount: number;

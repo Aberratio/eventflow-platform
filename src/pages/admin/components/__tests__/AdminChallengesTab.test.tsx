@@ -8,8 +8,8 @@ import type { Challenge, ChallengeParticipation } from '@/types';
 
 // The Moderator/Admin manual-verification review screen —
 // shared between /admin and /moderator via `basePath` (ModeratorChallengesTab
-// just re-exports this component). These tests cover the two pieces this
-// ticket adds on top of the pre-existing approve/reject buttons: a visible
+// just re-exports this component). These tests cover the two pieces
+// added on top of the pre-existing approve/reject buttons: a visible
 // link to the submitted proof, and capturing an optional rejection reason
 // (reviewChallengeEntry's `reason` param already existed on the contract but
 // was never actually wired up from this screen before).

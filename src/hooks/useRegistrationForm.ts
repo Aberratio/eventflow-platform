@@ -103,7 +103,7 @@ export const useRegistrationForm = (
   // with `createTeam`, never re-derived from the roster.
   const [teamSpecialCategory, setTeamSpecialCategory] = useState('');
 
-  // Wariant opłaty 
+  // Wariant opłaty
   const [selectedPricingVariantId, setSelectedPricingVariantId] = useState<string>('');
 
   // NNW (insurance) — id of the selected catalog InsuranceVariant, '' = none

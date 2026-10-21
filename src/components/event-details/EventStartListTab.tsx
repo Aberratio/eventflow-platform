@@ -262,7 +262,7 @@ export const EventStartListTab = ({
     clubQuery !== '' ||
     !allStatusesSelected;
 
-  // "lista startowa pogrupowana po Drużynie" is a
+  // Grouping the start list by Drużyna is a
   // VIEW concern layered on top of the existing per-member Zapisy — every
   // member already has its own bibNumber/qrCode (RegistrationRepository::
   // create(), unconditional, no team special-case). Real Drużyny

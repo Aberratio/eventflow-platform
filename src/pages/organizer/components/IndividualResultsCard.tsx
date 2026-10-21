@@ -57,7 +57,7 @@ const getStatusBadge = (status: string) => {
 
 interface IndividualResultsCardProps {
   distanceName?: string;
-  /** Status publikacji klasyfikacji tego dystansu; undefined - brak wynikow z API. */
+  /** Publication status of this distance's classification; undefined - no results from the API. */
   publicationStatus?: 'preliminary' | 'official';
   results: LocalResult[];
   entryMode: 'manual' | 'import';

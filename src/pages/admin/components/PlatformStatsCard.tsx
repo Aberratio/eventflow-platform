@@ -19,9 +19,9 @@ const statusLabels: Partial<Record<string, string>> = {
 
 /**
  * The minimal, explicitly-closed platform-admin
- * cross-section — "liczba Wydarzeń wg statusu publikacyjnego, liczba
- * Organizatorów, liczba aktywnych pakietów". Nothing beyond these three
- * numbers; the spec is explicit that no more is required here.
+ * cross-section: the number of Wydarzenia by publication status, the number
+ * of Organizatorzy and the number of active packages. Nothing beyond these
+ * three numbers is needed here.
  *
  * Reads from GET /admin/platform-stats (admin-only, not moderator) rather
  * than the paginated getEvents()/getUsers() calls AdminOverviewTab already

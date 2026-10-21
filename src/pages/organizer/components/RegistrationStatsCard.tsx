@@ -22,7 +22,7 @@ interface RegistrationStatsCardProps {
  *
  * Sits alongside FormFieldAggregatesCard in the same "Zestawienia"
  * sub-tab — that card covers the configurable form's choice fields, this one
- * covers everything the spec calls "wbudowane" (built-in, not from the form).
+ * covers everything called "wbudowane" (built-in, not from the form).
  */
 export const RegistrationStatsCard = ({ eventId }: RegistrationStatsCardProps) => {
   const { data, isLoading } = useQuery({

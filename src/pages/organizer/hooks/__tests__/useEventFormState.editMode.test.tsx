@@ -137,7 +137,7 @@ describe('useEventFormState edit mode', () => {
     const [tier] = dist.priceTiers;
     // participantLimit is 20 and registeredCount is 37, so the tier must be
     // reported expired using the real count (a hardcoded 0 would report it
-    // as still active, which is exactly the regression this ticket fixes).
+    // as still active, which is exactly the regression this test guards against).
     expect(isTierExpired(tier, dist.registeredCount)).toBe(true);
     expect(isTierExpired(tier, 0)).toBe(false);
   });

@@ -256,7 +256,7 @@ describe('useEventFormState event wizard validation', () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
     await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
 
-    // Bramka domyślnie 45 minut, przelew domyślnie 3 dni — zanim organizator
+    // Gateway defaults to 45 minutes, bank transfer to 3 days — before the organizer
     // cokolwiek zmieni w formularzu.
     expect(result.current.gatewayWindowMinutes).toBe('45');
     expect(result.current.transferWindowDays).toBe('3');

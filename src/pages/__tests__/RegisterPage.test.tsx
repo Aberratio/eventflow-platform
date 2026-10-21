@@ -111,7 +111,7 @@ describe('RegisterPage', () => {
     await userEvent.type(screen.getByPlaceholderText('Min. 8 znaków'), 'haslo1234');
     await userEvent.type(screen.getByPlaceholderText('Powtórz hasło'), 'haslo1234');
     fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
-    // Walidacja Zod blokuje submit — loginWithCredentials nie jest wywoływane
+    // Zod validation blocks the submit — loginWithCredentials is not called
     await new Promise((r) => setTimeout(r, 200));
     expect(mockLoginWithCredentials).not.toHaveBeenCalled();
   });

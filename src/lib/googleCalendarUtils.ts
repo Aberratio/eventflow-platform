@@ -26,7 +26,7 @@ export const parseEventDate = (dateStr: string): string => {
     pazdziernika: '10',
   };
 
-  // Format: "15 września 2026"
+  // Format: "15 września 2026" (Polish long date)
   const parts = dateStr.toLowerCase().split(' ');
   if (parts.length === 3) {
     const day = parts[0].padStart(2, '0');

@@ -3,8 +3,8 @@ import { useAuthSafe } from '@/contexts/AuthContext';
 import { appLogger } from '@/lib/logger';
 
 /**
- * Hook synchronizujący kontekst użytkownika z globalnym loggerem.
- * Zwraca instancję loggera gotową do użycia w komponentach React.
+ * Hook that syncs the user context with the global logger.
+ * Returns the logger instance, ready to use in React components.
  */
 export function useLogger() {
   const authContext = useAuthSafe();

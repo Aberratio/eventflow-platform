@@ -22,7 +22,7 @@ const formatEventDate = (value?: string | null): string => {
 };
 
 export const EventTicket = ({ ticket }: EventTicketProps) => {
-  // Kod startowy ważny tylko dla Zapisu opłaconego/potwierdzonego.
+  // The start code is valid only for a paid/confirmed Zapis.
   const qrValue = ticket.registrationStatus === 'confirmed' && ticket.qrCode ? ticket.qrCode : null;
   const inactiveMessage =
     ticket.registrationStatus === 'pending'

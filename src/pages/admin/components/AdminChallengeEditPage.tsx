@@ -75,7 +75,7 @@ export const AdminChallengeEditPage = () => {
     queryFn: () => getProducts({ includeArchived: true }),
   });
   // The sub-challenge-threshold node picker may only offer Wyzwania
-  // that already exist/are saved (spec: "referencja idzie tylko w dół" — no
+  // that already exist/are saved (spec: "a reference only goes downwards" — no
   // cycle, and the referenced Wyzwanie's tree must already be on disk).
   const { data: challengesData } = useQuery({
     queryKey: [...QUERY_KEYS.challenges, 'staff', 'condition-tree-picker'],

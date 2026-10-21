@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils';
 
 /* ─── EventTable ────────────────────────────────────────────
    Kontener tabeli wydarzeń — ramka + podział wierszy.
-   Nagłówek jest opcjonalny — przekaż go jako `header`.
+   The header is optional — pass it as `header`.
    ──────────────────────────────────────────────────────── */
 
 interface EventTableProps {
-  /** Opcjonalny wiersz nagłówka (dowolny ReactNode) */
+  /** Optional header row (any ReactNode) */
   header?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -35,12 +35,12 @@ EventTable.displayName = 'EventTable';
 
 interface EventTableRowProps {
   href: string;
-  /** Kafelek z datą */
+  /** Date tile */
   dateTile: { day: string; month: string };
   title: string;
-  /** Dodatkowe kolumny — każdy `<div className="hidden md:block">` lub `md:flex` */
+  /** Extra columns — each a `<div className="hidden md:block">` or `md:flex` */
   children?: React.ReactNode;
-  /** Skrócony opis mobilny */
+  /** Shortened mobile description */
   mobileMeta?: React.ReactNode;
   className?: string;
 }

@@ -34,8 +34,8 @@ const medalClass = (position: number): string | undefined => {
 };
 
 /**
- * "klasyfikacja drużynowa to osobna tabela obok
- * klasyfikacji indywidualnej na tym samym Dystansie" - a live-computed,
+ * "the team classification is a separate table next to the individual
+ * classification on the same Dystans" - a live-computed,
  * read-only table (GET /events/{eventId}/distances/{distanceId}/team-results),
  * never a form for manually entering/deleting teams (that legacy UI,
  * TeamResultsManager.tsx, was deleted - it let an organizer

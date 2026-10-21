@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ParticipantTicketsTabProps {
   tickets: Ticket[];
-  /** Zapisy użytkownika — źródło statusu i kodu startowego biletu. */
+  /** The user's Zapisy — the source of the ticket status and start code. */
   registrations?: Registration[];
 }
 

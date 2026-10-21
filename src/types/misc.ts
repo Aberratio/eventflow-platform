@@ -25,11 +25,11 @@ export interface Ticket {
   /** Start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
   qrCode?: string | null;
   /**
-   * Status Zapisu stojącego za biletem — QR kodu startowego
-   * jest pokazywany tylko dla `confirmed` (opłacony/potwierdzony).
+   * Status of the Zapis behind the ticket — the start code QR
+   * is shown only for `confirmed` (paid/confirmed).
    */
   registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
-  /** Kod startowy `pqr_…` Zapisu (z Registration.qrCode); QR = sam ten token. */
+  /** Start code `pqr_…` of the Zapis (from Registration.qrCode); the QR is this token alone. */
   qrCode?: string | null;
   /**
    * The Odprawa fact reported back by Biuro Zawodów —

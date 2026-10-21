@@ -62,9 +62,9 @@ function reg(overrides: Partial<Registration>): Registration {
 }
 
 /**
- * "ilu uczestników odebrało pakiet" — the minimal
- * organizer-facing stat this ticket adds to the existing participant list
- * dashboard, ahead of the full reporting ticket. Verifies the count is
+ * "How many participants picked up their pack" — the minimal
+ * organizer-facing stat added to the existing participant list
+ * dashboard, ahead of full reporting. Verifies the count is
  * derived correctly from checkedInAt across a mix of registrations, and
  * excludes removed ones the same way the other stat cards on this tab do.
  */

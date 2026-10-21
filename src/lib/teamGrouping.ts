@@ -3,9 +3,8 @@ import type { RelayTeam } from '@/types';
 /**
  * Numbering/QR is already per-Zapis regardless of team membership
  * (RegistrationRepository::create() generates a code unconditionally) — the
- * only thing this ticket still owes is the VIEW-level grouping the spec asks
- * for ("lista startowa pogrupowana po Drużynie ... widok, nie osobny byt
- * numeracji").
+ * only thing left is the VIEW-level grouping: the start list grouped by
+ * Drużyna, a view rather than a separate numbering entity.
  *
  * A "block" is either one real Drużyna's cluster of members, or a single
  * ungrouped Zapis. Grouping is keyed strictly on a `teamId` that resolves to

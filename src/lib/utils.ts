@@ -16,10 +16,10 @@ export function resolveApiAssetUrl(url: string): string {
 }
 
 /**
- * Spec 14 sekcja 2: czas jest przechowywany z dokladnoscia do setnej sekundy
- * (np. "0:41:10.55"), ale domyslnie wyswietlany zaokraglony do pelnej
- * sekundy - organizator nie ma dzis (i ta zmiana tego nie wprowadza) ustawien
- * precyzji, wiec zaokraglamy zawsze przy wyswietlaniu.
+ * Time is stored with hundredth-of-a-second precision
+ * (e.g. "0:41:10.55") but displayed rounded to a whole
+ * second by default - organizers have no precision setting today
+ * (and this change does not add one), so we always round when displaying.
  */
 export function formatTimeToWholeSeconds(time?: string | null): string {
   if (!time) return '';

@@ -71,7 +71,7 @@ export const AnimatedStopwatch = ({ status, className }: AnimatedStopwatchProps)
         {getTimeDisplay()}
       </div>
 
-      {/* Dekoracje dla błędu */}
+      {/* Decorations for the error state */}
       {status === 'error' && (
         <div className="absolute -bottom-2 left-1/2 flex -translate-x-1/2 gap-1 text-lg">
           <span className="animate-spark" style={{ animationDelay: '0s' }}>
@@ -86,7 +86,7 @@ export const AnimatedStopwatch = ({ status, className }: AnimatedStopwatchProps)
         </div>
       )}
 
-      {/* Cień świecący dla błędu */}
+      {/* Glow shadow for the error state */}
       {status === 'error' && (
         <div className="pointer-events-none absolute inset-0 animate-pulse rounded-xl bg-destructive/5" />
       )}

@@ -929,7 +929,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                   {/*
                     A manual, one-time choice from the same
                     per-Dystans configured list as the individual "Kategorie
-                    specjalne" checkboxes below (ticket 10) — never derived
+                    specjalne" checkboxes below — never derived
                     from who ends up on the roster, and not re-asked at join
                     time (only the captain, creating the team, declares it).
                   */}

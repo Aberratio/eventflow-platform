@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-// WCAG 1.4.3: tokeny tekstu i tła pod białym tekstem muszą dawać >= 4.5:1.
+// WCAG 1.4.3: text and background tokens under white text must give >= 4.5:1.
 const read = (f: string) => readFileSync(resolve(__dirname, '../tokens', f), 'utf8');
 const css = read('palette.css') + read('theme-dark.css');
 
@@ -40,7 +40,7 @@ const ratio = (a: [number, number, number], b: [number, number, number]) => {
 };
 
 const WHITE: [number, number, number] = [1, 1, 1];
-// Najciemniejsze/najjaśniejsze tła, na których tekst marki faktycznie występuje (panele, karty).
+// The darkest/lightest backgrounds the brand text actually appears on (panels, cards).
 const DARK_SURFACES = ['#0f1f35', '#121e2b', '#101418', '#070b12'];
 const fromHex = (h: string): [number, number, number] =>
   [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number];

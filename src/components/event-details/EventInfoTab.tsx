@@ -245,7 +245,7 @@ const LogisticsInfoSection = ({ info }: { info: EventLogisticsInfo }) => {
 
   return (
     <InfoSection
-      title="Logistyka zawodów"
+      title="Event logistics"
       icon={<ClipboardList className="h-4 w-4" />}
       tone="emerald"
     >
@@ -338,7 +338,7 @@ const WinnersWidget = ({ results }: { results: Result[] }) => {
     distances.length > 2 || Array.from(new Set(finished.map((r) => r.category))).length > 4;
 
   if (manyDistancesOrCategories) {
-    // Jedno pierwsze miejsce z klasyfikacji generalnej każdego dystansu
+    // The first place of the overall classification of each distance
     const generalWinners = distances
       .map((dist) => {
         const distResults = finished
@@ -372,10 +372,10 @@ const WinnersWidget = ({ results }: { results: Result[] }) => {
     );
   }
 
-  // Kilka kategorii — top 3 z każdej
+  // Several categories — top 3 of each
   const categories = Array.from(new Set(finished.map((r) => r.category))).filter(Boolean);
   if (categories.length === 0) {
-    // Brak kategorii — top 3 ogółem
+    // No categories — top 3 overall
     const top3 = [...finished].sort((a, b) => a.position - b.position).slice(0, 3);
     return (
       <div className="space-y-2">
@@ -462,9 +462,9 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
     <div className="space-y-6">
       {hasResults && <ResultsAnnouncementBanner onGoToResults={onGoToResults} />}
 
-      {/* ── Najważniejsze przed startem ──────────────────────── */}
+      {/* ── Key facts before the start ──────────────────────── */}
       <InfoSection
-        title="Najważniejsze przed startem"
+        title="Key facts before the start"
         icon={<AlertCircle className="h-4 w-4" />}
         tone="amber"
       >
@@ -535,7 +535,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
             </div>
           </div>
 
-          {/* Limit uczestników */}
+          {/* Participant limit */}
           {totalLimit != null && (
             <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.035] p-3">
               <Users className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -589,10 +589,10 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
         <RichTextDisplay html={event.description} className="text-foreground/75" />
       </InfoSection>
 
-      {/* ── Biuro zawodów i pakiety startowe ─────────────────── */}
+      {/* ── Race office and start packs ─────────────────── */}
       {(raceOffice?.status === 'yes' || baggage?.status === 'yes') && (
         <InfoSection
-          title="Biuro zawodów i pakiety startowe"
+          title="Race office and start packs"
           icon={<Package className="h-4 w-4" />}
           tone="orange"
         >
@@ -661,7 +661,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
         </InfoSection>
       )}
 
-      {/* Dokumenty bez regulaminu gdy nie ma rulesHtml */}
+      {/* Documents without the rules when there is no rulesHtml */}
       {!hasRulesContent && hasDocuments && (
         <InfoSection title="Dokumenty" icon={<FileText className="h-4 w-4" />} tone="slate">
           <div className="space-y-1.5">
@@ -672,7 +672,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
         </InfoSection>
       )}
 
-      {/* ── Logistyka zawodów ────────────────────────────────── */}
+      {/* ── Event logistics ────────────────────────────────── */}
       {event.logisticsInfo && <LogisticsInfoSection info={event.logisticsInfo} />}
 
       {/* ── Organizatorzy ────────────────────────────────────── */}
@@ -691,7 +691,7 @@ export const EventInfoTab = ({ event, isPast, eventResults, onGoToResults }: Eve
         </InfoSection>
       )}
 
-      {/* ── Gadżety przy rejestracji ─────────────────────────── */}
+      {/* ── Merchandise at registration ─────────────────────────── */}
       {event.enableMerchandiseInRegistration &&
         event.merchandise &&
         event.merchandise.length > 0 && (

@@ -35,7 +35,7 @@ describe('UsersAdminsTab last login', () => {
     expect(screen.getByText('Nigdy')).toBeInTheDocument();
   });
 
-  // Umowa §5.8: "ostatnie logowanie" dotyczy administratorów i moderatorów.
+  // "Last login" applies to administrators and moderators.
   it('lists moderators too, with their last login date', async () => {
     vi.mocked(getAllUsers).mockResolvedValue({
       data: [

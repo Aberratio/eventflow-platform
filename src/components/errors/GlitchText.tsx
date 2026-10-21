@@ -9,7 +9,7 @@ interface GlitchTextProps {
 export const GlitchText = ({ children, className, intensity = 'medium' }: GlitchTextProps) => {
   return (
     <div className={cn('relative inline-block', className)}>
-      {/* Główny tekst */}
+      {/* Main text */}
       <span className={cn('relative z-10 font-bold', intensity === 'high' && 'animate-glitch')}>
         {children}
       </span>
@@ -31,7 +31,7 @@ export const GlitchText = ({ children, className, intensity = 'medium' }: Glitch
         {children}
       </span>
 
-      {/* Warstwa glitch - ciemna (brand z przesunięciem) */}
+      {/* Glitch layer - dark (brand colour, offset) */}
       <span
         className={cn('absolute inset-0 animate-glitch-skew font-bold text-foreground opacity-40')}
         style={{

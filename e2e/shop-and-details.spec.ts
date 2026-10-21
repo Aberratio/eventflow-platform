@@ -42,8 +42,7 @@ test.describe('Shop & Cart Flow', () => {
 // transfer" and, unlike event registration, needs no sandbox gateway
 // credentials (that gap is tracked separately and currently blocked).
 //
-// A real *event* registration would have been the other option (per the
-// ticket), but every event fixture actually reachable in this seeded
+// A real *event* registration would have been the other option, but every event fixture actually reachable in this seeded
 // environment turned out to be a dead end for it: the two events seeded
 // with `paymentConfig.type: organizer_bank` (database/seeders/data/
 // events.json — 'e-bank-transfer', 'e-mixed') are BOTH deterministically

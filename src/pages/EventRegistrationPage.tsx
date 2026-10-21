@@ -63,7 +63,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     null,
   );
 
-  // Zapis Zawodnika pod moją opieką (kogoś innego niż ja)
+  // Registering a Zawodnik under my care (someone other than me)
   const [registeringForOther, setRegisteringForOther] = useState(false);
   const [selectedCompetitorRelId, setSelectedCompetitorRelId] = useState<string>('');
   const [grantorSearch, setGrantorSearch] = useState('');
@@ -523,7 +523,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
               : 'Podgląd formularza – nic nie jest wysyłane. Włącz tryb testowy w ustawieniach wydarzenia, aby sprawdzić Rozliczenie na serwerze.'}
           </p>
         )}
-        {/* Zapis w imieniu kogoś innego */}
+        {/* Registering on behalf of someone else */}
         {isParticipant && hasGrantors && !previewMode && (
           <div className="mx-auto mb-6 max-w-2xl">
             <div

@@ -15,10 +15,10 @@ export const RunnerAnimation = ({ className, variant = 'running' }: RunnerAnimat
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Głowa */}
+        {/* Head */}
         <circle cx="50" cy="20" r="10" className="fill-primary" />
 
-        {/* Ciało */}
+        {/* Body */}
         <line
           x1="50"
           y1="30"
@@ -29,7 +29,7 @@ export const RunnerAnimation = ({ className, variant = 'running' }: RunnerAnimat
           strokeLinecap="round"
         />
 
-        {/* Ręce */}
+        {/* Arms */}
         <g className={variant === 'running' ? 'animate-runner-legs' : ''}>
           <line
             x1="50"
@@ -86,12 +86,12 @@ export const RunnerAnimation = ({ className, variant = 'running' }: RunnerAnimat
         <div className="absolute -right-4 bottom-4 animate-pulse text-2xl opacity-60">💨</div>
       )}
 
-      {/* Znak zapytania dla zdezorientowanego */}
+      {/* Question mark for the confused runner */}
       {variant === 'confused' && (
         <div className="absolute -right-2 -top-2 animate-bounce text-2xl">❓</div>
       )}
 
-      {/* Znak stop dla zatrzymanego */}
+      {/* Stop sign for the stopped runner */}
       {variant === 'stopped' && (
         <div className="absolute -right-2 -top-2 animate-pulse text-2xl">🛑</div>
       )}

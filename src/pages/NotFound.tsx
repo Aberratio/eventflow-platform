@@ -25,7 +25,7 @@ const NotFound = () => {
 
   return (
     <ErrorPageShell tint="muted">
-      {/* Czerwona flaga z animacją */}
+      {/* Red flag with animation */}
       <div className="relative">
         <div className="animate-bounce text-6xl">🚩</div>
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 animate-pulse rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground">
@@ -54,7 +54,7 @@ const NotFound = () => {
           <RunnerAnimation variant="confused" />
         </div>
 
-        {/* Ślady stóp prowadzące donikąd */}
+        {/* Footprints leading nowhere */}
         <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-6 opacity-30">
           <span className="rotate-45 text-2xl">👟</span>
           <span className="rotate-45 text-xl opacity-60">👟</span>
@@ -70,7 +70,7 @@ const NotFound = () => {
         </div>
       </div>
 
-      {/* Główna treść */}
+      {/* Main content */}
       <div
         className={cn(
           'space-y-4 transition-all duration-700',
