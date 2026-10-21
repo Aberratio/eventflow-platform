@@ -73,7 +73,12 @@ describe('httpAdapter mail templates and log', () => {
 
   it('reads the paginated mail log with filters (global and per event)', async () => {
     ok({ success: true, data: [{ id: 'm1' }], total: 1, page: 2, pageSize: 10, totalPages: 1 });
-    const res = await httpAdapter.getMailLog({ page: 2, pageSize: 10, status: 'failed', mailType: 'x' });
+    const res = await httpAdapter.getMailLog({
+      page: 2,
+      pageSize: 10,
+      status: 'failed',
+      mailType: 'x',
+    });
     const { path } = lastCall();
     expect(path.startsWith('/admin/mail-log?')).toBe(true);
     expect(path).toContain('page=2');

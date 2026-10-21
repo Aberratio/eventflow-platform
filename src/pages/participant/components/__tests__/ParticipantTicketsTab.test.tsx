@@ -21,7 +21,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const dayOffset =(days: number): string => {
+const dayOffset = (days: number): string => {
   const d = new Date(NOW);
   d.setDate(d.getDate() + days);
   // Local calendar date (toISOString is UTC and shifts the day just after local midnight).

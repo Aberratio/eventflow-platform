@@ -181,14 +181,7 @@ test.describe('Interakcje — Panel uczestnika', () => {
   });
 
   test('przełączanie wszystkich zakładek', async ({ page }) => {
-    const tabNames = [
-      'Rejestracje',
-      'Historia',
-      'Zamówienia',
-      'Bilety',
-      'Wyzwania',
-      'Profil',
-    ];
+    const tabNames = ['Rejestracje', 'Historia', 'Zamówienia', 'Bilety', 'Wyzwania', 'Profil'];
     for (const tabName of tabNames) {
       const tab = page.getByRole('tab', { name: new RegExp(tabName) });
       await expect(tab).toBeVisible();

@@ -42,7 +42,9 @@ export async function login(request: APIRequestContext, key: AccountKey): Promis
   if (cached) return cached;
   const password = process.env.E2E_DEV_PASSWORD;
   if (!password) throw new Error('E2E_DEV_PASSWORD is not set');
-  const res = await call(request, 'POST', '/auth/login', { data: { email: emailFor(key), password } });
+  const res = await call(request, 'POST', '/auth/login', {
+    data: { email: emailFor(key), password },
+  });
   expect(res.status(), `login as ${key}`).toBe(200);
   const session = ((await res.json()) as ApiEnvelope<Session>).data;
   sessions.set(key, session);
@@ -58,7 +60,11 @@ export const dropSession = (key: AccountKey): void => {
  * Signs the page in by seeding the same localStorage keys the app writes after a login
  * (STORAGE_KEYS.API_TOKEN / STORAGE_KEYS.AUTH in src/constants), before any app script runs.
  */
-export async function signIn(page: Page, request: APIRequestContext, key: AccountKey): Promise<Session> {
+export async function signIn(
+  page: Page,
+  request: APIRequestContext,
+  key: AccountKey,
+): Promise<Session> {
   const session = await login(request, key);
   await page.addInitScript(
     ([token, user]) => {

@@ -79,10 +79,12 @@ export const MailLogTable: React.FC<MailLogTableProps> = ({ eventId }) => {
     void load();
   }, [load]);
 
-  const resetPageThen = <T,>(setter: (value: T) => void) => (value: T) => {
-    setPage(1);
-    setter(value);
-  };
+  const resetPageThen =
+    <T,>(setter: (value: T) => void) =>
+    (value: T) => {
+      setPage(1);
+      setter(value);
+    };
 
   return (
     <div className="space-y-4">

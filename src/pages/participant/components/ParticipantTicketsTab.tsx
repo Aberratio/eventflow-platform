@@ -19,7 +19,10 @@ const isArchived = (ticket: Ticket, startOfToday: number): boolean => {
   return !Number.isNaN(eventTime) && eventTime < startOfToday;
 };
 
-const ParticipantTicketsTab = ({ tickets: rawTickets, registrations = [] }: ParticipantTicketsTabProps) => {
+const ParticipantTicketsTab = ({
+  tickets: rawTickets,
+  registrations = [],
+}: ParticipantTicketsTabProps) => {
   const tickets: Ticket[] = rawTickets.map((t) => {
     const reg = registrations.find((r) => r.id === t.registrationId);
     return reg ? { ...t, registrationStatus: reg.status, qrCode: reg.qrCode ?? t.qrCode } : t;

@@ -47,7 +47,9 @@ test.describe('API (dev)', () => {
   });
 
   test('database is seeded: events, series and products exist', async ({ request }) => {
-    expect((await list(request, '/events?pageSize=100')).length, 'events').toBeGreaterThanOrEqual(10);
+    expect((await list(request, '/events?pageSize=100')).length, 'events').toBeGreaterThanOrEqual(
+      10,
+    );
     expect((await list(request, '/series')).length, 'series').toBeGreaterThan(0);
     expect((await list(request, '/shop/products')).length, 'products').toBeGreaterThan(0);
   });

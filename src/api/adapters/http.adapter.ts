@@ -725,7 +725,6 @@ export const httpAdapter: ApiAdapter = {
     request(`/challenges/${encodeURIComponent(challengeId)}/ranking`),
   getSeriesRanking: (seriesId) => request(`/series/${encodeURIComponent(seriesId)}/ranking`),
 
-
   getTickets: (userId) => request(`/users/${encodeURIComponent(userId)}/tickets`),
   getCertificates: (userId) => request(`/users/${encodeURIComponent(userId)}/certificates`),
 
