@@ -12,19 +12,12 @@ import {
 } from '@/components/ui/table';
 import { Users, Trophy } from 'lucide-react';
 import { TEAM_AGGREGATION_RULE_LABELS } from '@/types';
+import { formatDuration } from '@/lib/format';
 
 interface TeamClassificationCardProps {
   eventId: string;
   distanceId: string;
 }
-
-const formatAggregatedTime = (totalSeconds: number): string => {
-  const whole = Math.round(totalSeconds);
-  const hours = Math.floor(whole / 3600);
-  const minutes = Math.floor((whole % 3600) / 60);
-  const seconds = whole % 60;
-  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-};
 
 const medalClass = (position: number): string | undefined => {
   if (position === 1) return 'text-warning';
@@ -99,7 +92,7 @@ export const TeamClassificationCard = ({ eventId, distanceId }: TeamClassificati
                       {team.memberCount}
                     </TableCell>
                     <TableCell className="font-mono">
-                      {formatAggregatedTime(team.aggregatedTimeInSeconds)}
+                      {formatDuration(team.aggregatedTimeInSeconds)}
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({TEAM_AGGREGATION_RULE_LABELS[team.aggregationRule]})
                       </span>

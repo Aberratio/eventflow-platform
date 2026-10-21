@@ -1,30 +1,8 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowDown,
-  ArrowUp,
-  ClipboardList,
-  Lock,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Trash2,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import { ClipboardList, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -32,53 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  createDistanceFormField,
-  createFormField,
-  deleteFormField,
-  getDistanceFormFields,
-  getFormFields,
-  overrideFormField,
-  reorderFormFields,
-  resetFormFieldOverride,
-  updateFormField,
-} from '@/api';
-import { apiErrorCode } from '@/api/errors';
-import {
-  FORM_FIELD_STATE_LABELS,
-  FORM_FIELD_TYPE_LABELS,
-  allowedSystemStates,
-  formFieldLabel,
-  moveFieldId,
-} from '@/lib/formFields';
-import type {
-  CreateFormFieldPayload,
-  FormField,
-  FormFieldState,
-  FormFieldType,
-  UpdateFormFieldPayload,
-} from '@/types';
-
-const STATES: FormFieldState[] = ['hidden', 'shown', 'required'];
-const CHOICE_TYPES: FormFieldType[] = ['single_choice', 'multi_choice'];
-const TEXT_TYPES: FormFieldType[] = ['short_text', 'long_text'];
-
-const errorText = (error: unknown): string => {
-  // The two 409s of an in-place type / variants edit get an actionable text.
-  const code = apiErrorCode(error);
-  if (code === 'form_field_has_answers') {
-    return 'Nie można zmienić typu pola, które ma już odpowiedzi w zapisach. Dodaj nowe pole zamiast zmieniać typ.';
-  }
-  if (code === 'form_field_override_exists') {
-    return 'Ten dystans już nadpisuje to pole.';
-  }
-  if (code === 'form_field_option_in_use') {
-    return 'Nie można usunąć wariantu, który wybrali już zawodnicy. Zmień jego nazwę lub cenę albo zostaw go na liście.';
-  }
-  return error instanceof Error ? error.message : 'Nie udało się zapisać zmiany.';
-};
-
-const EVENT_SCOPE = '__event__';
+import { moveFieldId } from '@/lib/formFields';
+import type { FormField } from '@/types';
+import { CreateFieldDialog } from './form-fields/CreateFieldDialog';
+import { DeleteFieldDialog } from './form-fields/DeleteFieldDialog';
+import { EditFieldDialog } from './form-fields/EditFieldDialog';
+import { FormFieldRow } from './form-fields/FormFieldRow';
+import { EVENT_SCOPE, useFormFields } from './form-fields/useFormFields';
 
 interface FormFieldsTabProps {
   eventId: string;
@@ -97,87 +35,23 @@ interface FormFieldsTabProps {
  * reset to inherit again, and distance-only fields can be added.
  */
 export const FormFieldsTab = ({ eventId, distances = [] }: FormFieldsTabProps) => {
-  const queryClient = useQueryClient();
-  const [scope, setScope] = useState(EVENT_SCOPE);
-  const distanceId = scope === EVENT_SCOPE ? null : scope;
-  const queryKey = ['form-fields', 'manage', eventId, scope];
-  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<FormField | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<FormField | null>(null);
-
-  const { data: fields = [], isLoading } = useQuery({
-    queryKey,
-    queryFn: () =>
-      distanceId ? getDistanceFormFields(eventId, distanceId) : getFormFields(eventId),
-    select: (r) => r.data ?? [],
-  });
-
-  const refreshPublic = () =>
-    queryClient.invalidateQueries({ queryKey: ['form-fields', 'public', eventId] });
-  const replaceField = (saved: FormField) => {
-    queryClient.setQueryData(queryKey, (old: { data?: FormField[] } | undefined) =>
-      old ? { ...old, data: (old.data ?? []).map((f) => (f.id === saved.id ? saved : f)) } : old,
-    );
-    void refreshPublic();
-  };
-
-  const update = async (field: FormField, patch: UpdateFormFieldPayload) => {
-    setRowErrors((prev) => ({ ...prev, [field.id]: '' }));
-    try {
-      const response = await updateFormField(eventId, field.id, patch);
-      replaceField(response.data);
-      return true;
-    } catch (error) {
-      setRowErrors((prev) => ({ ...prev, [field.id]: errorText(error) }));
-      return false;
-    }
-  };
-
-  const reorder = useMutation({
-    mutationFn: (orderedIds: string[]) => reorderFormFields(eventId, orderedIds),
-    onSuccess: (response) => {
-      queryClient.setQueryData(queryKey, { success: true, data: response.data });
-      void refreshPublic();
-    },
-    onError: (error) => toast.error(errorText(error)),
-  });
-
-  const override = useMutation({
-    mutationFn: (field: FormField) => overrideFormField(eventId, distanceId ?? '', field.id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey });
-      void refreshPublic();
-      toast.success('Pole jest teraz nadpisane na tym dystansie.');
-    },
-    onError: (error) => toast.error(errorText(error)),
-  });
-
-  const resetOverride = useMutation({
-    mutationFn: (field: FormField) => resetFormFieldOverride(eventId, distanceId ?? '', field.id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey });
-      void refreshPublic();
-      toast.success('Dystans znów dziedziczy to pole z wydarzenia.');
-    },
-    onError: (error) =>
-      toast.error(
-        apiErrorCode(error) === 'form_field_has_answers'
-          ? 'Nie można przywrócić dziedziczenia, bo zapisy mają już odpowiedzi w tym polu.'
-          : errorText(error),
-      ),
-  });
-
-  const remove = useMutation({
-    mutationFn: (field: FormField) => deleteFormField(eventId, field.id),
-    onSuccess: () => {
-      setDeleting(null);
-      void queryClient.invalidateQueries({ queryKey });
-      void refreshPublic();
-      toast.success('Pole zostało usunięte.');
-    },
-    onError: (error) => toast.error(errorText(error)),
-  });
+  const {
+    scope,
+    setScope,
+    distanceId,
+    fields,
+    isLoading,
+    rowErrors,
+    update,
+    reorder,
+    override,
+    resetOverride,
+    remove,
+    refreshAfterCreate,
+  } = useFormFields(eventId, () => setDeleting(null));
 
   return (
     <Card>
@@ -222,163 +96,28 @@ export const FormFieldsTab = ({ eventId, distances = [] }: FormFieldsTabProps) =
           </div>
         )}
         {isLoading && <p className="text-sm text-muted-foreground">Ładowanie...</p>}
-        {fields.map((field, index) => {
-          const allowed = field.kind === 'system' ? allowedSystemStates(field.fieldKey) : STATES;
-          const inherited = distanceId !== null && field.source === 'event';
-          const locked = (field.kind === 'system' && allowed.length === 1) || inherited;
-          return (
-            <div
-              key={field.id}
-              data-testid={`form-field-row-${field.fieldKey}`}
-              className="space-y-2 rounded-lg border p-3"
-            >
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="flex flex-col">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    aria-label={`Przesuń w górę: ${formFieldLabel(field)}`}
-                    disabled={distanceId !== null || index === 0 || reorder.isPending}
-                    onClick={() => {
-                      const ids = moveFieldId(fields, field.id, -1);
-                      if (ids) reorder.mutate(ids);
-                    }}
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    aria-label={`Przesuń w dół: ${formFieldLabel(field)}`}
-                    disabled={
-                      distanceId !== null || index === fields.length - 1 || reorder.isPending
-                    }
-                    onClick={() => {
-                      const ids = moveFieldId(fields, field.id, 1);
-                      if (ids) reorder.mutate(ids);
-                    }}
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="min-w-[10rem] flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{formFieldLabel(field)}</span>
-                    {field.kind === 'system' ? (
-                      <Badge variant="secondary">Systemowe</Badge>
-                    ) : (
-                      <Badge variant="outline">
-                        {field.fieldType ? FORM_FIELD_TYPE_LABELS[field.fieldType] : 'Własne'}
-                      </Badge>
-                    )}
-                    {inherited && <Badge variant="outline">Odziedziczone</Badge>}
-                    {field.source === 'override' && <Badge>Nadpisane na dystansie</Badge>}
-                    {field.source === 'distance' && <Badge>Tylko ten dystans</Badge>}
-                    {field.isConfidential && (
-                      <Badge variant="destructive" className="gap-1">
-                        <Lock className="h-3 w-3" /> Poufne
-                      </Badge>
-                    )}
-                  </div>
-                  {field.tooltipOverride && (
-                    <p className="text-xs text-muted-foreground">{field.tooltipOverride}</p>
-                  )}
-                </div>
-
-                <div
-                  role="group"
-                  aria-label={`Stan pola: ${formFieldLabel(field)}`}
-                  className="inline-flex rounded-md border"
-                >
-                  {STATES.map((state) => {
-                    const selectable = allowed.includes(state);
-                    return (
-                      <Button
-                        key={state}
-                        type="button"
-                        size="sm"
-                        variant={field.state === state ? 'default' : 'ghost'}
-                        className="rounded-none first:rounded-l-md last:rounded-r-md"
-                        aria-pressed={field.state === state}
-                        disabled={!selectable || locked}
-                        title={
-                          !selectable ? 'Ten stan jest niedostępny dla tej pozycji.' : undefined
-                        }
-                        onClick={() => {
-                          if (field.state !== state) void update(field, { state });
-                        }}
-                      >
-                        {FORM_FIELD_STATE_LABELS[state]}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Edytuj: ${formFieldLabel(field)}`}
-                  disabled={inherited}
-                  onClick={() => setEditing(field)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                {inherited && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label={`Nadpisz na dystansie: ${formFieldLabel(field)}`}
-                    disabled={override.isPending}
-                    onClick={() => override.mutate(field)}
-                  >
-                    Nadpisz na dystansie
-                  </Button>
-                )}
-                {field.source === 'override' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label={`Przywróć dziedziczenie: ${formFieldLabel(field)}`}
-                    disabled={resetOverride.isPending}
-                    onClick={() => resetOverride.mutate(field)}
-                  >
-                    <RotateCcw className="mr-1 h-4 w-4" /> Przywróć dziedziczenie
-                  </Button>
-                )}
-                {field.kind === 'custom' &&
-                  (distanceId === null || field.source === 'distance') && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Usuń: ${formFieldLabel(field)}`}
-                      onClick={() => setDeleting(field)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
-              </div>
-              {field.kind === 'custom' && field.options && field.options.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Warianty:{' '}
-                  {field.options
-                    .map(
-                      (o) =>
-                        `${o.label}${o.price ? ` (${o.price > 0 ? '+' : ''}${o.price} zł)` : ''}`,
-                    )
-                    .join(', ')}
-                </p>
-              )}
-              {rowErrors[field.id] && (
-                <p role="alert" className="text-sm text-destructive">
-                  {rowErrors[field.id]}
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {fields.map((field, index) => (
+          <FormFieldRow
+            key={field.id}
+            field={field}
+            index={index}
+            count={fields.length}
+            distanceId={distanceId}
+            error={rowErrors[field.id]}
+            reorderPending={reorder.isPending}
+            overridePending={override.isPending}
+            resetPending={resetOverride.isPending}
+            onMove={(direction) => {
+              const ids = moveFieldId(fields, field.id, direction);
+              if (ids) reorder.mutate(ids);
+            }}
+            onSetState={(state) => void update(field, { state })}
+            onEdit={() => setEditing(field)}
+            onOverride={() => override.mutate(field)}
+            onResetOverride={() => resetOverride.mutate(field)}
+            onDelete={() => setDeleting(field)}
+          />
+        ))}
       </CardContent>
 
       {creating && (
@@ -388,8 +127,7 @@ export const FormFieldsTab = ({ eventId, distances = [] }: FormFieldsTabProps) =
           onClose={() => setCreating(false)}
           onCreated={() => {
             setCreating(false);
-            void queryClient.invalidateQueries({ queryKey });
-            void refreshPublic();
+            refreshAfterCreate();
           }}
         />
       )}
@@ -405,406 +143,12 @@ export const FormFieldsTab = ({ eventId, distances = [] }: FormFieldsTabProps) =
           error={rowErrors[editing.id]}
         />
       )}
-      <Dialog open={deleting !== null} onOpenChange={(open) => !open && setDeleting(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Usunąć pole?</DialogTitle>
-            <DialogDescription>
-              Pole „{deleting ? formFieldLabel(deleting) : ''}" zniknie z formularza razem z
-              zebranymi odpowiedziami. Tej operacji nie można cofnąć.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleting(null)}>
-              Anuluj
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={remove.isPending}
-              onClick={() => deleting && remove.mutate(deleting)}
-            >
-              Usuń pole
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteFieldDialog
+        field={deleting}
+        pending={remove.isPending}
+        onClose={() => setDeleting(null)}
+        onConfirm={(field) => remove.mutate(field)}
+      />
     </Card>
-  );
-};
-
-// ─── Create ──────────────────────────────────────────────────────────────
-
-interface DraftOption {
-  /** Present for a variant that already exists on the server — keeps its identity on save. */
-  key?: string;
-  label: string;
-  price: string;
-}
-
-const parsePrice = (raw: string): number => (raw.trim() === '' ? 0 : Number(raw.replace(',', '.')));
-
-const toDraftOptions = (field: FormField): DraftOption[] =>
-  field.options && field.options.length > 0
-    ? field.options.map((o) => ({
-        key: o.key,
-        label: o.label,
-        price: o.price ? String(o.price) : '',
-      }))
-    : [{ label: '', price: '' }];
-
-const toPayloadOptions = (drafts: DraftOption[]) =>
-  drafts
-    .filter((o) => o.label.trim() !== '')
-    .map((o) => ({
-      ...(o.key ? { key: o.key } : {}),
-      label: o.label.trim(),
-      price: parsePrice(o.price),
-    }));
-
-/** Variant rows (name + signed price) shared by the create and the edit dialog. */
-const OptionsEditor = ({
-  options,
-  setOptions,
-}: {
-  options: DraftOption[];
-  setOptions: (updater: (prev: DraftOption[]) => DraftOption[]) => void;
-}) => (
-  <div className="space-y-2">
-    <Label>Warianty</Label>
-    <p className="text-xs text-muted-foreground">
-      Cena wariantu jest opcjonalna i może być ujemna (np. -5 przy rezygnacji z losowania).
-    </p>
-    {options.map((option, index) => (
-      <div key={index} className="flex gap-2">
-        <Input
-          aria-label={`Wariant ${index + 1}`}
-          placeholder="Nazwa wariantu"
-          value={option.label}
-          onChange={(e) =>
-            setOptions((prev) =>
-              prev.map((o, i) => (i === index ? { ...o, label: e.target.value } : o)),
-            )
-          }
-        />
-        <Input
-          aria-label={`Cena wariantu ${index + 1}`}
-          placeholder="Cena, zł"
-          type="number"
-          step="0.01"
-          className="w-32"
-          value={option.price}
-          onChange={(e) =>
-            setOptions((prev) =>
-              prev.map((o, i) => (i === index ? { ...o, price: e.target.value } : o)),
-            )
-          }
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={`Usuń wariant ${index + 1}`}
-          disabled={options.length === 1}
-          onClick={() => setOptions((prev) => prev.filter((_, i) => i !== index))}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
-    ))}
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={() => setOptions((prev) => [...prev, { label: '', price: '' }])}
-    >
-      <Plus className="mr-2 h-4 w-4" /> Dodaj wariant
-    </Button>
-  </div>
-);
-
-const CreateFieldDialog = ({
-  eventId,
-  distanceId,
-  onClose,
-  onCreated,
-}: {
-  eventId: string;
-  distanceId: string | null;
-  onClose: () => void;
-  onCreated: () => void;
-}) => {
-  const [fieldType, setFieldType] = useState<FormFieldType>('short_text');
-  const [label, setLabel] = useState('');
-  const [tooltip, setTooltip] = useState('');
-  const [required, setRequired] = useState(false);
-  const [confidential, setConfidential] = useState(false);
-  const [publicList, setPublicList] = useState(false);
-  const [maxLength, setMaxLength] = useState('');
-  const [options, setOptions] = useState<DraftOption[]>([{ label: '', price: '' }]);
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const usesOptions = CHOICE_TYPES.includes(fieldType);
-
-  const submit = async () => {
-    setError('');
-    if (!label.trim()) {
-      setError('Podaj etykietę pola.');
-      return;
-    }
-    const filledOptions = options.filter((o) => o.label.trim() !== '');
-    if (usesOptions && filledOptions.length === 0) {
-      setError('Dodaj co najmniej jeden wariant.');
-      return;
-    }
-    const payload: CreateFormFieldPayload = {
-      fieldType,
-      label: label.trim(),
-      tooltip: tooltip.trim() || null,
-      state: required ? 'required' : 'shown',
-      isConfidential: confidential,
-      publicListVisible: confidential ? false : publicList,
-    };
-    if (usesOptions) {
-      payload.options = filledOptions.map((o) => ({
-        label: o.label.trim(),
-        price: parsePrice(o.price),
-      }));
-    }
-    if (TEXT_TYPES.includes(fieldType) && Number(maxLength) > 0) {
-      payload.validationConfig = { maxLength: Number(maxLength) };
-    }
-    setSaving(true);
-    try {
-      await (distanceId
-        ? createDistanceFormField(eventId, distanceId, payload)
-        : createFormField(eventId, payload));
-      onCreated();
-    } catch (e) {
-      setError(errorText(e));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nowe pole formularza</DialogTitle>
-          <DialogDescription>
-            Poufność ustalasz teraz i nie da się jej później zmienić. Typ i warianty możesz poprawić
-            w edycji pola (typ tylko dopóki nie ma odpowiedzi).
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ff-type">Typ pola</Label>
-            <Select value={fieldType} onValueChange={(v) => setFieldType(v as FormFieldType)}>
-              <SelectTrigger id="ff-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(FORM_FIELD_TYPE_LABELS) as FormFieldType[]).map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {FORM_FIELD_TYPE_LABELS[type]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ff-label">Etykieta</Label>
-            <Input id="ff-label" value={label} onChange={(e) => setLabel(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ff-tooltip">Podpowiedź (opcjonalnie)</Label>
-            <Input id="ff-tooltip" value={tooltip} onChange={(e) => setTooltip(e.target.value)} />
-          </div>
-          {TEXT_TYPES.includes(fieldType) && (
-            <div className="space-y-2">
-              <Label htmlFor="ff-max">Maksymalna długość (opcjonalnie)</Label>
-              <Input
-                id="ff-max"
-                type="number"
-                min={1}
-                value={maxLength}
-                onChange={(e) => setMaxLength(e.target.value)}
-              />
-            </div>
-          )}
-          {usesOptions && <OptionsEditor options={options} setOptions={setOptions} />}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="ff-required">Pole wymagane</Label>
-            <Switch id="ff-required" checked={required} onCheckedChange={setRequired} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="ff-confidential">Poufne</Label>
-              <p className="text-xs text-muted-foreground">
-                Nigdy na publicznej liście, w eksporcie ani u Biura Zawodów. Nie da się zmienić po
-                utworzeniu.
-              </p>
-            </div>
-            <Switch
-              id="ff-confidential"
-              checked={confidential}
-              onCheckedChange={(checked) => {
-                setConfidential(checked);
-                if (checked) setPublicList(false);
-              }}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="ff-public">Widoczne na publicznej liście startowej</Label>
-            <Switch
-              id="ff-public"
-              checked={publicList}
-              disabled={confidential}
-              onCheckedChange={setPublicList}
-            />
-          </div>
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>
-            Anuluj
-          </Button>
-          <Button onClick={submit} disabled={saving}>
-            Dodaj pole
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-// ─── Edit ────────────────────────────────────────────────────────────────
-
-const EditFieldDialog = ({
-  field,
-  onClose,
-  onSave,
-  error,
-}: {
-  field: FormField;
-  onClose: () => void;
-  onSave: (patch: UpdateFormFieldPayload) => Promise<boolean>;
-  error?: string;
-}) => {
-  const [label, setLabel] = useState(field.labelOverride ?? '');
-  const [tooltip, setTooltip] = useState(field.tooltipOverride ?? '');
-  const [publicList, setPublicList] = useState(field.publicListVisible);
-  const [bz, setBz] = useState(field.visibleToBz);
-  const [fieldType, setFieldType] = useState<FormFieldType | null>(field.fieldType);
-  const [options, setOptions] = useState<DraftOption[]>(() => toDraftOptions(field));
-  const [saving, setSaving] = useState(false);
-
-  const isCustom = field.kind === 'custom' && field.fieldType !== null;
-  const usesOptions = fieldType !== null && CHOICE_TYPES.includes(fieldType);
-
-  const save = async () => {
-    setSaving(true);
-    const definition: UpdateFormFieldPayload = {};
-    if (isCustom && fieldType !== null) {
-      // Type / variants edited in place — only what changed, variants keep their keys.
-      if (fieldType !== field.fieldType) definition.fieldType = fieldType;
-      if (usesOptions) definition.options = toPayloadOptions(options);
-    }
-    await onSave({
-      label: label.trim() || null,
-      tooltip: tooltip.trim() || null,
-      publicListVisible: publicList,
-      ...(field.kind === 'custom' ? { visibleToBz: bz } : {}),
-      ...definition,
-    });
-    setSaving(false);
-  };
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Edytuj: {formFieldLabel(field)}</DialogTitle>
-          <DialogDescription>
-            Zmiana etykiety nie zmienia klucza pola, więc integracje zewnętrzne działają dalej.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ef-label">Etykieta</Label>
-            <Input id="ef-label" value={label} onChange={(e) => setLabel(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ef-tooltip">Podpowiedź</Label>
-            <Input id="ef-tooltip" value={tooltip} onChange={(e) => setTooltip(e.target.value)} />
-          </div>
-          {isCustom && fieldType !== null && (
-            <div className="space-y-2">
-              <Label htmlFor="ef-type">Typ pola</Label>
-              <Select value={fieldType} onValueChange={(v) => setFieldType(v as FormFieldType)}>
-                <SelectTrigger id="ef-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(FORM_FIELD_TYPE_LABELS) as FormFieldType[]).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {FORM_FIELD_TYPE_LABELS[type]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Typ można zmienić, dopóki nikt nie odpowiedział na to pole. Wariantów użytych w
-                odpowiedziach nie da się usunąć, ale możesz zmienić ich nazwę i cenę.
-              </p>
-            </div>
-          )}
-          {isCustom && usesOptions && <OptionsEditor options={options} setOptions={setOptions} />}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="ef-public">Widoczne na publicznej liście startowej</Label>
-            <Switch
-              id="ef-public"
-              checked={publicList}
-              disabled={field.isConfidential}
-              onCheckedChange={setPublicList}
-            />
-          </div>
-          {field.kind === 'custom' && (
-            <div className="flex items-center justify-between">
-              <Label htmlFor="ef-bz">Widoczne dla Biura Zawodów</Label>
-              <Switch
-                id="ef-bz"
-                checked={bz}
-                disabled={field.isConfidential}
-                onCheckedChange={setBz}
-              />
-            </div>
-          )}
-          {field.isConfidential && (
-            <p className="text-xs text-muted-foreground">
-              Pole poufne nie może być widoczne publicznie ani dla Biura Zawodów.
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>
-            Anuluj
-          </Button>
-          <Button onClick={save} disabled={saving}>
-            Zapisz
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 };
