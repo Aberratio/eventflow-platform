@@ -120,4 +120,45 @@ describe('ChallengeRankingCard (E6.6)', () => {
       await screen.findByText('Nikt jeszcze nie dołączył do tego Wyzwania.'),
     ).toBeInTheDocument();
   });
+  it('keys rows per Zawodnik: a ward without an account next to others raises no duplicate-key warning', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderCard({
+      hasPoints: false,
+      entries: [
+        {
+          rank: 1,
+          userId: 'u-1',
+          competitorId: 'c-1',
+          name: 'Jan Rodzic',
+          isAnonymized: false,
+          points: 1,
+          isCompleted: true,
+        },
+        {
+          rank: 1,
+          userId: null,
+          competitorId: 'c-2',
+          name: 'Zosia Rodzic',
+          isAnonymized: false,
+          points: 1,
+          isCompleted: true,
+        },
+        {
+          rank: 1,
+          userId: null,
+          competitorId: 'c-3',
+          name: 'Ola Rodzic',
+          isAnonymized: false,
+          points: 1,
+          isCompleted: true,
+        },
+      ],
+    });
+
+    expect(await screen.findByText('Zosia Rodzic')).toBeInTheDocument();
+    expect(screen.getByText('Ola Rodzic')).toBeInTheDocument();
+    const keyWarnings = errorSpy.mock.calls.filter((call) => String(call[0]).includes('same key'));
+    expect(keyWarnings).toHaveLength(0);
+    errorSpy.mockRestore();
+  });
 });

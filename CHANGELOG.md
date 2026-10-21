@@ -82,6 +82,9 @@ as the first version.
   competitor, found by name and date of birth or entered as a new person. The
   confirmation explains that the start code is rotated, the form answers are
   dropped and no money is settled between the two people.
+- Participant challenges (zakres P2, to be confirmed by the client): the
+  "My challenges" tab also lists the challenges of wards under care, grouped
+  by competitor, and a caregiver can join a challenge on behalf of a ward.
 
 ### Fixed
 

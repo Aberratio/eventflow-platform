@@ -443,7 +443,11 @@ export interface ApiAdapter {
     challengeId?: string,
     userId?: string,
   ): Promise<ApiResponse<ChallengeParticipation[]>>;
-  joinChallenge(challengeId: string): Promise<ApiResponse<ChallengeParticipation>>;
+  /** R-06: `competitorId` = a ward under the caller's care (403 otherwise); omitted = own profile. */
+  joinChallenge(
+    challengeId: string,
+    competitorId?: string,
+  ): Promise<ApiResponse<ChallengeParticipation>>;
   submitChallengeEntry(data: Partial<ChallengeEntry>): Promise<ApiResponse<ChallengeEntry>>;
   reviewChallengeEntry(
     entryId: string,
