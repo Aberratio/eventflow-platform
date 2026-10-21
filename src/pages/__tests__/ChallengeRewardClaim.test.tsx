@@ -30,7 +30,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
 
 const { mockToast, mockClaimChallengeReward, baseChallenge, baseParticipation } = vi.hoisted(
   () => ({
-    mockToast: vi.fn(),
+    mockToast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
     mockClaimChallengeReward: vi.fn(),
     baseChallenge: {
       id: 'chal-1',
@@ -98,10 +98,7 @@ vi.mock('@/contexts/AuthContext', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
-  useToast: () => ({ toast: mockToast }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 const setup = async (participation: ChallengeParticipation | null) => {
   const apiModule = await import('@/api');
@@ -206,9 +203,9 @@ describe('ChallengeDetailsPage reward claim', () => {
     await user.click(submit);
 
     await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith(
+      expect(mockToast.error).toHaveBeenCalledWith(
+        'Nie udało się odebrać nagrody',
         expect.objectContaining({
-          title: 'Nie udało się odebrać nagrody',
           description: 'Requested quantity exceeds available stock for one or more products.',
         }),
       ),

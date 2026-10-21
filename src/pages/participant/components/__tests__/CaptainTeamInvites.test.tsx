@@ -12,7 +12,7 @@ import CaptainTeamInvites from '../CaptainTeamInvites';
 const mockGetTeamById = vi.fn();
 const mockGetTeamInvite = vi.fn();
 const mockGetTeamMembers = vi.fn();
-const mockToast = vi.fn();
+const mockToast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');
@@ -36,10 +36,7 @@ vi.mock('@/contexts/AuthContext', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
-  useToast: () => ({ toast: (...args: unknown[]) => mockToast(...args) }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 const event = { id: 'e1', name: 'Bieg Testowy', slug: 'bieg-testowy' } as unknown as Event;
 
@@ -74,6 +71,8 @@ describe('CaptainTeamInvites', () => {
     mockGetTeamInvite.mockReset();
     mockGetTeamMembers.mockReset();
     mockToast.mockReset();
+    mockToast.success.mockReset();
+    mockToast.error.mockReset();
   });
 
   it('renders nothing when the user captains no team', async () => {
@@ -149,7 +148,7 @@ describe('CaptainTeamInvites', () => {
       ),
     );
     expect(mockGetTeamInvite).toHaveBeenCalledWith('team-own');
-    expect(mockToast).toHaveBeenCalledWith({ title: 'Skopiowano link zaproszenia' });
+    expect(mockToast.success).toHaveBeenCalledWith('Skopiowano link zaproszenia');
   });
 
   it('shows an error toast when the invitation cannot be fetched', async () => {
@@ -165,10 +164,7 @@ describe('CaptainTeamInvites', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Kopiuj link zaproszenia' }));
 
     await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith({
-        title: 'Nie udało się pobrać linku zaproszenia',
-        variant: 'destructive',
-      }),
+      expect(mockToast.error).toHaveBeenCalledWith('Nie udało się pobrać linku zaproszenia'),
     );
   });
 

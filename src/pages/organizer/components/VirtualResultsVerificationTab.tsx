@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Event, VirtualResultSubmission } from '@/types';
 import { QUERY_KEYS } from '@/constants';
 import {
@@ -44,7 +44,6 @@ interface VirtualResultsVerificationTabProps {
 }
 
 export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificationTabProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [selectedDistance, setSelectedDistance] = useState<string>('all');
@@ -99,15 +98,12 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     try {
       await reviewVirtualResult(id, 'approved');
       await refreshResults();
-      toast({
-        title: 'Wynik zatwierdzony',
+      toast.success('Wynik zatwierdzony', {
         description: 'Wynik został zatwierdzony i dodany do klasyfikacji.',
       });
     } catch (error) {
-      toast({
-        title: 'Nie udało się zatwierdzić wyniku',
+      toast.error('Nie udało się zatwierdzić wyniku', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsReviewing(false);
@@ -120,16 +116,13 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     try {
       await Promise.all(selectedIds.map((id) => reviewVirtualResult(id, 'approved')));
       await refreshResults();
-      toast({
-        title: 'Wyniki zatwierdzone',
+      toast.success('Wyniki zatwierdzone', {
         description: `Zatwierdzono ${selectedIds.length} wyników.`,
       });
       setSelectedIds([]);
     } catch (error) {
-      toast({
-        title: 'Nie udało się zatwierdzić wyników',
+      toast.error('Nie udało się zatwierdzić wyników', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsReviewing(false);
@@ -144,11 +137,7 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast({
-        title: 'Błąd',
-        description: 'Podaj powód odrzucenia.',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Podaj powód odrzucenia.' });
       return;
     }
 
@@ -159,8 +148,7 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
     try {
       await Promise.all(ids.map((id) => reviewVirtualResult(id, 'rejected', rejectionReason)));
       await refreshResults();
-      toast({
-        title: ids.length > 1 ? 'Wyniki odrzucone' : 'Wynik odrzucony',
+      toast.success(ids.length > 1 ? 'Wyniki odrzucone' : 'Wynik odrzucony', {
         description: 'Uczestnik otrzyma powód odrzucenia.',
       });
       setSelectedIds([]);
@@ -168,10 +156,8 @@ export const VirtualResultsVerificationTab = ({ event }: VirtualResultsVerificat
       setRejectingId(null);
       setRejectionReason('');
     } catch (error) {
-      toast({
-        title: 'Nie udało się odrzucić wyniku',
+      toast.error('Nie udało się odrzucić wyniku', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsReviewing(false);

@@ -28,7 +28,7 @@ import {
 } from '@/lib/logger';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const LEVEL_BADGE: Record<
   LogLevel,
@@ -99,7 +99,7 @@ export const SystemLogsPanel = () => {
     clearStoredLogs();
     refresh();
     setPage(0);
-    toast({ title: 'Logi wyczyszczone', description: 'Pamięć logów została wyczyszczona.' });
+    toast.success('Logi wyczyszczone', { description: 'Pamięć logów została wyczyszczona.' });
   };
 
   const handleExport = () => {
@@ -111,7 +111,7 @@ export const SystemLogsPanel = () => {
     a.download = `logi-systemowe-${format(new Date(), 'yyyy-MM-dd-HHmm')}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast({ title: 'Eksport', description: `Wyeksportowano ${filtered.length} logów.` });
+    toast.success('Eksport', { description: `Wyeksportowano ${filtered.length} logów.` });
   };
 
   return (

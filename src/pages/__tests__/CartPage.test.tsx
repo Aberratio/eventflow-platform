@@ -32,7 +32,7 @@ const {
   ],
   mockClearCart: vi.fn(),
   mockSetLastOrder: vi.fn(),
-  mockToast: vi.fn(),
+  mockToast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
   mockNavigate: vi.fn(),
   mockCreateOrder: vi.fn(),
   mockRefreshUser: vi.fn(),
@@ -106,9 +106,7 @@ vi.mock('@/contexts/AuthContext', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: mockToast }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -194,11 +192,9 @@ describe('CartPage checkout', () => {
     await user.click(screen.getByRole('button', { name: /Przejdź do płatności/ }));
 
     await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          description: 'Brak towaru na stanie',
-        }),
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: 'Brak towaru na stanie' }),
       ),
     );
 

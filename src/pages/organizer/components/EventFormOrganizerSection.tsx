@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { safeUrl } from '@/lib/safeUrl';
 import { useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,12 +34,10 @@ const SponsorLogoUpload = ({
   logoUrl,
   onUpload,
   onRemove,
-  toast,
 }: {
   logoUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
-  toast: EventFormState['toast'];
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -49,11 +48,9 @@ const SponsorLogoUpload = ({
       const response = await uploadEventImage(file);
       onUpload(response.data.url);
     } catch (error) {
-      toast({
-        title: 'Błąd uploadu',
+      toast.error('Błąd uploadu', {
         description:
           error instanceof Error ? error.message : 'Nie udało się wgrać logo. Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setUploading(false);
@@ -112,12 +109,10 @@ const CoOrganizerLogoUpload = ({
   logoUrl,
   onUpload,
   onRemove,
-  toast,
 }: {
   logoUrl?: string;
   onUpload: (url: string) => void;
   onRemove: () => void;
-  toast: EventFormState['toast'];
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -128,11 +123,9 @@ const CoOrganizerLogoUpload = ({
       const response = await uploadEventImage(file);
       onUpload(response.data.url);
     } catch (error) {
-      toast({
-        title: 'Błąd uploadu',
+      toast.error('Błąd uploadu', {
         description:
           error instanceof Error ? error.message : 'Nie udało się wgrać logo. Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setUploading(false);
@@ -459,7 +452,6 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                       logoUrl={coOrg.logoUrl}
                       onUpload={(url) => form.updateCoOrganizer(coOrg.id, { logoUrl: url })}
                       onRemove={() => form.updateCoOrganizer(coOrg.id, { logoUrl: undefined })}
-                      toast={form.toast}
                     />
                   </div>
                 </div>
@@ -552,7 +544,6 @@ export const EventFormOrganizerSection = ({ form }: EventFormOrganizerSectionPro
                       logoUrl={sponsor.logoUrl}
                       onUpload={(url) => form.updateSponsor(sponsor.id, { logoUrl: url })}
                       onRemove={() => form.updateSponsor(sponsor.id, { logoUrl: undefined })}
-                      toast={form.toast}
                     />
                   </div>
                 </div>

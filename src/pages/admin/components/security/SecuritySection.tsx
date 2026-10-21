@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { PasswordChangeDialog } from './PasswordChangeDialog';
 import { TwoFASetupDialog } from './TwoFASetupDialog';
 
@@ -87,8 +87,7 @@ export const SecuritySection = () => {
 
   const handleDisable2FA = () => {
     patchMutation.mutate({ twoFactorEnabled: false, twoFactorMethod: undefined });
-    toast({
-      title: '2FA wyłączone',
+    toast.success('2FA wyłączone', {
       description: 'Uwierzytelnianie dwuskładnikowe zostało wyłączone.',
     });
   };
@@ -98,15 +97,14 @@ export const SecuritySection = () => {
       trustedDevices: settings.trustedDevices.filter((d) => d.id !== deviceId),
     });
     setRemoveDeviceId(null);
-    toast({
-      title: 'Urządzenie usunięte',
+    toast.success('Urządzenie usunięte', {
       description: 'Urządzenie zostało usunięte z listy zaufanych.',
     });
   };
 
   const handleSessionTimeoutChange = (value: string) => {
     patchMutation.mutate({ sessionTimeoutMinutes: parseInt(value) });
-    toast({ title: 'Zapisano', description: `Limit sesji ustawiony na ${value} minut.` });
+    toast.success('Zapisano', { description: `Limit sesji ustawiony na ${value} minut.` });
   };
 
   return (

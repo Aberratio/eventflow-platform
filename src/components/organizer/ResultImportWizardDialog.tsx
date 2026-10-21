@@ -42,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, Loader2, Upload } from 'lucide-react';
 
 interface ResultImportWizardDialogProps {
@@ -105,7 +105,6 @@ export function ResultImportWizardDialog({
   distances,
   onCommitted,
 }: ResultImportWizardDialogProps) {
-  const { toast } = useToast();
   const [distanceId, setDistanceId] = useState(selectedDistanceId);
   const [mode, setMode] = useState<ResultImportMode>('replace');
   const [file, setFile] = useState<File | null>(null);
@@ -140,11 +139,7 @@ export function ResultImportWizardDialog({
 
   const handleUpload = async () => {
     if (!file) {
-      toast({
-        title: 'Brak pliku',
-        description: 'Wybierz plik CSV, XLSX albo PDF.',
-        variant: 'destructive',
-      });
+      toast.error('Brak pliku', { description: 'Wybierz plik CSV, XLSX albo PDF.' });
       return;
     }
     setBusy(true);
@@ -153,12 +148,10 @@ export function ResultImportWizardDialog({
       setBatch(response.data);
       setMapping(response.data.mapping ?? {});
       setSheetName(response.data.sheetName ?? null);
-      toast({ title: 'Import przygotowany', description: 'Sprawdź mapowanie i podgląd wyników.' });
+      toast.success('Import przygotowany', { description: 'Sprawdź mapowanie i podgląd wyników.' });
     } catch (error) {
-      toast({
-        title: 'Import nieudany',
+      toast.error('Import nieudany', {
         description: error instanceof Error ? error.message : 'Nie udało się wgrać pliku.',
-        variant: 'destructive',
       });
     } finally {
       setBusy(false);
@@ -172,16 +165,13 @@ export function ResultImportWizardDialog({
       const response = await updateResultImportMapping(batch.id, mapping, sheetName);
       setBatch(response.data);
       setDrafts({});
-      toast({
-        title: 'Podgląd zaktualizowany',
+      toast.success('Podgląd zaktualizowany', {
         description: 'Możesz poprawić pojedyncze wiersze przed zatwierdzeniem.',
       });
     } catch (error) {
-      toast({
-        title: 'Analiza nieudana',
+      toast.error('Analiza nieudana', {
         description:
           error instanceof Error ? error.message : 'Nie udało się przeanalizować importu.',
-        variant: 'destructive',
       });
     } finally {
       setBusy(false);
@@ -199,10 +189,8 @@ export function ResultImportWizardDialog({
         return next;
       });
     } catch (error) {
-      toast({
-        title: 'Nie zapisano wiersza',
+      toast.error('Nie zapisano wiersza', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setBusy(false);
@@ -214,18 +202,15 @@ export function ResultImportWizardDialog({
     setBusy(true);
     try {
       await commitResultImport(batch.id);
-      toast({
-        title: 'Wyniki zapisane',
+      toast.success('Wyniki zapisane', {
         description: 'Wyniki są już widoczne w wydarzeniu i profilach uczestników.',
       });
       onCommitted();
       reset();
       onOpenChange(false);
     } catch (error) {
-      toast({
-        title: 'Nie zatwierdzono importu',
+      toast.error('Nie zatwierdzono importu', {
         description: error instanceof Error ? error.message : 'Rozwiąż problematyczne wiersze.',
-        variant: 'destructive',
       });
     } finally {
       setBusy(false);

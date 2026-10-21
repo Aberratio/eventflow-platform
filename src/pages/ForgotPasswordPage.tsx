@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +25,6 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPasswordPage = () => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -38,8 +37,7 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsSuccess(true);
-    toast({
-      title: 'Link wysłany',
+    toast.success('Link wysłany', {
       description: `Na adres ${data.email} wysłaliśmy link do resetowania hasła.`,
     });
     setIsLoading(false);

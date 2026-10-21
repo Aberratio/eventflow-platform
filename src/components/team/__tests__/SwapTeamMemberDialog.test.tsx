@@ -11,7 +11,7 @@ import SwapTeamMemberDialog from '../SwapTeamMemberDialog';
 
 const mockSwap = vi.fn();
 const mockGetCare = vi.fn();
-const mockToast = vi.fn();
+const mockToast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');
@@ -22,10 +22,7 @@ vi.mock('@/api', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: (...args: unknown[]) => mockToast(...args),
-  useToast: () => ({ toast: (...args: unknown[]) => mockToast(...args) }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 const swapped = { id: 'r1', teamId: 't1', userName: 'Nowy Zawodnik' } as Registration;
 
@@ -56,6 +53,8 @@ describe('SwapTeamMemberDialog', () => {
     mockSwap.mockReset();
     mockGetCare.mockReset();
     mockToast.mockReset();
+    mockToast.success.mockReset();
+    mockToast.error.mockReset();
   });
 
   it('keeps the submit button disabled until first and last name are filled', () => {
@@ -86,9 +85,7 @@ describe('SwapTeamMemberDialog', () => {
     );
     await waitFor(() => expect(onSwapped).toHaveBeenCalledWith(swapped));
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Zawodnik wymieniony' }),
-    );
+    expect(mockToast.success).toHaveBeenCalledWith('Zawodnik wymieniony', expect.anything());
   });
 
   it('shows the server message when the swap is refused (deadline passed)', async () => {
@@ -106,11 +103,9 @@ describe('SwapTeamMemberDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Wymień zawodnika' }));
 
     await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          description: 'Termin wymiany zawodnika w drużynie minął.',
-        }),
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: 'Termin wymiany zawodnika w drużynie minął.' }),
       ),
     );
     expect(onSwapped).not.toHaveBeenCalled();

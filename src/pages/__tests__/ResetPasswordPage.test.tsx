@@ -5,7 +5,7 @@ import { ApiRequestError } from '@/api/errors';
 import ResetPasswordPage from '../ResetPasswordPage';
 
 const confirmPasswordReset = vi.fn();
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', () => ({
   confirmPasswordReset: (...args: unknown[]) => confirmPasswordReset(...args),
@@ -13,9 +13,7 @@ vi.mock('@/api', () => ({
   getInfoPages: () => Promise.resolve({ success: true, data: [] }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 const TOKEN = 'a'.repeat(64);
 
@@ -30,6 +28,8 @@ describe('ResetPasswordPage', () => {
   beforeEach(() => {
     confirmPasswordReset.mockReset();
     toast.mockReset();
+    toast.success.mockReset();
+    toast.error.mockReset();
   });
 
   it('sends the link token and the new password to the API and shows the success view', async () => {
@@ -89,11 +89,9 @@ describe('ResetPasswordPage', () => {
     submit();
 
     await waitFor(() =>
-      expect(toast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variant: 'destructive',
-          description: 'Nie udało się zmienić hasła. Spróbuj ponownie.',
-        }),
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: 'Nie udało się zmienić hasła. Spróbuj ponownie.' }),
       ),
     );
     expect(screen.getByPlaceholderText('Min. 8 znaków')).toBeInTheDocument();

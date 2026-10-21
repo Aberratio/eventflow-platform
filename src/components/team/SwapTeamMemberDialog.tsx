@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { Registration } from '@/types';
 
 const NEW_PERSON = '__new__';
@@ -102,8 +102,7 @@ const SwapTeamMemberDialog = ({
       return swapTeamMember(teamId, registrationId, payload);
     },
     onSuccess: (response) => {
-      toast({
-        title: 'Zawodnik wymieniony',
+      toast.success('Zawodnik wymieniony', {
         description: 'Kod startowy został zmieniony; numer startowy i opłata zostają przy zapisie.',
       });
       queryClient.invalidateQueries({ queryKey: ['team-members', teamId] });
@@ -112,11 +111,7 @@ const SwapTeamMemberDialog = ({
       onOpenChange(false);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Nie udało się wymienić zawodnika',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się wymienić zawodnika', { description: error.message });
     },
   });
 

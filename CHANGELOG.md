@@ -75,6 +75,7 @@ as the first version.
   like the main registration page.
 - Login tells the user how long to wait and disables the button when the
   server temporarily blocks further attempts after repeated failures.
+- Notifications use one consistent style and position across the app.
 
 ### Fixed
 

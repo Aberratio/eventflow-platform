@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { changePassword } from '@/api';
 
 const MIN_LENGTH = 8;
@@ -39,15 +39,11 @@ export const ChangePasswordCard = () => {
       setNext('');
       setConfirm('');
       setError(null);
-      toast({ title: 'Hasło zostało zmienione' });
+      toast.success('Hasło zostało zmienione');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Nie udało się zmienić hasła.';
       setError(message);
-      toast({
-        title: 'Nie udało się zmienić hasła',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się zmienić hasła', { description: message });
     } finally {
       setSaving(false);
     }

@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle, Loader2, MailCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AuthPageShell } from '@/components/ui/auth-page-shell';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { resendEmailVerification, verifyEmail } from '@/api';
 
@@ -37,16 +37,14 @@ const VerifyEmailPage = () => {
     setResending(true);
     try {
       const response = await resendEmailVerification();
-      toast({
-        title: response.data?.alreadyVerified
+      toast.success(
+        response.data?.alreadyVerified
           ? 'Adres e-mail jest już potwierdzony'
           : 'Wysłaliśmy link weryfikacyjny.',
-      });
+      );
     } catch (error) {
-      toast({
-        title: 'Nie udało się wysłać linku',
+      toast.error('Nie udało się wysłać linku', {
         description: error instanceof Error ? error.message : undefined,
-        variant: 'destructive',
       });
     } finally {
       setResending(false);

@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Link, Loader2, Plus, Trash2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { SosContact } from '@/types';
 
 const ParticipantProfileTab = () => {
@@ -38,8 +38,7 @@ const ParticipantProfileTab = () => {
 
   const copyProfileLink = () => {
     navigator.clipboard.writeText(publicProfileUrl);
-    toast({
-      title: 'Skopiowano link',
+    toast.success('Skopiowano link', {
       description: 'Link do profilu został skopiowany do schowka.',
     });
   };
@@ -76,9 +75,9 @@ const ParticipantProfileTab = () => {
         sosContacts: validContacts.length ? validContacts : undefined,
       });
 
-      toast({ title: 'Zapisano dane zawodnika' });
+      toast.success('Zapisano dane zawodnika');
     } catch {
-      toast({ title: 'Błąd zapisu', variant: 'destructive' });
+      toast.error('Błąd zapisu');
     } finally {
       setSaving(false);
     }

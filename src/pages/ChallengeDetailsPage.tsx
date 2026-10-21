@@ -47,7 +47,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { ChallengeEntryStatus } from '@/types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ChallengeRankingCard } from '@/pages/challenges/ChallengeRankingCard';
 import { formatMoney } from '@/lib/format';
 
@@ -99,7 +99,7 @@ const ChallengeDetailsPage = () => {
     mutationFn: () => joinChallenge(challenge!.id),
     onSuccess: () => {
       invalidate();
-      toast({ title: 'Dołączono do wyzwania' });
+      toast.success('Dołączono do wyzwania');
     },
   });
 
@@ -118,7 +118,7 @@ const ChallengeDetailsPage = () => {
       setTime('');
       setPosition('');
       setProofUrl('');
-      toast({ title: 'Wynik zgłoszony', description: 'Zgłoszenie oczekuje na weryfikację.' });
+      toast.success('Wynik zgłoszony', { description: 'Zgłoszenie oczekuje na weryfikację.' });
     },
   });
 
@@ -204,13 +204,11 @@ const ChallengeDetailsPage = () => {
     onSuccess: () => {
       invalidate();
       setRewardDialogOpen(false);
-      toast({ title: 'Nagroda odebrana', description: 'Zamówienie zostało utworzone.' });
+      toast.success('Nagroda odebrana', { description: 'Zamówienie zostało utworzone.' });
     },
     onError: (error: unknown) => {
-      toast({
-        title: 'Nie udało się odebrać nagrody',
+      toast.error('Nie udało się odebrać nagrody', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     },
   });

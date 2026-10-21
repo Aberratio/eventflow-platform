@@ -17,7 +17,7 @@ import { SelfUpdateUserPayload } from '@/api/payloads';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import { appLogger } from '@/lib/logger';
 import { ApiRequestError } from '@/api/errors';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -129,8 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const cleared = clearSessionForToken(token);
       // Only a real token the server rejected is a session ending; an anonymous 401 (no token) is not.
       if (cleared && token) {
-        toast({
-          title: 'Sesja zakończona',
+        toast('Sesja zakończona', {
           description: 'Twoja sesja wygasła lub została zakończona. Zaloguj się ponownie.',
         });
       }

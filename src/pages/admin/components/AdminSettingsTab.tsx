@@ -26,7 +26,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type {
   ChallengePointsSettings,
@@ -75,7 +75,7 @@ export const AdminSettingsTab = () => {
         targetType: 'settings',
         metadata: { baseFee: data.baseFee, ageMultiplier: data.ageMultiplier, maxAge: data.maxAge },
       });
-      toast({ title: 'Zapisano', description: 'Ustawienia ubezpieczeń zostały zaktualizowane' });
+      toast.success('Zapisano', { description: 'Ustawienia ubezpieczeń zostały zaktualizowane' });
     },
   });
 
@@ -95,7 +95,7 @@ export const AdminSettingsTab = () => {
       appLogger.settings('challenge_points_save', 'Zapisano tabelę punktacji Wyzwań', {
         targetType: 'settings',
       });
-      toast({ title: 'Zapisano', description: 'Tabela punktacji Wyzwań została zaktualizowana' });
+      toast.success('Zapisano', { description: 'Tabela punktacji Wyzwań została zaktualizowana' });
     },
   });
 
@@ -134,14 +134,10 @@ export const AdminSettingsTab = () => {
     calendarMutation.mutate(patch, {
       onSuccess: () => {
         appLogger.settings('calendar_save', 'Zapisano ustawienia Kalendarza Google');
-        toast({ title: 'Zapisano', description: 'Ustawienia Kalendarza Google zostały zapisane' });
+        toast.success('Zapisano', { description: 'Ustawienia Kalendarza Google zostały zapisane' });
       },
       onError: () => {
-        toast({
-          title: 'Nie zapisano',
-          description: 'Sprawdź ID kalendarza i spróbuj ponownie',
-          variant: 'destructive',
-        });
+        toast.error('Nie zapisano', { description: 'Sprawdź ID kalendarza i spróbuj ponownie' });
       },
     });
   };

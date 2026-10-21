@@ -38,7 +38,7 @@ import { getEditUrl } from '@/components/event-details';
 import { isExternalRegistrationEvent } from './ExternalRegistrationFrame';
 import { getCurrentPrice } from '@/api';
 import { formatMoney } from '@/lib/format';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface EventSidebarProps {
   event: Event;
@@ -435,7 +435,7 @@ const ShareRegistrationDialog = ({
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(url);
-    toast({ title: 'Link skopiowany', description: 'Link do wydarzenia skopiowany do schowka.' });
+    toast.success('Link skopiowany', { description: 'Link do wydarzenia skopiowany do schowka.' });
     onCopyLink();
   };
 

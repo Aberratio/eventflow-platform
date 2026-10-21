@@ -6,7 +6,7 @@ import RegisterPage from '../RegisterPage';
 
 const mockLoginWithCredentials = vi.fn();
 const mockNavigate = vi.fn();
-const mockToast = vi.fn();
+const mockToast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const mockRegister = vi.fn();
 
 vi.mock('@/api', async () => ({
@@ -35,9 +35,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: mockToast }),
-}));
+vi.mock('sonner', () => ({ toast: mockToast }));
 
 vi.mock('@/lib/logger', () => ({
   appLogger: { auth: vi.fn() },
@@ -175,11 +173,9 @@ describe('RegisterPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Konto zostało utworzone!' }),
-      );
+      expect(mockToast.success).toHaveBeenCalledWith('Konto zostało utworzone!', expect.anything());
     });
-    const description = mockToast.mock.calls[0][0].description as string;
+    const description = mockToast.success.mock.calls[0][1].description as string;
     expect(description).not.toMatch(/wysłaliśmy/i);
   });
 
@@ -193,18 +189,17 @@ describe('RegisterPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Zarejestruj się' }));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          description: 'Ten adres e-mail jest już zajęty.',
-          variant: 'destructive',
-        }),
+      expect(mockToast.error).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ description: 'Ten adres e-mail jest już zajęty.' }),
       );
     });
     expect(await screen.findAllByText('Ten adres e-mail jest już zajęty.')).not.toHaveLength(0);
     expect(mockLoginWithCredentials).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
-    expect(mockToast).not.toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Konto zostało utworzone!' }),
+    expect(mockToast.success).not.toHaveBeenCalledWith(
+      'Konto zostało utworzone!',
+      expect.anything(),
     );
     expect(screen.getByRole('button', { name: 'Zarejestruj się' })).toBeEnabled();
   });

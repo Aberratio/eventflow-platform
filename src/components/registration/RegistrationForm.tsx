@@ -57,7 +57,7 @@ import { CustomFormFieldsStep } from './CustomFormFieldsStep';
 import { DistanceRouteDialog, hasRouteArtifacts } from '@/components/DistanceRouteDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { RichTextDisplay } from '@/components/ui/rich-text-display';
 import {
   useRegistrationForm,
@@ -1461,7 +1461,7 @@ const BankTransferDetails = ({
   };
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast({ title: 'Skopiowano', description: `${label} został skopiowany do schowka` });
+      toast.success('Skopiowano', { description: `${label} został skopiowany do schowka` });
     });
   };
   if (!event.paymentConfig) return null;

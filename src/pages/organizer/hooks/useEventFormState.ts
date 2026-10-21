@@ -9,7 +9,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { bibRangeFieldErrors } from '@/lib/bibNumberUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { isEventOwnerLevel } from '@/lib/eventTeam';
@@ -243,7 +243,6 @@ export const useEventFormState = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { user } = useAuth();
   const isEditing = Boolean(id);
   const [existingEvent, setExistingEvent] = useState<Event | null>(null);
@@ -647,13 +646,9 @@ export const useEventFormState = () => {
             ? error.message
             : 'Nie udało się wczytać danych wydarzenia do edycji.';
         setEventLoadError(message);
-        toast({
-          title: 'Nie udało się wczytać wydarzenia',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error('Nie udało się wczytać wydarzenia', { description: message });
       });
-  }, [id, isEditing, toast]);
+  }, [id, isEditing]);
 
   useEffect(() => {
     if (!existingEvent) return;
@@ -784,13 +779,9 @@ export const useEventFormState = () => {
         const message =
           error instanceof Error ? error.message : 'Nie udało się pobrać listy organizatorów.';
         setOrganizersLoadError(message);
-        toast({
-          title: 'Nie udało się pobrać organizatorów',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error('Nie udało się pobrać organizatorów', { description: message });
       });
-  }, [canChooseOrganizer, selectedOrganizerId, toast]);
+  }, [canChooseOrganizer, selectedOrganizerId]);
 
   useEffect(() => {
     if (canChooseOrganizer || user?.role !== 'organizer') return;
@@ -814,13 +805,9 @@ export const useEventFormState = () => {
           error instanceof Error ? error.message : 'Nie udało się pobrać limitu wydarzeń.';
         setEventLimit(null);
         setEventLimitError(message);
-        toast({
-          title: 'Nie udało się pobrać limitu wydarzeń',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error('Nie udało się pobrać limitu wydarzeń', { description: message });
       });
-  }, [selectedOrganizerId, toast]);
+  }, [selectedOrganizerId]);
 
   // Distance handlers
   const addDistance = () => {
@@ -1498,11 +1485,7 @@ export const useEventFormState = () => {
   const validateStep1 = (): boolean => {
     const message = getFirstValidationError();
     if (message) {
-      toast({
-        title: 'Błąd',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: message });
       return false;
     }
     return true;
@@ -1511,11 +1494,7 @@ export const useEventFormState = () => {
   const validateStep2 = (): boolean => {
     const message = getFirstValidationError();
     if (message) {
-      toast({
-        title: 'Błąd',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: message });
       return false;
     }
     return true;
@@ -1577,11 +1556,7 @@ export const useEventFormState = () => {
     markValidationShown(subStep);
     const sectionError = getFirstCurrentSectionError();
     if (sectionError) {
-      toast({
-        title: 'Uzupełnij tę sekcję',
-        description: sectionError,
-        variant: 'destructive',
-      });
+      toast.error('Uzupełnij tę sekcję', { description: sectionError });
       return;
     }
     if (subStep === 'distances') {
@@ -1808,34 +1783,22 @@ export const useEventFormState = () => {
   const handleSubmit = async () => {
     setShownValidationSubSteps(STEP_NAV_ITEMS.map((item) => item.id));
     if (!selectedOrganizerId) {
-      toast({
-        title: 'Błąd',
-        description: 'Wybierz organizatora wydarzenia',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Wybierz organizatora wydarzenia' });
       return;
     }
     if (!isEditing && eventLimitError) {
-      toast({
-        title: 'Nie można potwierdzić limitu wydarzeń',
-        description: eventLimitError,
-        variant: 'destructive',
-      });
+      toast.error('Nie można potwierdzić limitu wydarzeń', { description: eventLimitError });
       return;
     }
     if (!isEditing && !selectedEventLimit) {
-      toast({
-        title: 'Limit wydarzeń jest jeszcze sprawdzany',
+      toast.error('Limit wydarzeń jest jeszcze sprawdzany', {
         description: 'Poczekaj na pobranie limitu organizatora i spróbuj ponownie.',
-        variant: 'destructive',
       });
       return;
     }
     if (!isEditing && selectedEventLimit && selectedEventLimit.available <= 0) {
-      toast({
-        title: 'Limit wydarzeń wyczerpany',
+      toast.error('Limit wydarzeń wyczerpany', {
         description: 'Organizator nie ma wolnego miejsca na kolejne wydarzenie.',
-        variant: 'destructive',
       });
       return;
     }
@@ -1865,16 +1828,13 @@ export const useEventFormState = () => {
         queryClient.invalidateQueries({ queryKey: ['events'] }),
       ]);
 
-      toast({
-        title: isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone',
+      toast.success(isEditing ? 'Wydarzenie zaktualizowane' : 'Wydarzenie utworzone', {
         description: 'Wydarzenie zostało zapisane jako szkic.',
       });
       navigate(isEditing ? `/organizer/events/${saved.id}` : '/organizer/events');
     } catch (error) {
-      toast({
-        title: 'Nie udało się zapisać wydarzenia',
+      toast.error('Nie udało się zapisać wydarzenia', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -1906,7 +1866,6 @@ export const useEventFormState = () => {
     privacyChanged: isEditing && (existingEvent?.visibility === 'private') !== isPrivate,
     step,
     navigate,
-    toast,
     user,
     canChooseOrganizer,
     canManageFeatured,

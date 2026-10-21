@@ -4,6 +4,7 @@
  */
 
 import type { CreateEventPayload } from '@/api/payloads';
+import { formatDuration } from '@/lib/format';
 import type {
   Distance,
   AgeCategory,
@@ -341,14 +342,6 @@ function slugify(text: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .trim();
-}
-
-function formatTime(totalSeconds: number): string {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 // ─── Public interface for generator options ──────────────────
@@ -890,7 +883,10 @@ export function generateResults(
         category,
         gender: p.gender,
         birthYear: p.birthYear,
-        time: p.status === 'finished' ? formatTime(p.seconds) : p.status.toUpperCase(),
+        time:
+          p.status === 'finished'
+            ? formatDuration(p.seconds, { hours: 'auto' })
+            : p.status.toUpperCase(),
         timeInSeconds: p.seconds,
         position: p.status === 'finished' ? pos++ : 9999,
         categoryPosition: p.status === 'finished' ? catPos : 9999,

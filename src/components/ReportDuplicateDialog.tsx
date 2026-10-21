@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Copy, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface Props {
   competitorId: string;
@@ -44,15 +44,14 @@ export const ReportDuplicateDialog = ({ competitorId, firstName, lastName, birth
   const mutation = useMutation({
     mutationFn: () => reportCompetitorDuplicate(competitorId, { duplicateOfId, note: note.trim() }),
     onSuccess: () => {
-      toast({
-        title: 'Zgłoszenie wysłane',
+      toast.success('Zgłoszenie wysłane', {
         description: 'Moderator zweryfikuje, czy profile są duplikatem.',
       });
       setOpen(false);
       setDuplicateOfId('');
       setNote('');
     },
-    onError: () => toast({ title: 'Nie udało się wysłać zgłoszenia', variant: 'destructive' }),
+    onError: () => toast.error('Nie udało się wysłać zgłoszenia'),
   });
 
   return (

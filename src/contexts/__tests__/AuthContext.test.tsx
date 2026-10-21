@@ -5,7 +5,7 @@ import { getCurrentUser, login } from '@/api';
 import { ApiRequestError } from '@/api/errors';
 import { AUTH_SESSION_EXPIRED_EVENT, STORAGE_KEYS } from '@/constants';
 import type { User, UserRole } from '@/types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const testUsers: User[] = [
   { id: 'u-participant', name: 'Participant', email: 'jan@example.com', role: 'participant' },
@@ -36,7 +36,7 @@ vi.mock('@/api', () => ({
   logout: vi.fn(async () => ({ data: undefined, success: true })),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({ toast: vi.fn() }));
+vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
 /** Behaves like http.adapter.ts on a protected 401: drops the token, announces it, rejects. */
 const fakeAdapterRejects = async (token: string): Promise<never> => {
@@ -54,6 +54,8 @@ describe('AuthContext', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.mocked(toast).mockClear();
+    vi.mocked(toast.success).mockClear();
+    vi.mocked(toast.error).mockClear();
   });
 
   it('starts unauthenticated', () => {
@@ -201,7 +203,7 @@ describe('AuthContext', () => {
     expect(localStorage.getItem(STORAGE_KEYS.AUTH)).toBeNull();
     expect(localStorage.getItem(STORAGE_KEYS.API_TOKEN)).toBeNull();
     expect(toast).toHaveBeenCalledTimes(1);
-    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sesja zakończona' }));
+    expect(toast).toHaveBeenCalledWith('Sesja zakończona', expect.anything());
   });
 
   it('clears the session when mount-time validation is rejected by the adapter', async () => {

@@ -4,7 +4,7 @@ import { pl } from 'date-fns/locale';
 import { AlertTriangle, CreditCard, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { formatMoney } from '@/lib/format';
 import {
   canRetryPayment,
@@ -30,7 +30,6 @@ export const UnpaidRegistrationBanner = ({
   events,
   onRetried,
 }: UnpaidRegistrationBannerProps) => {
-  const { toast } = useToast();
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const now = new Date();
 
@@ -55,18 +54,13 @@ export const UnpaidRegistrationBanner = ({
     try {
       const { redirected } = await retryRegistrationPayment(registration.id);
       if (!redirected) {
-        toast({
-          title: 'Okno płatności zostało ponownie otwarte',
+        toast.success('Okno płatności zostało ponownie otwarte', {
           description: 'Opłać zapis przelewem na dane z komunikatu.',
         });
         onRetried?.();
       }
     } catch (error) {
-      toast({
-        title: 'Nie udało się ponowić płatności',
-        description: retryErrorMessage(error),
-        variant: 'destructive',
-      });
+      toast.error('Nie udało się ponowić płatności', { description: retryErrorMessage(error) });
       onRetried?.();
     } finally {
       setRetryingId(null);

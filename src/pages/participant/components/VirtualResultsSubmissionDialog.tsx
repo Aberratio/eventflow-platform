@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Event } from '@/types';
 import { Clock, Link as LinkIcon, FileText, Send } from 'lucide-react';
 
@@ -37,8 +37,6 @@ export const VirtualResultsSubmissionDialog = ({
   registeredDistanceId,
   onSubmitted,
 }: VirtualResultsSubmissionDialogProps) => {
-  const { toast } = useToast();
-
   const [selectedDistanceId, setSelectedDistanceId] = useState(registeredDistanceId || '');
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
@@ -73,20 +71,12 @@ export const VirtualResultsSubmissionDialog = ({
 
   const handleSubmit = async () => {
     if (!selectedDistanceId) {
-      toast({
-        title: 'Błąd',
-        description: 'Wybierz dystans',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Wybierz dystans' });
       return;
     }
 
     if (!validateTime()) {
-      toast({
-        title: 'Błąd',
-        description: 'Wprowadź poprawny czas (minuty i sekundy max 59)',
-        variant: 'destructive',
-      });
+      toast.error('Błąd', { description: 'Wprowadź poprawny czas (minuty i sekundy max 59)' });
       return;
     }
 
@@ -101,8 +91,7 @@ export const VirtualResultsSubmissionDialog = ({
         notes: notes.trim() || undefined,
       });
 
-      toast({
-        title: 'Wynik zgłoszony',
+      toast.success('Wynik zgłoszony', {
         description: `Twój czas ${formatTime()} został przesłany do weryfikacji przez organizatora.`,
       });
 
@@ -114,10 +103,8 @@ export const VirtualResultsSubmissionDialog = ({
       setProofUrl('');
       setNotes('');
     } catch (error) {
-      toast({
-        title: 'Nie udało się zgłosić wyniku',
+      toast.error('Nie udało się zgłosić wyniku', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie za chwilę.',
-        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);

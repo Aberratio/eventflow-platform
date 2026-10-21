@@ -5,7 +5,7 @@ import { useEventFormState } from '../useEventFormState';
 import { createEvent, getOrganizerEventLimit } from '@/api';
 import type { OrganizerEventLimit, User } from '@/types';
 
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 const navigate = vi.fn();
 
 const organizer: User = {
@@ -29,9 +29,7 @@ vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ user: organizer }),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
@@ -67,6 +65,8 @@ const addValidDistance = (form: ReturnType<typeof useEventFormState>) => {
 describe('useEventFormState event wizard validation', () => {
   beforeEach(() => {
     toast.mockClear();
+    toast.success.mockClear();
+    toast.error.mockClear();
     navigate.mockClear();
     vi.mocked(createEvent).mockClear();
     vi.mocked(getOrganizerEventLimit).mockClear();
@@ -86,12 +86,7 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(result.current.subStep).toBe('basic');
     expect(result.current.shownValidationSubSteps).toContain('basic');
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Uzupełnij tę sekcję',
-        variant: 'destructive',
-      }),
-    );
+    expect(toast.error).toHaveBeenCalledWith('Uzupełnij tę sekcję', expect.anything());
   });
 
   it('rejects non-numeric distance values before submit', async () => {
@@ -110,12 +105,7 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(createEvent).not.toHaveBeenCalled();
     expect(result.current.fieldValidationErrors.distance_0_price).toContain('poprawną liczbą');
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Błąd',
-        variant: 'destructive',
-      }),
-    );
+    expect(toast.error).toHaveBeenCalledWith('Błąd', expect.anything());
   });
 
   it('rejects invalid named gadgets before submit', async () => {
@@ -158,11 +148,9 @@ describe('useEventFormState event wizard validation', () => {
     });
 
     expect(createEvent).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Limit wydarzeń jest jeszcze sprawdzany',
-        variant: 'destructive',
-      }),
+    expect(toast.error).toHaveBeenCalledWith(
+      'Limit wydarzeń jest jeszcze sprawdzany',
+      expect.anything(),
     );
   });
 
@@ -183,11 +171,9 @@ describe('useEventFormState event wizard validation', () => {
     });
 
     expect(createEvent).not.toHaveBeenCalled();
-    expect(toast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Nie można potwierdzić limitu wydarzeń',
-        variant: 'destructive',
-      }),
+    expect(toast.error).toHaveBeenCalledWith(
+      'Nie można potwierdzić limitu wydarzeń',
+      expect.anything(),
     );
   });
 

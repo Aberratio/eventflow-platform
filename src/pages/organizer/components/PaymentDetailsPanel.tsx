@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Registration, Event, PaymentDetails } from '@/types';
 import { Check, X, Mail, CreditCard, Calendar, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -41,7 +41,6 @@ export const PaymentDetailsPanel = ({
   onCompleteRefund,
   onMarkPaid,
 }: PaymentDetailsPanelProps) => {
-  const { toast } = useToast();
   const [details, setDetails] = useState<PaymentDetails>(
     registration.paymentDetails || {
       startFeePaid: false,
@@ -107,16 +106,12 @@ export const PaymentDetailsPanel = ({
     // The hook shows the server error itself; keep the panel open so nothing is lost.
     const saved = await onPaymentUpdate(registration.id, details);
     if (saved === false) return;
-    toast({
-      title: 'Zapisano zmiany',
-      description: 'Status płatności został zaktualizowany.',
-    });
+    toast.success('Zapisano zmiany', { description: 'Status płatności został zaktualizowany.' });
     onClose();
   };
 
   const handleSendReminder = () => {
-    toast({
-      title: 'Przypomnienie wysłane',
+    toast.success('Przypomnienie wysłane', {
       description: `Wysłano przypomnienie o płatności do ${registration.userEmail}`,
     });
   };

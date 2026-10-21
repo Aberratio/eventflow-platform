@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { CartItem, ShopProduct, OrderDetails } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { appLogger } from '@/lib/logger';
 
 const CART_STORAGE_KEY = 'shop-cart-items';
@@ -39,7 +39,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>(() => loadStoredCartItems());
   const [lastOrder, setLastOrder] = useState<OrderDetails | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     try {
@@ -51,39 +50,29 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items]);
 
-  const addItem = useCallback(
-    (item: CartItem) => {
-      setItems((prev) => {
-        const existingIndex = prev.findIndex(
-          (i) => i.productId === item.productId && i.size === item.size && i.color === item.color,
-        );
-
-        if (existingIndex >= 0) {
-          const updated = [...prev];
-          updated[existingIndex].quantity += item.quantity;
-          return updated;
-        }
-
-        return [...prev, item];
-      });
-
-      toast({
-        title: 'Dodano do koszyka',
-        description: item.productName,
-      });
-      appLogger.shop(
-        'cart_add',
-        `Dodano do koszyka: ${item.productName} (ilość: ${item.quantity})`,
-        {
-          targetType: 'product',
-          targetId: item.productId,
-          targetName: item.productName,
-          metadata: { quantity: item.quantity, size: item.size, color: item.color },
-        },
+  const addItem = useCallback((item: CartItem) => {
+    setItems((prev) => {
+      const existingIndex = prev.findIndex(
+        (i) => i.productId === item.productId && i.size === item.size && i.color === item.color,
       );
-    },
-    [toast],
-  );
+
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += item.quantity;
+        return updated;
+      }
+
+      return [...prev, item];
+    });
+
+    toast.success('Dodano do koszyka', { description: item.productName });
+    appLogger.shop('cart_add', `Dodano do koszyka: ${item.productName} (ilość: ${item.quantity})`, {
+      targetType: 'product',
+      targetId: item.productId,
+      targetName: item.productName,
+      metadata: { quantity: item.quantity, size: item.size, color: item.color },
+    });
+  }, []);
 
   const removeItem = useCallback(
     (productId: string) => {

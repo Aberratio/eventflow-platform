@@ -7,16 +7,14 @@ import type { Event, VirtualResultSubmission } from '@/types';
 
 const getVirtualResultSubmissions = vi.fn();
 const reviewVirtualResult = vi.fn();
-const toast = vi.fn();
+const toast = vi.hoisted(() => Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }));
 
 vi.mock('@/api', () => ({
   getVirtualResultSubmissions: (...args: unknown[]) => getVirtualResultSubmissions(...args),
   reviewVirtualResult: (...args: unknown[]) => reviewVirtualResult(...args),
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast }),
-}));
+vi.mock('sonner', () => ({ toast }));
 
 const event: Event = {
   id: 'event-virtual',

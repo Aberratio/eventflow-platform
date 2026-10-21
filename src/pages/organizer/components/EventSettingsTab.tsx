@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cancelEvent, deleteEvent, setEventIsTest, setEventVisibility, submitEvent } from '@/api';
 import { isEventOwnerLevel } from '@/lib/eventTeam';
 import type { Event, UserRole } from '@/types';
@@ -55,7 +55,6 @@ const statusLabels: Record<Event['publicationStatus'], string> = {
 export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTabProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(event.visibility === 'private');
@@ -138,8 +137,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         },
       );
       await invalidateEventQueries();
-      toast({
-        title: pendingIsPrivate ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne',
+      toast.success(pendingIsPrivate ? 'Wydarzenie prywatne' : 'Wydarzenie publiczne', {
         description: pendingIsPrivate
           ? 'Wydarzenie nie będzie widoczne publicznie.'
           : 'Wydarzenie będzie widoczne dla wszystkich.',
@@ -147,10 +145,8 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
       setPrivacyDialogOpen(false);
       setPendingIsPrivate(null);
     } catch (error) {
-      toast({
-        title: 'Nie udało się zmienić prywatności',
+      toast.error('Nie udało się zmienić prywatności', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsPrivacySaving(false);
@@ -165,15 +161,12 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         throw new Error(response.message || 'Nie udało się oddać wydarzenia do sprawdzenia.');
       }
       await invalidateEventQueries();
-      toast({
-        title: 'Wydarzenie oddane do sprawdzenia',
+      toast.success('Wydarzenie oddane do sprawdzenia', {
         description: 'Admin lub moderator musi je zatwierdzić przed publikacja.',
       });
     } catch (error) {
-      toast({
-        title: 'Nie udało się oddać wydarzenia do sprawdzenia',
+      toast.error('Nie udało się oddać wydarzenia do sprawdzenia', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsSubmittingReview(false);
@@ -194,17 +187,13 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         metadata: { oldStatus: event.publicationStatus, newStatus: 'cancelled' },
       });
       await invalidateEventQueries();
-      toast({
-        title: 'Wydarzenie odwołane',
+      toast.error('Wydarzenie odwołane', {
         description: 'Uczestnicy zobacza informacje o odwolaniu wydarzenia.',
-        variant: 'destructive',
       });
       setCancelDialogOpen(false);
     } catch (error) {
-      toast({
-        title: 'Nie udało się odwołać wydarzenia',
+      toast.error('Nie udało się odwołać wydarzenia', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsCancelling(false);
@@ -219,17 +208,14 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         throw new Error(response.message || 'Nie udało się zmienić trybu testowego.');
       }
       await invalidateEventQueries();
-      toast({
-        title: checked ? 'Tryb testowy wlaczony' : 'Tryb testowy wylaczony',
+      toast.success(checked ? 'Tryb testowy wlaczony' : 'Tryb testowy wylaczony', {
         description: checked
           ? 'Możesz teraz przetestować formularz zapisu przez bezpośredni link.'
           : undefined,
       });
     } catch (error) {
-      toast({
-        title: 'Nie udało się zmienić trybu testowego',
+      toast.error('Nie udało się zmienić trybu testowego', {
         description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
-        variant: 'destructive',
       });
     } finally {
       setIsTestSaving(false);
@@ -252,21 +238,17 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
         invalidateEventQueries(),
         queryClient.invalidateQueries({ queryKey: ['organizer-event-limit', event.organizerId] }),
       ]);
-      toast({
-        title: 'Wydarzenie usunięte',
+      toast.error('Wydarzenie usunięte', {
         description: 'Wydarzenie zniknie z panelu organizatora i list publicznych.',
-        variant: 'destructive',
       });
       setDeleteDialogOpen(false);
       navigate('/organizer');
     } catch (error) {
-      toast({
-        title: 'Nie udało się usunąć wydarzenia',
+      toast.error('Nie udało się usunąć wydarzenia', {
         description:
           error instanceof Error
             ? error.message
             : 'Usunąć można tylko nadchodzące wydarzenie bez zapisów.',
-        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);
@@ -427,7 +409,7 @@ export const EventSettingsTab = ({ event, currentUser = null }: EventSettingsTab
                       onClick={() => {
                         const url = `${window.location.origin}/events/${event.slug}?access=${accessCode}`;
                         navigator.clipboard.writeText(url);
-                        toast({ title: 'Skopiowano', description: 'Link skopiowany do schowka.' });
+                        toast.success('Skopiowano', { description: 'Link skopiowany do schowka.' });
                       }}
                       title="Kopiuj link"
                     >

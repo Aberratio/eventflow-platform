@@ -41,7 +41,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { InfoPage } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Mail,
@@ -58,7 +58,6 @@ export const AdminPagesTab = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deletePageId, setDeletePageId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const { data: pagesResp } = useQuery({
     queryKey: ['info-pages'],
@@ -76,7 +75,7 @@ export const AdminPagesTab = () => {
     onSuccess: () => {
       invalidate();
       setDeletePageId(null);
-      toast({ title: 'Usunięto stronę', variant: 'destructive' });
+      toast.error('Usunięto stronę');
     },
   });
 
@@ -86,8 +85,7 @@ export const AdminPagesTab = () => {
     onSuccess: (_, vars) => {
       invalidate();
       const page = pages.find((p) => p.id === vars.id);
-      toast({
-        title: vars.published ? 'Strona opublikowana' : 'Strona ukryta',
+      toast.success(vars.published ? 'Strona opublikowana' : 'Strona ukryta', {
         description: page
           ? `"${page.title}" jest teraz ${vars.published ? 'widoczna publicznie' : 'ukryta'}.`
           : undefined,
