@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { formatMoney, formatDate, formatDuration } from '../format';
+import { formatMoney, formatDate, formatDuration, formatPace } from '../format';
+
+describe('formatPace', () => {
+  it('formats the average pace as M:SS min/km', () => {
+    expect(formatPace(1500, 5)).toBe('5:00 min/km');
+    expect(formatPace(2537, 10)).toBe('4:14 min/km');
+  });
+
+  it('rounds the whole pace, so seconds never reach 60', () => {
+    expect(formatPace(1499, 5)).toBe('5:00 min/km');
+    expect(formatPace(299.6, 1)).toBe('5:00 min/km');
+    expect(formatPace(239.5, 1)).toBe('4:00 min/km');
+  });
+});
 
 describe('formatMoney', () => {
   it('formats value as Polish currency', () => {

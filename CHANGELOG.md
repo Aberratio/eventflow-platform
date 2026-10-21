@@ -79,6 +79,7 @@ as the first version.
 
 ### Fixed
 
+- Results in pace mode no longer show impossible values such as "4:60 min/km".
 - Mobile: the Tickets tab no longer breaks on a missing event date, and
   organizer and admin tabs no longer overflow the page at 360 px.
 - Organizer participant actions (confirming a payment, cancelling single,
