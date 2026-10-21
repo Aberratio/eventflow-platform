@@ -680,7 +680,7 @@ const EventsPage = () => {
             statusCounts={statusCounts}
           />
 
-          <main className="min-w-0 flex-1 overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
             {/* ── Mobile ── */}
             <div className="lg:hidden">
               <div className="mx-auto max-w-5xl px-4 pb-28 pt-6 sm:px-8">
@@ -939,7 +939,7 @@ const EventsPage = () => {
                 )}
               </div>
             </div>
-          </main>
+          </div>
         </div>
       </div>
     </Layout>
