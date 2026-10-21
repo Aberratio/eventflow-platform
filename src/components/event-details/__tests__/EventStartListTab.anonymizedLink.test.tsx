@@ -55,7 +55,7 @@ const baseEntry = (overrides: Partial<PublicStartListEntry>): PublicStartListEnt
   ...overrides,
 });
 
-describe('EventStartListTab anonymized entries (PP.3)', () => {
+describe('EventStartListTab anonymized entries', () => {
   it('renders no /athlete/ link for an entry with userId: null, and links a non-null userId', () => {
     const registrations: PublicStartListEntry[] = [
       baseEntry({ id: 'r1', userId: null, userName: 'Zawodnik anonimowy', bibNumber: '101' }),

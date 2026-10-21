@@ -65,7 +65,7 @@ beforeEach(() => {
   api.getFormFields.mockResolvedValue({ success: true, data: list });
 });
 
-describe('FormFieldsTab (E1.13)', () => {
+describe('FormFieldsTab', () => {
   it('lists system and custom fields and locks the states the catalogue does not allow', async () => {
     render(<FormFieldsTab eventId="e1" />);
     expect(await screen.findByText('Rozmiar koszulki')).toBeInTheDocument();
@@ -154,7 +154,7 @@ describe('FormFieldsTab (E1.13)', () => {
     );
   });
 
-  it('edits the variants of a custom field in place, keeping the keys of existing ones (B-02)', async () => {
+  it('edits the variants of a custom field in place, keeping the keys of existing ones', async () => {
     api.updateFormField.mockResolvedValue({ success: true, data: list[3] });
     render(<FormFieldsTab eventId="e1" />);
     await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
@@ -175,7 +175,7 @@ describe('FormFieldsTab (E1.13)', () => {
     expect(patch).not.toHaveProperty('fieldType');
   });
 
-  it('changes the type of a custom field in place (B-02)', async () => {
+  it('changes the type of a custom field in place', async () => {
     api.updateFormField.mockResolvedValue({ success: true, data: list[3] });
     render(<FormFieldsTab eventId="e1" />);
     await userEvent.click(await screen.findByRole('button', { name: 'Edytuj: Rozmiar koszulki' }));
@@ -189,7 +189,7 @@ describe('FormFieldsTab (E1.13)', () => {
     });
   });
 
-  it('explains a 409 when the type of a field with answers is changed (B-02)', async () => {
+  it('explains a 409 when the type of a field with answers is changed', async () => {
     api.updateFormField.mockRejectedValue(
       new ApiRequestError('Nie można zmienić typu.', 'form_field_has_answers', 409),
     );
@@ -202,7 +202,7 @@ describe('FormFieldsTab (E1.13)', () => {
     expect(screen.getByRole('button', { name: 'Zapisz' })).toBeInTheDocument();
   });
 
-  it('explains a 409 when a used variant is removed (B-02)', async () => {
+  it('explains a 409 when a used variant is removed', async () => {
     api.updateFormField.mockRejectedValue(
       new ApiRequestError('Nie można usunąć wariantu: m.', 'form_field_option_in_use', 409),
     );
@@ -232,7 +232,7 @@ describe('FormFieldsTab (E1.13)', () => {
   });
 });
 
-describe('FormFieldsTab per distance (R-04)', () => {
+describe('FormFieldsTab per distance', () => {
   const distances = [{ id: 'd1', name: '10 km' }];
   const effective: FormField[] = [
     { ...list[1], source: 'event' },

@@ -9,9 +9,9 @@ import { cn } from '@/lib/utils';
    ──────────────────────────────────────────────────────── */
 
 interface PageBgProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Nakładka z niebieskimi radial gradientami w rogach */
+  /** Overlay with blue radial gradients in the corners */
   glows?: boolean;
-  /** Nakładka przyciemniająca dół strony */
+  /** Overlay darkening the bottom of the page */
   fade?: boolean;
 }
 

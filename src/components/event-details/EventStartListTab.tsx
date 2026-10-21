@@ -262,10 +262,10 @@ export const EventStartListTab = ({
     clubQuery !== '' ||
     !allStatusesSelected;
 
-  // E7.4 (issue 23 Answer §4): "lista startowa pogrupowana po Drużynie" is a
+  // Grouping the start list by Drużyna is a
   // VIEW concern layered on top of the existing per-member Zapisy — every
   // member already has its own bibNumber/qrCode (RegistrationRepository::
-  // create(), unconditional, no team special-case). Real Drużyny (E7.1/E7.2)
+  // create(), unconditional, no team special-case). Real Drużyny
   // are fetched per relay Dystans actually present among these
   // registrations, never derived from the free-text `teamName` the older,
   // unrelated `collectTeam` classification feature also writes.
@@ -600,10 +600,10 @@ export const EventStartListTab = ({
                               {formatTeamCompleteness(block.team)}
                             </Badge>
                             {/*
-                              E7.5 (issue 23 Answer §7): the captain's
+                              The captain's
                               manually declared Kategoria specjalna, shown as
                               a cheap extension of the existing team-group
-                              header (E7.4) — never recomputed from the
+                              header — never recomputed from the
                               members listed below it, so it may legitimately
                               look stale after a roster change.
                             */}

@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ChallengeDetailsPage from '../ChallengeDetailsPage';
 
-// D-08: an anonymous visitor used to get no call to action at all.
+// An anonymous visitor used to get no call to action at all.
 
 vi.mock('@/api', async () => {
   const actual = await vi.importActual<typeof import('@/api')>('@/api');

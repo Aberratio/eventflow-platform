@@ -2,8 +2,7 @@ import type { MerchandiseOrder, PaymentDetails } from './event';
 
 /**
  * One line of the frozen Rozliczenie (settlement) the server computes and
- * attaches to a Zapis — name, basis, amount, freeze timestamp (E1.2,
- * resolution #14). The client never computes these; it only displays them
+ * attaches to a Zapis — name, basis, amount, freeze timestamp). The client never computes these; it only displays them
  * once the server returns them on create/fetch.
  */
 export interface SettlementItem {
@@ -16,16 +15,16 @@ export interface SettlementItem {
 }
 
 /**
- * E1.5: the refund cycle currently on file for this Zapis, if any — layered on top
- * of `status` (opłacona/confirmed), not a replacement for it. `requested` (zawodnik
- * poprosił) -> `approved` ("do zwrotu", organizator/admin zatwierdził) -> `refunded`
- * (zwrócona — trasa A: bramka, jeszcze nie zbudowana, E1.6/E1.7; trasa B: organizator
- * ręcznie, w pełni zbudowane tym tickietem). `amount` is the server-computed saldo
+ * The refund cycle currently on file for this Zapis, if any — layered on top
+ * of `status` (paid/confirmed), not a replacement for it. `requested` (the Zawodnik
+ * asked) -> `approved` ("do zwrotu", approved by the organizer/admin) -> `refunded`
+ * (route A: gateway, not built yet; route B: the organizer marks it manually, fully
+ * built). `amount` is the server-computed saldo
  * (never client-supplied) — the client only ever displays it.
  */
 /**
- * R-02: wpis w historii zapisu (`GET /registrations/{id}/changes`). `from`/`to` to migawki
- * zależne od typu — rezygnacja: `{ status, distanceId }` → `{ status, refundRequested }`.
+ * An entry in the history of a Zapis (`GET /registrations/{id}/changes`). `from`/`to` are
+ * snapshots that depend on the type — cancellation: `{ status, distanceId }` → `{ status, refundRequested }`.
  */
 export interface RegistrationChange {
   id: string;
@@ -52,7 +51,7 @@ export interface RefundState {
 }
 
 /**
- * E7.1 (issue 23 Answer §1): a real, server-validated Drużyna — the roster
+ * A real, server-validated Drużyna — the roster
  * entity behind `Registration.teamId`/`teamName` for a relay Dystans.
  * `memberCount`/`complete` are derived server-side on every read (never a
  * settable field): a Drużyna with fewer Zapisy than `maxSize` is a legal,
@@ -68,10 +67,10 @@ export interface RelayTeam {
   minSize: number | null;
   maxSize: number | null;
   complete: boolean | null;
-  /** E7.1: the user who created the team — the "captain" for permission checks (E7.5). */
+  /** The user who created the team — the "captain" for permission checks. */
   createdByUserId?: string | null;
   /**
-   * E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+   * The captain's manually declared Kategoria
    * specjalna, e.g. "Drużyna mieszana" — set once at creation, optionally
    * changed later by the captain, and NEVER recomputed from the roster.
    */
@@ -79,7 +78,7 @@ export interface RelayTeam {
 }
 
 /**
- * PP.54 (spec 23 §1): the captain's invitation for one Drużyna — read only by the captain and by
+ * The captain's invitation for one Drużyna — read only by the captain and by
  * staff who manage the event (`GET /teams/{teamId}/invite`). `inviteToken` is a bearer secret,
  * separate from the (public) team id.
  */
@@ -91,7 +90,7 @@ export interface TeamInvite {
 }
 
 /**
- * G-04: one active Zapis on a Drużyna's roster, as the captain / the event's manager sees it when
+ * One active Zapis on a Drużyna's roster, as the captain / the event's manager sees it when
  * choosing whom to swap out (`GET /teams/{teamId}/members`).
  */
 export interface TeamMember {
@@ -102,7 +101,7 @@ export interface TeamMember {
   competitorId: string | null;
 }
 
-/** PP.52: returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
+/** Returned only by POST /registrations for a fresh `pending` trasa-A Zapis when a gateway session was opened. */
 export interface PaymentSession {
   transactionId: string;
   redirectUrl: string;
@@ -113,7 +112,7 @@ export interface Registration {
   eventId: string;
   eventName: string;
   userId: string;
-  /** Zawodnik będący źródłem tożsamości zapisu (E0.1) — identyfikator, nie kopiowana nazwa. */
+  /** The Zawodnik that is the identity source of the Zapis — an identifier, not a copied name. */
   competitorId?: string;
   userName: string;
   userEmail: string;
@@ -131,36 +130,36 @@ export interface Registration {
   merchandiseOrders?: MerchandiseOrder[];
   insurancePaid?: number;
   totalAmount?: number;
-  /** Server-computed, position-by-position Rozliczenie (E1.2). */
+  /** Server-computed, position-by-position Rozliczenie. */
   settlementItems?: SettlementItem[];
   removedAt?: string;
   paymentDetails?: PaymentDetails;
-  /** PP.52: present only on the POST /registrations response, when a gateway session was opened. */
+  /** Present only on the POST /registrations response, when a gateway session was opened. */
   paymentSession?: PaymentSession | null;
   /**
-   * B-05: end of the payment window of a `pending` Zapis (ISO). NOTE: the server does not serialise it
+   * End of the payment window of a `pending` Zapis (ISO). NOTE: the server does not serialise it
    * yet (column registrations.payment_expires_at) — the banner degrades to "dokończ płatność" without a date.
    */
   paymentExpiresAt?: string | null;
   /**
-   * G-08: true on the POST /registrations response of a dry run (a Draft in test mode). The
+   * True on the POST /registrations response of a dry run (a Draft in test mode). The
    * Zapis does not exist (the `id` is a ghost), nothing was paid; only the Rozliczenie is real.
    */
   isTest?: boolean;
   registeredById?: string;
-  /** E1.5: maszyna stanów zwrotu — null/undefined means no refund cycle has ever started. */
+  /** Refund state machine — null/undefined means no refund cycle has ever started. */
   refund?: RefundState | null;
   /**
-   * E1.8: server-computed, deterministic bank-transfer title for trasa B
+   * Server-computed, deterministic bank-transfer title for trasa B
    * (`ZC-{id}`) — used to match incoming bank transfers to this Zapis.
    * Always present regardless of payment route (trasa A ignores it).
    */
   transferTitle?: string;
   /**
-   * E1.11: platform-generated QR start code (`pqr_` + 48 hex chars) belonging to
+   * Platform-generated QR start code (`pqr_` + 48 hex chars) belonging to
    * this Zapis — the same format Biuro Zawodów's own offline scanner already
    * expects (`^pqr_[a-f0-9]{48}$}`), just generated by the platform instead.
-   * Distinct from the (not-yet-built, E1.12) `zqr_` identity code, which belongs
+   * Distinct from the (not-yet-built) `zqr_` identity code, which belongs
    * to the Zawodnik, not the Zapis. Carries no status of its own — its validity
    * on the day follows `status` above, not a separate flag. Always present
    * (every Zapis gets one at creation), so the client never has to special-case
@@ -168,8 +167,7 @@ export interface Registration {
    */
   qrCode?: string;
   /**
-   * E3.6 (issue 12 §4): "BZ zwraca status odprawy przy każdej synchronizacji" —
-   * set once Biuro Zawodów reports back that this Zapis was checked in on-site
+   * Set once Biuro Zawodów reports back that this Zapis was checked in on-site
    * (return-synced via PATCH /bz/participants/{registrationId}), undefined/null
    * beforehand. `checkedInBy` is BZ's own opaque identifier/name for whoever
    * confirmed it, not a platform user.
@@ -178,7 +176,7 @@ export interface Registration {
   checkedInBy?: string | null;
 }
 
-/** PP.3: one organizer-opted public form field on a start-list entry. */
+/** One organizer-opted public form field on a start-list entry. */
 export interface PublicStartListField {
   fieldKey: string;
   label: string;
@@ -186,7 +184,7 @@ export interface PublicStartListField {
 }
 
 /**
- * PP.3: the only shape `GET /events/{id}/start-list` returns — a hard
+ * The only shape `GET /events/{id}/start-list` returns — a hard
  * allowlist (server: RegistrationRepository::PUBLIC_START_LIST_FIELDS), never
  * userEmail/qrCode/discountCode/checkedInBy or any other financial/PII field
  * a full Registration carries.
@@ -209,7 +207,7 @@ export interface PublicStartListEntry {
 }
 
 /**
- * R-02 (zakres P2): the numbers of a change of Dystans — the response of `POST /registrations/{id}/distance-change/quote`
+ * The numbers of a change of Dystans — the response of `POST /registrations/{id}/distance-change/quote`
  * and the `change` part of the change itself. Money in PLN, `*Minor` in grosze. `blockedReason` is set when
  * this caller may not (or cannot yet) make the change, e.g. `balance_due_requires_organizer` for a dearer Dystans.
  */
@@ -232,7 +230,7 @@ export interface DistanceChangeQuote {
   blockedMessage: string | null;
 }
 
-/** R-02: the changed Zapis plus what the change cost (`POST /registrations/{id}/distance-change`). */
+/** The changed Zapis plus what the change cost (`POST /registrations/{id}/distance-change`). */
 export type DistanceChangeResult = Registration & {
   balanceDueMinor: number;
   refundDueMinor: number;
@@ -241,7 +239,7 @@ export type DistanceChangeResult = Registration & {
 };
 
 /**
- * R-02 (zakres P2): the Zapis after `POST /registrations/{id}/transfer`. Nothing is paid or refunded by
+ * The Zapis after `POST /registrations/{id}/transfer`. Nothing is paid or refunded by
  * the transfer: `balanceDueMinor` / `overpaymentMinor` (grosze) only report what the new person's NNW
  * insurance changed, for the organizer to settle by hand.
  */
@@ -255,7 +253,7 @@ export type TransferRegistrationResult = Registration & {
   };
 };
 
-/** B-02: one line of the Rozliczenie a Zapis would get — the response of `POST /registrations/quote`. */
+/** One line of the Rozliczenie a Zapis would get — the response of `POST /registrations/quote`. */
 export interface RegistrationQuoteItem {
   name: string;
   basis: string;
@@ -263,7 +261,7 @@ export interface RegistrationQuoteItem {
 }
 
 /**
- * B-02: the price the server would freeze for this payload right now, without creating the Zapis.
+ * The price the server would freeze for this payload right now, without creating the Zapis.
  * Binding only as a preview — the Zapis created afterwards recomputes the same way.
  */
 export interface RegistrationQuote {

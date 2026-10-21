@@ -1,4 +1,4 @@
-# 25 resilience-network (Sonnet, P2)
+# 25 resilience-network (P2)
 **Cel:** aplikacja zachowuje się sensownie przy błędach API, pustych danych i słabej sieci.
 **Plik:** `e2e-dev/resilience/network-errors.spec.ts`.
 **Kontekst:** mockuj przez `page.route('**/api/v1/...')`, bez obciążania dev. Fixture `problems` łapie page errors; gdy błąd jest celowy, użyj `problems.allow(/regex/)`.

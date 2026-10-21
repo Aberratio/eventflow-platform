@@ -62,13 +62,13 @@ function reg(overrides: Partial<Registration>): Registration {
 }
 
 /**
- * E3.6 (issue 12 §4): "ilu uczestników odebrało pakiet" — the minimal
- * organizer-facing stat this ticket adds to the existing participant list
- * dashboard, ahead of the full reporting ticket. Verifies the count is
+ * "How many participants picked up their pack" — the minimal
+ * organizer-facing stat added to the existing participant list
+ * dashboard, ahead of full reporting. Verifies the count is
  * derived correctly from checkedInAt across a mix of registrations, and
  * excludes removed ones the same way the other stat cards on this tab do.
  */
-describe('ParticipantsTab checked-in stat (E3.6)', () => {
+describe('ParticipantsTab checked-in stat', () => {
   it('counts only registrations with a checkedInAt timestamp', () => {
     const registrations: Registration[] = [
       reg({ id: 'reg-1', checkedInAt: '2026-06-01T07:42:00+02:00' }),

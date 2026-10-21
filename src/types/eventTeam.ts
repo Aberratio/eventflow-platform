@@ -1,5 +1,5 @@
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): the Event Team - the Owner plus Co-managers.
+ * The Event Team - the Owner plus Co-managers.
  * The Owner is `events.organizer_id`; the server stores only the Co-managers.
  */
 export type EventTeamRole = 'owner' | 'co_manager';

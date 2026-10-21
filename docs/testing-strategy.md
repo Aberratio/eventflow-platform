@@ -60,8 +60,8 @@ Every non-passing test of the full suite is listed here with a ticket, or the ta
 
 | Test                                  | Ticket | Reason                                                                                                        |
 | ------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- |
-| `visual.spec.ts` "sklep — desktop"    | PP.58  | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (product images, 22% of pixels)  |
-| `visual.spec.ts` "wyzwania — desktop" | PP.58  | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (challenge images, 6% of pixels) |
+| `visual.spec.ts` "sklep — desktop"    | none   | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (product images, 22% of pixels)  |
+| `visual.spec.ts` "wyzwania — desktop" | none   | quarantined (`test.fixme`): the committed baseline differs from a fresh seed (challenge images, 6% of pixels) |
 
 Skipped by design: `e2e/security-headers.spec.ts` (opt-in via `SECURITY_HEADERS_BASE_URL`, 8 tests).
 

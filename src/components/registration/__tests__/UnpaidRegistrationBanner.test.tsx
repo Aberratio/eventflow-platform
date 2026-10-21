@@ -36,7 +36,7 @@ const event = (type: 'organizer_bank' | 'admin_gateway'): Event =>
 
 beforeEach(() => vi.clearAllMocks());
 
-describe('UnpaidRegistrationBanner (B-05)', () => {
+describe('UnpaidRegistrationBanner', () => {
   it('renders nothing when every registration is paid or confirmed', () => {
     const { container } = render(
       <UnpaidRegistrationBanner

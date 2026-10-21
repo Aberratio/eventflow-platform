@@ -48,7 +48,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  // G-03: id of the server result being corrected / whose correction history is open.
+  // Id of the server result being corrected / whose correction history is open.
   const [editResultId, setEditResultId] = useState<string | null>(null);
   const [correctionsResultId, setCorrectionsResultId] = useState<string | null>(null);
   const canUploadResults =
@@ -188,7 +188,7 @@ export const ResultsTab = ({ event, registrations }: ResultsTabProps) => {
       {!canUploadResults && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Wyniki niedostepne dla tego statusu</AlertTitle>
+          <AlertTitle>Wyniki niedostępne dla tego statusu</AlertTitle>
           <AlertDescription>
             Wyniki mozna wgrywac tylko do wydarzen trwajacych albo zakonczonych.
           </AlertDescription>

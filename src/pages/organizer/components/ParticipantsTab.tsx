@@ -393,9 +393,9 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
             </div>
           </div>
         </Card>
-        {/* E3.6 (issue 12 §4): "ilu uczestników odebrało pakiet" — the minimal
+        {/* "ilu uczestników odebrało pakiet" — the minimal
             organizer-facing input this ticket scopes in, ahead of the full
-            reporting ticket (21/E2.5/E8.2). Counts registrations Biuro
+            reporting work. Counts registrations Biuro
             Zawodów has reported checked in via return-sync, among the same
             already-fetched registrations every other card above reads. */}
         <Card className="px-5 py-6">
@@ -558,14 +558,14 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                         <Printer className="mr-2 h-4 w-4" />
                         Drukuj PDF
                       </DropdownMenuItem>
-                      {/* E2.6: server-side export (all form fields + numer startowy +
+                      {/* Server-side export (all form fields + numer startowy +
                           status płatności) — one Distance at a time, so it requires
                           a concrete selection from the Dystans filter above, not "all". */}
                       <DropdownMenuItem
                         disabled={distanceFilter === 'all'}
                         title={
                           distanceFilter === 'all'
-                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startówą.'
                             : undefined
                         }
                         onClick={() => handleExportStartList(distanceFilter, 'csv')}
@@ -577,7 +577,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                         disabled={distanceFilter === 'all'}
                         title={
                           distanceFilter === 'all'
-                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startówą.'
                             : undefined
                         }
                         onClick={() => handleExportStartList(distanceFilter, 'xlsx')}
@@ -589,7 +589,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                         disabled={distanceFilter === 'all'}
                         title={
                           distanceFilter === 'all'
-                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startową.'
+                            ? 'Wybierz konkretny dystans, aby wyeksportować listę startówą.'
                             : undefined
                         }
                         onClick={() => handleExportStartList(distanceFilter, 'xml')}

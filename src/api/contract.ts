@@ -166,7 +166,7 @@ export interface ApiAdapter {
   updateEvent(id: string, data: UpdateEventPayload): Promise<ApiResponse<Event>>;
   deleteEvent(id: string): Promise<ApiResponse<void>>;
   /**
-   * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): the Event Team. The roster, invitations
+   * The Event Team. The roster, invitations
    * and revocations are Owner/admin only (403 for a Co-manager).
    */
   getEventTeam(eventId: string): Promise<ApiResponse<EventTeam>>;
@@ -201,7 +201,7 @@ export interface ApiAdapter {
   /** Only valid while publicationStatus === 'draft'. */
   setEventIsTest(id: string, isTest: boolean): Promise<ApiResponse<Event>>;
   /**
-   * E6.4 (issue 15 §3): creates a barebones "Wydarzenie zewnętrzne" — no
+   * Creates a barebones "Wydarzenie zewnętrzne" — no
    * Dystansy, no registrations — as the reference point for a Zawodnik's
    * manual challenge-entry proof (a pre-platform completion, or a race
    * that never ran on this platform). Moderator-or-above.
@@ -274,7 +274,7 @@ export interface ApiAdapter {
   getRegistrations(filters?: RegistrationFilters): Promise<PaginatedResponse<Registration>>;
   getRegistrationsByEvent(eventId: string): Promise<ApiResponse<Registration[]>>;
   /**
-   * E7.1: joinable Drużyny (with server-derived completeness) for one relay
+   * Joinable Drużyny (with server-derived completeness) for one relay
    * Dystans — the source of truth the "join an existing team" registration
    * step reads from, instead of its old purely client-side text-grouping
    * heuristic (`getExistingTeamsForEvent`, kept for the unrelated
@@ -282,10 +282,10 @@ export interface ApiAdapter {
    */
   getTeamsForDistance(eventId: string, distanceId: string): Promise<ApiResponse<RelayTeam[]>>;
   /**
-   * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
+   * Invitation link for the remaining spots:
    * resolves a single Drużyna by its own id — the read side of a captain's
    * shareable invitation link (`/events/{eventSlug}/register?joinTeam=
-   * {teamId}&invite={token}`). PP.54: the team id is public and is NOT the
+   * {teamId}&invite={token}`). The team id is public and is NOT the
    * invitation — the secret is the separate `inviteToken` (see
    * `getTeamInvite`). This lets the landing page show a clear "team
    * full"/"link invalid" message before the invitee ever opens the
@@ -294,18 +294,18 @@ export interface ApiAdapter {
    */
   getTeamById(teamId: string): Promise<ApiResponse<RelayTeam>>;
   /**
-   * PP.54: the invitation token of a Drużyna, for building the link
+   * The invitation token of a Drużyna, for building the link
    * (`buildTeamInviteLink`). Authenticated; the server answers 403 unless the
    * caller is the team's captain or manages the event, 404 for an unknown id.
    */
   getTeamInvite(teamId: string): Promise<ApiResponse<TeamInvite>>;
   /**
-   * G-04: the active roster of a Drużyna (the list to pick the member to swap out of). Authenticated;
+   * The active roster of a Drużyna (the list to pick the member to swap out of). Authenticated;
    * 403 unless the caller is the team's captain or manages the event, 404 for an unknown id.
    */
   getTeamMembers(teamId: string): Promise<ApiResponse<TeamMember[]>>;
   /**
-   * G-04 (spec 23 §2 / spec 20 transfer): swaps the person on a relay member's Zapis. Price, bib
+   * Swaps the person on a relay member's Zapis. Price, bib
    * number and status stay, the start code rotates. Captain until the Dystans's swap deadline
    * (409 `team_swap_deadline_passed` afterwards), the event's manager always. Rejects with
    * `ApiRequestError` (codes: `team_not_captain`, `not_authorized_to_register`,
@@ -318,7 +318,7 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<Registration>>;
   getPublicStartList(eventId: string): Promise<ApiResponse<PublicStartListEntry[]>>;
   /**
-   * E8.11: unauthenticated — the embed page (`/embed/event/:id/register`)
+   * Unauthenticated — the embed page (`/embed/event/:id/register`)
    * calls this before rendering the form, to check whether embedding is
    * enabled for the event and what origins are allowlisted. Mirrors the
    * server's own "returns 200 with enabled:false rather than 404" contract
@@ -330,7 +330,7 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<{ enabled: boolean; allowedOrigins: string[] }>>;
   getRegistrationsByUser(userId: string): Promise<ApiResponse<Registration[]>>;
   createRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<Registration>>;
-  /** B-02: prices the payload (same as `createRegistration`) without creating a Zapis. */
+  /** Prices the payload (same as `createRegistration`) without creating a Zapis. */
   quoteRegistration(data: CreateRegistrationPayload): Promise<ApiResponse<RegistrationQuote>>;
   updateRegistration(
     id: string,
@@ -342,19 +342,19 @@ export interface ApiAdapter {
     data: AssignBibNumbersPayload,
   ): Promise<ApiResponse<AssignBibNumbersResult>>;
   cancelRegistration(id: string): Promise<ApiResponse<Registration>>;
-  /** R-02: historia zmian jednego zapisu (właściciel i organizator), od najstarszej. */
+  /** History of changes of one Zapis (owner and organizer), oldest first. */
   getRegistrationChanges(id: string): Promise<ApiResponse<RegistrationChange[]>>;
-  /** R-02 (zakres P2): co da zmiana dystansu — nowa cena i saldo; nic nie zapisuje. */
+  /** What a change of Dystans would do — the new price and balance; persists nothing. */
   quoteDistanceChange(
     id: string,
     data: ChangeDistancePayload,
   ): Promise<ApiResponse<DistanceChangeQuote>>;
-  /** R-02 (zakres P2): zmiana dystansu/wariantu zapisu (właściciel w oknie, organizator zawsze). */
+  /** Changes the Dystans/Wariant of a Zapis (the owner inside the window, the organizer always). */
   changeRegistrationDistance(
     id: string,
     data: ChangeDistancePayload,
   ): Promise<ApiResponse<DistanceChangeResult>>;
-  /** R-02 (zakres P2): organizator przenosi zapis na innego zawodnika (istniejącego albo nową osobę). */
+  /** The organizer moves a Zapis to another person (an existing Zawodnik or a new one). */
   transferRegistration(
     id: string,
     data: SwapTeamMemberPayload,
@@ -363,18 +363,18 @@ export interface ApiAdapter {
     id: string,
     paymentDetails: PaymentDetails,
   ): Promise<ApiResponse<Registration>>;
-  /** E1.5: zawodnik (właściciel Zapisu) prosi o zwrot — nigdy nie wyzwala go sam. */
+  /** The Zawodnik (owner of the Zapis) asks for a refund — never triggers it on their own. */
   requestRefund(id: string, reason?: string): Promise<ApiResponse<Registration>>;
-  /** Organizator (własne Wydarzenie) lub admin zatwierdza żądanie — "do zwrotu". */
+  /** The organizer (own Wydarzenie) or an admin approves the request — "do zwrotu". */
   approveRefund(id: string, amount?: number): Promise<ApiResponse<Registration>>;
-  /** Wykonuje zwrot (trasa B: organizator ręcznie odznacza „zwrócono"). */
+  /** Completes the refund (route B: the organizer manually marks it "zwrócono"). */
   completeRefund(id: string): Promise<ApiResponse<Registration>>;
-  /** Jednoklikowe ponowienie płatności dla wygasłego Zapisu — otwiera nowe okno. */
+  /** One-click payment retry for an expired Zapis — opens a new payment window. */
   retryPayment(id: string): Promise<ApiResponse<Registration>>;
   /**
-   * E1.8: organizator (własne Wydarzenie) lub admin ręcznie potwierdza wpłatę
-   * przelewem tradycyjnym (trasa B) — jedyna droga oznaczenia trasy B jako
-   * opłaconej; serwer odrzuci wywołanie dla Zapisu na trasie A (bramka).
+   * The organizer (own Wydarzenie) or an admin manually confirms a payment
+   * made by traditional bank transfer (route B) — the only way to mark a route-B
+   * Zapis as paid; the server rejects the call for a route-A (gateway) Zapis.
    */
   markRegistrationPaid(id: string): Promise<ApiResponse<Registration>>;
 
@@ -385,11 +385,11 @@ export interface ApiAdapter {
   createResult(data: CreateResultPayload): Promise<ApiResponse<Result>>;
   updateResult(id: string, data: UpdateResultPayload): Promise<ApiResponse<Result>>;
   deleteResult(id: string): Promise<ApiResponse<void>>;
-  /** G-03: correction trail of one result, newest first. */
+  /** Correction trail of one result, newest first. */
   getResultCorrections(id: string): Promise<ApiResponse<ResultCorrection[]>>;
   getPersonalRecords(userId: string): Promise<ApiResponse<PersonalRecord[]>>;
   getTeamResults(eventId: string): Promise<ApiResponse<TeamResult[]>>;
-  /** E2.7: live-computed team/relay classification for one event+distance. */
+  /** Live-computed team/relay classification for one event+distance. */
   getTeamClassification(
     eventId: string,
     distanceId: string,
@@ -415,9 +415,9 @@ export interface ApiAdapter {
   ): Promise<ApiResponse<ResultImportBatch>>;
   commitResultImport(importId: string): Promise<ApiResponse<ResultImportBatch>>;
   /**
-   * E2.3 (spec 14 Answer §6): oznacza wszystkie wyniki danego Wydarzenia+Dystansu
-   * jako oficjalne (nieodwracalne z poziomu klienta - serwer nie udostepnia
-   * cofniecia). Korekty pojedynczych wynikow pozostaja mozliwe zawsze.
+   * Marks all results of the given Wydarzenie+Dystans as official (irreversible
+   * from the client — the server offers no way back). Corrections of single
+   * results always remain possible.
    */
   publishOfficialResults(
     eventId: string,
@@ -469,7 +469,7 @@ export interface ApiAdapter {
     challengeId?: string,
     userId?: string,
   ): Promise<ApiResponse<ChallengeParticipation[]>>;
-  /** R-06: `competitorId` = a ward under the caller's care (403 otherwise); omitted = own profile. */
+  /** `competitorId` = a ward under the caller's care (403 otherwise); omitted = own profile. */
   joinChallenge(
     challengeId: string,
     competitorId?: string,
@@ -481,7 +481,7 @@ export interface ApiAdapter {
     reason?: string,
   ): Promise<ApiResponse<ChallengeEntry>>;
   /**
-   * E6.5 (issue 15 §4-5): claims a completed Wyzwanie's reward Product,
+   * Claims a completed Wyzwanie's reward Product,
    * creating a real shop order through the existing checkout flow —
    * `deliveryMethod`/`paymentMethod` are required exactly like
    * `createOrder()` (a free reward still goes through the same order
@@ -495,11 +495,11 @@ export interface ApiAdapter {
     data: ClaimChallengeRewardPayload,
   ): Promise<ApiResponse<ChallengeParticipation>>;
   /**
-   * E6.6 (issue 15 §6): public, unauthenticated — descending points, ties
+   * Public, unauthenticated — descending points, ties
    * sharing a rank ("1,1,3"), anonymized competitors masked server-side.
    */
   getChallengeRanking(challengeId: string): Promise<ApiResponse<ChallengeRanking>>;
-  /** E6.6 (issue 15 §6): "Klasyfikacja Serii" — the union of a Series's linked Wyzwania's rankings. */
+  /** "Klasyfikacja Serii" — the union of a Series's linked Wyzwania's rankings. */
   getSeriesRanking(seriesId: string): Promise<ApiResponse<ChallengeRanking>>;
 
   // ── Messages ──
@@ -527,36 +527,36 @@ export interface ApiAdapter {
     lastName: string,
     birthDate?: string,
   ): Promise<ApiResponse<Competitor[]>>;
-  /** E1.12: rotacja kodu tożsamości — wywołujący musi być Zawodnikiem albo mieć nad nim Opiekę. */
+  /** Rotates the identity code — the caller must be the Zawodnik or have Opieka over them. */
   rotateIdentityCode(competitorId: string): Promise<ApiResponse<Competitor>>;
-  /** G-09 (spec 10): own profile or a Zawodnik under my Opieka; drives name masking in public rankings. */
+  /** Own profile or a Zawodnik under my Opieka; drives name masking in public rankings. */
   setCompetitorAnonymization(
     competitorId: string,
     isAnonymized: boolean,
   ): Promise<ApiResponse<Competitor>>;
 
-  // ── E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin) ──
-  /** Wyszukiwanie kandydatów do scalenia po imieniu/nazwisku/kodzie tożsamości. */
+  // ── Merging Zawodnik profiles (Moderator/Admin only) ──
+  /** Searches merge candidates by first name / last name / identity code. */
   searchCompetitorsForMerge(q: string): Promise<ApiResponse<Competitor[]>>;
-  /** Widok "obok siebie" dwóch profili, wraz z listą konfliktów Zapisów, przed wskazaniem profilu przeżywającego. */
+  /** Side-by-side view of two profiles with the list of Zapis conflicts, before the surviving profile is chosen. */
   getCompetitorMergeComparison(
     competitorIdA: string,
     competitorIdB: string,
   ): Promise<ApiResponse<CompetitorMergeComparison>>;
-  /** Wykonuje (albo wstrzymuje) scalenie — patrz CompetitorMergeResult.status. */
+  /** Performs (or holds back) the merge — see CompetitorMergeResult.status. */
   mergeCompetitors(payload: CompetitorMergePayload): Promise<ApiResponse<CompetitorMergeResult>>;
 
-  // ── R-08: zgłoszenia duplikatów Zawodnika ──
-  /** Opiekun / organizator zgłasza, że profil jest duplikatem innego (nic nie scala). */
+  // ── Duplicate reports of a Zawodnik ──
+  /** A guardian / organizer reports that a profile duplicates another (merges nothing). */
   reportCompetitorDuplicate(
     competitorId: string,
     payload: ReportCompetitorDuplicatePayload,
   ): Promise<ApiResponse<CompetitorDuplicateReport>>;
-  /** Kolejka zgłoszeń dla Moderatora/Admina; domyślnie tylko otwarte. */
+  /** Report queue for the Moderator/Admin; open reports only by default. */
   listCompetitorDuplicateReports(
     status?: CompetitorDuplicateReportStatus | 'all',
   ): Promise<ApiResponse<CompetitorDuplicateReport[]>>;
-  /** Moderator/Admin odrzuca otwarte zgłoszenie (opcjonalny powód). */
+  /** The Moderator/Admin rejects an open report (optional reason). */
   rejectCompetitorDuplicateReport(
     id: string,
     reason?: string,
@@ -568,30 +568,30 @@ export interface ApiAdapter {
     data: Partial<GlobalInsuranceSettings>,
   ): Promise<ApiResponse<GlobalInsuranceSettings>>;
 
-  // ── Challenge points settings (E6.2) ──
+  // ── Challenge points settings ──
   getChallengePointsSettings(): Promise<ApiResponse<ChallengePointsSettings>>;
   updateChallengePointsSettings(
     data: Partial<ChallengePointsSettings>,
   ): Promise<ApiResponse<ChallengePointsSettings>>;
 
   // ── Admin ──
-  // E0.8: global list — admin/superadmin only, enforced server-side.
+  // Global list — admin/superadmin only, enforced server-side.
   getActivityLogs(filters?: ActivityLogFilters): Promise<ApiResponse<AdminActivityLog[]>>;
-  // E0.8: event-owner-scoped slice — organizer sees only their own event's entries,
+  // Event-owner-scoped slice — organizer sees only their own event's entries,
   // authorized server-side via the existing single-owner check.
   getEventActivityLogs(
     eventId: string,
     filters?: EventActivityLogFilters,
   ): Promise<ApiResponse<AdminActivityLog[]>>;
-  // E2.5: automatic, no-opt-in answer-count aggregation for choice-type form fields
+  // Automatic, no-opt-in answer-count aggregation for choice-type form fields
   // (single_choice/multi_choice/consent) — organizer-scoped, same $canManageEvent gate.
   getFormFieldAggregates(eventId: string): Promise<ApiResponse<FormFieldAggregate[]>>;
-  // E1.13: configurable registration form ("Pozycje formularza"). The public list is
+  // Configurable registration form ("Pozycje formularza"). The public list is
   // unauthenticated (non-hidden positions only); the rest is organizer/staff-scoped.
-  // R-04: with a `distanceId` the public list is that distance's effective form.
+  // With a `distanceId` the public list is that distance's effective form.
   getPublicFormFields(eventId: string, distanceId?: string): Promise<ApiResponse<FormField[]>>;
   getFormFields(eventId: string): Promise<ApiResponse<FormField[]>>;
-  // R-04: per-distance form — effective list (event form + overrides + own fields), a distance-only
+  // Per-distance form — effective list (event form + overrides + own fields), a distance-only
   // field, copy-on-override of an inherited position and reset (inherit again).
   getDistanceFormFields(eventId: string, distanceId: string): Promise<ApiResponse<FormField[]>>;
   createDistanceFormField(
@@ -623,12 +623,12 @@ export interface ApiAdapter {
     value: FormFieldAnswerValue,
   ): Promise<ApiResponse<FormFieldAnswer>>;
   getFormFieldAnswers(registrationId: string): Promise<ApiResponse<FormFieldAnswer[]>>;
-  // E8.2: built-in cross-sections from the Zapis record itself (distance,
+  // Built-in cross-sections from the Zapis record itself (distance,
   // payment status, signup curve, plus gender/club/age-category when
   // configured) — complements getFormFieldAggregates above. Same
   // $canManageEvent gate.
   getRegistrationStats(eventId: string): Promise<ApiResponse<RegistrationStats>>;
-  // E2.6: organizer-facing start-list export (CSV/XLSX) for one Distance —
+  // Organizer-facing start-list export (CSV/XLSX) for one Distance —
   // triggers a real browser file download (fetch blob -> object URL -> anchor
   // click), unlike every other adapter method here which returns JSON data.
   // Same $canManageEvent gate as the rest of this group, server-side.
@@ -637,7 +637,7 @@ export interface ApiAdapter {
     distanceId: string,
     format: 'csv' | 'xlsx' | 'xml',
   ): Promise<void>;
-  // R-07: discount code batches (generator over the ordinary event discount codes).
+  // Discount code batches (generator over the ordinary event discount codes).
   // Same event-manager gate as the start-list export; the CSV is a real file download.
   createDiscountCodeBatch(
     eventId: string,
@@ -653,10 +653,10 @@ export interface ApiAdapter {
   updateSecuritySettings(data: Partial<SecuritySettings>): Promise<ApiResponse<SecuritySettings>>;
   getOnlineSessions(): Promise<ApiResponse<OnlineSession[]>>;
   getSalesStats(): Promise<ApiResponse<SalesStats>>;
-  // E8.3: minimal platform-admin cross-section — Events by publication_status,
+  // Minimal platform-admin cross-section — Events by publication_status,
   // Organizer count, active package-credit total. Admin-only (not moderator).
   getPlatformStats(): Promise<ApiResponse<PlatformStats>>;
-  // R-03 (spec 13, trasa A): admin-only settlement report (amounts in minor units) and its
+  // Admin-only settlement report (amounts in minor units) and its
   // CSV/XLSX download (same browser-download idiom as exportStartList).
   getSettlementReport(params: SettlementReportParams): Promise<ApiResponse<SettlementReport>>;
   exportSettlementReport(params: SettlementReportParams, format: 'csv' | 'xlsx'): Promise<void>;
@@ -689,7 +689,7 @@ export interface ApiAdapter {
     reason?: string,
   ): Promise<ApiResponse<VirtualResultSubmission>>;
 
-  // ── Mail templates & log (B-03) — eventId omitted/null = global (admin) scope ──
+  // ── Mail templates & log — eventId omitted/null = global (admin) scope ──
   getMailTemplates(eventId?: string | null): Promise<ApiResponse<MailTemplate[]>>;
   saveMailTemplate(
     mailType: string,

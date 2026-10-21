@@ -43,7 +43,7 @@ const participation = (id: string, challengeId: string, competitorId: string, na
   rewardGranted: false,
 });
 
-describe('ParticipantChallengesTab (R-06: challenges of wards)', () => {
+describe('ParticipantChallengesTab (challenges of wards)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetQueryClient();

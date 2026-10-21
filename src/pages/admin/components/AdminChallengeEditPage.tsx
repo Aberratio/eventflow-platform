@@ -74,8 +74,8 @@ export const AdminChallengeEditPage = () => {
     queryKey: [...QUERY_KEYS.products, 'staff'],
     queryFn: () => getProducts({ includeArchived: true }),
   });
-  // E6.1: the sub-challenge-threshold node picker may only offer Wyzwania
-  // that already exist/are saved (spec: "referencja idzie tylko w dół" — no
+  // The sub-challenge-threshold node picker may only offer Wyzwania
+  // that already exist/are saved (spec: "a reference only goes downwards" — no
   // cycle, and the referenced Wyzwanie's tree must already be on disk).
   const { data: challengesData } = useQuery({
     queryKey: [...QUERY_KEYS.challenges, 'staff', 'condition-tree-picker'],
@@ -129,7 +129,7 @@ export const AdminChallengeEditPage = () => {
     },
   });
 
-  // E6.4 (issue 15 §3): "Wydarzenie zewnętrzne" quick-create, right where an
+  // "Wydarzenie zewnętrzne" quick-create, right where an
   // event gets linked into a Wyzwanie — for a Korona half-marathon that never
   // ran on this platform, or a pre-platform completion, there is no real
   // Event to pick from `events` until one is created here.

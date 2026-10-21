@@ -34,7 +34,7 @@ describe('buildCsp', () => {
     expect(scriptSrc).not.toContain('unsafe-eval');
   });
 
-  it('fonts are self-hosted: style-src and font-src do not allow Google hosts (R-15)', () => {
+  it('fonts are self-hosted: style-src and font-src do not allow Google hosts', () => {
     const csp = buildCsp(baseOptions(), "'self'");
     expect(directive(csp, 'style-src')).toBe("style-src 'self' 'unsafe-inline'");
     expect(directive(csp, 'font-src')).toBe("font-src 'self'");

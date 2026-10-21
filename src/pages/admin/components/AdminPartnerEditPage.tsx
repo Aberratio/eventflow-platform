@@ -67,7 +67,7 @@ export const AdminPartnerEditPage = () => {
       })
       .catch((error) => {
         if (!cancelled)
-          toast.error(error instanceof Error ? error.message : 'Nie udalo sie pobrac partnera');
+          toast.error(error instanceof Error ? error.message : 'Nie udało się pobrać partnera');
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -130,14 +130,14 @@ export const AdminPartnerEditPage = () => {
 
       if (isEditing && id) {
         await updatePartner(id, payload);
-        toast.success(`Partner ${payload.name} zostal zaktualizowany`);
+        toast.success(`Partner ${payload.name} został zaktualizowany`);
       } else {
         await createPartner(payload);
-        toast.success(`Partner ${payload.name} zostal dodany`);
+        toast.success(`Partner ${payload.name} został dodany`);
       }
       navigate('/admin/partners');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zapisac partnera');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zapisać partnera');
     } finally {
       setIsSaving(false);
     }
@@ -218,7 +218,7 @@ export const AdminPartnerEditPage = () => {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="logoFile">Logo na jasne tlo *</Label>
+                <Label htmlFor="logoFile">Logo na jasne tło *</Label>
                 <Input
                   id="logoFile"
                   type="file"
@@ -233,7 +233,7 @@ export const AdminPartnerEditPage = () => {
                   <div className="flex h-24 w-full items-center justify-center rounded-lg border bg-muted">
                     <img
                       src={previewUrl}
-                      alt="Podglad logo na jasne tlo"
+                      alt="Podgląd logo na jasne tło"
                       className="max-h-20 max-w-full object-contain"
                     />
                   </div>
@@ -241,7 +241,7 @@ export const AdminPartnerEditPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="logoDarkFile">Logo na ciemne tlo</Label>
+                <Label htmlFor="logoDarkFile">Logo na ciemne tło</Label>
                 <Input
                   id="logoDarkFile"
                   type="file"
@@ -255,7 +255,7 @@ export const AdminPartnerEditPage = () => {
                   <div className="flex h-24 w-full items-center justify-center rounded-lg border bg-neutral-950">
                     <img
                       src={darkPreviewUrl}
-                      alt="Podglad logo na ciemne tlo"
+                      alt="Podgląd logo na ciemne tło"
                       className="max-h-20 max-w-full object-contain"
                     />
                   </div>
@@ -275,7 +275,7 @@ export const AdminPartnerEditPage = () => {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="featured">Wyswietlaj na stronie glownej</Label>
+              <Label htmlFor="featured">Wyświetlaj na stronie głównej</Label>
               <Switch
                 id="featured"
                 checked={formData.featured}

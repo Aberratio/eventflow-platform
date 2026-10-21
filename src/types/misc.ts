@@ -20,19 +20,19 @@ export interface Ticket {
   bibNumber: string;
   category: string;
   registrationId: string;
-  /** G-12 (server PR #38): status of the Zapis this ticket belongs to. */
+  /** Status of the Zapis this ticket belongs to. */
   registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
-  /** G-12: start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
+  /** Start code; the server returns it only for a `confirmed`/paid Zapis, otherwise null. */
   qrCode?: string | null;
   /**
-   * G-01 (spec 11 pkt 4): status Zapisu stojącego za biletem — QR kodu startowego
-   * jest pokazywany tylko dla `confirmed` (opłacony/potwierdzony).
+   * Status of the Zapis behind the ticket — the start code QR
+   * is shown only for `confirmed` (paid/confirmed).
    */
   registrationStatus?: 'pending' | 'confirmed' | 'cancelled' | 'removed' | 'expired';
-  /** B-04: kod startowy `pqr_…` Zapisu (z Registration.qrCode); QR = sam ten token. */
+  /** Start code `pqr_…` of the Zapis (from Registration.qrCode); the QR is this token alone. */
   qrCode?: string | null;
   /**
-   * E3.6 (issue 12 §4): the Odprawa fact reported back by Biuro Zawodów —
+   * The Odprawa fact reported back by Biuro Zawodów —
    * set once BZ confirms check-in, undefined/null beforehand. `checkedInBy`
    * is BZ's own opaque identifier/name for whoever confirmed it.
    */

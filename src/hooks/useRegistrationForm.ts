@@ -35,14 +35,13 @@ import {
 const currentYear = new Date().getFullYear();
 
 /**
- * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
- * the resolved target of a `?joinTeam={teamId}&invite={token}` invitation link — already
+ * * the resolved target of a `?joinTeam={teamId}&invite={token}` invitation link — already
  * validated (exists, belongs to this event, not full) by the caller
  * (`EventRegistrationPage`, via `getTeamById`) before this hook ever sees
  * it. Applying it here only pre-fills the form's own state (distance +
  * "join this team"); the actual join is still fully re-validated by the
  * server at submit time (RegistrationRepository::resolveTeamForRegistration).
- * PP.54: `inviteToken` is the captain's secret from the link; the server
+ * `inviteToken` is the captain's secret from the link; the server
  * refuses to let anyone join someone else's team without it, so it is sent
  * as `teamInviteToken` whenever this invited team is the one being joined.
  */
@@ -53,7 +52,7 @@ export interface InitialTeamJoin {
 }
 
 /**
- * PP.44: the Zawodnik under the caller's Opieka being registered ("Zapisuję kogoś innego").
+ * The Zawodnik under the caller's Opieka being registered ("Zapisuję kogoś innego").
  * When given, the personal-data step is filled from THIS person, never from the logged-in Konto.
  */
 export interface RegistrationParticipant {
@@ -99,12 +98,12 @@ export const useRegistrationForm = (
   const [teamName, setTeamName] = useState('');
   const [selectedExistingTeam, setSelectedExistingTeam] = useState('');
   const [teamNameError, setTeamNameError] = useState('');
-  // E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+  // The captain's manually declared Kategoria
   // specjalna for a brand-new Drużyna — only sent to the server together
   // with `createTeam`, never re-derived from the roster.
   const [teamSpecialCategory, setTeamSpecialCategory] = useState('');
 
-  // Wariant opłaty (E1.2, step 1-2 of the "Rozliczenie" algorithm)
+  // Wariant opłaty
   const [selectedPricingVariantId, setSelectedPricingVariantId] = useState<string>('');
 
   // NNW (insurance) — id of the selected catalog InsuranceVariant, '' = none
@@ -118,7 +117,7 @@ export const useRegistrationForm = (
   }, [ward, user]);
 
   useEffect(() => {
-    // E7.2: an invitation link already dictates the distance — don't let the
+    // An invitation link already dictates the distance — don't let the
     // "only one distance available" convenience auto-select fight it.
     if (initialTeamJoin) return;
     const availableDistances = event.distances.filter(
@@ -130,7 +129,7 @@ export const useRegistrationForm = (
     }
   }, [event.distances, selectedDistanceId, initialTeamJoin]);
 
-  // E7.2: apply the invitation link's target exactly once — after this, the
+  // Apply the invitation link's target exactly once — after this, the
   // invitee can still freely change distance/team mode like anyone else
   // (this only sets the initial defaults, it never re-forces them).
   const appliedInitialTeamJoinRef = useRef(false);
@@ -181,8 +180,8 @@ export const useRegistrationForm = (
     event.merchandise.length > 0;
 
   // Warianty opłaty visible on the public form for the selected distance
-  // (office-only variants are for in-person race-office sign-up only — E0.3
-  // resolution #13). Empty = distance was never migrated to Warianty; the
+  // (office-only variants are for in-person race-office sign-up only).
+  // Empty = distance was never migrated to Warianty; the
   // legacy distance.price/priceTiers pricing applies instead.
   const pricingVariants = useMemo(
     () =>
@@ -209,7 +208,7 @@ export const useRegistrationForm = (
     [pricingVariants, selectedPricingVariantId],
   );
 
-  // Catalog NNW variants offered by this event (E1.2, resolution #9). Empty
+  // Catalog NNW variants offered by this event. Empty
   // means no insurance step at all.
   const insuranceVariants = useMemo(
     () => ((formCfg?.collectInsurance ?? true) ? (event.insuranceVariants ?? []) : []),
@@ -254,18 +253,18 @@ export const useRegistrationForm = (
           ? `do ${selectedDistance.relayMaxTeamSize} os.`
           : '';
 
-  // E1.13: the organizer-configured form. The public route lists every non-hidden position
+  // The organizer-configured form. The public route lists every non-hidden position
   // in the order the organizer set; this form renders the custom ones. A failed load simply
   // leaves the fixed fields (the registration must not depend on this optional list).
   const { data: publicFormFields } = useQuery({
-    // R-04: the form of the chosen distance (event form + its overrides + its own fields).
+    // The form of the chosen distance (event form + its overrides + its own fields).
     queryKey: ['form-fields', 'public', event.id, selectedDistanceId],
     queryFn: () => getPublicFormFields(event.id, selectedDistanceId || undefined),
     select: (r) => r.data ?? [],
     retry: false,
   });
   const customFormFields = useMemo(() => visibleCustomFields(publicFormFields), [publicFormFields]);
-  // B-07: identity system positions (phone, club, ..., anonymization) by their tri-state.
+  // Identity system positions (phone, club, ..., anonymization) by their tri-state.
   const identityFormFields = useMemo(
     () => visibleIdentityFields(publicFormFields),
     [publicFormFields],
@@ -274,7 +273,7 @@ export const useRegistrationForm = (
   const [formFieldAnswers, setFormFieldAnswers] = useState<Record<string, FormFieldAnswerValue>>(
     {},
   );
-  // B-07: messages from a 422 `registration_form_invalid`, by form-field id; cleared per field on edit.
+  // Messages from a 422 `registration_form_invalid`, by form-field id; cleared per field on edit.
   const [serverFieldErrors, setServerFieldErrors] = useState<Record<string, string>>({});
   const setFormFieldAnswer = (fieldId: string, value: FormFieldAnswerValue) => {
     setFormFieldAnswers((prev) => ({ ...prev, [fieldId]: value }));
@@ -292,7 +291,7 @@ export const useRegistrationForm = (
   const { data: eventRegsData } = useQuery({
     queryKey: ['registrations', 'event', event.id],
     queryFn: () => getRegistrationsByEvent(event.id),
-    // E7.1: only the legacy, non-relay `collectTeam` classification path
+    // Only the legacy, non-relay `collectTeam` classification path
     // still needs this (grouping registrations by their free-text
     // `teamName`) — a relay Dystans reads real Drużyny from
     // `getTeamsForDistance` below instead.
@@ -300,7 +299,7 @@ export const useRegistrationForm = (
     select: (r) => r.data ?? [],
   });
 
-  // E7.1 (issue 23 Answer §1): for a relay Dystans, "which teams can I
+  // For a relay Dystans, "which teams can I
   // join" is now a server-validated read (real `teams` rows + derived
   // completeness) rather than the client grouping registrations by a raw
   // text label — the server is the actual source of truth once
@@ -318,7 +317,7 @@ export const useRegistrationForm = (
     memberCount: number;
   }> => {
     if (isRelayDistance) {
-      // PP.54: the server only lets a Zapis into a team through the captain's invitation, or the
+      // The server only lets a Zapis into a team through the captain's invitation, or the
       // captain themself — so the picker offers only the user's own teams plus the invited team.
       const invitedTeamId = initialTeamJoin?.teamId;
       return (relayTeamsData ?? [])
@@ -367,7 +366,7 @@ export const useRegistrationForm = (
     }
   }, [formCfg?.collectTeam, isRelayDistance]);
 
-  // E7.2: whether the relevant "which teams exist" query has actually
+  // Whether the relevant "which teams exist" query has actually
   // resolved at least once — guards the clearing effect below so a
   // selection made before that first response lands (in particular, the
   // invitation-link pre-selection above, which sets a team id before its
@@ -395,8 +394,8 @@ export const useRegistrationForm = (
     birthYear && birthMonth && birthDay ? `${birthYear}-${birthMonth}-${birthDay}` : undefined;
 
   /**
-   * PREVIEW ONLY. NNW premium (step 6): age computed as of the EVENT date
-   * (E1.2 resolution #9), not today and not the registration date. The
+   * PREVIEW ONLY. NNW premium: age computed as of the EVENT date
+   * - not today and not the registration date. The
    * server recomputes and freezes the real amount.
    */
   const insurancePrice = useMemo(() => {
@@ -427,7 +426,7 @@ export const useRegistrationForm = (
     return total;
   }, [merchandiseOrders]);
 
-  /** Step 3: discount code bites only the result of step 2, result >= 0. */
+  /** Discount code bites only the result of step 2, result >= 0. */
   const discountAmount = useMemo(() => {
     if (!appliedDiscount) return 0;
     if (appliedDiscount.type === 'percent')
@@ -478,7 +477,7 @@ export const useRegistrationForm = (
     }
   }, [teamName, wantsTeam, teamMode]);
 
-  // E7.5: a stale selection could otherwise survive a mode/distance switch
+  // A stale selection could otherwise survive a mode/distance switch
   // and get silently resubmitted against a different Dystans's (different)
   // configured list — clear it whenever it's no longer the "create a team"
   // path, or the distance (and therefore the configured list) changes.
@@ -495,7 +494,7 @@ export const useRegistrationForm = (
   const getFinalTeamName = (): string | undefined => {
     if (!wantsTeam) return undefined;
     if (teamMode === 'create') return teamName.trim() || undefined;
-    // E7.1: for a relay Dystans `selectedExistingTeam` now holds the real
+    // For a relay Dystans `selectedExistingTeam` now holds the real
     // team id (see existingTeams above), not its label — resolve the label
     // back out for display purposes. The server ignores this field anyway
     // once `teamId` is set (RegistrationRepository::resolveTeamForRegistration
@@ -507,7 +506,7 @@ export const useRegistrationForm = (
   };
 
   /**
-   * E7.1: the real server-assigned team id to join — only meaningful for a
+   * The real server-assigned team id to join — only meaningful for a
    * relay Dystans, where `existingTeams` is backed by real `teams` rows
    * (see `getTeamsForDistance` above). The unrelated, non-relay
    * `collectTeam` classification path never sends a `teamId` — it keeps
@@ -519,7 +518,7 @@ export const useRegistrationForm = (
   };
 
   /**
-   * E7.1: explicit "create a new Drużyna" intent, sent to the server only
+   * Explicit "create a new Drużyna" intent, sent to the server only
    * for a relay Dystans — see `CreateRegistrationPayload.createTeam`'s own
    * docblock for why this flag (not just a non-empty `teamName`) is what
    * the server keys team creation off of.
@@ -625,7 +624,7 @@ export const useRegistrationForm = (
   };
 
   /**
-   * B-07: puts the server's per-field messages next to their fields and returns the user to the
+   * Puts the server's per-field messages next to their fields and returns the user to the
    * step that holds the first offending field. Returns the entries that match no field.
    */
   const applyServerFieldErrors = (errors: RegistrationFormFieldError[]) => {
@@ -646,7 +645,7 @@ export const useRegistrationForm = (
 
   /**
    * The form as filled in so far, as `RegistrationData`. Unlike `buildSubmitData` it does not need the
-   * terms to be accepted, so the summary can ask the server for a price (B-02) before the final tick.
+   * terms to be accepted, so the summary can ask the server for a price before the final tick.
    */
   const buildRegistrationData = (): RegistrationData | null => {
     if (!selectedDistance) return null;
@@ -749,7 +748,7 @@ export const useRegistrationForm = (
     hasMerchandise,
     hasInsurance,
     hasTeamOption,
-    // E7.2: true whenever this render was reached via a `?joinTeam=`
+    // True whenever this render was reached via a `?joinTeam=`
     // invitation link — used purely for the "you're joining via invite
     // link" banner text, never to change validation (the join is still
     // fully server-validated at submit time regardless of this flag).

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@/test/test-utils';
 import { EventSelfServiceSection } from '../EventSelfServiceSection';
 
-describe('EventSelfServiceSection (R-02)', () => {
+describe('EventSelfServiceSection', () => {
   it('toggles self-service and hides the date fields when switched off', () => {
     const onEnabledChange = vi.fn();
     const { rerender } = render(

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActivityLogsSection } from '../ActivityLogsSection';
 import type { AdminActivityLog } from '@/types';
 
-// Regression test for TD.3: `queryFn: getActivityLogs` used to pass react-query's
+// Regression test: `queryFn: getActivityLogs` used to pass react-query's
 // QueryFunctionContext straight through as the (unused) filters argument at
 // runtime, and the resulting `unknown`-typed response would throw on the
 // following `.filter` calls, crashing this panel. The fix wraps it as

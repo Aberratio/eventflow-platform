@@ -9,8 +9,8 @@ function mockJsonResponse(payload: unknown, status = 200): Response {
   } as unknown as Response;
 }
 
-/** G-04 (spec 23 §2): the contract for the relay member swap and the roster the captain picks from. */
-describe('httpAdapter team member swap (G-04)', () => {
+/** The contract for the relay member swap and the roster the captain picks from. */
+describe('httpAdapter team member swap', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

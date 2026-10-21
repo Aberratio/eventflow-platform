@@ -3,7 +3,7 @@ import { render, waitFor, resetQueryClient } from '@/test/test-utils';
 import EventRegistrationPage from '../EventRegistrationPage';
 
 /**
- * TD.22: react-hooks/exhaustive-deps flagged the unauthenticated-redirect
+ * React-hooks/exhaustive-deps flagged the unauthenticated-redirect
  * `useEffect` in EventRegistrationPage for a missing `slug` dependency. The
  * effect builds `returnTo: /events/${slug}/register` for the post-login
  * redirect — if `slug` isn't a dependency, a stale closure could carry an
@@ -80,7 +80,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('EventRegistrationPage login redirect — TD.22 slug dependency', () => {
+describe('EventRegistrationPage login redirect — slug dependency', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
     currentSlug = 'event-a';

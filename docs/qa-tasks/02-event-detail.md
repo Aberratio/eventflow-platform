@@ -1,4 +1,4 @@
-# 02 event-detail (Sonnet, P1)
+# 02 event-detail (P1)
 **Cel:** strona szczegółów wydarzenia działa dla wydarzeń przyszłych, przeszłych i różnych statusów zapisów.
 **Plik:** `e2e-dev/functional/event-detail.spec.ts`.
 **Kontekst:** trasy `/events/:slug`, `/events/:slug/:tab` (`src/App.tsx`); komponent: grep w `src/pages` ("EventDetail"). API: `GET /events/slug/{slug}`, `/events/{id}/results`, `/events/{id}/result-documents`, `/events/{eventId}/start-list`.

@@ -36,7 +36,7 @@ function initials(firstName: string, lastName: string): string {
   return `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase();
 }
 
-/** E1.12: jedna "tożsamość" (własny profil albo Zawodnik pod opieką) w przełączniku kodów. */
+/** One "identity" (own profile or a Zawodnik under care) in the code switcher. */
 interface IdentityOption {
   competitorId: string;
   label: string;
@@ -44,12 +44,12 @@ interface IdentityOption {
 }
 
 /**
- * E1.12 ("Kod tożsamości QR na Zawodniku"): duży kod QR + surowy token + przycisk
- * "wygeneruj nowy", identyczny wzorzec renderowania QR co RegistrationListRow z
- * E1.11 (qrcode.react, sam token jako czysty tekst — bez URL-a/danych osobowych,
- * spec 11 pkt 5). Osobny komponent, bo ten sam widok obsługuje i "mój" kod,
- * i kod każdego Zawodnika pod Opieką (spec 11 §5.1 — mama przełącza między
- * swoim kodem, kodem Zosi i Antka).
+ * Large QR code + raw token + a
+ * "generate new" button, the same QR rendering pattern as RegistrationListRow
+ * (qrcode.react, the token alone as plain text — no URL or personal data).
+ * A separate component because the same view handles both "my" code
+ * and the code of every Zawodnik under Opieka (a mother switches between
+ * her own code and her children's codes).
  */
 function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
   const queryClient = useQueryClient();
@@ -128,7 +128,7 @@ function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
   );
 }
 
-/** G-09 (spec 10): jedna osoba w przełączniku anonimizacji. */
+/** One person in the anonymization switcher. */
 interface AnonymizationOption {
   competitorId: string;
   label: string;
@@ -136,8 +136,8 @@ interface AnonymizationOption {
 }
 
 /**
- * G-09: „Anonimizuj moje dane w rankingach" — POST /competitors/{id}/anonymization dla własnego
- * profilu i każdego Zawodnika pod Opieką. Serwer maskuje imię i nazwisko w publicznych rankingach.
+ * "Anonimizuj moje dane w rankingach" — POST /competitors/{id}/anonymization for the own
+ * profile and every Zawodnik under Opieka. The server masks the first and last name in public rankings.
  */
 function AnonymizationCard({ options }: { options: AnonymizationOption[] }) {
   const queryClient = useQueryClient();
@@ -270,8 +270,8 @@ const ParticipantAuthorizationsTab = () => {
   const myCompetitors: MyCompetitor[] = data?.myCompetitors ?? [];
   const caregivers: Caregiver[] = data?.caregivers ?? [];
 
-  // E1.12: przełącznik kodów tożsamości — "Ja" (własny profil Zawodnika, jeśli
-  // istnieje) plus każdy Zawodnik pod moją opieką, w kolejności jak w liście niżej.
+  // Identity code switcher — "Ja" (own Zawodnik profile, if
+  // it exists) plus every Zawodnik under my care, in the same order as the list below.
   const identityOptions = [
     ...(data?.myProfile
       ? [
@@ -308,7 +308,7 @@ const ParticipantAuthorizationsTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Dodaj Zawodnika (np. dziecko) pod moją opiekę */}
+      {/* Add a Zawodnik (e.g. a child) under my care */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -378,7 +378,7 @@ const ParticipantAuthorizationsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Upoważnij istniejące konto do zapisywania mnie */}
+      {/* Authorize an existing account to register me */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -422,13 +422,13 @@ const ParticipantAuthorizationsTab = () => {
         </div>
       ) : (
         <>
-          {/* E1.12: kod tożsamości QR — mój i każdego Zawodnika pod opieką, z przełącznikiem */}
+          {/* Identity QR code — mine and of every Zawodnik under care, with a switcher */}
           <IdentityCodeCard options={identityOptions} />
 
-          {/* G-09: przełącznik anonimizacji */}
+          {/* Anonymization switcher */}
           <AnonymizationCard options={anonymizationOptions} />
 
-          {/* Zawodnicy pod moją opieką */}
+          {/* Zawodnicy under my care */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -495,7 +495,7 @@ const ParticipantAuthorizationsTab = () => {
             </CardContent>
           </Card>
 
-          {/* Konta, które mają opiekę nade mną */}
+          {/* Accounts that have care of me */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">

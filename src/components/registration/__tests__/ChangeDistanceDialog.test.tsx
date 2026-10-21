@@ -69,7 +69,7 @@ const renderDialog = (props: { isManager?: boolean; onChanged?: () => void } = {
 const pick = (distanceId: string) =>
   fireEvent.change(screen.getByLabelText('Nowy dystans'), { target: { value: distanceId } });
 
-describe('ChangeDistanceDialog (R-02)', () => {
+describe('ChangeDistanceDialog', () => {
   beforeEach(() => {
     api.quoteDistanceChange.mockReset();
     api.changeRegistrationDistance.mockReset();

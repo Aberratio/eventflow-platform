@@ -1,5 +1,5 @@
 /**
- * PP.9: pure generator for the build-time `dist/.htaccess`.
+ * Pure generator for the build-time `dist/.htaccess`.
  *
  * No Node or Vite imports here — only the global `URL` — so this module can
  * be unit-tested with plain vitest and reasoned about without a build
@@ -177,7 +177,7 @@ export function buildHtaccess(o: HtaccessOptions): string {
 
   const apiOrigin = originOf(o.apiUrl);
 
-  return `# GENERATED at build time by build/securityHeadersPlugin.ts (PP.9) -- do not edit on the server.
+  return `# GENERATED at build time by build/securityHeadersPlugin.ts -- do not edit on the server.
 # mode=${o.mode} api=${apiOrigin}
 DirectoryIndex index.html
 
@@ -192,7 +192,7 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
-  # E8.11 embed routes: same app shell, but frameable by third-party sites.
+  # Embed routes: same app shell, but frameable by third-party sites.
   RewriteRule ^embed/ embed.html [L]
   RewriteRule ^events/[^/]+/embed/?$ embed.html [L]
   RewriteRule ^ index.html [L]

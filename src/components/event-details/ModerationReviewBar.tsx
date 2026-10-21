@@ -19,7 +19,7 @@ const statusMessages: Partial<Record<Event['publicationStatus'], string>> = {
 };
 
 /**
- * Yellow moderation-context bar (E1.1, §4.4.15) shown to Moderator/Admin when
+ * Yellow moderation-context bar shown to Moderator/Admin when
  * previewing a non-public-yet state (draft/submitted/rejected). Carries the
  * approve/reject actions when the event is submitted, otherwise is purely
  * informational.
@@ -58,7 +58,7 @@ export const ModerationReviewBar = ({ event }: ModerationReviewBarProps) => {
 
   const handleReject = () => {
     setRejectReasonPrompted(true);
-    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    const reason = window.prompt('Podaj powód odesłania wydarzenia do poprawy:');
     if (!reason?.trim()) {
       setRejectReasonPrompted(false);
       return;

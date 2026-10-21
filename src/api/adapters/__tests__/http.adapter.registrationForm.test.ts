@@ -26,7 +26,7 @@ const base = {
   category: 'Open',
 };
 
-describe('httpAdapter createRegistration with the registration form (B-07)', () => {
+describe('httpAdapter createRegistration with the registration form', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());
@@ -120,7 +120,7 @@ describe('httpAdapter createRegistration with the registration form (B-07)', () 
   });
 });
 
-describe('httpAdapter createRegistration closed and test-mode outcomes (B-01, G-08)', () => {
+describe('httpAdapter createRegistration closed and test-mode outcomes', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());
@@ -169,7 +169,7 @@ describe('httpAdapter createRegistration closed and test-mode outcomes (B-01, G-
   });
 });
 
-describe('httpAdapter quoteRegistration (B-02)', () => {
+describe('httpAdapter quoteRegistration', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

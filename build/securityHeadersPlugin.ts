@@ -4,7 +4,7 @@ import type { Plugin } from 'vite';
 import { buildHtaccess, type HtaccessOptions } from './securityHeaders';
 
 /**
- * PP.9: writes the generated `dist/.htaccess` and a byte-identical
+ * Writes the generated `dist/.htaccess` and a byte-identical
  * `dist/embed.html` copy of `index.html` after Vite has finished writing the
  * bundle. Build-only: this plugin does nothing in dev server mode.
  */

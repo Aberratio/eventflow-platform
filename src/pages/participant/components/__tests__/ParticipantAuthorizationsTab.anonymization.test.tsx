@@ -40,8 +40,8 @@ const careResponse: CareResponse = {
   caregivers: [],
 };
 
-// G-09 (spec 10): self-service anonymization toggle for the own profile and for wards.
-describe('ParticipantAuthorizationsTab anonymization (G-09)', () => {
+// Self-service anonymization toggle for the own profile and for wards.
+describe('ParticipantAuthorizationsTab anonymization', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCare.mockResolvedValue({ data: careResponse });

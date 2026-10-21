@@ -26,7 +26,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('FormFieldAggregatesCard (E2.5)', () => {
+describe('FormFieldAggregatesCard', () => {
   it('renders the counts it is given for a single_choice field, including the zero-count option', async () => {
     getFormFieldAggregates.mockResolvedValue({ success: true, data: [tshirtAggregate] });
 

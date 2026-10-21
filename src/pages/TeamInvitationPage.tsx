@@ -8,21 +8,14 @@ import { AuthPageShell } from '@/components/ui/auth-page-shell';
 import { useAuth } from '@/contexts/AuthContext';
 import { acceptTeamInvitation, getTeamInvitation } from '@/api';
 import { ApiRequestError, apiErrorCode } from '@/api/errors';
-
-/** What the Account sees when the invitation cannot be accepted, by the server's error code. */
-const refusalMessages: Record<string, string> = {
-  invitation_not_found: 'To zaproszenie nie istnieje albo zostało odwołane.',
-  invitation_expired: 'To zaproszenie wygasło. Poproś organizatora o nowe.',
-  invitation_email_mismatch:
-    'To zaproszenie wysłano na inny adres e-mail. Zaloguj się na właściwe konto.',
-};
+import { TEAM_INVITATION_ERROR_MESSAGES } from '@/lib/eventTeam';
 
 const refusalMessage = (error: unknown): string =>
-  (error instanceof ApiRequestError && error.code && refusalMessages[error.code]) ||
+  (error instanceof ApiRequestError && error.code && TEAM_INVITATION_ERROR_MESSAGES[error.code]) ||
   (error instanceof Error ? error.message : 'Nie udało się przetworzyć zaproszenia.');
 
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): lands here from the e-mail invitation
+ * Lands here from the e-mail invitation
  * (`/team-invitations/{token}`). The preview is public; accepting needs the Account the invitation was
  * addressed to, so a signed-out visitor is sent to the login and brought back.
  */

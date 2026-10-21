@@ -4,8 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChallengeRankingCard } from '../ChallengeRankingCard';
 import type { ChallengeRanking } from '@/types';
 
-// E6.6 (issue 15 §6, "Ranking: publiczny, z respektowaniem anonimizacji"):
-// the ranking table renders exactly what the server sends — rank/name/points
+// The ranking table renders exactly what the server sends — rank/name/points
 // — and never re-derives or reveals a name for a row the server already
 // masked (CompetitorNamePresenter runs server-side; this component has no
 // access to a real name for an anonymized row at all).
@@ -32,7 +31,7 @@ const renderCard = (ranking: ChallengeRanking) => {
   );
 };
 
-describe('ChallengeRankingCard (E6.6)', () => {
+describe('ChallengeRankingCard', () => {
   it('renders rank, name and points for a point-based ranking, including a masked row', async () => {
     renderCard({
       hasPoints: true,

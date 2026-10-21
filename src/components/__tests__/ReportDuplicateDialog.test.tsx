@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReportDuplicateDialog } from '../ReportDuplicateDialog';
 
-// R-08: dialog zgłoszenia duplikatu - kandydaci z /competitors/duplicates, wysyłka zgłoszenia.
+// Duplicate report dialog - candidates from /competitors/duplicates, report submission.
 
 const { mockCheck, mockReport } = vi.hoisted(() => ({ mockCheck: vi.fn(), mockReport: vi.fn() }));
 

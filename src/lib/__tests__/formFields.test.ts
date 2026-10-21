@@ -84,7 +84,7 @@ describe('form field helpers', () => {
 const sys = (key: string, state: FormField['state'], id = `s-${key}`): FormField =>
   f({ id, kind: 'system', fieldKey: key, state, fieldType: null, labelOverride: null });
 
-describe('identity section by tri-state (B-07)', () => {
+describe('identity section by tri-state', () => {
   const fields = [
     sys('phone', 'required'),
     sys('club', 'shown'),
@@ -130,7 +130,7 @@ describe('identity section by tri-state (B-07)', () => {
   });
 });
 
-describe('server field errors (B-07)', () => {
+describe('server field errors', () => {
   const fields = [sys('phone', 'required'), f({ id: 'c1', fieldKey: 'custom_size' })];
 
   it('maps by fieldId, falls back to fieldKey and reports the rest', () => {

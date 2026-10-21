@@ -1,4 +1,4 @@
-# 16 a11y-axe, część publiczna (Sonnet, P1)
+# 16 a11y-axe, część publiczna (P1)
 **Cel:** automatyczny audyt WCAG 2.2 AA (axe) tras publicznych i ich stanów. Panele zalogowanych dojdą po deployu (osobny brief).
 **Plik:** `e2e-dev/a11y/axe-public.spec.ts`.
 **Kontekst:** `scanA11y` z `e2e-dev/support/axe.ts`. Dark mode: `next-themes`; sprawdź w `src`, jak przełączyć (klasa `dark`, localStorage `theme` albo `page.emulateMedia({colorScheme:'dark'})`).

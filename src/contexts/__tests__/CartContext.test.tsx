@@ -4,7 +4,7 @@ import React from 'react';
 import { CartProvider, useCart } from '@/contexts/CartContext';
 import type { CartItem } from '@/types';
 
-// Cart items now persist to localStorage (E5.2), so every test must start
+// Cart items now persist to localStorage, so every test must start
 // from a clean store or state leaks between tests.
 beforeEach(() => {
   localStorage.clear();
@@ -105,7 +105,7 @@ describe('CartContext', () => {
   });
 });
 
-// E5.2: the cart must survive a page reload, so items are persisted to
+// The cart must survive a page reload, so items are persisted to
 // localStorage and rehydrated on mount — guarded so a disabled/corrupt store
 // never crashes the provider.
 describe('CartContext localStorage persistence', () => {

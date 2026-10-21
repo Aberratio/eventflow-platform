@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { httpAdapter } from '../http.adapter';
 
-// R-02: POST /registrations/{id}/distance-change[/quote]
-describe('httpAdapter distance change (R-02)', () => {
+// POST /registrations/{id}/distance-change[/quote]
+describe('httpAdapter distance change', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

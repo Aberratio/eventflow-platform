@@ -42,7 +42,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // R-02 (zakres P2): the owner cancels their own Zapis inside the organizer's window.
+  // The owner cancels their own Zapis inside the organizer's window.
   const handleConfirmCancel = async () => {
     if (!cancelTarget) return;
     setCancelPending(true);
@@ -74,7 +74,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
       await requestRefund(registration.id);
       toast({
         title: 'Wysłano prośbę o zwrot',
-        description: 'Organizator lub administrator rozpatrzy Twoją prośbę.',
+        description: 'Organizator lub administrator rozpatrzy Twóją prośbę.',
       });
       queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
     } catch {
@@ -85,7 +85,7 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
       });
     }
   };
-  // B-05: same button as in the unpaid banner — reopens the payment window / sends to the gateway.
+  // Same button as in the unpaid banner — reopens the payment window / sends to the gateway.
   const handleRetryPayment = async (registration: Registration) => {
     try {
       const { redirected } = await retryRegistrationPayment(registration.id);

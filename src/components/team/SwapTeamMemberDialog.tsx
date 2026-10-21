@@ -40,7 +40,7 @@ interface SwapTeamMemberDialogProps {
 }
 
 /**
- * G-04 (spec 23 §2): swap the person on a relay member's Zapis. The price, the bib number and the
+ * Swap the person on a relay member's Zapis. The price, the bib number and the
  * status stay with the Zapis; the start code is rotated by the server. Used by the captain (team
  * roster) and by the organizer (participants list).
  */

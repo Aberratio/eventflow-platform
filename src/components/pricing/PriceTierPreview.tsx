@@ -1,5 +1,6 @@
 import { applyDiscount, isTierExpired } from '@/api';
 import { Badge } from '@/components/ui/badge';
+import { formatMoney } from '@/lib/format';
 import type { PriceTier } from '@/types';
 import { Calendar, Users } from 'lucide-react';
 
@@ -10,12 +11,6 @@ interface PriceTierPreviewProps {
   className?: string;
 }
 
-// TD.21: intentionally NOT `formatMoney` from '@/lib/format' — this preview
-// strips trailing ".00" (e.g. "50 zł" instead of "50,00 zł"), a genuinely
-// different display rule from the rest of the app, kept as-is. Only the
-// unit suffix is unified here to match the app-wide "zł" standard.
-const formatPrice = (price: number) => `${price.toFixed(2).replace(/\.00$/, '')} zł`;
-
 const getTierPrice = (basePrice: number, tier: PriceTier) =>
   tier.price != null
     ? Number(tier.price)
@@ -25,7 +20,7 @@ const getTierPrice = (basePrice: number, tier: PriceTier) =>
  * Shows the configured tiers in their evaluation order — the same order the
  * server walks in RegistrationRepository::currentDistancePrice — rather than
  * re-sorting by a single field, since a tier can carry both an end date and
- * a participant limit at once (E0.3).
+ * a participant limit at once.
  */
 export const PriceTierPreview = ({
   basePrice,
@@ -37,7 +32,7 @@ export const PriceTierPreview = ({
     return (
       <div className={className}>
         <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
-          Brak progow: obowiazuje cena bazowa {formatPrice(basePrice)}.
+          Brak progów: obowiązuje cena bazowa {formatMoney(basePrice)}.
         </div>
       </div>
     );
@@ -73,7 +68,7 @@ export const PriceTierPreview = ({
             >
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">
-                  {tier.name || `Prog ${index + 1}`}
+                  {tier.name || `Próg ${index + 1}`}
                 </div>
                 <div className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
                   {tier.endDate && <span>do {tier.endDate}</span>}
@@ -83,13 +78,13 @@ export const PriceTierPreview = ({
                   {expired && <span className="text-destructive/80">wygasł</span>}
                 </div>
               </div>
-              <div className="text-sm font-semibold">{formatPrice(price)}</div>
+              <div className="text-sm font-semibold">{formatMoney(price)}</div>
             </div>
           );
         })}
         <div className="grid gap-2 rounded-md border border-dashed bg-muted/20 p-3 sm:grid-cols-[1fr_auto]">
           <div className="text-xs text-muted-foreground">Po ostatnim (nie)wygasłym progu</div>
-          <div className="text-sm font-semibold">{formatPrice(basePrice)}</div>
+          <div className="text-sm font-semibold">{formatMoney(basePrice)}</div>
         </div>
       </div>
     </div>

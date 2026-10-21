@@ -140,7 +140,7 @@ describe('useEventFormState event wizard validation', () => {
 
     expect(createEvent).not.toHaveBeenCalled();
     expect(result.current.sectionValidationErrors.gadgets).toEqual(
-      expect.arrayContaining([expect.stringContaining('Cena gadzetu')]),
+      expect.arrayContaining([expect.stringContaining('Cena gadżetu')]),
     );
   });
 
@@ -256,7 +256,7 @@ describe('useEventFormState event wizard validation', () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
     await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
 
-    // E1.4: bramka domyślnie 45 minut, przelew domyślnie 3 dni — zanim organizator
+    // Gateway defaults to 45 minutes, bank transfer to 3 days — before the organizer
     // cokolwiek zmieni w formularzu.
     expect(result.current.gatewayWindowMinutes).toBe('45');
     expect(result.current.transferWindowDays).toBe('3');
@@ -282,7 +282,7 @@ describe('useEventFormState event wizard validation', () => {
     );
   });
 
-  // E3.2 (issue 12 §3): the platform never creates a BZ organization itself, so
+  // The platform never creates a BZ organization itself, so
   // enabling the toggle without a pasted token must be blocked client-side too —
   // matching the server's hard 422 for the same case.
   it('rejects submit when Biuro Zawodow is enabled without a token', async () => {
@@ -377,7 +377,7 @@ describe('useEventFormState event wizard validation', () => {
     expect(result.current.fieldValidationErrors.distance_0_relayMaxTeamSize).toContain('Maksimum');
   });
 
-  // TD.8 (spec 07 rozstrzygniecie 10): the server's own default is
+  // The server's own default is
   // 'per_person' - a fresh relay distance the organizer never touches this
   // field on must submit that same default, not omit the key.
   it('defaults a fresh relay distance to per_person team pricing on submit', async () => {
@@ -405,7 +405,7 @@ describe('useEventFormState event wizard validation', () => {
     );
   });
 
-  it('requires a team aggregation rule for a relay distance (E2.7)', async () => {
+  it('requires a team aggregation rule for a relay distance', async () => {
     const { result } = renderHook(() => useEventFormState(), { wrapper });
     await waitFor(() => expect(getOrganizerEventLimit).toHaveBeenCalled());
 

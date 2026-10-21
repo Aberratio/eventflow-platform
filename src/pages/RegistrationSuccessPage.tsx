@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 interface RegistrationSuccessState {
   /**
    * The server's frozen response from `createRegistration()` — the
-   * authoritative Rozliczenie (E1.2). Everything actually charged/recorded
+   * authoritative Rozliczenie. Everything actually charged/recorded
    * (`totalAmount`, `settlementItems`, `pricePaid`, `discountAmount`,
    * `insurancePaid`, `merchandiseOrders`) must be read from here, never from
    * `registrationData`.
@@ -63,7 +63,7 @@ interface ReceiptLine {
 /**
  * Build the receipt line items to render, from the server's frozen
  * Rozliczenie — never from the pre-submit preview. `settlementItems` (the
- * position-by-position breakdown the server computes, E1.2) is authoritative
+ * position-by-position breakdown the server computes) is authoritative
  * when present; the discrete `pricePaid`/`discountAmount`/`insurancePaid`/
  * `merchandiseOrders` fields on the same server response are the fallback
  * for older/partial responses. `registrationData` is touched only as a
@@ -123,7 +123,7 @@ const RegistrationSuccessPage = () => {
 
   const state = location.state as RegistrationSuccessState | null;
 
-  // PP.54: the invitation token is the captain's secret (the team id is public), so it is fetched
+  // The invitation token is the captain's secret (the team id is public), so it is fetched
   // from the server (captain-only) instead of being derived from the Zapis. Only the Zapis that
   // just created a brand-new relay Drużyna is the captain and gets the link here.
   const inviteTeamId =
@@ -147,7 +147,7 @@ const RegistrationSuccessPage = () => {
   };
 
   const generateTransferTitle = () => {
-    // E1.8: the server-computed, deterministic `ZC-{id}` title is authoritative
+    // The server-computed, deterministic `ZC-{id}` title is authoritative
     // for matching bank transfers to this Zapis — prefer it whenever the
     // registration response carried one. The template-based title below is a
     // legacy fallback for the (now rare) case a registration response predates
@@ -156,7 +156,7 @@ const RegistrationSuccessPage = () => {
       return state.registration.transferTitle;
     }
 
-    // PP.44: the registered participant (the ward for an Opieka Zapis), not the logged-in guardian.
+    // The registered participant (the ward for an Opieka Zapis), not the logged-in guardian.
     const participantName = state?.registration.userName || user?.name || 'Uczestnik';
 
     if (!state?.paymentConfig?.transferTitle) {
@@ -197,7 +197,7 @@ const RegistrationSuccessPage = () => {
 
   const { registration, registrationData, eventName, eventDate, eventCity, paymentConfig } = state;
   const isBankTransfer = paymentConfig?.type === 'organizer_bank';
-  // PP.52: paid or not comes from the server's Zapis status, never from the payment route.
+  // Paid or not comes from the server's Zapis status, never from the payment route.
   const isTestRun = registration.isTest === true;
   const isPaid = registration.status === 'confirmed';
   const receiptLines = buildReceiptLines(registration, registrationData);
@@ -205,10 +205,9 @@ const RegistrationSuccessPage = () => {
   const distanceName = registration.distanceName || registrationData.distanceName;
   const category = registration.category || registrationData.category;
 
-  // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
-  // this Zapis just created a brand-new relay Drużyna (E7.1's `createTeam`
+  // // this Zapis just created a brand-new relay Drużyna (`createTeam`
   // intent) — surface the shareable invitation link for the still-missing
-  // teammates right here, the natural "what happens next" moment. PP.54: the
+  // teammates right here, the natural "what happens next" moment. The
   // link carries the captain's secret `invite` token (fetched above); joining
   // still goes through RegistrationRepository::resolveTeamForRegistration()
   // in full at submit time, which refuses a join without that token.
@@ -402,7 +401,7 @@ const RegistrationSuccessPage = () => {
             </Card>
           )}
 
-          {/* Team Invitation Link (E7.2) — only for the Zapis that just created a new relay Drużyna */}
+          {/* Team Invitation Link — only for the Zapis that just created a new relay Drużyna */}
           {(teamInviteLink || teamInviteUnavailable) && (
             <Card className="mb-6 border-primary/20 bg-primary/5">
               <CardContent className="space-y-3 pt-6">

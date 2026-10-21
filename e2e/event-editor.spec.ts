@@ -3,7 +3,7 @@ import type { ConsoleMessage, Page } from '@playwright/test';
 import { ensureOrganizerCapacity } from './api';
 import { advanceThroughWizard, isoDaysFromToday, loginAs, pickDate } from './helpers';
 
-// PP.16: the event wizard crashed on step 1 (both create and edit) because RichTextEditor's TipTap
+// The event wizard crashed on step 1 (both create and edit) because RichTextEditor's TipTap
 // instance could be destroyed by its own 1ms timer before the component's sync effect ran, throwing
 // "Cannot read properties of null (reading 'cached')" with no error boundary below the page. This spec
 // walks the real wizard against a real backend and must never see the "Coś poszło nie tak" error
@@ -25,7 +25,7 @@ async function assertNoErrorScreen(page: Page) {
   await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);
 }
 
-test.describe('Event editor (PP.16)', () => {
+test.describe('Event editor', () => {
   test('organizer creates a draft event with a rich-text description', async ({
     page,
     request,

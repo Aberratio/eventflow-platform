@@ -105,7 +105,7 @@ async function readWizardPosition(page: Page): Promise<string> {
 }
 
 // Clicks "Zapisz i przejdź dalej" and waits until the wizard moved to another step/sub-step. A blind
-// click walk raced the step transition (PP.15). When the section blocks (validation), the wait times
+// click walk raced the step transition. When the section blocks (validation), the wait times
 // out and the error names the validation toast, if any.
 export async function clickNextAndSettle(page: Page): Promise<void> {
   await expect(page.getByText('Coś poszło nie tak')).toHaveCount(0);

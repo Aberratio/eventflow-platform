@@ -78,7 +78,7 @@ const EventManage = () => {
   const sectionBasePath = isModeratorContext
     ? `/moderator/events/${id}`
     : `/organizer/events/${id}`;
-  // A participant who only co-manages Events has no organizer dashboard (R-01, zakres P2).
+  // A participant who only co-manages Events has no organizer dashboard.
   const dashboardPath = isModeratorContext
     ? '/moderator'
     : user?.role === 'organizer'
@@ -171,7 +171,7 @@ const EventManage = () => {
     void saver.save(codes);
   };
 
-  // R-01 (zakres P2): a Co-manager is not the Owner; the organizer-panel list tells whether the
+  // A Co-manager is not the Owner; the organizer-panel list tells whether the
   // Account co-manages this Event. Moderators and admins get their access from their role.
   const needsTeamLookup =
     Boolean(user) &&
@@ -183,7 +183,7 @@ const EventManage = () => {
   const isCoManager = needsTeamLookup && isCoManagerOf(coManaged.allEvents, id);
 
   // Moderator access starts at `submitted` — a Szkic (draft) is visible only to its
-  // owning organizer/team and to admins (spec 08, "Co widzi każda rola").
+  // owning organizer/team and to admins.
   const canManage =
     user?.role === 'admin' ||
     user?.role === 'superadmin' ||

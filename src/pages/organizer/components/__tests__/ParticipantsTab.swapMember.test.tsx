@@ -46,8 +46,8 @@ const reg = (over: Partial<Registration>): Registration =>
     ...over,
   }) as Registration;
 
-/** G-04: the organizer swaps a relay member from the participants list; solo entries have no such action. */
-describe('ParticipantsTab relay member swap (G-04)', () => {
+/** The organizer swaps a relay member from the participants list; solo entries have no such action. */
+describe('ParticipantsTab relay member swap', () => {
   it('offers the swap only for Zapisy that belong to a team', () => {
     render(
       <ParticipantsTab

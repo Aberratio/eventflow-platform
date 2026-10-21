@@ -25,9 +25,9 @@ interface Props {
 }
 
 /**
- * R-08 (spec 22): opiekun / organizator zgłasza, że profil Zawodnika jest duplikatem innego.
- * Kandydaci pochodzą z GET /competitors/duplicates (to samo imię, nazwisko i data urodzenia);
- * zgłoszenie niczego nie scala - trafia do kolejki Moderatora/Admina.
+ * A guardian / organizer reports that a Zawodnik profile duplicates another one.
+ * Candidates come from GET /competitors/duplicates (same first name, last name and birth date);
+ * the report merges nothing - it goes to the Moderator/Admin queue.
  */
 export const ReportDuplicateDialog = ({ competitorId, firstName, lastName, birthDate }: Props) => {
   const [open, setOpen] = useState(false);

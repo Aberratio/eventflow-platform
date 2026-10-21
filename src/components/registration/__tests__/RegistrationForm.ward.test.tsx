@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { RegistrationForm } from '../RegistrationForm';
 import type { Event } from '@/types';
 
-// PP.44: the real useRegistrationForm hook (not mocked) drives the personal-data step.
+// The real useRegistrationForm hook (not mocked) drives the personal-data step.
 
 vi.mock('@/contexts/AuthContext', async () => {
   const actual =

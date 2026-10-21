@@ -3,7 +3,7 @@ import type { RegistrationFormFieldError } from '@/types';
 /**
  * Error thrown by the HTTP adapter for a non-2xx API response. `message` is the user-facing
  * Polish text; `code` is the API's `error.code` (e.g. `invalid_token`) for callers that
- * branch on it (PP.7: reset, verification and e-mail change screens).
+ * branch on it (reset, verification and e-mail change screens).
  */
 export class ApiRequestError extends Error {
   readonly code?: string;
@@ -21,7 +21,7 @@ export class ApiRequestError extends Error {
 }
 
 /**
- * B-07: the per-field errors of a 422 `registration_form_invalid` (empty for any other error),
+ * The per-field errors of a 422 `registration_form_invalid` (empty for any other error),
  * so the form can show each message next to its field.
  */
 export function registrationFormFieldErrors(error: unknown): RegistrationFormFieldError[] {

@@ -32,7 +32,7 @@ class AppLogger {
     }
   }
 
-  // ─── Kontekst użytkownika ─────────────────────────────
+  // ─── User context ────────────────────────────────────
 
   setCurrentUser(user: LoggerUserContext | null): void {
     this.currentUser = user;
@@ -42,7 +42,7 @@ class AppLogger {
     return this.currentUser;
   }
 
-  // ─── Główna metoda logowania ──────────────────────────
+  // ─── Main logging method ─────────────────────────────
 
   log(
     level: LogLevel,
@@ -83,7 +83,7 @@ class AppLogger {
     }
   }
 
-  // ─── Skrócone metody per kategoria ────────────────────
+  // ─── Shortcut methods per category ───────────────────
 
   auth(action: string, description: string, options?: Parameters<AppLogger['log']>[4]): void {
     this.log('audit', 'auth', action, description, options);
@@ -139,7 +139,7 @@ class AppLogger {
       await this.transport.send(batch);
     } catch (err) {
       console.error('[AppLogger] Błąd wysyłki logów:', err);
-      // Przywróć logi do bufora w razie błędu
+      // Put the logs back into the buffer on error
       this.buffer.unshift(...batch);
     }
   }
@@ -154,13 +154,13 @@ class AppLogger {
   }
 }
 
-// E0.8: rejestr aktywności (audit log) jest pisany wyłącznie przez serwer —
-// nie ma już transportu, który wysyłałby te wpisy do API (POST
-// /admin/client-logs został usunięty, bo pozwalał sfałszować autora wpisu).
-// MockTransport zostaje jako lokalne logowanie do konsoli/pamięci przeglądarki.
+// The activity log (audit log) is written by the server only —
+// there is no transport left that would send these entries to the API (POST
+// /admin/client-logs was removed because it allowed forging the author of an entry).
+// MockTransport stays as local logging to the console / browser memory.
 function createDefaultTransport(): LogTransport {
   return new MockTransport();
 }
 
-/** Globalny singleton loggera (logowanie lokalne — nic stąd nie trafia na serwer) */
+/** Global logger singleton (local logging — nothing from here reaches the server) */
 export const appLogger = new AppLogger(createDefaultTransport());

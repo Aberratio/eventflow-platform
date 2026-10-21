@@ -18,7 +18,7 @@ interface CaptainTeamInvitesProps {
 }
 
 /**
- * PP.54 (spec 23 §1): "Twoje drużyny" — the captain's way back to the invitation link. The
+ * "Twoje drużyny" — the captain's way back to the invitation link. The
  * link is only shown at team creation, and a gateway event redirects the captain away from that
  * page, so the participant dashboard is where they (or anyone who lost the link) can copy it.
  * Lazy on purpose: the secret token is fetched only when the button is clicked.

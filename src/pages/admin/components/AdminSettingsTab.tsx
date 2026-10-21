@@ -305,7 +305,7 @@ export const AdminSettingsTab = () => {
         )}
       </Card>
 
-      {/* E6.2 (issue 15 §2): global points-per-place table for Wyzwania */}
+      {/* Global points-per-place table for Wyzwania */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

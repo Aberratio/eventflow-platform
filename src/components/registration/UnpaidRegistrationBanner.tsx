@@ -24,7 +24,7 @@ interface UnpaidRegistrationBannerProps {
 const formatDeadline = (iso: string): string =>
   format(new Date(iso), 'd MMMM yyyy, HH:mm', { locale: pl });
 
-/** B-05 (umowa §5.16, spec 13): "Masz nieopłacony zapis…" with the way to finish the payment. */
+/** "Masz nieopłacony zapis…" with the way to finish the payment. */
 export const UnpaidRegistrationBanner = ({
   registrations,
   events,

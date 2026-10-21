@@ -29,7 +29,7 @@ beforeEach(() => {
   resetQueryClient();
 });
 
-describe('PlatformStatsCard (E8.3)', () => {
+describe('PlatformStatsCard', () => {
   it('renders the organizer count, active package credits and events-by-status breakdown', async () => {
     getPlatformStats.mockResolvedValue({ success: true, data: baseStats });
 

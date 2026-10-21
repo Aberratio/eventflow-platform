@@ -161,7 +161,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return true;
     } catch (error) {
       appLogger.auth('login_failed', `Failed login for ${email}`, { metadata: { email } });
-      // PP.70: a blocked account is not a credentials problem; the page shows the server message.
+      // A blocked account is not a credentials problem; the page shows the server message.
       if (error instanceof ApiRequestError && error.code === 'account_blocked') throw error;
       // R-10: too many failed attempts; the page shows the wait time.
       if (error instanceof ApiRequestError && error.status === 429) throw error;
@@ -184,7 +184,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return response.data;
   };
 
-  // E5.7 (issue 16 §2 "Samoobsluga"): the only trigger this context had for
+  // The only trigger this context had for
   // re-fetching /users/me was mount + login — nothing re-pulled the logged-in
   // user after an action taken *during* the session that changes their role
   // server-side, like a self-service organizer-package purchase (server:

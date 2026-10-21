@@ -29,7 +29,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('RegistrationStatsCard (E8.2)', () => {
+describe('RegistrationStatsCard', () => {
   it('renders the built-in distance, payment-status and signup-curve breakdowns', async () => {
     getRegistrationStats.mockResolvedValue({ success: true, data: baseStats });
 

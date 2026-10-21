@@ -47,8 +47,8 @@ const ticket = (over: Partial<Ticket>): Ticket => ({
   ...over,
 });
 
-// G-12 (spec 11 pkt 4): GET /users/{id}/tickets now carries eventDate, so the tab can split on it.
-describe('ParticipantTicketsTab (G-12)', () => {
+// GET /users/{id}/tickets now carries eventDate, so the tab can split on it.
+describe('ParticipantTicketsTab', () => {
   it('splits tickets into upcoming and archived by eventDate', () => {
     render(
       <ParticipantTicketsTab

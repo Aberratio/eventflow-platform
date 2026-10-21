@@ -53,8 +53,8 @@ export interface ShopProduct {
   serviceDetails?: string;
   validityDays?: number;
   visibleToRoles?: UserRole[];
-  // E5.6: 'organizer_package' is the "pakiet organizatora" digital product
-  // (issue 16 §2, umowa §5.5) — matches the server's
+  // 'organizer_package' is the "pakiet organizatora" digital product
+  // — matches the server's
   // OrderRepository::SERVICE_KIND_ORGANIZER_PACKAGE constant exactly.
   serviceKind?: 'organizer_package';
   status?: 'active' | 'archived';
@@ -67,14 +67,14 @@ export interface CartItem {
   quantity: number;
   size?: string;
   color?: string;
-  // E5.6: carried over from ShopProduct.isService at add-to-cart time
+  // Carried over from ShopProduct.isService at add-to-cart time
   // (ShopProductPage.tsx) so CartPage can tell a fully-digital cart (e.g. the
   // "pakiet organizatora") apart from a physical one without re-fetching
   // every product. Undefined (items added before this field existed, still
   // in a returning visitor's localStorage) is treated as "not a service" —
   // see CartPage's hasOnlyServices.
   isService?: boolean;
-  // PP.105: carried over from ShopProduct.serviceKind so the order success page can say that an
+  // Carried over from ShopProduct.serviceKind so the order success page can say that an
   // organizer package activates only after payment confirmation.
   serviceKind?: 'organizer_package';
 }
@@ -99,7 +99,7 @@ export interface OrderDetails {
   estimatedDelivery: string;
   createdAt: string;
   shippingAddress?: ShopOrderAddress;
-  // PP.105: the order contains an organizer package (granted only once the order is paid).
+  // The order contains an organizer package (granted only once the order is paid).
   includesOrganizerPackage?: boolean;
 }
 

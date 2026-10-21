@@ -63,17 +63,17 @@ function displayValue(value: unknown): string {
 }
 
 /**
- * E8.1 (issue 22, "Scalanie i przejmowanie profili Zawodnika"): wyłącznie
- * Moderator/Admin — nigdy samoobsługa, nawet dla opiekuna sprawującego
- * Opiekę nad oboma profilami (spec Answer §1). Wchodzi zarówno w Panel
- * Administratora, jak i Panel Moderatora — patrz AdminDashboard/
- * ModeratorDashboard, które oba montują ten sam komponent (dokładnie ten sam
- * wzorzec co AdminSeriesTab/AdminFeaturedEventsTab, już współdzielone
- * pomiędzy oboma panelami).
+ * Moderator/Admin only
+ * never self-service, not even for a guardian who has
+ * care of both profiles. Used in both the Admin
+ * Panel and the Moderator Panel — see AdminDashboard/
+ * ModeratorDashboard, which both mount the same component (exactly the same
+ * pattern as AdminSeriesTab/AdminFeaturedEventsTab, already shared
+ * between both panels).
  *
- * Przepływ: wyszukaj dwa profile -> porównaj "obok siebie" -> wskaż
- * przeżywający -> rozstrzygnij pola rozbieżne -> rozstrzygnij ewentualny
- * konflikt Zapisów -> potwierdź (operacja jest permanentna, brak "cofnij").
+ * Flow: search two profiles -> compare side by side -> pick the
+ * surviving one -> resolve the differing fields -> resolve a possible
+ * Zapis conflict -> confirm (the operation is permanent, there is no undo).
  */
 export const CompetitorMergeTab = () => {
   const queryClient = useQueryClient();

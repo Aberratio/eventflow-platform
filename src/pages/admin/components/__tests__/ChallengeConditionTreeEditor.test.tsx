@@ -20,7 +20,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   value: () => undefined,
 });
 
-// E6.1 (issue 15 §1): the tree-builder UI is the only way an admin composes
+// The tree-builder UI is the only way an admin composes
 // a Wyzwanie's completion condition tree (event_threshold / point_threshold /
 // sub_challenge_threshold, joined by a `group` AND/threshold node). These
 // tests exercise node-type switching, add/remove of `group` children, and

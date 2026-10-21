@@ -37,7 +37,7 @@ describe('ResultListRow event link (L-03)', () => {
   });
 });
 
-describe('ResultListRow place by gender (G-03)', () => {
+describe('ResultListRow place by gender', () => {
   it('shows the place by gender next to the open and category places', () => {
     render(
       <ResultListRow result={{ ...result, gender: 'K', genderPosition: 3 }} showEvent={false} />,

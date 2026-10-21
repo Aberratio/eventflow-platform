@@ -56,14 +56,14 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // B-01: the server refused with 409 `registration_closed` — shown instead of the form.
+  // The server refused with 409 `registration_closed` — shown instead of the form.
   const [closedMessage, setClosedMessage] = useState<string | null>(null);
-  // B-07: per-field messages of a 422 `registration_form_invalid`, handed to the form.
+  // Per-field messages of a 422 `registration_form_invalid`, handed to the form.
   const [serverFieldErrors, setServerFieldErrors] = useState<RegistrationFormFieldError[] | null>(
     null,
   );
 
-  // Zapis Zawodnika pod moją opieką (kogoś innego niż ja)
+  // Registering a Zawodnik under my care (someone other than me)
   const [registeringForOther, setRegisteringForOther] = useState(false);
   const [selectedCompetitorRelId, setSelectedCompetitorRelId] = useState<string>('');
   const [grantorSearch, setGrantorSearch] = useState('');
@@ -93,7 +93,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
   const selectedGrantor = myCompetitors.find((g) => g.id === selectedCompetitorRelId) ?? null;
 
-  // PP.44: the form must describe the person being registered, not the logged-in guardian.
+  // The form must describe the person being registered, not the logged-in guardian.
   const wardParticipant = useMemo<RegistrationParticipant | null>(
     () =>
       registeringForOther && selectedGrantor
@@ -115,9 +115,8 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
 
   const event = eventResponse?.data ?? null;
 
-  // E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
-  // a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}`
-  // on this same registration route (PP.54: the team id is public, the
+  // // a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}`
+  // on this same registration route (the team id is public, the
   // `invite` token is the secret the server requires to join). Resolve it up front — before the invitee ever
   // sees the multi-step form — so a full/unknown/wrong-event team shows one
   // clear message instead of silently falling back to the generic "browse
@@ -143,7 +142,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     joinTeam && joinTeam.maxSize !== null && joinTeam.memberCount >= joinTeam.maxSize,
   );
   const joinTeamInvalid = Boolean(joinTeamId) && (isJoinTeamError || joinTeamEventMismatch);
-  // PP.54: links shared before invitation tokens existed (`?joinTeam=` only) can no
+  // Links shared before invitation tokens existed (`?joinTeam=` only) can no
   // longer join — the server would refuse them — so say so instead of showing the form.
   const joinTeamOutdated = Boolean(joinTeamId) && !inviteToken;
   const initialTeamJoin =
@@ -228,7 +227,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     );
   }
 
-  // E7.2: a `?joinTeam=` link that doesn't resolve to a real, joinable team
+  // A `?joinTeam=` link that doesn't resolve to a real, joinable team
   // for THIS event — unknown id, wrong event, or already-full roster. Shown
   // as its own clear message rather than crashing, or silently falling back
   // to the generic "browse teams" picker as if nothing was wrong.
@@ -364,7 +363,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     );
   }
 
-  // Payload of `createRegistration` AND of `quoteRegistration` (B-02): the quote asks the server to price
+  // Payload of `createRegistration` AND of `quoteRegistration`: the quote asks the server to price
   // exactly what the create call would send, so both are built here, once.
   const buildCreatePayload = (data: RegistrationData): CreateRegistrationPayload | null => {
     if (!user) return null;
@@ -397,7 +396,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       discountCode: data.discountCode,
       merchandise: data.merchandise,
       insuranceVariantId: data.insuranceVariantId,
-      // B-07: answers and identity travel in the create call itself; the server validates them
+      // Answers and identity travel in the create call itself; the server validates them
       // in the same transaction and creates nothing on a 422.
       formFieldAnswers: answersToPayload(data.formFieldAnswers),
       identity: data.identity,
@@ -405,7 +404,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
   };
 
   const handleComplete = async (data: RegistrationData) => {
-    // G-08: a Draft in test mode takes the real request (the server answers with a dry run);
+    // A Draft in test mode takes the real request (the server answers with a dry run);
     // without test mode the preview stays local and sends nothing.
     if (isPreviewAvailable && !event.isTest) {
       setPreviewRegistrationData(data);
@@ -416,7 +415,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
     setIsSubmitting(true);
     let registration: Registration;
     try {
-      // E1.2: the client never sends computed money amounts (price,
+      // The client never sends computed money amounts (price,
       // discountAmount, pricePaid, totalAmount, insurancePrice, or the
       // amount fields inside paymentDetails) — only IDs/selections. The
       // server recomputes and freezes the authoritative Rozliczenie and
@@ -444,7 +443,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
       return;
     }
 
-    // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — the
+    // A fresh `pending` trasa-A Zapis comes with a gateway session — the
     // payment happens there. The page is leaving, so `isSubmitting` stays true.
     if (
       !registration.isTest &&
@@ -524,7 +523,7 @@ const EventRegistrationPage = ({ previewMode = false }: EventRegistrationPagePro
               : 'Podgląd formularza – nic nie jest wysyłane. Włącz tryb testowy w ustawieniach wydarzenia, aby sprawdzić Rozliczenie na serwerze.'}
           </p>
         )}
-        {/* Zapis w imieniu kogoś innego */}
+        {/* Registering on behalf of someone else */}
         {isParticipant && hasGrantors && !previewMode && (
           <div className="mx-auto mb-6 max-w-2xl">
             <div

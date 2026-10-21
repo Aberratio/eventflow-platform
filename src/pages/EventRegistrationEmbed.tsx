@@ -51,7 +51,7 @@ const EventRegistrationEmbed = () => {
           <p className="text-sm text-muted-foreground">
             To wydarzenie używa formularza Zmierzymy Czas.
           </p>
-          {/* Zwykła strona zapisów nie może być ramkowana (X-Frame-Options), więc CTA otwiera nową kartę. */}
+          {/* The regular registration page cannot be framed (X-Frame-Options), so the CTA opens a new tab. */}
           <Button asChild>
             <a href={`/events/${event.slug}/register`} target="_blank" rel="noopener noreferrer">
               Przejdź do zapisów

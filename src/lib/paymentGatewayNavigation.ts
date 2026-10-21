@@ -1,5 +1,5 @@
 /**
- * E8.11 ("Zewnętrzny formularz w iframe", contract §5.3): when the
+ * When the
  * registration/payment flow is about to navigate to an external payment
  * gateway's checkout URL (PayNow/Tpay — the `admin_gateway` PaymentConfig
  * type), that navigation must break OUT of an iframe rather than happen
@@ -8,7 +8,7 @@
  * would silently fail (a blank/error frame) rather than showing the
  * checkout page.
  *
- * NOTE: PP.52: called by EventRegistrationPage and EmbedEventRegistrationPage
+ * NOTE: called by EventRegistrationPage and EmbedEventRegistrationPage
  * when POST /registrations returns a `paymentSession`.
  */
 export function navigateToPaymentGateway(url: string): void {

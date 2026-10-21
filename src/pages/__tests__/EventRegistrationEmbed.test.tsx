@@ -19,7 +19,7 @@ const zcEvent = {
   city: 'Łódź',
 };
 
-describe('EventRegistrationEmbed (D-10)', () => {
+describe('EventRegistrationEmbed', () => {
   beforeEach(() => resetQueryClient());
 
   it('shows event name, date, place and a registration CTA for a Zmierzymy Czas form event', async () => {

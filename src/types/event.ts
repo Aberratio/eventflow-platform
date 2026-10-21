@@ -7,16 +7,16 @@ export type RegistrationStatus = 'open' | 'closed' | 'none';
 export type PriceTierDiscountType = 'percent' | 'fixed';
 export type DistanceStartType = 'individual' | 'relay';
 /**
- * TD.8 (spec 07 rozstrzygniecie 10): sposob naliczania oplaty startowej dla
- * Dystansu sztafetowego. `per_person` (domyslne, jedyne dotychczasowe
- * zachowanie) - kazdy czlonek zespolu placi osobno. `per_team` - kapitan
- * placi cala oplate za druzyne, pozostali czlonkowie maja oplate zerowa.
- * Ma sens tylko dla `startType === 'relay'`, ale serwer tego nie wymusza.
+ * How the start fee is charged for a relay
+ * Dystans. `per_person` (the default and the only behaviour so far) - every team
+ * member pays separately. `per_team` - the captain pays the whole fee for the team,
+ * the other members pay nothing.
+ * Only meaningful for `startType === 'relay'`, but the server does not enforce it.
  */
 export type TeamPricingMode = 'per_person' | 'per_team';
 
 export const TEAM_PRICING_MODE_LABELS: Record<TeamPricingMode, string> = {
-  per_person: 'Za osobę (każdy płaci osobno)',
+  per_person: 'Za osóbę (każdy płaci osobno)',
   per_team: 'Za drużynę (cała opłata na Zapisie kapitana)',
 };
 
@@ -33,7 +33,7 @@ export interface VipPrice {
  * A Próg (price tier). `endDate` and `participantLimit` are independent, both
  * optional, and can be set at the same time — the tier expires on whichever
  * is hit first ("co nastąpi wcześniej"). There is no mode flag choosing
- * between them (E0.3).
+ * between them.
  */
 export interface PriceTier {
   id: string;
@@ -50,10 +50,10 @@ export interface PriceTier {
 /**
  * A pricing variant belonging to a Dystans — e.g. the office-only "zapis w
  * biurze zawodow" price that used to be the special-cased `officePrice` field
- * on Distance (E0.3). Office-only variants are hidden from the public
+ * on Distance. Office-only variants are hidden from the public
  * registration form.
  *
- * Per the E1.2 pricing algorithm ("Rozliczenie", steps 1-2), the Wariant
+ * Per the pricing algorithm ("Rozliczenie", steps 1-2), the Wariant
  * carries its own base `price` AND its own Próg (tier) list — it is a full
  * price list, not a discount off the distance's base price. `priceTiers`
  * uses the same dual-optional-limit shape as `PriceTier` (see
@@ -93,7 +93,7 @@ export interface DiscountCode {
   batchId?: string;
 }
 
-/** R-07: a generated batch of discount codes (grouping label over ordinary discount codes). */
+/** A generated batch of discount codes (grouping label over ordinary discount codes). */
 export interface DiscountCodeBatch {
   id: string;
   eventId: string;
@@ -205,11 +205,11 @@ export interface Distance {
   relaySwapDeadline?: string;
   teamPricingMode?: TeamPricingMode;
   /**
-   * E2.7 (spec 14 sekcja 4): regula agregacji wyniku druzynowego z wynikow
-   * indywidualnych czlonkow, konfigurowalna per Dystans (relacja z
-   * `startType === 'relay'` tak sama jak reszta pol relay*: jest sens tylko
-   * dla dystansu sztafetowego, ale serwer jej nie wymusza - patrz
-   * ResultRepository::teamClassification() dla domyslnego fallbacku).
+   * Rule for aggregating the team result from the individual members'
+   * results, configurable per Dystans (related to `startType === 'relay'`
+   * like the other relay* fields: it only makes sense for a relay Dystans,
+   * but the server does not enforce it - see
+   * ResultRepository::teamClassification() for the default fallback).
    */
   teamAggregationRule?: TeamAggregationRule;
   ageCategories?: AgeCategory[];
@@ -221,7 +221,7 @@ export interface Distance {
   registeredCount: number;
   paidCount?: number;
   /**
-   * E8.2 (spec 21 Answer §4): live-computed remaining capacity (limit -
+   * Live-computed remaining capacity (limit -
    * registeredCount, null when the Distance has no limit). Present only when
    * the Event's `displayOptions.showFreeSlots` toggle is on for a
    * non-manager reader — the server omits the key entirely when hidden
@@ -279,7 +279,7 @@ export interface OrganizerInfo {
 }
 
 /** @deprecated Single-object legacy insurance config. Superseded by the global
- * catalog of `InsuranceVariant`s (E1.2) — an event now offers 0..n catalog
+ * catalog of `InsuranceVariant`s — an event now offers 0..n catalog
  * variants via `Event.insuranceVariants` instead of one ad-hoc option. Kept
  * for backward compatibility with call sites that haven't migrated yet;
  * the registration flow no longer reads it. */
@@ -296,7 +296,7 @@ export interface InsuranceOption {
 /**
  * A catalog NNW (accident insurance) variant, defined globally by the admin
  * with its pricing formula parameters; an organizer opts an event into 0, 1,
- * or several of these (E1.2, resolution #9). Premium = baseFee +
+ * or several of these. Premium = baseFee +
  * max(0, age-18) * ageMultiplier, age computed as of the EVENT date (not
  * registration date), unavailable above maxAge.
  */
@@ -341,8 +341,8 @@ export interface EventDisplayOptions {
   hideUnpaid: boolean; // @deprecated - use showParticipants
   showParticipants: 'all' | 'paid_only';
   /**
-   * E8.2 (spec 21 Answer §4): "ten sam wzorzec przełącznika co przy liście
-   * startowej publicznej/ukrytej" (showParticipants above) — free-slots
+   * Same toggle pattern as the public/hidden start list
+   * (showParticipants above) — free-slots
    * counter, visible by default (undefined/true), organizer can hide it per
    * Event. Same JSON blob, same generic PATCH /events/{id} write path.
    */
@@ -375,7 +375,7 @@ export interface EventBackgroundUsage {
 }
 
 /**
- * Axis 1 — moderation workflow (E1.1). Replaces the old mixed `status` field.
+ * Axis 1 — moderation workflow. Replaces the old mixed `status` field.
  *
  *   draft -> submitted -> published -> finished
  *                       \-> rejected (organizer edits, resubmits)
@@ -398,7 +398,7 @@ export type EventPublicationStatus =
   | 'cancelled';
 
 /**
- * Axis 2 — visibility (E1.1). Only meaningful/editable while
+ * Axis 2 — visibility. Only meaningful/editable while
  * `publicationStatus === 'published'`: public events show in calendar/search,
  * private events are hidden from them and reachable only via direct link
  * (optionally gated by `accessCode`).
@@ -421,7 +421,7 @@ export interface Event {
   distances: Distance[];
   organizerId: string;
   /**
-   * R-01 (zakres P2): present only on `GET /organizers/{id}/events` - the viewer's role in the Event
+   * Present only on `GET /organizers/{id}/events` - the viewer's role in the Event
    * Team ('owner' for their own events, 'co_manager' for the ones they co-manage).
    */
   teamRole?: 'owner' | 'co_manager';
@@ -432,7 +432,7 @@ export interface Event {
   /** Only meaningful/editable while `publicationStatus === 'draft'`; cleared and locked once submitted. */
   isTest?: boolean;
   /**
-   * E6.4 (issue 15 §3): "Wydarzenie zewnętrzne" — a barebones Event with no
+   * "Wydarzenie zewnętrzne" — a barebones Event with no
    * Dystansy and no registrations, created by a Moderator/Admin purely as the
    * reference point a Zawodnik's manual challenge-entry proof points at (a
    * pre-platform completion, or a race that never ran on this platform).
@@ -450,11 +450,11 @@ export interface Event {
   registrationDeadline: string;
   registrationOpenDate?: string;
   registrationUntilEventStart?: boolean;
-  /** R-02 (zakres P2): czy właściciel zapisu może sam zrezygnować (domyślnie tak). */
+  /** Whether the owner of a Zapis may cancel it themselves (default yes). */
   selfServiceEnabled?: boolean;
-  /** R-02: data graniczna ustawiona przez organizatora (ISO); brak = domyślnie 7 dni przed startem. */
+  /** Cut-off date set by the organizer (ISO); none = the default of 7 days before the start. */
   selfServiceDeadline?: string | null;
-  /** R-02: data graniczna, która faktycznie obowiązuje (ISO) — własna albo domyślna. */
+  /** The cut-off date actually in force (ISO) — the custom one or the default. */
   selfServiceEffectiveDeadline?: string | null;
   featured: boolean;
   liveResultsUrl?: string;
@@ -466,7 +466,7 @@ export interface Event {
   enableMerchandiseInRegistration?: boolean;
   /** @deprecated see `InsuranceOption`. Use `insuranceVariants` instead. */
   insuranceOption?: InsuranceOption;
-  /** Catalog NNW variants this event offers (E1.2, resolution #9). Empty/absent = no insurance step. */
+  /** Catalog NNW variants this event offers. Empty/absent = no insurance step. */
   insuranceVariants?: InsuranceVariant[];
   galleryAlbums?: GalleryAlbum[];
   routeMapUrl?: string;
@@ -497,7 +497,7 @@ export interface Event {
   logisticsInfo?: EventLogisticsInfo;
   backgroundId?: string;
   /**
-   * E3.2: "Biuro Zawodów" (BZ) integration toggle (issue 12 §3). The platform
+   * "Biuro Zawodów" (BZ) integration toggle. The platform
    * never creates a BZ organization itself — the organizer pastes an
    * existing organization token/identifier when flipping this on.
    */
@@ -511,7 +511,7 @@ export interface Event {
    */
   bzOrganizationToken?: string | null;
   /**
-   * E8.11 ("Zewnętrzny formularz w iframe"): lets the organizer embed THIS
+   * Lets the organizer embed THIS
    * platform's own registration form on an external (organizer-owned) site
    * via `<iframe>`. Deliberately separate from `registrationEmbed` above,
    * which is the opposite direction — embedding an EXTERNAL registration
@@ -535,13 +535,13 @@ export interface PaymentConfig {
   bankAccountHolder?: string;
   transferTitle?: string;
   /**
-   * E1.4: okno płatności, konfigurowalne per Wydarzenie (docs/20 pkt 1). Bramka
-   * (Tpay/PayNow): domyślnie 45 minut. Serwer (EventRepository) domyśla te wartości
-   * na czytaniu, więc zawsze przychodzą wypełnione — undefined tu oznacza tylko
-   * "jeszcze nie wysłano do API", nie "brak wartości".
+   * Payment window, configurable per Wydarzenie. Gateway
+   * (Tpay/PayNow): 45 minutes by default. The server (EventRepository) fills in these
+   * defaults on read, so they always arrive populated — undefined here only means
+   * "not sent to the API yet", not "no value".
    */
   gatewayWindowMinutes?: number;
-  /** Przelew tradycyjny: domyślnie 3 dni robocze. */
+  /** Traditional bank transfer: 3 business days by default. */
   transferWindowDays?: number;
 }
 
@@ -710,7 +710,7 @@ export interface GlobalInsuranceSettings {
 }
 
 /**
- * E6.2 (issue 15 §2, "Punktacja: za miejsce, N najlepszych startow"): global,
+ * Global,
  * admin-configurable points-per-place table a Wyzwanie's `point_threshold`
  * condition node converts an Event classification place into points with.
  * `pointsTable[i]` is the points for place `i + 1`; `floorPoints` is awarded
@@ -726,7 +726,7 @@ export interface GroupDiscountCode extends DiscountCode {
 }
 
 /**
- * E2.5: automatic answer-count tally for one choice-type custom form field
+ * Automatic answer-count tally for one choice-type custom form field
  * (single_choice/multi_choice/consent) — server computes this live from
  * FormFieldRepository::aggregatesForEvent(), no organizer configuration.
  */
@@ -745,10 +745,10 @@ export interface FormFieldAggregate {
 }
 
 /**
- * E8.2 (spec 21 Answer §2): built-in organizer cross-sections computed
+ * Built-in organizer cross-sections computed
  * live from the Zapis record itself (RegistrationRepository::organizerStats()),
  * complementing FormFieldAggregate above (which covers configurable form
- * fields, E2.5). `byGender`/`byClub`/`ageCategories` are genuinely absent
+ * fields). `byGender`/`byClub`/`ageCategories` are genuinely absent
  * (key missing, not an empty array) whenever the underlying field/config
  * isn't set up for this Event — mirror this on render: check for the key,
  * don't render an empty chart for a present-but-empty array vs an absent key.
@@ -792,7 +792,7 @@ export interface RegistrationStats {
 }
 
 /**
- * E1.13 (ticket 10, model-formularza-zapisow.md): one "Pozycja formularza" as the
+ * One "Pozycja formularza" as the
  * server returns it from `/events/{id}/form-fields*` — 13 system positions plus the
  * organizer's custom fields, one ordered list per Wydarzenie.
  */
@@ -842,7 +842,7 @@ export interface FormField {
   createdAt?: string;
   updatedAt?: string;
   /**
-   * R-04, only on a distance's effective form: where the position comes from — `event` (inherited
+   * Only on a distance's effective form: where the position comes from — `event` (inherited
    * as is), `override` (this distance replaces it) or `distance` (exists on this distance only).
    */
   source?: 'event' | 'override' | 'distance';
@@ -862,7 +862,7 @@ export interface CreateFormFieldPayload {
 }
 
 /**
- * PATCH accepts only these (confidentiality is fixed at creation). B-02: a custom field's type
+ * PATCH accepts only these (confidentiality is fixed at creation). A custom field's type
  * and variants are editable in place; the server answers 409 `form_field_has_answers` for a type
  * change once the field has answers, and 409 `form_field_option_in_use` for dropping a variant
  * an answer still points at. Send the existing `key` to keep a variant's identity.
@@ -895,7 +895,7 @@ export interface RegistrationFormFieldAnswer {
 }
 
 /**
- * Identity-section values in `POST /registrations` `identity` (B-07). Every key is optional;
+ * Identity-section values in `POST /registrations` `identity`. Every key is optional;
  * the server ignores values for hidden positions and takes `voivodeship` from a closed list.
  */
 export interface RegistrationIdentityPayload {

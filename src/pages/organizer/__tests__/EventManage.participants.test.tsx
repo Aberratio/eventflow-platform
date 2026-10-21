@@ -67,7 +67,7 @@ const renderPage = () => {
   );
 };
 
-describe('EventManage participants tab (PP.46)', () => {
+describe('EventManage participants tab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getEventById.mockResolvedValue({ success: true, data: event });

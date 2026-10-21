@@ -639,7 +639,7 @@ export const ResultsSection = ({ event, eventResults }: ResultsSectionProps) => 
         </Card>
       )}
 
-      {/* E2.7: team/relay classification, single-distance case - the
+      {/* Team/relay classification, single-distance case - the
           multi-distance case renders one of these per relay TabsContent
           above instead (each Dystans has its own classification). */}
       {!hasMultipleDistances && event.distances[0]?.startType === 'relay' && (

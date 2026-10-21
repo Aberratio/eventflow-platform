@@ -65,7 +65,7 @@ export interface ResultFilters {
   search?: string;
 }
 
-/** Odpowiedz POST /events/{eventId}/distances/{distanceId}/results/publish-official (E2.3). */
+/** Odpowiedz POST /events/{eventId}/distances/{distanceId}/results/publish-official. */
 export interface PublishOfficialResultsResponse {
   eventId: string;
   distanceId: string;
@@ -103,7 +103,7 @@ export interface ActivityLogFilters {
   dateTo?: string;
 }
 
-/** E0.8: filters for the event-owner-scoped slice of the activity log. */
+/** Filters for the event-owner-scoped slice of the activity log. */
 export interface EventActivityLogFilters {
   dateFrom?: string;
   dateTo?: string;

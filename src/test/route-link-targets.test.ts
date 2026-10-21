@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /**
- * Guards against dead internal links (backlog L-01..L-04, D-07): every static
+ * Guards against dead internal links : every static
  * link target in src (`to=`, `href=`, `navigate(`) must match a <Route> in App.tsx.
  */
 const SRC = join(process.cwd(), 'src');

@@ -158,7 +158,7 @@ test.describe('Moderator Login & Dashboard', () => {
 
     await openDashboardSection(page, 'Moderacja');
     await expect(
-      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzen do sprawdzenia/).first(),
+      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzeń do sprawdzenia/).first(),
     ).toBeVisible();
     await openDashboardSection(page, 'Zamówienia');
     await expect(page.getByText(/Zamówienia \(\d+\)/).first()).toBeVisible();

@@ -4,7 +4,7 @@ import { render } from '@/test/test-utils';
 import { ProductCard } from './ProductCard';
 import type { ShopProduct } from '@/types';
 
-// D-03: prices go through formatMoney (pl-PL, two decimals), never raw `${price} zł`.
+// Prices go through formatMoney (pl-PL, two decimals), never raw `${price} zł`.
 describe('ProductCard price', () => {
   it('formats price and original price with formatMoney', () => {
     render(

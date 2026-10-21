@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { httpAdapter } from '../http.adapter';
 
-// R-02: GET /registrations/{id}/changes
-describe('httpAdapter.getRegistrationChanges (R-02)', () => {
+// GET /registrations/{id}/changes
+describe('httpAdapter.getRegistrationChanges', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

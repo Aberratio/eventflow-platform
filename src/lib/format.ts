@@ -1,12 +1,8 @@
 /**
- * Współdzielone funkcje formatujące używane w całej aplikacji.
+ * Shared formatting helpers used across the app.
  *
- * TD.21: ujednolicony standard wyświetlania kwot pieniężnych to
- * pl-PL (przecinek jako separator dziesiętny, spacja jako separator
- * tysięcy) z sufiksem "zł" — tak jak już robił (częściowo przyjęty)
- * `formatMoney`. Wcześniejsze rozproszone `.toFixed(2)` (z kropką i
- * bez grupowania tysięcy) oraz sufiks "PLN" w części miejsc były
- * niespójne z tym standardem i zostały ujednolicone w ramach TD.21.
+ * Money is shown in the pl-PL standard: comma as the decimal separator, a
+ * space as the thousands separator and a "zł" suffix.
  */
 export function formatMoney(value: number | string | null | undefined): string {
   const amount = Number(value ?? 0);
@@ -17,20 +13,23 @@ export function formatMoney(value: number | string | null | undefined): string {
   })} zł`;
 }
 
-/** Kwota w groszach (int z API, np. raport rozliczeniowy) -> "123,45 zł". */
+/** Amount in grosze (integer from the API, e.g. the settlement report) -> "123,45 zł". */
 export function formatMinorMoney(minor: number): string {
   return formatMoney(minor / 100);
 }
 
 /**
- * Formatuje datę (bez godziny) zgodnie z lokalnym standardem pl-PL,
- * identycznie jak rozproszone wcześniej wywołania
- * `new Date(x).toLocaleDateString('pl-PL')` (TD.21). Celowo nie
- * przyjmuje opcji ani nie dodaje godziny/minuty — miejsca, które
- * potrzebują innego formatu (np. z godziną, z długą nazwą miesiąca,
- * czy z jawnym `day: '2-digit'`), zostały w TD.21 świadomie
- * pozostawione bez zmian jako odrębny przypadek formatowania.
+ * Formats a date (no time) in the local pl-PL standard, the same as the
+ * `new Date(x).toLocaleDateString('pl-PL')` calls it replaced. It takes no
+ * options and adds no time; callers that need another format (with time, a
+ * long month name, an explicit `day: '2-digit'`) format dates themselves.
  */
 export function formatDate(date: string | number | Date): string {
   return new Date(date).toLocaleDateString('pl-PL');
+}
+
+/** Local calendar date as "YYYY-MM-DD" (no timezone shift, unlike `toISOString`). */
+export function toIsoDate(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }

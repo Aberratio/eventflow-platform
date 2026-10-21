@@ -1,6 +1,8 @@
 # Audyt UX/UI (mobile-first) — ZmierzymyCzas
 
-Data: 2026-10-20. Środowisko: lokalne API + baza `zc_a11y`, front z `origin/main`. Viewporty 360×800, 390×844, 1280×800.
+> English summary: mobile-first UX/UI audit (Polish text) covering horizontal overflow, touch targets, text size and task flows at three viewports.
+
+Data: 2026-10-20. Środowisko: lokalne API + lokalna baza, front z `origin/main`. Viewporty 360×800, 390×844, 1280×800.
 Metoda: Playwright, ~66 tras × 3 viewporty (poziomy overflow z winowajcą, cele dotyku <44 px, tekst <12 px, błędy JS) oraz przejścia zadań na 360 px (gość, rejestracja + zapis, uczestnik, organizator, moderator/admin). Zrzuty poza repo. Ograniczenia: płatność na fake gateway nie została zainicjowana lokalnie (zapis kończy się na ekranie „płatność nie została zrealizowana"), konto organizatora z seeda ma wyczerpany limit wydarzeń (22 z 11), więc kreator został obejrzany, ale nie dokończony; moderator/admin przejrzani wyłącznie na pulpitach (dalsze sekcje nie mają własnych tras — patrz UX-18). Automatyczne liczniki celów dotyku zawierają baner cookies (klucz zgody w skrypcie początkowo był błędny), więc traktować je orientacyjnie.
 
 ## (a) Top 10 problemów

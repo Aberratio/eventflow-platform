@@ -18,7 +18,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   value: () => undefined,
 });
 
-// E5.1: the catalog's client-side filtering (search/category/brand) is the
+// The catalog's client-side filtering (search/category/brand) is the
 // only place that decides what a shopper actually sees on /shop — a bug here
 // silently hides or leaks products. This exercises the real filter logic in
 // ShopPage against a small fixed product set instead of mocking it away.

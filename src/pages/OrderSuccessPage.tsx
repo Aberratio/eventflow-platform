@@ -166,7 +166,7 @@ const OrderSuccessPage = () => {
             </div>
           </div>
 
-          {/* E5.3: shipping address, only present for courier/paczkomat orders */}
+          {/* Shipping address, only present for courier/paczkomat orders */}
           {lastOrder.shippingAddress && (
             <div className="rounded-xl border bg-card p-5 shadow-sm">
               <div className="flex items-start gap-3">
@@ -194,7 +194,7 @@ const OrderSuccessPage = () => {
             </div>
           )}
 
-          {/* PP.105: an organizer package is granted only after the payment is confirmed */}
+          {/* An organizer package is granted only after the payment is confirmed */}
           {lastOrder.includesOrganizerPackage && (
             <InfoBanner
               icon={

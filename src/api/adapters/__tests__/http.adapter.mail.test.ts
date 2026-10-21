@@ -14,9 +14,9 @@ const lastCall = () => {
   return { path: url.replace(/^.*\/api\/v1/, ''), init };
 };
 
-// B-03: the adapter talks to the real server routes (/admin/mail-templates, /events/{id}/mail-templates,
+// The adapter talks to the real server routes (/admin/mail-templates, /events/{id}/mail-templates,
 // …/preview, …/mail-log) — NOT to the old /email-templates* that never existed.
-describe('httpAdapter mail templates and log (B-03)', () => {
+describe('httpAdapter mail templates and log', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

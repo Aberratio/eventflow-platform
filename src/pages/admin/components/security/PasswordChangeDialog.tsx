@@ -73,7 +73,7 @@ export const PasswordChangeDialog = ({
 
   const { strength, checks } = calculatePasswordStrength(form.new);
 
-  // PP.7: the server rule (at least 8 characters, different from the current one) is the only
+  // The server rule (at least 8 characters, different from the current one) is the only
   // gate. The strength meter below is advisory and never blocks a submit.
   const handleSubmit = async () => {
     if (form.new !== form.confirm) {

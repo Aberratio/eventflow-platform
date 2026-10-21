@@ -42,7 +42,7 @@ const TRACKING = /[?&](utm_[a-z]+|fbclid|gclid)=/i;
 
 test.describe('SEO and meta @seo', () => {
   test('public pages carry title, description, Open Graph and canonical @smoke', async ({ page, seed, request }) => {
-    test.fail(true, 'QA-SEO-01: static title/description for every route, no og:image, no canonical');
+    test.fail(true, 'static title/description for every route, no og:image, no canonical');
     const targets: { path: string; label: string; expectName?: string }[] = [{ path: '/', label: 'home' }, { path: '/events', label: 'events list' }];
     if (seed.upcoming[0]) targets.push({ path: `/events/${seed.upcoming[0].slug}`, label: 'upcoming event', expectName: seed.upcoming[0].name });
     if (seed.past[0]) targets.push({ path: `/events/${seed.past[0].slug}`, label: 'past event', expectName: seed.past[0].name });
@@ -90,12 +90,12 @@ test.describe('SEO and meta @seo', () => {
 
     expect(
       disallowsAll || /noindex/i.test(xRobots) || metaNoindex,
-      'dev must block indexing: robots.txt "User-agent: * / Disallow: /", X-Robots-Tag: noindex or meta robots noindex (README PP.28)',
+      'dev must block indexing: robots.txt "User-agent: * / Disallow: /", X-Robots-Tag: noindex or meta robots noindex',
     ).toBe(true);
   });
 
   test('sitemap.xml is XML with a urlset (not the SPA shell) @seo', async ({ request }) => {
-    test.fail(true, 'QA-SEO-03: /sitemap.xml returns the SPA HTML shell');
+    test.fail(true, '/sitemap.xml returns the SPA HTML shell');
     const res = await request.get('/sitemap.xml');
     expect(res.status(), 'sitemap status').toBe(200);
     expect(res.headers()['content-type'], 'sitemap content-type').toMatch(/(application|text)\/xml/);
@@ -103,7 +103,7 @@ test.describe('SEO and meta @seo', () => {
   });
 
   test('unknown routes answer 404 and the 404 page is noindex', async ({ page, request }) => {
-    test.fail(true, 'QA-SEO-04: unknown routes answer HTTP 200 (soft 404) and the 404 page has no noindex');
+    test.fail(true, 'unknown routes answer HTTP 200 (soft 404) and the 404 page has no noindex');
     for (const path of ['/events/qa-nonexistent-xyz', '/qa-nonexistent-xyz']) {
       const res = await request.get(path);
       expect.soft(res.status(), `${path} must answer HTTP 404 (soft 404 otherwise)`).toBe(404);

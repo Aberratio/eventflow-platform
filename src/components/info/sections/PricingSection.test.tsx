@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { PricingSection } from './PricingSection';
 import type { InfoPageSection } from '@/types';
 
-describe('PricingSection price (D-03)', () => {
+describe('PricingSection price', () => {
   it('formats the price with formatMoney', () => {
     render(
       <PricingSection

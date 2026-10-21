@@ -21,7 +21,7 @@ const registration = (over: Partial<Registration> = {}): Registration =>
     ...over,
   }) as Registration;
 
-describe('CancelRegistrationDialog (R-02)', () => {
+describe('CancelRegistrationDialog', () => {
   it('announces a refund request for a paid registration and confirms on click', () => {
     const onConfirm = vi.fn();
     render(
@@ -95,7 +95,7 @@ describe('describeRegistrationChange', () => {
       'Zmieniono dystans',
     );
     expect(describeRegistrationChange(change({ type: 'transferred' }))).toBe(
-      'Zapis przeniesiono na inną osobę',
+      'Zapis przeniesiono na inną osóbę',
     );
   });
 });

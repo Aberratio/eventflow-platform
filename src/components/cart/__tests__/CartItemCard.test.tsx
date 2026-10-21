@@ -20,7 +20,7 @@ describe('CartItemCard', () => {
     expect(screen.getByText('Koszulka biegowa')).toBeInTheDocument();
     expect(screen.getByText('M')).toBeInTheDocument();
     expect(screen.getByText('Czarny')).toBeInTheDocument();
-    // TD.21: unified money formatting now uses pl-PL locale formatting
+    // Unified money formatting now uses pl-PL locale formatting
     // (comma decimal separator) via the shared formatMoney utility.
     expect(screen.getByText('50,00 zł / szt.')).toBeInTheDocument();
     expect(screen.getByText('100,00 zł')).toBeInTheDocument();

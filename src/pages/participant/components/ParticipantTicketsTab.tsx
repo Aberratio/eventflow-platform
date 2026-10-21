@@ -6,12 +6,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ParticipantTicketsTabProps {
   tickets: Ticket[];
-  /** G-01/B-04: Zapisy użytkownika — źródło statusu i kodu startowego biletu. */
+  /** The user's Zapisy — the source of the ticket status and start code. */
   registrations?: Registration[];
 }
 
 /**
- * G-12: archived = the event day is before today (the event day itself is still upcoming). A ticket
+ * Archived = the event day is before today (the event day itself is still upcoming). A ticket
  * without a usable `eventDate` is never dropped from the list, so it counts as upcoming.
  */
 const isArchived = (ticket: Ticket, startOfToday: number): boolean => {

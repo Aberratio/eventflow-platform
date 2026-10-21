@@ -55,8 +55,8 @@ const registration = {
   registeredAt: '2026-01-10T10:00:00Z',
 } as Registration;
 
-// G-11 (umowa §4.2.4): XML next to CSV and XLSX in the start-list export menu.
-describe('ParticipantsTab start-list export menu (G-11)', () => {
+// XML next to CSV and XLSX in the start-list export menu.
+describe('ParticipantsTab start-list export menu', () => {
   it('offers CSV, XLSX and XML start-list formats', async () => {
     render(<ParticipantsTab event={event} registrations={[registration]} />);
 

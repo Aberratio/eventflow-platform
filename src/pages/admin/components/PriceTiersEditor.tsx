@@ -239,7 +239,7 @@ export const PriceTiersEditor = ({ distances, onChange }: PriceTiersEditorProps)
                             calculatedPrice={tier.price != null ? visiblePrice : calculatedPrice}
                             priceWarning={
                               visiblePrice > distance.price
-                                ? 'Cena progu jest wyzsza od ceny bazowej. To dozwolone, ale zwykle dodatkowe ceny powinny byc nizsze.'
+                                ? 'Cena progu jest wyższa od ceny bazowej. To dozwolone, ale zwykle dodatkowe ceny powinny być niższe.'
                                 : undefined
                             }
                             isPast={!!isPast}

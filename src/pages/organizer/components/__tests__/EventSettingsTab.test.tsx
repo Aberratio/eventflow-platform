@@ -86,7 +86,7 @@ describe('EventSettingsTab', () => {
         event={{ ...baseEvent, publicationStatus: 'draft', rejectionReason: 'Brak mapy' }}
       />,
     );
-    expect(screen.getByText(/Powod odrzucenia:/)).toBeInTheDocument();
+    expect(screen.getByText(/Powód odrzucenia:/)).toBeInTheDocument();
     expect(screen.getByText(/Brak mapy/)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Popraw i oddaj ponownie do sprawdzenia/i }),
@@ -96,7 +96,7 @@ describe('EventSettingsTab', () => {
   it('shows the plain submit label on a never-reviewed draft', () => {
     render(<EventSettingsTab event={{ ...baseEvent, publicationStatus: 'draft' }} />);
     expect(screen.getByRole('button', { name: 'Oddaj do sprawdzenia' })).toBeInTheDocument();
-    expect(screen.queryByText(/Powod odrzucenia/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Powód odrzucenia/)).not.toBeInTheDocument();
   });
 
   it('only shows the visibility card once the event is published', () => {

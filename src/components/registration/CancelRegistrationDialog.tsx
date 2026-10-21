@@ -24,7 +24,7 @@ interface CancelRegistrationDialogProps {
 }
 
 /**
- * R-02 (zakres P2): confirmation before the owner cancels their own Zapis. Spells out what happens
+ * Confirmation before the owner cancels their own Zapis. Spells out what happens
  * to the money (a refund request the organizer decides on) and to the slot (it returns to the pool).
  */
 export const CancelRegistrationDialog = ({

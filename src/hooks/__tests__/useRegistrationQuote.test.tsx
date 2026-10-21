@@ -22,7 +22,7 @@ const wrapper = () => {
   );
 };
 
-describe('useRegistrationQuote (B-02)', () => {
+describe('useRegistrationQuote', () => {
   beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: true }));
   afterEach(() => vi.useRealTimers());
 

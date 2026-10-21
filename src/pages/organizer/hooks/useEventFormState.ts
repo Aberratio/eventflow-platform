@@ -57,9 +57,9 @@ export interface DistanceFormData {
   relayMaxTeamSize: string;
   relayTeamCompletionDeadline: string;
   relaySwapDeadline: string;
-  /** E2.7: regula agregacji wyniku druzynowego - puste = brak wyboru (nie wysylane). */
+  /** Team result aggregation rule - empty = no choice (not sent). */
   teamAggregationRule: TeamAggregationRule | '';
-  /** TD.8 (spec 07 rozstrzygniecie 10): sposob naliczania oplaty startowej dla Dystansu sztafetowego. */
+  /** How the start fee is charged for a relay Dystans. */
   teamPricingMode: TeamPricingMode;
   price: string;
   /** Office-only price (event_distance_pricing_variants entry, hidden from the public form). */
@@ -76,7 +76,7 @@ export interface DistanceFormData {
   routeGpxUrl: string;
   routeFiles: DistanceRouteFile[];
   distanceDocuments: DistanceDocument[];
-  /** E1.3: liczba juz zarejestrowanych zawodnikow na ten dystans (z serwera, tylko do odczytu). */
+  /** Number of Zawodnicy already registered for this Dystans (from the server, read-only). */
   registeredCount: number;
 }
 
@@ -247,7 +247,7 @@ export const useEventFormState = () => {
   const { user } = useAuth();
   const isEditing = Boolean(id);
   const [existingEvent, setExistingEvent] = useState<Event | null>(null);
-  // R-01 (zakres P2): payment configuration is the Owner's (and admin's) - a Co-manager edits the rest.
+  // Payment configuration is the Owner's (and admin's) - a Co-manager edits the rest.
   const canEditPayments = !existingEvent || isEventOwnerLevel(user, existingEvent);
   const canChooseOrganizer =
     user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
@@ -287,7 +287,7 @@ export const useEventFormState = () => {
   const [registrationUntilEventStart, setRegistrationUntilEventStart] = useState(
     existingEvent?.registrationUntilEventStart || false,
   );
-  // R-02 (zakres P2): samodzielna rezygnacja zawodnika. Pusta data = domyślnie 7 dni przed startem.
+  // Participant self-cancellation. An empty date = the default of 7 days before the start.
   const [selfServiceEnabled, setSelfServiceEnabled] = useState(
     existingEvent?.selfServiceEnabled ?? true,
   );
@@ -307,12 +307,12 @@ export const useEventFormState = () => {
   const [startDate, setStartDate] = useState(existingEvent?.startDate || '');
   const [endDate, setEndDate] = useState(existingEvent?.endDate || '');
 
-  // Private event (visibility; only takes effect once the event is published — E1.1)
+  // Private event (visibility; only takes effect once the event is published)
   const [isPrivate, setIsPrivate] = useState(existingEvent?.visibility === 'private');
   const [accessCode, setAccessCode] = useState(existingEvent?.accessCode || '');
 
-  // E3.2: "Biuro Zawodów" (BZ) integration toggle + pasted organization token
-  // (issue 12 §3). The platform never creates a BZ organization itself, so the
+  // "Biuro Zawodów" (BZ) integration toggle + pasted organization token
+  // The platform never creates a BZ organization itself, so the
   // token field only makes sense once the toggle is on — mirrors isPrivate/
   // accessCode above. The token is never wiped locally when the toggle turns
   // off, matching the server's "preserve on disable" contract.
@@ -354,10 +354,10 @@ export const useEventFormState = () => {
   const [transferTitle, setTransferTitle] = useState(
     existingEvent?.paymentConfig?.transferTitle || 'Opłata za {eventName} - {participantName}',
   );
-  // E1.4: okno płatności — dwie niezależne, konfigurowalne per Wydarzenie wartości
-  // (docs/20 pkt 1). Domyślne wartości muszą zgadzać się z serwerowymi (patrz
-  // EventRepository::withPaymentWindowDefaults) — trzymane tu jako string, jak
-  // każde inne pole liczbowe w tym formularzu (parseNumberInput() na submit).
+  // Payment window — two independent values configurable per Wydarzenie.
+  // The defaults must match the server ones (see
+  // EventRepository::withPaymentWindowDefaults) — kept here as strings, like
+  // every other numeric field in this form (parseNumberInput() on submit).
   const [gatewayWindowMinutes, setGatewayWindowMinutes] = useState(
     String(existingEvent?.paymentConfig?.gatewayWindowMinutes ?? 45),
   );
@@ -1158,7 +1158,7 @@ export const useEventFormState = () => {
       addError('basic', 'Wypełnij wszystkie wymagane pola');
     }
     if (registrationDeadline && date && registrationDeadline > date) {
-      addError('basic', 'Termin rejestracji nie moze byc pozniejszy niz data wydarzenia');
+      addError('basic', 'Termin rejestracji nie może być późniejszy niż data wydarzenia');
     }
     if (!isVirtual && (!location || !city)) {
       addError('basic', 'Wypełnij lokalizację i miasto');
@@ -1166,14 +1166,14 @@ export const useEventFormState = () => {
     if (isVirtual && startDate && endDate && startDate > endDate) {
       addError(
         'basic',
-        'Data rozpoczecia okna wirtualnego nie moze byc pozniejsza niz data zakonczenia',
+        'Data rozpoczęcia okna wirtualnego nie może być późniejsza niż data zakończenia',
       );
     }
     if (isPrivate && !accessCode.trim()) {
-      addError('basic', 'Podaj kod dostepu dla wydarzenia prywatnego');
+      addError('basic', 'Podaj kod dostępu dla wydarzenia prywatnego');
     }
     if (bzIntegrationEnabled && !bzOrganizationToken.trim()) {
-      addError('basic', 'Podaj token organizacji Biura Zawodow, aby wlaczyc integracje');
+      addError('basic', 'Podaj token organizacji Biura Zawodów, aby włączyć integrację');
     }
     if (isVirtual && (!startDate || !endDate)) {
       addError('basic', 'Wypełnij daty rozpoczęcia i zakończenia okna wirtualnego');
@@ -1181,7 +1181,7 @@ export const useEventFormState = () => {
     if (registrationMode === 'external_embed') {
       const trimmedUrl = externalRegistrationUrl.trim();
       if (!trimmedUrl) {
-        addError('registration', 'Podaj link do zewnetrznego formularza zapisow.');
+        addError('registration', 'Podaj link do zewnętrznego formularza zapisów.');
       } else {
         try {
           const parsedUrl = new URL(trimmedUrl);
@@ -1191,7 +1191,7 @@ export const useEventFormState = () => {
         } catch {
           addError(
             'registration',
-            'Link do zewnetrznego formularza musi byc pelnym adresem http lub https.',
+            'Link do zewnętrznego formularza musi być pełnym adresem http lub https.',
           );
         }
       }
@@ -1226,18 +1226,18 @@ export const useEventFormState = () => {
         addError('distances', 'Wypełnij wszystkie pola dystansów');
       }
       if (!dist.noLength && !isBlank(dist.length) && (lengthValue === null || lengthValue <= 0)) {
-        addError('distances', 'Dlugosc dystansu musi byc poprawna liczba wieksza od 0');
+        addError('distances', 'Długość dystansu musi być poprawną liczbą większą od 0');
       }
       if (!isBlank(dist.price) && (priceValue === null || priceValue < 0)) {
-        addError('distances', 'Cena dystansu musi byc poprawna liczba i nie moze byc ujemna');
+        addError('distances', 'Cena dystansu musi być poprawną liczbą i nie może być ujemna');
       }
       if (!isBlank(dist.limit) && (limitValue === null || !isPositiveInteger(limitValue))) {
-        addError('distances', 'Limit uczestnikow musi byc dodatnia liczba calkowita albo pusty');
+        addError('distances', 'Limit uczestników musi być dodatnią liczbą całkowitą albo pusty');
       }
       if (!isBlank(dist.officePrice) && (officePriceValue === null || officePriceValue < 0)) {
         addError(
           'distances',
-          'Cena w biurze zawodow musi byc poprawna liczba i nie moze byc ujemna',
+          'Cena w biurze zawodów musi być poprawną liczbą i nie może być ujemna',
         );
       }
       if (dist.startType === 'relay') {
@@ -1246,14 +1246,14 @@ export const useEventFormState = () => {
           relayMinTeamSize === null ||
           !isPositiveInteger(relayMinTeamSize)
         ) {
-          addError('distances', 'Podaj minimalna liczbe zawodnikow w sztafecie');
+          addError('distances', 'Podaj minimalną liczbę zawodników w sztafecie');
         }
         if (
           isBlank(dist.relayMaxTeamSize) ||
           relayMaxTeamSize === null ||
           !isPositiveInteger(relayMaxTeamSize)
         ) {
-          addError('distances', 'Podaj maksymalna liczbe zawodnikow w sztafecie');
+          addError('distances', 'Podaj maksymalną liczbę zawodników w sztafecie');
         }
         if (
           relayMinTeamSize !== null &&
@@ -1262,20 +1262,20 @@ export const useEventFormState = () => {
         ) {
           addError(
             'distances',
-            'Maksymalna liczba zawodnikow w sztafecie nie moze byc mniejsza niz minimalna',
+            'Maksymalna liczba zawodników w sztafecie nie może być mniejsza niż minimalna',
           );
         }
         if (isBlank(dist.relayTeamCompletionDeadline)) {
-          addError('distances', 'Podaj deadline kompletowania skladu sztafety');
+          addError('distances', 'Podaj deadline kompletowania składu sztafety');
         }
         if (dist.relayTeamCompletionDeadline && date && dist.relayTeamCompletionDeadline > date) {
           addError(
             'distances',
-            'Deadline kompletowania skladu sztafety nie moze byc pozniejszy niz data wydarzenia',
+            'Deadline kompletowania składu sztafety nie może być późniejszy niż data wydarzenia',
           );
         }
         if (isBlank(dist.teamAggregationRule)) {
-          addError('distances', 'Wybierz regule agregacji wyniku druzynowego');
+          addError('distances', 'Wybierz regule agregacji wyniku drużynowego');
         }
       }
       if (skipSystemPaymentConfig) continue;
@@ -1284,45 +1284,45 @@ export const useEventFormState = () => {
         const tierPrice = parseNumberInput(tier.price);
         const hasExplicitPrice = tier.price !== undefined && tier.price !== null;
         if (!tier.name.trim()) {
-          addError('distances', 'Kazdy prog cenowy musi miec nazwe');
+          addError('distances', 'Każdy próg cenowy musi mieć nazwę');
         }
         if (hasExplicitPrice && (tierPrice === null || tierPrice < 0)) {
-          addError('distances', 'Cena w progu musi byc poprawna liczba i nie moze byc ujemna');
+          addError('distances', 'Cena w progu musi być poprawną liczbą i nie może być ujemna');
         }
         if (tier.endDate) {
           if (Number.isNaN(new Date(tier.endDate).getTime())) {
-            addError('distances', 'Data koncowa progu cenowego jest nieprawidlowa');
+            addError('distances', 'Data końcowa progu cenowego jest nieprawidłowa');
           }
           if (registrationDeadline && tier.endDate > registrationDeadline) {
             addError(
               'distances',
-              'Data koncowa progu cenowego nie moze byc pozniejsza niz termin rejestracji',
+              'Data końcowa progu cenowego nie może być późniejsza niż termin rejestracji',
             );
           }
         }
         if (!isBlank(tier.participantLimit)) {
           const participantLimit = parseNumberInput(tier.participantLimit);
           if (participantLimit === null || participantLimit <= 0) {
-            addError('distances', 'Limit uczestnikow w progu musi byc dodatnia liczba');
+            addError('distances', 'Limit uczestników w progu musi być dodatnią liczbą');
           } else if (!Number.isInteger(participantLimit)) {
-            addError('distances', 'Limit uczestnikow w progu musi byc liczba calkowita');
+            addError('distances', 'Limit uczestników w progu musi być liczbą całkowitą');
           } else if (limitValue !== null && participantLimit > limitValue) {
             addError(
               'distances',
-              'Limit uczestnikow w progu nie moze byc wyzszy niz limit dystansu',
+              'Limit uczestników w progu nie może być wyższy niż limit dystansu',
             );
           }
         }
       }
       const tierDates = dist.priceTiers.map((tier) => tier.endDate).filter(Boolean);
       if (new Set(tierDates).size !== tierDates.length) {
-        addError('distances', 'Daty koncowe progow cenowych nie moga sie powtarzac');
+        addError('distances', 'Daty koncowe progów cenowych nie mogą się powtarzać');
       }
       const tierParticipantLimits = dist.priceTiers
         .map((tier) => parseNumberInput(tier.participantLimit))
         .filter((value): value is number => value !== null);
       if (new Set(tierParticipantLimits).size !== tierParticipantLimits.length) {
-        addError('distances', 'Limity uczestnikow w progach cenowych nie moga sie powtarzac');
+        addError('distances', 'Limity uczestników w progach cenowych nie mogą się powtarzać');
       }
     }
 
@@ -1333,30 +1333,30 @@ export const useEventFormState = () => {
       const stockCount = parseNumberInput(gadget.stockCount);
       const quantityMax = parseNumberInput(gadget.quantityMax);
       if (price === null || price < 0) {
-        addError('gadgets', 'Cena gadzetu musi byc poprawna liczba i nie moze byc ujemna');
+        addError('gadgets', 'Cena gadżetu musi być poprawną liczbą i nie może być ujemna');
       }
       if (!isBlank(gadget.originalPrice) && (originalPrice === null || originalPrice < 0)) {
         addError(
           'gadgets',
-          'Cena regularna gadzetu musi byc poprawna liczba i nie moze byc ujemna',
+          'Cena regularna gadżetu musi być poprawną liczbą i nie może być ujemna',
         );
       }
       if (!isBlank(gadget.stockCount) && (stockCount === null || !isPositiveInteger(stockCount))) {
         addError(
           'gadgets',
-          'Stan magazynowy gadzetu musi byc dodatnia liczba calkowita albo pusty',
+          'Stan magazynowy gadżetu musi być dodatnią liczbą całkowitą albo pusty',
         );
       }
       if (
         gadget.quantityMode === 'max' &&
         (quantityMax === null || !isPositiveInteger(quantityMax))
       ) {
-        addError('gadgets', 'Maksymalna liczba sztuk gadzetu musi byc dodatnia liczba calkowita');
+        addError('gadgets', 'Maksymalna liczba sztuk gadżetu musi być dodatnią liczbą całkowitą');
       }
       if (gadget.saleFrom && gadget.saleTo && gadget.saleFrom > gadget.saleTo) {
         addError(
           'gadgets',
-          'Data poczatku sprzedazy gadzetu nie moze byc pozniejsza niz data konca',
+          'Data początku sprzedaży gadżetu nie może być późniejsza niż data konca',
         );
       }
     }

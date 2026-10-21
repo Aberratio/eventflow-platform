@@ -6,12 +6,12 @@ import { getEventById, getOrganizerEventLimit, getOrganizers } from '@/api';
 import { isTierExpired } from '@/api/pricing';
 import type { Event, OrganizerEventLimit, User } from '@/types';
 
-// TD.2: EventFormStep2's price-tier expiry preview (PriceTierPreview + the
+// EventFormStep2's price-tier expiry preview (PriceTierPreview + the
 // inline isTierExpired check) reads `dist.registeredCount` off the
 // DistanceFormData produced by this hook. Previously it referenced an
 // undefined `existingEvent` variable in the component (tsc errors), so the
 // preview was dead code that could never reflect the real server-side count
-// (`event_distances.registered_count`, materialized by E1.3). This test
+// (`event_distances.registered_count`). This test
 // pins the hook's responsibility in the fix: when editing an existing event,
 // the loaded distance's registeredCount must reach `distances[i]`.
 
@@ -110,7 +110,7 @@ const existingEvent: Event = {
   ],
 };
 
-describe('useEventFormState edit mode (TD.2)', () => {
+describe('useEventFormState edit mode', () => {
   beforeEach(() => {
     toast.mockClear();
     navigate.mockClear();
@@ -137,12 +137,12 @@ describe('useEventFormState edit mode (TD.2)', () => {
     const [tier] = dist.priceTiers;
     // participantLimit is 20 and registeredCount is 37, so the tier must be
     // reported expired using the real count (a hardcoded 0 would report it
-    // as still active, which is exactly the regression this ticket fixes).
+    // as still active, which is exactly the regression this test guards against).
     expect(isTierExpired(tier, dist.registeredCount)).toBe(true);
     expect(isTierExpired(tier, 0)).toBe(false);
   });
 
-  // E3.2: editing an existing Event must load its saved BZ integration
+  // Editing an existing Event must load its saved BZ integration
   // toggle/token into the form state — the same round-trip other per-Event
   // fields (e.g. registeredCount above) already get through this hook.
   it('loads the existing event BZ integration toggle and token into the editable form state', async () => {
@@ -152,7 +152,7 @@ describe('useEventFormState edit mode (TD.2)', () => {
     expect(result.current.bzOrganizationToken).toBe('ORG-EXISTING-TOKEN');
   });
 
-  // TD.8 (spec 07 rozstrzygniecie 10): teamPricingMode must round-trip through
+  // TeamPricingMode must round-trip through
   // the same explicit-field-list load site as startType/relayMinTeamSize, or
   // it silently resets to the default on the organizer's next edit.
   it('loads the existing relay distance teamPricingMode into the editable form state', async () => {

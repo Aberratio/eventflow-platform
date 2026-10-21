@@ -15,7 +15,7 @@ const person = {
   email: '',
 };
 
-describe('registration transfer helpers (R-02)', () => {
+describe('registration transfer helpers', () => {
   it('offers live individual registrations only', () => {
     expect(canTransferRegistration({ status: 'pending' })).toBe(true);
     expect(canTransferRegistration({ status: 'confirmed' })).toBe(true);
@@ -80,6 +80,6 @@ describe('registration transfer helpers (R-02)', () => {
         actorRole: 'manager',
         createdAt: '2030-01-01 10:00:00',
       }),
-    ).toBe('Zapis przeniesiono na inną osobę');
+    ).toBe('Zapis przeniesiono na inną osóbę');
   });
 });

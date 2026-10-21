@@ -89,7 +89,7 @@ export const RichTextEditor = ({
     // instance is built during render and its 1ms destroy timer (see @tiptap/react useEditor.ts) races
     // React's passive-effect flush on heavy pages: if the flush lands after the timer, the editor gets
     // destroyed (schema = null) before this component's own sync effect calls editor.getHTML() on it
-    // (PP.16 — "Cannot read properties of null (reading 'cached')").
+    // ("Cannot read properties of null (reading 'cached')").
     immediatelyRender: false,
     extensions: EDITOR_EXTENSIONS,
     content: value ?? '',

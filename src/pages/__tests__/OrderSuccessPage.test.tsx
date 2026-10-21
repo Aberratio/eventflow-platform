@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { OrderDetails } from '@/types';
 import OrderSuccessPage from '../OrderSuccessPage';
 
-// PP.105: an organizer package is granted only after the payment is confirmed, so the success
+// An organizer package is granted only after the payment is confirmed, so the success
 // page must say so instead of implying the package is already active.
 
 const { cart } = vi.hoisted(() => ({ cart: { lastOrder: null as OrderDetails | null } }));

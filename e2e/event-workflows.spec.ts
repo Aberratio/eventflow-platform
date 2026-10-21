@@ -27,7 +27,7 @@ function queueCard(page: Page, eventName: string) {
   return page
     .locator('div')
     .filter({ has: page.getByText(eventName, { exact: true }) })
-    .filter({ has: page.getByRole('button', { name: /Zatwierdz/ }) })
+    .filter({ has: page.getByRole('button', { name: /Zatwierdź/ }) })
     .last();
 }
 
@@ -73,7 +73,7 @@ test.describe('Event workflow - organizer', () => {
     await page.locator('#location').fill('Stadion E2E');
     await page.locator('#city').fill('Warszawa');
     await page.getByRole('button', { name: WIZARD_NEXT_BUTTON }).click();
-    await expect(page.locator('body')).toContainText('Termin rejestracji nie moze');
+    await expect(page.locator('body')).toContainText('Termin rejestracji nie może');
 
     await pickDate(page, 'deadline', isoDaysFromToday(60));
 
@@ -87,7 +87,7 @@ test.describe('Event workflow - organizer', () => {
 
     await addFirstDistance(page, '-1');
     await page.getByRole('button', { name: WIZARD_NEXT_BUTTON }).click();
-    await expect(page.locator('body')).toContainText('nie moze byc ujemna');
+    await expect(page.locator('body')).toContainText('nie może być ujemna');
 
     await page.getByPlaceholder('150').first().fill('60');
     await advanceThroughWizard(page, /Utwórz wydarzenie/);
@@ -101,7 +101,7 @@ test.describe('Event workflow - organizer', () => {
 
 // One serial flow on a fresh seed. Fixtures are resolved by stable ID (names and slugs carry a year
 // that moves with the seed date). Depends on the seed: e19 = draft with a rejection reason,
-// e2e-pending = submitted, u-organizer starts with 0 package credits (PP.57 may change the seed; if
+// e2e-pending = submitted, u-organizer starts with 0 package credits (a seed change may alter this; if
 // it grants credits, step 1 has to change with it).
 test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
   const SEND_BACK_REASON = 'Brakuje regulaminu i mapy trasy';
@@ -116,7 +116,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
 
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e19');
-    await expect(page.getByText(/Powod odrzucenia:/).locator('..')).toContainText(
+    await expect(page.getByText(/Powód odrzucenia:/).locator('..')).toContainText(
       e19.rejectionReason as string,
     );
     const submit = page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' });
@@ -143,7 +143,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
     await expect(page.getByText(pending.name, { exact: true })).toBeVisible();
 
     page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toMatch(/powod|poprawy/i);
+      expect(dialog.message()).toMatch(/powód|poprawy/i);
       await dialog.accept(SEND_BACK_REASON);
     });
     await queueCard(page, pending.name)
@@ -162,7 +162,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
   }) => {
     await loginAs(page, 'organizer');
     await openOrganizerSettings(page, 'e2e-pending');
-    await expect(page.getByText(/Powod odrzucenia:/).locator('..')).toContainText(SEND_BACK_REASON);
+    await expect(page.getByText(/Powód odrzucenia:/).locator('..')).toContainText(SEND_BACK_REASON);
     await page.getByRole('button', { name: 'Popraw i oddaj ponownie do sprawdzenia' }).click();
 
     await expect(page.getByText('Wydarzenie oddane do sprawdzenia', { exact: true })).toBeVisible();
@@ -175,7 +175,7 @@ test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
     await openDashboardSection(page, 'Moderacja');
     await expect(page.getByText(pending.name, { exact: true })).toBeVisible();
     await queueCard(page, pending.name)
-      .getByRole('button', { name: /Zatwierdz/ })
+      .getByRole('button', { name: /Zatwierdź/ })
       .click();
 
     await expect(page.getByText(pending.name, { exact: true })).toBeHidden();

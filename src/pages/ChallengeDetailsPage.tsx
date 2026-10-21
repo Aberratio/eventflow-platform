@@ -51,7 +51,7 @@ import { toast } from '@/hooks/use-toast';
 import { ChallengeRankingCard } from '@/pages/challenges/ChallengeRankingCard';
 import { formatMoney } from '@/lib/format';
 
-// E5.3's client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
+// Client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
 // (same duplication CartPage.tsx already carries — the server stays
 // authoritative, this is UX only).
 const DELIVERY_METHODS_REQUIRING_ADDRESS = ['courier', 'paczkomat'];
@@ -122,7 +122,7 @@ const ChallengeDetailsPage = () => {
     },
   });
 
-  // E6.5 (issue 15 §4-5): reward selection, shown once the tree evaluator
+  // Reward selection, shown once the tree evaluator
   // (server-side, via participation.isCompleted) reports completion and the
   // reward hasn't been claimed yet (participation.rewardGranted).
   const [rewardDialogOpen, setRewardDialogOpen] = useState(false);

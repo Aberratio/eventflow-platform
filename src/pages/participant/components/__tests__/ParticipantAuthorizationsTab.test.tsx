@@ -43,7 +43,7 @@ const careResponse: CareResponse = {
   caregivers: [],
 };
 
-describe('ParticipantAuthorizationsTab identity code (E1.12)', () => {
+describe('ParticipantAuthorizationsTab identity code', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCare.mockResolvedValue({ data: careResponse });

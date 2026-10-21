@@ -3,9 +3,8 @@ import { act, render, screen, waitFor } from '@/test/test-utils';
 import EventRegistrationPage from '../EventRegistrationPage';
 
 /**
- * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
- * a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}` on the same
- * registration route (PP.54: the team id is public, the `invite` token is the secret the server
+ * * a captain's shareable invitation link is `?joinTeam={teamId}&invite={token}` on the same
+ * registration route (the team id is public, the `invite` token is the secret the server
  * requires to join; a link without it is outdated). `EventRegistrationPage` resolves it via
  * `GET /teams/{teamId}` (`getTeamById`) before the invitee ever sees the
  * form — these tests cover the three outcomes: valid link pre-fills the
@@ -102,7 +101,7 @@ const setUrl = (search: string) => {
   window.history.pushState({}, '', `/events/test-event/register${search}`);
 };
 
-describe('EventRegistrationPage — E7.2 `?joinTeam=&invite=` invitation link', () => {
+describe('EventRegistrationPage — `?joinTeam=&invite=` invitation link', () => {
   beforeEach(() => {
     mockGetTeamById.mockReset();
     mockCreateRegistration.mockReset();

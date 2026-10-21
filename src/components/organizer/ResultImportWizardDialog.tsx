@@ -56,23 +56,23 @@ interface ResultImportWizardDialogProps {
 
 const mappingTargets = [
   ['bibNumber', 'Numer startowy'],
-  ['fullName', 'Imie i nazwisko'],
-  ['firstName', 'Imie'],
+  ['fullName', 'Imię i nazwisko'],
+  ['firstName', 'Imię'],
   ['lastName', 'Nazwisko'],
   ['time', 'Czas'],
   ['status', 'Status'],
   ['position', 'Miejsce'],
   ['category', 'Kategoria'],
-  ['gender', 'Plec'],
+  ['gender', 'Płeć'],
   ['birthYear', 'Rok urodzenia'],
   ['club', 'Klub'],
 ] as const;
 
 const errorLabels: Record<string, string> = {
   time_missing: 'Brak czasu',
-  time_invalid: 'Nieprawidlowy czas',
+  time_invalid: 'Nieprawidłowy czas',
   participant_not_matched: 'Nie dopasowano uczestnika',
-  ambiguous_participant: 'Kilku pasujacych uczestnikow',
+  ambiguous_participant: 'Kilku pasujących uczestników',
   missing_mapping: 'Brak mapowania kolumn',
 };
 
@@ -153,11 +153,11 @@ export function ResultImportWizardDialog({
       setBatch(response.data);
       setMapping(response.data.mapping ?? {});
       setSheetName(response.data.sheetName ?? null);
-      toast({ title: 'Import przygotowany', description: 'Sprawdz mapowanie i podglad wynikow.' });
+      toast({ title: 'Import przygotowany', description: 'Sprawdź mapowanie i podgląd wyników.' });
     } catch (error) {
       toast({
         title: 'Import nieudany',
-        description: error instanceof Error ? error.message : 'Nie udalo sie wgrac pliku.',
+        description: error instanceof Error ? error.message : 'Nie udało się wgrać pliku.',
         variant: 'destructive',
       });
     } finally {
@@ -173,14 +173,14 @@ export function ResultImportWizardDialog({
       setBatch(response.data);
       setDrafts({});
       toast({
-        title: 'Podglad zaktualizowany',
-        description: 'Mozesz poprawic pojedyncze wiersze przed zatwierdzeniem.',
+        title: 'Podgląd zaktualizowany',
+        description: 'Możesz poprawić pojedyncze wiersze przed zatwierdzeniem.',
       });
     } catch (error) {
       toast({
         title: 'Analiza nieudana',
         description:
-          error instanceof Error ? error.message : 'Nie udalo sie przeanalizowac importu.',
+          error instanceof Error ? error.message : 'Nie udało się przeanalizować importu.',
         variant: 'destructive',
       });
     } finally {
@@ -201,7 +201,7 @@ export function ResultImportWizardDialog({
     } catch (error) {
       toast({
         title: 'Nie zapisano wiersza',
-        description: error instanceof Error ? error.message : 'Sprobuj ponownie.',
+        description: error instanceof Error ? error.message : 'Spróbuj ponownie.',
         variant: 'destructive',
       });
     } finally {
@@ -216,7 +216,7 @@ export function ResultImportWizardDialog({
       await commitResultImport(batch.id);
       toast({
         title: 'Wyniki zapisane',
-        description: 'Wyniki sa juz widoczne w wydarzeniu i profilach uczestnikow.',
+        description: 'Wyniki są już widoczne w wydarzeniu i profilach uczestników.',
       });
       onCommitted();
       reset();
@@ -224,7 +224,7 @@ export function ResultImportWizardDialog({
     } catch (error) {
       toast({
         title: 'Nie zatwierdzono importu',
-        description: error instanceof Error ? error.message : 'Rozwiaz problematyczne wiersze.',
+        description: error instanceof Error ? error.message : 'Rozwiąż problematyczne wiersze.',
         variant: 'destructive',
       });
     } finally {
@@ -249,7 +249,7 @@ export function ResultImportWizardDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-h-[92vh] max-w-6xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Import wynikow z pliku</DialogTitle>
+            <DialogTitle>Import wyników z pliku</DialogTitle>
             <DialogDescription>
               Wgraj CSV/XLSX albo eksperymentalnie odczytaj PDF dla jednego dystansu, popraw dane w
               podgladzie i zatwierdz oficjalne wyniki.
@@ -284,7 +284,7 @@ export function ResultImportWizardDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="replace">Zastap dystans</SelectItem>
+                    <SelectItem value="replace">Zastąp dystans</SelectItem>
                     <SelectItem value="upsert">Dopisz/aktualizuj</SelectItem>
                   </SelectContent>
                 </Select>
@@ -360,7 +360,7 @@ export function ResultImportWizardDialog({
                   </div>
                   <Button onClick={handleAnalyze} disabled={busy}>
                     {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Przelicz podglad
+                    Przelicz podgląd
                   </Button>
                 </div>
 
@@ -380,7 +380,7 @@ export function ResultImportWizardDialog({
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Import wymaga decyzji</AlertTitle>
                     <AlertDescription>
-                      Popraw czas/status albo dopasuj uczestnikow w problematycznych wierszach przed
+                      Popraw czas/status albo dopasuj uczestników w problematycznych wierszach przed
                       zatwierdzeniem.
                     </AlertDescription>
                   </Alert>
@@ -532,7 +532,7 @@ export function ResultImportWizardDialog({
 
                 {candidateRows.length > 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Najpierw sprawdz problematyczne wiersze:{' '}
+                    Najpierw sprawdź problematyczne wiersze:{' '}
                     {candidateRows
                       .map((row) => row.rowNumber)
                       .slice(0, 8)
@@ -550,7 +550,7 @@ export function ResultImportWizardDialog({
             </Button>
             <Button onClick={handleCommit} disabled={!canCommit || busy}>
               {busy && batch ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Zatwierdz wyniki
+              Zatwierdź wyniki
             </Button>
           </DialogFooter>
         </DialogContent>

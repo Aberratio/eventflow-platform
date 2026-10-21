@@ -27,7 +27,7 @@ export const ModeratorModerationTab = () => {
       toast.success('Wydarzenie zatwierdzone i opublikowane.');
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie zatwierdzic wydarzenia');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się zatwierdzić wydarzenia');
     },
   });
 
@@ -36,17 +36,17 @@ export const ModeratorModerationTab = () => {
       rejectEvent(event.id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.events });
-      toast.success('Wydarzenie odeslane do poprawy.');
+      toast.success('Wydarzenie odesłane do poprawy.');
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Nie udalo sie odeslac wydarzenia');
+      toast.error(error instanceof Error ? error.message : 'Nie udało się odesłać wydarzenia');
     },
   });
 
   const approve = (event: Event) => approveMutation.mutate(event);
 
   const reject = (event: Event) => {
-    const reason = window.prompt('Podaj powod odeslania wydarzenia do poprawy:');
+    const reason = window.prompt('Podaj powód odesłania wydarzenia do poprawy:');
     if (!reason?.trim()) return;
     rejectMutation.mutate({ event, reason: reason.trim() });
   };
@@ -67,8 +67,8 @@ export const ModeratorModerationTab = () => {
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 text-primary/50" />
-            <p className="text-lg font-medium">Brak wydarzen do sprawdzenia</p>
-            <p className="text-sm">Organizatorzy musza najpierw oddac szkic do sprawdzenia.</p>
+            <p className="text-lg font-medium">Brak wydarzeń do sprawdzenia</p>
+            <p className="text-sm">Organizatorzy muszą najpierw oddać szkic do sprawdzenia.</p>
           </div>
         </CardContent>
       </Card>
@@ -117,7 +117,7 @@ export const ModeratorModerationTab = () => {
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Button onClick={() => approve(event)} className="gap-2">
                     <CheckCircle className="h-4 w-4" />
-                    Zatwierdz
+                    Zatwierdź
                   </Button>
                   <Button variant="destructive" onClick={() => reject(event)} className="gap-2">
                     <XCircle className="h-4 w-4" />
@@ -126,13 +126,13 @@ export const ModeratorModerationTab = () => {
                   <Button variant="outline" size="default" asChild className="gap-2">
                     <a href={`/events/${event.slug}/preview`}>
                       <Eye className="h-4 w-4" />
-                      Podglad
+                      Podgląd
                     </a>
                   </Button>
                   <Button variant="outline" size="default" asChild className="gap-2">
                     <a href={`/moderator/events/${event.id}/overview`}>
                       <FileText className="h-4 w-4" />
-                      Zarzadzaj
+                      Zarządzaj
                     </a>
                   </Button>
                 </div>

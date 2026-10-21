@@ -21,7 +21,7 @@ import { TEST_REGISTRATION_MESSAGE, registrationClosedMessage } from '@/lib/regi
 import { formatMoney } from '@/lib/format';
 
 /**
- * E8.11 ("Zewnętrzny formularz w iframe", contract §5.3): the dedicated,
+ * The dedicated,
  * chrome-free route an organizer `<iframe>`s on their own website —
  * `/embed/event/:id/register`. No `<Layout>` (no header/nav/footer); `App.tsx`
  * additionally suppresses `BottomNav`/`DevToolbox`/`OnboardingDialog`/
@@ -36,7 +36,7 @@ const EmbedEventRegistrationPage = () => {
   const [registration, setRegistration] = useState<Registration | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  // B-01: the server refused with 409 `registration_closed` — shown instead of the form.
+  // The server refused with 409 `registration_closed` — shown instead of the form.
   const [closedMessage, setClosedMessage] = useState<string | null>(null);
   const [serverFieldErrors, setServerFieldErrors] = useState<RegistrationFormFieldError[] | null>(
     null,
@@ -98,7 +98,7 @@ const EmbedEventRegistrationPage = () => {
 
   const isLoading = isEmbedConfigLoading || (embedConfig?.enabled === true && isEventLoading);
 
-  // Payload of `createRegistration` AND of `quoteRegistration` (B-02): the quote prices exactly what
+  // Payload of `createRegistration` AND of `quoteRegistration`: the quote prices exactly what
   // the create call would send, so both are built here, once.
   const buildCreatePayload = (data: RegistrationData): CreateRegistrationPayload | null => {
     if (!user || !event) return null;
@@ -120,7 +120,7 @@ const EmbedEventRegistrationPage = () => {
       discountCode: data.discountCode,
       merchandise: data.merchandise,
       insuranceVariantId: data.insuranceVariantId,
-      // B-07: answers and identity are validated by the server in the create call itself.
+      // Answers and identity are validated by the server in the create call itself.
       formFieldAnswers: answersToPayload(data.formFieldAnswers),
       identity: data.identity,
     };
@@ -132,12 +132,12 @@ const EmbedEventRegistrationPage = () => {
     setSubmitError(null);
     try {
       // Same money-free payload contract as the normal registration page
-      // (E1.2) — only IDs/selections, server recomputes and freezes amounts.
+      // — only IDs/selections, server recomputes and freezes amounts.
       const payload = buildCreatePayload(data);
       if (!payload) return;
       const response = await createRegistration(payload);
-      // PP.52: a fresh `pending` trasa-A Zapis comes with a gateway session — pay there
-      // (the helper breaks out of the iframe, E8.11).
+      // A fresh `pending` trasa-A Zapis comes with a gateway session — pay there
+      // (the helper breaks out of the iframe).
       if (
         !response.data.isTest &&
         response.data.status === 'pending' &&
@@ -221,7 +221,7 @@ const EmbedEventRegistrationPage = () => {
             <p className="text-muted-foreground">
               Zaloguj się na koncie Zmierzymy Czas, aby dokończyć zapis.
             </p>
-            {/* /login is not frameable (PP.9 frame-ancestors 'self'), and
+            {/* /login is not frameable (frame-ancestors 'self'), and
                 third-party-iframe storage is partitioned anyway, so log in
                 top-level on our site. */}
             <Button asChild>

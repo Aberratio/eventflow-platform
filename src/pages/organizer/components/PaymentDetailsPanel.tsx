@@ -19,15 +19,15 @@ interface PaymentDetailsPanelProps {
     updatedDetails: PaymentDetails,
   ) => void | boolean | Promise<boolean | void>;
   onClose: () => void;
-  /** E1.5: zatwierdza żądanie zwrotu ("do zwrotu"). Omitted hides the action. */
+  /** Approves the refund request ("do zwrotu"). Omitted hides the action. */
   onApproveRefund?: () => void;
-  /** Trasa B: organizator ręcznie odznacza „zwrócono". Omitted hides the action. */
+  /** Route B: the organizer manually marks it "zwrócono". Omitted hides the action. */
   onCompleteRefund?: () => void;
   /**
-   * E1.8: trasa B — organizator ręcznie potwierdza wpłatę po zweryfikowaniu
-   * jej na koncie bankowym. Realna tranzycja pending -> confirmed po stronie
-   * serwera (nie lokalny checkbox jak startFeePaid poniżej). Omitted hides
-   * the action — shown only for a `pending` trasa-B Zapis.
+   * Route B — the organizer manually confirms a payment after verifying it
+   * on the bank account. A real pending -> confirmed transition on the
+   * server (not a local checkbox like startFeePaid below). Omitted hides
+   * the action — shown only for a `pending` route-B Zapis.
    */
   onMarkPaid?: () => void;
 }
@@ -274,7 +274,7 @@ export const PaymentDetailsPanel = ({
           ))}
         </div>
 
-        {/* E1.5: refund cycle, if any — request/approve/complete state machine */}
+        {/* Refund cycle, if any — request/approve/complete state machine */}
         {registration.refund && (
           <>
             <Separator />

@@ -55,7 +55,7 @@ export const CookieConsent = () => {
   const [marketing, setMarketing] = useState(false);
   const [functional, setFunctional] = useState(false);
   const openerRef = useRef<HTMLElement | null>(null);
-  // WCAG 2.4.3: po zamknięciu ustawień fokus wraca do elementu, który je otworzył.
+  // WCAG 2.4.3: when the settings close, focus returns to the element that opened them.
   const restoreFocus = () => {
     const opener = openerRef.current;
     openerRef.current = null;
@@ -117,7 +117,7 @@ export const CookieConsent = () => {
     </a>
   );
 
-  // Ustawienia szczegółowe: dialog modalny (pułapka fokusu, Escape, powrót fokusu do wywołującego).
+  // Detailed settings: a modal dialog (focus trap, Escape, focus returns to the opener).
   if (showDetails) {
     return (
       <Dialog
@@ -126,7 +126,7 @@ export const CookieConsent = () => {
           if (open) return;
           restoreFocus();
           setShowDetails(false);
-          // Zgoda już zapisana (otwarte z linku w stopce) -> zamknij całość; inaczej wróć do paska.
+          // Consent already saved (opened from the footer link) -> close everything; otherwise go back to the banner.
           if (localStorage.getItem(STORAGE_KEY)) setVisible(false);
         }}
       >

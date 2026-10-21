@@ -95,7 +95,7 @@ export const ProfileForm = ({ user, children }: ProfileFormProps) => {
     setSaving(true);
     try {
       const address = Object.values(formData.address).some(Boolean) ? formData.address : undefined;
-      // PP.1: e-mail is never sent from here — the server rejects a self
+      // E-mail is never sent from here — the server rejects a self
       // e-mail change (email_change_not_allowed). The input stays read-only.
       const updated = await updateCurrentUser({
         name: formData.name,

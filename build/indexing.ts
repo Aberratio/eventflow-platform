@@ -1,5 +1,5 @@
 /**
- * D-09 / PP.28 / QA-SEO-02: only the production build may be indexed. Every other
+ * Only the production build may be indexed. Every other
  * environment (dev, staging, previews, a local build) is blocked by default, so a new
  * environment can never leak into search results by forgetting a setting.
  *

@@ -55,7 +55,7 @@ const ParticipantDashboard = () => {
     enabled: Boolean(user?.id),
   });
   const queryClient = useQueryClient();
-  // B-05: shares the cache entry with the registrations tab (payment config of each event).
+  // Shares the cache entry with the registrations tab (payment config of each event).
   const { data: eventsResp } = useQuery({
     queryKey: ['events', 'participant-registrations'],
     queryFn: () => getEvents({ includeUnpublished: true, includePrivate: true, pageSize: 1000 }),

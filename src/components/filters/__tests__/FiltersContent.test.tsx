@@ -6,7 +6,7 @@ import { FiltersContent } from '../FiltersContent';
 import type { EventFiltersState } from '@/hooks/useEventFilters';
 import type { EventSeries } from '@/types';
 
-// Regression test for TD.3: `queryFn: getSeries` used to pass react-query's
+// Regression test: `queryFn: getSeries` used to pass react-query's
 // QueryFunctionContext straight through as the (unused) filters argument at
 // runtime, and the resulting `unknown`-typed response would throw on the
 // following `.map` call, crashing the series filter section. The fix wraps

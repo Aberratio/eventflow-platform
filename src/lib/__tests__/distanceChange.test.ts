@@ -22,7 +22,7 @@ const quote = (over: Partial<DistanceChangeQuote> = {}): DistanceChangeQuote => 
   ...over,
 });
 
-describe('canChangeDistance (R-02)', () => {
+describe('canChangeDistance', () => {
   it('offers live individual registrations only', () => {
     expect(canChangeDistance({ status: 'pending' })).toBe(true);
     expect(canChangeDistance({ status: 'confirmed' })).toBe(true);
@@ -32,7 +32,7 @@ describe('canChangeDistance (R-02)', () => {
   });
 });
 
-describe('describeBalance (R-02)', () => {
+describe('describeBalance', () => {
   it('says nothing needs settling when the balance is zero', () => {
     expect(describeBalance(quote(), false)).toEqual({
       tone: 'neutral',
@@ -72,7 +72,7 @@ describe('describeBalance (R-02)', () => {
   });
 });
 
-describe('describeRegistrationChange for a distance change (R-02)', () => {
+describe('describeRegistrationChange for a distance change', () => {
   const change = (over: Partial<RegistrationChange>): RegistrationChange => ({
     id: 'c1',
     registrationId: 'r1',

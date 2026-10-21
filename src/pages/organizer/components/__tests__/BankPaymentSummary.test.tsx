@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BankPaymentSummary } from '../BankPaymentSummary';
 import type { Event } from '@/types';
 
-// Regression test for TD.3: this component referenced
+// Regression test: this component referenced
 // `event.paymentConfig?.bankTransferAddress`, a field that never existed on
 // `PaymentConfig` (the real field is `transferTitle`, used elsewhere e.g.
 // RegistrationForm.tsx, EventSidebar.tsx). That typo meant the "Tytuł

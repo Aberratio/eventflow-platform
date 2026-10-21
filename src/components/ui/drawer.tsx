@@ -43,7 +43,7 @@ const DrawerContent = React.forwardRef<
           if (typeof ref === 'function') ref(node);
           else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
-        // WCAG 2.4.3: wejście do szuflady przenosi fokus do niej (domyślnie zostawał na wyzwalaczu).
+        // WCAG 2.4.3: opening the drawer moves focus into it (by default it stayed on the trigger).
         onOpenAutoFocus={(event) => {
           onOpenAutoFocus?.(event);
           if (event.defaultPrevented) return;

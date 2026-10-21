@@ -32,3 +32,9 @@ blob-report
 # Dev E2E suite: local credentials and reports
 .env.e2e-dev
 test-results-dev
+
+# Test coverage, TypeScript build info, local tooling
+coverage/
+*.tsbuildinfo
+.claude/
+.tiller-profile

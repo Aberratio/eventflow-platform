@@ -51,7 +51,7 @@ const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /**
- * R-02 (zakres P2): „Przenieś zapis”. The organizer moves a Zapis to another person: either finds an
+ * „Przenieś zapis”. The organizer moves a Zapis to another person: either finds an
  * existing Zawodnik (exact name + date of birth, the same lookup as the duplicate warning) or enters a
  * new person's data. A second step spells out what happens — the start code is rotated, the form answers
  * are dropped, no money is settled between the two people — and only then sends it.

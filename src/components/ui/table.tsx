@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    // WCAG 2.1.1: przewijalny kontener tabeli musi być osiągalny z klawiatury.
+    // WCAG 2.1.1: a scrollable table container must be reachable from the keyboard.
     <div
       className="relative w-full overflow-auto"
       tabIndex={0}

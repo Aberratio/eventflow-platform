@@ -16,11 +16,11 @@ interface EventImageCardProps {
   title: string;
   /** Wariant: closing = orange, finished = emerald */
   mode: 'closing' | 'finished';
-  /** Etykieta na obrazku (np. "Kończy się za 2 dni") */
+  /** Label on the image (e.g. "Kończy się za 2 dni") */
   imageLabel?: string;
-  /** Slot na metadane pod tytułem (np. EventMeta) */
+  /** Slot for metadata under the title (e.g. EventMeta) */
   meta?: React.ReactNode;
-  /** Dodatkowe info (cena, miejsca) — widoczne tylko w mode=closing */
+  /** Extra info (price, places) — visible only in mode=closing */
   footer?: React.ReactNode;
   buttonLabel?: string;
   className?: string;

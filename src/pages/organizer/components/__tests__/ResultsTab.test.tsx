@@ -74,7 +74,7 @@ beforeEach(() => {
   getResultDocuments.mockResolvedValue({ success: true, data: [] });
 });
 
-describe('ResultsTab publication status (E2.3)', () => {
+describe('ResultsTab publication status', () => {
   it('shows a preliminary badge and a "mark official" action when results are preliminary', async () => {
     getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
     render(<ResultsTab event={event} registrations={registrations} />);
@@ -119,7 +119,7 @@ describe('ResultsTab publication status (E2.3)', () => {
   });
 });
 
-describe('ResultsTab team classification (E2.7)', () => {
+describe('ResultsTab team classification', () => {
   it('shows a guidance message instead of the classification for a non-relay distance', async () => {
     getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });
     const user = userEvent.setup();
@@ -166,7 +166,7 @@ describe('ResultsTab team classification (E2.7)', () => {
   });
 });
 
-describe('ResultsTab result corrections (G-03)', () => {
+describe('ResultsTab result corrections', () => {
   it('opens the correction history of a result from its row', async () => {
     const user = userEvent.setup();
     getResultsByEvent.mockResolvedValue({ success: true, data: [baseResult] });

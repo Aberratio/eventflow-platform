@@ -3,7 +3,7 @@ import { httpAdapter } from '../http.adapter';
 
 const TOKEN_STORAGE_KEY = 'zmierzymy_czas_api_token';
 
-describe('httpAdapter settlement report (R-03)', () => {
+describe('httpAdapter settlement report', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

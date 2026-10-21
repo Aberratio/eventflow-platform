@@ -13,7 +13,7 @@ function res(payload: unknown, status = 200): Response {
 const notFound = () =>
   res({ success: false, error: { code: 'not_found', message: 'Nie znaleziono' } }, 404);
 
-/** Contract Rule (D-01): detail routes answer 404 now, 200 + data:null before. Both = "not found". */
+/** Contract Rule: detail routes answer 404 now, 200 + data:null before. Both = "not found". */
 const detailCalls: Array<[string, () => Promise<{ data: unknown }>]> = [
   ['getEventBySlug', () => httpAdapter.getEventBySlug('x')],
   ['getEventById', () => httpAdapter.getEventById('x')],

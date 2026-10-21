@@ -10,7 +10,7 @@ import { apiErrorCode } from '@/api/errors';
 
 type Status = 'loading' | 'success' | 'error' | 'taken';
 
-/** PP.7: lands here from the e-mail sent to the NEW address (`/confirm-email-change?token=…`). */
+/** Lands here from the e-mail sent to the NEW address (`/confirm-email-change?token=…`). */
 const ConfirmEmailChangePage = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');

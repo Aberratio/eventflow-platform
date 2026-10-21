@@ -45,7 +45,7 @@ const renderPage = () =>
     </QueryClientProvider>,
   );
 
-describe('TicketPrintPage (B-04)', () => {
+describe('TicketPrintPage', () => {
   beforeEach(() => {
     api.getEventById.mockResolvedValue({
       data: { id: 'ev-1', name: 'Bieg Testowy', date: '2026-09-15', location: 'Park Miejski', city: 'Łódź' },

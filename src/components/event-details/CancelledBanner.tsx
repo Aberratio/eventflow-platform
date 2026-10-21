@@ -8,7 +8,7 @@ interface CancelledBannerProps {
 
 /**
  * Shown to ALL roles (guest included) when a published event has been
- * cancelled (E1.1). Formal, terminal state — distinct styling from the
+ * cancelled. Formal, terminal state — distinct styling from the
  * moderator-only ModerationReviewBar.
  */
 export const CancelledBanner = ({ event }: CancelledBannerProps) => (

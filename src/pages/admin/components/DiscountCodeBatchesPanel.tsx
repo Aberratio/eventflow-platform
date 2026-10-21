@@ -15,7 +15,7 @@ interface DiscountCodeBatchesPanelProps {
 }
 
 /**
- * R-07: batch generator entry point of the discount codes tab - "Generuj partię" plus the list of
+ * Batch generator entry point of the discount codes tab - "Generuj partię" plus the list of
  * batches already generated for the event, each with a CSV download.
  */
 export const DiscountCodeBatchesPanel = ({

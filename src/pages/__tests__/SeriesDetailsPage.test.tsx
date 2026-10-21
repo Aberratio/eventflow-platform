@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SeriesDetailsPage from '../SeriesDetailsPage';
 
-// D-06: the classification used to be computed client-side from getEvents()/getResults()
+// The classification used to be computed client-side from getEvents()/getResults()
 // (a page of 25 events). It must come from GET /series/{id}/ranking.
 
 const { getSeriesRanking, getResults } = vi.hoisted(() => ({

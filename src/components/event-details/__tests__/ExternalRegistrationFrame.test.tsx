@@ -13,7 +13,7 @@ const eventWith = (externalUrl: string): Event =>
 const dangerousLink = (container: HTMLElement) =>
   container.querySelector('a[href^="javascript" i], a[href^="data" i], a[href^="vbscript" i]');
 
-describe('ExternalRegistrationFrame (PP.50)', () => {
+describe('ExternalRegistrationFrame', () => {
   it('renders no iframe and no link for a javascript: URL, and shows the Polish notice', () => {
     const { container, getByText } = render(
       <ExternalRegistrationFrame event={eventWith('javascript:window.__xss=1')} active />,

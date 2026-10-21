@@ -3,7 +3,7 @@ import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * PP.50 static regression net: every href={...}, window.open(...) and <iframe src={...}> in a .tsx source file
+ * Static regression net: every href={...}, window.open(...) and <iframe src={...}> in a .tsx source file
  * must either go through safeUrl() or be a known fixed-prefix / developer-controlled value.
  */
 const SRC = resolve(__dirname, '../..');
@@ -82,7 +82,7 @@ const isSafe = (expr: string, text: string): boolean => {
   return false;
 };
 
-describe('urlSinkGuard (PP.50)', () => {
+describe('urlSinkGuard', () => {
   it('routes every user-supplied href / window.open / iframe src through safeUrl', () => {
     const offenders: string[] = [];
     let inspected = 0;

@@ -24,7 +24,7 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
-/** G-04: the captain picks the member to swap out from the server-provided roster. */
+/** The captain picks the member to swap out from the server-provided roster. */
 describe('TeamRosterDialog', () => {
   beforeEach(() => {
     resetQueryClient();

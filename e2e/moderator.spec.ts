@@ -19,7 +19,7 @@ test.describe('Moderator Dashboard', () => {
   test('moderation tab loads events for review', async ({ page }) => {
     await openDashboardSection(page, 'Moderacja');
     await expect(
-      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzen do sprawdzenia/).first(),
+      page.getByText(/Wydarzenia do sprawdzenia|Brak wydarzeń do sprawdzenia/).first(),
     ).toBeVisible();
   });
 
@@ -49,9 +49,9 @@ test.describe('Moderator Dashboard', () => {
 
   test('challenges tab loads', async ({ page }) => {
     await openDashboardSection(page, 'Wyzwania');
-    // The section heading, not the sidebar button of the same name (PP.15 fix-loop 1).
+    // The section heading, not the sidebar button of the same name.
     await expect(page.getByRole('heading', { name: 'Wyzwania', exact: true })).toBeVisible();
-    // PP.4: the moderator view is read-only, so it has no create action.
+    // The moderator view is read-only, so it has no create action.
     await expect(page.getByRole('button', { name: 'Nowe wyzwanie' })).toHaveCount(0);
   });
 });

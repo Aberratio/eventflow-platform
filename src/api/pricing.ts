@@ -23,8 +23,8 @@ export const applyDiscount = (
 
 /**
  * A Próg (price tier) expires on whichever of its two independent, optional
- * limits is hit first ("co nastąpi wcześniej") — mirrors
- * RegistrationRepository::currentDistancePrice on the server (E0.3).
+ * limits is hit first ("whichever comes first") — mirrors
+ * RegistrationRepository::currentDistancePrice on the server.
  */
 export const isTierExpired = (tier: PriceTier, registeredCount: number): boolean => {
   const expiredByDate = !!tier.endDate && new Date(tier.endDate) < new Date();
@@ -52,7 +52,7 @@ const priceForTier = (basePrice: number, tier: PriceTier): number =>
  * Get the current active price tier for a distance. Tiers are evaluated in
  * their configured order (not re-sorted) — the first one that is not
  * expired by either limit wins, matching the server's
- * RegistrationRepository::currentDistancePrice (E0.3).
+ * RegistrationRepository::currentDistancePrice.
  */
 export const getCurrentPrice = (
   distance: Distance,
@@ -95,12 +95,12 @@ export const getCurrentPrice = (
 
 /**
  * PREVIEW ONLY — non-authoritative. Resolve the current price of a Wariant
- * opłaty (steps 1-2 of the E1.2 "Rozliczenie" algorithm): the Wariant is a
+ * opłaty: the Wariant is a
  * full price list carrying its own base price and its own tier list — not a
  * discount off `distance.price`. Tiers are evaluated in configured order,
  * first non-expired one wins (`isTierExpired`), matching the server's
  * eventual authoritative computation. The server always recomputes and
- * freezes the real "opłata startowa" on the Zapis; this only drives the
+ * freezes the real entry fee ("opłata startowa") on the Zapis; this only drives the
  * client-side price preview shown before submit.
  */
 export const getVariantPrice = (
@@ -141,7 +141,7 @@ export const getVariantPrice = (
 /**
  * Age as of a given reference date (defaults to today), counting whole years
  * elapsed since `birthDate`. Used for the NNW premium preview, which per
- * E1.2 resolution #9 must use the age AS OF THE EVENT DATE, not today and
+ * the pricing rules must use the age AS OF THE EVENT DATE, not today and
  * not the registration date.
  */
 export const calculateAge = (birthDate: string, asOfDate: string | Date = new Date()): number => {
@@ -156,7 +156,7 @@ export const calculateAge = (birthDate: string, asOfDate: string | Date = new Da
 };
 
 /**
- * PREVIEW ONLY — non-authoritative. NNW premium for step 6 of the E1.2
+ * PREVIEW ONLY — non-authoritative. NNW premium of the pricing
  * algorithm: baseFee + max(0, age-18) * ageMultiplier, age computed as of
  * the EVENT date. Returns 0 when the competitor's age at the event exceeds
  * the variant's maxAge (insurance unavailable). The server recomputes and

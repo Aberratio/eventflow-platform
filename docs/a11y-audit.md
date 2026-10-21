@@ -1,10 +1,12 @@
 # Audyt dostępności WCAG 2.2 AA
 
-Data: 2026-10-19/20. Zakres: front `eventflow-platform` na `origin/main` (13ffb02), API lokalne (`eventflow-server`, baza `zc_a11y`, seed demo).
+> English summary: WCAG 2.2 AA accessibility audit of the frontend (Polish text). Findings are listed with severity and fix status.
+
+Data: 2026-10-19/20. Zakres: front `eventflow-platform` na `origin/main`, API lokalne (`eventflow-server`, lokalna baza, seed demo).
 
 ## Metoda
 
-- Stos lokalny: `php -S 127.0.0.1:8081` (kopia serwera z własnym `.env`, baza `zc_a11y`, `bin/migrate.php` + `bin/seed.php`) oraz `npm run dev` z `VITE_API_URL` na to API. Hosta dev nie używano.
+- Stos lokalny: `php -S 127.0.0.1:8081` (kopia serwera z własnym `.env`, lokalna baza, `bin/migrate.php` + `bin/seed.php`) oraz `npm run dev` z `VITE_API_URL` na to API. Hosta dev nie używano.
 - **axe-core** (`@axe-core/playwright`, tagi `wcag2a/2aa/21a/21aa/22aa`) na 68 ekranach x 2 viewporty (desktop 1280x800, mobile 360x800) = 136 przebiegów: publiczne (strona główna, wydarzenia, szczegóły, zapis, wyniki, serie, sklep, produkt, koszyk, wyzwania, live, logowanie, rejestracja, reset hasła, 404), uczestnik (10 zakładek, profil), organizator (panel, lista, formularz, 7 zakładek wydarzenia), moderator (10 sekcji), admin (14 sekcji + formularze nowych rekordów).
 - Istniejący zestaw `e2e-dev/a11y` (struktura dokumentu, skip link, fokus klawiatury, dialogi, nazwy, formularze, reflow) uruchomiony na lokalnym stosie.
 - Ręcznie/skryptowo: przejście Tab po stronie (widoczny fokus, kolejność, pułapki), Escape i powrót fokusu w dialogach, liczba `<main>` i `<h1>`, przeskoki poziomów nagłówków, nazwy przycisków/linków/pól, cele dotyku < 24 px, przepełnienie poziome na 360 px, kontrast (wartości z axe).

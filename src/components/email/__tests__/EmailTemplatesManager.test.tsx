@@ -40,7 +40,7 @@ beforeEach(() => {
   api.getMailLog.mockResolvedValue({ data: [], total: 0, page: 1, pageSize: 25, totalPages: 0 });
 });
 
-describe('EmailTemplatesManager (B-03)', () => {
+describe('EmailTemplatesManager', () => {
   it('loads the global catalogue for the system scope', async () => {
     render(<EmailTemplatesManager scope="system" />);
     expect(await screen.findByText('Potwierdzenie płatności')).toBeInTheDocument();

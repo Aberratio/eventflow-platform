@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { DuplicateReportsQueue } from '../DuplicateReportsQueue';
 import type { CompetitorDuplicateReport } from '@/types';
 
-// R-08: kolejka zgłoszonych duplikatów - lista, filtr statusu, "Porównaj" i "Odrzuć".
+// Queue of reported duplicates - list, status filter, "Porównaj" and "Odrzuć".
 
 const { mockList, mockReject } = vi.hoisted(() => ({
   mockList: vi.fn(),

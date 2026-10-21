@@ -1,5 +1,5 @@
 /**
- * Render-side guard for user-supplied URLs in href/src/window.open (PP.50).
+ * Render-side guard for user-supplied URLs in href/src/window.open.
  * Mirrors zmierzymy_czas_server src/Support/UrlPolicy.php — keep the two in sync
  * (same LINK_SCHEMES, same HOST_LIKE, same shared test corpus).
  */

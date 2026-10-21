@@ -7,7 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AdminProductEditPage } from '../AdminProductEditPage';
 import { toast } from 'sonner';
 
-// E5.1: this is the only place an admin can create/edit a shop product,
+// This is the only place an admin can create/edit a shop product,
 // including its size/color variants. These tests exercise the real
 // create/update calls and the client-side validation that mirrors the
 // server's required-field check, so a regression here would either let bad

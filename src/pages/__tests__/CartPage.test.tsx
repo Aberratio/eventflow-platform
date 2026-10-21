@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CartPage from '../CartPage';
 import type { CartItem } from '@/types';
 
-// E5.2: `handleCheckout` used to fabricate an order locally (Math.random order
+// `handleCheckout` used to fabricate an order locally (Math.random order
 // number, crypto.randomUUID id, a fake delay) and never call the backend.
 // These assert the real `createOrder` API call happens with a reasonable
 // payload, and that success/failure are handled distinctly (cart cleared +
@@ -131,7 +131,7 @@ const renderPage = () => {
 
 const selectDeliveryAndPayment = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(await screen.findByText('Kurier'));
-  // E5.3: courier requires a shipping address before checkout is enabled.
+  // Courier requires a shipping address before checkout is enabled.
   await user.type(screen.getByLabelText('Imię i nazwisko'), 'Jan Kowalski');
   await user.type(screen.getByLabelText('Ulica i numer'), 'Testowa 1');
   await user.type(screen.getByLabelText('Kod pocztowy'), '00-001');
@@ -179,7 +179,7 @@ describe('CartPage checkout', () => {
     );
     expect(mockClearCart).toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith('/order-success');
-    // E5.7: a successful checkout may have granted the Organizer role
+    // A successful checkout may have granted the Organizer role
     // server-side (organizer-package purchase) — refetch /users/me so the
     // Organizer-only nav item can appear without a manual reload.
     expect(mockRefreshUser).toHaveBeenCalledTimes(1);
@@ -208,7 +208,7 @@ describe('CartPage checkout', () => {
     expect(mockRefreshUser).not.toHaveBeenCalled();
   }, 15000);
 
-  // E5.3: courier/paczkomat need a shipping address before checkout is
+  // Courier/paczkomat need a shipping address before checkout is
   // possible at all — these assert the button stays disabled (canCheckout
   // false) rather than letting an incomplete request reach the server.
   it('keeps checkout disabled for courier until the shipping address is complete', async () => {
@@ -243,7 +243,7 @@ describe('CartPage checkout', () => {
     expect(mockCreateOrder).not.toHaveBeenCalled();
   }, 15000);
 
-  // E5.3 WCAG fix: the disabled button alone isn't an accessible error
+  // WCAG fix: the disabled button alone isn't an accessible error
   // identification (SC 3.3.1) — each invalid field needs its own visible
   // message wired via aria-invalid/aria-describedby.
   it('shows a visible, accessible error for an empty required field once it has been touched', async () => {
@@ -352,10 +352,10 @@ describe('CartPage checkout', () => {
     );
   });
 
-  // E5.5: "Dane do faktury przy zamówieniu" — the "Chcę fakturę" toggle
+  // "Dane do faktury przy zamówieniu" — the "Chcę fakturę" toggle
   // shows/hides a fieldset (companyName/nip/street/city/postalCode),
-  // mirroring the E5.3 shipping-address accessible-error pattern.
-  describe('invoice data (E5.5)', () => {
+  // mirroring the shipping-address accessible-error pattern.
+  describe('invoice data', () => {
     it('does not show the invoice fieldset by default, and never requires or sends invoice data', async () => {
       mockCreateOrder.mockResolvedValue({ data: fakeOrder, success: true });
       const user = userEvent.setup();
@@ -488,7 +488,7 @@ describe('CartPage checkout', () => {
     }, 15000);
   });
 
-  // E5.6 (issue 16 §2/§5): hasOnlyServices gates the whole delivery-method /
+  // HasOnlyServices gates the whole delivery-method /
   // shipping-address block off for a cart made entirely of digital/service
   // items (e.g. "pakiet organizatora"). These cover the client-side gating
   // itself (.every(), not .some() — a mixed cart still needs delivery/address)
@@ -497,7 +497,7 @@ describe('CartPage checkout', () => {
   // "all services"). The last test is a regression test for the crash fix in
   // handleCheckout, where a digital-only order's `deliveryMethod` comes back
   // from the server as `{}` rather than a populated DeliveryMethod.
-  describe('digital-only cart gating (E5.6)', () => {
+  describe('digital-only cart gating', () => {
     const originalCartItems: CartItem[] = cartItems.map((item) => ({ ...item }));
 
     const setCartItems = (newItems: CartItem[]) => {

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { httpAdapter } from '../http.adapter';
 
-// G-09: POST /competitors/{id}/anonymization { isAnonymized }
-describe('httpAdapter.setCompetitorAnonymization (G-09)', () => {
+// POST /competitors/{id}/anonymization { isAnonymized }
+describe('httpAdapter.setCompetitorAnonymization', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

@@ -24,9 +24,9 @@ export interface SalesStats {
 }
 
 /**
- * E8.3 (spec 21 Answer §6): the minimal platform-admin cross-section —
- * Events by publication_status (E1.1), Organizer count, and the active
- * package-credit total (E5.6, `users.organizer_package_credits` summed
+ * The minimal platform-admin cross-section —
+ * Events by publication_status, Organizer count, and the active
+ * package-credit total (`users.organizer_package_credits` summed
  * across all users — each unit of credit is one still-unconsumed package).
  */
 export interface PlatformStatsEventStatusCount {
@@ -41,8 +41,8 @@ export interface PlatformStats {
 }
 
 /**
- * R-03 (spec 13, trasa A): raport rozliczeniowy admina — wpłaty bramką minus zwroty minus
- * prowizja = kwota do ręcznej wypłaty dla organizatora. Wszystkie kwoty w groszach (int).
+ * Admin settlement report — gateway payments minus refunds minus
+ * commission = the amount to pay out manually to the organizer. All amounts in grosze (int).
  */
 export interface SettlementTotals {
   readonly paymentsCount: number;

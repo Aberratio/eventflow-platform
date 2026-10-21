@@ -136,7 +136,7 @@ export const EventFormStep3 = ({ form }: EventFormStep3Props) => {
         <CardHeader className="p-4 pb-3 sm:p-6">
           <CardTitle className="flex flex-wrap items-center gap-1.5 text-lg sm:text-xl">
             Status po zapisie
-            <FieldHelp description="Organizator tworzy szkic. Publikacja jest dostepna dopiero po sprawdzeniu i zatwierdzeniu przez admina lub moderatora." />
+            <FieldHelp description="Organizator tworzy szkic. Publikacja jest dostępna dopiero po sprawdzeniu i zatwierdzeniu przez admina lub moderatora." />
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">

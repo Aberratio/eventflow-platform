@@ -337,7 +337,7 @@ export const updateGlobalInsuranceSettings: ApiAdapter['updateGlobalInsuranceSet
   ...args
 ) => ensureAdapter().then((a) => a.updateGlobalInsuranceSettings(...args));
 
-// Challenge points settings (E6.2)
+// Challenge points settings
 export const getChallengePointsSettings: ApiAdapter['getChallengePointsSettings'] = (...args) =>
   ensureAdapter().then((a) => a.getChallengePointsSettings(...args));
 export const updateChallengePointsSettings: ApiAdapter['updateChallengePointsSettings'] = (
@@ -464,7 +464,7 @@ export const setCompetitorAnonymization: ApiAdapter['setCompetitorAnonymization'
 export const rotateIdentityCode: ApiAdapter['rotateIdentityCode'] = (...args) =>
   ensureAdapter().then((a) => a.rotateIdentityCode(...args));
 
-// E8.1: Scalanie profili Zawodnika (wyłącznie Moderator/Admin)
+// Merging Zawodnik profiles (Moderator/Admin only)
 export const searchCompetitorsForMerge: ApiAdapter['searchCompetitorsForMerge'] = (...args) =>
   ensureAdapter().then((a) => a.searchCompetitorsForMerge(...args));
 export const getCompetitorMergeComparison: ApiAdapter['getCompetitorMergeComparison'] = (...args) =>

@@ -29,7 +29,7 @@ import {
   parseDiscountValueInput,
 } from '@/lib/discountValue';
 
-export const BATCH_MAX_COUNT = 1000;
+const BATCH_MAX_COUNT = 1000;
 const PREFIX_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,19}$/;
 
 type DiscountType = 'percent' | 'fixed';
@@ -40,7 +40,7 @@ interface GenerateDiscountBatchDialogProps {
 }
 
 /**
- * R-07: "Generuj partię" - one request creates N unique single-purpose codes on the server
+ * "Generuj partię" - one request creates N unique single-purpose codes on the server
  * (POST /events/{id}/discount-code-batches). Validation here only mirrors the server limits
  * so the organizer gets an answer before the round trip; the server stays the authority.
  */

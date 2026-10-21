@@ -78,14 +78,14 @@ beforeEach(() => {
 });
 
 /**
- * E2.6: the "Eksportuj listę startową" UI trigger inside ParticipantsTab's
+ * The "Eksportuj listę startową" UI trigger inside ParticipantsTab's
  * "Eksport" dropdown — mirrors FormFieldAggregatesCard.test.tsx's pattern of
  * mocking '@/api' and asserting the exact call the button produces, plus the
  * one piece of UI logic specific to this feature: the button is disabled
  * until a concrete Dystans (not "Wszystkie dystanse") is selected, because
  * the export is always for exactly one Distance.
  */
-describe('ParticipantsTab start-list export (E2.6)', () => {
+describe('ParticipantsTab start-list export', () => {
   it('disables the start-list export options while "Wszystkie dystanse" is selected', async () => {
     render(<ParticipantsTab event={mockEvent} registrations={mockRegistrations} />);
 

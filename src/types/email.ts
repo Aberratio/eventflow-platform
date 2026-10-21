@@ -1,4 +1,4 @@
-// ──────────────── Mail template system (B-03, spec 17, umowa §4.4.12 / §5.19) ────────────────
+// ──────────────── Mail template system ────────────────
 // Shapes mirror the server routes: GET/PUT /admin/mail-templates, GET/PUT/DELETE
 // /events/{id}/mail-templates, POST …/preview and GET …/mail-log.
 
