@@ -1,9 +1,17 @@
 import type { Event, EventTeamMember, EventTeamMemberStatus, UserRole } from '@/types';
 
 /**
- * R-01 (zakres P2, do potwierdzenia przez Zamawiającego): who is who in an Event's Team, for the UI.
+ * Who is who in an Event's Team, for the UI.
  * The server enforces every rule; these helpers only decide what to show.
  */
+
+/** What an Account is told when a team invitation cannot be used, by the server's error code. */
+export const TEAM_INVITATION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
+  invitation_not_found: 'To zaproszenie nie istnieje albo zostało odwołane.',
+  invitation_expired: 'To zaproszenie wygasło. Poproś organizatora o nowe.',
+  invitation_email_mismatch:
+    'To zaproszenie wysłano na inny adres e-mail. Zaloguj się na właściwe konto.',
+};
 
 /** Owner-level = the Event's Owner or an admin/superadmin (the roster, payments, delete, hand-over). */
 export function isEventOwnerLevel(
