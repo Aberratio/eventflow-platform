@@ -40,7 +40,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { SendMessageDialog } from '@/components/SendMessageDialog';
 import SwapTeamMemberDialog from '@/components/team/SwapTeamMemberDialog';
 import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration } from '@/types';
@@ -52,12 +51,9 @@ import {
 import {
   Search,
   Download,
-  Mail,
   UserCheck,
   UserX,
   Hash,
-  Trash2,
-  RotateCcw,
   Users,
   UserMinus,
   ArrowLeftRight,
@@ -147,10 +143,8 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
     localRegistrations,
     setLocalRegistrations,
     handleStatusChange,
-    handleRemoveParticipant,
-    handleRestoreParticipant,
-    handleBulkDelete,
-    handleDeleteUnpaid,
+    handleBulkCancel,
+    handleCancelUnpaid,
     handleAssignBib,
     handlePaymentUpdate,
     handleApproveRefund,
@@ -175,7 +169,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] = useState(false);
   const [deleteUnpaidDialogOpen, setDeleteUnpaidDialogOpen] = useState(false);
-  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [paymentPanelRegistration, setPaymentPanelRegistration] = useState<Registration | null>(
     null,
   );
@@ -232,19 +225,24 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   };
 
   const onBulkDelete = () => {
-    handleBulkDelete(selectedIds);
+    void handleBulkCancel(selectedIds);
     setSelectedIds(new Set());
     setDeleteSelectedDialogOpen(false);
   };
 
   const onDeleteUnpaid = () => {
-    handleDeleteUnpaid();
+    void handleCancelUnpaid();
     setDeleteUnpaidDialogOpen(false);
   };
 
-  const onAssignBib = () => {
+  const onAssignBib = async () => {
     if (!selectedParticipant || !bibNumber) return;
-    handleAssignBib(selectedParticipant.id, bibNumber, selectedParticipant.userName);
+    const saved = await handleAssignBib(
+      selectedParticipant.id,
+      bibNumber,
+      selectedParticipant.userName,
+    );
+    if (!saved) return;
     setBibDialogOpen(false);
     setBibNumber('');
     setSelectedParticipant(null);
@@ -402,7 +400,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
       </div>
 
       <Tabs defaultValue="list" className="space-y-5">
-        <TabsList className="h-auto rounded-lg border border-border/80 bg-muted/20 p-0">
+        <TabsList className="h-auto max-w-full justify-start overflow-x-auto rounded-lg border border-border/80 bg-muted/20 p-0">
           <TabsTrigger value="list" className="h-[46px] px-6">
             <Users className="mr-2 h-4 w-4" />
             Lista uczestników
@@ -520,8 +518,8 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                     onClick={() => setDeleteSelectedDialogOpen(true)}
                     disabled={selectedIds.size === 0}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Usuń zaznaczonych
+                    <UserX className="mr-2 h-4 w-4" />
+                    Anuluj zaznaczone
                   </Button>
                   <Button
                     variant="outline"
@@ -530,7 +528,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                     disabled={unpaidCount === 0}
                   >
                     <UserMinus className="mr-2 h-4 w-4" />
-                    Usuń nieopłaconych ({unpaidCount})
+                    Anuluj nieopłacone ({unpaidCount})
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -589,10 +587,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Wiadomość
-                  </Button>
                 </div>
               )}
 
@@ -685,16 +679,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
-                              {viewMode === 'removed' ? (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  title="Przywróć"
-                                  onClick={() => handleRestoreParticipant(reg)}
-                                >
-                                  <RotateCcw className="h-4 w-4 text-primary" />
-                                </Button>
-                              ) : (
+                              {viewMode === 'removed' ? null : (
                                 <>
                                   {requiresManualPayment && (
                                     <Button
@@ -729,12 +714,15 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                       <ArrowLeftRight className="h-4 w-4" />
                                     </Button>
                                   )}
-                                  {reg.status !== 'confirmed' && (
+                                  {/* Server only offers pending -> confirmed as the manual
+                                      "mark paid" transition (POST /registrations/{id}/mark-paid). */}
+                                  {reg.status === 'pending' && requiresManualPayment && (
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      title="Potwierdź"
-                                      onClick={() => handleStatusChange(reg, 'confirmed')}
+                                      title="Potwierdź wpłatę"
+                                      aria-label={`Potwierdź wpłatę ${reg.userName}`}
+                                      onClick={() => void handleStatusChange(reg, 'confirmed')}
                                     >
                                       <UserCheck className="h-4 w-4 text-primary" />
                                     </Button>
@@ -744,19 +732,12 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                                       variant="ghost"
                                       size="icon"
                                       title="Anuluj"
-                                      onClick={() => handleStatusChange(reg, 'cancelled')}
+                                      aria-label={`Anuluj zapis ${reg.userName}`}
+                                      onClick={() => void handleStatusChange(reg, 'cancelled')}
                                     >
                                       <UserX className="h-4 w-4 text-destructive" />
                                     </Button>
                                   )}
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="Usuń"
-                                    onClick={() => handleRemoveParticipant(reg)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                                  </Button>
                                 </>
                               )}
                             </div>
@@ -860,16 +841,16 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
       <AlertDialog open={deleteSelectedDialogOpen} onOpenChange={setDeleteSelectedDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Usuń zaznaczonych uczestników?</AlertDialogTitle>
+            <AlertDialogTitle>Anulować zaznaczone zapisy?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć {selectedIds.size}{' '}
-              {selectedIds.size === 1 ? 'zaznaczonego uczestnika' : 'zaznaczonych uczestników'}? Ta
-              operacja może być cofnięta w zakładce "Usunięci".
+              Czy na pewno chcesz anulować {selectedIds.size}{' '}
+              {selectedIds.size === 1 ? 'zaznaczony zapis' : 'zaznaczonych zapisów'}? Tej operacji
+              nie można cofnąć.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={onBulkDelete}>Usuń uczestników</AlertDialogAction>
+            <AlertDialogCancel>Wróć</AlertDialogCancel>
+            <AlertDialogAction onClick={onBulkDelete}>Anuluj zapisy</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -877,27 +858,18 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
       <AlertDialog open={deleteUnpaidDialogOpen} onOpenChange={setDeleteUnpaidDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Usuń nieopłaconych uczestników?</AlertDialogTitle>
+            <AlertDialogTitle>Anulować nieopłacone zapisy?</AlertDialogTitle>
             <AlertDialogDescription>
-              Znaleziono {unpaidCount} {unpaidCount === 1 ? 'uczestnika' : 'uczestników'} ze
-              statusem "Oczekujący" (nieopłacony). Ta operacja może być cofnięta w zakładce
-              "Usunięci".
+              Znaleziono {unpaidCount} {unpaidCount === 1 ? 'zapis' : 'zapisów'} ze statusem
+              "Oczekujący" (nieopłacony). Tej operacji nie można cofnąć.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anuluj</AlertDialogCancel>
-            <AlertDialogAction onClick={onDeleteUnpaid}>Usuń nieopłaconych</AlertDialogAction>
+            <AlertDialogCancel>Wróć</AlertDialogCancel>
+            <AlertDialogAction onClick={onDeleteUnpaid}>Anuluj nieopłacone</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <SendMessageDialog
-        open={messageDialogOpen}
-        onOpenChange={setMessageDialogOpen}
-        registrations={localRegistrations}
-        selectedIds={selectedIds}
-        distances={event.distances}
-      />
     </div>
   );
 };

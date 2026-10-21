@@ -69,6 +69,7 @@ const SponsorLogoUpload = ({
           <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" />
         </div>
         <Button
+          aria-label="Usuń logo"
           type="button"
           variant="ghost"
           size="icon"
@@ -147,6 +148,7 @@ const CoOrganizerLogoUpload = ({
           <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" />
         </div>
         <Button
+          aria-label="Usuń logo"
           type="button"
           variant="ghost"
           size="icon"

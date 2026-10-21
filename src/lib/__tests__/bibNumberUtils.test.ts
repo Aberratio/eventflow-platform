@@ -3,6 +3,7 @@ import {
   getNextAvailableNumber,
   isBibNumberTaken,
   getAvailableNumbersString,
+  bibRangeFieldErrors,
 } from '../bibNumberUtils';
 import { Registration } from '@/types';
 
@@ -71,5 +72,37 @@ describe('getAvailableNumbersString', () => {
     const regs = [makeReg('1', '3'), makeReg('2', '5')];
     const result = getAvailableNumbersString(regs);
     expect(result).toContain('1');
+  });
+});
+
+describe('bibRangeFieldErrors', () => {
+  const d = (name: string, from: string, to: string) => ({
+    name,
+    bibRangeFrom: from,
+    bibRangeTo: to,
+  });
+
+  it('accepts blank and disjoint ranges', () => {
+    const list = [d('10 km', '1', '99'), d('5 km', '100', '199'), d('1 km', '', '')];
+    expect(bibRangeFieldErrors(list, 0)).toEqual({});
+    expect(bibRangeFieldErrors(list, 1)).toEqual({});
+    expect(bibRangeFieldErrors(list, 2)).toEqual({});
+  });
+
+  it('flags an overlap with an earlier distance and names it', () => {
+    const list = [d('10 km', '1', '100'), d('5 km', '100', '200')];
+    const errors = bibRangeFieldErrors(list, 1);
+    expect(errors.distance_1_bibRangeFrom).toContain('10 km');
+  });
+
+  it('requires both bounds', () => {
+    expect(bibRangeFieldErrors([d('a', '5', '')], 0)).toHaveProperty('distance_0_bibRangeTo');
+    expect(bibRangeFieldErrors([d('a', '', '5')], 0)).toHaveProperty('distance_0_bibRangeFrom');
+  });
+
+  it('rejects reversed, zero and fractional ranges', () => {
+    expect(bibRangeFieldErrors([d('a', '10', '5')], 0)).toHaveProperty('distance_0_bibRangeTo');
+    expect(bibRangeFieldErrors([d('a', '0', '5')], 0)).toHaveProperty('distance_0_bibRangeTo');
+    expect(bibRangeFieldErrors([d('a', '1.5', '5')], 0)).toHaveProperty('distance_0_bibRangeTo');
   });
 });

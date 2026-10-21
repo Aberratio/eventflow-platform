@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,18 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+const DEFAULT_LOCKOUT_SECONDS = 60;
+
+/** R-10: seconds to wait, from the 429 `error.details.retryAfterSeconds` (mirrors Retry-After). */
+function lockoutSeconds(error: ApiRequestError): number {
+  const value = (error.details as { retryAfterSeconds?: unknown } | undefined)?.retryAfterSeconds;
+  return typeof value === 'number' && value > 0 ? Math.ceil(value) : DEFAULT_LOCKOUT_SECONDS;
+}
+
+function lockoutMessage(seconds: number): string {
+  return `Zbyt wiele nieudanych prób logowania. Spróbuj ponownie za ${Math.max(1, Math.ceil(seconds / 60))} min.`;
+}
+
 const LoginPage = () => {
   const { loginWithCredentials, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -41,6 +53,18 @@ const LoginPage = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const lockedUntil = useRef(0);
+
+  const isLocked = secondsLeft > 0;
+  useEffect(() => {
+    if (!isLocked) return;
+    const timer = setInterval(() => {
+      const left = Math.ceil((lockedUntil.current - Date.now()) / 1000);
+      setSecondsLeft(left > 0 ? left : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isLocked]);
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo;
 
@@ -82,7 +106,11 @@ const LoginPage = () => {
         });
       }
     } catch (error) {
-      if (error instanceof ApiRequestError && error.code === 'account_blocked') {
+      if (error instanceof ApiRequestError && error.status === 429) {
+        const seconds = lockoutSeconds(error);
+        lockedUntil.current = Date.now() + seconds * 1000;
+        setSecondsLeft(seconds);
+      } else if (error instanceof ApiRequestError && error.code === 'account_blocked') {
         toast({ title: 'Konto zablokowane', description: error.message, variant: 'destructive' });
       } else {
         throw error;
@@ -115,17 +143,17 @@ const LoginPage = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           type="email"
                           placeholder="twoj@email.com"
                           className="pl-10"
                           {...field}
                         />
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -141,35 +169,40 @@ const LoginPage = () => {
                         Zapomniałeś hasła?
                       </Link>
                     </div>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <FormControl>
                         <Input
                           type={showPassword ? 'text' : 'password'}
                           placeholder="••••••••"
                           className="pl-10 pr-10"
                           {...field}
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
-                          aria-pressed={showPassword}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
+                      </FormControl>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground"
+                        aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
+                        aria-pressed={showPassword}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLocked && (
+                <p role="alert" className="text-sm font-medium text-destructive">
+                  {lockoutMessage(secondsLeft)}
+                </p>
+              )}
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading || isLocked}>
                 {isLoading ? 'Logowanie...' : 'Zaloguj się'}
               </Button>
             </form>

@@ -23,7 +23,7 @@
   --color-gray-900: 216 25% 5%; /* #080A0D */
 
   /* Semantic colors - stonowane */
-  --color-danger: 357 60% 60%; /* #D75A63 */
+  --color-danger: 357 65% 64%; /* #E0666E, >=4.5:1 jako tekst na ciemnych tłach */
   --color-success: 131 42% 57%; /* #68C77B */
   --color-warning: 37 74% 58%; /* #E2A84A */
   --color-info: 214 89% 58%; /* #4B8DF8 */
