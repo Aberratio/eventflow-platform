@@ -24,6 +24,7 @@ as the first version.
 - Inter fonts are served from the platform's own domain, so no request goes
   to Google before cookie consent.
 - Shop with product pages, cart and order confirmation.
+- Escape closes the mobile menu and returns focus to the menu button.
 - Accounts: sign-up, login, password reset, e-mail verification and e-mail
   change, a profile page and public athlete profiles.
 - Participant dashboard with printable tickets and team invitations for
