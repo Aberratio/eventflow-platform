@@ -18,6 +18,14 @@ export default {
       },
     },
     extend: {
+      // WCAG 1.4.3: ten sam kolor marki nie spełnia 4.5:1 jako tekst na ciemnym tle i jako tło pod białym tekstem
+      // jednocześnie - tekst używa jaśniejszego wariantu, tło (przycisk destrukcyjny) ciemniejszego.
+      textColor: {
+        primary: { DEFAULT: 'hsl(var(--primary-text))' },
+      },
+      backgroundColor: {
+        destructive: { DEFAULT: 'hsl(var(--destructive-solid))' },
+      },
       colors: {
         /* === BRAND STATIC TOKENS === */
         brand: {

@@ -180,7 +180,11 @@ const ChallengeCard = ({
                   {participation.completedCount}/{challenge.rule.minCompleted}
                 </span>
               </div>
-              <Progress value={Math.min(progressPercent, 100)} className="h-2" />
+              <Progress
+                aria-label="Twój postęp"
+                value={Math.min(progressPercent, 100)}
+                className="h-2"
+              />
             </div>
           )}
           <div className="flex justify-end">

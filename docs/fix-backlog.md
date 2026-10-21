@@ -16,7 +16,75 @@ Stan wdrożenia (2026-10-19, wieczór): CM #3/#4 zmergowane i wdrożone na stagi
 
 Aktualizacja 2026-10-19 (późny wieczór): bez zmian – nic nowego nie zmergowano, oba repo prywatne, Actions nie startują. Decyzja: nie płacimy za GitHuba, deploye ręcznie robi Lesław (lista „Tryb ręczny” w sekcji „Wdrożenie na dev”). Staging ma stary serwer: `GET /api/v1/health` = 200 z `version` „20260916-1”, a trasa z S #44 `GET /api/v1/results/{id}/corrections` = 404 (route not found). Uwaga: odpowiedź 404 zawiera pełny stack trace ze ścieżkami serwera – na dev prawdopodobnie włączony tryb debug; do sprawdzenia przy deployu (na prod nie może tak być).
 
-**Merge 2026-10-19 (noc, zgoda Joanny):** S #51 → `master` (zawiera #45–#50); F #6 → `main`, #24 i #28 przepięte na `main` i zmergowane, potem stare F #5 (PP.105) i #1 (PP.15) – sprawdzone lokalnie na wyniku rundy 4: bez konfliktów, typecheck, eslint, vitest 1011/1011. Pojedyncze PR-y zawarte w integracjach zamknięte z komentarzem. Niezmergowane: PR-y Lesława (S #52, F #29) i dependabota. **Nic nie jest wdrożone** – Lesław wdraża `master` serwera (migracje 068–101) i `main` frontu według listy „Tryb ręczny”; kroki 1 i 3 z tej listy łączą się w jeden deploy.
+**Merge 2026-10-19 (noc, zgoda Joanny):** S #51 → `master` (zawiera #45–#50); F #6 → `main`, #24 i #28 przepięte na `main` i zmergowane, potem stare F #5 (PP.105) i #1 (PP.15) – sprawdzone lokalnie na wyniku rundy 4: bez konfliktów, typecheck, eslint, vitest 1011/1011. Pojedyncze PR-y serwera (#45–#50) GitHub oznaczył jako zmergowane; frontowe F #7–#23 i #25–#27 są w `main`, ale **nadal otwarte** (zamknięcie zablokowane w sesji – do zamknięcia ręcznie). Niezmergowane: PR-y Lesława (S #52, F #29) i dependabota. **Nic nie jest wdrożone** – Lesław wdraża `master` serwera (migracje 068–101) i `main` frontu według listy „Tryb ręczny”; kroki 1 i 3 z tej listy łączą się w jeden deploy.
+
+### Noc 3 (2026-10-20/21) – fala 0, P2, defekty (wszystko w PR-ach, nic niezmergowane)
+
+`gh pr merge` i force-push były w nocy zablokowane przez klasyfikator uprawnień, więc **nic nie jest zmergowane**. Każdy PR ma zielone bramki lokalnie (XAMPP PHP + MySQL 8.4 na bazie `*_test`; front: typecheck, vitest, build, lint na eksporcie LF). Gałęzie zaktualizowano merge'em `master`/`main` zamiast rebase. Wszystkie serwerowe PR-y nocy połączone razem (gałąź `n3/integration-night3`, z commitem integracyjnym R-01 `c251be3`): Unit 677, Integration 1601 OK. Lint frontu: baza `main` ma 326 ostrzeżeń na eksporcie LF (już ponad `--max-warnings 71` – do osobnego sprzątania); żaden PR nocy jej nie podnosi.
+
+| Pozycja | PR | Status | Migracje | Nowe env | Co sprawdzić ręcznie |
+|---|---|---|---|---|---|
+| Fala 0 serwer: QA-LOCAL-01, R-12, R-09, R-05, R-08, CI | S #62, #61, #60, #59, #55, #54 | ready (changelog dopisany) | 103 | `RETENTION_CONFIDENTIAL_ANSWERS_DAYS`, `RETENTION_ACTIVITY_LOG_MONTHS` | `Anonim #<kod>` w rankingu; zgłoszenie duplikatu i kolejka moderatora; zadanie `retention.purge` w schedulerze |
+| Fala 0 front: R-08, R-11, R-15, R-16, WCAG ×4, UX, docs | F #30, #41, #39, #40, #31–#34, #35, #36 | ready (changelog; #34 zawiera merge #31–#33) | – | – | fonty bez Google; Escape w menu; skip link; kontrast |
+| M-04 | CM #5 | ready | CM 014 | `ZMIERZYMY_CZAS_API_KEY` (CM, ≥ 32 znaki) | po ustawieniu: serwer ZC na nowy klucz (`CENTRAL_MAILER_API_KEY`) |
+| DEF: QA-DEV-01 (trace tylko local+debug), QA-API-01, CORS PUT (testy), QA-TEST-01 | S #63, F #42 | draft | – | – | `GET /api/v1/nie-istnieje` bez `details`/`trace` |
+| R-07 partie kodów rabatowych + CSV | S #64, F #43 | draft | 110 | – | generacja 20 kodów, CSV w Excelu, kod działa raz |
+| R-03 raport rozliczeniowy trasy A | S #65, F #44 | draft | – (111 wolna) | `SETTLEMENT_COMMISSION_BPS` (0) | sumy w okresie, CSV/XLSX; NNW nieodejmowane – do potwierdzenia |
+| R-04 formularz per Dystans | S #66, F #45 | draft | 112 | – | nadpisanie pola na dystansie, pole tylko dla dystansu |
+| REST: B-02, G-03, R-17 | S #67, F #46 | draft | 115 | – | wycena embedu, 422 dla równych ręcznych miejsc, miejsce wg płci, prywatne → wpis znika z kalendarza |
+| R-10 dławienie logowania | S #68, F #47 | draft | 113 | `LOGIN_THROTTLE_ACCOUNT_MAX`, `LOGIN_THROTTLE_IP_MAX`, `LOGIN_THROTTLE_WINDOW_SECONDS`, `LOGIN_THROTTLE_LOCKOUT_SECONDS` | 6. błędne logowanie → 429 i komunikat; `REMOTE_ADDR` = IP klienta |
+| R-13 zakresy numerów startowych | S #69, F #48 | draft | 114 | – | zakresy bez nakładania, „Nadaj numery”, numery po odświeżeniu zostają |
+| DEF-PT-01 akcje listy uczestników tylko lokalnie (nowy defekt) | F #51 (zawiera #48) | draft | – | – | anuluj / potwierdź wpłatę / dane płatności → odśwież stronę |
+| R-02a rezygnacja + historia zapisu | S #70, F #49 | draft | 130 | – | rezygnacja w oknie, 409 po terminie, wniosek o zwrot |
+| R-02b zmiana dystansu | S #74, F #52 (stos na a) | draft | – (131 wolna) | – | taniej → wniosek o zwrot; drożej → tylko organizator |
+| R-02c transfer przez organizatora | S #75, F #54 (stos na b) | draft | – (132 wolna) | – | nowy kod startowy, maile do obu osób |
+| R-06 wyzwania per Zawodnik | S #71 (zawiera #60), F #50 | draft | 120, 121 | – | opiekun zapisuje podopiecznego; postęp tylko podopiecznemu |
+| R-01 Zespół wydarzenia | S #72 → #73 (stos), F #53 | draft | 140 | – (link z `APP_URL`) | zaproszenie, akceptacja z właściwego/niewłaściwego konta, odebranie dostępu |
+| Dependabot | S #10, #12, #53 | parked | – | – | brak composera lokalnie i CI – do merge po zielonym CI |
+
+Zakres P2 (R-01, R-02, R-06 i reszta „do potwierdzenia przez Zamawiającego”) jest oznaczony w opisach PR i changelogach.
+
+**Kolejność merge (rano, Joanna)**
+1. CM #5.
+2. S: #62 → #61 → #60 → #59 → #55 → #54 → #63 → #64 → #65 → #66 → #67 → #68 → #69 → #70 (konflikt z #69 w `routes.php`/`EventRepository.php` – opis w PR) → #74 i #75 (przestawić bazę na `master` po każdym merge) → #71 → #72 (najpierw nanieść `c251be3`, komentarz w PR) → #73 (baza na `master`).
+3. F: #30 → #41 → #39 → #40 → #31 → #32 → #33 → #34 → #35 → #36 → #42 → #43 → #44 → #45 → #46 → #47 → #48 → #51 → #49 → #52 → #54 → #50 → #53. PR-y fali 1 dopisują wpis na końcu listy w `CHANGELOG.md` i metody w tych samych miejscach adaptera (#43/#44) – po merge poprzedniego merge `main` i zostawić obie strony.
+
+**Decyzje nocne do zatwierdzenia:** G-03 – miejsca automatyczne omijają numery ręczne (zamiast odrzucać ręczne); R-02b – dopłata przy zmianie dystansu tylko przez organizatora (rozliczenie ręczne), nadpłata → automatyczny wniosek o zwrot; R-01 – Właściciel = `events.organizer_id`, Współzarządzający bez zwrotów i mark-paid, skład Zespołu widzi tylko Właściciel/admin, płatności tylko do odczytu dla moderatora na cudzym wydarzeniu; R-03 – NNW nie odejmowane od wypłaty; DEF-PT-01 – „Usuń/Przywróć” usunięte (serwer nie zna statusu `removed`), zbiorowe usuwanie = anulowanie.
+
+**Follow-upy:** dopłata online przy zmianie dystansu; automatyczne nadanie numeru przy opłaceniu (R-13); anulowanie opłaconego zapisu przez organizatora bez automatycznego wniosku o zwrot; R-17 – powrót na publiczne nie dodaje wpisu do kalendarza; biuro_zawodow-api ignoruje push `distance_change`/`transfer` (`ignored_unknown_type`); wyszukiwanie Zawodnika dla organizatora (transfer); `gender_position` istniejących wyników = 0 do przeliczenia; R-04 – pola „tylko dla dystansu” poza agregatami i eksportem.
+
+### Noc 2026-10-19/20 – P2, CI, WCAG, UX (wszystko draft / lokalnie, nic niezmergowane)
+
+Push i `gh pr create` agentów były w nocy blokowane; 2026-10-20 wszystko wypchnięte i otwarte jako draft PR (zgoda Joanny). R-08 przerobione wg decyzji (statusy, zakres organizatora; mig. 103 zmieniona w miejscu – na bazach z zaaplikowaną 103: DROP TABLE `competitor_duplicate_reports` i usunąć wiersz 103 z `schema_migrations`). Do sprawdzenia: `ChallengeCompletionTest::testJoinAutoApprovalCrossesThresholdAndCompletionDetectedOnce` czerwony w pełnym Integration na gałęzi R-08 (QA-TEST-02, niezweryfikowany na master).
+
+| ID | Co | Gdzie |
+|---|---|---|
+| CI | `test.yml` tylko gotowe PR-y + concurrency + paths-ignore, bez push master; `e2e-bz` po merge, ręcznie i co tydzień | S #54 |
+| R-08 | Zgłoszenie duplikatu (opiekun/organizator), kolejka dla moderatora/admina; mig. 103. Spec 22 niedostępna (hook) – założenia: organizator może zgłosić dowolny profil, brak akcji „odrzuć/scalone” | S #55, F #30 |
+| M-04 | Klient `zmierzymy-czas` w `email_clients`; mig. CM 014; nowa zmienna `ZMIERZYMY_CZAS_API_KEY` (CM), potem przestawić klucz w serwerze | CM #5 |
+| R-05 | Zadanie `retention.purge`: odpowiedzi poufne 12 mies. po końcu wydarzenia, rejestr aktywności 12 mies. (okres do potwierdzenia RODO) | S #59 (env `RETENTION_CONFIDENTIAL_ANSWERS_DAYS`=90, `RETENTION_ACTIVITY_LOG_MONTHS`=12) |
+| R-09 | `Anonim #<8 hex>` (skrót z id zawodnika) – **zmiana kontraktu** `userName` | S #60 |
+| R-12 | Testy: podłoga ceny i współbieżność licznika miejsc (6 procesów) – błędu nie ma | S #61 |
+| QA-LOCAL-01 | Błędny fixture (brak K40 na dystansie), nie kod | S #62 |
+| R-15 | Inter self-hostowany, hosty Google usunięte z CSP | F #39 |
+| R-16 | Escape zamyka menu mobilne, fokus wraca na przycisk | F #40 |
+| R-11 | Usunięte tylko nieużywane `getMessage/sendMessage/markAsRead`. **Decyzja:** zakładka „Wiadomości” uczestnika woła `/users/{id}/messages` (poza umową) – usunąć? | F #41 (zakładka i atrapa `SendMessageDialog` usunięte) |
+| WCAG | Audyt 2.2 AA (68 ekranów × 2 viewporty), 25 pozycji (14 P1); raport `docs/a11y-audit.md` | F #31–#34 (mechaniczne konflikty w `Footer.tsx`/`Index.tsx` między #32–#34) |
+| UX | Audyt użyteczności mobile, raport `docs/ux-audit.md`; poprawki blokujące: bilet bez daty (500), overflow paneli na 360 px | F #35 |
+| Redesign | Plan: `docs/redesign-plan.md` | ten PR |
+
+Decyzje 2026-10-20 (Joanna, wg rekomendacji Tech Leada): R-11 – usunąć zakładkę „Wiadomości” w całości (trasy `/users/{id}/messages` nie ma na serwerze, dziś 404); R-05 – okresy retencji z konfiguracji, domyślnie 90 dni dla odpowiedzi poufnych i 12 mies. dla rejestru aktywności (wartości do potwierdzenia z klientem); R-08 – organizator zgłasza tylko zawodników ze swoich wydarzeń, statusy `open`/`rejected`/`merged`, scalenie profili zamyka zgłoszenie; R-09 – do merge po sprawdzeniu rankingu serii. Redesign odłożony (`docs/redesign-plan.md`).
+
+**Propozycja funkcji N-01 „Powiadomienia” (poza umową – do uzgodnienia z klientem):**
+- Transakcyjne (zawsze, mail przez CM + dziennik w panelu): koniec zapisów / termin płatności, start jutro, zmiana terminu lub miejsca, opublikowane wyniki. Część już jest (`PaymentRemindersJob`, `ResultsPublicationNotifier`).
+- Marketingowe („kolejna edycja wydarzenia, w którym startowałeś”, nowy cykl, nowe Wyzwanie): osobna, jawna zgoda (Prawo komunikacji elektronicznej – uzasadniony interes z RODO nie wystarcza), link „wypisz się”, preferencje w profilu; wymaga powiązania edycji wydarzeń (seria albo pole „poprzednia edycja”).
+- Kolejność: zgody i preferencje → maile → dziennik w panelu → (później) push.
+
+Nowe defekty:
+- **QA-TEST-01:** `ParticipantTicketsTab (G-12)` w vitest pada po północy czasu lokalnego (fixture z datami względnymi vs UTC).
+- **QA-DEV-01:** odpowiedź 404 API na dev zawiera stack trace (tryb debug).
+- **A11Y-22:** około 100 kontrolek w panelach bez nazwy (lista i metoda w `docs/a11y-audit.md`).
+- **A11Y-25:** fokus nie wchodzi do menu mobilnego – do zrobienia razem z R-16.
 
 Tabele niżej (P0/P1/P2) to inwentarz z fazy 1 – stan każdej pozycji jest w tej sekcji.
 
@@ -72,11 +140,8 @@ Gałęzie integracyjne `integration/fix-all` (S i F) łączą wszystkie PR-y z r
 
 | ID | Co | Dlaczego |
 |---|---|---|
-| R-17 (reszta) | Zmiana widoczności na prywatną nie usuwa wpisu z kalendarza; brak testu na prawdziwym Google | P2; brak dostępów klienta |
-| G-03 (reszta) | Ręczne miejsce może się pokrywać z automatycznym (pozostali liczeni po czasie); brak miejsca wg płci (brak kolumny) | P2 |
-| B-02 (reszta) | Embed (`EmbedEventRegistrationPage`) pokazuje lokalny podgląd ceny zamiast quote; quote nie sprawdza limitu miejsc ani zaproszenia do drużyny | P2 |
-| QA-LOCAL-01 | `ResultImportRepositoryTest::testRealSampleCsvImportsDnfRowWithStatusAndNoRankingPosition` pada na master (`AgeCategoryResolver`: „kategoria nie jest dostępna na tym dystansie”) – test z grupy `requires-local-samples`, CI go pomija | Defekt P2: test lub dane próbki niezgodne z kategoriami liczonymi na serwerze (PP.79) |
-| R-01–R-11, R-13–R-16, R-18, Z-03, Z-04, M-04, M-05 | Pozycje P2 / „poza umową” / warunkowe od klienta | Zgodnie z decyzją 6 – poza zakresem tej sesji |
+| R-17 (reszta) | Brak testu na prawdziwym Google; powrót na publiczne nie dodaje wpisu ponownie (prywatne → usunięcie: S #67, noc 3) | P2; brak dostępów klienta |
+| R-14, R-18, Z-03, Z-04, M-05 | SEO, wyniki live z zewnętrznego systemu, reszta „poza umową” | Decyzja: SEO później; R-18 warunkowe od dostępów. R-01–R-13, R-15–R-17, G-03, B-02, QA-LOCAL-01, M-04 – w PR-ach (sekcja „Noc 3”) |
 | QA-SEO-01/03/04 | Meta per trasa, sitemap, soft 404 | Decyzja: SEO później |
 | Płatności | Tpay/PayNow sprawdzone tylko na fake gateway | Brak kont sandbox (O-02) |
 
@@ -93,6 +158,27 @@ Skrócona lista – szczegóły (migracje, zmienne, weryfikacja) niżej.
 3. **Joanna merguje S #51** (`integration/round4`, zawiera #45–#50) → **drugi deploy serwera** tak samo jak w kroku 1. Migracje: 100 (`r17_calendar_outbox_action`), 101 (`g03_manual_result_places`). Runda 4 nie dodaje nowych zmiennych env.
 4. **Joanna merguje front** F #6 → #24 (przepięty na `main`) → #28 (przepięty na `main`) → **deploy frontu**: `npm ci`, `VITE_API_URL=<URL API dev> VITE_APP_ENV=staging VITE_APP_RELEASE=<sha> npm run build:staging` (+ `VITE_STAGING_GATE_PASSWORD`, jeśli bramka jest używana), wgrać `dist/`. **Nie** ustawiać `VITE_ALLOW_INDEXING` na dev.
 5. Po wdrożeniu: 8 kroków „Weryfikacja po wdrożeniu” niżej + whitelist IP w seohost (bez niego `npm run test:e2e:dev` dostaje 429).
+
+**Tryb ręczny – po nocy 3 (gdy Joanna zmerguje PR-y z sekcji „Noc 3”)**
+
+Kolejność deployu: **CM → serwer → front**.
+
+1. **central-mailer** (`master` z CM #5): deploy jak dotąd, `php scripts/run-migrations.php` (migracja **014** – klient `zmierzymy-czas`), ustawić `ZMIERZYMY_CZAS_API_KEY` (losowy, min. 32 znaki; dopóki nie ustawiony, nikt nie loguje się jako ten klient), restart workerów (`bin/worker.php`, `bin/technical-worker.php`). Potem w `.env` serwera ZC `CENTRAL_MAILER_API_KEY` = ten sam klucz i wysłać mail testowy (np. reset hasła).
+2. **eventflow-server** (`master`): deploy jak w kroku 1 wyżej (`api-remote.sh preflight` → `install`). Migracje w kolejności: **103, 110, 112, 113, 114, 115, 120, 121, 130, 140** (111, 131, 132 celowo wolne); drugi `composer migrate` / `bin/migrate.php` = 0 plików. Nowe zmienne (wszystkie opcjonalne, wartości domyślne w `.env.example`):
+   - `RETENTION_CONFIDENTIAL_ANSWERS_DAYS` (90) – po ilu dniach od końca wydarzenia usuwać odpowiedzi na pola poufne; `RETENTION_ACTIVITY_LOG_MONTHS` (12) – retencja rejestru aktywności. Zadanie `retention.purge` działa z crona `bin/scheduler.php` (rejestr nie jest już czyszczony przy odczycie).
+   - `SETTLEMENT_COMMISSION_BPS` (0) – prowizja platformy w raporcie rozliczeniowym (punkty bazowe, 100 = 1%).
+   - `LOGIN_THROTTLE_ACCOUNT_MAX` (5), `LOGIN_THROTTLE_IP_MAX` (20), `LOGIN_THROTTLE_WINDOW_SECONDS` (900), `LOGIN_THROTTLE_LOCKOUT_SECONDS` (`60,300,900`) – dławienie logowania. **Sprawdzić przed wdrożeniem:** czy przed PHP nie ma reverse proxy (limit IP liczy `REMOTE_ADDR`; za proxy wszyscy mieliby jeden adres).
+   - Upewnić się, że `APP_URL` wskazuje front (link w zaproszeniu do Zespołu) i że `APP_ENV` na dev/staging **nie** jest `local` (szczegóły wyjątków tylko przy `APP_ENV=local` + `APP_DEBUG=true`).
+3. **eventflow-platform** (`main`): `npm ci`, build jak w kroku 4 wyżej, wgrać `dist/`. Bez nowych zmiennych `VITE_*`; fonty Inter są teraz w `public/fonts` (CSP bez hostów Google).
+4. **Smoke po wdrożeniu:**
+   - `GET /api/v1/health` = 200 z nową `version`/`commit`;
+   - `GET /api/v1/nie-istnieje` = 404 **bez** `details`/`trace`; `OPTIONS` z `Origin` → `PUT` w `Access-Control-Allow-Methods`;
+   - `php bin/scheduler.php --status` pokazuje `retention.purge`;
+   - 6 błędnych logowań na jedno konto → 429 z `Retry-After`;
+   - organizator: generator partii kodów (CSV), „Nadaj numery startowe”, zakresy numerów, formularz per dystans, zakładka „Zespół”;
+   - admin: Finanse → Rozliczenia (trasa A);
+   - uczestnik: „Zrezygnuj” / „Zmień dystans” w oknie samoobsługi, „Historia zapisu”.
+5. `results.gender_position` dla istniejących wyników = 0 do najbliższego przeliczenia miejsc (korekta/import) – zgłosić Joannie, jeśli potrzebne jednorazowe przeliczenie.
 
 Gdy repo stanie się publiczne i Actions ruszą: do environment `staging` serwera dodać `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `BACKEND_REMOTE_DIR`, `BACKEND_ALLOWED_ROOT`, `BACKEND_BACKUP_DIR`, `API_URL`; frontu: `API_URL`, `VITE_STAGING_GATE_PASSWORD` oraz zestaw FTP (`FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD`, `FTP_SERVER_DIR`) albo SSH (`SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`, `FRONTEND_REMOTE_DIR`, `FRONTEND_ALLOWED_ROOT`, `FRONTEND_URL`) – zależnie od wybranej metody w `deploy.yml`.
 
@@ -283,6 +369,8 @@ Ryzyko: jeśli kiedyś włączymy wymagane status checks na `master`, `paths-ign
 | R-16 | Menu mobilne nie zamyka się po Escape (funkcja, nie wygląd) | a11y | F | S |
 | R-17 | Kalendarz Google (§5.9): brak po obu stronach (`/calendar/*` w adapterze bez tras) – **warunkowe od dostępów Zamawiającego** | umowa §5.9 | S + F | L |
 | R-18 | Wyniki live – motyw zewnętrznego systemu (§3.5) – warunkowe od dostępów | 14 | F | ? |
+
+Stan po nocy 3: R-01–R-13 i R-15–R-17 są w PR-ach (sekcja „Noc 3”; R-10 tylko dławienie logowania – 2FA, zaufane urządzenia i rotacja haseł zostają, decyzja Joanny). Zostają R-14 (SEO, później) i R-18 (warunkowe od dostępów).
 
 Poza zakresem tej sesji (wygląd): kontrasty, odstępy, rozmiary, dwa `<main>`, skip link, rozmiar „Pokaż hasło” (QA a11y, `axe-public.spec.ts:78`).
 

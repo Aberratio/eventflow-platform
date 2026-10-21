@@ -17,6 +17,11 @@ export function formatMoney(value: number | string | null | undefined): string {
   })} zł`;
 }
 
+/** Kwota w groszach (int z API, np. raport rozliczeniowy) -> "123,45 zł". */
+export function formatMinorMoney(minor: number): string {
+  return formatMoney(minor / 100);
+}
+
 /**
  * Formatuje datę (bez godziny) zgodnie z lokalnym standardem pl-PL,
  * identycznie jak rozproszone wcześniej wywołania
