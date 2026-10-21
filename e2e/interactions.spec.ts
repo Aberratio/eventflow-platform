@@ -33,7 +33,7 @@ test.describe('Interakcje — Logowanie', () => {
     await page.fill('input[type="password"]', 'demo1234');
     await page.click('button[type="submit"]');
     // The browser's native type=email validation stops the submit before zod runs (the Polish
-    // message UX is tracked under PP.26).
+    // message UX is tracked separately).
     await expect(page.locator('input[type="email"]:invalid')).toHaveCount(1);
     await expect(page).toHaveURL(/\/login/);
   });

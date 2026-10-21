@@ -22,7 +22,7 @@ interface EventEmbedSettingsCardProps {
 const ORIGIN_PATTERN = /^https?:\/\/[^/\s?#]+$/i;
 
 /**
- * E8.11 ("Zewnętrzny formularz w iframe"): lets the organizer (or admin)
+ * Lets the organizer (or admin)
  * enable embedding this event's registration form on their own external
  * site, configure the origin allowlist the embed page checks before
  * rendering, and copy a ready-made `<iframe>` snippet.

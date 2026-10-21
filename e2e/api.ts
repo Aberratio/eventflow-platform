@@ -27,7 +27,7 @@ export interface SeededEvent {
 }
 
 // Fixture IDs are stable but FixtureCalendar::retitleForYear rewrites year-stamped names and slugs on
-// every seed, so specs resolve events by ID through the API instead of hard-coding names (PP.15).
+// every seed, so specs resolve events by ID through the API instead of hard-coding names.
 export async function seededEvent(request: APIRequestContext, id: string): Promise<SeededEvent> {
   const res = await request.get(`${API_URL}/events/${id}`, {
     headers: await adminHeaders(request),
@@ -36,7 +36,7 @@ export async function seededEvent(request: APIRequestContext, id: string): Promi
   return (await res.json()).data as SeededEvent;
 }
 
-// The seed gives u-organizer more events than its event_limit (PP.57), so "Utwórz wydarzenie" is
+// The seed gives u-organizer more events than its event_limit, so "Utwórz wydarzenie" is
 // disabled on a fresh seed. Raise the limit when fewer than `headroom` slots are left.
 export async function ensureOrganizerCapacity(
   request: APIRequestContext,

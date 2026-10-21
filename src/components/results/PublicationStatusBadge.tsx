@@ -7,7 +7,7 @@ interface PublicationStatusBadgeProps {
 }
 
 /**
- * "Wstepne" / "oficjalne" wskaznik publikacji wynikow (spec 14 Answer §6, E2.3).
+ * "Wstepne" / "oficjalne" wskaznik publikacji wynikow.
  * Granulacja to Wydarzenie+Dystans (klasyfikacja) - wszystkie wiersze tej samej
  * klasyfikacji dziela ten sam status, wiec ten badge reprezentuje cala
  * klasyfikacje, nie pojedynczy wynik.

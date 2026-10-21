@@ -44,7 +44,7 @@ const roleLabels: Record<Extract<UserRole, 'admin' | 'superadmin'>, string> = {
   superadmin: 'Superadmin',
 };
 
-/** Staff accounts listed here: admins and (umowa §5.8) moderators. */
+/** Staff accounts listed here: admins and moderators. */
 const staffRoleLabel = (role: UserRole): string =>
   role === 'superadmin' ? 'Superadmin' : role === 'moderator' ? 'Moderator' : 'Administrator';
 const formatLastLogin = (iso?: string | null): string =>

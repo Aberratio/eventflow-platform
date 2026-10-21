@@ -12,7 +12,7 @@ const textSection = (over: Partial<InfoPageSection>): InfoPageSection => ({
   ...over,
 });
 
-describe('SectionEditor text block (B-08)', () => {
+describe('SectionEditor text block', () => {
   it('opens a legacy text block converted to HTML', async () => {
     render(
       <SectionEditor

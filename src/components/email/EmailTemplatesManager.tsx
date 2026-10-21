@@ -35,7 +35,7 @@ interface EmailTemplatesManagerProps {
 }
 
 /**
- * Mail templates of the server catalogue (spec 17): authentication mails are editable only globally,
+ * Mail templates of the server catalogue: authentication mails are editable only globally,
  * the rest can be overridden per event and reverted to the default.
  */
 export const EmailTemplatesManager: React.FC<EmailTemplatesManagerProps> = ({

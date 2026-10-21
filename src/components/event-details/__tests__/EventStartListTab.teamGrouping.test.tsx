@@ -83,7 +83,7 @@ const baseReg = (overrides: Partial<Registration>): PublicStartListEntry =>
     ...overrides,
   });
 
-describe('EventStartListTab team grouping (E7.4)', () => {
+describe('EventStartListTab team grouping', () => {
   it('clusters registrations sharing a real teamId under one labeled group with a completeness indicator', async () => {
     const registrations: PublicStartListEntry[] = [
       baseReg({
@@ -119,9 +119,9 @@ describe('EventStartListTab team grouping (E7.4)', () => {
     const partialHeader = await screen.findByText(/Drużyna: Błyskawice/);
     const partialGroup = partialHeader.closest('th') as HTMLElement;
     expect(within(partialGroup).getByText('3/4 zawodników')).toBeInTheDocument();
-    // E7.5 (issue 23 Answer §7): the captain's manually declared Kategoria
+    // The captain's manually declared Kategoria
     // specjalna is shown alongside the completeness badge, as a cheap
-    // extension of the existing E7.4 team-group header.
+    // extension of the existing team-group header.
     expect(within(partialGroup).getByText('Drużyna mieszana')).toBeInTheDocument();
 
     const fullHeader = screen.getByText(/Drużyna: Sokoły/);
@@ -133,7 +133,7 @@ describe('EventStartListTab team grouping (E7.4)', () => {
     ).not.toBeInTheDocument();
 
     // Both members of the Błyskawice team are still individually rendered
-    // (own bib number each, per Answer §4 — grouping is a view, not a merge).
+    // (own bib number each — grouping is a view, not a merge).
     await waitFor(() => {
       expect(screen.getByText('101')).toBeInTheDocument();
       expect(screen.getByText('102')).toBeInTheDocument();

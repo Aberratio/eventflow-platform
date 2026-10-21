@@ -72,7 +72,7 @@ const renderPage = () => {
   );
 };
 
-describe('EventManage discount codes tab child ids (PP.96)', () => {
+describe('EventManage discount codes tab child ids', () => {
   let server: ReturnType<typeof createFakeEventServer>;
 
   beforeEach(() => {

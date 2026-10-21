@@ -5,7 +5,7 @@ import { getPlatformStats } from '@/api';
 import type { PlatformStats } from '@/types';
 
 /** Same six-value vocabulary as AdminEventsTab's own statusLabels — 'approved'
- * is a real ENUM value on the server (E1.1) but the application never rests
+ * is a real ENUM value on the server but the application never rests
  * in it (approve() lands directly in 'published'), so it falls back to the
  * raw status string rather than needing its own label. */
 const statusLabels: Partial<Record<string, string>> = {
@@ -18,7 +18,7 @@ const statusLabels: Partial<Record<string, string>> = {
 };
 
 /**
- * E8.3 (spec 21 Answer §6): the minimal, explicitly-closed platform-admin
+ * The minimal, explicitly-closed platform-admin
  * cross-section — "liczba Wydarzeń wg statusu publikacyjnego, liczba
  * Organizatorów, liczba aktywnych pakietów". Nothing beyond these three
  * numbers; the spec is explicit that no more is required here.

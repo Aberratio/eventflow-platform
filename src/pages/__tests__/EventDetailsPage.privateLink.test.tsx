@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import EventDetailsPage from '../EventDetailsPage';
 
-// PP.55: the server is the only gate for private Events. The page forwards the link's
+// The server is the only gate for private Events. The page forwards the link's
 // `?access=` code as `accessCode` and trusts the 200/404; the server never sends the
 // real code back to non-managers.
 
@@ -109,7 +109,7 @@ describe('EventDetailsPage private link', () => {
   });
 
   it('shows not found when the server rejects the code', async () => {
-    // The adapter folds the server's 404 into data:null (D-01); a rejection now means a real failure.
+    // The adapter folds the server's 404 into data:null; a rejection now means a real failure.
     mockGetEventBySlug.mockResolvedValue({ success: true, data: null });
     renderAt('/events/bieg?access=ZLY');
 

@@ -6,14 +6,14 @@ import type { RegistrationData } from '@/components/registration/RegistrationFor
 import { getCare } from '@/api';
 import { ApiRequestError } from '@/api/errors';
 
-// E1.2: the client must never send computed money amounts to the server as
+// The client must never send computed money amounts to the server as
 // authoritative — this test exercises the real `handleComplete` in
 // EventRegistrationPage and asserts the payload forwarded to
 // `createRegistration` carries only IDs/selections.
 
 const mockCreateRegistration = vi.fn().mockResolvedValue({ data: { id: 'r1' } });
 const mockNavigate = vi.fn();
-// PP.44: records the props the page hands to the (mocked) RegistrationForm.
+// Records the props the page hands to the (mocked) RegistrationForm.
 const mockFormProps: { current: Record<string, unknown> | null } = { current: null };
 const mockNavigateToPaymentGateway = vi.fn();
 
@@ -120,7 +120,7 @@ vi.mock('@/components/registration/RegistrationForm', () => ({
   },
 }));
 
-describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () => {
+describe('EventRegistrationPage handleComplete — money-free payload', () => {
   beforeEach(() => {
     mockCreateRegistration.mockClear();
     mockNavigate.mockClear();
@@ -152,7 +152,7 @@ describe('EventRegistrationPage handleComplete — E1.2 money-free payload', () 
     expect(payload.totalAmount).toBeUndefined();
     expect(payload.insurancePrice).toBeUndefined();
     expect(payload.merchandiseOrders).toBeUndefined();
-    // PP.52: the client never claims a payment either — the server owns the status.
+    // The client never claims a payment either — the server owns the status.
     expect(payload.paymentDetails).toBeUndefined();
   });
 

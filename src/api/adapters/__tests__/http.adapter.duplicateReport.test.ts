@@ -8,8 +8,8 @@ const okResponse = (data: unknown, status = 200) =>
     json: vi.fn().mockResolvedValue({ success: true, data }),
   }) as unknown as Response;
 
-// R-08 (spec 22): POST /competitors/{id}/duplicate-reports, GET /admin/competitors/duplicate-reports
-describe('httpAdapter competitor duplicate reports (R-08)', () => {
+// POST /competitors/{id}/duplicate-reports, GET /admin/competitors/duplicate-reports
+describe('httpAdapter competitor duplicate reports', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

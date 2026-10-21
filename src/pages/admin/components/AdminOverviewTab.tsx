@@ -170,7 +170,7 @@ export const AdminOverviewTab = () => {
         ))}
       </div>
 
-      {/* E8.3 (spec 21 Answer §6): exact platform-admin cross-section —
+      {/* Exact platform-admin cross-section —
           Events by publication_status, Organizer count, active package
           credits — complements the approximate tiles above. */}
       <PlatformStatsCard />

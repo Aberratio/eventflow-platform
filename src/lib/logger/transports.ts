@@ -12,7 +12,7 @@ const storedLogs: LogEntry[] = [];
 /**
  * MockTransport — loguje do konsoli i przechowuje w pamięci (per przeglądarka).
  *
- * E0.8: żaden transport nie wysyła tych wpisów na serwer. Rejestr aktywności
+ * Żaden transport nie wysyła tych wpisów na serwer. Rejestr aktywności
  * (audit log) jest pisany wyłącznie przez serwer, na podstawie tożsamości
  * z zweryfikowanego JWT — POST /admin/client-logs został usunięty, bo
  * pozwalał dowolnemu klientowi sfałszować wpis przypisany komuś innemu.

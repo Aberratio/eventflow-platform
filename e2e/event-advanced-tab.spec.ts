@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { dismissCookies, loginAs } from './helpers';
 
 /**
- * PP.103: the admin event screen must not crash on DECIMAL money fields that PHP/PDO serialises
+ * The admin event screen must not crash on DECIMAL money fields that PHP/PDO serialises
  * as numeric strings ("120.00"). Reproduces the second visit to "Opcje zaawansowane".
  *
  * Needs a real backend on another origin than the client (not tagged @smoke):
@@ -18,7 +18,7 @@ const trackPageErrors = (page: Page): string[] => {
   return errors;
 };
 
-test.describe('admin event advanced tab with string DECIMAL prices (PP.103)', () => {
+test.describe('admin event advanced tab with string DECIMAL prices', () => {
   // The save test mutates the event, so keep the tests of this file in order.
   test.describe.configure({ mode: 'serial' });
 

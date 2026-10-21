@@ -109,7 +109,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-describe('useRegistrationForm identity section and server errors (B-07)', () => {
+describe('useRegistrationForm identity section and server errors', () => {
   it('lists identity positions by tri-state, validates the required one and sends only visible values', async () => {
     const { result } = renderHook(() => useRegistrationForm(event), { wrapper });
     await waitFor(() => expect(result.current.identityFormFields).toHaveLength(1));

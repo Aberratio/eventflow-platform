@@ -5,7 +5,7 @@ import type { Registration } from '@/types';
 import SwapTeamMemberDialog from '../SwapTeamMemberDialog';
 
 /**
- * G-04 (spec 23 §2): the swap form. New person => `newPerson` payload; a known Zawodnik (captain
+ * The swap form. New person => `newPerson` payload; a known Zawodnik (captain
  * flow only) => `competitorId`; a server refusal (e.g. the deadline) is shown, not swallowed.
  */
 

@@ -59,7 +59,7 @@ export const AddOrganizerDialog: React.FC<AddOrganizerDialogProps> = ({
       ? error.message
       : 'Nie udało się zapisać zmian. Spróbuj ponownie.';
 
-  // PP.101: POST /users creates the account; the server reports whether the password-set link went out.
+  // POST /users creates the account; the server reports whether the password-set link went out.
   const handleAdd = async () => {
     if (!newName.trim() || !newEmail.trim() || isSaving) return;
     setIsSaving(true);

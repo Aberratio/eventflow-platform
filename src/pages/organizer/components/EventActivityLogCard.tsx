@@ -11,7 +11,7 @@ interface EventActivityLogCardProps {
 }
 
 /**
- * E0.8: minimal owner-facing view of "activity on my event", fed by the new
+ * Minimal owner-facing view of "activity on my event", fed by the new
  * GET /events/{id}/activity-logs endpoint. Server enforces that only the event's
  * organizer (or staff) can read it — this component doesn't add authorization,
  * it just renders what the server is willing to return.

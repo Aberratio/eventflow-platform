@@ -60,7 +60,7 @@ const buildEvent = (urls: {
 const hrefs = (container: HTMLElement) =>
   Array.from(container.querySelectorAll('a[href]')).map((a) => a.getAttribute('href') ?? '');
 
-describe('EventInfoTab URL safety (PP.50)', () => {
+describe('EventInfoTab URL safety', () => {
   it('renders no javascript:/data: href for poisoned stored URLs and keeps the website as text', () => {
     const { container, getByText } = render(
       <EventInfoTab

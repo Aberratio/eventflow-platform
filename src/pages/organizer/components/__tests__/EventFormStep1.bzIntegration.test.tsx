@@ -7,7 +7,7 @@ import { useEventFormState } from '../../hooks/useEventFormState';
 import { createEvent, getOrganizerEventLimit } from '@/api';
 import type { OrganizerEventLimit, User } from '@/types';
 
-// E3.2 (issue 12 §3): the "Biuro Zawodów" (BZ) integration toggle + pasted
+// The "Biuro Zawodów" (BZ) integration toggle + pasted
 // organization token, added to EventFormStep1's basic settings section
 // alongside the existing isPrivate/accessCode toggle it mirrors. This wires
 // the real useEventFormState hook into the real component in one tree (the

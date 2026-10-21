@@ -10,7 +10,7 @@ import { resendEmailVerification, verifyEmail } from '@/api';
 
 type Status = 'loading' | 'success' | 'error';
 
-/** PP.7: lands here from the verification e-mail (`/verify-email?token=…`). */
+/** Lands here from the verification e-mail (`/verify-email?token=…`). */
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');

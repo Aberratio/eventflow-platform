@@ -156,7 +156,7 @@ const ParticipantOrdersTab = ({ orders }: ParticipantOrdersTabProps) => {
                       )}
                     </div>
 
-                    {/* E5.3: shipping address, only present for courier/paczkomat orders */}
+                    {/* Shipping address, only present for courier/paczkomat orders */}
                     {order.shippingAddress && (
                       <>
                         <Separator />

@@ -44,8 +44,8 @@ interface NodeEditorProps {
 }
 
 /**
- * E6.1: recursive editor for one node of a Wyzwanie's completion condition
- * tree (issue 15 §1). A straightforward add/remove-child tree builder, not
+ * Recursive editor for one node of a Wyzwanie's completion condition
+ * tree. A straightforward add/remove-child tree builder, not
  * drag-and-drop, per the ticket's own scope note.
  */
 const ChallengeConditionNodeEditor = ({

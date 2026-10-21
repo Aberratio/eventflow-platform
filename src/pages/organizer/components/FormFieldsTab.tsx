@@ -64,7 +64,7 @@ const CHOICE_TYPES: FormFieldType[] = ['single_choice', 'multi_choice'];
 const TEXT_TYPES: FormFieldType[] = ['short_text', 'long_text'];
 
 const errorText = (error: unknown): string => {
-  // B-02: the two 409s of an in-place type / variants edit get an actionable text.
+  // The two 409s of an in-place type / variants edit get an actionable text.
   const code = apiErrorCode(error);
   if (code === 'form_field_has_answers') {
     return 'Nie można zmienić typu pola, które ma już odpowiedzi w zapisach. Dodaj nowe pole zamiast zmieniać typ.';
@@ -82,17 +82,17 @@ const EVENT_SCOPE = '__event__';
 
 interface FormFieldsTabProps {
   eventId: string;
-  /** R-04: when given (and not empty) the form can be configured per distance as well. */
+  /** When given (and not empty) the form can be configured per distance as well. */
   distances?: Array<{ id: string; name: string }>;
 }
 
 /**
- * E1.13 (ticket 10): the organizer's configuration of the registration form — the 13 system
+ * The organizer's configuration of the registration form — the 13 system
  * positions (Nie / Pokaż / Wymagany, within what the server allows for each) and the custom
  * fields, in one ordered list. The server is authoritative: every rule we mirror here only
  * saves a round trip, a 422 text is always shown next to the field it came from.
  *
- * R-04: the scope selector switches between the whole event and one distance. A distance shows
+ * The scope selector switches between the whole event and one distance. A distance shows
  * the event form as inherited; a position can be overridden there (a copy the organizer edits),
  * reset to inherit again, and distance-only fields can be added.
  */
@@ -711,7 +711,7 @@ const EditFieldDialog = ({
     setSaving(true);
     const definition: UpdateFormFieldPayload = {};
     if (isCustom && fieldType !== null) {
-      // B-02: type / variants edited in place — only what changed, variants keep their keys.
+      // Type / variants edited in place — only what changed, variants keep their keys.
       if (fieldType !== field.fieldType) definition.fieldType = fieldType;
       if (usesOptions) definition.options = toPayloadOptions(options);
     }

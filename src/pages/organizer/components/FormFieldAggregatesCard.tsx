@@ -8,7 +8,7 @@ interface FormFieldAggregatesCardProps {
 }
 
 /**
- * E2.5: "minimum" zestawienie organizatora — automatyczna liczność
+ * "minimum" zestawienie organizatora — automatyczna liczność
  * odpowiedzi dla każdego pola formularza typu wyboru (single_choice/
  * multi_choice/consent), fed by GET /events/{id}/form-field-aggregates.
  * No configuration on the client side — the server decides which fields

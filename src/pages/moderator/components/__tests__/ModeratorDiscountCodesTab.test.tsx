@@ -69,7 +69,7 @@ const addCode = async (user: User, code: string) => {
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Dodaj kod' }));
 };
 
-describe('ModeratorDiscountCodesTab child ids (PP.96)', () => {
+describe('ModeratorDiscountCodesTab child ids', () => {
   let server: ReturnType<typeof createFakeEventServer>;
 
   beforeEach(() => {

@@ -17,7 +17,7 @@ import ShopProductPage from '../ShopProductPage';
 import ChallengeDetailsPage from '../ChallengeDetailsPage';
 import { DynamicInfoPage } from '@/components/info/DynamicInfoPage';
 
-// D-02: a failed request (5xx / network / timeout) used to render the same "not found" copy as
+// A failed request (5xx / network / timeout) used to render the same "not found" copy as
 // a genuinely missing record. These pin the difference: failure -> error state + retry,
 // 200/404-as-null -> "not found".
 

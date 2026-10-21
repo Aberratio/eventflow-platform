@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AdminChallengesTab } from '../AdminChallengesTab';
 import type { Challenge, ChallengeParticipation } from '@/types';
 
-// E6.4 (issue 15 §3): the Moderator/Admin manual-verification review screen —
+// The Moderator/Admin manual-verification review screen —
 // shared between /admin and /moderator via `basePath` (ModeratorChallengesTab
 // just re-exports this component). These tests cover the two pieces this
 // ticket adds on top of the pre-existing approve/reject buttons: a visible
@@ -83,7 +83,7 @@ beforeEach(() => {
   mockReviewChallengeEntry.mockResolvedValue({ data: { id: 'entry-pending' } });
 });
 
-describe('AdminChallengesTab manual verification review (E6.4)', () => {
+describe('AdminChallengesTab manual verification review', () => {
   it('shows a link to the submitted proof for a pending manual entry', async () => {
     renderTab();
 
@@ -124,7 +124,7 @@ describe('AdminChallengesTab manual verification review (E6.4)', () => {
   });
 });
 
-describe('AdminChallengesTab proof link safety (PP.50)', () => {
+describe('AdminChallengesTab proof link safety', () => {
   it('does not render a link for a javascript: proofUrl', async () => {
     const entry = participation.entries[0];
     const original = entry.proofUrl;
@@ -147,7 +147,7 @@ describe('AdminChallengesTab proof link safety (PP.50)', () => {
   });
 });
 
-describe('AdminChallengesTab configuration actions (PP.4)', () => {
+describe('AdminChallengesTab configuration actions', () => {
   it('hides configuration actions for the moderator but keeps entry review', async () => {
     renderTab('/moderator');
 

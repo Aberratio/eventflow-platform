@@ -5,11 +5,10 @@ import type { Registration } from '@/types';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 
 /**
- * E7.2 (issue 23 Answer §1, "link do zaproszenia dla pozostałych miejsc"):
- * once a captain's Zapis creates a brand-new relay Drużyna
+ * * once a captain's Zapis creates a brand-new relay Drużyna
  * (`registrationData.createTeam`), the success page is the natural
  * "what happens next" moment to hand them the shareable invitation link for
- * the still-missing teammates. PP.54: the link carries the captain's secret invite token, which
+ * the still-missing teammates. The link carries the captain's secret invite token, which
  * the page fetches from the server (`getTeamInvite`) — the team id alone is public and is no
  * longer an invitation.
  */
@@ -83,7 +82,7 @@ const baseState = {
   eventCity: 'Warszawa',
 };
 
-describe('RegistrationSuccessPage — E7.2 team invitation link', () => {
+describe('RegistrationSuccessPage — team invitation link', () => {
   beforeEach(() => {
     resetQueryClient();
     mockGetTeamInvite.mockReset();

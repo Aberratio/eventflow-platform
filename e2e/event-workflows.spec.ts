@@ -101,7 +101,7 @@ test.describe('Event workflow - organizer', () => {
 
 // One serial flow on a fresh seed. Fixtures are resolved by stable ID (names and slugs carry a year
 // that moves with the seed date). Depends on the seed: e19 = draft with a rejection reason,
-// e2e-pending = submitted, u-organizer starts with 0 package credits (PP.57 may change the seed; if
+// e2e-pending = submitted, u-organizer starts with 0 package credits (a seed change may alter this; if
 // it grants credits, step 1 has to change with it).
 test.describe.serial('Event lifecycle - seeded e2e-pending and e19', () => {
   const SEND_BACK_REASON = 'Brakuje regulaminu i mapy trasy';

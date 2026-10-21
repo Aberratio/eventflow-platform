@@ -53,7 +53,7 @@ function toSeconds(time: string): number {
   return h * 3600 + m * 60 + s;
 }
 
-/** G-03: correct a result's gross/net time, status and places, with the reason that lands in the correction trail. */
+/** Correct a result's gross/net time, status and places, with the reason that lands in the correction trail. */
 export const EditResultDialog = ({
   open,
   onOpenChange,

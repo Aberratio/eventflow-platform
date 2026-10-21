@@ -11,7 +11,7 @@ const renderHeader = () =>
     </MemoryRouter>,
   );
 
-describe('Header mobile menu (R-16)', () => {
+describe('Header mobile menu', () => {
   it('closes on Escape and returns focus to the menu button', async () => {
     const user = userEvent.setup();
     renderHeader();

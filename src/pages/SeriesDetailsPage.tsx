@@ -51,7 +51,7 @@ const SeriesDetailsPage = () => {
     return seriesEvents.filter((e) => e.publicationStatus === 'finished');
   }, [seriesEvents]);
 
-  // The server sums the series' challenge rankings (E6.6); it owns ordering and ties.
+  // The server sums the series' challenge rankings; it owns ordering and ties.
   const ranking = rankingData?.data;
   const standings = useMemo(
     (): SeriesStanding[] =>

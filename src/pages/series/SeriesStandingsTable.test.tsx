@@ -4,7 +4,7 @@ import { render } from '@/test/test-utils';
 import { SeriesStandingsTable } from './SeriesStandingsTable';
 import type { Event } from '@/types';
 
-describe('SeriesStandingsTable event column links (D-07)', () => {
+describe('SeriesStandingsTable event column links', () => {
   it('links event headers by slug', () => {
     render(
       <SeriesStandingsTable

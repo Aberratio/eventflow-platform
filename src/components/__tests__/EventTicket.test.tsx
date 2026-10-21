@@ -21,11 +21,11 @@ const baseTicket: Ticket = {
 };
 
 /**
- * E3.6 (issue 12 §4): "odprawiono Cię o 7:42" — the Bilet must show the
+ * "odprawiono Cię o 7:42" — the Bilet must show the
  * check-in fact BZ reports back once known, and must not show anything for
  * the (far more common) not-yet-checked-in case.
  */
-describe('EventTicket check-in display (E3.6)', () => {
+describe('EventTicket check-in display', () => {
   it('shows nothing check-in related when the ticket was never checked in', () => {
     render(<EventTicket ticket={baseTicket} />);
 
@@ -60,7 +60,7 @@ describe('EventTicket check-in display (E3.6)', () => {
 
 const START_CODE = `pqr_${'a1'.repeat(24)}`;
 
-describe('EventTicket start code QR (B-04, G-01)', () => {
+describe('EventTicket start code QR', () => {
   it('encodes the bare pqr_ start code (not JSON) for a confirmed Zapis', () => {
     const { container } = render(
       <EventTicket

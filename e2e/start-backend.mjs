@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// E0.4: brings up the PHP API for Playwright's webServer.
+// Brings up the PHP API for Playwright's webServer.
 //
 // Playwright's webServer just runs a shell command and polls a URL/port until
 // it responds - it has no notion of "migrate, then seed, then serve". This

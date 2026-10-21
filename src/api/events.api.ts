@@ -18,7 +18,7 @@ export async function getEventById(id: string): Promise<ApiResponse<Event | null
   return httpAdapter.getEventById(id);
 }
 
-/** E8.11: unauthenticated embed-status check, called by the embed page. */
+/** Unauthenticated embed-status check, called by the embed page. */
 export async function getEventEmbedPublicConfig(
   id: string,
 ): Promise<ApiResponse<{ enabled: boolean; allowedOrigins: string[] }>> {

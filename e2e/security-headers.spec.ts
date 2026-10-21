@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { dismissCookies, loginAs } from './helpers';
 
 /**
- * PP.9: verifies the generated `dist/.htaccess` security headers when served
+ * Verifies the generated `dist/.htaccess` security headers when served
  * by a real Apache (lane-D, port 5304 locally). Opt-in via
  * SECURITY_HEADERS_BASE_URL so the default suite and @smoke are unaffected —
  * dev/CI runs of `npx playwright test` never talk to a static Apache build.

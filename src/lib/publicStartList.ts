@@ -1,7 +1,7 @@
 import type { PublicStartListEntry, Registration } from '@/types';
 
 /**
- * PP.3: preview mode (organizer/staff viewing their own not-yet-public event)
+ * Preview mode (organizer/staff viewing their own not-yet-public event)
  * maps a full `Registration` down to the same DTO shape the public
  * `/start-list` endpoint returns, so `EventStartListTab` only ever has to
  * render one shape. Preview is for the owning organizer or staff, so no

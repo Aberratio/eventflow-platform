@@ -5,7 +5,7 @@ import type { Registration } from '@/types';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 
 /**
- * PP.52: the success page derives "paid / not paid" from the server's Zapis
+ * The success page derives "paid / not paid" from the server's Zapis
  * status, never from the payment route — a pending gateway Zapis must not say
  * "Płatność zrealizowana automatycznie".
  */
@@ -76,7 +76,7 @@ const makeState = (
   },
 });
 
-describe('RegistrationSuccessPage — PP.52 status-driven payment display', () => {
+describe('RegistrationSuccessPage — status-driven payment display', () => {
   it('shows "Do zapłaty" and the amber note for a pending gateway Zapis', () => {
     mockLocationState = makeState('pending', 'admin_gateway', 80);
 

@@ -26,7 +26,7 @@ beforeEach(() => {
   updateResult.mockResolvedValue({ success: true, data: { id: 'r1' } });
 });
 
-describe('EditResultDialog (G-03)', () => {
+describe('EditResultDialog', () => {
   it('sends the new time, status and the reason of the correction', async () => {
     const user = userEvent.setup();
     const onSaved = vi.fn();
@@ -88,7 +88,7 @@ describe('EditResultDialog (G-03)', () => {
   });
 });
 
-describe('EditResultDialog net time and places (G-03)', () => {
+describe('EditResultDialog net time and places', () => {
   const withNumbers = { ...result, netTime: '00:44:30', position: 1, categoryPosition: 1 };
 
   const renderDialog = (value = withNumbers) =>
@@ -165,7 +165,7 @@ describe('EditResultDialog net time and places (G-03)', () => {
   });
 });
 
-describe('ResultCorrectionsDialog (G-03)', () => {
+describe('ResultCorrectionsDialog', () => {
   it('lists who, when, what changed (from -> to) and why', async () => {
     getResultCorrections.mockResolvedValue({
       success: true,

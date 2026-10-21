@@ -44,7 +44,7 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // jsdom implements no layout, so it is missing a handful of DOM measurement APIs that
-// ProseMirror/TipTap (PP.16 rich-text-editor) queries on every focus/selection change:
+// ProseMirror/TipTap (rich-text-editor) queries on every focus/selection change:
 // Range.getClientRects, Range.getBoundingClientRect and document.elementFromPoint. Without these,
 // interacting with the editor in a test (click, type, or any command that scrolls the selection
 // into view) throws "... is not a function". Polyfill them with safe empty/zero values — jsdom has

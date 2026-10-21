@@ -20,7 +20,7 @@ interface CustomFormFieldsStepProps {
   fields: FormField[];
   answers: Record<string, FormFieldAnswerValue>;
   errors: Record<string, string>;
-  /** B-07: messages from the server's 422 `registration_form_invalid`, by form-field id. */
+  /** Messages from the server's 422 `registration_form_invalid`, by form-field id. */
   serverErrors?: Record<string, string>;
   onChange: (fieldId: string, value: FormFieldAnswerValue) => void;
 }
@@ -32,7 +32,7 @@ const optionPriceHint = (option: FormFieldOption): string => {
 };
 
 /**
- * E1.13: the custom positions of the organizer-configured registration form. Rendered by type,
+ * The custom positions of the organizer-configured registration form. Rendered by type,
  * in the order the organizer set; "Wymagany" ones carry an asterisk and block the step until
  * they are answered (the server validates again on save).
  */

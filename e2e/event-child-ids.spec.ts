@@ -2,7 +2,7 @@ import { expect, test, type Page, type Response } from '@playwright/test';
 import { dismissCookies, loginAs } from './helpers';
 
 /**
- * PP.96: event child rows (discount codes, merchandise, payment methods, distances) must keep
+ * Event child rows (discount codes, merchandise, payment methods, distances) must keep
  * their server ids and server-owned counters across repeated saves from the same screen.
  *
  * Needs a real backend on another origin than the client (not tagged @smoke):
@@ -36,7 +36,7 @@ const isEventPatch = (eventId: string) => (response: Response) =>
 
 const uniqueCode = (prefix: string) => `${prefix}${Date.now().toString(36).toUpperCase()}`;
 
-test.describe('event child ids stay stable across saves (PP.96)', () => {
+test.describe('event child ids stay stable across saves', () => {
   // Both tests save the same event, so run them one after another (last write wins otherwise).
   test.describe.configure({ mode: 'serial' });
 

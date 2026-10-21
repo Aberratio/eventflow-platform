@@ -74,16 +74,16 @@ interface RegistrationFormProps {
   onCancel: () => void;
   previewMode?: boolean;
   disabled?: boolean;
-  /** E7.2: pre-fills "join this exact team" when arriving via an invitation link. */
+  /** Pre-fills "join this exact team" when arriving via an invitation link. */
   initialTeamJoin?: InitialTeamJoin | null;
-  /** PP.44: the ward being registered; null/undefined = the logged-in user themself. */
+  /** The ward being registered; null/undefined = the logged-in user themself. */
   participant?: RegistrationParticipant | null;
   /**
-   * B-07: per-field errors from a 422 `registration_form_invalid` after a submit attempt; the
+   * Per-field errors from a 422 `registration_form_invalid` after a submit attempt; the
    * form shows each next to its field and moves back to the step that holds it.
    */
   serverFieldErrors?: RegistrationFormFieldError[] | null;
-  /**   * B-02: asks the server what this form would cost (`POST /registrations/quote`), given the form as   * filled in so far. The summary shows the server's Rozliczenie lines and total (debounced) instead of   * the local preview; without it, or when the server refuses, the local preview stays.   */ quote?: (
+  /**   * Asks the server what this form would cost (`POST /registrations/quote`), given the form as   * filled in so far. The summary shows the server's Rozliczenie lines and total (debounced) instead of   * the local preview; without it, or when the server refuses, the local preview stays.   */ quote?: (
     data: RegistrationData,
   ) => Promise<{ data: RegistrationQuote }>;
 }
@@ -96,7 +96,7 @@ interface RegistrationFormProps {
  * they are NEVER sent to the server as-is. The actual `createRegistration`
  * call (see `EventRegistrationPage.handleComplete`) forwards only the
  * selection fields (`pricingVariantId`, `discountCode`, `merchandise`,
- * `insuranceVariantId`) per the E1.2 contract: the server recomputes and
+ * `insuranceVariantId`) per the pricing contract: the server recomputes and
  * freezes the authoritative amounts.
  */
 export interface RegistrationData {
@@ -113,31 +113,31 @@ export interface RegistrationData {
   modifiersTotal: number;
   totalAmount: number;
   teamName?: string;
-  /** E7.1: real server-assigned team id when joining an existing relay Drużyna. */
+  /** Real server-assigned team id when joining an existing relay Drużyna. */
   teamId?: string;
-  /** PP.54: the captain's invitation token (from the `&invite=` link) — required to join someone else's Drużyna. */
+  /** The captain's invitation token (from the `&invite=` link) — required to join someone else's Drużyna. */
   teamInviteToken?: string;
-  /** E7.1: explicit "create a new Drużyna" intent (relay Dystans only). */
+  /** Explicit "create a new Drużyna" intent (relay Dystans only). */
   createTeam?: boolean;
   /**
-   * E7.5: the captain's manually declared Kategoria specjalna for a
+   * The captain's manually declared Kategoria specjalna for a
    * newly-created Drużyna — only meaningful together with `createTeam`.
    */
   teamSpecialCategory?: string;
   pricingVariantId?: string;
   insuranceVariantId?: string;
   /**
-   * E1.13: answers to the organizer's custom form fields, keyed by form-field id (only the
+   * Answers to the organizer's custom form fields, keyed by form-field id (only the
    * ones actually filled in). Sent as `formFieldAnswers` in the same POST that creates the Zapis.
    */
   formFieldAnswers?: Record<string, FormFieldAnswerValue>;
-  /** B-07: values of the visible identity positions (phone, club, ...), sent in `identity`. */
+  /** Values of the visible identity positions (phone, club, ...), sent in `identity`. */
   identity?: RegistrationIdentityPayload;
 }
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 63 }, (_, i) => currentYear - 18 - i);
-/** PP.44: a ward is often a child — offer every year back from the current one. */
+/** A ward is often a child — offer every year back from the current one. */
 const wardYears = Array.from({ length: 101 }, (_, i) => currentYear - i);
 const mutedWarningCallout =
   'border-warning/20 bg-warning/[0.06] text-foreground [&>svg]:text-warning/70';
@@ -277,13 +277,13 @@ export const RegistrationForm = ({
         </Alert>
       )}
 
-      {/* Step 1: Distance Selection */}
+      {/* Distance Selection */}
       {form.step === 1 && <DistanceStep event={event} form={form} />}
 
-      {/* Step 2: Personal Data */}
+      {/* Personal Data */}
       {form.step === 2 && form.selectedDistance && <PersonalDataStep form={form} />}
 
-      {/* Step 26: organizer-configured custom fields (E1.13) */}
+      {/* Organizer-configured custom fields */}
       {form.step === 26 && form.isStepInActiveSteps(26) && (
         <CustomFormFieldsStep
           fields={form.stepFormFields}
@@ -294,23 +294,23 @@ export const RegistrationForm = ({
         />
       )}
 
-      {/* Step 25: Team */}
+      {/* Team */}
       {form.step === 25 && form.isStepInActiveSteps(25) && <TeamStep form={form} />}
 
-      {/* Step 3: Insurance */}
+      {/* Insurance */}
       {form.step === 3 && form.isStepInActiveSteps(3) && form.hasInsurance && (
         <InsuranceStep event={event} form={form} />
       )}
 
-      {/* Step 4: Merchandise */}
+      {/* Merchandise */}
       {form.step === 4 && form.isStepInActiveSteps(4) && form.hasMerchandise && (
         <MerchandiseStep event={event} form={form} />
       )}
 
-      {/* Step 5: Discount */}
+      {/* Discount */}
       {form.step === 5 && form.isStepInActiveSteps(5) && <DiscountStep event={event} form={form} />}
 
-      {/* Step 6: Summary */}
+      {/* Summary */}
       {form.step === 6 && form.isStepInActiveSteps(6) && form.selectedDistance && (
         <SummaryStep event={event} form={form} previewMode={previewMode} quote={quote} />
       )}
@@ -463,7 +463,7 @@ const DistanceStep = ({ event, form }: { event: Event; form: FormHook }) => (
       </RadioGroup>
 
       {/* Wariant opłaty selection — only rendered as a chooser when 2+ Warianty
-          exist; a single Wariant is auto-selected silently (E1.2 resolution #1). */}
+          exist; a single Wariant is auto-selected silently. */}
       {form.selectedDistance && form.pricingVariants.length > 1 && (
         <div className="mt-4 space-y-3 rounded-lg border p-4">
           <div className="flex items-center gap-2">
@@ -927,8 +927,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                     3-50 znaków. Użyj tej samej nazwy co pozostali członkowie drużyny.
                   </p>
                   {/*
-                    E7.5 (issue 23 Answer §7, "Kategoria specjalna: deklaracja
-                    ręczna kapitana"): a manual, one-time choice from the same
+                    A manual, one-time choice from the same
                     per-Dystans configured list as the individual "Kategorie
                     specjalne" checkboxes below (ticket 10) — never derived
                     from who ends up on the roster, and not re-asked at join
@@ -995,7 +994,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
                     </SelectTrigger>
                     <SelectContent>
                       {form.existingTeams.map((team) => (
-                        // E7.1: a relay Dystans's existingTeams entries carry
+                        // A relay Dystans's existingTeams entries carry
                         // a real server-assigned `id` (from getTeamsForDistance)
                         // — select on that so the join is validated against
                         // the real team, not its (potentially non-unique)
@@ -1029,7 +1028,7 @@ const TeamStep = ({ form }: { form: FormHook }) => (
 
 /**
  * NNW premium preview for one catalog variant. Age is computed as of the
- * EVENT date (E1.2 resolution #9), not today — mirrors
+ * EVENT date, not today — mirrors
  * `calculateInsurancePreview` in `@/api/pricing`, kept inline here since the
  * form already has `birthDate`/`event.date` at hand for the render.
  */
@@ -1267,7 +1266,7 @@ const SummaryStep = ({
   quote?: RegistrationFormProps['quote'];
 }) => {
   const selectedDistance = form.selectedDistance!;
-  // B-02: the server's price for the form as it stands; the local preview is the fallback.
+  // The server's price for the form as it stands; the local preview is the fallback.
   const { quote, isPending: quotePending } = useRegistrationQuote({
     enabled: Boolean(requestQuote) && !previewMode,
     payload: form.buildRegistrationData(),

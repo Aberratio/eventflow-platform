@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ShopProductPage from '../ShopProductPage';
 
-// Regression test for TD.3: `handleAddToCart` used to build the CartItem
+// Regression test: `handleAddToCart` used to build the CartItem
 // without `productName`/`unitPrice`, which are required for the cart's
 // toast message, activity log, and total-price calculation. This asserts
 // the real product data reaches `addItem`, not just that the call happens.
@@ -109,7 +109,7 @@ describe('ShopProductPage add to cart', () => {
   });
 });
 
-// E5.1: the size/color pickers are the only UI for choosing a variant before
+// The size/color pickers are the only UI for choosing a variant before
 // checkout — a regression here would silently add the wrong variant (or none)
 // to the cart. These exercise the real selection state, not just rendering.
 describe('ShopProductPage variant selection', () => {

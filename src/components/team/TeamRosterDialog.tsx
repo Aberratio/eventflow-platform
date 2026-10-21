@@ -20,7 +20,7 @@ interface TeamRosterDialogProps {
 }
 
 /**
- * G-04: the captain's view of the roster with a "Wymień zawodnika" action per member (the swap
+ * The captain's view of the roster with a "Wymień zawodnika" action per member (the swap
  * deadline is enforced by the server; a late swap is answered with a clear message).
  */
 const TeamRosterDialog = ({ open, onOpenChange, teamId, teamName }: TeamRosterDialogProps) => {

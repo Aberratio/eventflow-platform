@@ -24,7 +24,7 @@ const sys = (key: string, state: FormField['state']): FormField => ({
   options: null,
 });
 
-describe('CustomFormFieldsStep identity section (B-07)', () => {
+describe('CustomFormFieldsStep identity section', () => {
   it('renders non-hidden identity positions by tri-state with the right controls', async () => {
     const onChange = vi.fn();
     const all = [

@@ -153,7 +153,7 @@ test.describe('API contract: public endpoints @api', () => {
     expect(r.json.data.slug).toBe(slug);
   });
 
-  test('public events expose no sensitive fields (PP.55)', async ({ request, seed }) => {
+  test('public events expose no sensitive fields', async ({ request, seed }) => {
     const list = await timed(request, 'GET', '/events', { params: { pageSize: 200 } });
     expect(list.status).toBe(200);
     for (const e of list.json.data) {
@@ -233,7 +233,7 @@ test.describe('API contract: errors @api', () => {
   });
 
   test('unknown catalogue slug/id -> 404 with error envelope', async ({ request }) => {
-    // QA-API-01 (D-01): needs the server change that answers 404 for unknown catalogue slugs (eventflow-server PR).
+    // Needs the server change that answers 404 for unknown catalogue slugs (eventflow-server PR).
     const ts = Date.now().toString(36);
     for (const path of [
       `/series/slug/qa-nope-${ts}`,

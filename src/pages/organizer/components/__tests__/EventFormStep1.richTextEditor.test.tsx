@@ -7,7 +7,7 @@ import { useEventFormState } from '../../hooks/useEventFormState';
 import { getEventById, getOrganizerEventLimit } from '@/api';
 import type { Event, OrganizerEventLimit, User } from '@/types';
 
-// PP.16 regression: the event wizard's description step hosts RichTextEditor, the component whose
+// Regression: the event wizard's description step hosts RichTextEditor, the component whose
 // TipTap lifecycle crashed on this exact page (see rich-text-editor.test.tsx for the isolated repro).
 // This test wires the real useEventFormState hook + the real EventFormStep1 component together, the
 // same combination the organizer's browser runs, and fires the destroy timer the same way.
@@ -75,7 +75,7 @@ const renderHarness = () => {
   );
 };
 
-describe('EventFormStep1 description editor (PP.16)', () => {
+describe('EventFormStep1 description editor', () => {
   beforeEach(() => {
     paramsReturn = {};
     toast.mockClear();
@@ -118,7 +118,7 @@ describe('EventFormStep1 description editor (PP.16)', () => {
     });
   });
 
-  // PP.16 §3.3: added once DisciplineMultiSelect (also rendered by this sub-step) no longer nests a
+  // Added once DisciplineMultiSelect (also rendered by this sub-step) no longer nests a
   // <button> inside the combobox trigger <button>. Kept in this file rather than
   // DisciplineMultiSelect.test.tsx because it exercises the real page-level markup, not the
   // component in isolation.

@@ -4,7 +4,7 @@ import type { Plugin } from 'vite';
 import { applyIndexingToHtml, resolveRobotsTxt } from './indexing';
 
 /**
- * D-09: noindex meta + generated robots.txt for every build that is not explicitly
+ * Noindex meta + generated robots.txt for every build that is not explicitly
  * allowed to be indexed. Build-only.
  */
 export function indexingPlugin(options: { allowIndexing: boolean }): Plugin {

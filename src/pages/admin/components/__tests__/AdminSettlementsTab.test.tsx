@@ -72,7 +72,7 @@ beforeEach(() => {
   exportSettlementReport.mockResolvedValue(undefined);
 });
 
-describe('AdminSettlementsTab (R-03)', () => {
+describe('AdminSettlementsTab', () => {
   it('converts minor units to a Polish money string', () => {
     expect(formatMinorMoney(13025)).toMatch(/^130,25\s*zł$/);
     expect(formatMinorMoney(0)).toMatch(/^0,00\s*zł$/);

@@ -105,7 +105,7 @@ test.describe('security headers and CORS @security', () => {
 
   // Hypothesis H2: the API has PUT routes (e.g. PUT /events/{eventId}/form-fields/reorder), but
   // CorsMiddleware lists only "GET, POST, PATCH, DELETE, OPTIONS". A browser PUT fails preflight.
-  test('preflight from the front origin allows PUT (D-04)', async ({ request }) => {
+  test('preflight from the front origin allows PUT', async ({ request }) => {
     const res = await preflight(request, '/events/qa-placeholder/form-fields/reorder', 'PUT', FRONT_ORIGIN);
     const allowed = (res.headers()['access-control-allow-methods'] ?? '').split(',').map((m) => m.trim().toUpperCase());
     expect(allowed, 'Access-Control-Allow-Methods must include PUT').toContain('PUT');

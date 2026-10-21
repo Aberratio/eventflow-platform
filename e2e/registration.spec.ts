@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { dismissCookies } from './helpers';
 
-// PP.101: self-registration talks to the real API (run against a live backend; the client and the API are on
+// Self-registration talks to the real API (run against a live backend; the client and the API are on
 // different origins, so this also exercises CORS for POST /auth/register). Not part of the mock smoke run.
 test.describe('Self-registration against the live API', () => {
   const password = 'Haslo-e2e-1234';

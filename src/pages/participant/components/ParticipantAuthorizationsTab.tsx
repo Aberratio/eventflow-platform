@@ -36,7 +36,7 @@ function initials(firstName: string, lastName: string): string {
   return `${firstName[0] ?? ''}${lastName[0] ?? ''}`.toUpperCase();
 }
 
-/** E1.12: jedna "tożsamość" (własny profil albo Zawodnik pod opieką) w przełączniku kodów. */
+/** Jedna "tożsamość" (własny profil albo Zawodnik pod opieką) w przełączniku kodów. */
 interface IdentityOption {
   competitorId: string;
   label: string;
@@ -44,11 +44,11 @@ interface IdentityOption {
 }
 
 /**
- * E1.12 ("Kod tożsamości QR na Zawodniku"): duży kod QR + surowy token + przycisk
- * "wygeneruj nowy", identyczny wzorzec renderowania QR co RegistrationListRow z
- * E1.11 (qrcode.react, sam token jako czysty tekst — bez URL-a/danych osobowych,
- * spec 11 pkt 5). Osobny komponent, bo ten sam widok obsługuje i "mój" kod,
- * i kod każdego Zawodnika pod Opieką (spec 11 §5.1 — mama przełącza między
+ * Duży kod QR + surowy token + przycisk
+ * "wygeneruj nowy", identyczny wzorzec renderowania QR co RegistrationListRow
+ * (qrcode.react, sam token jako czysty tekst — bez URL-a/danych osobowych).
+ * Osobny komponent, bo ten sam widok obsługuje i "mój" kod,
+ * i kod każdego Zawodnika pod Opieką (mama przełącza między
  * swoim kodem, kodem Zosi i Antka).
  */
 function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
@@ -128,7 +128,7 @@ function IdentityCodeCard({ options }: { options: IdentityOption[] }) {
   );
 }
 
-/** G-09 (spec 10): jedna osoba w przełączniku anonimizacji. */
+/** Jedna osoba w przełączniku anonimizacji. */
 interface AnonymizationOption {
   competitorId: string;
   label: string;
@@ -136,7 +136,7 @@ interface AnonymizationOption {
 }
 
 /**
- * G-09: „Anonimizuj moje dane w rankingach" — POST /competitors/{id}/anonymization dla własnego
+ * „Anonimizuj moje dane w rankingach" — POST /competitors/{id}/anonymization dla własnego
  * profilu i każdego Zawodnika pod Opieką. Serwer maskuje imię i nazwisko w publicznych rankingach.
  */
 function AnonymizationCard({ options }: { options: AnonymizationOption[] }) {
@@ -270,7 +270,7 @@ const ParticipantAuthorizationsTab = () => {
   const myCompetitors: MyCompetitor[] = data?.myCompetitors ?? [];
   const caregivers: Caregiver[] = data?.caregivers ?? [];
 
-  // E1.12: przełącznik kodów tożsamości — "Ja" (własny profil Zawodnika, jeśli
+  // Przełącznik kodów tożsamości — "Ja" (własny profil Zawodnika, jeśli
   // istnieje) plus każdy Zawodnik pod moją opieką, w kolejności jak w liście niżej.
   const identityOptions = [
     ...(data?.myProfile
@@ -422,10 +422,10 @@ const ParticipantAuthorizationsTab = () => {
         </div>
       ) : (
         <>
-          {/* E1.12: kod tożsamości QR — mój i każdego Zawodnika pod opieką, z przełącznikiem */}
+          {/* Kod tożsamości QR — mój i każdego Zawodnika pod opieką, z przełącznikiem */}
           <IdentityCodeCard options={identityOptions} />
 
-          {/* G-09: przełącznik anonimizacji */}
+          {/* Przełącznik anonimizacji */}
           <AnonymizationCard options={anonymizationOptions} />
 
           {/* Zawodnicy pod moją opieką */}

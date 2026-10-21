@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 
 interface LocalResult {
-  /** Present only for results stored on the server (G-03: only those can be corrected). */
+  /** Present only for results stored on the server (only those can be corrected). */
   id?: string;
   bibNumber: string;
   time: string;
@@ -57,7 +57,7 @@ const getStatusBadge = (status: string) => {
 
 interface IndividualResultsCardProps {
   distanceName?: string;
-  /** Status publikacji klasyfikacji tego dystansu (E2.3); undefined - brak wynikow z API. */
+  /** Status publikacji klasyfikacji tego dystansu; undefined - brak wynikow z API. */
   publicationStatus?: 'preliminary' | 'official';
   results: LocalResult[];
   entryMode: 'manual' | 'import';

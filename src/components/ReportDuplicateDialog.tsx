@@ -25,7 +25,7 @@ interface Props {
 }
 
 /**
- * R-08 (spec 22): opiekun / organizator zgłasza, że profil Zawodnika jest duplikatem innego.
+ * Opiekun / organizator zgłasza, że profil Zawodnika jest duplikatem innego.
  * Kandydaci pochodzą z GET /competitors/duplicates (to samo imię, nazwisko i data urodzenia);
  * zgłoszenie niczego nie scala - trafia do kolejki Moderatora/Admina.
  */

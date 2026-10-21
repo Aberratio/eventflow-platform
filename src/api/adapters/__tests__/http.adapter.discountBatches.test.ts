@@ -12,7 +12,7 @@ function jsonResponse(payload: unknown, status = 200): Response {
   } as unknown as Response;
 }
 
-describe('httpAdapter discount code batches (R-07)', () => {
+describe('httpAdapter discount code batches', () => {
   beforeEach(() => {
     localStorage.clear();
     localStorage.setItem(TOKEN_STORAGE_KEY, 'jwt-token');

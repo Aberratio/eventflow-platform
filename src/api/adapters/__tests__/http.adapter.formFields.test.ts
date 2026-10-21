@@ -16,7 +16,7 @@ const lastCall = () => {
   return { url, init, body: init.body ? JSON.parse(init.body as string) : undefined };
 };
 
-describe('httpAdapter form-field routes (E1.13)', () => {
+describe('httpAdapter form-field routes', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());
@@ -61,7 +61,7 @@ describe('httpAdapter form-field routes (E1.13)', () => {
     expect(call.body).toEqual({ state: 'required' });
   });
 
-  it('PATCHes a changed type and variants with their keys and signed prices (B-02)', async () => {
+  it('PATCHes a changed type and variants with their keys and signed prices', async () => {
     vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ success: true, data: { id: 'f1' } }));
     await httpAdapter.updateFormField('e1', 'f1', {
       fieldType: 'multi_choice',
@@ -81,7 +81,7 @@ describe('httpAdapter form-field routes (E1.13)', () => {
     });
   });
 
-  it('surfaces the 409 code of a type / variant edit that would orphan answers (B-02)', async () => {
+  it('surfaces the 409 code of a type / variant edit that would orphan answers', async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockJsonResponse(
         {
@@ -130,7 +130,7 @@ describe('httpAdapter form-field routes (E1.13)', () => {
   });
 });
 
-describe('httpAdapter per-distance form routes (R-04)', () => {
+describe('httpAdapter per-distance form routes', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

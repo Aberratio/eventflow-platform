@@ -65,7 +65,7 @@ const RegisterPage = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      // PP.101: self-registration always creates a participant; the server ignores any role in the body.
+      // Self-registration always creates a participant; the server ignores any role in the body.
       await register({
         name: `${data.firstName.trim()} ${data.lastName.trim()}`,
         email: data.email,

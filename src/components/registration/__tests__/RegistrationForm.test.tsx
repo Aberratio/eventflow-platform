@@ -151,7 +151,7 @@ describe('RegistrationForm preview mode', () => {
   });
 });
 
-describe('RegistrationForm summary with the server quote (B-02)', () => {
+describe('RegistrationForm summary with the server quote', () => {
   afterEach(() => {
     currentFormState = formState;
   });
@@ -218,7 +218,7 @@ describe('RegistrationForm summary with the server quote (B-02)', () => {
   });
 });
 
-describe('RegistrationForm team special category (E7.5, issue 23 Answer §7)', () => {
+describe('RegistrationForm team special category', () => {
   afterEach(() => {
     currentFormState = formState;
   });

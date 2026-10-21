@@ -53,7 +53,7 @@ describe('isAwaitingPayment / canRetryPayment', () => {
     expect(canRetryPayment(lapsed, NOW)).toBe(true);
   });
 
-  it('a pending gateway registration with an open window can be retried (B-05)', () => {
+  it('a pending gateway registration with an open window can be retried', () => {
     expect(canRetryPayment(reg(), NOW, { isBankTransfer: false })).toBe(true);
     // bank transfer has no gateway link; unknown route is not assumed to be a gateway
     expect(canRetryPayment(reg(), NOW, { isBankTransfer: true })).toBe(false);

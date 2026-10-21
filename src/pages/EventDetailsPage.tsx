@@ -83,7 +83,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
     const base = previewMode ? `/events/${slug}/preview` : `/events/${slug}`;
     navigate(`${base}/${value}`, { replace: true });
   };
-  // PP.55: the server is the only gate for private Events — forward the link's code
+  // The server is the only gate for private Events — forward the link's code
   // (or the one it already accepted in this tab) and trust its 200/404.
   const accessCodeFromUrl = searchParams.get('access') || undefined;
   const accessStorageKey = `private-event-code:${slug ?? ''}`;
@@ -136,7 +136,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   const isAdminLike = user?.role === 'admin' || user?.role === 'superadmin';
   const isModeratorLike = isAdminLike || user?.role === 'moderator';
   // A moderator has no access to a Szkic (draft) — their access starts at `submitted`
-  // (spec 08, "Co widzi każda rola"). Admins keep full access to every status.
+  // Admins keep full access to every status.
   const canViewDraft =
     isAdminLike ||
     (user?.role === 'moderator' && event?.publicationStatus !== 'draft') ||
@@ -263,7 +263,7 @@ const EventDetailsPage = ({ previewMode = false }: EventDetailsPageProps) => {
   };
 
   const totalParticipants = event.distances.reduce((acc, d) => acc + d.registeredCount, 0);
-  // E8.2 (spec 21 Answer §4): "X miejsc pozostało" — only shown when the
+  // "X miejsc pozostało" — only shown when the
   // organizer's `showFreeSlots` toggle is on. The server omits `slotsRemaining`
   // entirely (not null) from every Distance when it's off, so presence of the
   // key on at least one Distance is the actual signal, not a value check.

@@ -4,7 +4,7 @@ import type { Event, Registration } from '@/types';
 import CaptainTeamInvites from '../CaptainTeamInvites';
 
 /**
- * PP.54: the dashboard block "Twoje drużyny" — lets a captain (also on a gateway event, where the
+ * The dashboard block "Twoje drużyny" — lets a captain (also on a gateway event, where the
  * success page is skipped) copy the invitation link. Shown only for teams the user captains; the
  * secret token is fetched lazily, on click.
  */
@@ -172,7 +172,7 @@ describe('CaptainTeamInvites', () => {
     );
   });
 
-  it('opens the roster with the swap action for the captain (G-04)', async () => {
+  it('opens the roster with the swap action for the captain', async () => {
     mockGetTeamById.mockResolvedValue(team('team-own', 'Moja drużyna', 'u1'));
     mockGetTeamMembers.mockResolvedValue({
       success: true,

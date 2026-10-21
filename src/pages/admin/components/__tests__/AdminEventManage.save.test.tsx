@@ -88,7 +88,7 @@ const addMerchandise = async (user: ReturnType<typeof userEvent.setup>, name: st
   );
 };
 
-describe('AdminEventManage advanced save child ids (PP.96)', () => {
+describe('AdminEventManage advanced save child ids', () => {
   let server: ReturnType<typeof createFakeEventServer>;
 
   beforeEach(() => {

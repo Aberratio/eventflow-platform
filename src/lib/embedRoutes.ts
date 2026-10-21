@@ -1,5 +1,5 @@
 /**
- * D-10 (umowa §5.3): trasy renderowane w iframe na zewnętrznej stronie —
+ * Trasy renderowane w iframe na zewnętrznej stronie —
  * `/embed/*` oraz `/events/:slug/embed`. Bez nawigacji aplikacji, onboardingu,
  * banera cookies i DevToolbox.
  */

@@ -28,7 +28,7 @@ test.describe('Shop & Cart Flow', () => {
   });
 });
 
-// TD.18: every test above (and the registration tests in
+// Every test above (and the registration tests in
 // event-workflows.spec.ts) only checks an empty or blocked cart/registration
 // state — none of them ever complete a real purchase. This is the one e2e
 // test that drives a real shop checkout to a genuine terminal state against
@@ -40,7 +40,7 @@ test.describe('Shop & Cart Flow', () => {
 // `createOrder()` persists the order directly, whichever payment method is
 // picked. "bank" ("Przelew bankowy") is the closest match to "manual bank
 // transfer" and, unlike event registration, needs no sandbox gateway
-// credentials (that gap is tracked separately as TD.4, currently blocked).
+// credentials (that gap is tracked separately and currently blocked).
 //
 // A real *event* registration would have been the other option (per the
 // ticket), but every event fixture actually reachable in this seeded
@@ -54,7 +54,7 @@ test.describe('Shop & Cart Flow', () => {
 // always-in-stock, non-service product seeded directly by 001_demo.sql (not
 // subject to any date-based re-anchoring), which is what makes this the
 // tractable path.
-test.describe('Shop checkout via bank transfer (TD.18)', () => {
+test.describe('Shop checkout via bank transfer', () => {
   test('completes a real order and reaches a pending-payment terminal state @smoke', async ({
     page,
     request,
@@ -78,7 +78,7 @@ test.describe('Shop checkout via bank transfer (TD.18)', () => {
     await page.getByText('Odbior osobisty').click();
 
     // Payment: "Przelew bankowy" — see the file-level comment above for why
-    // this is the real, always-reachable stand-in for TD.4's blocked
+    // this is the real, always-reachable stand-in for the blocked
     // gateway-sandbox scope.
     await page.getByText('Przelew bankowy').click();
 
@@ -110,7 +110,7 @@ test.describe('Shop checkout via bank transfer (TD.18)', () => {
     // their own orders 403s and the tab silently renders "Brak zamówień"
     // (confirmed live: this is what actually happened when this test first
     // drove there). That is a real, separate bug this new test surfaced —
-    // out of TD.18's scope to fix (it's a server-repo authorization gap,
+    // out of scope to fix here (it's a server-repo authorization gap,
     // not a client checkout-flow bug), but real, so it's asserted around
     // here rather than asserted ON, and reported alongside this ticket.
     const apiBaseUrl = API_URL;

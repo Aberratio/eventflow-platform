@@ -30,7 +30,7 @@ const name = (p: CompetitorDuplicateReportProfile) =>
   `${p.firstName} ${p.lastName}${p.birthDate ? ` (${p.birthDate})` : ''}`;
 
 /**
- * R-08: zgłoszenia duplikatów od opiekunów/organizatorów, nad narzędziem scalania.
+ * Zgłoszenia duplikatów od opiekunów/organizatorów, nad narzędziem scalania.
  * "Porównaj" ładuje oba profile do porównania; "Odrzuć" zamyka zgłoszenie bez scalania.
  * Status `merged` ustawia serwer po scaleniu profili.
  */

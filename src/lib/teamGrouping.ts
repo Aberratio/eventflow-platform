@@ -1,8 +1,7 @@
 import type { RelayTeam } from '@/types';
 
 /**
- * E7.4 (issue 23 Answer §4, "Numer startowy: per członek, jak każdy inny
- * Zapis"): numbering/QR is already per-Zapis regardless of team membership
+ * Numbering/QR is already per-Zapis regardless of team membership
  * (RegistrationRepository::create() generates a code unconditionally) — the
  * only thing this ticket still owes is the VIEW-level grouping the spec asks
  * for ("lista startowa pogrupowana po Drużynie ... widok, nie osobny byt
@@ -10,15 +9,15 @@ import type { RelayTeam } from '@/types';
  *
  * A "block" is either one real Drużyna's cluster of members, or a single
  * ungrouped Zapis. Grouping is keyed strictly on a `teamId` that resolves to
- * an actual entry in `teamsById` (a real `teams` row from E7.1/E7.2's
+ * an actual entry in `teamsById` (a real `teams` row from the team API's
  * `GET /events/{eventId}/distances/{distanceId}/teams`) — never on the
  * free-text `teamName`. That free-text field is also written by the older,
- * unrelated `collectTeam` classification feature (out of E7.1's scope), and
+ * unrelated `collectTeam` classification feature (out of scope here), and
  * a stale/legacy value there could coincidentally collide with a real team's
  * display name; keying on `teamId` (and requiring it to resolve) means that
  * collision can never cause two unrelated registrations to cluster together,
  * and a registration whose `teamId` is missing or doesn't resolve (deleted
- * team, data from before E7.1, or simply no team at all) always renders as
+ * team, data from before real teams existed, or simply no team at all) always renders as
  * an individual block, exactly as it does today.
  */
 export type StartListBlock<T> =

@@ -34,13 +34,13 @@ const medalClass = (position: number): string | undefined => {
 };
 
 /**
- * E2.7 (spec 14 sekcja 4): "klasyfikacja drużynowa to osobna tabela obok
+ * "klasyfikacja drużynowa to osobna tabela obok
  * klasyfikacji indywidualnej na tym samym Dystansie" - a live-computed,
  * read-only table (GET /events/{eventId}/distances/{distanceId}/team-results),
  * never a form for manually entering/deleting teams (that legacy UI,
- * TeamResultsManager.tsx, was deleted as part of E2.7 - it let an organizer
- * manually type in a team's members/total time, exactly the model spec 14
- * sekcja 4 rejects, and its add/delete handlers were never even wired to a
+ * TeamResultsManager.tsx, was deleted - it let an organizer
+ * manually type in a team's members/total time, exactly the model the product
+ * owner rejects, and its add/delete handlers were never even wired to a
  * write endpoint - see server ResultRepository::teamResults()'s docblock).
  * Callers
  * are expected to render this only for a Dystans with startType === 'relay'

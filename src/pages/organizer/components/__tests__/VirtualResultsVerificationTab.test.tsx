@@ -82,7 +82,7 @@ describe('VirtualResultsVerificationTab', () => {
   });
 });
 
-describe('VirtualResultsVerificationTab proof link safety (PP.50)', () => {
+describe('VirtualResultsVerificationTab proof link safety', () => {
   it('shows plain text instead of a link for a javascript: proofUrl', async () => {
     getVirtualResultSubmissions.mockResolvedValue({
       success: true,

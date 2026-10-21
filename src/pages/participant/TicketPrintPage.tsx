@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { TicketQr } from '@/components/TicketQr';
 
 /**
- * B-04 (umowa §4.1.3): karta startowa do wydruku / zapisu jako PDF z przeglądarki.
+ * Karta startowa do wydruku / zapisu jako PDF z przeglądarki.
  * Bez layoutu aplikacji (nawigacji/stopki); QR = sam token `pqr_…`, plus `zqr_…`
- * Zawodnika, jeśli dostępny. Tylko dla Zapisu potwierdzonego (G-01).
+ * Zawodnika, jeśli dostępny. Tylko dla Zapisu potwierdzonego.
  */
 const TicketPrintPage = () => {
   const { registrationId } = useParams<{ registrationId: string }>();

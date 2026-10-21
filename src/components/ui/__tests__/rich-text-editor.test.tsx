@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RichTextEditor } from '../rich-text-editor';
 
-// PP.16: TipTap's useEditor (immediatelyRender: true by default) builds the Editor during render and
+// TipTap's useEditor (immediatelyRender: true by default) builds the Editor during render and
 // schedules a 1ms destroy timer. On a heavy page the passive-effect flush that would cancel that timer
 // can land after it fires, so the editor gets destroyed (schema = null) before RichTextEditor's own sync
 // effect calls editor.getHTML() on it. This harness reproduces "the timer fires after commit, before

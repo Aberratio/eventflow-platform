@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 import { formatDiscountBadge } from '@/lib/discountValue';
 
 interface DiscountCodesEditorProps {
-  /** When set, the batch generator (R-07) is offered; it needs the persisted event. */
+  /** When set, the batch generator is offered; it needs the persisted event. */
   eventId?: string;
   discountCodes: DiscountCode[];
   distances: Distance[];

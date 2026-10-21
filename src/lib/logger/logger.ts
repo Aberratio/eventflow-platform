@@ -154,7 +154,7 @@ class AppLogger {
   }
 }
 
-// E0.8: rejestr aktywności (audit log) jest pisany wyłącznie przez serwer —
+// Rejestr aktywności (audit log) jest pisany wyłącznie przez serwer —
 // nie ma już transportu, który wysyłałby te wpisy do API (POST
 // /admin/client-logs został usunięty, bo pozwalał sfałszować autora wpisu).
 // MockTransport zostaje jako lokalne logowanie do konsoli/pamięci przeglądarki.

@@ -20,7 +20,7 @@ interface DisciplineMultiSelectProps {
   onChange: (v: SportDiscipline[]) => void;
 }
 
-// PP.16: the discipline chips used to render as <button> elements inside the combobox trigger
+// The discipline chips used to render as <button> elements inside the combobox trigger
 // <button>, which is invalid HTML (WCAG 4.1.2 / axe nested-interactive) and a React
 // validateDOMNesting warning. The chips now render as a separate list below the trigger.
 export const DisciplineMultiSelect = ({ selected, onChange }: DisciplineMultiSelectProps) => {

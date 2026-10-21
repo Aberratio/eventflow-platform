@@ -63,9 +63,9 @@ function displayValue(value: unknown): string {
 }
 
 /**
- * E8.1 (issue 22, "Scalanie i przejmowanie profili Zawodnika"): wyłącznie
+ * Wyłącznie
  * Moderator/Admin — nigdy samoobsługa, nawet dla opiekuna sprawującego
- * Opiekę nad oboma profilami (spec Answer §1). Wchodzi zarówno w Panel
+ * Opiekę nad oboma profilami. Wchodzi zarówno w Panel
  * Administratora, jak i Panel Moderatora — patrz AdminDashboard/
  * ModeratorDashboard, które oba montują ten sam komponent (dokładnie ten sam
  * wzorzec co AdminSeriesTab/AdminFeaturedEventsTab, już współdzielone

@@ -30,7 +30,7 @@ interface ResultCorrectionsDialogProps {
   title?: string;
 }
 
-/** G-03: the server's correction trail of one result - who, when, from -> to, and why. */
+/** The server's correction trail of one result - who, when, from -> to, and why. */
 export const ResultCorrectionsDialog = ({
   open,
   onOpenChange,

@@ -22,7 +22,7 @@ const formatEventDate = (value?: string | null): string => {
 };
 
 export const EventTicket = ({ ticket }: EventTicketProps) => {
-  // G-01 (spec 11 pkt 4): kod startowy ważny tylko dla Zapisu opłaconego/potwierdzonego.
+  // Kod startowy ważny tylko dla Zapisu opłaconego/potwierdzonego.
   const qrValue = ticket.registrationStatus === 'confirmed' && ticket.qrCode ? ticket.qrCode : null;
   const inactiveMessage =
     ticket.registrationStatus === 'pending'
@@ -82,7 +82,7 @@ export const EventTicket = ({ ticket }: EventTicketProps) => {
               </div>
             </div>
 
-            {/* E3.6 (issue 12 §4): "odprawiono Cię o 7:42" — the check-in fact
+            {/* "odprawiono Cię o 7:42" — the check-in fact
                 Biuro Zawodów reports back via return-sync, shown right on the
                 Bilet the moment it's known; absent while un-checked-in, so no
                 empty/placeholder row appears for the common not-yet case. */}

@@ -5,7 +5,7 @@ import { UsersAdminsTab } from '../UsersAdminsTab';
 import { getAllUsers } from '@/api/fetchAllPages';
 import type { User } from '@/types';
 
-// D-05: the tab pages through every user via getAllUsers.
+// The tab pages through every user via getAllUsers.
 vi.mock('@/api/fetchAllPages', async () => {
   const actual = await vi.importActual<typeof import('@/api/fetchAllPages')>('@/api/fetchAllPages');
   return { ...actual, getAllUsers: vi.fn() };
@@ -14,8 +14,8 @@ vi.mock('@/api/fetchAllPages', async () => {
 const user = (over: Partial<User>): User =>
   ({ id: 'u', name: 'Ada Admin', email: 'ada@example.com', role: 'admin', ...over }) as User;
 
-// G-07 (umowa §5.8): the server exposes users.last_login_at as `lastLoginAt` (ISO or null).
-describe('UsersAdminsTab last login (G-07)', () => {
+// The server exposes users.last_login_at as `lastLoginAt` (ISO or null).
+describe('UsersAdminsTab last login', () => {
   it('shows the last login date, or "Nigdy" before the first login', async () => {
     vi.mocked(getAllUsers).mockResolvedValue({
       data: [

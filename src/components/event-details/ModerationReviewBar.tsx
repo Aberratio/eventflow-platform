@@ -19,7 +19,7 @@ const statusMessages: Partial<Record<Event['publicationStatus'], string>> = {
 };
 
 /**
- * Yellow moderation-context bar (E1.1, §4.4.15) shown to Moderator/Admin when
+ * Yellow moderation-context bar shown to Moderator/Admin when
  * previewing a non-public-yet state (draft/submitted/rejected). Carries the
  * approve/reject actions when the event is submitted, otherwise is purely
  * informational.

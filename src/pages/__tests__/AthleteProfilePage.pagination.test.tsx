@@ -7,7 +7,7 @@ import { CartProvider } from '@/contexts/CartContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AthleteProfilePage from '../AthleteProfilePage';
 
-// D-05: the page asked for pageSize 1000, the API caps a page at 100, so an athlete's event that
+// The page asked for pageSize 1000, the API caps a page at 100, so an athlete's event that
 // sat beyond the first 100 events lost its name/date/discipline without any error.
 
 const { getEvents } = vi.hoisted(() => ({ getEvents: vi.fn() }));

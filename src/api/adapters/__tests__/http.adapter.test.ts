@@ -91,7 +91,7 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
-  it('stores the rotated token returned by a password change (PP.7)', async () => {
+  it('stores the rotated token returned by a password change', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
@@ -114,7 +114,7 @@ describe('httpAdapter contract mapping', () => {
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('fresh-token');
   });
 
-  it('keeps the stored token when a password change fails (PP.7)', async () => {
+  it('keeps the stored token when a password change fails', async () => {
     localStorage.setItem(TOKEN_STORAGE_KEY, 'old-token');
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse(
@@ -130,7 +130,7 @@ describe('httpAdapter contract mapping', () => {
     expect(localStorage.getItem(TOKEN_STORAGE_KEY)).toBe('old-token');
   });
 
-  it('posts the reset token and new password to the confirm endpoint (PP.7)', async () => {
+  it('posts the reset token and new password to the confirm endpoint', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
 
     await httpAdapter.confirmPasswordReset({ token: 'a'.repeat(64), newPassword: 'NoweHaslo123' });
@@ -144,7 +144,7 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
-  it('carries the API error code and status on thrown errors (PP.7)', async () => {
+  it('carries the API error code and status on thrown errors', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse(
         {
@@ -175,7 +175,7 @@ describe('httpAdapter contract mapping', () => {
       '/auth/email/change',
       { newEmail: 'nowy@example.test', currentPassword: 'demo1234' },
     ],
-  ] as const)('%s posts its payload to %s (PP.7)', async (method, path, payload) => {
+  ] as const)('%s posts its payload to %s', async (method, path, payload) => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ success: true, data: null }));
 
     await (httpAdapter[method] as (p: unknown) => Promise<unknown>)(payload);
@@ -186,7 +186,7 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
-  it('posts the verification resend without a body (PP.7)', async () => {
+  it('posts the verification resend without a body', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({ success: true, data: { alreadyVerified: false } }),
     );
@@ -218,7 +218,7 @@ describe('httpAdapter contract mapping', () => {
     expect(response.pageSize).toBe(25);
   });
 
-  it('posts to the publish-official endpoint for the given event and distance (E2.3)', async () => {
+  it('posts to the publish-official endpoint for the given event and distance', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
         success: true,
@@ -323,7 +323,7 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
-  it('posts to /events/external for a barebones external event (E6.4)', async () => {
+  it('posts to /events/external for a barebones external event', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
         success: true,
@@ -460,7 +460,7 @@ describe('httpAdapter contract mapping', () => {
     );
   });
 
-  it('requests own orders from /me/orders and normalizes money fields (PP.17)', async () => {
+  it('requests own orders from /me/orders and normalizes money fields', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       mockJsonResponse({
         success: true,
@@ -486,9 +486,9 @@ describe('httpAdapter contract mapping', () => {
   });
 });
 
-// E2.6: start-list export — the one adapter method that downloads a file
+// Start-list export — the one adapter method that downloads a file
 // instead of returning parsed JSON.
-describe('httpAdapter.exportStartList (E2.6)', () => {
+describe('httpAdapter.exportStartList', () => {
   let createObjectURLSpy: ReturnType<typeof vi.fn>;
   let revokeObjectURLSpy: ReturnType<typeof vi.fn>;
   let clickSpy: ReturnType<typeof vi.fn>;
@@ -546,7 +546,7 @@ describe('httpAdapter.exportStartList (E2.6)', () => {
     );
   });
 
-  it('requests format=xml and downloads the file (G-11)', async () => {
+  it('requests format=xml and downloads the file', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockFileResponse('<startList/>'));
 
     await httpAdapter.exportStartList('event-1', 'distance-1', 'xml');
@@ -616,7 +616,7 @@ describe('httpAdapter getEventBySlug access code', () => {
   });
 });
 
-describe('httpAdapter event write payloads (PP.96)', () => {
+describe('httpAdapter event write payloads', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
   });
@@ -666,7 +666,7 @@ describe('httpAdapter event write payloads (PP.96)', () => {
   });
 });
 
-describe('event money normalisation (PP.103)', () => {
+describe('event money normalisation', () => {
   // PHP/PDO returns DECIMAL columns as numeric strings.
   const rawEvent = () => ({
     id: 'e1',
@@ -800,7 +800,7 @@ describe('event money normalisation (PP.103)', () => {
   });
 });
 
-describe('httpAdapter info page block format (B-08)', () => {
+describe('httpAdapter info page block format', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
   });
@@ -828,7 +828,7 @@ describe('httpAdapter info page block format (B-08)', () => {
   });
 });
 
-describe('httpAdapter calendar (R-17)', () => {
+describe('httpAdapter calendar', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

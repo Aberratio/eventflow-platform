@@ -100,7 +100,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-describe('useRegistrationForm with an organizer-configured form (E1.13)', () => {
+describe('useRegistrationForm with an organizer-configured form', () => {
   it('adds a Formularz step with only the custom, non-hidden fields', async () => {
     const { result } = renderHook(() => useRegistrationForm(event), { wrapper });
     await waitFor(() => expect(result.current.customFormFields).toHaveLength(2));
@@ -144,7 +144,7 @@ describe('useRegistrationForm with an organizer-configured form (E1.13)', () => 
     });
   });
 
-  it('loads the form of the chosen distance (R-04)', async () => {
+  it('loads the form of the chosen distance', async () => {
     const { getPublicFormFields } = await import('@/api');
     const { result } = renderHook(() => useRegistrationForm(event), { wrapper });
     await waitFor(() => expect(getPublicFormFields).toHaveBeenCalledWith('e1', undefined));

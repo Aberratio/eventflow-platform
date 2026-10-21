@@ -6,7 +6,7 @@ import { navigateToPaymentGateway } from './paymentGatewayNavigation';
 const isPast = (iso: string | null | undefined, now: Date): boolean =>
   Boolean(iso) && new Date(iso as string).getTime() <= now.getTime();
 
-/** B-05: a `pending`, not yet paid Zapis whose payment window has not lapsed ("dokończ płatność"). */
+/** A `pending`, not yet paid Zapis whose payment window has not lapsed ("dokończ płatność"). */
 export function isAwaitingPayment(registration: Registration, now: Date = new Date()): boolean {
   return (
     registration.status === 'pending' &&
@@ -17,7 +17,7 @@ export function isAwaitingPayment(registration: Registration, now: Date = new Da
 
 /**
  * POST /registrations/{id}/retry-payment reopens an expired Zapis (a lapsed-but-not-yet-swept
- * `pending` one is expired on the spot by the server) and, since B-05, also starts a fresh gateway
+ * `pending` one is expired on the spot by the server) and also starts a fresh gateway
  * session for a `pending` Zapis whose window is still open. A bank-transfer Zapis has no gateway
  * link, so the pending case needs the caller to say it is NOT a transfer (`isBankTransfer: false`);
  * an unknown route is never assumed to be a gateway.

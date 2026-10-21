@@ -11,7 +11,7 @@ interface RegistrationStatsCardProps {
 }
 
 /**
- * E8.2 (spec 21 Answer §2): built-in organizer cross-sections computed live
+ * Built-in organizer cross-sections computed live
  * from the Zapis record itself — distance/payment-status/signup-curve
  * always present, gender/club/age-category shown only when the server
  * actually includes the corresponding key (RegistrationRepository::
@@ -20,7 +20,7 @@ interface RegistrationStatsCardProps {
  * that contract: it checks for key PRESENCE, not array length, so an absent
  * breakdown renders nothing at all rather than an empty section.
  *
- * Sits alongside FormFieldAggregatesCard (E2.5) in the same "Zestawienia"
+ * Sits alongside FormFieldAggregatesCard in the same "Zestawienia"
  * sub-tab — that card covers the configurable form's choice fields, this one
  * covers everything the spec calls "wbudowane" (built-in, not from the form).
  */
@@ -193,7 +193,7 @@ export const RegistrationStatsCard = ({ eventId }: RegistrationStatsCardProps) =
   );
 };
 
-/** Shared accessible bar-list renderer — same text+bar shape as FormFieldAggregatesCard (E2.5). */
+/** Shared accessible bar-list renderer — same text+bar shape as FormFieldAggregatesCard. */
 const BarList = ({
   items,
   emptyLabel,

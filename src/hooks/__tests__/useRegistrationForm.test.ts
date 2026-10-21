@@ -7,7 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import type { Event } from '@/types';
 
-// PP.54: the relay picker offers only the user's own teams (captain consent) plus the invited team.
+// The relay picker offers only the user's own teams (captain consent) plus the invited team.
 vi.mock('@/contexts/AuthContext', async () => {
   const actual =
     await vi.importActual<typeof import('@/contexts/AuthContext')>('@/contexts/AuthContext');
@@ -318,7 +318,7 @@ describe('useRegistrationForm', () => {
     expect(result.current.wantsTeam).toBe(true);
   });
 
-  describe('E1.2 pricing model', () => {
+  describe('pricing model', () => {
     it('auto-selects the only Wariant and prices off it, not the legacy distance price', () => {
       const eventWithVariant = {
         ...mockEvent,
@@ -525,7 +525,7 @@ describe('useRegistrationForm', () => {
     });
   });
 
-  describe('E7.1 relay team creation/join wiring', () => {
+  describe('relay team creation/join wiring', () => {
     const relayEvent = {
       ...mockEvent,
       distances: [
@@ -600,7 +600,7 @@ describe('useRegistrationForm', () => {
     });
   });
 
-  describe('E7.5 team special category (issue 23 Answer §7)', () => {
+  describe('team special category', () => {
     const relayEvent = {
       ...mockEvent,
       distances: [
@@ -662,7 +662,7 @@ describe('useRegistrationForm', () => {
     });
   });
 
-  describe('E7.2 invitation link (`?joinTeam=`) pre-selection', () => {
+  describe('invitation link (`?joinTeam=`) pre-selection', () => {
     const relayEvent = {
       ...mockEvent,
       distances: [
@@ -771,7 +771,7 @@ describe('useRegistrationForm', () => {
     });
   });
 
-  describe('E1.2 buildSubmitData contract fields', () => {
+  describe('buildSubmitData contract fields', () => {
     it('populates pricingVariantId/discountCode/merchandise/insuranceVariantId for submission', () => {
       const eventWithVariant = {
         ...mockEvent,

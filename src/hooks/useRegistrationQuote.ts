@@ -14,7 +14,7 @@ interface UseRegistrationQuoteOptions<TPayload> {
 }
 
 /**
- * B-02: the server's price for the registration form as filled in so far (`POST /registrations/quote`),
+ * The server's price for the registration form as filled in so far (`POST /registrations/quote`),
  * re-asked after the payload has been still for `debounceMs`. The server is the only authority on the
  * Rozliczenie; a failed quote (e.g. 422 on an incomplete form) simply yields `quote: null`, so the
  * caller falls back to its local preview and never blocks the form.

@@ -21,7 +21,7 @@ Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   value: () => undefined,
 });
 
-// E6.5 (issue 15 §4-5): "Uczestnictwo odblokowuje zakup Produktu" — the
+// "Uczestnictwo odblokowuje zakup Produktu" — the
 // reward-selection UI on ChallengeDetailsPage must only appear once the real
 // tree-based completion (participation.isCompleted, server-computed) is
 // true, must disappear/show a claimed state once rewardGranted flips, and
@@ -122,7 +122,7 @@ const setup = async (participation: ChallengeParticipation | null) => {
   );
 };
 
-describe('ChallengeDetailsPage reward claim (E6.5)', () => {
+describe('ChallengeDetailsPage reward claim', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

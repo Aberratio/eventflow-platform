@@ -8,7 +8,7 @@ import {
 
 const html = '<html><head><title>x</title></head><body></body></html>';
 
-describe('indexing (D-09)', () => {
+describe('indexing', () => {
   it('is blocked unless VITE_ALLOW_INDEXING is exactly "true"', () => {
     expect(isIndexingAllowed(undefined)).toBe(false);
     expect(isIndexingAllowed('')).toBe(false);

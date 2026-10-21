@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 const root = resolve(__dirname, '..');
 const read = (p: string) => readFileSync(resolve(root, p), 'utf-8');
 
-describe('fonts are self-hosted (R-15, RODO)', () => {
+describe('fonts are self-hosted (GDPR)', () => {
   it('no stylesheet or html loads fonts from Google before cookie consent', () => {
     for (const file of ['src/styles/typography.css', 'src/styles/base.css', 'index.html']) {
       expect(read(file), file).not.toMatch(/fonts\.(googleapis|gstatic)\.com/);

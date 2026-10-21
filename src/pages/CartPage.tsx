@@ -42,8 +42,8 @@ const paymentIcons: Record<string, React.ReactNode> = {
   cod: <Banknote className="h-4 w-4" />,
 };
 
-// E5.3: courier and paczkomat are the two delivery methods that ship to a
-// physical address (spec issue 16 §5). `pickup` (Biuro Zawodow, E5.4) and
+// Courier and paczkomat are the two delivery methods that ship to a
+// physical address `pickup` (Biuro Zawodow) and
 // any future digital/service-only checkout never need one — this list is
 // the client-side mirror of OrderRepository::DELIVERY_METHODS_REQUIRING_ADDRESS
 // on the server, which is the actual source of truth; this copy only drives
@@ -69,7 +69,7 @@ const emptyAddress: AddressFormState = {
   paczkomatId: '',
 };
 
-// E5.3 WCAG fix (SC 3.3.1 Error Identification / 3.3.3 Error Suggestion):
+// WCAG fix (SC 3.3.1 Error Identification / 3.3.3 Error Suggestion):
 // the disabled-until-valid submit button gave no visible or accessible
 // reason why checkout wouldn't proceed. These are the per-field error
 // messages shown once a field has been touched (or submit was attempted),
@@ -104,9 +104,9 @@ const getAddressFieldErrors = (
   return errors;
 };
 
-// E5.5: "Dane do faktury przy zamówieniu" (spec issue 16 pkt 1 — "dane
-// adresowe, faktura z NIP"; §6 — "dane do faktury" is part of the minimal
-// required shop scope). This is data capture only, mirroring the shipping
+// "Dane do faktury przy zamówieniu" ("dane
+// adresowe, faktura z NIP") is part of the minimal
+// required shop scope. This is data capture only, mirroring the shipping
 // address block above: same fieldset/legend grouping, same per-field
 // visible-error-after-blur pattern, same aria-invalid/aria-describedby
 // wiring. Sending invoiceData at all is itself the "chcę fakturę" signal on
@@ -128,7 +128,7 @@ const emptyInvoice: InvoiceFormState = {
 };
 
 // Mirrors the server's validateNip() format check (OrderRepository::validateNip,
-// E5.5) — 10 digits, dashes/spaces allowed in the submitted form. The
+// 10 digits, dashes/spaces allowed in the submitted form. The
 // server additionally verifies the checksum; this client-side check only
 // covers digit count/format, which is enough for early UX feedback.
 const NIP_DIGITS_PATTERN = /^\d{10}$/;
@@ -227,7 +227,7 @@ const CartPage = () => {
   const deliveryMethod = deliveryMethods.find((d) => d.id === selectedDelivery);
   const paymentMethod = paymentMethods.find((p) => p.id === selectedPayment);
 
-  // E5.6 (issue 16 §2/§5): a cart made entirely of digital products — e.g.
+  // A cart made entirely of digital products — e.g.
   // the "pakiet organizatora" — has no physical delivery step at all, and
   // must not force a delivery-method choice or an address. Mirrors the
   // server's OrderRepository::isDigitalOnlyCart() (same "every item is a
@@ -237,7 +237,7 @@ const CartPage = () => {
 
   const requiresShippingAddress = DELIVERY_METHODS_REQUIRING_ADDRESS.includes(selectedDelivery);
   const requiresPaczkomatId = selectedDelivery === 'paczkomat';
-  // Mirrors the server's validateShippingAddress() (E5.3) for UX only — the
+  // Mirrors the server's validateShippingAddress() for UX only — the
   // server is the source of truth and re-validates regardless of this.
   const addressFieldErrors = requiresShippingAddress
     ? getAddressFieldErrors(address, requiresPaczkomatId)
@@ -246,7 +246,7 @@ const CartPage = () => {
   const shouldShowAddressFieldError = (field: keyof AddressFormState) =>
     (touchedAddressFields[field] || addressSubmitAttempted) && !!addressFieldErrors[field];
 
-  // Mirrors the server's validateInvoiceData()/validateNip() (E5.5) for UX
+  // Mirrors the server's validateInvoiceData()/validateNip() for UX
   // only — the server is the source of truth and re-validates regardless.
   const invoiceFieldErrors = wantsInvoice ? getInvoiceFieldErrors(invoice) : {};
   const isInvoiceValid = !wantsInvoice || Object.keys(invoiceFieldErrors).length === 0;
@@ -321,7 +321,7 @@ const CartPage = () => {
       });
 
       const order = response.data;
-      // E5.6: a digital-only order's deliveryMethod comes back as an empty
+      // A digital-only order's deliveryMethod comes back as an empty
       // object/array (OrderRepository persists the column's own '{}' default
       // — there is no delivery method at all), not a DeliveryMethod with an
       // estimatedDays string — guard with optional chaining instead of
@@ -348,7 +348,7 @@ const CartPage = () => {
 
       setLastOrder(orderDetails);
       clearCart();
-      // PP.105: an organizer-package order is created `pending` and grants nothing; the
+      // An organizer-package order is created `pending` and grants nothing; the
       // Organizer role, credits and event slot arrive only when staff mark the order paid
       // (the server then ends the buyer's session, so they log in again). The refresh stays:
       // it is cheap, harmless for every order, and picks up any change already made server-side.
@@ -437,7 +437,7 @@ const CartPage = () => {
                   Dostawa
                 </h2>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
-                  {/* E5.1 hit this exact WCAG 1.3.1 gap for a grouped-choice
+                  {/* Same WCAG 1.3.1 gap for a grouped-choice
                       UI: a plain <span>/<Label> above a set of radios isn't
                       programmatically associated with the group. fieldset/
                       legend fixes it for courier/paczkomat/pickup here. */}
@@ -490,7 +490,7 @@ const CartPage = () => {
                     </RadioGroup>
                   </fieldset>
 
-                  {/* E5.3: shipping address, only for courier/paczkomat — a
+                  {/* Shipping address, only for courier/paczkomat — a
                       pickup-at-office or digital-only order never shows this. */}
                   {requiresShippingAddress && (
                     <div className="mt-6 space-y-4 border-t pt-6">
@@ -719,7 +719,7 @@ const CartPage = () => {
               </div>
             </div>
 
-            {/* Invoice Data (E5.5) */}
+            {/* Invoice Data */}
             <div>
               <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 Faktura

@@ -5,10 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CompetitorMergeTab } from '../CompetitorMergeTab';
 import type { Competitor, CompetitorMergeComparison, CompetitorMergeConflict } from '@/types';
 
-// E8.1 (issue 22, "Scalanie i przejmowanie profili Zawodnika"): the
+// The
 // comparison + conflict-resolution UI. Covers: finding two profiles,
-// requiring an explicit field decision for every differing field (spec
-// Answer §2 step 4 — no default, no "profile with an account wins"),
+// requiring an explicit field decision for every differing field (
+// no default, no "profile with an account wins"),
 // requiring a winner for a detected registration conflict before the merge
 // can be reviewed, the confirmation step before the permanent merge fires,
 // and the server's field_decisions_required/conflict_pending responses
@@ -131,7 +131,7 @@ beforeEach(async () => {
   });
 });
 
-describe('CompetitorMergeTab (E8.1)', () => {
+describe('CompetitorMergeTab', () => {
   it('lets a moderator find two candidates and shows both side by side', async () => {
     const user = userEvent.setup();
     renderTab();

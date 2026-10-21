@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { requestEmailChange } from '@/api';
 
 /**
- * PP.7: self-service e-mail change. The new address only takes effect after the user clicks
+ * Self-service e-mail change. The new address only takes effect after the user clicks
  * the link mailed to it; until then they keep signing in with the current address.
  */
 export const ChangeEmailCard = () => {

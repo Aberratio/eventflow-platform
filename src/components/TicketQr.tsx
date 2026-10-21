@@ -1,7 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react';
 
 /**
- * QR kodujący sam token (`pqr_…` / `zqr_…`) jako czysty tekst — spec 11: bez URL-a
+ * QR kodujący sam token (`pqr_…` / `zqr_…`) jako czysty tekst — bez URL-a
  * i bez danych osobowych. `data-qr-value` pozwala testom sprawdzić zakodowaną treść.
  */
 export const TicketQr = ({ value, size = 120 }: { value: string; size?: number }) => (

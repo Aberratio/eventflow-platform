@@ -14,7 +14,7 @@ const lastCall = () => {
   return { url, init, body: init.body ? JSON.parse(init.body as string) : undefined };
 };
 
-describe('httpAdapter result corrections (G-03)', () => {
+describe('httpAdapter result corrections', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn());

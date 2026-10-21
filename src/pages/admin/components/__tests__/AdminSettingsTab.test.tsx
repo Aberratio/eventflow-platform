@@ -16,7 +16,7 @@ import type {
   GoogleCalendarSettings,
 } from '@/types';
 
-// E6.2 (issue 15 §2): admin UI for the global points-per-place table that
+// Admin UI for the global points-per-place table that
 // drives a Wyzwanie's point_threshold condition node scoring.
 
 vi.mock('@/api', async () => {
@@ -56,7 +56,7 @@ const calendarSettings: GoogleCalendarSettings = {
   enabled: false,
 };
 
-describe('AdminSettingsTab — Challenge points settings (E6.2)', () => {
+describe('AdminSettingsTab — Challenge points settings', () => {
   beforeEach(() => {
     mockedGetChallengePointsSettings.mockResolvedValue({ data: pointsSettings } as never);
     mockedUpdateChallengePointsSettings.mockResolvedValue({ data: pointsSettings } as never);
@@ -152,9 +152,9 @@ describe('AdminSettingsTab — Challenge points settings (E6.2)', () => {
   });
 });
 
-// R-17 (umowa §5.9): the admin can configure the Google Calendar integration; the service-account
+// The admin can configure the Google Calendar integration; the service-account
 // key itself lives only on the server, the panel only shows whether it is there.
-describe('AdminSettingsTab — Google Calendar (R-17)', () => {
+describe('AdminSettingsTab — Google Calendar', () => {
   beforeEach(() => {
     mockedGetChallengePointsSettings.mockResolvedValue({ data: pointsSettings } as never);
     mockedGetGlobalInsuranceSettings.mockResolvedValue({ data: insuranceSettings } as never);

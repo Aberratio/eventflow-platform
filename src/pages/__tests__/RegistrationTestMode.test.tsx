@@ -5,7 +5,7 @@ import EventRegistrationPage from '../EventRegistrationPage';
 import RegistrationSuccessPage from '../RegistrationSuccessPage';
 import type { RegistrationData } from '@/components/registration/RegistrationForm';
 
-// G-08: the manager's preview of a Draft only talks to the server when the Event is in test mode
+// The manager's preview of a Draft only talks to the server when the Event is in test mode
 // (the server then answers with a dry run); the success page words a dry run as a test.
 
 const mockCreateRegistration = vi.fn();
@@ -96,7 +96,7 @@ vi.mock('@/components/registration/RegistrationForm', () => ({
   ),
 }));
 
-describe('registration preview of a Draft (G-08)', () => {
+describe('registration preview of a Draft', () => {
   beforeEach(() => {
     mockCreateRegistration.mockReset();
     mockNavigate.mockReset();
@@ -133,7 +133,7 @@ describe('registration preview of a Draft (G-08)', () => {
   });
 });
 
-describe('RegistrationSuccessPage for a dry run (G-08)', () => {
+describe('RegistrationSuccessPage for a dry run', () => {
   it('words the dry run as a test, shows the Rozliczenie and no payment hints', async () => {
     mockState.location = {
       registration: {

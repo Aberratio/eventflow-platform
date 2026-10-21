@@ -52,7 +52,7 @@ describe('TextSection', () => {
   });
 });
 
-describe('TextSection html format (B-08)', () => {
+describe('TextSection html format', () => {
   const htmlSection = (content: string) =>
     ({ id: 's1', type: 'text', format: 'html', title: '', content }) as unknown as InfoPageSection;
 

@@ -33,9 +33,9 @@ export interface User {
   isNewUser?: boolean;
   status?: 'active' | 'blocked';
   eventLimit?: number;
-  /** PP.7: informational only; absent on older API responses. */
+  /** Informational only; absent on older API responses. */
   emailVerified?: boolean;
-  /** G-07 (umowa §5.8): last successful login, ISO 8601; null before the first login. */
+  /** Last successful login, ISO 8601; null before the first login. */
   lastLoginAt?: string | null;
 }
 
@@ -53,23 +53,23 @@ export interface Competitor {
   phone?: string;
   club?: string;
   /**
-   * E1.12: kod tożsamości QR (`zqr_` + 48 hex) — generowany zawsze, przy
+   * Kod tożsamości QR (`zqr_` + 48 hex) — generowany zawsze, przy
    * utworzeniu Zawodnika, więc zawsze obecny (ta sama konwencja co
-   * Registration.qrCode z E1.11 — klient nigdy nie musi obsługiwać braku).
+   * Registration.qrCode — klient nigdy nie musi obsługiwać braku).
    * Bez wygasania; rotuje wyłącznie na żądanie (zob. rotateIdentityCode()).
    */
   identityCode: string;
   userId?: string | null;
   /**
-   * E8.1: `scalony` (merged) is a permanent archival state — the profile was
+   * `scalony` (merged) is a permanent archival state — the profile was
    * absorbed into another one and its own registrations/care relations have
    * all been repointed away. Absent/`active` for every ordinary profile;
    * older responses that predate this field are treated as `active`.
    */
   status?: 'active' | 'scalony';
-  /** E8.1: set only when status === 'scalony' — the profile that survived. */
+  /** Set only when status === 'scalony' — the profile that survived. */
   mergedIntoCompetitorId?: string | null;
-  /** G-09: public name masking in rankings (POST /competitors/{id}/anonymization). */
+  /** Public name masking in rankings (POST /competitors/{id}/anonymization). */
   isAnonymized?: boolean;
 }
 
@@ -85,10 +85,10 @@ export interface MyCompetitor {
   email?: string;
   phone?: string;
   club?: string;
-  /** E1.12: kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
+  /** Kod tożsamości tego Zawodnika — patrz Competitor.identityCode. */
   identityCode: string;
   competitorUserId?: string | null;
-  /** G-09: current masking state of this ward, returned by GET /care. */
+  /** Current masking state of this ward, returned by GET /care. */
   isAnonymized?: boolean;
 }
 
@@ -104,7 +104,7 @@ export interface Caregiver {
 
 export interface CareResponse {
   /**
-   * E1.12: własny profil Zawodnika wywołującego Konta (z identityCode) — każde
+   * Własny profil Zawodnika wywołującego Konta (z identityCode) — każde
    * Konto uczestnika dostaje go automatycznie przy rejestracji. Null tylko dla
    * kont, które jeszcze nie mają swojego profilu Zawodnika (praktycznie nie
    * zdarza się dla uczestników, ale typ zostaje szczery co do tego brzegu).
@@ -138,7 +138,7 @@ export interface GrantCareResult {
 }
 
 /**
- * E8.1 ("Scalanie i przejmowanie profili Zawodnika"): jeden zwycięski czas na
+ * Jeden zwycięski czas na
  * dystansie, wyliczany na żywo z historii Wyników/Zapisów tego Zawodnika
  * (patrz `ResultRepository::lifetimeRecordsForCompetitor()` po stronie
  * serwera) — nigdy nie jest to przechowywany osobno wiersz, więc scalanie
@@ -159,7 +159,7 @@ export interface CompetitorLifetimeRecord {
 }
 
 /**
- * E8.1: wszystko, co dany profil "niesie" — widok "obok siebie" (spec Answer
+ * Wszystko, co dany profil "niesie" — widok "obok siebie" (spec Answer
  * §2 krok 2). `challengeParticipations` pokazuje udział w Wyzwaniach jego
  * WŁASNEGO Konta, jeśli je ma — Uczestnictwa są kluczowane po `user_id`
  * (Koncie), nie po Zawodniku, więc scalanie dwóch profili nigdy ich nie
@@ -177,7 +177,7 @@ export interface CompetitorMergeProfileBundle {
 
 /**
  * Dwa aktywne Zapisy (nie anulowane/usunięte/wygasłe) na ten sam Dystans tego
- * samego Wydarzenia, po jednym z każdego profilu (spec Answer §2 krok 6).
+ * samego Wydarzenia, po jednym z każdego profilu.
  * `registrationIds` jest celowo nieuporządkowana para (obie strony
  * "kandydują" jednakowo, dopóki moderator nie wybierze zwycięzcy).
  */
@@ -225,7 +225,7 @@ export interface CompetitorMergePayload {
 
 /**
  * Trzy możliwe wyniki POST /admin/competitors/merge, wszystkie jako 200
- * (spec Answer §2 krok 6 — wstrzymanie na konflikcie to normalny, oczekiwany
+ * (wstrzymanie na konflikcie to normalny, oczekiwany
  * krok tego przepływu, nie błąd HTTP; mirror idiomu `duplicateWarnings` z
  * POST /care). `status` jest dyskryminatorem — UI przełącza się na jego
  * podstawie, nie na kodzie HTTP.
@@ -300,7 +300,7 @@ export interface OnlineSession {
   location?: string;
 }
 
-/** R-08 (spec 22): zgłoszenie możliwego duplikatu Zawodnika (opiekun/organizator -> Moderator/Admin). */
+/** Zgłoszenie możliwego duplikatu Zawodnika (opiekun/organizator -> Moderator/Admin). */
 export interface ReportCompetitorDuplicatePayload {
   duplicateOfId: string;
   note?: string;
