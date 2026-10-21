@@ -399,7 +399,7 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
       </div>
 
       <Tabs defaultValue="list" className="space-y-5">
-        <TabsList className="h-auto rounded-lg border border-border/80 bg-muted/20 p-0">
+        <TabsList className="h-auto max-w-full justify-start overflow-x-auto rounded-lg border border-border/80 bg-muted/20 p-0">
           <TabsTrigger value="list" className="h-[46px] px-6">
             <Users className="mr-2 h-4 w-4" />
             Lista uczestników
