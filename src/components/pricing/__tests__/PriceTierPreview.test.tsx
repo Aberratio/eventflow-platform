@@ -5,7 +5,7 @@ import { PriceTiersEditor } from '@/pages/admin/components/PriceTiersEditor';
 import { PriceTierPreview } from '../PriceTierPreview';
 import type { Distance } from '@/types';
 
-describe('PriceTierPreview money rendering (PP.103)', () => {
+describe('PriceTierPreview money rendering', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
   });
@@ -15,7 +15,7 @@ describe('PriceTierPreview money rendering (PP.103)', () => {
 
   it('renders the base price for a numeric basePrice', () => {
     render(<PriceTierPreview basePrice={55} tiers={[]} />);
-    expect(screen.getByText(/cena bazowa 55 zł/)).toBeInTheDocument();
+    expect(screen.getByText(/cena bazowa 55,00 zł/)).toBeInTheDocument();
   });
 
   it('PriceTiersEditor renders a distance coming out of the http adapter from string DECIMALs', async () => {
@@ -41,7 +41,7 @@ describe('PriceTierPreview money rendering (PP.103)', () => {
     } as unknown as Response);
     const event = (await httpAdapter.getEventById('e1')).data!;
     render(<PriceTiersEditor distances={event.distances as Distance[]} onChange={() => {}} />);
-    expect(screen.getByText(/cena bazowa 55 zł/)).toBeInTheDocument();
+    expect(screen.getByText(/cena bazowa 55,00 zł/)).toBeInTheDocument();
     expect(screen.getByText(/\(10 km\)/)).toBeInTheDocument();
   });
 });

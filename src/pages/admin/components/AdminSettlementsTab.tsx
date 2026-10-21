@@ -15,14 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMinorMoney as minorToMoney } from '@/lib/format';
+import { formatMinorMoney, toIsoDate } from '@/lib/format';
 import type { SettlementEventTotals } from '@/types';
 
 const ALL_EVENTS = 'all';
-
-const pad = (value: number) => String(value).padStart(2, '0');
-const toIsoDate = (date: Date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
 const defaultPeriod = () => {
   const now = new Date();
@@ -148,15 +144,15 @@ export const AdminSettlementsTab = () => {
       {report && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Podsumowanie">
-            <SummaryCard label="Wpłaty" value={minorToMoney(report.summary.grossMinor)} />
-            <SummaryCard label="Zwroty" value={minorToMoney(report.summary.refundsMinor)} />
+            <SummaryCard label="Wpłaty" value={formatMinorMoney(report.summary.grossMinor)} />
+            <SummaryCard label="Zwroty" value={formatMinorMoney(report.summary.refundsMinor)} />
             <SummaryCard
               label={`Prowizja platformy (${report.commissionRateBps / 100}%)`}
-              value={minorToMoney(report.summary.commissionMinor)}
+              value={formatMinorMoney(report.summary.commissionMinor)}
             />
             <SummaryCard
               label="Do wypłaty"
-              value={minorToMoney(report.summary.netMinor)}
+              value={formatMinorMoney(report.summary.netMinor)}
               emphasis
             />
           </div>
@@ -189,16 +185,16 @@ export const AdminSettlementsTab = () => {
                         <TableCell className="font-medium">{event.eventName}</TableCell>
                         <TableCell>{event.organizerName}</TableCell>
                         <TableCell className="text-right">
-                          {minorToMoney(event.grossMinor)}
+                          {formatMinorMoney(event.grossMinor)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {minorToMoney(event.refundsMinor)}
+                          {formatMinorMoney(event.refundsMinor)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {minorToMoney(event.commissionMinor)}
+                          {formatMinorMoney(event.commissionMinor)}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
-                          {minorToMoney(event.netMinor)}
+                          {formatMinorMoney(event.netMinor)}
                         </TableCell>
                         <TableCell className="text-right">
                           {eventFilter === undefined && (
@@ -252,10 +248,10 @@ export const AdminSettlementsTab = () => {
                             <TableCell>{line.bibNumber ?? '—'}</TableCell>
                             <TableCell>{line.gateway}</TableCell>
                             <TableCell className="text-right">
-                              {minorToMoney(sign * line.amountMinor)}
+                              {formatMinorMoney(sign * line.amountMinor)}
                             </TableCell>
                             <TableCell className="text-right">
-                              {minorToMoney(sign * line.commissionMinor)}
+                              {formatMinorMoney(sign * line.commissionMinor)}
                             </TableCell>
                           </TableRow>
                         );

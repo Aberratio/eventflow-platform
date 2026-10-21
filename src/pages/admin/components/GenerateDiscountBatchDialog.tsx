@@ -29,7 +29,7 @@ import {
   parseDiscountValueInput,
 } from '@/lib/discountValue';
 
-export const BATCH_MAX_COUNT = 1000;
+const BATCH_MAX_COUNT = 1000;
 const PREFIX_PATTERN = /^[A-Za-z0-9][A-Za-z0-9-]{0,19}$/;
 
 type DiscountType = 'percent' | 'fixed';
