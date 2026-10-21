@@ -87,7 +87,6 @@ import type {
   ChallengeEntry,
   ChallengeEntryStatus,
   ChallengeRanking,
-  Message,
   Ticket,
   Certificate,
   Partner,
@@ -437,10 +436,6 @@ export interface ApiAdapter {
   getSeriesRanking(seriesId: string): Promise<ApiResponse<ChallengeRanking>>;
 
   // ── Messages ──
-  getMessages(userId: string): Promise<ApiResponse<Message[]>>;
-  getMessage(id: string): Promise<ApiResponse<Message | null>>;
-  sendMessage(data: Partial<Message>): Promise<ApiResponse<Message>>;
-  markAsRead(id: string): Promise<ApiResponse<Message>>;
 
   // ── Tickets ──
   getTickets(userId: string): Promise<ApiResponse<Ticket[]>>;

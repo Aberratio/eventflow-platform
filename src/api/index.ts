@@ -285,14 +285,6 @@ export const getSeriesRanking: ApiAdapter['getSeriesRanking'] = (...args) =>
   ensureAdapter().then((a) => a.getSeriesRanking(...args));
 
 // Messages
-export const getMessages: ApiAdapter['getMessages'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessages(...args));
-export const getMessage: ApiAdapter['getMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.getMessage(...args));
-export const sendMessage: ApiAdapter['sendMessage'] = (...args) =>
-  ensureAdapter().then((a) => a.sendMessage(...args));
-export const markAsRead: ApiAdapter['markAsRead'] = (...args) =>
-  ensureAdapter().then((a) => a.markAsRead(...args));
 
 // Tickets
 export const getTickets: ApiAdapter['getTickets'] = (...args) =>

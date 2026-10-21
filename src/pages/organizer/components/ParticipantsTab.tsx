@@ -40,7 +40,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { SendMessageDialog } from '@/components/SendMessageDialog';
 import SwapTeamMemberDialog from '@/components/team/SwapTeamMemberDialog';
 import { BibNumberAssignment } from '@/components/organizer/BibNumberAssignment';
 import { Event, Registration } from '@/types';
@@ -52,7 +51,6 @@ import {
 import {
   Search,
   Download,
-  Mail,
   UserCheck,
   UserX,
   Hash,
@@ -175,7 +173,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteSelectedDialogOpen, setDeleteSelectedDialogOpen] = useState(false);
   const [deleteUnpaidDialogOpen, setDeleteUnpaidDialogOpen] = useState(false);
-  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [paymentPanelRegistration, setPaymentPanelRegistration] = useState<Registration | null>(
     null,
   );
@@ -589,10 +586,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="outline" size="sm" onClick={() => setMessageDialogOpen(true)}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Wiadomość
-                  </Button>
                 </div>
               )}
 
@@ -890,14 +883,6 @@ export const ParticipantsTab = ({ event, registrations }: ParticipantsTabProps) 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <SendMessageDialog
-        open={messageDialogOpen}
-        onOpenChange={setMessageDialogOpen}
-        registrations={localRegistrations}
-        selectedIds={selectedIds}
-        distances={event.distances}
-      />
     </div>
   );
 };
