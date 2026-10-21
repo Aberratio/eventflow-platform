@@ -55,7 +55,7 @@ const statusLabels: Record<ShopOrder['status'], string> = {
 };
 
 const statusColors: Record<ShopOrder['status'], string> = {
-  pending: 'bg-warning/20 text-warning-foreground border-warning',
+  pending: 'bg-warning/20 text-warning border-warning',
   paid: 'bg-primary/20 text-primary border-primary',
   shipped: 'bg-accent/20 text-accent-foreground border-accent',
   delivered: 'bg-success/20 text-success border-success',

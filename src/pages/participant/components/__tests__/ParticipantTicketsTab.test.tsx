@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import type { Ticket } from '@/types';
 import ParticipantTicketsTab from '../ParticipantTicketsTab';
@@ -9,10 +9,24 @@ vi.mock('@/components/EventTicket', () => ({
   ),
 }));
 
-const dayOffset = (days: number): string => {
-  const d = new Date();
+// Frozen clock: 30 minutes after local midnight, the moment the old UTC-based dates broke the test.
+const NOW = new Date(2026, 9, 21, 0, 30, 0);
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+const dayOffset =(days: number): string => {
+  const d = new Date(NOW);
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  // Local calendar date (toISOString is UTC and shifts the day just after local midnight).
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
 const ticket = (over: Partial<Ticket>): Ticket => ({

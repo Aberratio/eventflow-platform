@@ -39,6 +39,12 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
   });
 
+  it('pola mają programowo powiązane etykiety (WCAG 1.3.1, 4.1.2)', () => {
+    render(<LoginPage />);
+    expect(screen.getByLabelText('Email')).toHaveAttribute('type', 'email');
+    expect(screen.getByLabelText('Hasło')).toHaveAttribute('type', 'password');
+  });
+
   it('renderuje formularz logowania', () => {
     render(<LoginPage />);
     expect(screen.getByPlaceholderText('twoj@email.com')).toBeInTheDocument();

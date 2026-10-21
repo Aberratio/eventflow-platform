@@ -15,6 +15,7 @@ import { Trash2, Tag, Copy, Eye, Pencil } from 'lucide-react';
 import { DiscountCode, Distance } from '@/types';
 import { DiscountCodeUsageDialog } from '@/components/organizer/DiscountCodeUsageDialog';
 import { AddDiscountCodeDialog } from './AddDiscountCodeDialog';
+import { DiscountCodeBatchesPanel } from './DiscountCodeBatchesPanel';
 import { EditDiscountCodeDialog } from './EditDiscountCodeDialog';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
@@ -22,12 +23,15 @@ import { toast } from 'sonner';
 import { formatDiscountBadge } from '@/lib/discountValue';
 
 interface DiscountCodesEditorProps {
+  /** When set, the batch generator (R-07) is offered; it needs the persisted event. */
+  eventId?: string;
   discountCodes: DiscountCode[];
   distances: Distance[];
   onChange: (codes: DiscountCode[]) => void;
 }
 
 export const DiscountCodesEditor = ({
+  eventId,
   discountCodes,
   distances,
   onChange,
@@ -95,6 +99,14 @@ export const DiscountCodesEditor = ({
         </div>
       </CardHeader>
       <CardContent>
+        {eventId && (
+          <div className="mb-6">
+            <DiscountCodeBatchesPanel
+              eventId={eventId}
+              onCodesGenerated={(codes) => onChange([...discountCodes, ...codes])}
+            />
+          </div>
+        )}
         {discountCodes.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
             <Tag className="mx-auto mb-4 h-12 w-12 opacity-50" />
