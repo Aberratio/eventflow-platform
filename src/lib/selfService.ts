@@ -1,3 +1,4 @@
+import { ApiRequestError, apiErrorCode } from '@/api/errors';
 import type { Event, Registration } from '@/types';
 
 /**
@@ -81,3 +82,12 @@ export function selfServiceDeniedMessage(
 export const hasPaidAmount = (
   registration: Pick<Registration, 'status' | 'totalAmount'>,
 ): boolean => registration.status === 'confirmed' && (registration.totalAmount ?? 0) > 0;
+
+/** Polish reason shown when „Poproś o zwrot" fails, so the participant knows whether a retry can help. */
+export function refundRequestErrorMessage(error: unknown): string {
+  if (apiErrorCode(error) === 'refund_requires_paid_registration') {
+    return 'Zwrot można zgłosić tylko dla opłaconego zapisu.';
+  }
+  if (error instanceof ApiRequestError && error.message) return error.message;
+  return 'Spróbuj ponownie za chwilę.';
+}

@@ -316,3 +316,49 @@ describe('RegistrationListRow refund action', () => {
     expect(screen.queryByRole('button', { name: /Poproś o zwrot/ })).not.toBeInTheDocument();
   });
 });
+
+describe('RegistrationListRow pending actions', () => {
+  const liveEvent: Event = { ...event, isVirtual: false, startDate: undefined, endDate: undefined };
+
+  it('sends one refund request when "Poproś o zwrot" is clicked twice', () => {
+    const onRequestRefund = vi.fn(() => new Promise<void>(() => {}));
+    render(
+      <RegistrationListRow
+        registration={registration}
+        event={liveEvent}
+        onRequestRefund={onRequestRefund}
+      />,
+    );
+
+    const [button, ...others] = screen.getAllByRole('button', { name: /Poproś o zwrot/ });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    others.forEach((other) => fireEvent.click(other));
+
+    expect(onRequestRefund).toHaveBeenCalledTimes(1);
+    screen.getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ }).forEach((b) => expect(b).toBeDisabled());
+  });
+
+  it('starts one payment retry when "Ponów płatność" is clicked twice', () => {
+    const onRetryPayment = vi.fn(() => new Promise<void>(() => {}));
+    render(
+      <RegistrationListRow
+        registration={{
+          ...registration,
+          status: 'expired',
+          paymentExpiresAt: '2026-05-21T10:00:00Z',
+        }}
+        event={{ ...liveEvent, date: '2099-06-21', registrationDeadline: '2099-05-31' }}
+        onRetryPayment={onRetryPayment}
+      />,
+    );
+
+    const [button, ...others] = screen.getAllByRole('button', { name: /Ponów płatność/ });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    others.forEach((other) => fireEvent.click(other));
+
+    expect(onRetryPayment).toHaveBeenCalledTimes(1);
+    screen.getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ }).forEach((b) => expect(b).toBeDisabled());
+  });
+});

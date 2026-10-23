@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Event } from '@/types';
-import { evaluateSelfService, selfServiceDeadline, selfServiceDeniedMessage } from '../selfService';
+import { ApiRequestError } from '@/api/errors';
+import {
+  evaluateSelfService,
+  refundRequestErrorMessage,
+  selfServiceDeadline,
+  selfServiceDeniedMessage,
+} from '../selfService';
 
 const event = (over: Partial<Event> = {}): Event =>
   ({
@@ -65,5 +71,21 @@ describe('evaluateSelfService', () => {
       '13 czerwca 2026',
     );
     expect(selfServiceDeniedMessage('event_over', null)).toBeNull();
+  });
+});
+
+describe('refundRequestErrorMessage', () => {
+  it('explains that only a paid registration can be refunded', () => {
+    const error = new ApiRequestError('Only a paid registration can request a refund.', 'refund_requires_paid_registration', 409);
+    expect(refundRequestErrorMessage(error)).toBe('Zwrot można zgłosić tylko dla opłaconego zapisu.');
+  });
+
+  it('shows the server message for other API errors', () => {
+    const error = new ApiRequestError('Nie znaleziono zapisu.', 'registration_not_found', 404);
+    expect(refundRequestErrorMessage(error)).toBe('Nie znaleziono zapisu.');
+  });
+
+  it('falls back to a retry hint for network errors', () => {
+    expect(refundRequestErrorMessage(new TypeError('Failed to fetch'))).toBe('Spróbuj ponownie za chwilę.');
   });
 });

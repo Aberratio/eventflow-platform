@@ -2,7 +2,7 @@ import { cancelRegistration, getVirtualResultSubmissions, requestRefund } from '
 import { ApiRequestError } from '@/api/errors';
 import { CancelRegistrationDialog } from '@/components/registration/CancelRegistrationDialog';
 import { ChangeDistanceDialog } from '@/components/registration/ChangeDistanceDialog';
-import { hasPaidAmount } from '@/lib/selfService';
+import { hasPaidAmount, refundRequestErrorMessage } from '@/lib/selfService';
 import { RegistrationHistoryDialog } from '@/components/registration/RegistrationHistoryDialog';
 import { getAllEventsPaged } from '@/api/fetchAllPages';
 import { useState } from 'react';
@@ -69,11 +69,13 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
     try {
       await requestRefund(registration.id);
       toast.success('Wysłano prośbę o zwrot', {
-        description: 'Organizator lub administrator rozpatrzy Twóją prośbę.',
+        description: 'Organizator lub administrator rozpatrzy Twoją prośbę.',
       });
       queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
-    } catch {
-      toast.error('Nie udało się wysłać prośby', { description: 'Spróbuj ponownie za chwilę.' });
+    } catch (error) {
+      toast.error('Nie udało się wysłać prośby', {
+        description: refundRequestErrorMessage(error),
+      });
     }
   };
   // Same button as in the unpaid banner — reopens the payment window / sends to the gateway.
