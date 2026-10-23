@@ -336,7 +336,9 @@ describe('RegistrationListRow pending actions', () => {
     others.forEach((other) => fireEvent.click(other));
 
     expect(onRequestRefund).toHaveBeenCalledTimes(1);
-    screen.getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ }).forEach((b) => expect(b).toBeDisabled());
+    screen
+      .getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ })
+      .forEach((b) => expect(b).toBeDisabled());
   });
 
   it('starts one payment retry when "Ponów płatność" is clicked twice', () => {
@@ -359,6 +361,8 @@ describe('RegistrationListRow pending actions', () => {
     others.forEach((other) => fireEvent.click(other));
 
     expect(onRetryPayment).toHaveBeenCalledTimes(1);
-    screen.getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ }).forEach((b) => expect(b).toBeDisabled());
+    screen
+      .getAllByRole('button', { name: /Poproś o zwrot|Ponów płatność/ })
+      .forEach((b) => expect(b).toBeDisabled());
   });
 });

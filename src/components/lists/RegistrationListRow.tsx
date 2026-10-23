@@ -69,13 +69,15 @@ export const RegistrationListRow = ({
     if (!result || typeof result.then !== 'function') return;
     actionInFlight.current = true;
     setActionPending(true);
-    result.then(
-      () => undefined,
-      () => undefined,
-    ).finally(() => {
-      actionInFlight.current = false;
-      setActionPending(false);
-    });
+    result
+      .then(
+        () => undefined,
+        () => undefined,
+      )
+      .finally(() => {
+        actionInFlight.current = false;
+        setActionPending(false);
+      });
   };
   const now = new Date();
   const isVirtual = event.isVirtual;

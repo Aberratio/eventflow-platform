@@ -76,8 +76,14 @@ describe('evaluateSelfService', () => {
 
 describe('refundRequestErrorMessage', () => {
   it('explains that only a paid registration can be refunded', () => {
-    const error = new ApiRequestError('Only a paid registration can request a refund.', 'refund_requires_paid_registration', 409);
-    expect(refundRequestErrorMessage(error)).toBe('Zwrot można zgłosić tylko dla opłaconego zapisu.');
+    const error = new ApiRequestError(
+      'Only a paid registration can request a refund.',
+      'refund_requires_paid_registration',
+      409,
+    );
+    expect(refundRequestErrorMessage(error)).toBe(
+      'Zwrot można zgłosić tylko dla opłaconego zapisu.',
+    );
   });
 
   it('shows the server message for other API errors', () => {
@@ -86,6 +92,8 @@ describe('refundRequestErrorMessage', () => {
   });
 
   it('falls back to a retry hint for network errors', () => {
-    expect(refundRequestErrorMessage(new TypeError('Failed to fetch'))).toBe('Spróbuj ponownie za chwilę.');
+    expect(refundRequestErrorMessage(new TypeError('Failed to fetch'))).toBe(
+      'Spróbuj ponownie za chwilę.',
+    );
   });
 });
