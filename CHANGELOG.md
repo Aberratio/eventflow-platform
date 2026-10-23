@@ -91,6 +91,8 @@ as the first version.
   disabled until the first request finishes. A failed refund request now
   says why (for example that only a paid registration can be refunded)
   instead of always asking to try again later.
+- Event results: an anonymised competitor's name is shown as plain text
+  instead of a broken link to a profile that does not exist.
 
 ### Removed
 

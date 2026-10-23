@@ -4,7 +4,8 @@ export interface Result {
   eventName: string;
   distanceId: string;
   distanceName: string;
-  userId: string;
+  /** null for an anonymised competitor in public results (no profile to link to). */
+  userId: string | null;
   registrationId?: string;
   userName: string;
   bibNumber: string;
