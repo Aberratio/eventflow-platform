@@ -169,12 +169,16 @@ const CategoryTable = ({
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Link
-                          to={`/athlete/${result.userId}`}
-                          className="font-medium transition-colors hover:text-primary hover:underline"
-                        >
-                          {result.userName}
-                        </Link>
+                        {result.userId ? (
+                          <Link
+                            to={`/athlete/${result.userId}`}
+                            className="font-medium transition-colors hover:text-primary hover:underline"
+                          >
+                            {result.userName}
+                          </Link>
+                        ) : (
+                          <span className="font-medium">{result.userName}</span>
+                        )}
                         {isCurrentUser && (
                           <Badge variant="default" className="shrink-0 px-1.5 py-0 text-xs">
                             Ty
@@ -366,12 +370,16 @@ const FlatResultsTable = ({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Link
-                      to={`/athlete/${result.userId}`}
-                      className="font-medium transition-colors hover:text-primary hover:underline"
-                    >
-                      {result.userName}
-                    </Link>
+                    {result.userId ? (
+                      <Link
+                        to={`/athlete/${result.userId}`}
+                        className="font-medium transition-colors hover:text-primary hover:underline"
+                      >
+                        {result.userName}
+                      </Link>
+                    ) : (
+                      <span className="font-medium">{result.userName}</span>
+                    )}
                     {isCurrentUser && (
                       <Badge variant="default" className="shrink-0 px-1.5 py-0 text-xs">
                         Ty
