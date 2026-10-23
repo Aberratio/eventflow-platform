@@ -86,6 +86,11 @@ as the first version.
   selected or unpaid registrations, saving payment details and start numbers)
   are saved on the server and no longer disappear after a reload; errors show
   the server's message.
+- My registrations: tapping "Poproś o zwrot" or "Ponów płatność" twice no
+  longer sends a second request or opens a second payment; both buttons stay
+  disabled until the first request finishes. A failed refund request now
+  says why (for example that only a paid registration can be refunded)
+  instead of always asking to try again later.
 
 ### Removed
 

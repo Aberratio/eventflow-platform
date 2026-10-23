@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,10 +32,13 @@ interface RegistrationListRowProps {
   event: Event;
   virtualSubmission?: VirtualResultSubmission;
   onSubmitResult?: () => void;
-  /** „poproś o zwrot" — omitted when the caller doesn't want the action offered here. */
-  onRequestRefund?: () => void;
-  /** „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. */
-  onRetryPayment?: () => void;
+  /**
+   * „poproś o zwrot" — omitted when the caller doesn't want the action offered here.
+   * Return the request's promise to keep both payment buttons disabled until it settles.
+   */
+  onRequestRefund?: () => void | Promise<unknown>;
+  /** „ponów płatność" for an expired Zapis — omitted when the caller doesn't offer it. Same promise rule. */
+  onRetryPayment?: () => void | Promise<unknown>;
   /** „Zrezygnuj” — offered only while the self-service window is open; omitted = never offered. */
   onCancel?: () => void;
   /** „Historia zapisu” — omitted = not offered. */
@@ -56,6 +59,26 @@ export const RegistrationListRow = ({
   onChangeDistance,
 }: RegistrationListRowProps) => {
   const [showStartCode, setShowStartCode] = useState(false);
+  // One payment action at a time: a double tap must not send a second refund request
+  // or open a second gateway session. The ref also covers clicks before the re-render.
+  const actionInFlight = useRef(false);
+  const [actionPending, setActionPending] = useState(false);
+  const runPaymentAction = (action?: () => void | Promise<unknown>) => {
+    if (!action || actionInFlight.current) return;
+    const result = action();
+    if (!result || typeof result.then !== 'function') return;
+    actionInFlight.current = true;
+    setActionPending(true);
+    result
+      .then(
+        () => undefined,
+        () => undefined,
+      )
+      .finally(() => {
+        actionInFlight.current = false;
+        setActionPending(false);
+      });
+  };
   const now = new Date();
   const isVirtual = event.isVirtual;
   const startDate = event.startDate ? new Date(event.startDate) : null;
@@ -125,8 +148,9 @@ export const RegistrationListRow = ({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        onRequestRefund?.();
+        runPaymentAction(onRequestRefund);
       }}
+      disabled={actionPending}
       className="h-7 text-xs"
     >
       <RotateCcw className="mr-1 h-3 w-3" />
@@ -143,8 +167,9 @@ export const RegistrationListRow = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onRetryPayment();
+          runPaymentAction(onRetryPayment);
         }}
+        disabled={actionPending}
         className="h-7 text-xs"
       >
         <CreditCard className="mr-1 h-3 w-3" />
