@@ -71,7 +71,8 @@ const ParticipantRegistrationsTab = ({ registrations }: ParticipantRegistrations
       toast.success('Wysłano prośbę o zwrot', {
         description: 'Organizator lub administrator rozpatrzy Twoją prośbę.',
       });
-      queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
+      // Keep the button locked until the row shows the new refund state.
+      await queryClient.invalidateQueries({ queryKey: ['registrations-by-user'] });
     } catch (error) {
       toast.error('Nie udało się wysłać prośby', {
         description: refundRequestErrorMessage(error),
